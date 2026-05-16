@@ -1,0 +1,165 @@
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "wouter";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
+import { useMarket } from "@/lib/market-context";
+import { useToast } from "@/hooks/use-toast";
+import { AuthToolbar } from "@/components/auth-toolbar";
+
+export default function ProfilePage() {
+  const [, setLocation] = useLocation();
+  const { user, loading, refresh } = useAuth();
+  const { t } = useMarket();
+  const { toast } = useToast();
+
+  const [displayName, setDisplayName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [city, setCity] = useState("");
+  const [aboutMe, setAboutMe] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      setLocation(loginUrlWithReturn("/profile"));
+      return;
+    }
+    setDisplayName(user.display_name ?? "");
+    setContactPhone(
+      user.contact_phone
+        ? user.contact_phone.startsWith("+")
+          ? user.contact_phone
+          : `+${user.contact_phone}`
+        : user.phone_e164_digits
+          ? `+${user.phone_e164_digits}`
+          : "",
+    );
+    setPhotoUrl(user.profile_photo_url ?? "");
+    setCity(user.city ?? "");
+    setAboutMe(user.about_me ?? "");
+  }, [user, loading, setLocation]);
+
+  async function onSave(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const res = await fetch("/api/auth/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          display_name: displayName,
+          contact_phone: contactPhone,
+          profile_photo_url: photoUrl,
+          city,
+          about_me: aboutMe,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({
+          title: (data as { error?: string }).error ?? t.toast_reqFail,
+          variant: "destructive",
+        });
+        return;
+      }
+      await refresh();
+      toast({ title: t.profile_saved });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between gap-3">
+          <Link href="/" className="flex items-center gap-2 text-gray-700 min-h-12">
+            <ArrowLeft size={20} />
+            <span className="font-semibold text-sm">{t.back}</span>
+          </Link>
+          <AuthToolbar variant="compact" />
+        </div>
+      </header>
+
+      <main className="max-w-lg mx-auto px-4 py-6">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+          <div>
+            <h1 className="text-xl font-black text-gray-900">{t.profile_heading}</h1>
+            <p className="text-sm text-gray-500 mt-1">{t.profile_sub}</p>
+          </div>
+
+          <form className="space-y-4" onSubmit={onSave}>
+            <div className="space-y-2">
+              <Label htmlFor="profile-name">{t.profile_fullName}</Label>
+              <Input
+                id="profile-name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder={t.reg_sellerGate_namePh}
+                className="min-h-12 h-12"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="profile-phone">{t.phoneNum}</Label>
+              <Input
+                id="profile-phone"
+                type="tel"
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                className="min-h-12 h-12"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="profile-photo">{t.profile_photo}</Label>
+              <Input
+                id="profile-photo"
+                type="url"
+                value={photoUrl}
+                onChange={(e) => setPhotoUrl(e.target.value)}
+                placeholder="https://"
+                className="min-h-12 h-12"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="profile-city">{t.profile_city}</Label>
+              <Input
+                id="profile-city"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="min-h-12 h-12"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="profile-about">{t.profile_about}</Label>
+              <Textarea
+                id="profile-about"
+                value={aboutMe}
+                onChange={(e) => setAboutMe(e.target.value)}
+                rows={4}
+                className="min-h-[120px] text-[16px]"
+              />
+            </div>
+            <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
+              {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.profile_save}
+            </Button>
+          </form>
+        </div>
+      </main>
+    </div>
+  );
+}
+

@@ -1,0 +1,663 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Vendi.com classifieds marketplace API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: listings
+    description: Classified listings
+  - name: categories
+    description: Listing categories
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /listings:
+    get:
+      operationId: getListings
+      tags: [listings]
+      summary: List classifieds
+      parameters:
+        - name: category_id
+          in: query
+          schema:
+            type: integer
+        - name: category_ids
+          in: query
+          description: Comma-separated leaf category ids (e.g. Vetura brand ids)
+          schema:
+            type: string
+        - name: location
+          in: query
+          schema:
+            type: string
+        - name: location_search
+          in: query
+          description: Case-insensitive partial match against listing `location` (ILIKE `%term%`)
+          schema:
+            type: string
+        - name: property_txn
+          in: query
+          description: Real estate listing transaction (`shitje`, `qira`)
+          schema:
+            type: string
+        - name: property_subtype
+          in: query
+          description: Real estate subtype key stored on listings (matches panel card keys)
+          schema:
+            type: string
+        - name: property_sqm_min
+          in: query
+          schema:
+            type: integer
+        - name: property_sqm_max
+          in: query
+          schema:
+            type: integer
+        - name: property_floor
+          in: query
+          description: Floor label (`Përdhesë`, `Kati N`, …) stored on listing
+          schema:
+            type: string
+        - name: min_price
+          in: query
+          schema:
+            type: number
+        - name: max_price
+          in: query
+          schema:
+            type: number
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: year_min
+          in: query
+          schema:
+            type: integer
+        - name: year_max
+          in: query
+          schema:
+            type: integer
+        - name: mileage_max
+          in: query
+          description: Maximum odometer km
+          schema:
+            type: integer
+        - name: mileage_min
+          in: query
+          description: Minimum odometer km (exclusive of NULL rows when combined with other filters)
+          schema:
+            type: integer
+        - name: truck_type_slug
+          in: query
+          description: Kamionë hub type category slug (e.g. `kamione-type-furgone`)
+          schema:
+            type: string
+        - name: truck_axle_config
+          in: query
+          description: Axle configuration stored on listing (e.g. `4x2`)
+          schema:
+            type: string
+        - name: truck_gvw_band
+          in: query
+          description: GVW band key (`up_to_3_5`, `band_3_5_7_5`, `band_7_5_18`, `above_18`)
+          schema:
+            type: string
+        - name: truck_euro_standard
+          in: query
+          description: Stored label e.g. Euro 6
+          schema:
+            type: string
+        - name: motor_type_slug
+          in: query
+          description: Motorr hub type category slug (e.g. `motorr-type-chopper`)
+          schema:
+            type: string
+        - name: motor_cc_band
+          in: query
+          description: Engine displacement band (`up_to_50`, `band_51_125`, … `above_750`)
+          schema:
+            type: string
+        - name: motor_kw_min
+          in: query
+          description: Minimum power (kW)
+          schema:
+            type: number
+        - name: motor_kw_max
+          in: query
+          description: Maximum power (kW)
+          schema:
+            type: number
+        - name: motor_transmission
+          in: query
+          description: Comma-separated `Manual`, `Automatik`
+          schema:
+            type: string
+        - name: vehicle_body_type
+          in: query
+          schema:
+            type: string
+        - name: vehicle_body_filter
+          in: query
+          description: Special key `elektrike_hibrid` matches electric/hybrid fuel
+          schema:
+            type: string
+        - name: vehicle_model
+          in: query
+          schema:
+            type: string
+        - name: fuel
+          in: query
+          description: Comma-separated fuel labels (exact match to listing field)
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of listings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListingsPage"
+    post:
+      operationId: createListing
+      tags: [listings]
+      summary: Create a new listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListingInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+
+  /listings/featured:
+    get:
+      operationId: getFeaturedListings
+      tags: [listings]
+      summary: Get featured listings
+      responses:
+        "200":
+          description: Featured listings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Listing"
+
+  /listings/recent:
+    get:
+      operationId: getRecentListings
+      tags: [listings]
+      summary: Get recently added listings
+      responses:
+        "200":
+          description: Recent listings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Listing"
+
+  /listings/stats:
+    get:
+      operationId: getListingsStats
+      tags: [listings]
+      summary: Get marketplace statistics
+      responses:
+        "200":
+          description: Marketplace stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketplaceStats"
+
+  /listings/{id}:
+    get:
+      operationId: getListing
+      tags: [listings]
+      summary: Get a listing by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Listing detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateListing
+      tags: [listings]
+      summary: Update a listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListingUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteListing
+      tags: [listings]
+      summary: Delete a listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /car-models:
+    get:
+      operationId: getCarModels
+      tags: [categories]
+      summary: Vetura reference models by brand slug
+      responses:
+        "200":
+          description: Sorted car models
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CarModelRow"
+
+  /truck-models:
+    get:
+      operationId: getTruckModels
+      tags: [categories]
+      summary: Kamionë & Furgonë reference models by brand slug (`kamione-*`)
+      responses:
+        "200":
+          description: Sorted truck/van models
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CarModelRow"
+
+  /motor-models:
+    get:
+      operationId: getMotorModels
+      tags: [categories]
+      summary: Motorr & Skuter reference models by brand slug (`motorr-*`)
+      responses:
+        "200":
+          description: Sorted motorcycle/scooter models
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CarModelRow"
+
+  /categories:
+    get:
+      operationId: getCategories
+      tags: [categories]
+      summary: Get all categories with listing counts
+      responses:
+        "200":
+          description: Categories list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Listing:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - price
+        - category_id
+        - location
+        - seller_name
+        - seller_phone
+        - condition
+        - views
+        - is_featured
+        - created_at
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        category_id:
+          type: integer
+        category_name:
+          type: ["string", "null"]
+        location:
+          type: string
+        seller_name:
+          type: string
+        seller_phone:
+          type: string
+        condition:
+          type: string
+        views:
+          type: integer
+        is_featured:
+          type: boolean
+        image_url:
+          type: ["string", "null"]
+        created_at:
+          type: string
+        vehicle_year:
+          type: integer
+          nullable: true
+        vehicle_mileage_km:
+          type: integer
+          nullable: true
+        vehicle_fuel:
+          type: string
+          nullable: true
+        vehicle_body_type:
+          type: string
+          nullable: true
+        vehicle_model:
+          type: string
+          nullable: true
+        truck_type_slug:
+          type: string
+          nullable: true
+        truck_axle_config:
+          type: string
+          nullable: true
+        truck_gvw_band:
+          type: string
+          nullable: true
+        truck_euro_standard:
+          type: string
+          nullable: true
+        property_txn:
+          type: string
+          nullable: true
+        property_subtype:
+          type: string
+          nullable: true
+        property_sqm:
+          type: integer
+          nullable: true
+        property_floor:
+          type: string
+          nullable: true
+        motor_type_slug:
+          type: string
+          nullable: true
+        motor_cc_band:
+          type: string
+          nullable: true
+        motor_power_kw:
+          type: integer
+          nullable: true
+        motor_transmission:
+          type: string
+          nullable: true
+
+    ListingInput:
+      type: object
+      required:
+        - title
+        - description
+        - price
+        - category_id
+        - location
+        - seller_name
+        - seller_phone
+        - condition
+      properties:
+        title:
+          type: string
+          minLength: 3
+        description:
+          type: string
+          minLength: 10
+        price:
+          type: number
+          minimum: 0
+        category_id:
+          type: integer
+        location:
+          type: string
+        seller_name:
+          type: string
+        seller_phone:
+          type: string
+        condition:
+          type: string
+        image_url:
+          type: string
+        is_featured:
+          type: boolean
+        vehicle_year:
+          type: integer
+          nullable: true
+        vehicle_mileage_km:
+          type: integer
+          nullable: true
+        vehicle_fuel:
+          type: string
+          nullable: true
+        vehicle_body_type:
+          type: string
+          nullable: true
+        vehicle_model:
+          type: string
+          nullable: true
+        truck_type_slug:
+          type: string
+          nullable: true
+        truck_axle_config:
+          type: string
+          nullable: true
+        truck_gvw_band:
+          type: string
+          nullable: true
+        truck_euro_standard:
+          type: string
+          nullable: true
+        property_txn:
+          type: string
+          nullable: true
+        property_subtype:
+          type: string
+          nullable: true
+        property_sqm:
+          type: integer
+          nullable: true
+        property_floor:
+          type: string
+          nullable: true
+        motor_type_slug:
+          type: string
+          nullable: true
+        motor_cc_band:
+          type: string
+          nullable: true
+        motor_power_kw:
+          type: integer
+          nullable: true
+        motor_transmission:
+          type: string
+          nullable: true
+
+    ListingUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 3
+        description:
+          type: string
+        price:
+          type: number
+          minimum: 0
+        location:
+          type: string
+        condition:
+          type: string
+        image_url:
+          type: string
+        is_featured:
+          type: boolean
+
+    ListingsPage:
+      type: object
+      required:
+        - listings
+        - total
+        - page
+        - limit
+      properties:
+        listings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Listing"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    Category:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+        - icon
+        - listing_count
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        icon:
+          type: string
+        listing_count:
+          type: integer
+        parent_id:
+          type: integer
+          nullable: true
+        image_url:
+          type: string
+          nullable: true
+
+    MarketplaceStats:
+      type: object
+      required:
+        - total_listings
+        - total_categories
+        - featured_count
+        - listings_today
+      properties:
+        total_listings:
+          type: integer
+        total_categories:
+          type: integer
+        featured_count:
+          type: integer
+        listings_today:
+          type: integer
+        top_locations:
+          type: array
+          items:
+            type: object
+            required: [location, count]
+            properties:
+              location:
+                type: string
+              count:
+                type: integer
+
+    CarModelRow:
+      type: object
+      required:
+        - brand_slug
+        - name
+      properties:
+        brand_slug:
+          type: string
+        name:
+          type: string

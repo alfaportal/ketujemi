@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment & secrets
+.env
+**/.env
+!.env.example
+!**/.env.example
+
+# Build outputs
+dist/
+**/dist/
+build/
+**/build/
+out/
+**/out/
+.next/
+**/.next/
+.turbo/
+**/.turbo/
+coverage/
+**/coverage/
+
+# Archives & duplicate project copies
+*.zip
+ketujemi-project/
+
+# Logs & OS
+*.log
+.DS_Store
+Thumbs.db

@@ -1,0 +1,30 @@
+---
+description: KetuJemi local dev servers (ketujemi-2) — hot reload vs restarts
+globs:
+  - artifacts/**/*
+  - lib/**/*
+---
+
+# KetuJemi dev workflow
+
+## While coding (human or agent)
+
+From repo **`ketujemi-2`**, prefer a **single terminal**:
+
+- **`pnpm dev`** — runs **both** `@workspace/api-server` and `@workspace/vendi`.
+
+### Frontend (`artifacts/vendi`)
+
+- **Hot reload / HMR** is enabled by **Vite** by default (`pnpm run dev` / `pnpm dev:web`). Edits under `artifacts/vendi` should reflect in the browser **without restarting** the web server.
+
+### Backend (`artifacts/api-server`)
+
+- **`pnpm run dev:api`** (used by **`pnpm dev`**) runs **esbuild in watch mode** plus **`node --watch`** on `dist/index.mjs`.
+- Editing API source (and bundled workspace code) triggers a **rebuild and automatic API process restart**.
+- **`pnpm run dev:once`** in the api-server remains a one-shot build + start (no watch).
+
+## Agent behavior after edits
+
+**Do not** manually restart **`pnpm dev`** after normal source changes when the stack is running with **`pnpm dev`** — watch + HMR already apply updates.
+
+Restart both processes only when something **outside** that pipeline changed, for example `.env`, `vite.config.ts` (sometimes), lockfile-heavy dependency changes, or if the servers were not running with watch/HMR active.
