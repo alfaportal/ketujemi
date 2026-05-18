@@ -15,31 +15,31 @@ import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
 import { LanguageSelector } from "@/components/language-selector";
 import { SiteFooter } from "@/components/site-footer";
 
-// --- Cover photos keyed by category name prefix -------------------------------
-const CAT_PHOTOS: Record<string, string> = {
-  "Vetura":    "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=85",
-  "Motorr":    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=85",
-  "Kamion":    "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=85",
-  "Auto":      "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=85",
-  "Banesa":    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=85",
-  "Lokale":    "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=85",
-  "Telefona":  "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=85",
-  "Kompjuter": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&q=85",
-  "TV":        "https://images.unsplash.com/photo-1593344484962-796055d4a3a4?w=800&q=85",
-  "Mobilje":   "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=85",
-  "Rroba":     "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800&q=85",
-  "F?mij?":   "https://images.pexels.com/photos/8924170/pexels-photo-8924170.jpeg?auto=compress&cs=tinysrgb&w=800",
-  "Pun?":   "https://images.pexels.com/photos/15635241/pexels-photo-15635241.jpeg?auto=compress&cs=tinysrgb&w=800",
-  "Bujq?si":   "https://images.pexels.com/photos/2933243/pexels-photo-2933243.jpeg?auto=compress&cs=tinysrgb&w=800",
-  "Muzik?":   "https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=800",
-  "Kafsh?":   "https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=800",
-  "Sport":     "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=85",
-  "Arsim":     "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&q=85",
+// --- Cover photos by category slug (all 18 parent categories) ----------------
+const CAT_PHOTOS_BY_SLUG: Record<string, string> = {
+  vetura: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&q=85",
+  "motorr-skuter": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=85",
+  "kamione-furgone": "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&q=85",
+  "auto-pjese": "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&q=85",
+  "banesa-shtepi": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=85",
+  "lokale-zyre": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=85",
+  telefona: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&q=85",
+  "kompjutere-laptope": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&q=85",
+  "tv-elektronike": "https://images.unsplash.com/photo-1593344484962-796055d4a3a4?w=600&q=85",
+  "mobilje-dekorime": "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=85",
+  "rroba-kepuce": "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&q=85",
+  femije: "https://images.pexels.com/photos/8924170/pexels-photo-8924170.jpeg?auto=compress&cs=tinysrgb&w=600",
+  "sport-outdoor": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=85",
+  "pune-sherbime": "https://images.pexels.com/photos/15635241/pexels-photo-15635241.jpeg?auto=compress&cs=tinysrgb&w=600",
+  "bujqesi-blegtori": "https://images.pexels.com/photos/2933243/pexels-photo-2933243.jpeg?auto=compress&cs=tinysrgb&w=600",
+  "arsim-kurse": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=85",
+  "muzike-hobby": "https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=600",
+  kafshet: "https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=600",
 };
 
-function getCatPhoto(name: string): string | null {
-  const key = Object.keys(CAT_PHOTOS).find((k) => name.startsWith(k));
-  return key ? CAT_PHOTOS[key] : null;
+function getCatPhoto(slug: string | null | undefined): string | null {
+  if (!slug) return null;
+  return CAT_PHOTOS_BY_SLUG[slug] ?? null;
 }
 
 // --- Animated stat counter ----------------------------------------------------
@@ -300,47 +300,51 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* -- Categories -- */}
-      <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl sm:text-2xl font-black text-gray-900">{t.categories}</h2>
-          <Link href="/listings" className="flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+      {/* -- Categories (mobile-first: 2 cols, compact photos, natural API order) -- */}
+      <section id="categories" className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 sm:py-10">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-2xl font-black text-gray-900">{t.categories}</h2>
+          <Link href="/listings" className="flex items-center gap-1 text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors shrink-0">
             {t.viewAll} <ChevronRight size={16} />
           </Link>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
           {parentCategories.map((cat: any) => {
             const localName = translateCategory(cat.name, market.code);
-            const photo = (cat.image_url as string | null | undefined)?.trim() || getCatPhoto(cat.name);
+            const photo = getCatPhoto(cat.slug);
             const IconComp = (Icons as unknown as Record<string, React.ElementType>)[cat.icon] ?? Icons.Tag;
             return (
               <Link
                 key={cat.id}
                 href={`/categories/${cat.id}`}
                 data-testid={`link-category-${cat.id}`}
-                className="group flex flex-col bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-200 cursor-pointer"
+                className="group flex flex-col bg-white rounded-xl sm:rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-200 cursor-pointer"
               >
                 {photo ? (
-                  <div className="relative w-full rounded-t-2xl bg-gray-50 p-2 sm:p-3">
+                  <div className="relative aspect-[5/3] w-full shrink-0 overflow-hidden rounded-t-xl sm:rounded-t-2xl bg-gray-100">
                     <img
                       src={photo}
                       alt={localName}
-                      className="block w-full h-auto object-contain object-center transition-opacity duration-300 group-hover:opacity-95"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                      loading="lazy"
+                      decoding="async"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                      className="absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-300 group-hover:opacity-95"
                     />
-                    <div className="absolute bottom-2 right-2 w-6 h-6 rounded-lg bg-blue-600/90 flex items-center justify-center shadow-sm">
-                      <IconComp size={13} className="text-white" />
+                    <div className="absolute bottom-1 right-1 sm:bottom-1.5 sm:right-1.5 w-5 h-5 sm:w-6 sm:h-6 rounded-md sm:rounded-lg bg-blue-600/90 flex items-center justify-center shadow-sm">
+                      <IconComp size={11} className="text-white sm:hidden" />
+                      <IconComp size={13} className="text-white hidden sm:block" />
                     </div>
                   </div>
                 ) : (
-                  <div className="flex min-h-[140px] sm:min-h-[160px] w-full items-center justify-center rounded-t-2xl bg-blue-50 group-hover:bg-blue-100 transition-colors">
-                    <IconComp size={24} className="text-blue-500" />
+                  <div className="relative flex aspect-[5/3] w-full shrink-0 items-center justify-center rounded-t-xl sm:rounded-t-2xl bg-blue-50 group-hover:bg-blue-100 transition-colors">
+                    <IconComp size={22} className="text-blue-500 sm:hidden" />
+                    <IconComp size={24} className="text-blue-500 hidden sm:block" />
                   </div>
                 )}
-                <div className="p-2 text-center min-w-0">
-                  <div className="text-sm font-semibold text-gray-700 leading-snug hyphens-auto">{localName}</div>
+                <div className="px-1.5 py-2 sm:p-2 text-center min-w-0">
+                  <div className="text-xs sm:text-sm font-semibold text-gray-700 leading-snug line-clamp-2 hyphens-auto">{localName}</div>
                   {cat.listing_count > 0 && (
-                    <div className="text-sm text-gray-400 mt-0.5">{cat.listing_count}</div>
+                    <div className="text-xs sm:text-sm text-gray-400 mt-0.5">{cat.listing_count}</div>
                   )}
                 </div>
               </Link>
