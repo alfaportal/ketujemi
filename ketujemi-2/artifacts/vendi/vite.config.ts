@@ -1,89 +1,78 @@
 import { config as loadEnv } from "dotenv";
-import { defineConfig } from "vite";
+import path from "path";
+import { fileURLToPath } from "node:url";
+import { defineConfig, type PluginOption } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-const repoRoot = path.resolve(import.meta.dirname, "..", "..");
+const configDir = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(configDir, "..", "..");
 loadEnv({ path: path.join(repoRoot, ".env") });
 
-const rawPort = process.env.WEB_PORT ?? process.env.PORT;
+export default defineConfig(async ({ command }) => {
+  const basePath = process.env.BASE_PATH?.trim() || "/";
+  const apiProxyTarget =
+    process.env.API_PROXY_TARGET ?? "http://127.0.0.1:8080";
 
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
-}
+  const plugins: PluginOption[] = [react(), tailwindcss()];
 
-const port = Number(rawPort);
+  if (command === "serve") {
+    plugins.push(runtimeErrorOverlay());
 
-if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${rawPort}"`);
-}
+    if (process.env.REPL_ID !== undefined) {
+      const cartographer = await import("@replit/vite-plugin-cartographer");
+      const devBanner = await import("@replit/vite-plugin-dev-banner");
+      plugins.push(
+        cartographer.cartographer({
+          root: path.resolve(configDir, ".."),
+        }),
+        devBanner.devBanner(),
+      );
+    }
+  }
 
-const basePath = process.env.BASE_PATH;
+  const rawPort = process.env.WEB_PORT ?? process.env.PORT ?? "5173";
+  const port = Number(rawPort);
+  if (command === "serve" && (Number.isNaN(port) || port <= 0)) {
+    throw new Error(`Invalid PORT value: "${rawPort}"`);
+  }
 
-if (!basePath) {
-  throw new Error(
-    "BASE_PATH environment variable is required but was not provided.",
-  );
-}
-
-const apiProxyTarget =
-  process.env.API_PROXY_TARGET ?? "http://127.0.0.1:8080";
-
-export default defineConfig({
-  envDir: repoRoot,
-  base: basePath,
-  plugins: [
-    react(),
-    tailwindcss(),
-    runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
-      ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer({
-              root: path.resolve(import.meta.dirname, ".."),
-            }),
-          ),
-          await import("@replit/vite-plugin-dev-banner").then((m) =>
-            m.devBanner(),
-          ),
-        ]
-      : []),
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(import.meta.dirname, "src"),
-      "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
+  return {
+    envDir: repoRoot,
+    base: basePath,
+    plugins,
+    resolve: {
+      alias: {
+        "@": path.resolve(configDir, "src"),
+        "@assets": path.resolve(repoRoot, "attached_assets"),
+      },
+      dedupe: ["react", "react-dom"],
     },
-    dedupe: ["react", "react-dom"],
-  },
-  root: path.resolve(import.meta.dirname),
-  build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
-    emptyOutDir: true,
-  },
-  server: {
-    port,
-    strictPort: true,
-    host: "0.0.0.0",
-    allowedHosts: true,
-    proxy: {
-      "/api": {
-        target: apiProxyTarget,
-        changeOrigin: true,
+    root: configDir,
+    build: {
+      outDir: path.resolve(configDir, "dist/public"),
+      emptyOutDir: true,
+    },
+    server: {
+      port,
+      strictPort: true,
+      host: "0.0.0.0",
+      allowedHosts: true,
+      proxy: {
+        "/api": {
+          target: apiProxyTarget,
+          changeOrigin: true,
+        },
+      },
+      fs: {
+        strict: true,
       },
     },
-    fs: {
-      strict: true,
+    preview: {
+      port,
+      host: "0.0.0.0",
+      allowedHosts: true,
     },
-  },
-  preview: {
-    port,
-    host: "0.0.0.0",
-    allowedHosts: true,
-  },
+  };
 });
