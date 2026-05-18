@@ -194,7 +194,7 @@ export default function HomePage() {
       </nav>
 
       {/* -- Hero -- */}
-      <section className="relative h-[280px] md:h-[500px] w-full overflow-hidden">
+      <section className="relative w-full overflow-hidden bg-slate-900 h-[clamp(220px,52vw,340px)] sm:h-[clamp(280px,45vh,420px)] md:h-[min(520px,50vh)] lg:h-[540px]">
         <div className="absolute inset-0 z-0">
           <HomeHeroSlideshow />
         </div>
@@ -206,22 +206,6 @@ export default function HomePage() {
           <p className="mt-1.5 w-full max-w-xl text-sm leading-snug font-medium text-white/95 drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] sm:mt-2 sm:text-xl sm:text-blue-100">
             {t.heroSub}
           </p>
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3 pointer-events-auto">
-            <Link
-              href="/login?channel=email"
-              className="inline-flex items-center gap-2 rounded-xl bg-white/95 px-4 py-2.5 text-sm font-bold text-blue-700 shadow-lg ring-1 ring-white/40 transition hover:bg-white min-h-11 touch-manipulation sm:px-5 sm:text-base"
-            >
-              <Mail size={18} aria-hidden className="shrink-0" />
-              {t.login_tab_email}
-            </Link>
-            <Link
-              href="/login?channel=sms"
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600/95 px-4 py-2.5 text-sm font-bold text-white shadow-lg ring-1 ring-blue-400/50 transition hover:bg-blue-700 min-h-11 touch-manipulation sm:px-5 sm:text-base"
-            >
-              <Smartphone size={18} aria-hidden className="shrink-0" />
-              {t.login_tab_sms}
-            </Link>
-          </div>
         </div>
         <div className="relative h-10 -mb-1">
           <svg viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full" preserveAspectRatio="none">
@@ -387,20 +371,19 @@ export default function HomePage() {
                 className="group flex flex-col overflow-hidden bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-200 cursor-pointer"
               >
                 {photo ? (
-                  <div className="relative h-[160px] md:h-[200px] overflow-hidden">
+                  <div className="relative flex w-full items-center justify-center aspect-[4/3] sm:aspect-[5/4] bg-gray-100 overflow-hidden">
                     <img
                       src={photo}
                       alt={localName}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      className="max-h-full max-w-full h-full w-full object-contain p-1.5 sm:p-2 transition-opacity duration-300 group-hover:opacity-95"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                    <div className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-lg bg-blue-600/90 flex items-center justify-center">
+                    <div className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-lg bg-blue-600/90 flex items-center justify-center shadow-sm">
                       <IconComp size={13} className="text-white" />
                     </div>
                   </div>
                 ) : (
-                  <div className="h-[160px] md:h-[200px] bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                  <div className="flex aspect-[4/3] sm:aspect-[5/4] w-full items-center justify-center bg-blue-50 group-hover:bg-blue-100 transition-colors">
                     <IconComp size={24} className="text-blue-500" />
                   </div>
                 )}

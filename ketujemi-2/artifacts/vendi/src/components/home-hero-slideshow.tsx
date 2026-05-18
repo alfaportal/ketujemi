@@ -59,7 +59,7 @@ export function HomeHeroSlideshow() {
   }, [count]);
 
   return (
-    <div className="absolute inset-0">
+    <div className="absolute inset-0 bg-slate-900">
       {HOME_HERO_SLIDES.map((slide, i) => (
         <img
           key={slide.url}
@@ -67,9 +67,9 @@ export function HomeHeroSlideshow() {
           alt=""
           draggable={false}
           loading={i === 0 ? "eager" : "lazy"}
-          sizes="100vw"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1920px"
           className={cn(
-            "absolute inset-0 h-full w-full object-contain object-center max-w-none transition-opacity duration-1000 ease-in-out",
+            "absolute inset-0 m-auto h-full w-full max-h-full max-w-full object-contain object-center transition-opacity duration-1000 ease-in-out",
             i === currentIndex ? "opacity-100" : "opacity-0",
           )}
         />
