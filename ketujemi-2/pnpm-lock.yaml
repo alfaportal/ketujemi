@@ -624,6 +624,16 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 3.25.76
+    optionalDependencies:
+      '@rollup/rollup-linux-x64-gnu':
+        specifier: 4.59.0
+        version: 4.59.0
+      '@tailwindcss/oxide-linux-x64-gnu':
+        specifier: 4.2.1
+        version: 4.2.1
+      lightningcss-linux-x64-gnu:
+        specifier: 1.31.1
+        version: 1.31.1
 
   lib/api-client-react:
     dependencies:

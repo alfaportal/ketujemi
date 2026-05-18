@@ -4,7 +4,6 @@ import { fileURLToPath } from "node:url";
 import { defineConfig, type PluginOption } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 const configDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(configDir, "..", "..");
@@ -18,6 +17,9 @@ export default defineConfig(async ({ command }) => {
   const plugins: PluginOption[] = [react(), tailwindcss()];
 
   if (command === "serve") {
+    const { default: runtimeErrorOverlay } = await import(
+      "@replit/vite-plugin-runtime-error-modal"
+    );
     plugins.push(runtimeErrorOverlay());
 
     if (process.env.REPL_ID !== undefined) {
@@ -53,6 +55,8 @@ export default defineConfig(async ({ command }) => {
     build: {
       outDir: path.resolve(configDir, "dist/public"),
       emptyOutDir: true,
+      sourcemap: false,
+      target: "es2022",
     },
     server: {
       port,

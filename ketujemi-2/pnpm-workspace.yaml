@@ -68,7 +68,8 @@ catalog:
 
 autoInstallPeers: false
 
-onlyBuiltDependencies: esbuild
+onlyBuiltDependencies:
+  - esbuild
 
 overrides:
   # replit uses linux-x64 only, we can exclude all other platforms
@@ -156,4 +157,4 @@ overrides:
   esbuild: "0.27.3"
 
 allowBuilds:
-  esbuild: set this to true or false
+  esbuild: true

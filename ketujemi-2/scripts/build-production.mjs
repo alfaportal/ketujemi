@@ -13,6 +13,8 @@ const env = {
   NODE_ENV: "production",
   BASE_PATH: "/",
   PORT: process.env.PORT ?? "8080",
+  NODE_OPTIONS:
+    process.env.NODE_OPTIONS ?? "--max-old-space-size=4096",
 };
 
 function run(args) {
