@@ -1,17 +1,33 @@
-# Railway builds from the repository root; application code lives in ketujemi-2/.
-# Uses npm workspaces (no corepack/pnpm).
-FROM node:22-bookworm-slim AS build
+# Railway: repo root. App in ketujemi-2/. Uses pnpm via npm global (no corepack).
+FROM node:22-bookworm-slim AS base
+RUN corepack disable 2>/dev/null || true
+ENV COREPACK_ENABLE_STRICT=0
+RUN npm install -g pnpm@10.12.1
 WORKDIR /app
+
+FROM base AS deps
+COPY ketujemi-2/package.json ketujemi-2/pnpm-lock.yaml ketujemi-2/pnpm-workspace.yaml ./
+COPY ketujemi-2/artifacts/api-server/package.json artifacts/api-server/
+COPY ketujemi-2/artifacts/vendi/package.json artifacts/vendi/
+COPY ketujemi-2/artifacts/mockup-sandbox/package.json artifacts/mockup-sandbox/
+COPY ketujemi-2/lib/db/package.json lib/db/
+COPY ketujemi-2/lib/api-spec/package.json lib/api-spec/
+COPY ketujemi-2/lib/api-zod/package.json lib/api-zod/
+COPY ketujemi-2/lib/api-client-react/package.json lib/api-client-react/
+COPY ketujemi-2/lib/integrations/ lib/integrations/
+COPY ketujemi-2/scripts/package.json scripts/
+RUN pnpm install --frozen-lockfile
+
+FROM deps AS build
 COPY ketujemi-2/ .
-RUN node ./scripts/prepare-npm-install.mjs
-RUN npm install --workspaces --include-workspace-root --ignore-scripts
 ENV NODE_ENV=production
-ENV USE_NPM=1
 ENV BASE_PATH=/
 ENV PORT=8080
 RUN node ./scripts/build-production.mjs
 
 FROM node:22-bookworm-slim AS runner
+RUN corepack disable 2>/dev/null || true
+ENV COREPACK_ENABLE_STRICT=0
 ENV NODE_ENV=production
 ENV PORT=8080
 ENV STATIC_ROOT=/app/artifacts/vendi/dist/public

@@ -1,16 +1,33 @@
-# Local / alternate Docker build (app root). Railway uses /Dockerfile at repo root.
-FROM node:22-bookworm-slim AS build
+# Railway when Root Directory = ketujemi-2. pnpm via npm global (no corepack).
+FROM node:22-bookworm-slim AS base
+RUN corepack disable 2>/dev/null || true
+ENV COREPACK_ENABLE_STRICT=0
+RUN npm install -g pnpm@10.12.1
 WORKDIR /app
+
+FROM base AS deps
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY artifacts/api-server/package.json artifacts/api-server/
+COPY artifacts/vendi/package.json artifacts/vendi/
+COPY artifacts/mockup-sandbox/package.json artifacts/mockup-sandbox/
+COPY lib/db/package.json lib/db/
+COPY lib/api-spec/package.json lib/api-spec/
+COPY lib/api-zod/package.json lib/api-zod/
+COPY lib/api-client-react/package.json lib/api-client-react/
+COPY lib/integrations/ lib/integrations/
+COPY scripts/package.json scripts/
+RUN pnpm install --frozen-lockfile
+
+FROM deps AS build
 COPY . .
-RUN node ./scripts/prepare-npm-install.mjs
-RUN npm install --workspaces --include-workspace-root --ignore-scripts
 ENV NODE_ENV=production
-ENV USE_NPM=1
 ENV BASE_PATH=/
 ENV PORT=8080
 RUN node ./scripts/build-production.mjs
 
 FROM node:22-bookworm-slim AS runner
+RUN corepack disable 2>/dev/null || true
+ENV COREPACK_ENABLE_STRICT=0
 ENV NODE_ENV=production
 ENV PORT=8080
 ENV STATIC_ROOT=/app/artifacts/vendi/dist/public
