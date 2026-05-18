@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { attachStaticFrontend } from "./lib/serve-static";
 
 const app: Express = express();
 
@@ -39,5 +40,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+attachStaticFrontend(app);
 
 export default app;

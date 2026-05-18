@@ -364,17 +364,8 @@ export function LokaleZyreSearchPanel({
 
   return (
     <div className="mb-8 space-y-6 rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm overflow-hidden max-w-full">
-      <div className="flex flex-col gap-1 border-b border-gray-100 pb-4">
-        <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
-          <Building2 size={20} className="text-blue-600 shrink-0" aria-hidden />
-          {t.lz_panel_title}
-        </h2>
-        <p className="text-sm text-gray-500">{t.lz_panel_sub}</p>
-      </div>
-
       {/* Property type cards */}
       <section className="space-y-3">
-        <Label className="text-sm font-bold text-gray-900">{t.lz_sec_property}</Label>
         <div className="grid grid-cols-2 gap-3">
           {LOKALE_PROPERTY_KEYS.map((key) => {
             const selected = propertyKey === key;
@@ -404,6 +395,14 @@ export function LokaleZyreSearchPanel({
           })}
         </div>
       </section>
+
+      <div className="flex flex-col gap-1 border-t border-gray-100 pt-6">
+        <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
+          <Building2 size={20} className="text-blue-600 shrink-0" aria-hidden />
+          {t.lz_panel_title}
+        </h2>
+        <p className="text-sm text-gray-500">{t.lz_panel_sub}</p>
+      </div>
 
       {/* Dynamic filters per property type */}
       {propertyKey === "afariste" ? (

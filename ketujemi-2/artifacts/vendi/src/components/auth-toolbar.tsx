@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 
 type Props = {
   variant?: "default" | "compact";
+  /** Navbar: match primary “Posto” button (blue). */
+  loginAccent?: boolean;
   className?: string;
 };
 
-export function AuthToolbar({ variant = "default", className }: Props) {
+export function AuthToolbar({ variant = "default", loginAccent = false, className }: Props) {
   const [, setLocation] = useLocation();
   const { user, loading, refresh } = useAuth();
   const { t } = useMarket();
@@ -41,6 +43,29 @@ export function AuthToolbar({ variant = "default", className }: Props) {
   }
 
   if (!user) {
+    if (loginAccent) {
+      return (
+        <>
+          <button
+            type="button"
+            data-testid="button-login-toolbar"
+            onClick={goLogin}
+            className={`inline-flex md:hidden shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 min-h-12 touch-manipulation ${className ?? ""}`}
+          >
+            <span>+ {t.authLogin}</span>
+          </button>
+          <Button
+            type="button"
+            variant="outline"
+            className={`hidden md:inline-flex ${btnCls} font-semibold ${className ?? ""}`}
+            data-testid="button-login-toolbar-desktop"
+            onClick={goLogin}
+          >
+            {t.authLogin}
+          </Button>
+        </>
+      );
+    }
     return (
       <Button
         type="button"

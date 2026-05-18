@@ -32,7 +32,7 @@ export const MH_TYPE_PHOTOS: Record<MhTypeKey, string> = {
   tastiere:
     "https://images.pexels.com/photos/164935/pexels-photo-164935.jpeg?auto=compress&cs=tinysrgb&w=400",
   studio:
-    "https://images.pexels.com/photos/1478442/pexels-photo-1478442.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/4253570/pexels-photo-4253570.jpeg?auto=compress&cs=tinysrgb&w=400",
   libra:
     "https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=400",
   art_teater:

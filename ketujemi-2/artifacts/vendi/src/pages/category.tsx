@@ -38,6 +38,22 @@ import { getVeturaBrandLeafCategoryIds } from "@/lib/vetura-search-helpers";
 import { VeturaSearchPanel } from "@/components/vetura-search-panel";
 import { VeturaHeroSlideshow } from "@/components/vetura-hero-slideshow";
 import { MotorrHeroSlideshow } from "@/components/motorr-hero-slideshow";
+import { KamioneHeroSlideshow } from "@/components/kamione-hero-slideshow";
+import { AutoPjeseHeroSlideshow } from "@/components/auto-pjese-hero-slideshow";
+import { BanesaHeroSlideshow } from "@/components/banesa-hero-slideshow";
+import { LokaleZyreHeroSlideshow } from "@/components/lokale-zyre-hero-slideshow";
+import { TelefonaHeroSlideshow } from "@/components/telefona-hero-slideshow";
+import { KompjuterLaptopHeroSlideshow } from "@/components/kompjuter-laptop-hero-slideshow";
+import { TvElektronikeHeroSlideshow } from "@/components/tv-elektronike-hero-slideshow";
+import { MobiljeDekorimHeroSlideshow } from "@/components/mobilje-dekorim-hero-slideshow";
+import { RrobaKepuceHeroSlideshow } from "@/components/rroba-kepuce-hero-slideshow";
+import { FemijeHeroSlideshow } from "@/components/femije-hero-slideshow";
+import { SportOutdoorHeroSlideshow } from "@/components/sport-outdoor-hero-slideshow";
+import { ArsimKurseHeroSlideshow } from "@/components/arsim-kurse-hero-slideshow";
+import { MuzikeHobbyHeroSlideshow } from "@/components/muzike-hobby-hero-slideshow";
+import { BujqesiBlegtoriHeroSlideshow } from "@/components/bujqesi-blegtori-hero-slideshow";
+import { PuneSherbimeHeroSlideshow } from "@/components/pune-sherbime-hero-slideshow";
+import { KafshetHeroSlideshow } from "@/components/kafshet-hero-slideshow";
 import {
   KAMION_SEARCH_BRAND_ORDER,
   getKamioneBrandLeafCategoryIds,
@@ -53,63 +69,37 @@ import {
   getAutoPiesePartTypeCategoryIds,
 } from "@/lib/auto-pjese-search-helpers";
 import { SportOutdoorSearchPanel } from "@/components/sport-outdoor-search-panel";
-import {
-  SPORT_OUTDOOR_HERO_PHOTO,
-  getSportOutdoorLeafCategoryIds,
-} from "@/lib/sport-outdoor-search-helpers";
+import { getSportOutdoorLeafCategoryIds } from "@/lib/sport-outdoor-search-helpers";
 import { LokaleZyreSearchPanel } from "@/components/lokale-zyre-search-panel";
 import {
   LOKALE_ZYRE_HERO_PHOTO,
   getLokaleZyreLeafCategoryIds,
 } from "@/lib/lokale-zyre-search-helpers";
 import { TelefonaSearchPanel } from "@/components/telefona-search-panel";
-import {
-  TELEFONA_HERO_PHOTO,
-  getTelefonaHubChildCategoryIds,
-} from "@/lib/telefona-search-helpers";
+import { getTelefonaHubChildCategoryIds } from "@/lib/telefona-search-helpers";
 import { ArsimKurseSearchPanel } from "@/components/arsim-kurse-search-panel";
-import {
-  ARSIM_KURSE_HERO_PHOTO,
-  getArsimKurseLeafCategoryIds,
-} from "@/lib/arsim-kurse-search-helpers";
+import { getArsimKurseLeafCategoryIds } from "@/lib/arsim-kurse-search-helpers";
 import { MobiljeDekorimSearchPanel } from "@/components/mobilje-dekorim-search-panel";
 import {
-  MOBILJE_DEKORIM_HERO_PHOTO,
   getMobiljeDekorimLeafCategoryIds,
 } from "@/lib/mobilje-dekorim-search-helpers";
 import { RrobaKepuceSearchPanel } from "@/components/rroba-kepuce-search-panel";
 import {
-  RROBA_KEPUCE_HERO_PHOTO,
   getRrobaKepuceLeafCategoryIds,
 } from "@/lib/rroba-kepuce-search-helpers";
 import { FemijeSearchPanel } from "@/components/femije-search-panel";
-import {
-  FEMIJE_HERO_PHOTO,
-  getFemijeLeafCategoryIds,
-} from "@/lib/femije-search-helpers";
+import { getFemijeLeafCategoryIds } from "@/lib/femije-search-helpers";
 import { PuneSherbimeSearchPanel } from "@/components/pune-sherbime-search-panel";
-import {
-  PUNE_SHERBIME_HERO_PHOTO,
-  getPuneSherbimeLeafCategoryIds,
-} from "@/lib/pune-sherbime-search-helpers";
+import { getPuneSherbimeLeafCategoryIds } from "@/lib/pune-sherbime-search-helpers";
 import { BujqesiBlegtoriSearchPanel } from "@/components/bujqesi-blegtori-search-panel";
-import {
-  BUJQESI_BLEGTORI_HERO_PHOTO,
-  getBujqesiBlegtoriLeafCategoryIds,
-} from "@/lib/bujqesi-blegtori-search-helpers";
+import { getBujqesiBlegtoriLeafCategoryIds } from "@/lib/bujqesi-blegtori-search-helpers";
 import { MuzikeHobbySearchPanel } from "@/components/muzike-hobby-search-panel";
-import {
-  MUZIKE_HOBBY_HERO_PHOTO,
-  getMuzikeHobbyLeafCategoryIds,
-} from "@/lib/muzike-hobby-search-helpers";
+import { getMuzikeHobbyLeafCategoryIds } from "@/lib/muzike-hobby-search-helpers";
 import { KafshetSearchPanel } from "@/components/kafshet-search-panel";
-import {
-  KAFSHET_HERO_PHOTO,
-  getKafshetLeafCategoryIds,
-} from "@/lib/kafshet-search-helpers";
+import { getKafshetLeafCategoryIds } from "@/lib/kafshet-search-helpers";
 import { TvElektronikeSearchPanel } from "@/components/tv-elektronike-search-panel";
+import { KompjuterLaptopHubPanel } from "@/components/kompjuter-laptop-hub-panel";
 import {
-  TV_ELEKTRONIKE_HERO_PHOTO,
   getTvElektronikeLeafCategoryIds,
 } from "@/lib/tv-elektronike-search-helpers";
 
@@ -351,6 +341,33 @@ const KOMPJUTER_BRAND_ORDER = [
   "Acer", "Apple", "ASUS", "Dell", "HP", "Huawei", "Lenovo", "Microsoft", "MSI", "Razer",
 ] as const;
 
+/** Kompjuterë hub brand logos (Simple Icons CDN — Clearbit is blocked in-browser). */
+const KOMPJUTER_BRAND_LOGOS: Record<string, string> = {
+  Acer: "https://cdn.simpleicons.org/acer/83B81A",
+  Apple: "https://cdn.simpleicons.org/apple/ffffff",
+  ASUS: "https://cdn.simpleicons.org/asus/ffffff",
+  Dell: "https://cdn.simpleicons.org/dell/007DB8",
+  HP: "https://cdn.simpleicons.org/hp/0096D6",
+  Huawei: "https://cdn.simpleicons.org/huawei/CF0A2C",
+  Lenovo: "https://cdn.simpleicons.org/lenovo/E2231A",
+  Microsoft: "https://cdn.simpleicons.org/microsoft/00A4EF",
+  MSI: "https://cdn.simpleicons.org/msi/FF0000",
+  Razer: "https://cdn.simpleicons.org/razer/00FF00",
+};
+
+const KOMPJUTER_BRAND_INITIALS: Record<string, string> = {
+  Acer: "AC",
+  Apple: "AP",
+  ASUS: "AS",
+  Dell: "DE",
+  HP: "HP",
+  Huawei: "HW",
+  Lenovo: "LE",
+  Microsoft: "MS",
+  MSI: "MS",
+  Razer: "RZ",
+};
+
 function sortChildrenByNameOrder(childrenIn: unknown[], order: readonly string[]): any[] {
   const rank = new Map(order.map((n, i) => [n, i]));
   return [...childrenIn].sort(
@@ -394,6 +411,42 @@ function BodyTypeCard({ category, onClick }: { category: any; onClick: () => voi
           <ChevronRight size={16} className="text-gray-300 group-hover:text-blue-400 flex-shrink-0" />
         </div>
       )}
+    </button>
+  );
+}
+
+/** Kompjuterë hub — brand card matching BodyTypeCard (logo on dark fill, label at bottom). */
+function KompjuterBrandPhotoCard({ category, onClick }: { category: any; onClick: () => void }) {
+  const logoUrl = KOMPJUTER_BRAND_LOGOS[category.name] ?? null;
+  const initials = KOMPJUTER_BRAND_INITIALS[category.name] ?? category.name.slice(0, 2).toUpperCase();
+  const [imgErr, setImgErr] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group relative overflow-hidden bg-white border border-gray-100 hover:border-blue-200 hover:shadow-lg rounded-2xl transition-all duration-200 text-left w-full touch-manipulation"
+    >
+      <div className="relative min-h-[7.5rem] h-28 overflow-hidden" style={{ backgroundColor: "#1a1a2e" }}>
+        {logoUrl && !imgErr ? (
+          <img
+            src={logoUrl}
+            alt=""
+            onError={() => setImgErr(true)}
+            className="absolute inset-0 m-auto h-11 w-[72%] max-w-[88%] object-contain group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <span className="absolute inset-0 flex items-center justify-center px-2 text-white text-2xl font-black tracking-tight select-none">
+            {initials}
+          </span>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+        <div className="absolute bottom-2 left-2 right-2">
+          <span className="text-white font-bold text-sm sm:text-base drop-shadow leading-snug line-clamp-2">
+            {category.name}
+          </span>
+        </div>
+      </div>
     </button>
   );
 }
@@ -599,6 +652,11 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     (currentCategory as any).slug === TV_ELEKTRONIKE_HUB_SLUG &&
     !(currentCategory as any).parent_id;
 
+  const isKompjuterLaptopHub =
+    !!(currentCategory as any) &&
+    (currentCategory as any).slug === KOMPJUTERE_LAPTOP_HUB_SLUG &&
+    !(currentCategory as any).parent_id;
+
   const autoPjeseLeafCsv = useMemo(() => {
     if (!allCategories || !isAutoPjesHub) return "";
     const ids = getAutoPiesePartTypeCategoryIds(allCategories as any, categoryId);
@@ -724,6 +782,8 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
   const [kafshetListParams, setKafshetListParams] = useState<GetListingsParams | null>(null);
   const [tvElektronikeListParams, setTvElektronikeListParams] =
     useState<GetListingsParams | null>(null);
+  const [kompjuterListParams, setKompjuterListParams] =
+    useState<GetListingsParams | null>(null);
 
   const listingsQueryParams: GetListingsParams = useMemo(() => {
     if (isVeturaHub && veturaBrandLeafCsv) {
@@ -774,8 +834,16 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     if (isKafshetHub && kafshetLeafCsv) {
       return kafshetListParams ?? { category_ids: kafshetLeafCsv, page: 1, limit: 20 };
     }
-    if (isTvElektronikeHub && tvElektronikeLeafCsv) {
-      return tvElektronikeListParams ?? { category_ids: tvElektronikeLeafCsv, page: 1, limit: 20 };
+    if (isTvElektronikeHub) {
+      return (
+        tvElektronikeListParams ??
+        (tvElektronikeLeafCsv
+          ? { category_ids: tvElektronikeLeafCsv, page: 1, limit: 20 }
+          : { category_id: categoryId, page: 1, limit: 20 })
+      );
+    }
+    if (isKompjuterLaptopHub) {
+      return kompjuterListParams ?? { category_id: categoryId, page: 1, limit: 20 };
     }
     return { category_id: categoryId, limit: 20 };
   }, [
@@ -830,6 +898,8 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     isTvElektronikeHub,
     tvElektronikeLeafCsv,
     tvElektronikeListParams,
+    isKompjuterLaptopHub,
+    kompjuterListParams,
     categoryId,
   ]);
 
@@ -851,7 +921,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     (!isBujqesiBlegtoriHub || bujqesiBlegtoriLeafCsv.length > 0) &&
     (!isMuzikeHobbyHub || muzikeHobbyLeafCsv.length > 0) &&
     (!isKafshetHub || kafshetLeafCsv.length > 0) &&
-    (!isTvElektronikeHub || tvElektronikeLeafCsv.length > 0);
+    !isTvElektronikeHub;
 
   const { data: listingsData, isLoading } = useGetListings(listingsQueryParams, {
     query: {
@@ -878,6 +948,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     setMuzikeHobbyListParams(null);
     setKafshetListParams(null);
     setTvElektronikeListParams(null);
+    setKompjuterListParams(null);
   }, [categoryId]);
 
   if (!allCategories) return null;
@@ -898,7 +969,6 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
   const isBodyTypeLevel = depth === 2;
 
   const isTelefonaHub = (currentCategory as any)?.slug === TELEFONA_HUB_SLUG;
-  const isKompjuterLaptopHub = (currentCategory as any)?.slug === KOMPJUTERE_LAPTOP_HUB_SLUG;
   const orderedTelefonaTypes = sortChildrenByNameOrder(
     children.filter((c: any) => (TELEFONA_TYPE_ORDER as readonly string[]).includes(c.name)),
     TELEFONA_TYPE_ORDER,
@@ -972,30 +1042,8 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
       ? MOTORR_HERO_PHOTO
       : isAutoPjesHub
         ? AUTO_PJESE_HERO_PHOTO
-        : isSportOutdoorHub
-          ? SPORT_OUTDOOR_HERO_PHOTO
-          : isLokaleZyreHub
+        : isLokaleZyreHub
             ? LOKALE_ZYRE_HERO_PHOTO
-            : isTelefonaHubPage
-              ? TELEFONA_HERO_PHOTO
-              : isArsimKurseHub
-                ? ARSIM_KURSE_HERO_PHOTO
-                : isMobiljeDekorimHub
-                  ? MOBILJE_DEKORIM_HERO_PHOTO
-                  : isRrobaKepuceHub
-                    ? RROBA_KEPUCE_HERO_PHOTO
-                    : isFemijeHub
-                      ? FEMIJE_HERO_PHOTO
-                      : isPuneSherbimeHub
-                        ? PUNE_SHERBIME_HERO_PHOTO
-                        : isBujqesiBlegtoriHub
-                          ? BUJQESI_BLEGTORI_HERO_PHOTO
-                          : isMuzikeHobbyHub
-                            ? MUZIKE_HOBBY_HERO_PHOTO
-                            : isKafshetHub
-                              ? KAFSHET_HERO_PHOTO
-                              : isTvElektronikeHub
-                                ? TV_ELEKTRONIKE_HERO_PHOTO
             : (typeof (currentCategory as any)?.image_url === "string" &&
                 String((currentCategory as any).image_url).trim()) ||
               getCatPhoto(currentCategory?.name ?? "") ||
@@ -1006,6 +1054,119 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
   if (grandparentCategory) crumbItems.push({ label: translateCategory(grandparentCategory.name, market.code), href: `/categories/${grandparentCategory.id}` });
   if (parentCategory) crumbItems.push({ label: translateCategory(parentCategory.name, market.code), href: `/categories/${parentCategory.id}` });
   crumbItems.push({ label: translateCategory(currentCategory?.name ?? "", market.code) });
+
+  const hubResultsId = isVeturaHub
+    ? "vetura-results"
+    : isKamioneFurgoneHub
+      ? "kamione-results"
+      : isBanesaShtepiHub
+        ? "banesa-results"
+        : isMotorSkuterHub
+          ? "motorr-results"
+          : isAutoPjesHub
+            ? "auto-pjese-results"
+            : isSportOutdoorHub
+              ? "sport-outdoor-results"
+              : isLokaleZyreHub
+                ? "lokale-zyre-results"
+                : isTelefonaHubPage
+                  ? "telefona-results"
+                  : isArsimKurseHub
+                    ? "arsim-kurse-results"
+                    : isMobiljeDekorimHub
+                      ? "mobilje-dekorim-results"
+                      : isRrobaKepuceHub
+                        ? "rroba-kepuce-results"
+                        : isFemijeHub
+                          ? "femije-results"
+                          : isPuneSherbimeHub
+                            ? "pune-sherbime-results"
+                            : isBujqesiBlegtoriHub
+                              ? "bujqesi-blegtori-results"
+                              : isMuzikeHobbyHub
+                                ? "muzike-hobby-results"
+                                : isKafshetHub
+                                  ? "kafshet-results"
+                                  : isTvElektronikeHub
+                                    ? "tv-elektronike-results"
+                                    : undefined;
+
+  const renderListingsSection = () => (
+    <div ref={resultsAnchorRef} id={hubResultsId} className="scroll-mt-28">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-black text-gray-900">
+          {isBrandLevel || isMotorBrandLeaf || isKamionBrandLeaf || isTelefonaBrandLeaf || isKompjuterBrandLeaf
+            ? `${translateCategory(currentCategory?.name ?? "", market.code)} — ${t.listings.toLowerCase()}`
+            : isTvElektronikeHub || isTelefonaHubPage
+              ? t.listings
+              : children.length > 0
+                ? t.allListings
+                : t.listings}
+        </h2>
+        {listingsData && listingsData.total > 0 && (
+          <span className="text-sm text-gray-400">
+            {listingsData.total} {t.totalLabel}
+          </span>
+        )}
+      </div>
+
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 min-[1200px]:grid-cols-3 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl overflow-hidden border border-gray-100">
+              <Skeleton className="aspect-[4/3] w-full" />
+              <div className="p-3 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-5 w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : listingsData && listingsData.listings.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 min-[1200px]:grid-cols-3 gap-4">
+          {listingsData.listings.map((listing: any) => (
+            <ListingCard key={listing.id} listing={listing} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-3xl bg-gradient-to-br from-sky-200/95 via-blue-100/85 to-[#2563eb]/45 p-[1.5px] shadow-sm shadow-blue-500/20">
+          <div className="rounded-[calc(1.5rem-1.5px)] bg-[#f5f7fa] px-6 py-14 sm:px-10 sm:py-16 text-center">
+            <div className="flex justify-center mb-5">
+              {useWrenchEmptyListingIcon ? (
+                <Wrench size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
+              ) : useSmartphoneEmptyListingIcon ? (
+                <Smartphone size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
+              ) : useLaptopEmptyListingIcon ? (
+                <Laptop size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
+              ) : useBikeEmptyListingIcon ? (
+                <Bike size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
+              ) : useTruckEmptyListingIcon ? (
+                <Truck size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
+              ) : useHouseEmptyListingIcon ? (
+                <House size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
+              ) : (
+                <Car size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
+              )}
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 mb-2">{t.noListingsYet}</h3>
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-lg mx-auto mb-8">
+              {emptyListingsCopy.sub}
+            </p>
+            <button
+              type="button"
+              onClick={goToPostListing}
+              className="inline-flex items-center justify-center px-8 py-3.5 sm:px-10 sm:py-4 min-w-[200px] bg-[#2563eb] hover:bg-blue-700 text-white rounded-2xl text-base sm:text-lg font-semibold transition-all shadow-md shadow-blue-600/30"
+            >
+              {t.post}
+            </button>
+            <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium tracking-wide">
+              {emptyListingsCopy.trust}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1028,17 +1189,27 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
                 <SheetHeader className="text-left">
                   <SheetTitle>Menyja</SheetTitle>
                 </SheetHeader>
-                <nav className="mt-8 flex flex-col gap-2">
-                  <SheetClose asChild>
-                    <Link href="/" className="rounded-xl px-3 py-3 text-base font-semibold text-gray-800 hover:bg-muted min-h-12 flex items-center">
-                      Kryefaqja
-                    </Link>
-                  </SheetClose>
-                  <SheetClose asChild>
-                    <Link href="/listings" className="rounded-xl px-3 py-3 text-base font-semibold text-gray-800 hover:bg-muted min-h-12 flex items-center">
-                      {t.listings}
-                    </Link>
-                  </SheetClose>
+                <nav className="mt-6 flex flex-col gap-1">
+                  {(
+                    [
+                      ["/", t.nav_home],
+                      ["/listings", t.title],
+                      ["/#categories", t.categories],
+                      ["/faq", t.faq],
+                      ["/contact", t.contact],
+                      ["/terms", t.terms],
+                      ["/privacy", t.privacy],
+                    ] as const
+                  ).map(([href, label]) => (
+                    <SheetClose asChild key={href}>
+                      <Link
+                        href={href}
+                        className="flex items-center rounded-xl px-3 py-3 text-base font-semibold text-gray-800 hover:bg-muted min-h-12 touch-manipulation"
+                      >
+                        {label}
+                      </Link>
+                    </SheetClose>
+                  ))}
                 </nav>
               </SheetContent>
             </Sheet>
@@ -1054,7 +1225,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
             </Link>
           </div>
           <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end flex-wrap">
-            <AuthToolbar variant="compact" />
+            <AuthToolbar variant="compact" loginAccent />
             <button
               type="button"
               onClick={goToPostListing}
@@ -1072,7 +1243,24 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
       {/* Hero banner */}
       <div
         className={
-          isVeturaHub || isMotorSkuterHub || isKamioneFurgoneHub
+          isVeturaHub ||
+          isMotorSkuterHub ||
+          isKamioneFurgoneHub ||
+          isAutoPjesHub ||
+          isBanesaShtepiHub ||
+          isLokaleZyreHub ||
+          isTelefonaHubPage ||
+          isKompjuterLaptopHub ||
+          isTvElektronikeHub ||
+          isMobiljeDekorimHub ||
+          isRrobaKepuceHub ||
+          isFemijeHub ||
+          isSportOutdoorHub ||
+          isArsimKurseHub ||
+          isMuzikeHobbyHub ||
+          isBujqesiBlegtoriHub ||
+          isPuneSherbimeHub ||
+          isKafshetHub
             ? "relative h-[220px] md:h-[420px] w-full max-w-[100vw] overflow-hidden isolate"
             : "relative min-h-[10rem] h-44 sm:h-40 w-full max-w-[100vw] overflow-hidden isolate"
         }
@@ -1083,6 +1271,36 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
           <MotorrHeroSlideshow />
         ) : isKamioneFurgoneHub ? (
           <KamioneHeroSlideshow />
+        ) : isAutoPjesHub ? (
+          <AutoPjeseHeroSlideshow />
+        ) : isBanesaShtepiHub ? (
+          <BanesaHeroSlideshow />
+        ) : isLokaleZyreHub ? (
+          <LokaleZyreHeroSlideshow />
+        ) : isTelefonaHubPage ? (
+          <TelefonaHeroSlideshow />
+        ) : isKompjuterLaptopHub ? (
+          <KompjuterLaptopHeroSlideshow />
+        ) : isTvElektronikeHub ? (
+          <TvElektronikeHeroSlideshow />
+        ) : isMobiljeDekorimHub ? (
+          <MobiljeDekorimHeroSlideshow />
+        ) : isRrobaKepuceHub ? (
+          <RrobaKepuceHeroSlideshow />
+        ) : isFemijeHub ? (
+          <FemijeHeroSlideshow />
+        ) : isSportOutdoorHub ? (
+          <SportOutdoorHeroSlideshow />
+        ) : isArsimKurseHub ? (
+          <ArsimKurseHeroSlideshow />
+        ) : isMuzikeHobbyHub ? (
+          <MuzikeHobbyHeroSlideshow />
+        ) : isBujqesiBlegtoriHub ? (
+          <BujqesiBlegtoriHeroSlideshow />
+        ) : isPuneSherbimeHub ? (
+          <PuneSherbimeHeroSlideshow />
+        ) : isKafshetHub ? (
+          <KafshetHeroSlideshow />
         ) : photo ? (
           <img src={photo} alt={currentCategory?.name} className="absolute inset-0 w-full h-full object-cover max-w-none" sizes="100vw" />
         ) : (
@@ -1218,16 +1436,19 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
         ) : null}
 
         {isTelefonaHubPage && telefonaLeafCsv ? (
-          <TelefonaSearchPanel
-            hubId={categoryId}
-            categories={allCategories as any}
-            previewTotal={listingsData?.total ?? null}
-            previewLoading={isLoading}
-            onListingParamsChange={setTelefonaListParams}
-            onScrollToResults={() =>
-              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-            }
-          />
+          <>
+            <TelefonaSearchPanel
+              hubId={categoryId}
+              categories={allCategories as any}
+              previewTotal={listingsData?.total ?? null}
+              previewLoading={isLoading}
+              onListingParamsChange={setTelefonaListParams}
+              onScrollToResults={() =>
+                resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
+            />
+            {renderListingsSection()}
+          </>
         ) : null}
 
         {isArsimKurseHub && arsimKurseLeafCsv ? (
@@ -1334,40 +1555,29 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
           />
         ) : null}
 
-        {isKompjuterLaptopHub && (orderedKompjuterTypes.length > 0 || orderedKompjuterBrands.length > 0) && (
-          <div className="mb-8 space-y-8">
-            <h2 className="text-lg font-black text-gray-900">{t.cat_pickKindBrand}</h2>
-            {orderedKompjuterTypes.length > 0 && (
-              <div>
-                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">{t.cat_sectionTypes}</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                  {orderedKompjuterTypes.map((sub: any) => (
-                    <BodyTypeCard
-                      key={sub.id}
-                      category={sub}
-                      onClick={() => setLocation(`/categories/${sub.id}`)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-            {orderedKompjuterBrands.length > 0 && (
-              <div>
-                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-1">{t.cat_sectionBrands}</h3>
-                <p className="text-sm text-gray-400 mb-4">{orderedKompjuterBrands.length} {t.brandsAvail}</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                  {orderedKompjuterBrands.map((brand: any) => (
-                    <BrandCard
-                      key={brand.id}
-                      category={brand}
-                      onClick={() => setLocation(`/categories/${brand.id}`)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+        {isTvElektronikeHub ? (
+          <TvElektronikeSearchPanel
+            hubId={categoryId}
+            categories={allCategories as any}
+            previewTotal={listingsData?.total ?? null}
+            previewLoading={isLoading}
+            onListingParamsChange={setTvElektronikeListParams}
+            onScrollToResults={() =>
+              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }
+          />
+        ) : null}
+
+        {isKompjuterLaptopHub ? (
+          <KompjuterLaptopHubPanel
+            hubId={categoryId}
+            types={orderedKompjuterTypes}
+            onListingParamsChange={setKompjuterListParams}
+            onScrollToResults={() =>
+              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }
+          />
+        ) : null}
 
         {/* Level 1 → show body types (not hubs that define their own pickers above) */}
         {!isBrandLevel &&
@@ -1431,117 +1641,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
           </div>
         )}
 
-        {/* Listings section */}
-        <div
-          ref={resultsAnchorRef}
-          id={
-            isVeturaHub
-              ? "vetura-results"
-              : isKamioneFurgoneHub
-                ? "kamione-results"
-                : isBanesaShtepiHub
-                  ? "banesa-results"
-                  : isMotorSkuterHub
-                    ? "motorr-results"
-                    : isAutoPjesHub
-                      ? "auto-pjese-results"
-                      : isSportOutdoorHub
-                        ? "sport-outdoor-results"
-                        : isLokaleZyreHub
-                          ? "lokale-zyre-results"
-                          : isTelefonaHubPage
-                            ? "telefona-results"
-                            : isArsimKurseHub
-                              ? "arsim-kurse-results"
-                              : isMobiljeDekorimHub
-                                ? "mobilje-dekorim-results"
-                                : isRrobaKepuceHub
-                                  ? "rroba-kepuce-results"
-                                  : isFemijeHub
-                                    ? "femije-results"
-                                    : isPuneSherbimeHub
-                                      ? "pune-sherbime-results"
-                                      : isBujqesiBlegtoriHub
-                                        ? "bujqesi-blegtori-results"
-                                        : isMuzikeHobbyHub
-                                          ? "muzike-hobby-results"
-                                          : isKafshetHub
-                                            ? "kafshet-results"
-                                            : isTvElektronikeHub
-                                              ? "tv-elektronike-results"
-                                              : undefined
-          }
-          className="scroll-mt-28"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-black text-gray-900">
-              {isBrandLevel || isMotorBrandLeaf || isKamionBrandLeaf || isTelefonaBrandLeaf || isKompjuterBrandLeaf
-                ? `${translateCategory(currentCategory?.name ?? "", market.code)} — ${t.listings.toLowerCase()}`
-                : children.length > 0
-                  ? t.allListings
-                  : t.listings}
-            </h2>
-            {listingsData && listingsData.total > 0 && (
-              <span className="text-sm text-gray-400">{listingsData.total} {t.totalLabel}</span>
-            )}
-          </div>
-
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 min-[1200px]:grid-cols-3 gap-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl overflow-hidden border border-gray-100">
-                  <Skeleton className="aspect-[4/3] w-full" />
-                  <div className="p-3 space-y-2">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-5 w-1/2" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : listingsData && listingsData.listings.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 min-[1200px]:grid-cols-3 gap-4">
-              {listingsData.listings.map((listing: any) => (
-                <ListingCard key={listing.id} listing={listing} />
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-3xl bg-gradient-to-br from-sky-200/95 via-blue-100/85 to-[#2563eb]/45 p-[1.5px] shadow-sm shadow-blue-500/20">
-              <div className="rounded-[calc(1.5rem-1.5px)] bg-[#f5f7fa] px-6 py-14 sm:px-10 sm:py-16 text-center">
-                <div className="flex justify-center mb-5">
-                  {useWrenchEmptyListingIcon ? (
-                    <Wrench size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
-                  ) : useSmartphoneEmptyListingIcon ? (
-                    <Smartphone size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
-                  ) : useLaptopEmptyListingIcon ? (
-                    <Laptop size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
-                  ) : useBikeEmptyListingIcon ? (
-                    <Bike size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
-                  ) : useTruckEmptyListingIcon ? (
-                    <Truck size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
-                  ) : useHouseEmptyListingIcon ? (
-                    <House size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
-                  ) : (
-                    <Car size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
-                  )}
-                </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-2">{t.noListingsYet}</h3>
-                <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-lg mx-auto mb-8">
-                  {emptyListingsCopy.sub}
-                </p>
-                <button
-                  type="button"
-                  onClick={goToPostListing}
-                  className="inline-flex items-center justify-center px-8 py-3.5 sm:px-10 sm:py-4 min-w-[200px] bg-[#2563eb] hover:bg-blue-700 text-white rounded-2xl text-base sm:text-lg font-semibold transition-all shadow-md shadow-blue-600/30"
-                >
-                  {t.post}
-                </button>
-                <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium tracking-wide">
-                  {emptyListingsCopy.trust}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
+        {!isTelefonaHubPage && renderListingsSection()}
       </div>
     </div>
   );

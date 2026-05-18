@@ -15,18 +15,12 @@ import {
   clearUserSessionCookie,
   publicUser,
 } from "../lib/user-session";
+import { normalizePhone } from "../lib/phone-prefixes";
 
 const router = Router();
 
 const CHALLENGE_TTL_MS = 1000 * 60 * 15;
 const MIN_PASSWORD = 6;
-
-function normalizePhone(input: unknown): string | null {
-  if (typeof input !== "string") return null;
-  const d = input.replace(/\D/g, "");
-  if (d.length < 8 || d.length > 15) return null;
-  return d;
-}
 
 function normalizeEmail(input: unknown): string | null {
   if (typeof input !== "string") return null;

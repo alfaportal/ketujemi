@@ -347,6 +347,11 @@ const TV_ELECTRONIKE_TYPES: { name: string; slug: string; icon: string }[] = [
     slug: "tv-type-kamera-foto-smartwatch",
     icon: "Tv",
   },
+  {
+    name: "Laptopë & Kompjuterë",
+    slug: "tv-type-laptop-kompjutere",
+    icon: "Laptop",
+  },
 ];
 
 const MOBILJE_DEKORIME_TYPES: { name: string; slug: string; icon: string }[] = [

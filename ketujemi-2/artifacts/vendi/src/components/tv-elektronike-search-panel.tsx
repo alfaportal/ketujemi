@@ -22,6 +22,13 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
 import {
@@ -31,9 +38,6 @@ import {
   EP_AUDIO_KIND_KEYS,
   EP_AUDIO_KIND_LABEL_KEY,
   EP_AUDIO_KIND_SEARCH,
-  EP_BRAND_KEYS,
-  EP_BRAND_LABEL_KEY,
-  EP_BRAND_SEARCH,
   EP_BTU_KEYS,
   EP_BTU_LABEL_KEY,
   EP_BTU_SEARCH,
@@ -73,6 +77,9 @@ import {
   EP_TV_TYPE_KEYS,
   EP_TV_TYPE_LABEL_KEY,
   EP_TV_TYPE_SEARCH,
+  EP_LAPTOP_SUBSECTIONS,
+  EP_LAPTOP_SUB_LABEL_KEY,
+  EP_LAPTOP_SUB_SEARCH,
   EP_TYPE_KEYS,
   EP_TYPE_LABEL_KEY,
   EP_TYPE_PHOTOS,
@@ -84,7 +91,6 @@ import {
   resolveTvElektronikeTypeCategoryId,
   type EpApplianceKindKey,
   type EpAudioKindKey,
-  type EpBrandKey,
   type EpBtuKey,
   type EpCameraKindKey,
   type EpCityKey,
@@ -93,6 +99,7 @@ import {
   type EpConsoleKey,
   type EpDisplayTechKey,
   type EpEnergyKey,
+  type EpLaptopSubItemKey,
   type EpGameItemKey,
   type EpResolutionKey,
   type EpStorageKey,
@@ -148,6 +155,38 @@ function FilterSection({ title, children }: { title: string; children: ReactNode
       <p className="text-sm font-bold text-gray-900">{title}</p>
       {children}
     </div>
+  );
+}
+
+/** Image card with bottom label — category type cards. */
+function PhotoOverlayCard({
+  selected,
+  onClick,
+  imageSrc,
+  label,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  imageSrc: string;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "relative overflow-hidden rounded-2xl border text-left transition-all min-h-[7.5rem] touch-manipulation",
+        selected
+          ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
+          : "border-gray-100 hover:border-blue-200 hover:shadow-md",
+      )}
+    >
+      <img src={imageSrc} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+      <span className="absolute bottom-2 left-2 right-2 text-white text-sm font-bold leading-snug line-clamp-2 drop-shadow">
+        {label}
+      </span>
+    </button>
   );
 }
 
@@ -208,8 +247,8 @@ export function TvElektronikeSearchPanel({
   const [storage, setStorage] = useState<EpStorageKey | "">("");
   const [audioKind, setAudioKind] = useState<EpAudioKindKey | "">("");
   const [cameraKind, setCameraKind] = useState<EpCameraKindKey | "">("");
+  const [laptopSub, setLaptopSub] = useState<EpLaptopSubItemKey | null>(null);
   const [condition, setCondition] = useState<EpConditionKey | "">("");
-  const [brand, setBrand] = useState<EpBrandKey | "">("");
   const [hasWarranty, setHasWarranty] = useState(false);
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
@@ -232,7 +271,10 @@ export function TvElektronikeSearchPanel({
     setStorage("");
     setAudioKind("");
     setCameraKind("");
+    setLaptopSub(null);
   };
+
+  const laptopSectionRef = useRef<HTMLElement | null>(null);
 
   const selectType = (key: EpTypeKey) => {
     if (typeKey === key) {
@@ -241,6 +283,11 @@ export function TvElektronikeSearchPanel({
     } else {
       setTypeKey(key);
       resetSubFilters();
+      if (key === "laptop_kompjutere") {
+        window.requestAnimationFrame(() => {
+          laptopSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
     }
   };
 
@@ -259,8 +306,12 @@ export function TvElektronikeSearchPanel({
     const p: GetListingsParams = {
       page: 1,
       limit: 20,
-      category_ids: leafCsv,
     };
+    if (leafCsv) {
+      p.category_ids = leafCsv;
+    } else {
+      p.category_id = hubId;
+    }
 
     if (typeKey) {
       const cid = resolveTvElektronikeTypeCategoryId(categories, hubId, typeKey);
@@ -296,10 +347,11 @@ export function TvElektronikeSearchPanel({
       if (audioKind) searchBits.push(EP_AUDIO_KIND_SEARCH[audioKind]);
     } else if (typeKey === "kamera") {
       if (cameraKind) searchBits.push(EP_CAMERA_KIND_SEARCH[cameraKind]);
+    } else if (typeKey === "laptop_kompjutere" && laptopSub) {
+      searchBits.push(EP_LAPTOP_SUB_SEARCH[laptopSub]);
     }
 
     if (condition) searchBits.push(EP_CONDITION_SEARCH[condition]);
-    if (brand) searchBits.push(EP_BRAND_SEARCH[brand]);
     if (hasWarranty) searchBits.push(EP_WARRANTY_SEARCH);
 
     if (searchBits.length) p.search = searchBits.join(" ");
@@ -336,8 +388,8 @@ export function TvElektronikeSearchPanel({
     storage,
     audioKind,
     cameraKind,
+    laptopSub,
     condition,
-    brand,
     hasWarranty,
     priceMin,
     priceMax,
@@ -367,7 +419,7 @@ export function TvElektronikeSearchPanel({
       <section className="space-y-3">
         <Label className="text-sm font-bold text-gray-900">{t.ep_sec_types}</Label>
         <div className="grid grid-cols-2 gap-3">
-          {EP_TYPE_KEYS.map((key) => {
+          {EP_TYPE_KEYS.filter((key) => key !== "laptop_kompjutere").map((key) => {
             const selected = typeKey === key;
             return (
               <button
@@ -586,6 +638,42 @@ export function TvElektronikeSearchPanel({
         </section>
       ) : null}
 
+      {typeKey === "laptop_kompjutere" ? (
+        <section
+          ref={laptopSectionRef}
+          className="space-y-6 rounded-xl border border-gray-100 bg-gray-50/60 p-4 scroll-mt-24"
+        >
+          <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
+          {EP_LAPTOP_SUBSECTIONS.map((sec) => (
+            <div key={sec.sectionLabelKey} className="space-y-3">
+              <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                {t[sec.sectionLabelKey]}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {sec.itemKeys.map((itemKey) => {
+                  const active = laptopSub === itemKey;
+                  return (
+                    <button
+                      key={itemKey}
+                      type="button"
+                      onClick={() => setLaptopSub(active ? null : itemKey)}
+                      className={cn(
+                        "rounded-full border px-3 py-2 text-left text-xs sm:text-sm font-medium leading-snug transition-colors touch-manipulation max-w-full",
+                        active
+                          ? "border-blue-600 bg-blue-600 text-white shadow-sm"
+                          : "border-gray-200 bg-white text-gray-800 hover:border-blue-300 hover:bg-blue-50",
+                      )}
+                    >
+                      {t[EP_LAPTOP_SUB_LABEL_KEY[itemKey]]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </section>
+      ) : null}
+
       <section className="space-y-5 rounded-xl border border-blue-100 bg-blue-50/30 p-4">
         <h3 className="text-base font-black text-gray-900">{t.ep_sec_universal}</h3>
 
@@ -601,16 +689,6 @@ export function TvElektronikeSearchPanel({
               </ChipButton>
             ))}
           </div>
-        </FilterSection>
-
-        <FilterSection title={t.ep_sec_brand}>
-          <KindChips
-            keys={EP_BRAND_KEYS}
-            labelKey={EP_BRAND_LABEL_KEY}
-            selected={brand}
-            onSelect={setBrand}
-            t={t}
-          />
         </FilterSection>
 
         <FilterSection title={t.ep_sec_price}>

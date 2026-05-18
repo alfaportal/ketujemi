@@ -13,6 +13,10 @@ import ProfilePage from "@/pages/profile";
 import { AuthProvider } from "@/lib/auth-context";
 import EditListing from "@/pages/edit-listing";
 import AdminPanel from "@/pages/admin/index";
+import TermsPage from "@/pages/terms";
+import PrivacyPage from "@/pages/privacy";
+import ContactPage from "@/pages/contact";
+import FaqPage from "@/pages/faq";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -32,6 +36,10 @@ function Router() {
           <Route path="/admin" component={AdminPanel} />
           <Route path="/login" component={LoginPage} />
           <Route path="/profile" component={ProfilePage} />
+          <Route path="/terms" component={TermsPage} />
+          <Route path="/privacy" component={PrivacyPage} />
+          <Route path="/contact" component={ContactPage} />
+          <Route path="/faq" component={FaqPage} />
           <Route path="/" component={Home} />
           <Route path="/categories/:id" component={CategoryPage} />
           <Route path="/listings/new" component={NewListing} />

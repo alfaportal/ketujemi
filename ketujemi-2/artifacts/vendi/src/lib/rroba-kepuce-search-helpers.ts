@@ -25,7 +25,7 @@ export const RK_TYPE_PHOTOS: Record<RkTypeKey, string> = {
   aksesore:
     "https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=400",
   femije:
-    "https://images.pexels.com/photos/35537/child-children-girl-happy.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/19869761/pexels-photo-19869761.jpeg?auto=compress&cs=tinysrgb&w=400",
 };
 
 export const RK_TYPE_LABEL_KEY: Record<RkTypeKey, string> = {

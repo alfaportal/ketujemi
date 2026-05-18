@@ -1,8 +1,8 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useLocation, Link } from "wouter";
 import { useGetListings, useGetCategories } from "@workspace/api-client-react";
 import {
-  Search, SlidersHorizontal, X, Plus, ChevronLeft, ChevronRight, ChevronDown, Menu,
+  Search, SlidersHorizontal, X, Plus, ChevronLeft, ChevronRight, Menu,
 } from "lucide-react";
 import {
   Sheet,
@@ -19,45 +19,9 @@ import SharedListingCard from "@/components/listing-card";
 import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
 import { AuthToolbar } from "@/components/auth-toolbar";
 
-// ─── Market Selector ──────────────────────────────────────────────────────────
-function MarketSelector() {
-  const { market, setMarket } = useMarket();
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative">
-      <button
-        data-testid="button-market-selector"
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-all text-sm font-medium text-gray-700 shadow-sm min-h-12 touch-manipulation"
-      >
-        <span className="text-base">{market.flag}</span>
-        <span className="hidden sm:inline">{market.name}</span>
-        <ChevronDown size={13} className={`transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && (
-        <div className="absolute top-full mt-2 right-0 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 min-w-[170px]">
-          {MARKETS.map((m) => (
-            <button
-              key={m.code}
-              data-testid={`option-market-${m.code}`}
-              onClick={() => { setMarket(m); setOpen(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left ${m.code === market.code ? "bg-blue-50" : ""}`}
-            >
-              <span className="text-lg">{m.flag}</span>
-              <div>
-                <div className="text-sm font-semibold text-gray-800">{m.name}</div>
-                <div className="text-sm text-gray-400">{m.currency}</div>
-              </div>
-              {m.code === market.code && <div className="ml-auto w-2 h-2 rounded-full bg-blue-500" />}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+import { LanguageSelector } from "@/components/language-selector";
 
-// ─── Skeleton Card ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Skeleton Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SkeletonCard() {
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-gray-100">
@@ -71,7 +35,7 @@ function SkeletonCard() {
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const PAGE_SIZE = 16;
 
 export default function Listings() {
@@ -132,7 +96,7 @@ export default function Listings() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* ── Top bar ── */}
+      {/* â”€â”€ Top bar â”€â”€ */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex flex-col gap-3">
@@ -152,58 +116,54 @@ export default function Listings() {
                     <SheetHeader className="text-left">
                       <SheetTitle>{t.nav_menuTitle}</SheetTitle>
                     </SheetHeader>
-                    <nav className="mt-8 flex flex-col gap-2">
-                      <SheetClose asChild>
-                        <Link
-                          href="/"
-                          className="flex items-center rounded-xl px-3 py-3 text-base font-semibold text-gray-800 hover:bg-muted min-h-12"
-                        >
-                          {t.nav_home}
-                        </Link>
-                      </SheetClose>
-                      <SheetClose asChild>
-                        <Link
-                          href="/listings"
-                          className="flex items-center rounded-xl px-3 py-3 text-base font-semibold text-gray-800 hover:bg-muted min-h-12"
-                        >
-                          {t.title}
-                        </Link>
-                      </SheetClose>
+                    <nav className="mt-6 flex flex-col gap-1">
+                      {(
+                        [
+                          ["/", t.nav_home],
+                          ["/listings", t.title],
+                          ["/#categories", t.categories],
+                          ["/faq", t.faq],
+                          ["/contact", t.contact],
+                          ["/terms", t.terms],
+                          ["/privacy", t.privacy],
+                        ] as const
+                      ).map(([href, label]) => (
+                        <SheetClose asChild key={href}>
+                          <Link
+                            href={href}
+                            className="flex items-center rounded-xl px-3 py-3 text-base font-semibold text-gray-800 hover:bg-muted min-h-12 touch-manipulation"
+                          >
+                            {label}
+                          </Link>
+                        </SheetClose>
+                      ))}
                     </nav>
                   </SheetContent>
                 </Sheet>
-                <Link
-                  href="/"
-                  data-testid="link-logo"
-                  className="flex flex-col sm:flex-row sm:gap-0.5 select-none shrink-0 min-w-0"
-                >
-                  <span className="text-lg sm:text-xl font-black text-gray-900 leading-tight">KetuJemi</span>
-                  <span className="text-lg sm:text-xl font-black text-blue-500 leading-tight shrink-0">.com</span>
-                </Link>
+                <div className="flex items-center gap-1 min-w-0">
+                  <Link
+                    href="/"
+                    data-testid="link-logo"
+                    className="flex flex-col sm:flex-row sm:gap-0.5 select-none shrink-0 min-w-0"
+                  >
+                    <span className="text-lg sm:text-xl font-black text-gray-900 leading-tight">KetuJemi</span>
+                    <span className="text-lg sm:text-xl font-black text-blue-500 leading-tight shrink-0">.com</span>
+                  </Link>
+                  <LanguageSelector />
+                </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <AuthToolbar variant="compact" />
-                <MarketSelector />
+                <AuthToolbar variant="compact" loginAccent />
                 <button
                   data-testid="button-new-listing"
                   onClick={goToPostListing}
-                  className="hidden md:inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm min-h-12"
+                  type="button"
+                  className="inline-flex shrink-0 items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm min-h-12 touch-manipulation"
                 >
                   <Plus size={15} aria-hidden />
                   <span>{t.post}</span>
                 </button>
               </div>
-            </div>
-            <div className="flex flex-wrap items-center justify-end gap-2 md:hidden w-full">
-              <button
-                data-testid="button-new-listing-mobile"
-                onClick={goToPostListing}
-                type="button"
-                className="inline-flex flex-1 min-w-[8rem] items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm min-h-12 touch-manipulation"
-              >
-                <Plus size={16} aria-hidden />
-                {t.post}
-              </button>
             </div>
             <form onSubmit={applyFilters} className="flex flex-col gap-2 w-full md:flex-row md:items-center md:flex-nowrap md:gap-2">
               <div className="relative flex-1 min-w-0">
@@ -231,7 +191,7 @@ export default function Listings() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
 
-        {/* ── Header row ── */}
+        {/* â”€â”€ Header row â”€â”€ */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-5">
           <div className="min-w-0">
             <h1 className="text-lg sm:text-2xl font-black text-gray-900">{t.title}</h1>
@@ -259,7 +219,7 @@ export default function Listings() {
           </button>
         </div>
 
-        {/* ── Filters panel ── */}
+        {/* â”€â”€ Filters panel â”€â”€ */}
         {showFilters && (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-5 shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -312,7 +272,7 @@ export default function Listings() {
                 <input
                   data-testid="input-max-price"
                   type="number"
-                  placeholder="∞"
+                  placeholder="âˆž"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
                   min="0"
@@ -341,7 +301,7 @@ export default function Listings() {
           </div>
         )}
 
-        {/* ── Active filter badges ── */}
+        {/* â”€â”€ Active filter badges â”€â”€ */}
         {hasActiveFilters && (
           <div className="flex flex-wrap gap-2 mb-5">
             {appliedSearch && (
@@ -364,14 +324,14 @@ export default function Listings() {
             )}
             {(appliedMinPrice || appliedMaxPrice) && (
               <span className="flex items-center gap-1.5 bg-amber-50 text-amber-700 text-sm font-semibold px-3 py-1.5 rounded-full border border-amber-200">
-                {appliedMinPrice || "0"} – {appliedMaxPrice || "∞"} {market.symbol}
+                {appliedMinPrice || "0"} â€“ {appliedMaxPrice || "âˆž"} {market.symbol}
                 <X size={12} className="cursor-pointer hover:text-amber-900" onClick={() => { setMinPrice(""); setMaxPrice(""); setAppliedMinPrice(""); setAppliedMaxPrice(""); setPage(1); }} />
               </span>
             )}
           </div>
         )}
 
-        {/* ── Grid ── */}
+        {/* â”€â”€ Grid â”€â”€ */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 min-[1200px]:grid-cols-3 gap-4">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}

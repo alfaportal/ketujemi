@@ -24,7 +24,7 @@ export const BB_TYPE_DB_SLUG: Record<BbTypeKey, string> = {
 
 export const BB_TYPE_PHOTOS: Record<BbTypeKey, string> = {
   makineri:
-    "https://images.pexels.com/photos/2132227/pexels-photo-2132227.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/2933243/pexels-photo-2933243.jpeg?auto=compress&cs=tinysrgb&w=400",
   bageti:
     "https://images.pexels.com/photos/422218/pexels-photo-422218.jpeg?auto=compress&cs=tinysrgb&w=400",
   shpeze:

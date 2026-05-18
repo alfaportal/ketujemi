@@ -8,7 +8,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -21,9 +23,9 @@ import {
   SPORT_BIKE_TYPE_LABEL_KEY,
   SPORT_BIKE_TYPE_SEARCH,
   SPORT_CONDITION_SEARCH,
-  SPORT_EQUIPMENT_KEYS,
-  SPORT_EQUIPMENT_LABEL_KEY,
-  SPORT_EQUIPMENT_SEARCH,
+  SPORT_DEVICE_LABEL_KEY,
+  SPORT_DEVICE_SEARCH,
+  SPORT_DEVICE_SECTIONS,
   SPORT_GENDER_KEYS,
   SPORT_GENDER_LABEL_KEY,
   SPORT_GENDER_SEARCH,
@@ -33,7 +35,7 @@ import {
   getSportOutdoorLeafCategoryIds,
   resolveSportTypeCategoryId,
   type SportBikeTypeKey,
-  type SportEquipmentKey,
+  type SportDeviceKey,
   type SportGenderKey,
   type SportOutdoorCategoryRow,
   type SportTypeKey,
@@ -66,7 +68,7 @@ export function SportOutdoorSearchPanel({
   }, [categories, hubId]);
 
   const [sportKey, setSportKey] = useState<SportTypeKey | null>(null);
-  const [equipment, setEquipment] = useState<SportEquipmentKey | "">("");
+  const [deviceKey, setDeviceKey] = useState<SportDeviceKey | "">("");
   const [condNew, setCondNew] = useState(false);
   const [condUsed, setCondUsed] = useState(false);
   const [bikeSize, setBikeSize] = useState("");
@@ -76,6 +78,11 @@ export function SportOutdoorSearchPanel({
   const [priceMax, setPriceMax] = useState("");
 
   const showBikeFilters = sportKey === "bike";
+  const deviceSections = sportKey ? SPORT_DEVICE_SECTIONS[sportKey] : [];
+
+  useEffect(() => {
+    setDeviceKey("");
+  }, [sportKey]);
 
   useEffect(() => {
     if (!showBikeFilters) {
@@ -83,6 +90,13 @@ export function SportOutdoorSearchPanel({
       setBikeType("");
     }
   }, [showBikeFilters]);
+
+  useEffect(() => {
+    if (deviceKey && sportKey) {
+      const allowed = deviceSections.flatMap((s) => s.itemKeys);
+      if (!allowed.includes(deviceKey)) setDeviceKey("");
+    }
+  }, [deviceKey, sportKey, deviceSections]);
 
   const buildParams = (): GetListingsParams => {
     const params: GetListingsParams = { page: 1, limit: 20 };
@@ -101,7 +115,7 @@ export function SportOutdoorSearchPanel({
       if (label) searchBits.push(label);
     }
 
-    if (equipment) searchBits.push(SPORT_EQUIPMENT_SEARCH[equipment]);
+    if (deviceKey) searchBits.push(SPORT_DEVICE_SEARCH[deviceKey]);
 
     if (condNew && !condUsed) searchBits.push(SPORT_CONDITION_SEARCH.new);
     else if (condUsed && !condNew) searchBits.push(SPORT_CONDITION_SEARCH.used);
@@ -128,7 +142,7 @@ export function SportOutdoorSearchPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- live preview
   }, [
     sportKey,
-    equipment,
+    deviceKey,
     condNew,
     condUsed,
     bikeSize,
@@ -169,7 +183,10 @@ export function SportOutdoorSearchPanel({
               <button
                 key={key}
                 type="button"
-                onClick={() => setSportKey(selected ? null : key)}
+                onClick={() => {
+                  setSportKey(selected ? null : key);
+                  if (!selected) setDeviceKey("");
+                }}
                 className={cn(
                   "relative overflow-hidden rounded-2xl border text-left transition-all min-h-[7.5rem] touch-manipulation",
                   selected
@@ -198,20 +215,31 @@ export function SportOutdoorSearchPanel({
           {t.so_sec_equipment}
         </Label>
         <Select
-          value={equipment || "__any__"}
-          onValueChange={(v) => setEquipment(v === "__any__" ? "" : (v as SportEquipmentKey))}
+          key={sportKey ?? "__none__"}
+          value={deviceKey || "__any__"}
+          onValueChange={(v) => setDeviceKey(v === "__any__" ? "" : (v as SportDeviceKey))}
+          disabled={!sportKey}
         >
           <SelectTrigger id="so-equipment" className={triggerClass}>
-            <SelectValue placeholder={t.so_equip_any} />
+            <SelectValue placeholder={t.so_equip_any}>
+              {deviceKey ? t[SPORT_DEVICE_LABEL_KEY[deviceKey]] : t.so_equip_any}
+            </SelectValue>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-[min(70vh,360px)]">
             <SelectItem value="__any__" className="min-h-11">
               {t.so_equip_any}
             </SelectItem>
-            {SPORT_EQUIPMENT_KEYS.map((k) => (
-              <SelectItem key={k} value={k} className="min-h-11">
-                {t[SPORT_EQUIPMENT_LABEL_KEY[k]]}
-              </SelectItem>
+            {deviceSections.map((section) => (
+              <SelectGroup key={section.groupLabelKey}>
+                <SelectLabel className="text-xs font-bold text-gray-500 px-2 py-1.5">
+                  {t[section.groupLabelKey]}
+                </SelectLabel>
+                {section.itemKeys.map((k) => (
+                  <SelectItem key={k} value={k} className="min-h-11 pl-6">
+                    {t[SPORT_DEVICE_LABEL_KEY[k]]}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             ))}
           </SelectContent>
         </Select>

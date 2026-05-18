@@ -28,15 +28,15 @@ export const MD_TYPE_PHOTOS: Record<MdTypeKey, string> = {
   sallone_ulese:
     "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=400",
   dhoma_gjumit:
-    "https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/36676787/pexels-photo-36676787.jpeg?auto=compress&cs=tinysrgb&w=400",
   ndricim:
     "https://images.pexels.com/photos/1123262/pexels-photo-1123262.jpeg?auto=compress&cs=tinysrgb&w=400",
   kuzhina:
     "https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg?auto=compress&cs=tinysrgb&w=400",
   kopsht_terasa:
-    "https://images.pexels.com/photos/1643384/pexels-photo-1643384.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/27975920/pexels-photo-27975920.jpeg?auto=compress&cs=tinysrgb&w=400",
   tepihe_perde:
-    "https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/28379851/pexels-photo-28379851.jpeg?auto=compress&cs=tinysrgb&w=400",
 };
 
 export const MD_TYPE_LABEL_KEY: Record<MdTypeKey, string> = {

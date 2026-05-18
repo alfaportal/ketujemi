@@ -1,11 +1,24 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { EXTRA_TRANSLATIONS } from "./app-extra-i18n";
+import {
+  DEFAULT_UI_LANG,
+  isUiLang,
+  translationKeyForUiLang,
+  type UiLang,
+} from "./ui-languages";
 
 export const MARKETS = [
-  { code: "ks",  flag: "🇽🇰", name: "Kosovë",   currency: "EUR", symbol: "€",   prefix: "+383" },
-  { code: "al",  flag: "🇦🇱", name: "Shqipëri", currency: "ALL", symbol: "L",   prefix: "+355" },
-  { code: "mk",  flag: "🇲🇰", name: "Македонија", currency: "MKD", symbol: "ден", prefix: "+389" },
-  { code: "mne", flag: "🇲🇪", name: "Crna Gora", currency: "EUR", symbol: "€",   prefix: "+382" },
+  { code: "ks",  flag: "🇽🇰", name: "Kosovë",             currency: "EUR", symbol: "€",   prefix: "+383" },
+  { code: "al",  flag: "🇦🇱", name: "Shqipëri",           currency: "ALL", symbol: "L",   prefix: "+355" },
+  { code: "mk",  flag: "🇲🇰", name: "Maqedoni e Veriut",  currency: "MKD", symbol: "ден", prefix: "+389" },
+  { code: "mne", flag: "🇲🇪", name: "Mal i Zi",           currency: "EUR", symbol: "€",   prefix: "+382" },
+  { code: "de",  flag: "🇩🇪", name: "Gjermani",           currency: "EUR", symbol: "€",   prefix: "+49" },
+  { code: "at",  flag: "🇦🇹", name: "Austri",             currency: "EUR", symbol: "€",   prefix: "+43" },
+  { code: "ch",  flag: "🇨🇭", name: "Zvicër",             currency: "CHF", symbol: "CHF", prefix: "+41" },
+  { code: "it",  flag: "🇮🇹", name: "Itali",              currency: "EUR", symbol: "€",   prefix: "+39" },
+  { code: "fr",  flag: "🇫🇷", name: "Francë",             currency: "EUR", symbol: "€",   prefix: "+33" },
+  { code: "gb",  flag: "🇬🇧", name: "Angli",              currency: "GBP", symbol: "£",   prefix: "+44" },
+  { code: "us",  flag: "🇺🇸", name: "SHBA",               currency: "USD", symbol: "$",   prefix: "+1" },
 ] as const;
 
 export type Market = (typeof MARKETS)[number];
@@ -147,7 +160,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     conditionUsedSub: "Ka qenë në përdorim",
     conditionDamagedSub: "Me defekt / aksident",
     marketsTagline: "Kosovë · Shqipëri · Maqedoni · Mal i Zi",
-    terms: "Kushtet", privacy: "Privatësia", contact: "Kontakti",
+    terms: "Kushtet", privacy: "Privatësia", contact: "Kontakti", faq: "FAQ",
     featured: "Të rekomanduara", recent: "Njoftimet e fundit",
     listingsCount: "shpallje", citiesLabel: "qytetet kryesore",
     authLogin: "Hyr",
@@ -267,7 +280,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     conditionUsedSub: "Ka qenë në përdorim",
     conditionDamagedSub: "Me defekt / aksident",
     marketsTagline: "Kosovë · Shqipëri · Maqedoni · Mal i Zi",
-    terms: "Kushtet", privacy: "Privatësia", contact: "Kontakti",
+    terms: "Kushtet", privacy: "Privatësia", contact: "Kontakti", faq: "FAQ",
     featured: "Të rekomanduara", recent: "Njoftimet e fundit",
     listingsCount: "njoftime", citiesLabel: "qytetet kryesore",
     authLogin: "Hyr",
@@ -387,7 +400,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     conditionUsedSub: "Бил во употреба",
     conditionDamagedSub: "Со дефект / акцидент",
     marketsTagline: "Косово · Албанија · Македонија · Црна Гора",
-    terms: "Услови", privacy: "Приватност", contact: "Контакт",
+    terms: "Услови", privacy: "Приватност", contact: "Контакт", faq: "FAQ",
     featured: "Препорачани", recent: "Последни огласи",
     listingsCount: "огласи", citiesLabel: "главни градови",
     authLogin: "Најави се",
@@ -507,7 +520,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     conditionUsedSub: "Bio u upotrebi",
     conditionDamagedSub: "Sa defektom / u nesreći",
     marketsTagline: "Kosovo · Albanija · Makedonija · Crna Gora",
-    terms: "Uslovi", privacy: "Privatnost", contact: "Kontakt",
+    terms: "Uslovi", privacy: "Privatnost", contact: "Kontakt", faq: "FAQ",
     featured: "Preporučeni", recent: "Najnoviji oglasi",
     listingsCount: "oglasa", citiesLabel: "glavni gradovi",
     authLogin: "Prijavi se",
@@ -612,6 +625,8 @@ export const ALL_LOCATIONS: string[] = [
 interface MarketContextType {
   market: Market;
   setMarket: (m: Market) => void;
+  uiLang: UiLang;
+  setUiLang: (lang: UiLang) => void;
   rates: Record<string, number>;
   t: Record<string, string>;
 }
@@ -619,12 +634,15 @@ interface MarketContextType {
 const MarketContext = createContext<MarketContextType>({
   market: MARKETS[0],
   setMarket: () => {},
+  uiLang: DEFAULT_UI_LANG,
+  setUiLang: () => {},
   rates: { EUR: 1, ALL: 109.5, MKD: 61.5 },
   t: { ...TRANSLATIONS.ks, ...EXTRA_TRANSLATIONS.ks },
 });
 
 export function MarketProvider({ children }: { children: ReactNode }) {
   const [market, setMarketState] = useState<Market>(MARKETS[0]);
+  const [uiLang, setUiLangState] = useState<UiLang>(DEFAULT_UI_LANG);
   const [rates, setRates] = useState<Record<string, number>>({ EUR: 1, ALL: 109.5, MKD: 61.5 });
 
   useEffect(() => {
@@ -641,18 +659,31 @@ export function MarketProvider({ children }: { children: ReactNode }) {
     } catch {}
   }, []);
 
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("vendi_ui_lang");
+      if (saved && isUiLang(saved)) setUiLangState(saved);
+    } catch {}
+  }, []);
+
   const setMarket = (m: Market) => {
     setMarketState(m);
     try { localStorage.setItem("vendi_market", m.code); } catch {}
   };
 
+  const setUiLang = (lang: UiLang) => {
+    setUiLangState(lang);
+    try { localStorage.setItem("vendi_ui_lang", lang); } catch {}
+  };
+
+  const translationCode = translationKeyForUiLang(uiLang);
   const tMerged = {
-    ...TRANSLATIONS[market.code],
-    ...EXTRA_TRANSLATIONS[market.code as keyof typeof EXTRA_TRANSLATIONS],
+    ...TRANSLATIONS[translationCode],
+    ...EXTRA_TRANSLATIONS[translationCode],
   };
 
   return (
-    <MarketContext.Provider value={{ market, setMarket, rates, t: tMerged }}>
+    <MarketContext.Provider value={{ market, setMarket, uiLang, setUiLang, rates, t: tMerged }}>
       {children}
     </MarketContext.Provider>
   );

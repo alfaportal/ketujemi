@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { GetListingsParams } from "@workspace/api-client-react";
-import { Euro, Search, Wrench } from "lucide-react";
+import { ChevronDown, Euro, Search, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,19 +19,16 @@ import { translateCategory } from "@/lib/category-translations";
 import {
   AP_PART_CONDITION_DESC,
   AUTO_PJESE_BRANDS,
-  AUTO_PJESE_MODELS,
   AUTO_PJESE_PART_NAMES,
+  getAutoPjeseModelsForBrand,
   AUTO_PJESE_PART_PHOTOS,
   AUTO_PJESE_YEARS,
-  TIRE_INCH_OPTS,
-  TIRE_SEASON_OPTS,
   getAutoPiesePartTypeCategoryIds,
+  getAutoPjeseSubcategoryGroups,
   resolvePartTypeCategoryId,
   type AutoPjeseCategoryRow,
   type AutoPjesePartName,
 } from "@/lib/auto-pjese-search-helpers";
-
-const FELLNE_NAME: AutoPjesePartName = "Fellne & Goma";
 
 type Props = {
   hubId: number;
@@ -60,29 +57,33 @@ export function AutoPjeseSearchPanel({
     [partTypeIds],
   );
 
-  const [partName, setPartName] = useState<string | null>(null);
+  const [partName, setPartName] = useState<AutoPjesePartName | null>(null);
+  const [subcategory, setSubcategory] = useState<string | null>(null);
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
   const [year, setYear] = useState("");
   const [partCondition, setPartCondition] = useState("");
-  const [tireInch, setTireInch] = useState("");
-  const [tireSeason, setTireSeason] = useState("");
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
 
-  const models = brand ? (AUTO_PJESE_MODELS[brand as keyof typeof AUTO_PJESE_MODELS] ?? []) : [];
-  const showTires = partName === FELLNE_NAME;
+  const models = useMemo(() => getAutoPjeseModelsForBrand(brand), [brand]);
+  const subcategoryGroups = useMemo(
+    () => getAutoPjeseSubcategoryGroups(partName),
+    [partName],
+  );
 
-  useEffect(() => {
-    if (!showTires) {
-      setTireInch("");
-      setTireSeason("");
-    }
-  }, [showTires]);
-
-  useEffect(() => {
+  const handleBrandChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextBrand = e.target.value;
+    setBrand(nextBrand);
     setModel("");
-  }, [brand]);
+  };
+
+  const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setModel(e.target.value);
+  };
+
+  const compatSelectClass =
+    "flex min-h-12 h-12 w-full appearance-none rounded-md border border-input bg-transparent pl-3 pr-9 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring touch-manipulation";
 
   const buildParams = (): GetListingsParams => {
     const params: GetListingsParams = { page: 1, limit: 20 };
@@ -102,10 +103,7 @@ export function AutoPjeseSearchPanel({
     if (partCondition && AP_PART_CONDITION_DESC[partCondition]) {
       searchBits.push(AP_PART_CONDITION_DESC[partCondition]);
     }
-    if (showTires) {
-      if (tireInch) searchBits.push(tireInch);
-      if (tireSeason) searchBits.push(tireSeason);
-    }
+    if (subcategory) searchBits.push(subcategory);
     if (searchBits.length) params.search = searchBits.join(" ");
 
     if (year) {
@@ -129,19 +127,17 @@ export function AutoPjeseSearchPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- live preview for parent listing query
   }, [
     partName,
+    subcategory,
     brand,
     model,
     year,
     partCondition,
-    tireInch,
-    tireSeason,
     priceMin,
     priceMax,
     defaultCsv,
     hubId,
     categories,
     onListingParamsChange,
-    showTires,
   ]);
 
   const handleSearch = () => {
@@ -149,11 +145,14 @@ export function AutoPjeseSearchPanel({
     onScrollToResults?.();
   };
 
-  const tireSeasonLabel = (stored: string) => {
-    if (stored === "Verore") return t.ap_tire_verore;
-    if (stored === "Dimërore") return t.ap_tire_dimerore;
-    if (stored === "Gjithëvjetore") return t.ap_tire_allseason;
-    return stored;
+  const selectPartType = (name: AutoPjesePartName) => {
+    if (partName === name) {
+      setPartName(null);
+      setSubcategory(null);
+      return;
+    }
+    setPartName(name);
+    setSubcategory(null);
   };
 
   const countLabel =
@@ -176,7 +175,7 @@ export function AutoPjeseSearchPanel({
               <button
                 key={name}
                 type="button"
-                onClick={() => setPartName(selected ? null : name)}
+                onClick={() => selectPartType(name)}
                 className={cn(
                   "group relative overflow-hidden rounded-2xl border text-left w-full min-h-[120px] transition-all touch-manipulation",
                   selected
@@ -191,38 +190,96 @@ export function AutoPjeseSearchPanel({
         </div>
       </section>
 
+      {partName && subcategoryGroups.length > 0 && (
+        <section className="space-y-4 rounded-xl border border-blue-100 bg-blue-50/30 p-3 sm:p-4">
+          <h2 className="text-base font-bold text-gray-900">{t.ap_sec_subcategories}</h2>
+          <div className="space-y-4">
+            {subcategoryGroups.map((group) => (
+              <div key={group.label} className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  {group.label}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {group.items.map((item) => {
+                    const active = subcategory === item;
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => setSubcategory(active ? null : item)}
+                        className={cn(
+                          "rounded-full border px-3 py-2 text-left text-xs sm:text-sm font-medium leading-snug transition-colors touch-manipulation max-w-full",
+                          active
+                            ? "border-blue-600 bg-blue-600 text-white shadow-sm"
+                            : "border-gray-200 bg-white text-gray-800 hover:border-blue-300 hover:bg-blue-50",
+                        )}
+                      >
+                        {item}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="space-y-3">
         <h2 className="text-base font-bold text-gray-900">{t.ap_sec_compat}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="space-y-2 min-w-0">
-            <Label className="text-sm font-semibold text-gray-700">{t.ap_lbl_brand}</Label>
-            <Select value={brand} onValueChange={setBrand}>
-              <SelectTrigger className="w-full min-h-12 text-sm">
-                <SelectValue placeholder={t.ap_ph_brand} />
-              </SelectTrigger>
-              <SelectContent>
+            <Label htmlFor="ap-compat-brand" className="text-sm font-semibold text-gray-700">
+              {t.ap_lbl_brand}
+            </Label>
+            <div className="relative">
+              <select
+                id="ap-compat-brand"
+                value={brand}
+                onChange={handleBrandChange}
+                className={compatSelectClass}
+              >
+                <option value="">{t.ap_ph_brand}</option>
                 {AUTO_PJESE_BRANDS.map((b) => (
-                  <SelectItem key={b} value={b} className="min-h-11 text-sm">
+                  <option key={b} value={b}>
                     {b}
-                  </SelectItem>
+                  </option>
                 ))}
-              </SelectContent>
-            </Select>
+              </select>
+              <ChevronDown
+                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50"
+                aria-hidden
+              />
+            </div>
           </div>
           <div className="space-y-2 min-w-0">
-            <Label className="text-sm font-semibold text-gray-700">{t.ap_lbl_model}</Label>
-            <Select value={model} onValueChange={setModel} disabled={!brand}>
-              <SelectTrigger className="w-full min-h-12 text-sm">
-                <SelectValue placeholder={brand ? t.ap_ph_model : t.ap_ph_model_first} />
-              </SelectTrigger>
-              <SelectContent>
+            <Label htmlFor="ap-compat-model" className="text-sm font-semibold text-gray-700">
+              {t.ap_lbl_model}
+            </Label>
+            <div className="relative">
+              <select
+                id="ap-compat-model"
+                key={brand || "no-brand"}
+                value={model}
+                onChange={handleModelChange}
+                disabled={!brand}
+                className={cn(
+                  compatSelectClass,
+                  !brand && "cursor-not-allowed opacity-50 bg-muted/30",
+                )}
+              >
+                <option value="">{brand ? t.ap_ph_model : t.ap_ph_model_first}</option>
                 {models.map((m) => (
-                  <SelectItem key={m} value={m} className="min-h-11 text-sm">
+                  <option key={m} value={m}>
                     {m}
-                  </SelectItem>
+                  </option>
                 ))}
-              </SelectContent>
-            </Select>
+              </select>
+              <ChevronDown
+                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50"
+                aria-hidden
+              />
+            </div>
           </div>
           <div className="space-y-2 min-w-0">
             <Label className="text-sm font-semibold text-gray-700">{t.ap_lbl_year}</Label>
@@ -272,44 +329,6 @@ export function AutoPjeseSearchPanel({
           ))}
         </RadioGroup>
       </section>
-
-      {showTires && (
-        <section className="space-y-3 rounded-xl border border-amber-100 bg-amber-50/40 p-4">
-          <h2 className="text-base font-bold text-gray-900">{t.ap_sec_tires}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-2 min-w-0">
-              <Label className="text-sm font-semibold text-gray-700">{t.ap_lbl_tire_inch}</Label>
-              <Select value={tireInch} onValueChange={setTireInch}>
-                <SelectTrigger className="w-full min-h-12 text-sm">
-                  <SelectValue placeholder={t.ap_tire_any_inch} />
-                </SelectTrigger>
-                <SelectContent>
-                  {TIRE_INCH_OPTS.map((inch) => (
-                    <SelectItem key={inch} value={inch} className="min-h-11 text-sm">
-                      {inch}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2 min-w-0">
-              <Label className="text-sm font-semibold text-gray-700">{t.ap_lbl_tire_season}</Label>
-              <Select value={tireSeason} onValueChange={setTireSeason}>
-                <SelectTrigger className="w-full min-h-12 text-sm">
-                  <SelectValue placeholder={t.ap_tire_any_season} />
-                </SelectTrigger>
-                <SelectContent>
-                  {TIRE_SEASON_OPTS.map((s) => (
-                    <SelectItem key={s} value={s} className="min-h-11 text-sm">
-                      {tireSeasonLabel(s)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </section>
-      )}
 
       <section className="space-y-3">
         <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">

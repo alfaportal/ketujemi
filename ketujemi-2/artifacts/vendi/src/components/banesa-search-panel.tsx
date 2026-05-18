@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import type { GetListingsParams } from "@workspace/api-client-react";
 import { MapPin, Euro, Maximize } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,6 @@ const BANESA_CARD_LABEL_KEY: Record<string, string> = {
 
 const PROPERTY_SECTIONS: {
   secKey: string;
-  icon: string;
   cards: {
     key: string;
     parentSlug: string;
@@ -51,7 +50,6 @@ const PROPERTY_SECTIONS: {
 }[] = [
   {
     secKey: "hub_banesa_sec_apt",
-    icon: "🏢",
     cards: [
       {
         key: "banesa_garsoniere",
@@ -93,7 +91,6 @@ const PROPERTY_SECTIONS: {
   },
   {
     secKey: "hub_banesa_sec_home",
-    icon: "🏡",
     cards: [
       {
         key: "shtepi_familjare",
@@ -123,7 +120,6 @@ const PROPERTY_SECTIONS: {
   },
   {
     secKey: "hub_banesa_sec_land",
-    icon: "🗺️",
     cards: [
       {
         key: "truall_ndertim",
@@ -147,7 +143,6 @@ const PROPERTY_SECTIONS: {
   },
   {
     secKey: "hub_banesa_sec_other",
-    icon: "📦",
     cards: [
       {
         key: "garazh",
@@ -300,16 +295,55 @@ export function BanesaSearchPanel({
   ]);
 
   const countLabel =
-    previewLoading || previewTotal === null ? "…" : previewTotal.toLocaleString("de-DE");
+    previewLoading || previewTotal === null ? "â€¦" : previewTotal.toLocaleString("de-DE");
   const listingLine = fillCount(t.hub_show_listings_m, countLabel);
 
   return (
     <div className="mb-10 rounded-2xl border border-slate-200/80 bg-white p-6 md:p-8 shadow-sm ring-1 ring-slate-100">
-      <div className="flex flex-col gap-1 border-b border-slate-100 pb-5 mb-6">
+      {/* PROPERTY TYPE CARDS BY SECTION - above search form */}
+      <div className="space-y-10 mb-8">
+        {PROPERTY_SECTIONS.map((sec) => (
+          <div key={sec.secKey} className="space-y-4">
+            <h3 className="text-lg font-bold uppercase tracking-wide text-slate-600">{t[sec.secKey]}</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {sec.cards.map((c) => {
+                const lk = BANESA_CARD_LABEL_KEY[c.key];
+                const cardLabel = lk ? t[lk] : c.key;
+                const active = selectedCardKey === c.key;
+                return (
+                  <button
+                    key={c.key}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setSelectedCardKey(active ? null : c.key)}
+                    className={cn(
+                      "flex flex-col items-stretch rounded-xl border-2 text-left outline-none overflow-hidden transition-all focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 touch-manipulation",
+                      active
+                        ? "border-blue-600 bg-blue-50/80 shadow-md shadow-blue-900/15 ring-2 ring-blue-500/25"
+                        : "border-slate-100 bg-white hover:border-blue-300 hover:shadow-md",
+                    )}
+                  >
+                    <img
+                      src={c.imageUrl}
+                      alt=""
+                      loading="lazy"
+                      className="h-[5.75rem] w-full object-cover"
+                    />
+                    <span className="px-2.5 py-2.5 text-sm font-bold leading-tight text-slate-800">
+                      {cardLabel}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Kërko prona - search form */}
+      <div className="flex flex-col gap-1 border-t border-slate-100 pt-8 pb-5 mb-6">
         <h2 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">{t.hub_banesa_title}</h2>
-        <p className="text-sm text-slate-500">
-          {t.hub_banesa_sub}
-        </p>
+        <p className="text-sm text-slate-500">{t.hub_banesa_sub}</p>
       </div>
 
       {/* TRANSACTION */}
@@ -345,53 +379,8 @@ export function BanesaSearchPanel({
         </div>
       </div>
 
-      {/* PROPERTY TYPE CARDS BY SECTION */}
-      <div className="space-y-10 mb-8">
-        {PROPERTY_SECTIONS.map((sec) => (
-          <div key={sec.secKey} className="space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="text-xl" aria-hidden>
-                {sec.icon}
-              </span>
-              <h3 className="text-lg font-bold uppercase tracking-wide text-slate-600">{t[sec.secKey]}</h3>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {sec.cards.map((c) => {
-                const lk = BANESA_CARD_LABEL_KEY[c.key];
-                const cardLabel = lk ? t[lk] : c.key;
-                const active = selectedCardKey === c.key;
-                return (
-                  <button
-                    key={c.key}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => setSelectedCardKey(active ? null : c.key)}
-                    className={cn(
-                      "flex flex-col items-stretch rounded-xl border-2 text-left outline-none overflow-hidden transition-all focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
-                      active
-                        ? "border-blue-600 bg-blue-50/80 shadow-md shadow-blue-900/15 ring-2 ring-blue-500/25"
-                        : "border-slate-100 bg-white hover:border-blue-300 hover:shadow-md",
-                    )}
-                  >
-                    <img
-                      src={c.imageUrl}
-                      alt=""
-                      loading="lazy"
-                      className="h-[5.75rem] w-full object-cover"
-                    />
-                    <span className="px-2.5 py-2.5 text-sm font-bold leading-tight text-slate-800">
-                      {cardLabel}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-
       {/* FILTERS */}
-      <div className="border-t border-slate-100 pt-8 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
         <div className="space-y-2 md:col-span-2">
           <Label className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
             <MapPin className="w-3.5 h-3.5" />
@@ -413,7 +402,7 @@ export function BanesaSearchPanel({
           <div className="grid grid-cols-2 gap-3">
             <div className="relative">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">
-                €
+                â‚¬
               </span>
               <Input
                 type="text"
@@ -426,7 +415,7 @@ export function BanesaSearchPanel({
             </div>
             <div className="relative">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">
-                €
+                â‚¬
               </span>
               <Input
                 type="text"
@@ -492,7 +481,7 @@ export function BanesaSearchPanel({
           <span>{t.hub_cta_search_property}</span>
           <span className="text-sm font-medium opacity-90">
             {listingLine}
-            {previewLoading ? " …" : ""}
+            {previewLoading ? " â€¦" : ""}
           </span>
         </span>
       </Button>

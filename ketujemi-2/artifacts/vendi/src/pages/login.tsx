@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { PhoneInput, defaultDialForMarket } from "@/components/phone-input";
 import { useAuth, safeAuthReturnUrl } from "@/lib/auth-context";
 import { useMarket } from "@/lib/market-context";
+import { isValidPhoneDigits } from "@/lib/phone-prefixes";
 
 type Flow = "register" | "login";
 type Channel = "email" | "sms";
@@ -19,7 +21,8 @@ export default function LoginPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user, loading: authLoading, refresh } = useAuth();
-  const { t } = useMarket();
+  const { t, market } = useMarket();
+  const phoneDefaultDial = defaultDialForMarket(market.prefix);
 
   const returnTo =
     typeof window !== "undefined"
@@ -88,6 +91,10 @@ export default function LoginPage() {
         setStep("verify");
         toast({ title: t.toast_emailSent });
       } else {
+        if (!isValidPhoneDigits(phone)) {
+          toast({ title: t.toast_reqFail, variant: "destructive" });
+          return;
+        }
         const res = await fetch("/api/auth/sms/start", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -179,6 +186,10 @@ export default function LoginPage() {
 
   async function onLoginSmsStart(e: React.FormEvent) {
     e.preventDefault();
+    if (!isValidPhoneDigits(phone)) {
+      toast({ title: t.toast_reqFail, variant: "destructive" });
+      return;
+    }
     setBusy(true);
     try {
       const res = await fetch("/api/auth/sms/start", {
@@ -396,16 +407,12 @@ export default function LoginPage() {
                 <form className="space-y-4" onSubmit={onRegisterCredentials}>
                   <div className="space-y-2">
                     <Label htmlFor="reg-phone">{t.login_phoneLbl}</Label>
-                    <Input
+                    <PhoneInput
                       id="reg-phone"
-                      type="tel"
-                      inputMode="tel"
-                      autoComplete="tel"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      required
-                      placeholder={t.login_phonePh}
-                      className="min-h-12 h-12"
+                      onChange={setPhone}
+                      defaultDial={phoneDefaultDial}
+                      nationalPlaceholder="XX XXX XXX"
                     />
                   </div>
                   <div className="space-y-2">
@@ -431,16 +438,12 @@ export default function LoginPage() {
                   <p className="text-sm text-gray-600">{t.login_phoneIntro}</p>
                   <div className="space-y-2">
                     <Label htmlFor="login-phone">{t.login_phoneLbl}</Label>
-                    <Input
+                    <PhoneInput
                       id="login-phone"
-                      type="tel"
-                      inputMode="tel"
-                      autoComplete="tel"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      required
-                      placeholder={t.login_phonePh}
-                      className="min-h-12 h-12"
+                      onChange={setPhone}
+                      defaultDial={phoneDefaultDial}
+                      nationalPlaceholder="XX XXX XXX"
                     />
                   </div>
                   <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>

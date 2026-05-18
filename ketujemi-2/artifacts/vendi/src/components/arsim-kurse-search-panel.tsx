@@ -1,49 +1,45 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { GetListingsParams } from "@workspace/api-client-react";
-import { Euro, GraduationCap, Search } from "lucide-react";
+import { GraduationCap, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
-import { fillCount } from "@/lib/app-extra-i18n";
 import {
-  AK_CYCLE_KEYS,
-  AK_CYCLE_LABEL_KEY,
-  AK_CYCLE_SEARCH,
+  AK_CITY_KEYS,
+  AK_CITY_LABEL_KEY,
+  AK_CITY_SEARCH,
   AK_FORMAT_KEYS,
   AK_FORMAT_LABEL_KEY,
   AK_FORMAT_SEARCH,
-  AK_IT_DIR_KEYS,
-  AK_IT_DIR_LABEL_KEY,
-  AK_IT_DIR_SEARCH,
-  AK_LANG_KEYS,
-  AK_LANG_LABEL_KEY,
-  AK_LANG_SEARCH,
-  AK_LEVEL_KEYS,
-  AK_LEVEL_LABEL_KEY,
-  AK_LEVEL_SEARCH,
-  AK_PROF_DIR_KEYS,
-  AK_PROF_DIR_LABEL_KEY,
-  AK_PROF_DIR_SEARCH,
-  AK_SUBJECT_KEYS,
-  AK_SUBJECT_LABEL_KEY,
-  AK_SUBJECT_SEARCH,
+  AK_SKILL_LEVEL_KEYS,
+  AK_SKILL_LEVEL_LABEL_KEY,
+  AK_SKILL_LEVEL_SEARCH,
+  AK_SUBCATEGORIES_BY_TYPE,
   AK_TYPE_KEYS,
   AK_TYPE_LABEL_KEY,
   AK_TYPE_PHOTOS,
+  getAkSubcategorySearch,
   getArsimKurseLeafCategoryIds,
   resolveArsimTypeCategoryId,
-  type AkCycleKey,
+  type AkCityKey,
   type AkFormatKey,
-  type AkItDirKey,
-  type AkLangKey,
-  type AkLevelKey,
-  type AkProfDirKey,
-  type AkSubjectKey,
+  type AkSkillLevelKey,
+  type AkSubcategoryKey,
   type AkTypeKey,
   type ArsimKurseCategoryRow,
 } from "@/lib/arsim-kurse-search-helpers";
+
+const triggerClass =
+  "min-h-12 h-12 w-full text-[16px] rounded-xl border-slate-200 font-normal";
 
 type Props = {
   hubId: number;
@@ -54,39 +50,30 @@ type Props = {
   onScrollToResults?: () => void;
 };
 
-function ChipButton({
-  selected,
-  onClick,
+function Field({
+  id,
+  label,
   children,
-  className,
 }: {
-  selected: boolean;
-  onClick: () => void;
+  id: string;
+  label: string;
   children: ReactNode;
-  className?: string;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "w-full rounded-xl border px-3 py-3 min-h-12 text-sm font-semibold text-left transition-colors touch-manipulation",
-        selected
-          ? "border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-600/20"
-          : "border-gray-200 bg-white text-gray-800 hover:border-blue-200",
-        className,
-      )}
-    >
+    <div className="space-y-2 min-w-0">
+      <Label htmlFor={id} className="text-sm font-bold text-gray-900">
+        {label}
+      </Label>
       {children}
-    </button>
+    </div>
   );
 }
 
 export function ArsimKurseSearchPanel({
   hubId,
   categories,
-  previewTotal,
-  previewLoading,
+  previewTotal: _previewTotal,
+  previewLoading: _previewLoading,
   onListingParamsChange,
   onScrollToResults,
 }: Props) {
@@ -97,67 +84,54 @@ export function ArsimKurseSearchPanel({
     return [...ids].sort((a, b) => a - b).join(",");
   }, [categories, hubId]);
 
-  const [typeKey, setTypeKey] = useState<AkTypeKey | null>(null);
-  const [language, setLanguage] = useState<AkLangKey | "">("");
-  const [level, setLevel] = useState<AkLevelKey | "">("");
-  const [format, setFormat] = useState<AkFormatKey | "">("");
-  const [subject, setSubject] = useState<AkSubjectKey | "">("");
-  const [cycle, setCycle] = useState<AkCycleKey | "">("");
-  const [profDir, setProfDir] = useState<AkProfDirKey | "">("");
-  const [itDir, setItDir] = useState<AkItDirKey | "">("");
+  const [categoryKey, setCategoryKey] = useState<AkTypeKey | "">("");
+  const [subcategoryKey, setSubcategoryKey] = useState<AkSubcategoryKey | "">("");
+  const [cityKey, setCityKey] = useState<AkCityKey | "">("");
+  const [formatKey, setFormatKey] = useState<AkFormatKey | "">("");
+  const [skillLevel, setSkillLevel] = useState<AkSkillLevelKey | "">("");
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
 
-  const resetSubFilters = () => {
-    setLanguage("");
-    setLevel("");
-    setFormat("");
-    setSubject("");
-    setCycle("");
-    setProfDir("");
-    setItDir("");
-  };
+  const subcategoryOptions = categoryKey ? AK_SUBCATEGORIES_BY_TYPE[categoryKey] : [];
 
-  const selectType = (key: AkTypeKey) => {
-    if (typeKey === key) {
-      setTypeKey(null);
-      resetSubFilters();
-    } else {
-      setTypeKey(key);
-      resetSubFilters();
+  useEffect(() => {
+    setSubcategoryKey("");
+  }, [categoryKey]);
+
+  useEffect(() => {
+    if (subcategoryKey && categoryKey) {
+      const allowed = subcategoryOptions.map((o) => o.key);
+      if (!allowed.includes(subcategoryKey)) setSubcategoryKey("");
     }
-  };
+  }, [subcategoryKey, categoryKey, subcategoryOptions]);
 
   const buildParams = (): GetListingsParams => {
     const params: GetListingsParams = { page: 1, limit: 20 };
 
-    if (typeKey) {
-      const cid = resolveArsimTypeCategoryId(categories, hubId, typeKey);
+    if (categoryKey) {
+      const cid = resolveArsimTypeCategoryId(categories, hubId, categoryKey);
       if (cid) params.category_id = cid;
       else if (defaultCsv) params.category_ids = defaultCsv;
     } else if (defaultCsv) {
       params.category_ids = defaultCsv;
     }
 
+    if (cityKey) params.location_search = AK_CITY_SEARCH[cityKey];
+
     const searchBits: string[] = [];
-    if (typeKey) {
-      const typeLabel = t[AK_TYPE_LABEL_KEY[typeKey]];
+    if (categoryKey) {
+      const typeLabel = t[AK_TYPE_LABEL_KEY[categoryKey]];
       if (typeLabel) searchBits.push(typeLabel);
     }
-
-    if (typeKey === "gjuhe_huaja") {
-      if (language) searchBits.push(AK_LANG_SEARCH[language]);
-      if (level) searchBits.push(AK_LEVEL_SEARCH[level]);
-      if (format) searchBits.push(AK_FORMAT_SEARCH[format]);
-    } else if (typeKey === "mesime_private") {
-      if (subject) searchBits.push(AK_SUBJECT_SEARCH[subject]);
-      if (cycle) searchBits.push(AK_CYCLE_SEARCH[cycle]);
-    } else if (typeKey === "kurse_prof") {
-      if (profDir) searchBits.push(AK_PROF_DIR_SEARCH[profDir]);
-    } else if (typeKey === "trajnime_it") {
-      if (itDir) searchBits.push(AK_IT_DIR_SEARCH[itDir]);
+    if (categoryKey && subcategoryKey) {
+      const subSearch = getAkSubcategorySearch(categoryKey, subcategoryKey);
+      if (subSearch) searchBits.push(subSearch);
     }
-
+    if (formatKey) searchBits.push(AK_FORMAT_SEARCH[formatKey]);
+    if (skillLevel && skillLevel !== "te_gjitha") {
+      const lvl = AK_SKILL_LEVEL_SEARCH[skillLevel];
+      if (lvl) searchBits.push(lvl);
+    }
     if (searchBits.length) params.search = searchBits.join(" ");
 
     const pMin = priceMin.trim() ? parseFloat(priceMin) : NaN;
@@ -172,14 +146,11 @@ export function ArsimKurseSearchPanel({
     onListingParamsChange(buildParams());
     // eslint-disable-next-line react-hooks/exhaustive-deps -- live preview
   }, [
-    typeKey,
-    language,
-    level,
-    format,
-    subject,
-    cycle,
-    profDir,
-    itDir,
+    categoryKey,
+    subcategoryKey,
+    cityKey,
+    formatKey,
+    skillLevel,
     priceMin,
     priceMax,
     defaultCsv,
@@ -193,230 +164,235 @@ export function ArsimKurseSearchPanel({
     onScrollToResults?.();
   };
 
-  const countLabel =
-    previewLoading || previewTotal == null
-      ? t.ak_search_btn
-      : fillCount(t.hub_show_listings_m, String(previewTotal));
-
-  const typeSectionTitle = typeKey ? t[AK_TYPE_LABEL_KEY[typeKey]] : "";
+  const selectCategoryCard = (key: AkTypeKey) => {
+    setCategoryKey((prev) => (prev === key ? "" : key));
+    setSubcategoryKey("");
+  };
 
   return (
-    <div className="mb-8 space-y-6 rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm overflow-hidden max-w-full">
-      <div className="flex flex-col gap-1 border-b border-gray-100 pb-4">
-        <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
-          <GraduationCap size={20} className="text-blue-600 shrink-0" aria-hidden />
-          {t.ak_panel_title}
-        </h2>
-        <p className="text-sm text-gray-500">{t.ak_panel_sub}</p>
+    <div className="mb-8 space-y-6 max-w-full overflow-hidden">
+      <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm">
+        <div className="flex flex-col gap-1 border-b border-gray-100 pb-4 mb-4">
+          <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
+            <GraduationCap size={20} className="text-blue-600 shrink-0" aria-hidden />
+            {t.ak_panel_title}
+          </h2>
+          <p className="text-sm text-gray-500">{t.ak_panel_sub}</p>
+        </div>
+
+        <section className="space-y-3" aria-label={t.ak_sec_types}>
+          <Label className="text-sm font-bold text-gray-500 uppercase tracking-wide">
+            {t.ak_sec_types}
+          </Label>
+          <div className="grid grid-cols-2 gap-3">
+            {AK_TYPE_KEYS.map((key) => {
+              const selected = categoryKey === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => selectCategoryCard(key)}
+                  className={cn(
+                    "relative overflow-hidden rounded-2xl border text-left transition-all min-h-[7.5rem] touch-manipulation",
+                    selected
+                      ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
+                      : "border-gray-100 hover:border-blue-200 hover:shadow-md",
+                  )}
+                >
+                  <img
+                    src={AK_TYPE_PHOTOS[key]}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                  <span className="absolute bottom-2 left-2 right-2 text-white text-sm font-bold leading-snug line-clamp-2 drop-shadow">
+                    {t[AK_TYPE_LABEL_KEY[key]]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
       </div>
 
-      {/* Main category cards — always visible */}
-      <section className="space-y-3">
-        <Label className="text-sm font-bold text-gray-900">{t.ak_sec_types}</Label>
-        <div className="grid grid-cols-2 gap-3">
-          {AK_TYPE_KEYS.map((key) => {
-            const selected = typeKey === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => selectType(key)}
-                className={cn(
-                  "relative overflow-hidden rounded-2xl border text-left transition-all min-h-[7.5rem] touch-manipulation",
-                  selected
-                    ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
-                    : "border-gray-100 hover:border-blue-200 hover:shadow-md",
-                )}
-              >
-                <img
-                  src={AK_TYPE_PHOTOS[key]}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-                <span className="absolute bottom-2 left-2 right-2 text-white text-sm font-bold leading-snug line-clamp-2 drop-shadow">
-                  {t[AK_TYPE_LABEL_KEY[key]]}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {typeKey === "gjuhe_huaja" ? (
-        <section className="space-y-5 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-          <h3 className="text-base font-black text-gray-900">{typeSectionTitle}</h3>
-
-          <div className="space-y-3">
-            <p className="text-sm font-bold text-gray-900">{t.ak_sec_language}</p>
-            <div className="grid grid-cols-2 gap-2">
-              {AK_LANG_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={language === k}
-                  onClick={() => setLanguage(language === k ? "" : k)}
-                >
-                  {t[AK_LANG_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <p className="text-sm font-bold text-gray-900">{t.ak_sec_level}</p>
-            <div className="grid grid-cols-2 gap-2">
-              {AK_LEVEL_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={level === k}
-                  onClick={() => setLevel(level === k ? "" : k)}
-                >
-                  {t[AK_LEVEL_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <p className="text-sm font-bold text-gray-900">{t.ak_sec_format}</p>
-            <div className="grid grid-cols-1 gap-2">
-              {AK_FORMAT_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={format === k}
-                  onClick={() => setFormat(format === k ? "" : k)}
-                >
-                  {t[AK_FORMAT_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      {typeKey === "mesime_private" ? (
-        <section className="space-y-5 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-          <h3 className="text-base font-black text-gray-900">{typeSectionTitle}</h3>
-
-          <div className="space-y-3">
-            <p className="text-sm font-bold text-gray-900">{t.ak_sec_subject}</p>
-            <div className="grid grid-cols-2 gap-2">
-              {AK_SUBJECT_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={subject === k}
-                  onClick={() => setSubject(subject === k ? "" : k)}
-                >
-                  {t[AK_SUBJECT_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <p className="text-sm font-bold text-gray-900">{t.ak_sec_cycle}</p>
-            <div className="grid grid-cols-2 gap-2">
-              {AK_CYCLE_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={cycle === k}
-                  onClick={() => setCycle(cycle === k ? "" : k)}
-                >
-                  {t[AK_CYCLE_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      {typeKey === "kurse_prof" ? (
-        <section className="space-y-5 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-          <h3 className="text-base font-black text-gray-900">{typeSectionTitle}</h3>
-          <div className="space-y-3">
-            <p className="text-sm font-bold text-gray-900">{t.ak_sec_direction}</p>
-            <div className="grid grid-cols-1 gap-2">
-              {AK_PROF_DIR_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={profDir === k}
-                  onClick={() => setProfDir(profDir === k ? "" : k)}
-                >
-                  {t[AK_PROF_DIR_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      {typeKey === "trajnime_it" ? (
-        <section className="space-y-5 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-          <h3 className="text-base font-black text-gray-900">{typeSectionTitle}</h3>
-          <div className="space-y-3">
-            <p className="text-sm font-bold text-gray-900">{t.ak_sec_direction}</p>
-            <div className="grid grid-cols-1 gap-2">
-              {AK_IT_DIR_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={itDir === k}
-                  onClick={() => setItDir(itDir === k ? "" : k)}
-                >
-                  {t[AK_IT_DIR_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      <section className="space-y-3">
-        <p className="text-sm font-bold text-gray-900 flex items-center gap-2">
-          <Euro size={18} className="text-blue-600 shrink-0" aria-hidden />
-          {t.ak_sec_price}
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label htmlFor="ak-price-min" className="text-sm text-gray-600">
-              {t.ak_from}
-            </Label>
-            <Input
-              id="ak-price-min"
-              type="number"
-              inputMode="decimal"
-              min={0}
-              value={priceMin}
-              onChange={(e) => setPriceMin(e.target.value)}
-              placeholder="0"
-              className="min-h-12 h-12 w-full text-[16px]"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="ak-price-max" className="text-sm text-gray-600">
-              {t.ak_to}
-            </Label>
-            <Input
-              id="ak-price-max"
-              type="number"
-              inputMode="decimal"
-              min={0}
-              value={priceMax}
-              onChange={(e) => setPriceMax(e.target.value)}
-              placeholder="500"
-              className="min-h-12 h-12 w-full text-[16px]"
-            />
-          </div>
-        </div>
-      </section>
-
-      <Button
-        type="button"
-        onClick={handleSearch}
-        className="w-full min-h-12 h-12 text-base font-bold bg-blue-600 hover:bg-blue-700 touch-manipulation"
+      {/* Search table — below cards, outside buttons */}
+      <section
+        className="rounded-2xl border border-blue-100 bg-blue-50/30 p-4 sm:p-5 shadow-sm space-y-4"
+        aria-label={t.ak_search_btn}
       >
-        <Search size={18} className="mr-2 shrink-0" aria-hidden />
-        {countLabel}
-      </Button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field id="ak-category" label={t.ak_fld_category}>
+            <Select
+              value={categoryKey || "__any__"}
+              onValueChange={(v) => setCategoryKey(v === "__any__" ? "" : (v as AkTypeKey))}
+            >
+              <SelectTrigger id="ak-category" className={triggerClass}>
+                <SelectValue placeholder={t.ak_select_category_ph}>
+                  {categoryKey ? t[AK_TYPE_LABEL_KEY[categoryKey]] : t.ak_select_any}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="max-h-[min(70vh,320px)]">
+                <SelectItem value="__any__" className="min-h-11">
+                  {t.ak_select_any}
+                </SelectItem>
+                {AK_TYPE_KEYS.map((key) => (
+                  <SelectItem key={key} value={key} className="min-h-11">
+                    {t[AK_TYPE_LABEL_KEY[key]]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field id="ak-subcategory" label={t.ak_fld_subcategory}>
+            <Select
+              key={categoryKey || "__none__"}
+              value={subcategoryKey || "__any__"}
+              onValueChange={(v) =>
+                setSubcategoryKey(v === "__any__" ? "" : (v as AkSubcategoryKey))
+              }
+              disabled={!categoryKey}
+            >
+              <SelectTrigger id="ak-subcategory" className={triggerClass}>
+                <SelectValue placeholder={t.ak_select_subcategory_ph}>
+                  {subcategoryKey
+                    ? t[
+                        subcategoryOptions.find((o) => o.key === subcategoryKey)?.labelKey ??
+                          ""
+                      ]
+                    : t.ak_select_any}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="max-h-[min(70vh,360px)]">
+                <SelectItem value="__any__" className="min-h-11">
+                  {t.ak_select_any}
+                </SelectItem>
+                {subcategoryOptions.map((opt) => (
+                  <SelectItem key={opt.key} value={opt.key} className="min-h-11">
+                    {t[opt.labelKey]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field id="ak-city" label={t.ak_fld_city}>
+            <Select
+              value={cityKey || "__any__"}
+              onValueChange={(v) => setCityKey(v === "__any__" ? "" : (v as AkCityKey))}
+            >
+              <SelectTrigger id="ak-city" className={triggerClass}>
+                <SelectValue placeholder={t.ak_select_city_ph}>
+                  {cityKey ? t[AK_CITY_LABEL_KEY[cityKey]] : t.ak_select_any}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="max-h-[min(70vh,320px)]">
+                <SelectItem value="__any__" className="min-h-11">
+                  {t.ak_select_any}
+                </SelectItem>
+                {AK_CITY_KEYS.map((key) => (
+                  <SelectItem key={key} value={key} className="min-h-11">
+                    {t[AK_CITY_LABEL_KEY[key]]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field id="ak-format" label={t.ak_sec_format}>
+            <Select
+              value={formatKey || "__any__"}
+              onValueChange={(v) => setFormatKey(v === "__any__" ? "" : (v as AkFormatKey))}
+            >
+              <SelectTrigger id="ak-format" className={triggerClass}>
+                <SelectValue placeholder={t.ak_select_format_ph}>
+                  {formatKey ? t[AK_FORMAT_LABEL_KEY[formatKey]] : t.ak_select_any}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__any__" className="min-h-11">
+                  {t.ak_select_any}
+                </SelectItem>
+                {AK_FORMAT_KEYS.map((key) => (
+                  <SelectItem key={key} value={key} className="min-h-11">
+                    {t[AK_FORMAT_LABEL_KEY[key]]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field id="ak-level" label={t.ak_sec_level}>
+            <Select
+              value={skillLevel || "__any__"}
+              onValueChange={(v) =>
+                setSkillLevel(v === "__any__" ? "" : (v as AkSkillLevelKey))
+              }
+            >
+              <SelectTrigger id="ak-level" className={triggerClass}>
+                <SelectValue placeholder={t.ak_select_level_ph}>
+                  {skillLevel ? t[AK_SKILL_LEVEL_LABEL_KEY[skillLevel]] : t.ak_select_any}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__any__" className="min-h-11">
+                  {t.ak_select_any}
+                </SelectItem>
+                {AK_SKILL_LEVEL_KEYS.map((key) => (
+                  <SelectItem key={key} value={key} className="min-h-11">
+                    {t[AK_SKILL_LEVEL_LABEL_KEY[key]]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <div className="space-y-2 min-w-0">
+            <p className="text-sm font-bold text-gray-900">{t.ak_sec_price}</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <span className="text-sm text-gray-600">{t.ak_from}</span>
+                <Input
+                  id="ak-price-min"
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  value={priceMin}
+                  onChange={(e) => setPriceMin(e.target.value)}
+                  placeholder="0"
+                  className="min-h-12 h-12 w-full text-[16px] rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <span className="text-sm text-gray-600">{t.ak_to}</span>
+                <Input
+                  id="ak-price-max"
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  value={priceMax}
+                  onChange={(e) => setPriceMax(e.target.value)}
+                  placeholder="500"
+                  className="min-h-12 h-12 w-full text-[16px] rounded-xl"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Button
+          type="button"
+          onClick={handleSearch}
+          className="w-full min-h-[48px] h-12 text-base font-bold bg-blue-600 hover:bg-blue-700 touch-manipulation"
+        >
+          <Search size={18} className="mr-2 shrink-0" aria-hidden />
+          {t.ak_search_btn}
+        </Button>
+      </section>
     </div>
   );
 }

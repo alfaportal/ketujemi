@@ -44,7 +44,7 @@ export const AK_LANG_KEYS = [
   "frence",
   "italiane",
   "spanjolle",
-  "tjeter",
+  "shqipe_huaj",
 ] as const;
 export type AkLangKey = (typeof AK_LANG_KEYS)[number];
 
@@ -54,16 +54,16 @@ export const AK_LANG_LABEL_KEY: Record<AkLangKey, string> = {
   frence: "ak_lang_fr",
   italiane: "ak_lang_it",
   spanjolle: "ak_lang_es",
-  tjeter: "ak_lang_other",
+  shqipe_huaj: "ak_lang_sq_huaj",
 };
 
 export const AK_LANG_SEARCH: Record<AkLangKey, string> = {
-  angleze: "Angleze",
-  gjermane: "Gjermane",
-  frence: "Frënge",
-  italiane: "Italiane",
-  spanjolle: "Spanjolle",
-  tjeter: "Gjuhë",
+  angleze: "Gjuhë Angleze",
+  gjermane: "Gjuhë Gjermane",
+  frence: "Gjuhë Frënge",
+  italiane: "Gjuhë Italiane",
+  spanjolle: "Gjuhë Spanjolle",
+  shqipe_huaj: "Gjuhë Shqipe për të huaj",
 };
 
 export const AK_LEVEL_KEYS = [
@@ -97,17 +97,77 @@ export const AK_LEVEL_SEARCH: Record<AkLevelKey, string> = {
   femije: "Fëmijë",
 };
 
-export const AK_FORMAT_KEYS = ["fizikisht", "online"] as const;
+export const AK_FORMAT_KEYS = ["fizikisht", "online", "hibrid"] as const;
 export type AkFormatKey = (typeof AK_FORMAT_KEYS)[number];
 
 export const AK_FORMAT_LABEL_KEY: Record<AkFormatKey, string> = {
   fizikisht: "ak_fmt_inperson",
   online: "ak_fmt_online",
+  hibrid: "ak_fmt_hybrid",
 };
 
 export const AK_FORMAT_SEARCH: Record<AkFormatKey, string> = {
-  fizikisht: "Në klasë",
+  fizikisht: "Fizikisht",
   online: "Online",
+  hibrid: "Hibrid",
+};
+
+export const AK_CITY_KEYS = [
+  "prishtine",
+  "ferizaj",
+  "prizren",
+  "peje",
+  "mitrovice",
+  "gjakove",
+  "gjilan",
+  "tirane",
+  "shkup",
+  "podgorice",
+] as const;
+export type AkCityKey = (typeof AK_CITY_KEYS)[number];
+
+export const AK_CITY_LABEL_KEY: Record<AkCityKey, string> = {
+  prishtine: "ak_city_prishtine",
+  ferizaj: "ak_city_ferizaj",
+  prizren: "ak_city_prizren",
+  peje: "ak_city_peje",
+  mitrovice: "ak_city_mitrovice",
+  gjakove: "ak_city_gjakove",
+  gjilan: "ak_city_gjilan",
+  tirane: "ak_city_tirane",
+  shkup: "ak_city_shkup",
+  podgorice: "ak_city_podgorice",
+};
+
+export const AK_CITY_SEARCH: Record<AkCityKey, string> = {
+  prishtine: "Prishtinë",
+  ferizaj: "Ferizaj",
+  prizren: "Prizren",
+  peje: "Pejë",
+  mitrovice: "Mitrovicë",
+  gjakove: "Gjakovë",
+  gjilan: "Gjilan",
+  tirane: "Tiranë",
+  shkup: "Shkup",
+  podgorice: "Podgoricë",
+};
+
+/** Course difficulty — search form row 3. */
+export const AK_SKILL_LEVEL_KEYS = ["fillestar", "mesatar", "avancuar", "te_gjitha"] as const;
+export type AkSkillLevelKey = (typeof AK_SKILL_LEVEL_KEYS)[number];
+
+export const AK_SKILL_LEVEL_LABEL_KEY: Record<AkSkillLevelKey, string> = {
+  fillestar: "ak_skill_beginner",
+  mesatar: "ak_skill_intermediate",
+  avancuar: "ak_skill_advanced",
+  te_gjitha: "ak_skill_all",
+};
+
+export const AK_SKILL_LEVEL_SEARCH: Record<AkSkillLevelKey, string> = {
+  fillestar: "Fillestar",
+  mesatar: "Mesatar",
+  avancuar: "I Avancuar",
+  te_gjitha: "",
 };
 
 export const AK_SUBJECT_KEYS = [
@@ -135,7 +195,7 @@ export const AK_SUBJECT_SEARCH: Record<AkSubjectKey, string> = {
   kimi: "Kimi",
   biologji: "Biologji",
   gjuhe_shqipe: "Gjuhë Shqipe",
-  ndihme_filloriste: "Filloristë",
+  ndihme_filloriste: "Ndihmë Filloristë",
 };
 
 export const AK_CYCLE_KEYS = [
@@ -154,8 +214,8 @@ export const AK_CYCLE_LABEL_KEY: Record<AkCycleKey, string> = {
 };
 
 export const AK_CYCLE_SEARCH: Record<AkCycleKey, string> = {
-  fillore: "Shkollë Fillore",
-  mesme: "Shkollë e Mesme",
+  fillore: "Fillore",
+  mesme: "Mesme",
   fakultet: "Fakultet",
   mature: "Maturë",
 };
@@ -182,7 +242,7 @@ export const AK_PROF_DIR_SEARCH: Record<AkProfDirKey, string> = {
   marketing: "Marketing Digjital",
   dizajn: "Dizajn Grafik",
   bukuri: "Kurse Bukurie",
-  fotografi: "Fotografi",
+  fotografi: "Fotografi Video",
 };
 
 export const AK_IT_DIR_KEYS = ["programim", "qa", "rrjeta", "uiux"] as const;
@@ -196,11 +256,77 @@ export const AK_IT_DIR_LABEL_KEY: Record<AkItDirKey, string> = {
 };
 
 export const AK_IT_DIR_SEARCH: Record<AkItDirKey, string> = {
-  programim: "Programim",
+  programim: "Programim Web",
   qa: "QA Testing",
-  rrjeta: "Cyber Security",
+  rrjeta: "Rrjeta Cyber Security",
   uiux: "UI/UX",
 };
+
+export type AkSubcategoryKey =
+  | AkLangKey
+  | AkSubjectKey
+  | AkCycleKey
+  | AkProfDirKey
+  | AkItDirKey;
+
+export type AkSubcategoryOption = {
+  key: AkSubcategoryKey;
+  labelKey: string;
+  search: string;
+};
+
+function langOptions(): AkSubcategoryOption[] {
+  return AK_LANG_KEYS.map((key) => ({
+    key,
+    labelKey: AK_LANG_LABEL_KEY[key],
+    search: AK_LANG_SEARCH[key],
+  }));
+}
+
+function mesimeOptions(): AkSubcategoryOption[] {
+  const subjects = AK_SUBJECT_KEYS.map((key) => ({
+    key: key as AkSubcategoryKey,
+    labelKey: AK_SUBJECT_LABEL_KEY[key],
+    search: AK_SUBJECT_SEARCH[key],
+  }));
+  const cycles = AK_CYCLE_KEYS.map((key) => ({
+    key: key as AkSubcategoryKey,
+    labelKey: AK_CYCLE_LABEL_KEY[key],
+    search: AK_CYCLE_SEARCH[key],
+  }));
+  return [...subjects, ...cycles];
+}
+
+function profOptions(): AkSubcategoryOption[] {
+  return AK_PROF_DIR_KEYS.map((key) => ({
+    key,
+    labelKey: AK_PROF_DIR_LABEL_KEY[key],
+    search: AK_PROF_DIR_SEARCH[key],
+  }));
+}
+
+function itOptions(): AkSubcategoryOption[] {
+  return AK_IT_DIR_KEYS.map((key) => ({
+    key,
+    labelKey: AK_IT_DIR_LABEL_KEY[key],
+    search: AK_IT_DIR_SEARCH[key],
+  }));
+}
+
+export const AK_SUBCATEGORIES_BY_TYPE: Record<AkTypeKey, readonly AkSubcategoryOption[]> = {
+  gjuhe_huaja: langOptions(),
+  mesime_private: mesimeOptions(),
+  kurse_prof: profOptions(),
+  trajnime_it: itOptions(),
+};
+
+export function getAkSubcategorySearch(
+  typeKey: AkTypeKey,
+  subKey: AkSubcategoryKey,
+): string | undefined {
+  const row = AK_SUBCATEGORIES_BY_TYPE[typeKey].find((o) => o.key === subKey);
+  return row?.search;
+}
 
 export type ArsimKurseCategoryRow = {
   id: number;
