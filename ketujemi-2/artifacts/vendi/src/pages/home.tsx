@@ -1,21 +1,14 @@
-﻿import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import {
   Zap, Mail, Smartphone, Tag,
-  ChevronRight, Globe, SlidersHorizontal, Search, Menu,
+  ChevronRight, Globe, SlidersHorizontal, Search,
 } from "lucide-react";
 import * as Icons from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { useMarket, LOCATIONS } from "@/lib/market-context";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
+import { SiteLogo } from "@/components/site-logo";
 import { useGetCategories } from "@workspace/api-client-react";
 import { translateCategory, type MarketCode } from "@/lib/category-translations";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
@@ -35,11 +28,11 @@ const CAT_PHOTOS: Record<string, string> = {
   "TV":        "https://images.unsplash.com/photo-1593344484962-796055d4a3a4?w=800&q=85",
   "Mobilje":   "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=85",
   "Rroba":     "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800&q=85",
-  "Fëmijë":   "https://images.pexels.com/photos/8924170/pexels-photo-8924170.jpeg?auto=compress&cs=tinysrgb&w=800",
-  "Punë":   "https://images.pexels.com/photos/15635241/pexels-photo-15635241.jpeg?auto=compress&cs=tinysrgb&w=800",
-  "Bujqësi":   "https://images.pexels.com/photos/2933243/pexels-photo-2933243.jpeg?auto=compress&cs=tinysrgb&w=800",
-  "Muzikë":   "https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=800",
-  "Kafshë":   "https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=800",
+  "F?mij?":   "https://images.pexels.com/photos/8924170/pexels-photo-8924170.jpeg?auto=compress&cs=tinysrgb&w=800",
+  "Pun?":   "https://images.pexels.com/photos/15635241/pexels-photo-15635241.jpeg?auto=compress&cs=tinysrgb&w=800",
+  "Bujq?si":   "https://images.pexels.com/photos/2933243/pexels-photo-2933243.jpeg?auto=compress&cs=tinysrgb&w=800",
+  "Muzik?":   "https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=800",
+  "Kafsh?":   "https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=800",
   "Sport":     "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=85",
   "Arsim":     "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&q=85",
 };
@@ -140,55 +133,12 @@ export default function HomePage() {
       {/* -- Navbar -- */}
       <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-3 py-3 min-w-0 sm:h-16 sm:py-0">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label={t.nav_menuAria}
-                      className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 md:hidden"
-                    >
-                      <Menu className="h-6 w-6" aria-hidden />
-                    </button>
-                  </SheetTrigger>
-                  <SheetContent side="left" className="w-[min(100vw-1.5rem,20rem)] sm:max-w-sm">
-                    <SheetHeader className="text-left">
-                      <SheetTitle>{t.nav_menuTitle}</SheetTitle>
-                    </SheetHeader>
-                    <nav className="mt-6 flex flex-col gap-1">
-                      {(
-                        [
-                          ["/", t.nav_home],
-                          ["/listings", t.title],
-                          ["/#categories", t.categories],
-                          ["/faq", t.faq],
-                          ["/contact", t.contact],
-                          ["/terms", t.terms],
-                          ["/privacy", t.privacy],
-                        ] as const
-                      ).map(([href, label]) => (
-                        <SheetClose asChild key={href}>
-                          <Link
-                            href={href}
-                            className="flex items-center rounded-xl px-3 py-3 text-base font-semibold text-gray-800 hover:bg-gray-100 min-h-12 touch-manipulation"
-                          >
-                            {label}
-                          </Link>
-                        </SheetClose>
-                      ))}
-                    </nav>
-                  </SheetContent>
-                </Sheet>
-                <div className="flex items-center gap-1 min-w-0">
-                  <Link href="/" className="flex items-center select-none min-w-0">
-                    <span className="text-xl sm:text-2xl font-black text-gray-900 truncate">KetuJemi</span>
-                    <span className="text-xl sm:text-2xl font-black text-blue-500 shrink-0">.com</span>
-                  </Link>
-                  <LanguageSelector />
-                </div>
+          <div className="flex items-center justify-between gap-2 py-3 min-w-0 sm:h-16 sm:py-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <SiteLogo />
+              <LanguageSelector />
             </div>
-            <SiteHeaderToolbar />
+            <SiteHeaderToolbar className="shrink-0" />
           </div>
         </div>
       </nav>
@@ -200,7 +150,7 @@ export default function HomePage() {
         </div>
         <div className="pointer-events-none absolute inset-0 z-[1] bg-black/15" aria-hidden />
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-start px-4 pt-[30px] text-center sm:px-6">
-          <h1 className="w-full max-w-xl text-[1.2rem] leading-[1.2] font-black text-white tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] sm:text-5xl lg:text-6xl">
+          <h1 className="w-full max-w-xl text-[1.2rem] leading-[1.2] font-black tracking-tight text-[#1A6FD4] drop-shadow-[0_1px_6px_rgba(255,255,255,0.9)] sm:text-5xl lg:text-6xl">
             {t.hero}
           </h1>
           <p className="mt-1.5 w-full max-w-xl text-sm leading-snug font-medium text-white/95 drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] sm:mt-2 sm:text-xl sm:text-blue-100">
@@ -218,7 +168,7 @@ export default function HomePage() {
       <section className="bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
 
-          {/* Search row � always visible at top */}
+          {/* Search row ? always visible at top */}
           <form onSubmit={(e) => { e.preventDefault(); applyFilters(); }} className="flex flex-col gap-2 mb-3 sm:flex-row sm:flex-nowrap sm:gap-2">
             <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -411,7 +361,7 @@ export default function HomePage() {
             {t.markets}
           </h3>
           <p className="mt-1 text-xs sm:text-sm font-medium text-blue-100 leading-snug">
-            Kosovë · Shqipëri · Maqedoni · Mal i Zi · Gjermani · Zvicër · Austri · Francë · Itali · Angli · SHBA
+            Kosov? ? Shqip?ri ? Maqedoni ? Mal i Zi ? Gjermani ? Zvic?r ? Austri ? Franc? ? Itali ? Angli ? SHBA
           </p>
         </div>
       </section>

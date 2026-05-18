@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { ArrowLeft } from "lucide-react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
+import { SiteLogo } from "@/components/site-logo";
 import { useMarket } from "@/lib/market-context";
 
 type StaticPageShellProps = {
@@ -23,10 +24,7 @@ export function StaticPageShell({ title, children }: StaticPageShellProps) {
             <ArrowLeft size={18} aria-hidden />
             {t.nav_home}
           </Link>
-          <Link href="/" className="flex items-center select-none shrink-0">
-            <span className="text-lg font-black text-gray-900">KetuJemi</span>
-            <span className="text-lg font-black text-blue-500">.com</span>
-          </Link>
+          <SiteLogo />
           <SiteHeaderToolbar />
         </div>
       </header>

@@ -2,23 +2,15 @@
 import { useLocation, Link } from "wouter";
 import { useGetListings, useGetCategories } from "@workspace/api-client-react";
 import {
-  Search, SlidersHorizontal, X, ChevronLeft, ChevronRight, Menu,
+  Search, SlidersHorizontal, X, ChevronLeft, ChevronRight,
 } from "lucide-react";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMarket, MARKETS, LOCATIONS } from "@/lib/market-context";
 import SharedListingCard from "@/components/listing-card";
 import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
-
+import { SiteLogo } from "@/components/site-logo";
 import { LanguageSelector } from "@/components/language-selector";
 
 // â”€â”€â”€ Skeleton Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -100,59 +92,12 @@ export default function Listings() {
       <div className="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3 min-w-0">
-              <div className="flex items-center gap-2 min-w-0">
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label={t.nav_menuAria}
-                      className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-gray-800 hover:bg-white md:hidden"
-                    >
-                      <Menu className="h-6 w-6" aria-hidden />
-                    </button>
-                  </SheetTrigger>
-                  <SheetContent side="left" className="w-[min(100vw-1.5rem,20rem)] sm:max-w-sm">
-                    <SheetHeader className="text-left">
-                      <SheetTitle>{t.nav_menuTitle}</SheetTitle>
-                    </SheetHeader>
-                    <nav className="mt-6 flex flex-col gap-1">
-                      {(
-                        [
-                          ["/", t.nav_home],
-                          ["/listings", t.title],
-                          ["/#categories", t.categories],
-                          ["/faq", t.faq],
-                          ["/contact", t.contact],
-                          ["/terms", t.terms],
-                          ["/privacy", t.privacy],
-                        ] as const
-                      ).map(([href, label]) => (
-                        <SheetClose asChild key={href}>
-                          <Link
-                            href={href}
-                            className="flex items-center rounded-xl px-3 py-3 text-base font-semibold text-gray-800 hover:bg-muted min-h-12 touch-manipulation"
-                          >
-                            {label}
-                          </Link>
-                        </SheetClose>
-                      ))}
-                    </nav>
-                  </SheetContent>
-                </Sheet>
-                <div className="flex items-center gap-1 min-w-0">
-                  <Link
-                    href="/"
-                    data-testid="link-logo"
-                    className="flex flex-col sm:flex-row sm:gap-0.5 select-none shrink-0 min-w-0"
-                  >
-                    <span className="text-lg sm:text-xl font-black text-gray-900 leading-tight">KetuJemi</span>
-                    <span className="text-lg sm:text-xl font-black text-blue-500 leading-tight shrink-0">.com</span>
-                  </Link>
-                  <LanguageSelector />
-                </div>
+            <div className="flex items-center justify-between gap-2 min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                <SiteLogo />
+                <LanguageSelector />
               </div>
-              <SiteHeaderToolbar />
+              <SiteHeaderToolbar className="shrink-0" />
             </div>
             <form onSubmit={applyFilters} className="flex flex-col gap-2 w-full md:flex-row md:items-center md:flex-nowrap md:gap-2">
               <div className="relative flex-1 min-w-0">

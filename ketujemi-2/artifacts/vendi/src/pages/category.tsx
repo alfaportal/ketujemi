@@ -17,7 +17,6 @@ import {
   Tag,
   Smartphone,
   Laptop,
-  Menu,
 } from "lucide-react";
 import * as Icons from "lucide-react";
 import { useMarket } from "@/lib/market-context";
@@ -26,14 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { translateCategory } from "@/lib/category-translations";
 import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { SiteLogo } from "@/components/site-logo";
 import { getVeturaBrandLeafCategoryIds } from "@/lib/vetura-search-helpers";
 import { VeturaSearchPanel } from "@/components/vetura-search-panel";
 import { VeturaHeroSlideshow } from "@/components/vetura-hero-slideshow";
@@ -1175,48 +1167,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
       <div className="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 min-w-0">
           <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-none">
-            <Sheet>
-              <SheetTrigger asChild>
-                <button
-                  type="button"
-                  aria-label="Hap menyunë"
-                  className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-gray-800 hover:bg-white md:hidden"
-                >
-                  <Menu className="h-6 w-6" aria-hidden />
-                </button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[min(100vw-1.5rem,20rem)] sm:max-w-sm">
-                <SheetHeader className="text-left">
-                  <SheetTitle>Menyja</SheetTitle>
-                </SheetHeader>
-                <nav className="mt-6 flex flex-col gap-1">
-                  {(
-                    [
-                      ["/", t.nav_home],
-                      ["/listings", t.title],
-                      ["/#categories", t.categories],
-                      ["/faq", t.faq],
-                      ["/contact", t.contact],
-                      ["/terms", t.terms],
-                      ["/privacy", t.privacy],
-                    ] as const
-                  ).map(([href, label]) => (
-                    <SheetClose asChild key={href}>
-                      <Link
-                        href={href}
-                        className="flex items-center rounded-xl px-3 py-3 text-base font-semibold text-gray-800 hover:bg-muted min-h-12 touch-manipulation"
-                      >
-                        {label}
-                      </Link>
-                    </SheetClose>
-                  ))}
-                </nav>
-              </SheetContent>
-            </Sheet>
-            <Link href="/" className="flex items-center select-none min-w-0">
-              <span className="text-lg sm:text-xl font-black text-gray-900 truncate">KetuJemi</span>
-              <span className="text-lg sm:text-xl font-black text-blue-500 shrink-0">.com</span>
-            </Link>
+            <SiteLogo />
             <Link
               href="/listings"
               className="hidden md:inline-flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 min-h-[44px] whitespace-nowrap"
