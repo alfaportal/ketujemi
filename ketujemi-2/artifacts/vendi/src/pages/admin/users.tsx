@@ -1,21 +1,48 @@
 import { useEffect, useState } from "react";
-import { getAdminUsers, getUserListings, type AdminUser, type AdminListing } from "@/lib/admin-api";
-import { Search, ChevronDown, ChevronUp, User, Phone, FileText, Clock } from "lucide-react";
+import {
+  getAdminUsers,
+  getRegisteredUsers,
+  getUserListings,
+  banRegisteredUser,
+  unbanRegisteredUser,
+  deleteRegisteredUser,
+  banSellerPhone,
+  unbanSellerPhone,
+  type AdminSeller,
+  type RegisteredUser,
+  type AdminListing,
+} from "@/lib/admin-api";
+import { Search, ChevronDown, ChevronUp, User, Phone, FileText, Clock, Ban, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useMarket } from "@/lib/market-context";
 import { dateFnsLocale, fillPlaceholders } from "@/lib/app-extra-i18n";
 
+type Tab = "registered" | "sellers";
+
 export default function AdminUsers() {
   const { t, market } = useMarket();
-  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [tab, setTab] = useState<Tab>("registered");
+  const [sellers, setSellers] = useState<AdminSeller[]>([]);
+  const [registered, setRegistered] = useState<RegisteredUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [userListings, setUserListings] = useState<Record<string, AdminListing[]>>({});
   const [listingsLoading, setListingsLoading] = useState<string | null>(null);
 
+  const reload = async () => {
+    setLoading(true);
+    try {
+      const [s, r] = await Promise.all([getAdminUsers(), getRegisteredUsers()]);
+      setSellers(s);
+      setRegistered(r);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    getAdminUsers().then(setUsers).finally(() => setLoading(false));
+    void reload();
   }, []);
 
   const toggleExpand = async (phone: string) => {
@@ -35,16 +62,48 @@ export default function AdminUsers() {
     }
   };
 
-  const filtered = users.filter((u) => {
-    const q = search.toLowerCase();
-    return u.seller_name.toLowerCase().includes(q) || u.seller_phone.includes(q);
-  });
+  const q = search.toLowerCase();
+  const filteredRegistered = registered.filter(
+    (u) =>
+      (u.display_name ?? "").toLowerCase().includes(q) ||
+      (u.email ?? "").toLowerCase().includes(q) ||
+      (u.phone_e164_digits ?? "").includes(q),
+  );
+  const filteredSellers = sellers.filter(
+    (u) => u.seller_name.toLowerCase().includes(q) || u.seller_phone.includes(q),
+  );
 
   return (
     <div className="space-y-4">
       <div>
         <h2 className="text-2xl font-black text-gray-900">{t.adm_users_head}</h2>
-        <p className="text-sm text-gray-400">{fillPlaceholders(t.adm_users_unique, { n: users.length.toLocaleString() })}</p>
+        <p className="text-sm text-gray-400">
+          {fillPlaceholders(t.adm_users_counts, {
+            reg: String(registered.length),
+            sellers: String(sellers.length),
+          })}
+        </p>
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => setTab("registered")}
+          className={`px-4 py-2 rounded-xl text-sm font-bold ${
+            tab === "registered" ? "bg-blue-600 text-white" : "bg-white border border-gray-200 text-gray-600"
+          }`}
+        >
+          {t.adm_users_tab_reg}
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("sellers")}
+          className={`px-4 py-2 rounded-xl text-sm font-bold ${
+            tab === "sellers" ? "bg-blue-600 text-white" : "bg-white border border-gray-200 text-gray-600"
+          }`}
+        >
+          {t.adm_users_tab_sellers}
+        </button>
       </div>
 
       <div className="relative">
@@ -60,22 +119,68 @@ export default function AdminUsers() {
 
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         {loading ? (
-          <div className="divide-y divide-gray-50">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="px-5 py-4 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-gray-100 animate-pulse flex-shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-100 rounded animate-pulse w-1/3" />
-                  <div className="h-3 bg-gray-100 rounded animate-pulse w-1/4" />
+          <div className="px-5 py-16 text-center text-gray-400">{t.adm_users_loading}</div>
+        ) : tab === "registered" ? (
+          filteredRegistered.length === 0 ? (
+            <div className="px-5 py-16 text-center text-gray-400">{t.adm_users_none}</div>
+          ) : (
+            <div className="divide-y divide-gray-50">
+              {filteredRegistered.map((u) => (
+                <div key={u.id} className="px-5 py-4 flex flex-wrap items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center flex-shrink-0">
+                    <User size={18} className="text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-gray-800">
+                      {u.display_name ?? t.adm_users_anon}
+                      {u.banned_at ? (
+                        <span className="ml-2 text-xs font-bold text-red-600 uppercase">{t.adm_users_banned}</span>
+                      ) : null}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      {u.email ?? "—"} · {u.phone_e164_digits ?? u.contact_phone ?? "—"} · {u.listing_count}{" "}
+                      {t.adm_users_lc}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {u.banned_at ? (
+                      <button
+                        type="button"
+                        onClick={() => unbanRegisteredUser(u.id).then(reload)}
+                        className="text-xs font-bold text-green-700 px-3 py-1.5 rounded-lg bg-green-50"
+                      >
+                        {t.adm_users_unban}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => banRegisteredUser(u.id).then(reload)}
+                        className="text-xs font-bold text-red-700 px-3 py-1.5 rounded-lg bg-red-50 flex items-center gap-1"
+                      >
+                        <Ban size={12} /> {t.adm_users_ban}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirm(t.adm_users_delConfirm)) {
+                          deleteRegisteredUser(u.id).then(reload);
+                        }
+                      }}
+                      className="text-xs font-bold text-gray-600 px-3 py-1.5 rounded-lg bg-gray-100 flex items-center gap-1"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
+              ))}
+            </div>
+          )
+        ) : filteredSellers.length === 0 ? (
           <div className="px-5 py-16 text-center text-gray-400">{t.adm_users_none}</div>
         ) : (
           <div className="divide-y divide-gray-50">
-            {filtered.map((u) => (
+            {filteredSellers.map((u) => (
               <div key={u.seller_phone}>
                 <button
                   type="button"
@@ -92,17 +197,17 @@ export default function AdminUsers() {
                       <span>{u.seller_phone}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 flex-shrink-0">
-                    <div className="text-right hidden sm:block">
-                      <div className="text-sm font-bold text-gray-700">{u.listing_count}</div>
-                      <div className="text-xs text-gray-400">{t.adm_users_lc}</div>
-                    </div>
-                    <div className="text-right hidden md:block">
-                      <div className="text-xs text-gray-400">{t.adm_users_last}</div>
-                      <div className="text-xs font-medium text-gray-600">
-                        {formatDistanceToNow(new Date(u.last_active), { addSuffix: true, locale: dateFnsLocale(market.code) })}
-                      </div>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        banSellerPhone(u.seller_phone).then(reload);
+                      }}
+                      className="text-xs font-bold text-red-700 px-2 py-1 rounded-lg bg-red-50"
+                    >
+                      {t.adm_users_ban}
+                    </button>
                     {expanded === u.seller_phone ? (
                       <ChevronUp size={16} className="text-gray-400" />
                     ) : (
@@ -110,38 +215,27 @@ export default function AdminUsers() {
                     )}
                   </div>
                 </button>
-
                 {expanded === u.seller_phone && (
                   <div className="px-5 pb-4 bg-blue-50/30">
                     {listingsLoading === u.seller_phone ? (
                       <div className="text-center py-6 text-sm text-gray-400">{t.adm_users_loading_listings}</div>
                     ) : (
                       <div className="space-y-2 pt-2">
-                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">
-                          {fillPlaceholders(t.adm_users_for, { name: u.seller_name })}
-                        </div>
                         {(userListings[u.seller_phone] ?? []).map((l) => (
                           <div key={l.id} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100">
-                            {l.image_url ? (
-                              <img src={l.image_url.split(",")[0]} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-                            ) : (
-                              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                <FileText size={14} className="text-gray-300" />
-                              </div>
-                            )}
                             <div className="flex-1 min-w-0">
                               <div className="text-sm font-semibold text-gray-800 truncate">{l.title}</div>
                               <div className="text-xs text-gray-400">{l.location} · €{l.price.toLocaleString()}</div>
                             </div>
-                            <div className="flex items-center gap-1 text-xs text-gray-400 flex-shrink-0">
+                            <div className="flex items-center gap-1 text-xs text-gray-400">
                               <Clock size={11} />
-                              {formatDistanceToNow(new Date(l.created_at), { addSuffix: true, locale: dateFnsLocale(market.code) })}
+                              {formatDistanceToNow(new Date(l.created_at), {
+                                addSuffix: true,
+                                locale: dateFnsLocale(market.code),
+                              })}
                             </div>
                           </div>
                         ))}
-                        {(userListings[u.seller_phone] ?? []).length === 0 && (
-                          <div className="text-center py-4 text-sm text-gray-400">{t.adm_users_noneL}</div>
-                        )}
                       </div>
                     )}
                   </div>
@@ -154,3 +248,4 @@ export default function AdminUsers() {
     </div>
   );
 }
+

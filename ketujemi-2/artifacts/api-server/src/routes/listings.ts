@@ -12,21 +12,35 @@ import {
 } from "@workspace/api-zod";
 import { getSessionUser } from "../lib/session-user";
 import { userOwnsListing } from "../lib/listing-ownership";
-import { maskSellerPhone, maskEmailInListingDescription } from "../lib/contact-mask";
+import { sellerFirstName, maskEmailInListingDescription } from "../lib/contact-mask";
+import { assertAccountActive } from "../lib/user-ban";
+import {
+  assertFreeListingQuota,
+  countUserActiveListingsInCategoryRoot,
+} from "../lib/category-quota";
 import type { User } from "@workspace/db";
 
 const router = Router();
 
-function withSellerContactForViewer<T extends { seller_phone: string; description: string }>(
-  listing: T,
-  viewer: User | null,
-): T {
-  if (viewer) return listing;
+function withSellerContactForViewer<
+  T extends { seller_phone: string; seller_name: string; description: string },
+>(listing: T, viewer: User | null): T {
+  const description = viewer
+    ? listing.description
+    : maskEmailInListingDescription(listing.description);
+
   return {
     ...listing,
-    seller_phone: maskSellerPhone(listing.seller_phone),
-    description: maskEmailInListingDescription(listing.description),
+    seller_name: sellerFirstName(listing.seller_name),
+    seller_phone: viewer ? listing.seller_phone : "",
+    description,
   };
+}
+
+function applyViewerContact<
+  T extends { seller_phone: string; seller_name: string; description: string },
+>(listing: T, viewer: User | null): T {
+  return withSellerContactForViewer(listing, viewer);
 }
 
 // ─── Helper: 30 ditë nga tani ─────────────────────────────────────────────────
@@ -277,7 +291,7 @@ router.get("/listings", async (req, res) => {
   const catMap = new Map(cats.map((c) => [c.id, c.name]));
 
   const listings = rows.map((l) =>
-    withSellerContactForViewer(formatListing(l, catMap.get(l.category_id) ?? null), viewer),
+    applyViewerContact(formatListing(l, catMap.get(l.category_id) ?? null), viewer),
   );
   res.json({ listings, total: totalResult[0]?.total ?? 0, page, limit });
 });
@@ -296,6 +310,28 @@ router.post("/listings", async (req, res) => {
     return;
   }
 
+  try {
+    await assertAccountActive(viewer, parsed.data.seller_phone);
+  } catch {
+    res.status(403).json({ error: "Account suspended" });
+    return;
+  }
+
+  try {
+    await assertFreeListingQuota(viewer, parsed.data.category_id);
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message === "FREE_QUOTA_EXCEEDED") {
+      const e = err as Error & { used: number; limit: number };
+      res.status(403).json({
+        error: "FREE_QUOTA_EXCEEDED",
+        used: e.used,
+        limit: e.limit,
+      });
+      return;
+    }
+    throw err;
+  }
+
   const [row] = await db
     .insert(listingsTable)
     .values({
@@ -304,7 +340,7 @@ router.post("/listings", async (req, res) => {
       price: String(parsed.data.price),
       category_id: parsed.data.category_id,
       location: parsed.data.location,
-      seller_name: parsed.data.seller_name,
+      seller_name: sellerFirstName(parsed.data.seller_name),
       seller_phone: parsed.data.seller_phone,
       condition: parsed.data.condition,
       image_url: parsed.data.image_url ?? null,
@@ -336,7 +372,7 @@ router.post("/listings", async (req, res) => {
     .where(eq(categoriesTable.id, row.category_id))
     .limit(1);
 
-  res.status(201).json(withSellerContactForViewer(formatListing(row, cat[0]?.name ?? null), viewer));
+  res.status(201).json(applyViewerContact(formatListing(row, cat[0]?.name ?? null), viewer));
 });
 
 // ─── GET /listings/featured ───────────────────────────────────────────────────
@@ -352,7 +388,7 @@ router.get("/listings/featured", async (req, res) => {
   const cats = await db.select().from(categoriesTable);
   const catMap = new Map(cats.map((c) => [c.id, c.name]));
   res.json(
-    rows.map((l) => withSellerContactForViewer(formatListing(l, catMap.get(l.category_id) ?? null), viewer)),
+    rows.map((l) => applyViewerContact(formatListing(l, catMap.get(l.category_id) ?? null), viewer)),
   );
 });
 
@@ -369,7 +405,7 @@ router.get("/listings/recent", async (req, res) => {
   const cats = await db.select().from(categoriesTable);
   const catMap = new Map(cats.map((c) => [c.id, c.name]));
   res.json(
-    rows.map((l) => withSellerContactForViewer(formatListing(l, catMap.get(l.category_id) ?? null), viewer)),
+    rows.map((l) => applyViewerContact(formatListing(l, catMap.get(l.category_id) ?? null), viewer)),
   );
 });
 
@@ -410,6 +446,33 @@ router.get("/listings/stats", async (req, res) => {
   });
 });
 
+// ─── GET /listings/free-quota ─────────────────────────────────────────────────
+router.get("/listings/free-quota", async (req, res) => {
+  const viewer = await getSessionUser(req);
+  if (!viewer) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+
+  const categoryId = Number(req.query.category_id);
+  if (!Number.isFinite(categoryId) || categoryId < 1) {
+    res.status(400).json({ error: "category_id required" });
+    return;
+  }
+
+  const { rootId, used, limit } = await countUserActiveListingsInCategoryRoot(
+    viewer,
+    categoryId,
+  );
+  res.json({
+    root_category_id: rootId,
+    used,
+    limit,
+    remaining: Math.max(0, limit - used),
+    allowed: used < limit,
+  });
+});
+
 // ─── GET /listings/:id ────────────────────────────────────────────────────────
 router.get("/listings/:id", async (req, res) => {
   const viewer = await getSessionUser(req);
@@ -442,12 +505,8 @@ router.get("/listings/:id", async (req, res) => {
     .where(eq(categoriesTable.id, row.category_id))
     .limit(1);
 
-  res.json(
-    withSellerContactForViewer(
-      formatListing({ ...row, views: row.views + 1 }, cat[0]?.name ?? null),
-      viewer,
-    ),
-  );
+  const formatted = formatListing({ ...row, views: row.views + 1 }, cat[0]?.name ?? null);
+  res.json(applyViewerContact(formatted, viewer));
 });
 
 // ─── PATCH /listings/:id ──────────────────────────────────────────────────────
@@ -507,7 +566,7 @@ router.patch("/listings/:id", async (req, res) => {
     .where(eq(categoriesTable.id, updated.category_id))
     .limit(1);
 
-  res.json(withSellerContactForViewer(formatListing(updated, cat[0]?.name ?? null), viewer));
+  res.json(applyViewerContact(formatListing(updated, cat[0]?.name ?? null), viewer));
 });
 
 // ─── DELETE /listings/:id ─────────────────────────────────────────────────────

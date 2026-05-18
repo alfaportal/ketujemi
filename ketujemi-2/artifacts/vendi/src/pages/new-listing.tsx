@@ -6,6 +6,7 @@ import { z } from "zod";
 import {
   useCreateListing, useGetCategories,
   getGetListingsQueryKey, getGetRecentListingsQueryKey,
+  ApiError,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -175,7 +176,16 @@ export default function NewListing() {
 
   const parentCatId    = useWatch({ control: form.control, name: "parent_category_id" });
   const bodyCatId      = useWatch({ control: form.control, name: "category_id" });
+  const brandCatId     = useWatch({ control: form.control, name: "brand_category_id" });
   const priceAgreement = useWatch({ control: form.control, name: "price_agreement" });
+  const [freeQuota, setFreeQuota] = useState<{
+    remaining: number;
+    limit: number;
+    allowed: boolean;
+  } | null>(null);
+
+  const effectiveCategoryId =
+    Number(brandCatId) || Number(bodyCatId) || Number(parentCatId);
 
   const subCats   = (allCategories ?? []).filter((c: any) => c.parent_id === Number(parentCatId));
   const brandCats = (allCategories ?? []).filter((c: any) => c.parent_id === Number(bodyCatId));
@@ -203,6 +213,32 @@ export default function NewListing() {
     if (seller_phone) form.setValue("seller_phone", seller_phone);
   }, [user, form]);
 
+  useEffect(() => {
+    if (!user || effectiveCategoryId < 1) {
+      setFreeQuota(null);
+      return;
+    }
+    let cancelled = false;
+    void fetch(`/api/listings/free-quota?category_id=${effectiveCategoryId}`, {
+      credentials: "include",
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (cancelled || !j) return;
+        setFreeQuota({
+          remaining: j.remaining ?? 0,
+          limit: j.limit ?? 0,
+          allowed: j.allowed ?? true,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setFreeQuota(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, effectiveCategoryId]);
+
   const createMutation = useCreateListing({
     mutation: {
       onSuccess: (listing) => {
@@ -211,7 +247,15 @@ export default function NewListing() {
         toast({ title: t.successPost });
         setLocation(`/listings/${listing.id}`);
       },
-      onError: () => {
+      onError: (err: unknown) => {
+        const data =
+          err instanceof ApiError
+            ? (err.data as { error?: string } | null)
+            : null;
+        if (data?.error === "FREE_QUOTA_EXCEEDED") {
+          toast({ title: t.postQuotaExceeded, variant: "destructive" });
+          return;
+        }
         toast({ title: t.postError, variant: "destructive" });
       },
     },
@@ -310,6 +354,10 @@ export default function NewListing() {
   };
 
   const onSubmit = (data: FormData) => {
+    if (freeQuota && !freeQuota.allowed) {
+      toast({ title: t.postQuotaExceeded, variant: "destructive" });
+      return;
+    }
     if (imageUrls.length === 0) {
       toast({ title: t.addAtLeastPhoto, variant: "destructive" });
       return;
@@ -391,6 +439,19 @@ export default function NewListing() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
+        {freeQuota != null && effectiveCategoryId > 0 ? (
+          <p
+            className={`rounded-xl border px-4 py-3 text-sm font-medium ${
+              freeQuota.allowed
+                ? "border-blue-100 bg-blue-50 text-blue-800"
+                : "border-amber-200 bg-amber-50 text-amber-900"
+            }`}
+          >
+            {freeQuota.allowed
+              ? t.postQuotaRemaining.replace("{n}", String(freeQuota.remaining))
+              : t.postQuotaExceeded}
+          </p>
+        ) : null}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 
@@ -1070,7 +1131,7 @@ export default function NewListing() {
                   type="submit"
                   size="lg"
                   className="w-full min-h-14 text-base font-bold rounded-xl bg-blue-600 hover:bg-blue-700"
-                  disabled={createMutation.isPending}
+                  disabled={createMutation.isPending || (freeQuota != null && !freeQuota.allowed)}
                   data-testid="button-submit-listing"
                 >
                   {createMutation.isPending ? t.posting : t.submitListing}

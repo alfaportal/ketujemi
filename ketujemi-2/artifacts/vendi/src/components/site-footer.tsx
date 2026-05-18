@@ -28,9 +28,6 @@ export function SiteFooter() {
           </nav>
           <div className="flex items-center gap-3 text-sm text-gray-400">
             <span>© 2025 KetuJemi.com</span>
-            <Link href="/admin" className="text-gray-300 hover:text-gray-500 transition-colors text-xs">
-              admin
-            </Link>
           </div>
         </div>
       </div>

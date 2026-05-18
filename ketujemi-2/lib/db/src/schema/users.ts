@@ -13,6 +13,8 @@ export const usersTable = pgTable("users", {
   city: text("city"),
   about_me: text("about_me"),
   email_verified_at: timestamp("email_verified_at"),
+  banned_at: timestamp("banned_at"),
+  ban_reason: text("ban_reason"),
   created_at: timestamp("created_at").notNull().defaultNow(),
 });
 

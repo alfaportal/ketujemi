@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import {
-  Plus, TrendingUp, Shield, Zap,
+  TrendingUp, Shield, Zap,
   ChevronRight, Globe, SlidersHorizontal, Search, Menu,
 } from "lucide-react";
 import * as Icons from "lucide-react";
@@ -15,8 +15,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useMarket, LOCATIONS } from "@/lib/market-context";
-import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
-import { AuthToolbar } from "@/components/auth-toolbar";
+import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { useGetCategories } from "@workspace/api-client-react";
 import { translateCategory, type MarketCode } from "@/lib/category-translations";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
@@ -111,7 +110,6 @@ function SponsorsAboveFooterRow() {
 export default function HomePage() {
   const { market, t } = useMarket();
   const [, setLocation] = useLocation();
-  const goToPostListing = useGoToPostListing();
   const { data: apiCategories } = useGetCategories();
   const [filterSearch, setFilterSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
@@ -190,17 +188,7 @@ export default function HomePage() {
                   <LanguageSelector />
                 </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <AuthToolbar variant="compact" loginAccent />
-              <button
-                type="button"
-                onClick={goToPostListing}
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 min-h-12 touch-manipulation sm:px-4 sm:min-w-[10rem]"
-              >
-                <Plus size={18} aria-hidden className="sm:h-4 sm:w-4" />
-                <span>{t.post}</span>
-              </button>
-            </div>
+            <SiteHeaderToolbar />
           </div>
         </div>
       </nav>

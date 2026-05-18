@@ -16,6 +16,7 @@ import {
   publicUser,
 } from "../lib/user-session";
 import { normalizePhone } from "../lib/phone-prefixes";
+import { assertAccountActive, isUserBanned } from "../lib/user-ban";
 
 const router = Router();
 
@@ -159,7 +160,7 @@ router.post("/auth/verify/email", async (req, res) => {
       .where(eq(emailVerifyChallengesTable.id, challenge.id));
 
     setUserSessionCookie(res, row.id);
-    res.json({ user: publicUser(row) });
+    res.json({ user: publicUser(row, { self: true }) });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     if (msg.includes("unique") || msg.includes("duplicate")) {
@@ -254,8 +255,13 @@ router.post("/auth/login/email", async (req, res) => {
       return;
     }
 
+    if (isUserBanned(user)) {
+      res.status(403).json({ error: "Account suspended" });
+      return;
+    }
+
     setUserSessionCookie(res, user.id);
-    res.json({ user: publicUser(user) });
+    res.json({ user: publicUser(user, { self: true }) });
   } catch (err) {
     req.log?.error({ err }, "login email");
     res.status(500).json({ error: "Login failed" });
@@ -283,7 +289,13 @@ router.get("/auth/me", async (req, res) => {
     return;
   }
 
-  res.json({ user: publicUser(user) });
+  if (isUserBanned(user)) {
+    clearUserSessionCookie(res);
+    res.status(403).json({ error: "Account suspended" });
+    return;
+  }
+
+  res.json({ user: publicUser(user, { self: true }) });
 });
 
 // ─── PATCH /auth/profile ──────────────────────────────────────────────────────
@@ -334,7 +346,7 @@ router.patch("/auth/profile", async (req, res) => {
     return;
   }
 
-  res.json({ user: publicUser(row) });
+  res.json({ user: publicUser(row, { self: true }) });
 });
 
 // ─── POST /auth/sms/start ───────────────────────────────────────────────────
@@ -422,6 +434,13 @@ router.post("/auth/sms/verify", async (req, res) => {
 
     await vonageVerifyCheck(challenge.request_id, code);
 
+    try {
+      await assertAccountActive(null, phone);
+    } catch {
+      res.status(403).json({ error: "Account suspended" });
+      return;
+    }
+
     await db
       .delete(phoneVerifyChallengesTable)
       .where(eq(phoneVerifyChallengesTable.id, challenge.id));
@@ -451,8 +470,13 @@ router.post("/auth/sms/verify", async (req, res) => {
       user = updated;
     }
 
+    if (isUserBanned(user)) {
+      res.status(403).json({ error: "Account suspended" });
+      return;
+    }
+
     setUserSessionCookie(res, user.id);
-    res.json({ user: publicUser(user) });
+    res.json({ user: publicUser(user, { self: true }) });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Verification failed";
     req.log?.error({ err }, "sms verify");

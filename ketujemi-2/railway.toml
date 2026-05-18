@@ -1,3 +1,6 @@
+# Required service variables (set in Railway dashboard or `pnpm run railway:env:vonage`):
+# DATABASE_URL, SESSION_SECRET (min 16 chars), VONAGE_API_KEY, VONAGE_API_SECRET
+
 [build]
 builder = "NIXPACKS"
 nixpacksConfigPath = "nixpacks.toml"

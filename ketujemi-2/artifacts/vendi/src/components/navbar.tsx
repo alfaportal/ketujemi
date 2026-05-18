@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Plus, Home, List, Menu } from "lucide-react";
+import { Home, List, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
 import {
@@ -101,9 +101,12 @@ export default function Navbar() {
           </button>
         </nav>
 
-        <Button onClick={goToPostListing} className="gap-1.5 shrink-0" data-testid="button-post-listing">
-          <Plus className="h-4 w-4" />
-          {t.nav_postShort}
+        <Button
+          onClick={goToPostListing}
+          className="shrink-0 text-xs h-9 px-3"
+          data-testid="button-post-listing"
+        >
+          {t.postFree}
         </Button>
       </div>
     </header>

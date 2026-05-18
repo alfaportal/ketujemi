@@ -26,7 +26,8 @@ import { useMarket } from "@/lib/market-context";
 import { dateFnsLocale } from "@/lib/app-extra-i18n";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { userOwnsListing } from "@/lib/listing-ownership";
-import { AuthToolbar } from "@/components/auth-toolbar";
+import { sellerFirstName } from "@/lib/seller-display";
+import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 
 // ─── Spec parser ─────────────────────────────────────────────────────────────
 interface ParsedDesc { specs: Record<string, string>; body: string }
@@ -180,6 +181,8 @@ export default function ListingDetail() {
   const sellerDigits = user ? (listing.seller_phone ?? "").replace(/\D/g, "") : "";
   const smsHref = user ? smsUriFromDigits(sellerDigits) : "sms:";
   const listingReturnPath = `/listings/${listing.id}`;
+  const sellerDisplayName = sellerFirstName(listing.seller_name);
+  const showSellerPhone = !!user && sellerDigits.length >= 8;
 
   const conditionMap: Record<string, { label: string; cls: string }> = {
     New:     { label: t.conditionNew,     cls: "bg-green-100 text-green-700 border-green-200" },
@@ -205,7 +208,7 @@ export default function ListingDetail() {
             {t.back}
           </button>
           <div className="flex gap-2 items-center flex-shrink-0">
-            <AuthToolbar variant="compact" />
+            <SiteHeaderToolbar />
             {canManage && (
               <>
                 <Button variant="outline" onClick={() => setLocation(`/listings/${listing.id}/edit`)}
@@ -373,7 +376,7 @@ export default function ListingDetail() {
                     <User className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900" data-testid="text-seller-name">{listing.seller_name}</div>
+                    <div className="font-semibold text-gray-900" data-testid="text-seller-name">{sellerDisplayName}</div>
                     <div className="text-sm text-gray-400">{t.privateSeller}</div>
                   </div>
                 </div>
@@ -392,18 +395,6 @@ export default function ListingDetail() {
 
                 {!user ? (
                   <>
-                    <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-                      <div className="flex items-center justify-center gap-2">
-                        <Phone className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
-                        <span
-                          className="text-center text-sm font-semibold tracking-wide text-gray-800 blur-[2.5px] select-none font-mono"
-                          data-testid="text-masked-phone"
-                          aria-hidden
-                        >
-                          {listing.seller_phone}
-                        </span>
-                      </div>
-                    </div>
                     {specs["Email"] ? (
                       <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
                         <div className="flex items-center justify-center gap-2">
@@ -427,7 +418,7 @@ export default function ListingDetail() {
                       {t.loginToViewPhone}
                     </Button>
                   </>
-                ) : sellerDigits.length >= 8 ? (
+                ) : showSellerPhone ? (
                   <>
                     <a
                       href={`tel:${listing.seller_phone}`}

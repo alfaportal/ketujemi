@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { ArrowLeft } from "lucide-react";
 import { SiteFooter } from "@/components/site-footer";
+import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { useMarket } from "@/lib/market-context";
 
 type StaticPageShellProps = {
@@ -14,7 +15,7 @@ export function StaticPageShell({ title, children }: StaticPageShellProps) {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-3">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 min-h-11 touch-manipulation"
@@ -26,6 +27,7 @@ export function StaticPageShell({ title, children }: StaticPageShellProps) {
             <span className="text-lg font-black text-gray-900">KetuJemi</span>
             <span className="text-lg font-black text-blue-500">.com</span>
           </Link>
+          <SiteHeaderToolbar />
         </div>
       </header>
 

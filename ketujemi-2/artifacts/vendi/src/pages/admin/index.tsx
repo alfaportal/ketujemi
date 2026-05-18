@@ -11,8 +11,9 @@ import AdminUsers from "./users";
 import AdminCategories from "./categories";
 import AdminReports from "./reports";
 import AdminSettings from "./settings";
+import AdminModeration from "./moderation";
 
-type Section = "dashboard" | "listings" | "users" | "categories" | "reports" | "settings";
+type Section = "dashboard" | "listings" | "users" | "categories" | "reports" | "moderation" | "settings";
 
 const NAV: { id: Section; icon: React.ElementType }[] = [
   { id: "dashboard", icon: LayoutDashboard },
@@ -20,6 +21,7 @@ const NAV: { id: Section; icon: React.ElementType }[] = [
   { id: "users", icon: Users },
   { id: "categories", icon: Tag },
   { id: "reports", icon: AlertTriangle },
+  { id: "moderation", icon: ShieldCheck },
   { id: "settings", icon: Settings },
 ];
 
@@ -29,13 +31,13 @@ const NAV_TITLE_KEY: Record<Section, string> = {
   users: "adm_nav_users",
   categories: "adm_nav_cats",
   reports: "adm_nav_reports",
+  moderation: "adm_nav_mod",
   settings: "adm_nav_settings",
 };
 
 // ─── Login page ───────────────────────────────────────────────────────────────
 function LoginPage({ onLogin }: { onLogin: () => void }) {
   const { t } = useMarket();
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
@@ -46,7 +48,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
     setError("");
     setLoading(true);
     try {
-      await adminLogin(username, password);
+      await adminLogin(password);
       onLogin();
     } catch {
       setError(t.adm_badLogin);
@@ -73,20 +75,6 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <h2 className="text-xl font-bold text-gray-900 mb-6">{t.adm_signInHeading}</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
-                {t.adm_username}
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder={t.adm_userPh}
-                autoComplete="username"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all"
-                required
-              />
-            </div>
             <div>
               <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
                 {t.adm_password}
@@ -235,6 +223,7 @@ export default function AdminPanel() {
     users:      AdminUsers,
     categories: AdminCategories,
     reports:    AdminReports,
+    moderation: AdminModeration,
     settings:   AdminSettings,
   }[section];
 

@@ -1,27 +1,57 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { listingsTable, categoriesTable, listingReportsTable, adminSettingsTable } from "@workspace/db";
-import { eq, desc, sql, count, and, gte } from "drizzle-orm";
+import {
+  listingsTable,
+  categoriesTable,
+  listingReportsTable,
+  adminSettingsTable,
+  usersTable,
+} from "@workspace/db";
+import { eq, desc, sql, count, gte } from "drizzle-orm";
+import { CreateListingBody } from "@workspace/api-zod";
+import {
+  verifyAdminPassword,
+  verifyAdminBearer,
+  getAdminBearerToken,
+  adminAuthConfigured,
+} from "../lib/admin-auth";
+import {
+  getModerationState,
+  updateModerationSettings,
+  runModerationCommand,
+} from "../lib/admin-moderation";
+import { loadBannedPhoneSet, saveBannedPhoneSet } from "../lib/user-ban";
 
 const router = Router();
 
-const ADMIN_TOKEN = "vendi2024-admin-token";
+function expiresAt30Days(): Date {
+  const d = new Date();
+  d.setDate(d.getDate() + 30);
+  return d;
+}
 
-// ─── Auth middleware ──────────────────────────────────────────────────────────
-function requireAdmin(req: any, res: any, next: any) {
-  const auth = req.headers["authorization"];
-  if (auth === `Bearer ${ADMIN_TOKEN}`) return next();
+function requireAdmin(req: { headers: { authorization?: string } }, res: any, next: () => void) {
+  if (verifyAdminBearer(req.headers.authorization)) return next();
   res.status(401).json({ error: "Unauthorized" });
 }
 
-// ─── POST /admin/login ────────────────────────────────────────────────────────
+// ─── POST /admin/login (owner password only) ─────────────────────────────────
 router.post("/admin/login", (req, res) => {
-  const { username, password } = req.body ?? {};
-  if (username === "admin" && password === "vendi2024") {
-    res.json({ token: ADMIN_TOKEN });
-  } else {
-    res.status(401).json({ error: "Invalid credentials" });
+  if (!adminAuthConfigured()) {
+    res.status(503).json({ error: "Admin panel not configured on server" });
+    return;
   }
+  const password = typeof req.body?.password === "string" ? req.body.password : "";
+  if (!verifyAdminPassword(password)) {
+    res.status(401).json({ error: "Invalid credentials" });
+    return;
+  }
+  const token = getAdminBearerToken();
+  if (!token) {
+    res.status(503).json({ error: "Admin panel not configured on server" });
+    return;
+  }
+  res.json({ token });
 });
 
 // ─── GET /admin/dashboard ─────────────────────────────────────────────────────
@@ -57,7 +87,8 @@ router.get("/admin/dashboard", requireAdmin, async (req, res) => {
       count: r.count,
     }));
 
-    const uniqueUsers = await db
+    const [registeredUsers] = await db.select({ count: count() }).from(usersTable);
+    const uniqueSellers = await db
       .selectDistinct({ seller_phone: listingsTable.seller_phone })
       .from(listingsTable);
 
@@ -69,7 +100,8 @@ router.get("/admin/dashboard", requireAdmin, async (req, res) => {
 
     res.json({
       total_listings: totalListings.count,
-      total_users: uniqueUsers.length,
+      total_users: registeredUsers.count,
+      total_sellers: uniqueSellers.length,
       total_categories: totalCategories.count,
       total_reports: totalReports.count,
       new_today: newToday.count,
@@ -177,6 +209,54 @@ router.delete("/admin/listings/:id", requireAdmin, async (req, res) => {
   }
 });
 
+// ─── POST /admin/listings ─────────────────────────────────────────────────────
+router.post("/admin/listings", requireAdmin, async (req, res) => {
+  try {
+    const parsed = CreateListingBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid body", details: parsed.error.issues });
+      return;
+    }
+    const [row] = await db
+      .insert(listingsTable)
+      .values({
+        title: parsed.data.title,
+        description: parsed.data.description,
+        price: String(parsed.data.price),
+        category_id: parsed.data.category_id,
+        location: parsed.data.location,
+        seller_name: parsed.data.seller_name,
+        seller_phone: parsed.data.seller_phone,
+        condition: parsed.data.condition,
+        image_url: parsed.data.image_url ?? null,
+        is_featured: parsed.data.is_featured ?? false,
+        expires_at: expiresAt30Days(),
+        vehicle_year: parsed.data.vehicle_year ?? null,
+        vehicle_mileage_km: parsed.data.vehicle_mileage_km ?? null,
+        vehicle_fuel: parsed.data.vehicle_fuel ?? null,
+        vehicle_body_type: parsed.data.vehicle_body_type ?? null,
+        vehicle_model: parsed.data.vehicle_model ?? null,
+        truck_type_slug: parsed.data.truck_type_slug ?? null,
+        truck_axle_config: parsed.data.truck_axle_config ?? null,
+        truck_gvw_band: parsed.data.truck_gvw_band ?? null,
+        truck_euro_standard: parsed.data.truck_euro_standard ?? null,
+        property_txn: parsed.data.property_txn ?? null,
+        property_subtype: parsed.data.property_subtype ?? null,
+        property_sqm: parsed.data.property_sqm ?? null,
+        property_floor: parsed.data.property_floor ?? null,
+        motor_type_slug: parsed.data.motor_type_slug ?? null,
+        motor_cc_band: parsed.data.motor_cc_band ?? null,
+        motor_power_kw: parsed.data.motor_power_kw ?? null,
+        motor_transmission: parsed.data.motor_transmission ?? null,
+      })
+      .returning();
+    res.status(201).json({ ...row, price: Number(row.price), created_at: row.created_at.toISOString() });
+  } catch (err) {
+    req.log.error({ err }, "Admin create listing error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // ─── GET /admin/users ─────────────────────────────────────────────────────────
 router.get("/admin/users", requireAdmin, async (req, res) => {
   try {
@@ -194,6 +274,130 @@ router.get("/admin/users", requireAdmin, async (req, res) => {
     res.json(users);
   } catch (err) {
     req.log.error({ err }, "Admin users error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── GET /admin/registered-users ──────────────────────────────────────────────
+router.get("/admin/registered-users", requireAdmin, async (req, res) => {
+  try {
+    const users = await db.select().from(usersTable).orderBy(desc(usersTable.created_at));
+    const counts = await db
+      .select({
+        phone: listingsTable.seller_phone,
+        listing_count: sql<number>`cast(count(*) as int)`,
+      })
+      .from(listingsTable)
+      .groupBy(listingsTable.seller_phone);
+    const countByPhone = new Map(counts.map((c) => [c.phone.replace(/\D/g, ""), c.listing_count]));
+
+    res.json(
+      users.map((u) => {
+        const phone = u.phone_e164_digits ?? u.contact_phone?.replace(/\D/g, "") ?? "";
+        return {
+          id: u.id,
+          email: u.email,
+          phone_e164_digits: u.phone_e164_digits,
+          display_name: u.display_name,
+          contact_phone: u.contact_phone,
+          banned_at: u.banned_at ? u.banned_at.toISOString() : null,
+          ban_reason: u.ban_reason,
+          created_at: u.created_at.toISOString(),
+          listing_count: phone ? (countByPhone.get(phone) ?? 0) : 0,
+        };
+      }),
+    );
+  } catch (err) {
+    req.log.error({ err }, "Admin registered users error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── POST /admin/registered-users/:id/ban ───────────────────────────────────
+router.post("/admin/registered-users/:id/ban", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const reason = typeof req.body?.reason === "string" ? req.body.reason.slice(0, 500) : null;
+    const [updated] = await db
+      .update(usersTable)
+      .set({ banned_at: new Date(), ban_reason: reason })
+      .where(eq(usersTable.id, id))
+      .returning();
+    if (!updated) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    res.json({
+      id: updated.id,
+      banned_at: updated.banned_at?.toISOString() ?? null,
+      ban_reason: updated.ban_reason,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Admin ban user error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── POST /admin/registered-users/:id/unban ───────────────────────────────────
+router.post("/admin/registered-users/:id/unban", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const [updated] = await db
+      .update(usersTable)
+      .set({ banned_at: null, ban_reason: null })
+      .where(eq(usersTable.id, id))
+      .returning();
+    if (!updated) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    res.json({ id: updated.id, banned_at: null });
+  } catch (err) {
+    req.log.error({ err }, "Admin unban user error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── DELETE /admin/registered-users/:id ─────────────────────────────────────
+router.delete("/admin/registered-users/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await db.delete(usersTable).where(eq(usersTable.id, id));
+    res.json({ success: true });
+  } catch (err) {
+    req.log.error({ err }, "Admin delete user error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── POST /admin/sellers/:phone/ban ─────────────────────────────────────────
+router.post("/admin/sellers/:phone/ban", requireAdmin, async (req, res) => {
+  try {
+    const phone = decodeURIComponent(req.params.phone).replace(/\D/g, "");
+    if (phone.length < 8) {
+      res.status(400).json({ error: "Invalid phone" });
+      return;
+    }
+    const set = await loadBannedPhoneSet();
+    set.add(phone);
+    await saveBannedPhoneSet(set);
+    res.json({ success: true, phone });
+  } catch (err) {
+    req.log.error({ err }, "Admin ban seller phone error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── POST /admin/sellers/:phone/unban ─────────────────────────────────────────
+router.post("/admin/sellers/:phone/unban", requireAdmin, async (req, res) => {
+  try {
+    const phone = decodeURIComponent(req.params.phone).replace(/\D/g, "");
+    const set = await loadBannedPhoneSet();
+    set.delete(phone);
+    await saveBannedPhoneSet(set);
+    res.json({ success: true, phone });
+  } catch (err) {
+    req.log.error({ err }, "Admin unban seller phone error");
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -386,8 +590,8 @@ router.get("/admin/settings", requireAdmin, async (req, res) => {
     for (const r of rows) obj[r.key] = r.value;
 
     const defaults: Record<string, string> = {
-      site_name: "KetuJemi.com",
-      contact_email: "info@ketujemi.com",
+      site_name: "Marketplace",
+      contact_email: "",
       maintenance_mode: "false",
     };
     res.json({ ...defaults, ...obj });
@@ -414,6 +618,45 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Admin update settings error");
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── GET /admin/moderation ────────────────────────────────────────────────────
+router.get("/admin/moderation", requireAdmin, async (req, res) => {
+  try {
+    const state = await getModerationState();
+    res.json(state);
+  } catch (err) {
+    req.log.error({ err }, "Admin moderation get error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── PATCH /admin/moderation ──────────────────────────────────────────────────
+router.patch("/admin/moderation", requireAdmin, async (req, res) => {
+  try {
+    const body = req.body as Record<string, string>;
+    const state = await updateModerationSettings({
+      enabled: body.enabled,
+      system_prompt: body.system_prompt,
+    });
+    res.json(state);
+  } catch (err) {
+    req.log.error({ err }, "Admin moderation patch error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── POST /admin/moderation/command ───────────────────────────────────────────
+router.post("/admin/moderation/command", requireAdmin, async (req, res) => {
+  try {
+    const command = typeof req.body?.command === "string" ? req.body.command : "";
+    const { reply } = await runModerationCommand(command);
+    res.json({ reply });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Moderation failed";
+    req.log.error({ err }, "Admin moderation command error");
+    res.status(msg.includes("not configured") ? 503 : 400).json({ error: msg });
   }
 });
 

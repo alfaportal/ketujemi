@@ -25,7 +25,7 @@ import ListingCard from "@/components/listing-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { translateCategory } from "@/lib/category-translations";
 import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
-import { AuthToolbar } from "@/components/auth-toolbar";
+import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import {
   Sheet,
   SheetClose,
@@ -1225,17 +1225,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
             </Link>
           </div>
           <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end flex-wrap">
-            <AuthToolbar variant="compact" loginAccent />
-            <button
-              type="button"
-              onClick={goToPostListing}
-              className="flex flex-1 sm:flex-none min-w-0 justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 sm:py-2 rounded-xl text-sm font-semibold transition-all min-h-12 touch-manipulation"
-            >
-              <span aria-hidden className="sm:hidden font-bold select-none">
-                +
-              </span>
-              <span className="truncate">{t.post}</span>
-            </button>
+            <SiteHeaderToolbar />
           </div>
         </div>
       </div>

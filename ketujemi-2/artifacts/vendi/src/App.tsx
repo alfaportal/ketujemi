@@ -33,7 +33,7 @@ function Router() {
     <div className="min-h-screen bg-background">
       <main>
         <Switch>
-          <Route path="/admin" component={AdminPanel} />
+          <Route path="/admin-secret-panel" component={AdminPanel} />
           <Route path="/login" component={LoginPage} />
           <Route path="/profile" component={ProfilePage} />
           <Route path="/terms" component={TermsPage} />

@@ -1,5 +1,11 @@
-/** Mask seller phone for anonymous API responses (never store in DB). */
+/** First token of display name (e.g. "Arben Krasniqi" → "Arben"). */
+export function sellerFirstName(raw: string): string {
+  const name = raw.trim();
+  if (!name) return "";
+  return name.split(/\s+/)[0] ?? name;
+}
 
+/** Mask seller phone for anonymous API responses (never store in DB). */
 export function maskSellerPhone(raw: string): string {
   const digits = raw.replace(/\D/g, "");
   if (digits.length < 8) return "+*** **** ***";

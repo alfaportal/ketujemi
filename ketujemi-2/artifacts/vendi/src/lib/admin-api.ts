@@ -18,19 +18,23 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error((body as any).error ?? `HTTP ${res.status}`);
+    throw new Error((body as { error?: string }).error ?? `HTTP ${res.status}`);
   }
   return res.json() as Promise<T>;
 }
 
-export async function adminLogin(username: string, password: string): Promise<string> {
+/** Owner-only: password from ADMIN_PANEL_PASSWORD (no username). */
+export async function adminLogin(password: string): Promise<string> {
   const res = await fetch(`${BASE}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ password }),
   });
-  if (!res.ok) throw new Error("Invalid credentials");
-  const { token } = await res.json();
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as { error?: string }).error ?? "Invalid credentials");
+  }
+  const { token } = (await res.json()) as { token: string };
   sessionStorage.setItem("admin_token", token);
   return token;
 }
@@ -56,6 +60,13 @@ export function getAdminListings(params?: { search?: string; category_id?: numbe
   return request<{ total: number; page: number; listings: AdminListing[] }>(`/listings?${qs}`);
 }
 
+export function createAdminListing(data: Partial<AdminListing> & Pick<AdminListing, "title" | "description" | "price" | "category_id" | "location" | "seller_name" | "seller_phone" | "condition">) {
+  return request<AdminListing>("/listings", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
 export function updateAdminListing(id: number, data: Partial<AdminListing>) {
   return request<AdminListing>(`/listings/${id}`, {
     method: "PATCH",
@@ -68,7 +79,34 @@ export function deleteAdminListing(id: number) {
 }
 
 export function getAdminUsers() {
-  return request<AdminUser[]>("/users");
+  return request<AdminSeller[]>("/users");
+}
+
+export function getRegisteredUsers() {
+  return request<RegisteredUser[]>("/registered-users");
+}
+
+export function banRegisteredUser(id: number, reason?: string) {
+  return request<{ id: number; banned_at: string | null }>(`/registered-users/${id}/ban`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export function unbanRegisteredUser(id: number) {
+  return request<{ id: number }>(`/registered-users/${id}/unban`, { method: "POST" });
+}
+
+export function deleteRegisteredUser(id: number) {
+  return request<{ success: boolean }>(`/registered-users/${id}`, { method: "DELETE" });
+}
+
+export function banSellerPhone(phone: string) {
+  return request<{ success: boolean }>(`/sellers/${encodeURIComponent(phone)}/ban`, { method: "POST" });
+}
+
+export function unbanSellerPhone(phone: string) {
+  return request<{ success: boolean }>(`/sellers/${encodeURIComponent(phone)}/unban`, { method: "POST" });
 }
 
 export function getUserListings(phone: string) {
@@ -123,9 +161,36 @@ export function updateAdminSettings(data: Record<string, string>) {
   });
 }
 
+export function getModerationState() {
+  return request<ModerationState>("/moderation");
+}
+
+export function updateModerationSettings(data: { enabled?: string; system_prompt?: string }) {
+  return request<ModerationState>("/moderation", {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export function runModerationCommand(command: string) {
+  return request<{ reply: string }>("/moderation/command", {
+    method: "POST",
+    body: JSON.stringify({ command }),
+  });
+}
+
+export interface ModerationState {
+  enabled: string;
+  system_prompt: string;
+  last_command: string;
+  last_reply: string;
+  last_run_at: string;
+}
+
 export interface AdminDashboard {
   total_listings: number;
   total_users: number;
+  total_sellers?: number;
   total_categories: number;
   total_reports: number;
   new_today: number;
@@ -151,11 +216,23 @@ export interface AdminListing {
   expires_at?: string | null;
 }
 
-export interface AdminUser {
+export interface AdminSeller {
   seller_phone: string;
   seller_name: string;
   listing_count: number;
   last_active: string;
+}
+
+export interface RegisteredUser {
+  id: number;
+  email: string | null;
+  phone_e164_digits: string | null;
+  display_name: string | null;
+  contact_phone: string | null;
+  banned_at: string | null;
+  ban_reason: string | null;
+  created_at: string;
+  listing_count: number;
 }
 
 export interface AdminCategory {

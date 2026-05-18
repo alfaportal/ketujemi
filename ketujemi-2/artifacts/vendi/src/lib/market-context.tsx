@@ -51,7 +51,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     minPrice: "Çmimi min", maxPrice: "Çmimi max", apply: "Zbato",
     clear: "Pastro", noResults: "Nuk u gjet asnjë shpallje",
     noResultsSub: "Provo të ndryshosh filtrat ose posto shpallje të re",
-    post: "Posto Shpallje", all: "Të gjitha", today: "Sot",
+    post: "Posto Shpallje", postFree: "Posto Falas", all: "Të gjitha", today: "Sot",
     views: "shikime", total: "shpallje gjithsej", in: "në",
     page: "Faqja", of: "nga",
     // Home
@@ -169,6 +169,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     listingAccessDenied: "Nuk keni akses për ta ndryshuar këtë shpallje",
     loginToViewPhone: "Kyçu për të parë numrin",
     sendSms: "Dërgo SMS",
+    postQuotaExceeded: "Ke arritur limitin e postimeve falas për këtë kategori.",
+    postQuotaRemaining: "Postime falas të mbetura në këtë kategori: {n}",
   },
   al: {
     title: "Njoftimet", search: "Kërko njoftim...", searchBtn: "Kërko",
@@ -176,7 +178,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     minPrice: "Çmimi min", maxPrice: "Çmimi max", apply: "Zbato",
     clear: "Pastro", noResults: "Nuk u gjet asnjë njoftim",
     noResultsSub: "Provo të ndryshosh filtrat ose posto njoftim të ri",
-    post: "Posto Njoftim", all: "Të gjitha", today: "Sot",
+    post: "Posto Njoftim", postFree: "Posto Falas", all: "Të gjitha", today: "Sot",
     views: "shikime", total: "njoftime gjithsej", in: "në",
     page: "Faqja", of: "nga",
     hero: "KetuJemi — Bli dhe Shit",
@@ -289,6 +291,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     listingAccessDenied: "Nuk keni akses për ta ndryshuar këtë njoftim",
     loginToViewPhone: "Kyçu për të parë numrin",
     sendSms: "Dërgo SMS",
+    postQuotaExceeded: "Ke arritur limitin e postimeve falas për këtë kategori.",
+    postQuotaRemaining: "Postime falas të mbetura në këtë kategori: {n}",
   },
   mk: {
     title: "Огласи", search: "Барај оглас...", searchBtn: "Барај",
@@ -296,7 +300,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     minPrice: "Цена МИН", maxPrice: "Цена МАКС", apply: "Примени",
     clear: "Исчисти", noResults: "Не се најдени огласи",
     noResultsSub: "Обидете се да ги промените филтрите или додајте нов оглас",
-    post: "Додај оглас", all: "Сите", today: "Денес",
+    post: "Додај оглас", postFree: "Објави бесплатно", all: "Сите", today: "Денес",
     views: "прегледи", total: "огласи вкупно", in: "во",
     page: "Страна", of: "од",
     hero: "Купи и Продај со КетуЈеми",
@@ -409,6 +413,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     listingAccessDenied: "Немате пристап за уредување на овој оглас",
     loginToViewPhone: "Најави се за да го видиш бројот",
     sendSms: "Испрати SMS",
+    postQuotaExceeded: "Го достигнавте лимитот на бесплатни огласи за оваа категорија.",
+    postQuotaRemaining: "Преостанати бесплатни огласи во оваа категорија: {n}",
   },
   mne: {
     title: "Oglasi", search: "Traži oglas...", searchBtn: "Traži",
@@ -416,7 +422,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     minPrice: "Cijena MIN", maxPrice: "Cijena MAX", apply: "Primijeni",
     clear: "Očisti", noResults: "Nisu pronađeni oglasi",
     noResultsSub: "Pokušajte promijeniti filtere ili dodajte novi oglas",
-    post: "Dodaj oglas", all: "Sve", today: "Danas",
+    post: "Dodaj oglas", postFree: "Objavi besplatno", all: "Sve", today: "Danas",
     views: "pregleda", total: "oglasa ukupno", in: "u",
     page: "Stranica", of: "od",
     hero: "Kupuj i Prodaj sa KetuJemi",
@@ -529,6 +535,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     listingAccessDenied: "Nemate pristup za uređivanje ovog oglasa",
     loginToViewPhone: "Prijavi se da vidiš broj",
     sendSms: "Pošalji SMS",
+    postQuotaExceeded: "Dostigli ste limit besplatnih oglasa za ovu kategoriju.",
+    postQuotaRemaining: "Preostalo besplatnih oglasa u ovoj kategoriji: {n}",
   },
 };
 

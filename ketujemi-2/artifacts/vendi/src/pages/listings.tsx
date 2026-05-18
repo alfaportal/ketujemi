@@ -2,7 +2,7 @@
 import { useLocation, Link } from "wouter";
 import { useGetListings, useGetCategories } from "@workspace/api-client-react";
 import {
-  Search, SlidersHorizontal, X, Plus, ChevronLeft, ChevronRight, Menu,
+  Search, SlidersHorizontal, X, ChevronLeft, ChevronRight, Menu,
 } from "lucide-react";
 import {
   Sheet,
@@ -17,7 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useMarket, MARKETS, LOCATIONS } from "@/lib/market-context";
 import SharedListingCard from "@/components/listing-card";
 import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
-import { AuthToolbar } from "@/components/auth-toolbar";
+import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 
 import { LanguageSelector } from "@/components/language-selector";
 
@@ -152,18 +152,7 @@ export default function Listings() {
                   <LanguageSelector />
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <AuthToolbar variant="compact" loginAccent />
-                <button
-                  data-testid="button-new-listing"
-                  onClick={goToPostListing}
-                  type="button"
-                  className="inline-flex shrink-0 items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm min-h-12 touch-manipulation"
-                >
-                  <Plus size={15} aria-hidden />
-                  <span>{t.post}</span>
-                </button>
-              </div>
+              <SiteHeaderToolbar />
             </div>
             <form onSubmit={applyFilters} className="flex flex-col gap-2 w-full md:flex-row md:items-center md:flex-nowrap md:gap-2">
               <div className="relative flex-1 min-w-0">
