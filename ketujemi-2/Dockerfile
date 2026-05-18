@@ -1,5 +1,8 @@
 # Railway when Root Directory = ketujemi-2. pnpm via npm global.
 FROM node:22-bookworm-slim AS base
+# Cache bust — invalidate stale layers (e.g. old corepack steps)
+ARG CACHEBUST=2026-05-18-no-corepack
+RUN echo "build=${CACHEBUST}" > /tmp/.cachebust
 RUN npm install -g pnpm@10.12.1
 WORKDIR /app
 

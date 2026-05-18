@@ -1,7 +1,8 @@
-# Railway: repo root. App in ketujemi-2/. Uses pnpm via npm global (no corepack).
+# Railway: repo root. App in ketujemi-2/. pnpm via npm global.
 FROM node:22-bookworm-slim AS base
-RUN corepack disable 2>/dev/null || true
-ENV COREPACK_ENABLE_STRICT=0
+# Cache bust — invalidate stale layers (e.g. old corepack steps)
+ARG CACHEBUST=2026-05-18-no-corepack
+RUN echo "build=${CACHEBUST}" > /tmp/.cachebust
 RUN npm install -g pnpm@10.12.1
 WORKDIR /app
 
@@ -26,8 +27,6 @@ ENV PORT=8080
 RUN node ./scripts/build-production.mjs
 
 FROM node:22-bookworm-slim AS runner
-RUN corepack disable 2>/dev/null || true
-ENV COREPACK_ENABLE_STRICT=0
 ENV NODE_ENV=production
 ENV PORT=8080
 ENV STATIC_ROOT=/app/artifacts/vendi/dist/public
