@@ -206,6 +206,25 @@ export default function HomePage() {
               {t.filters}
             </button>
           </div>
+          <div className="flex flex-wrap gap-2 sm:gap-3 mb-3" aria-label="Platform benefits">
+            {[
+              { icons: [Mail, Smartphone], text: t.trust1 },
+              { icons: [Zap], text: t.trust2 },
+              { icons: [Tag], text: t.trust3 },
+            ].map(({ icons, text }) => (
+              <div
+                key={text}
+                className="flex items-center gap-2 rounded-2xl border border-blue-100 bg-white px-3 py-2 sm:px-4 sm:py-2.5 shadow-sm"
+              >
+                <div className="flex items-center gap-1 shrink-0">
+                  {icons.map((Icon, i) => (
+                    <Icon key={i} size={18} className="text-blue-600 sm:w-5 sm:h-5" aria-hidden />
+                  ))}
+                </div>
+                <span className="text-xs sm:text-sm font-bold text-gray-800">{text}</span>
+              </div>
+            ))}
+          </div>
           {showFilters && (
             <div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -276,31 +295,6 @@ export default function HomePage() {
               </div>
             </div>
           )}
-        </div>
-      </section>
-
-      {/* -- Trust bar -- */}
-      <section className="bg-gradient-to-b from-blue-50/80 to-white border-b border-blue-100/80">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-            {[
-              { icons: [Mail, Smartphone], text: t.trust1 },
-              { icons: [Zap], text: t.trust2 },
-              { icons: [Tag], text: t.trust3 },
-            ].map(({ icons, text }) => (
-              <div
-                key={text}
-                className="flex items-center gap-3 rounded-2xl border border-blue-100 bg-white px-5 py-3.5 sm:px-6 sm:py-4 shadow-sm"
-              >
-                <div className="flex items-center gap-1 shrink-0">
-                  {icons.map((Icon, i) => (
-                    <Icon key={i} size={22} className="text-blue-600 sm:w-6 sm:h-6" aria-hidden />
-                  ))}
-                </div>
-                <span className="text-base sm:text-lg font-bold text-gray-800">{text}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
