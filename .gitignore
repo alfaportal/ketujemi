@@ -8,21 +8,20 @@ node_modules/
 !.env.example
 !**/.env.example
 
-# Build outputs
-dist/
-**/dist/
-build/
-**/build/
-out/
-**/out/
-.next/
-**/.next/
-.turbo/
+# Build outputs (artifact bundles — rebuilt in CI/Railway)
+ketujemi-2/artifacts/**/dist/
+ketujemi-2/artifacts/**/build/
+ketujemi-2/artifacts/**/out/
+
+# Local TypeScript emit for lib packages (rebuilt via pnpm typecheck:libs)
+ketujemi-2/lib/**/dist/
+
+# Other generated caches
 **/.turbo/
-coverage/
+**/.next/
 **/coverage/
 
-# Archives & duplicate project copies
+# Archives & duplicate project copies (not the deployed app)
 *.zip
 ketujemi-project/
 
@@ -30,3 +29,17 @@ ketujemi-project/
 *.log
 .DS_Store
 Thumbs.db
+
+# ---------------------------------------------------------------------------
+# Never ignore monorepo source or integration workspace packages
+# ---------------------------------------------------------------------------
+!ketujemi-2/lib/integrations/
+!ketujemi-2/lib/integrations/**
+!ketujemi-2/lib/**/src/
+!ketujemi-2/lib/**/src/**
+!ketujemi-2/lib/**/package.json
+!ketujemi-2/lib/**/tsconfig.json
+!ketujemi-2/lib/**/tsconfig.*.json
+!ketujemi-2/lib/**/openapi.yaml
+!ketujemi-2/lib/**/orval.config.ts
+!ketujemi-2/lib/**/drizzle.config.ts
