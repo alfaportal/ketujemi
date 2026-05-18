@@ -103,7 +103,7 @@ export default function Navbar() {
 
         <Button
           onClick={goToPostListing}
-          className="shrink-0 text-xs h-9 px-3"
+          className="shrink-0 text-sm font-bold h-11 px-4 sm:text-base sm:h-12 sm:px-5"
           data-testid="button-post-listing"
         >
           {t.postFree}

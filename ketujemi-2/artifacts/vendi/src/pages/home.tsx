@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import {
-  TrendingUp, Shield, Zap,
+  Zap, Mail, Smartphone, Tag,
   ChevronRight, Globe, SlidersHorizontal, Search, Menu,
 } from "lucide-react";
 import * as Icons from "lucide-react";
@@ -206,6 +206,22 @@ export default function HomePage() {
           <p className="mt-1.5 w-full max-w-xl text-sm leading-snug font-medium text-white/95 drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] sm:mt-2 sm:text-xl sm:text-blue-100">
             {t.heroSub}
           </p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3 pointer-events-auto">
+            <Link
+              href="/login?channel=email"
+              className="inline-flex items-center gap-2 rounded-xl bg-white/95 px-4 py-2.5 text-sm font-bold text-blue-700 shadow-lg ring-1 ring-white/40 transition hover:bg-white min-h-11 touch-manipulation sm:px-5 sm:text-base"
+            >
+              <Mail size={18} aria-hidden className="shrink-0" />
+              {t.login_tab_email}
+            </Link>
+            <Link
+              href="/login?channel=sms"
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600/95 px-4 py-2.5 text-sm font-bold text-white shadow-lg ring-1 ring-blue-400/50 transition hover:bg-blue-700 min-h-11 touch-manipulation sm:px-5 sm:text-base"
+            >
+              <Smartphone size={18} aria-hidden className="shrink-0" />
+              {t.login_tab_sms}
+            </Link>
+          </div>
         </div>
         <div className="relative h-10 -mb-1">
           <svg viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full" preserveAspectRatio="none">
@@ -326,16 +342,24 @@ export default function HomePage() {
       </section>
 
       {/* -- Trust bar -- */}
-      <section className="bg-white border-b border-gray-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex flex-wrap justify-center gap-6 sm:gap-10">
+      <section className="bg-gradient-to-b from-blue-50/80 to-white border-b border-blue-100/80">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
             {[
-              { icon: Shield,     text: t.trust1 },
-              { icon: Zap,        text: t.trust2 },
-              { icon: TrendingUp, text: t.trust3 },
-            ].map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-center gap-2 text-sm text-gray-500 font-medium">
-                <Icon size={16} className="text-blue-500" /> {text}
+              { icons: [Mail, Smartphone], text: t.trust1 },
+              { icons: [Zap], text: t.trust2 },
+              { icons: [Tag], text: t.trust3 },
+            ].map(({ icons, text }) => (
+              <div
+                key={text}
+                className="flex items-center gap-3 rounded-2xl border border-blue-100 bg-white px-5 py-3.5 sm:px-6 sm:py-4 shadow-sm"
+              >
+                <div className="flex items-center gap-1 shrink-0">
+                  {icons.map((Icon, i) => (
+                    <Icon key={i} size={22} className="text-blue-600 sm:w-6 sm:h-6" aria-hidden />
+                  ))}
+                </div>
+                <span className="text-base sm:text-lg font-bold text-gray-800">{text}</span>
               </div>
             ))}
           </div>
@@ -401,7 +425,7 @@ export default function HomePage() {
           style={{ background: "linear-gradient(135deg, #0F2B7F 0%, #2563EB 100%)" }}
         >
           <h3 className="text-base sm:text-lg font-black text-white leading-tight">
-            KetuJemi në 11 tregje
+            {t.markets}
           </h3>
           <p className="mt-1 text-xs sm:text-sm font-medium text-blue-100 leading-snug">
             Kosovë · Shqipëri · Maqedoni · Mal i Zi · Gjermani · Zvicër · Austri · Francë · Itali · Angli · SHBA

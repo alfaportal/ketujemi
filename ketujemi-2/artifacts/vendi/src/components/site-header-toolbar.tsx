@@ -18,7 +18,7 @@ export function SiteHeaderToolbar({ className }: Props) {
         type="button"
         data-testid="button-new-listing"
         onClick={goToPostListing}
-        className="inline-flex shrink-0 items-center justify-center rounded-xl bg-blue-600 px-2.5 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-blue-700 min-h-10 touch-manipulation sm:px-3"
+        className="inline-flex shrink-0 items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-blue-700 min-h-11 touch-manipulation sm:px-5 sm:text-base sm:min-h-12"
       >
         {t.postFree}
       </button>

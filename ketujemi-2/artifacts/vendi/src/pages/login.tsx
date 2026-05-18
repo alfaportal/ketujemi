@@ -46,6 +46,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const ch = params.get("channel");
+    if (ch === "email" || ch === "sms") {
+      setChannel(ch);
+    }
     if (params.get("error") === "verify") {
       toast({ title: t.toast_verifyFail, variant: "destructive" });
     }
