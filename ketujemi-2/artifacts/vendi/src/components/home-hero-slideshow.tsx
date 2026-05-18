@@ -67,9 +67,9 @@ export function HomeHeroSlideshow() {
           alt=""
           draggable={false}
           loading={i === 0 ? "eager" : "lazy"}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1920px"
+          sizes="100vw"
           className={cn(
-            "absolute inset-0 m-auto h-full w-full max-h-full max-w-full object-contain object-center transition-opacity duration-1000 ease-in-out",
+            "absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-1000 ease-in-out",
             i === currentIndex ? "opacity-100" : "opacity-0",
           )}
         />

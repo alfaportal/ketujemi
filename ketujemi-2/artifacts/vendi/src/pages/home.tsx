@@ -24,24 +24,24 @@ import { SiteFooter } from "@/components/site-footer";
 
 // --- Cover photos keyed by category name prefix -------------------------------
 const CAT_PHOTOS: Record<string, string> = {
-  "Vetura":    "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=300&q=80",
-  "Motorr":    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80",
-  "Kamion":    "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=300&q=80",
-  "Auto":      "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=300&q=80",
-  "Banesa":    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=300&q=80",
-  "Lokale":    "https://images.unsplash.com/photo-1497366216548-37526070297c?w=300&q=80",
-  "Telefona":  "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&q=80",
-  "Kompjuter": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&q=80",
-  "TV":        "https://images.unsplash.com/photo-1593344484962-796055d4a3a4?w=300&q=80",
-  "Mobilje":   "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=300&q=80",
-  "Rroba":     "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=300&q=80",
-  "Fëmijë":   "https://images.pexels.com/photos/8924170/pexels-photo-8924170.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "Punë":   "https://images.pexels.com/photos/15635241/pexels-photo-15635241.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "Bujqësi":   "https://images.pexels.com/photos/2933243/pexels-photo-2933243.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "Muzikë":   "https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "Kafshë":   "https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "Sport":     "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&q=80",
-  "Arsim":     "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=300&q=80",
+  "Vetura":    "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=85",
+  "Motorr":    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=85",
+  "Kamion":    "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=85",
+  "Auto":      "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=85",
+  "Banesa":    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=85",
+  "Lokale":    "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=85",
+  "Telefona":  "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=85",
+  "Kompjuter": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&q=85",
+  "TV":        "https://images.unsplash.com/photo-1593344484962-796055d4a3a4?w=800&q=85",
+  "Mobilje":   "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=85",
+  "Rroba":     "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800&q=85",
+  "Fëmijë":   "https://images.pexels.com/photos/8924170/pexels-photo-8924170.jpeg?auto=compress&cs=tinysrgb&w=800",
+  "Punë":   "https://images.pexels.com/photos/15635241/pexels-photo-15635241.jpeg?auto=compress&cs=tinysrgb&w=800",
+  "Bujqësi":   "https://images.pexels.com/photos/2933243/pexels-photo-2933243.jpeg?auto=compress&cs=tinysrgb&w=800",
+  "Muzikë":   "https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=800",
+  "Kafshë":   "https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=800",
+  "Sport":     "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=85",
+  "Arsim":     "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&q=85",
 };
 
 function getCatPhoto(name: string): string | null {
@@ -194,7 +194,7 @@ export default function HomePage() {
       </nav>
 
       {/* -- Hero -- */}
-      <section className="relative w-full overflow-hidden bg-slate-900 h-[clamp(220px,52vw,340px)] sm:h-[clamp(280px,45vh,420px)] md:h-[min(520px,50vh)] lg:h-[540px]">
+      <section className="relative w-full overflow-hidden bg-slate-800 h-[300px] sm:h-[380px] md:h-[480px] lg:h-[520px]">
         <div className="absolute inset-0 z-0">
           <HomeHeroSlideshow />
         </div>
@@ -361,29 +361,29 @@ export default function HomePage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {parentCategories.map((cat: any) => {
             const localName = translateCategory(cat.name, market.code);
-            const photo = getCatPhoto(cat.name);
+            const photo = (cat.image_url as string | null | undefined)?.trim() || getCatPhoto(cat.name);
             const IconComp = (Icons as unknown as Record<string, React.ElementType>)[cat.icon] ?? Icons.Tag;
             return (
               <Link
                 key={cat.id}
                 href={`/categories/${cat.id}`}
                 data-testid={`link-category-${cat.id}`}
-                className="group flex flex-col overflow-hidden bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-200 cursor-pointer"
+                className="group flex flex-col bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-200 cursor-pointer"
               >
                 {photo ? (
-                  <div className="relative flex w-full items-center justify-center aspect-[4/3] sm:aspect-[5/4] bg-gray-100 overflow-hidden">
+                  <div className="relative w-full rounded-t-2xl bg-gray-50 p-2 sm:p-3">
                     <img
                       src={photo}
                       alt={localName}
-                      className="max-h-full max-w-full h-full w-full object-contain p-1.5 sm:p-2 transition-opacity duration-300 group-hover:opacity-95"
+                      className="block w-full h-auto object-contain object-center transition-opacity duration-300 group-hover:opacity-95"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                     />
-                    <div className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-lg bg-blue-600/90 flex items-center justify-center shadow-sm">
+                    <div className="absolute bottom-2 right-2 w-6 h-6 rounded-lg bg-blue-600/90 flex items-center justify-center shadow-sm">
                       <IconComp size={13} className="text-white" />
                     </div>
                   </div>
                 ) : (
-                  <div className="flex aspect-[4/3] sm:aspect-[5/4] w-full items-center justify-center bg-blue-50 group-hover:bg-blue-100 transition-colors">
+                  <div className="flex min-h-[140px] sm:min-h-[160px] w-full items-center justify-center rounded-t-2xl bg-blue-50 group-hover:bg-blue-100 transition-colors">
                     <IconComp size={24} className="text-blue-500" />
                   </div>
                 )}
