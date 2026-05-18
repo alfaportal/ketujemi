@@ -494,7 +494,7 @@ const MK: StaticPagesCopy = {
           },
           {
             q: "Колку бесплатни огласи можам да објавам?",
-            a: "Приватните корисници имаат 10 бесплатни огласи по категорија. Бизнисите имаат 3 бесплатни огласи + верификација.",
+            a: "Корисниците имаат 10 бесплатни огласи по категорија + верификација.",
           },
           {
             q: "Дали можам да објавувам од странство?",
@@ -511,7 +511,7 @@ const MK: StaticPagesCopy = {
         items: [
           {
             q: "Како да креирам сметка?",
-            a: "Со телефонски број (SMS), Google или Facebook. Телефонскиот број е задолжителен пред првото објавување.",
+            a: "Со телефонски број (SMS) или Google. Телефонскиот број е задолжителен пред првото објавување.",
           },
           {
             q: "Како да ја верификувам сметката?",
@@ -528,7 +528,7 @@ const MK: StaticPagesCopy = {
         items: [
           {
             q: "Дали KetuJemi е бесплатен?",
-            a: "Да! Основното објавување е целосно бесплатно за приватни корисници.",
+            a: "Да! Основното објавување е целосно бесплатно!",
           },
           {
             q: "Како да го контактирам продавачот?",
@@ -553,11 +553,11 @@ const MK: StaticPagesCopy = {
         items: [
           {
             q: "Што е VIP пакетот?",
-            a: 'VIP пакетот нуди неограничени огласи, висока позиција во пребарување и badge "VIP" за €15-30/месец.',
+            a: 'VIP пакетот нуди неограничени огласи, висока позиција во пребарување и badge "VIP" за 30€ месечно.',
           },
           {
             q: "Кога се активира VIP пакетот?",
-            a: "VIP пакетот се активира по 6 месеци користење на платформата.",
+            a: "VIP пакетот се активира за некои корисници!",
           },
         ],
       },
@@ -753,7 +753,7 @@ const MNE: StaticPagesCopy = {
           },
           {
             q: "Koliko besplatnih oglasa mogu objaviti?",
-            a: "Privatni korisnici imaju 10 besplatnih oglasa po kategoriji. Biznisi imaju 3 besplatna oglasa + verifikaciju.",
+            a: "Korisnici imaju 10 besplatnih oglasa po kategoriji + verifikacija.",
           },
           {
             q: "Mogu li da objavljujem iz inostranstva?",
@@ -770,7 +770,7 @@ const MNE: StaticPagesCopy = {
         items: [
           {
             q: "Kako da kreiram nalog?",
-            a: "Putem broja telefona (SMS), Google ili Facebook. Broj telefona je obavezan prije prvog objavljivanja.",
+            a: "Putem broja telefona (SMS) ili Google. Broj telefona je obavezan prije prvog objavljivanja.",
           },
           {
             q: "Kako da verifikujem nalog?",
@@ -787,7 +787,7 @@ const MNE: StaticPagesCopy = {
         items: [
           {
             q: "Da li je KetuJemi besplatan?",
-            a: "Da! Osnovno objavljivanje je potpuno besplatno za privatne korisnike.",
+            a: "Da! Osnovno objavljivanje je potpuno besplatno!",
           },
           {
             q: "Kako da kontaktiram prodavca?",
@@ -812,11 +812,11 @@ const MNE: StaticPagesCopy = {
         items: [
           {
             q: "Šta je VIP paket?",
-            a: 'VIP paket nudi neograničene oglase, visoku poziciju u pretrazi i badge "VIP" za €15-30/mjesečno.',
+            a: 'VIP paket nudi neograničene oglase, visoku poziciju u pretrazi i badge "VIP" za 30€ mjesečno.',
           },
           {
             q: "Kada se aktivira VIP paket?",
-            a: "VIP paket se aktivira nakon 6 mjeseci korišćenja platforme.",
+            a: "VIP paket se aktivira za neke korisnike!",
           },
         ],
       },
