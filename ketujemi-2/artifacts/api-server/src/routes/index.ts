@@ -4,12 +4,14 @@ import listingsRouter from "./listings";
 import categoriesRouter from "./categories";
 import exchangeRatesRouter from "./exchange-rates";
 import adminRouter from "./admin";
+import contactRouter from "./contact";
 
 import authRouter from "./auth";
 
 const router: IRouter = Router();
 
 router.use(authRouter);
+router.use(contactRouter);
 router.use(healthRouter);
 router.use(listingsRouter);
 router.use(categoriesRouter);

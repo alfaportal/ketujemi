@@ -14,6 +14,9 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useStaticPages } from "@/lib/static-pages-i18n";
 
+const INFO_EMAIL = "info.info@ketujemi.com";
+const SUPPORT_EMAIL = "support@ketujemi.com";
+
 export default function ContactPage() {
   const { contact: c } = useStaticPages();
   const { toast } = useToast();
@@ -23,25 +26,40 @@ export default function ContactPage() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !subject || !message.trim()) {
       toast({ title: c.toastRequired, variant: "destructive" });
       return;
     }
+
     setBusy(true);
-    const subjectLabel = c.subjects.find((s) => s.value === subject)?.label ?? subject;
-    const body = [
-      `${c.mailtoBodyName} ${name.trim()}`,
-      `${c.mailtoBodyEmail} ${email.trim()}`,
-      `${c.mailtoBodySubject} ${subjectLabel}`,
-      "",
-      message.trim(),
-    ].join("\n");
-    const mailto = `mailto:info@ketujemi.com?subject=${encodeURIComponent(`${c.mailtoSubjectPrefix} ${subjectLabel}`)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailto;
-    toast({ title: c.toastMailto });
-    setBusy(false);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          subject,
+          message: message.trim(),
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("send failed");
+      }
+
+      toast({ title: c.toastSuccess });
+      setName("");
+      setEmail("");
+      setSubject("");
+      setMessage("");
+    } catch {
+      toast({ title: c.toastError, variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -53,8 +71,17 @@ export default function ContactPage() {
               📧
             </span>
             {c.emailLabel}{" "}
-            <a href="mailto:info@ketujemi.com" className="text-blue-600 font-semibold hover:underline">
-              info@ketujemi.com
+            <a href={`mailto:${INFO_EMAIL}`} className="text-blue-600 font-semibold hover:underline">
+              {INFO_EMAIL}
+            </a>
+          </li>
+          <li>
+            <span className="mr-2" aria-hidden>
+              📧
+            </span>
+            {c.supportEmailLabel}{" "}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 font-semibold hover:underline">
+              {SUPPORT_EMAIL}
             </a>
           </li>
           <li>
@@ -149,7 +176,7 @@ export default function ContactPage() {
             />
           </div>
           <Button type="submit" className="w-full min-h-12 h-12 text-base font-semibold" disabled={busy}>
-            {c.submitBtn}
+            {busy ? "…" : c.submitBtn}
           </Button>
         </form>
       </section>

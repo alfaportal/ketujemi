@@ -24,6 +24,7 @@ export type ContactCopy = {
   title: string;
   contactSectionTitle: string;
   emailLabel: string;
+  supportEmailLabel: string;
   facebookLabel: string;
   instagramLabel: string;
   formTitle: string;
@@ -35,11 +36,8 @@ export type ContactCopy = {
   subjects: ContactSubject[];
   submitBtn: string;
   toastRequired: string;
-  toastMailto: string;
-  mailtoSubjectPrefix: string;
-  mailtoBodyName: string;
-  mailtoBodyEmail: string;
-  mailtoBodySubject: string;
+  toastSuccess: string;
+  toastError: string;
   faqTitle: string;
   faq: { q: string; a: string }[];
 };
@@ -180,7 +178,8 @@ const KS: StaticPagesCopy = {
   contact: {
     title: "Na Kontaktoni",
     contactSectionTitle: "Kontakti",
-    emailLabel: "Email:",
+    emailLabel: "Info:",
+    supportEmailLabel: "Support:",
     facebookLabel: "Facebook:",
     instagramLabel: "Instagram:",
     formTitle: "Formulari i kontaktit",
@@ -198,11 +197,8 @@ const KS: StaticPagesCopy = {
     ],
     submitBtn: "Dërgo Mesazhin",
     toastRequired: "Plotësoni të gjitha fushat e detyrueshme",
-    toastMailto: "Hapet aplikacioni i email-it për të dërguar mesazhin.",
-    mailtoSubjectPrefix: "Kontakt:",
-    mailtoBodyName: "Emri:",
-    mailtoBodyEmail: "Email:",
-    mailtoBodySubject: "Subjekti:",
+    toastSuccess: "Mesazhi u dërgua. Do t'ju përgjigjemi së shpejti.",
+    toastError: "Mesazhi nuk u dërgua. Provoni përsëri ose na shkruani me email.",
     faqTitle: "Pyetje të shpeshta (FAQ)",
     faq: [
       {
@@ -440,7 +436,8 @@ const MK: StaticPagesCopy = {
   contact: {
     title: "Контактирајте нè",
     contactSectionTitle: "Контакт",
-    emailLabel: "Email:",
+    emailLabel: "Info:",
+    supportEmailLabel: "Support:",
     facebookLabel: "Facebook:",
     instagramLabel: "Instagram:",
     formTitle: "Контакт формулар",
@@ -458,11 +455,8 @@ const MK: StaticPagesCopy = {
     ],
     submitBtn: "Испрати порака",
     toastRequired: "Пополнете ги сите задолжителни полиња",
-    toastMailto: "Се отвора апликацијата за email за испраќање на пораката.",
-    mailtoSubjectPrefix: "Контакт:",
-    mailtoBodyName: "Име:",
-    mailtoBodyEmail: "Email:",
-    mailtoBodySubject: "Тема:",
+    toastSuccess: "Пораката е испратена. Ќе ви одговориме наскоро.",
+    toastError: "Пораката не е испратена. Обидете се повторно или пишете ни на email.",
     faqTitle: "Често поставувани прашања (FAQ)",
     faq: [
       {
@@ -700,7 +694,8 @@ const MNE: StaticPagesCopy = {
   contact: {
     title: "Kontaktirajte nas",
     contactSectionTitle: "Kontakt",
-    emailLabel: "Email:",
+    emailLabel: "Info:",
+    supportEmailLabel: "Support:",
     facebookLabel: "Facebook:",
     instagramLabel: "Instagram:",
     formTitle: "Kontakt formular",
@@ -718,11 +713,8 @@ const MNE: StaticPagesCopy = {
     ],
     submitBtn: "Pošalji poruku",
     toastRequired: "Popunite sva obavezna polja",
-    toastMailto: "Otvara se email aplikacija za slanje poruke.",
-    mailtoSubjectPrefix: "Kontakt:",
-    mailtoBodyName: "Ime:",
-    mailtoBodyEmail: "Email:",
-    mailtoBodySubject: "Predmet:",
+    toastSuccess: "Poruka je poslata. Odgovorićemo vam uskoro.",
+    toastError: "Poruka nije poslata. Pokušajte ponovo ili nam pišite na email.",
     faqTitle: "Često postavljana pitanja (FAQ)",
     faq: [
       {

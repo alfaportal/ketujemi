@@ -1,5 +1,6 @@
 # Required service variables (set in Railway dashboard or `pnpm run railway:env:vonage`):
 # DATABASE_URL, SESSION_SECRET (min 16 chars), VONAGE_API_KEY, VONAGE_API_SECRET
+# Contact form: EMAIL_USER, EMAIL_PASS (SMTP); optional CONTACT_INBOX=info.info@ketujemi.com
 
 [build]
 builder = "NIXPACKS"
