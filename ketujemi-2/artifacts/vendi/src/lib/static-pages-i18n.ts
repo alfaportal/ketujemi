@@ -14,7 +14,7 @@ type PageSection = {
 export type TermsPrivacyCopy = {
   title: string;
   sections: PageSection[];
-  /** Privacy page only — label before privacy@ketujemi.com link */
+  /** Privacy page only — label before support@ketujemi.com link */
   privacyEmailLabel?: string;
 };
 
@@ -67,7 +67,7 @@ const KS: StaticPagesCopy = {
       {
         title: "Hyrje",
         paragraphs: [
-          "KetuJemi.com është platformë shpalljesh për Kosovë, Shqipëri, Maqedoni dhe Mal të Zi. Duke përdorur platformën, pranoni këto kushte.",
+          "KetuJemi.com është platformë shpalljesh për Kosovë, Shqipëri, Maqedoni dhe Mal të Zi. Diaspora nga Gjermani, Zvicër, Austri, Francë, Itali, Angli dhe SHBA. Duke përdorur platformën, pranoni këto kushte.",
         ],
       },
       {
@@ -101,9 +101,8 @@ const KS: StaticPagesCopy = {
       {
         title: "Limitet e Shpalljeve Falas",
         bullets: [
-          "Përdorues privat: 10 shpallje falas për kategori",
-          "Biznes: 3 shpallje falas + verifikim",
-          "VIP: E pakufizuar (€15-30/muaj)",
+          "Përdorues: 10 shpallje falas për kategori + verifikim",
+          "VIP: E pakufizuar (30€ muaj)",
         ],
       },
       {
@@ -326,7 +325,7 @@ const MK: StaticPagesCopy = {
       {
         title: "Вовед",
         paragraphs: [
-          "KetuJemi.com е платформа за огласи за Косово, Албанија, Македонија и Црна Гора. Со користење на платформата, ги прифаќате овие услови.",
+          "KetuJemi.com е платформа за огласи за Косово, Албанија, Македонија и Црна Гора. Дијаспората од Германија, Швајцарија, Австрија, Франција, Италија, Англија и САД. Со користење на платформата, ги прифаќате овие услови.",
         ],
       },
       {
@@ -360,9 +359,8 @@ const MK: StaticPagesCopy = {
       {
         title: "Лимити на бесплатни огласи",
         bullets: [
-          "Приватен корисник: 10 бесплатни огласи по категорија",
-          "Бизнис: 3 бесплатни огласи + верификација",
-          "VIP: Неограничено (€15-30/месец)",
+          "Корисници: 10 бесплатни огласи по категорија + верификација",
+          "VIP: Неограничено (30€ месечно)",
         ],
       },
       {
@@ -585,7 +583,7 @@ const MNE: StaticPagesCopy = {
       {
         title: "Uvod",
         paragraphs: [
-          "KetuJemi.com je platforma za oglase za Kosovo, Albaniju, Makedoniju i Crnu Goru. Korišćenjem platforme prihvatate ove uslove.",
+          "KetuJemi.com je platforma za oglase za Kosovo, Albaniju, Makedoniju i Crnu Goru. Dijaspora iz Njemačke, Švicarske, Austrije, Francuske, Italije, Engleske i SAD. Korišćenjem platforme prihvatate ove uslove.",
         ],
       },
       {
@@ -619,9 +617,8 @@ const MNE: StaticPagesCopy = {
       {
         title: "Limiti besplatnih oglasa",
         bullets: [
-          "Privatni korisnik: 10 besplatnih oglasa po kategoriji",
-          "Biznis: 3 besplatna oglasa + verifikacija",
-          "VIP: Neograničeno (€15-30/mjesečno)",
+          "Korisnici: 10 besplatnih oglasa po kategoriji + verifikacija",
+          "VIP: Neograničeno (30€ mjesečno)",
         ],
       },
       {

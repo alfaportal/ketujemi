@@ -23,10 +23,10 @@ export default function PrivacyPage() {
             <p>
               {privacy.privacyEmailLabel}{" "}
               <a
-                href="mailto:privacy@ketujemi.com"
+                href="mailto:support@ketujemi.com"
                 className="text-blue-600 font-semibold hover:underline"
               >
-                privacy@ketujemi.com
+                support@ketujemi.com
               </a>
             </p>
           ) : null}
