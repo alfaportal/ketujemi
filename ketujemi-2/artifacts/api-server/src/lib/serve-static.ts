@@ -28,6 +28,8 @@ export function attachStaticFrontend(app: Express): void {
     if (req.method !== "GET" && req.method !== "HEAD") return next();
     const indexPath = path.join(resolved, "index.html");
     if (!fs.existsSync(indexPath)) return next();
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
     res.sendFile(indexPath);
   });
 }
