@@ -1,0 +1,14 @@
+.git
+**/.git
+**/node_modules
+**/.env
+!**/.env.example
+**/dist
+**/.turbo
+**/coverage
+homepage-screenshots
+ketujemi-2/artifacts/vendi/preview-screenshots/node_modules
+*.zip
+*.log
+.DS_Store
+Thumbs.db
