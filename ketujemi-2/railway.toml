@@ -1,10 +1,10 @@
-# Railway deploy uses /railway.toml and /Dockerfile at the repository root.
-# Leave the service Root Directory empty (repo root), not ketujemi-2.
+# Railway auto-detect (Railpack). Set service Root Directory to ketujemi-2.
 [build]
-builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
+builder = "RAILPACK"
+buildCommand = "pnpm install --frozen-lockfile && node ./scripts/build-production.mjs"
 
 [deploy]
+startCommand = "node --enable-source-maps artifacts/api-server/dist/index.mjs"
 healthcheckPath = "/api/healthz"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
