@@ -1,11 +1,17 @@
 import { Link } from "wouter";
-import { FaFacebook, FaGoogle, FaInstagram } from "react-icons/fa";
+import { FaEnvelope, FaFacebook, FaGoogle, FaInstagram } from "react-icons/fa";
 import { useMarket } from "@/lib/market-context";
 
-const SOCIAL_LINKS = [
-  { href: "https://facebook.com/ketujemi", label: "Facebook", Icon: FaFacebook },
-  { href: "https://instagram.com/ketujemi", label: "Instagram", Icon: FaInstagram },
-  { href: "https://www.google.com/search?q=KetuJemi.com", label: "Google", Icon: FaGoogle },
+const FOOTER_LINKS = [
+  { href: "https://facebook.com/ketujemi", label: "Facebook", Icon: FaFacebook, external: true },
+  { href: "https://instagram.com/ketujemi", label: "Instagram", Icon: FaInstagram, external: true },
+  { href: "https://www.google.com/search?q=KetuJemi.com", label: "Google", Icon: FaGoogle, external: true },
+  {
+    href: "mailto:info.info@ketujemi.com,support@ketujemi.com",
+    label: "Email",
+    Icon: FaEnvelope,
+    external: false,
+  },
 ] as const;
 
 export function SiteFooter() {
@@ -38,12 +44,13 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="mt-6 flex justify-center items-center gap-8">
-          {SOCIAL_LINKS.map(({ href, label, Icon }) => (
+          {FOOTER_LINKS.map(({ href, label, Icon, external }) => (
             <a
               key={label}
               href={href}
-              target="_blank"
-              rel="noopener noreferrer"
+              {...(external
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
               aria-label={label}
               className="flex flex-col items-center gap-1.5 text-gray-500 hover:text-blue-600 transition-colors"
             >

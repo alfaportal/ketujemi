@@ -6,7 +6,11 @@ import {
 } from "lucide-react";
 import * as Icons from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useMarket, LOCATIONS } from "@/lib/market-context";
+import { useMarket, LOCATIONS, MARKETS } from "@/lib/market-context";
+
+const MARKETS_BANNER_LINE = MARKETS.map((m) =>
+  m.code === "mk" ? "Maqedoni" : m.name,
+).join(" - ");
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { SiteLogo } from "@/components/site-logo";
 import { useGetCategories } from "@workspace/api-client-react";
@@ -365,7 +369,7 @@ export default function HomePage() {
             {t.markets}
           </h3>
           <p className="mt-1 text-xs sm:text-sm font-medium text-blue-100 leading-snug">
-            Kosov? ? Shqip?ri ? Maqedoni ? Mal i Zi ? Gjermani ? Zvic?r ? Austri ? Franc? ? Itali ? Angli ? SHBA
+            {MARKETS_BANNER_LINE}
           </p>
         </div>
       </section>
