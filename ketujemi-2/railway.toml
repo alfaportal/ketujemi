@@ -4,4 +4,6 @@ buildCommand = "pnpm install --no-frozen-lockfile && NODE_ENV=production BASE_PA
 nixpacksPlan = { phases = { install = { cmds = ["pnpm install --no-frozen-lockfile"] } } }
 
 [deploy]
+preDeployCommand = "pnpm run db:push"
 startCommand = "pnpm start"
+healthCheckPath = "/api/healthz"
