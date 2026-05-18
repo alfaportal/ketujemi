@@ -45,7 +45,7 @@ export type ContactCopy = {
 export type FaqItemCopy = {
   q: string;
   a?: string;
-  aEmail?: { before: string; after: string };
+  aEmail?: { before: string; between: string; after: string };
 };
 
 export type FaqCopy = {
@@ -235,7 +235,7 @@ const KS: StaticPagesCopy = {
           },
           {
             q: "Sa shpallje falas mund të postoj?",
-            a: "Përdoruesit privatë kanë 10 shpallje falas për çdo kategori. Bizneset kanë 3 shpallje falas + verifikim.",
+            a: "Përdoruesit kanë 10 shpallje falas për çdo kategori + verifikim.",
           },
           {
             q: "A mund të postoj nga jashtë vendit?",
@@ -252,7 +252,7 @@ const KS: StaticPagesCopy = {
         items: [
           {
             q: "Si të krijoj llogari?",
-            a: "Me numër telefoni (SMS), Google ose Facebook. Numri i telefonit kërkohet gjithmonë para postimit të parë.",
+            a: "Me numër telefoni (SMS) ose Google. Numri i telefonit kërkohet gjithmonë para postimit të parë.",
           },
           {
             q: "Si të verifikoj llogarinë?",
@@ -269,7 +269,7 @@ const KS: StaticPagesCopy = {
         items: [
           {
             q: "A është KetuJemi falas?",
-            a: "Po! Postimi bazë është plotësisht falas për përdoruesit privatë.",
+            a: "Po! Postimi bazë është plotësisht falas!",
           },
           {
             q: "Si të kontaktoj shitësin?",
@@ -279,6 +279,7 @@ const KS: StaticPagesCopy = {
             q: "Çfarë bëj nëse dikush po mashtron?",
             aEmail: {
               before: 'Klikoni "Raporto" në shpallje ose na kontaktoni në ',
+              between: " dhe ",
               after: ". Veprojmë brenda 24 orëve.",
             },
           },
@@ -293,11 +294,11 @@ const KS: StaticPagesCopy = {
         items: [
           {
             q: "Çfarë është paketa VIP?",
-            a: 'Paketa VIP ofron shpallje të pakufizuara, pozicion të lartë në kërkim dhe badge "VIP" për €15-30/muaj.',
+            a: 'Paketa VIP ofron shpallje të pakufizuara, pozicion të lartë në kërkim dhe badge "VIP" për 30€ muaj.',
           },
           {
             q: "Kur aktivizohet paketa VIP?",
-            a: "Paketa VIP aktivizohet pas 6 muajve të përdorimit të platformës.",
+            a: "Paketa VIP aktivizohet për disa përdorues!",
           },
         ],
       },
@@ -537,6 +538,7 @@ const MK: StaticPagesCopy = {
             q: "Што да направам ако некој измамува?",
             aEmail: {
               before: 'Кликнете "Пријави" на огласот или контактирајте нè на ',
+              between: " и ",
               after: ". Дејствуваме во рок од 24 часа.",
             },
           },
@@ -795,6 +797,7 @@ const MNE: StaticPagesCopy = {
             q: "Šta da uradim ako neko vara?",
             aEmail: {
               before: 'Kliknite "Prijavi" na oglasu ili nas kontaktirajte na ',
+              between: " i ",
               after: ". Djelujemo u roku od 24 sata.",
             },
           },

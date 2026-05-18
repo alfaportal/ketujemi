@@ -1,13 +1,26 @@
 import { StaticPageShell, Section } from "@/components/static-page-shell";
 import { useStaticPages, type FaqItemCopy } from "@/lib/static-pages-i18n";
 
+const FAQ_INFO_EMAIL = "info.info@ketujemi.com";
+const FAQ_SUPPORT_EMAIL = "support@ketujemi.com";
+
 function FaqAnswer({ item }: { item: FaqItemCopy }) {
   if (item.aEmail) {
     return (
       <>
         {item.aEmail.before}
-        <a href="mailto:info@ketujemi.com" className="text-blue-600 font-semibold hover:underline">
-          info@ketujemi.com
+        <a
+          href={`mailto:${FAQ_INFO_EMAIL}`}
+          className="text-blue-600 font-semibold hover:underline"
+        >
+          {FAQ_INFO_EMAIL}
+        </a>
+        {item.aEmail.between}
+        <a
+          href={`mailto:${FAQ_SUPPORT_EMAIL}`}
+          className="text-blue-600 font-semibold hover:underline"
+        >
+          {FAQ_SUPPORT_EMAIL}
         </a>
         {item.aEmail.after}
       </>
