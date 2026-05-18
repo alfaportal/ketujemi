@@ -1,29 +1,16 @@
-# KetuJemi / Vendi — single-container production (API + SPA)
-FROM node:22-bookworm-slim AS base
-RUN corepack enable && corepack prepare pnpm@10.12.1 --activate
+# Local / alternate Docker build (app root). Railway uses /Dockerfile at repo root.
+FROM node:22-bookworm-slim AS build
 WORKDIR /app
-
-FROM base AS deps
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY artifacts/api-server/package.json artifacts/api-server/
-COPY artifacts/vendi/package.json artifacts/vendi/
-COPY artifacts/mockup-sandbox/package.json artifacts/mockup-sandbox/
-COPY lib/db/package.json lib/db/
-COPY lib/api-spec/package.json lib/api-spec/
-COPY lib/api-zod/package.json lib/api-zod/
-COPY lib/api-client-react/package.json lib/api-client-react/
-COPY lib/integrations/ lib/integrations/
-COPY scripts/package.json scripts/
-RUN pnpm install --frozen-lockfile
-
-FROM deps AS build
 COPY . .
+RUN node ./scripts/prepare-npm-install.mjs
+RUN npm install --workspaces --include-workspace-root --ignore-scripts
 ENV NODE_ENV=production
+ENV USE_NPM=1
 ENV BASE_PATH=/
 ENV PORT=8080
 RUN node ./scripts/build-production.mjs
 
-FROM base AS runner
+FROM node:22-bookworm-slim AS runner
 ENV NODE_ENV=production
 ENV PORT=8080
 ENV STATIC_ROOT=/app/artifacts/vendi/dist/public
