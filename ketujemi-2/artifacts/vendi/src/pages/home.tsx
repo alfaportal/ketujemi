@@ -111,17 +111,10 @@ export default function HomePage() {
   const [filterMaxPrice, setFilterMaxPrice] = useState("");
   const [showFilters, setShowFilters] = useState(true);
 
-  const parentCategories = useMemo(() => {
-    const parents = (apiCategories ?? []).filter((c: any) => !c.parent_id);
-    const telefonaFirst = (a: { name?: string; slug?: string | null }, b: typeof a) => {
-      const aTel = a.slug === "telefona" || (a.name ?? "").startsWith("Telefona");
-      const bTel = b.slug === "telefona" || (b.name ?? "").startsWith("Telefona");
-      if (aTel && !bTel) return -1;
-      if (!aTel && bTel) return 1;
-      return 0;
-    };
-    return [...parents].sort(telefonaFirst);
-  }, [apiCategories]);
+  const parentCategories = useMemo(
+    () => (apiCategories ?? []).filter((c: any) => !c.parent_id),
+    [apiCategories],
+  );
 
   const applyFilters = () => {
     const params = new URLSearchParams();
@@ -328,11 +321,11 @@ export default function HomePage() {
                 className="group flex flex-col bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-200 cursor-pointer"
               >
                 {photo ? (
-                  <div className="relative flex h-[140px] sm:h-[160px] w-full items-center justify-center rounded-t-2xl bg-gray-50 p-2 sm:p-3">
+                  <div className="relative w-full rounded-t-2xl bg-gray-50 p-2 sm:p-3">
                     <img
                       src={photo}
                       alt={localName}
-                      className="max-h-full max-w-full object-contain object-center transition-opacity duration-300 group-hover:opacity-95"
+                      className="block w-full h-auto object-contain object-center transition-opacity duration-300 group-hover:opacity-95"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                     />
                     <div className="absolute bottom-2 right-2 w-6 h-6 rounded-lg bg-blue-600/90 flex items-center justify-center shadow-sm">
@@ -340,7 +333,7 @@ export default function HomePage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex h-[140px] sm:h-[160px] w-full items-center justify-center rounded-t-2xl bg-blue-50 group-hover:bg-blue-100 transition-colors">
+                  <div className="flex min-h-[140px] sm:min-h-[160px] w-full items-center justify-center rounded-t-2xl bg-blue-50 group-hover:bg-blue-100 transition-colors">
                     <IconComp size={24} className="text-blue-500" />
                   </div>
                 )}
