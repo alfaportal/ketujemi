@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { MapPin, Eye, Clock, AlertCircle } from "lucide-react";
 import { useMarket, convertPrice } from "@/lib/market-context";
+import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { translateCategory } from "@/lib/category-translations";
 
 // ─── Formatted timestamp ──────────────────────────────────────────────────────
@@ -81,12 +82,12 @@ interface ListingCardProps {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function ListingCard({ listing }: ListingCardProps) {
-  const { market, rates, t } = useMarket();
+  const { market, rates, t, uiLang } = useMarket();
   const [, navigate] = useLocation();
   const photo = listing.image_url || getPhoto(listing.category_name ?? "", listing.id);
   const isToday = new Date(listing.created_at).toDateString() === new Date().toDateString();
   const daysLeft = getDaysLeft(listing.expires_at, market.code);
-  const catName = translateCategory(listing.category_name ?? "", market.code);
+  const catName = translateCategory(listing.category_name ?? "", translationKeyForUiLang(uiLang));
 
   return (
     <Link

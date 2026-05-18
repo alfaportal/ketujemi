@@ -14,6 +14,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
+import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { fillCount } from "@/lib/app-extra-i18n";
 import { translateCategory } from "@/lib/category-translations";
 import {
@@ -47,7 +48,8 @@ export function AutoPjeseSearchPanel({
   onListingParamsChange,
   onScrollToResults,
 }: Props) {
-  const { t, market } = useMarket();
+  const { t, market, uiLang } = useMarket();
+  const locale = translationKeyForUiLang(uiLang);
   const partTypeIds = useMemo(
     () => getAutoPiesePartTypeCategoryIds(categories, hubId),
     [categories, hubId],
@@ -170,7 +172,7 @@ export function AutoPjeseSearchPanel({
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {AUTO_PJESE_PART_NAMES.map((name) => {
             const selected = partName === name;
-            const label = translateCategory(name, market.code);
+            const label = translateCategory(name, locale);
             return (
               <button
                 key={name}

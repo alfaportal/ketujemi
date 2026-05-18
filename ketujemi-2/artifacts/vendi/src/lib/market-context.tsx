@@ -160,6 +160,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     conditionUsedSub: "Ka qenë në përdorim",
     conditionDamagedSub: "Me defekt / aksident",
     marketsTagline: "Kosovë · Shqipëri · Maqedoni · Mal i Zi",
+    marketsBannerLine:
+      "Kosovë - Shqipëri - Maqedoni - Mal i Zi - Gjermani - Zvicër - Austri - Francë - Itali - Angli - SHBA",
     terms: "Kushtet", privacy: "Privatësia", contact: "Kontakti", faq: "FAQ",
     featured: "Të rekomanduara", recent: "Njoftimet e fundit",
     listingsCount: "shpallje", citiesLabel: "qytetet kryesore",
@@ -282,6 +284,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     conditionUsedSub: "Ka qenë në përdorim",
     conditionDamagedSub: "Me defekt / aksident",
     marketsTagline: "Kosovë · Shqipëri · Maqedoni · Mal i Zi",
+    marketsBannerLine:
+      "Kosovë - Shqipëri - Maqedoni - Mal i Zi - Gjermani - Zvicër - Austri - Francë - Itali - Angli - SHBA",
     terms: "Kushtet", privacy: "Privatësia", contact: "Kontakti", faq: "FAQ",
     featured: "Të rekomanduara", recent: "Njoftimet e fundit",
     listingsCount: "njoftime", citiesLabel: "qytetet kryesore",
@@ -404,6 +408,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     conditionUsedSub: "Бил во употреба",
     conditionDamagedSub: "Со дефект / акцидент",
     marketsTagline: "Косово · Албанија · Македонија · Црна Гора",
+    marketsBannerLine:
+      "Косово - Албанија - Македонија - Црна Гора - Германија - Швајцарија - Австрија - Франција - Италија - Англија - САД",
     terms: "Услови", privacy: "Приватност", contact: "Контакт", faq: "FAQ",
     featured: "Препорачани", recent: "Последни огласи",
     listingsCount: "огласи", citiesLabel: "главни градови",
@@ -526,6 +532,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     conditionUsedSub: "Bio u upotrebi",
     conditionDamagedSub: "Sa defektom / u nesreći",
     marketsTagline: "Kosovo · Albanija · Makedonija · Crna Gora",
+    marketsBannerLine:
+      "Kosovo - Albanija - Makedonija - Crna Gora - Njemačka - Švicarska - Austrija - Francuska - Italija - Engleska - SAD",
     terms: "Uslovi", privacy: "Privatnost", contact: "Kontakt", faq: "FAQ",
     featured: "Preporučeni", recent: "Najnoviji oglasi",
     listingsCount: "oglasa", citiesLabel: "glavni gradovi",

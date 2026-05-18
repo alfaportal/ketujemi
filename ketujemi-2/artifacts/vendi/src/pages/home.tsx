@@ -6,15 +6,12 @@ import {
 } from "lucide-react";
 import * as Icons from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useMarket, LOCATIONS, MARKETS } from "@/lib/market-context";
-
-const MARKETS_BANNER_LINE = MARKETS.map((m) =>
-  m.code === "mk" ? "Maqedoni" : m.name,
-).join(" - ");
+import { useMarket, LOCATIONS } from "@/lib/market-context";
+import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { SiteLogo } from "@/components/site-logo";
 import { useGetCategories } from "@workspace/api-client-react";
-import { translateCategory, type MarketCode } from "@/lib/category-translations";
+import { translateCategory } from "@/lib/category-translations";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
 import { LanguageSelector } from "@/components/language-selector";
 import { SiteFooter } from "@/components/site-footer";
@@ -105,7 +102,8 @@ function SponsorsAboveFooterRow() {
 
 // --- Page ---------------------------------------------------------------------
 export default function HomePage() {
-  const { market, t } = useMarket();
+  const { market, t, uiLang } = useMarket();
+  const locale = translationKeyForUiLang(uiLang);
   const [, setLocation] = useLocation();
   const { data: apiCategories } = useGetCategories();
   const [filterSearch, setFilterSearch] = useState("");
@@ -238,7 +236,7 @@ export default function HomePage() {
                       <SelectItem value="all">{t.all}</SelectItem>
                       {parentCategories.map((cat: any) => (
                         <SelectItem key={cat.id} value={String(cat.id)}>
-                          {translateCategory(cat.name, market.code)}
+                          {translateCategory(cat.name, locale)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -308,7 +306,7 @@ export default function HomePage() {
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
           {parentCategories.map((cat: any) => {
-            const localName = translateCategory(cat.name, market.code);
+            const localName = translateCategory(cat.name, locale);
             const photo = getCatPhoto(cat.slug);
             const IconComp = (Icons as unknown as Record<string, React.ElementType>)[cat.icon] ?? Icons.Tag;
             return (
@@ -363,7 +361,7 @@ export default function HomePage() {
             {t.markets}
           </h3>
           <p className="mt-1 text-xs sm:text-sm font-medium text-blue-100 leading-snug">
-            {MARKETS_BANNER_LINE}
+            {t.marketsBannerLine}
           </p>
         </div>
       </section>

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import * as Icons from "lucide-react";
 import { useMarket } from "@/lib/market-context";
+import { translationKeyForUiLang } from "@/lib/ui-languages";
 import ListingCard from "@/components/listing-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { translateCategory } from "@/lib/category-translations";
@@ -1043,9 +1044,9 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
   const Icon = getCatIcon(currentCategory?.icon ?? "Car");
 
   const crumbItems: { label: string; href?: string }[] = [{ label: "KetuJemi", href: "/" }];
-  if (grandparentCategory) crumbItems.push({ label: translateCategory(grandparentCategory.name, market.code), href: `/categories/${grandparentCategory.id}` });
-  if (parentCategory) crumbItems.push({ label: translateCategory(parentCategory.name, market.code), href: `/categories/${parentCategory.id}` });
-  crumbItems.push({ label: translateCategory(currentCategory?.name ?? "", market.code) });
+  if (grandparentCategory) crumbItems.push({ label: translateCategory(grandparentCategory.name, locale), href: `/categories/${grandparentCategory.id}` });
+  if (parentCategory) crumbItems.push({ label: translateCategory(parentCategory.name, locale), href: `/categories/${parentCategory.id}` });
+  crumbItems.push({ label: translateCategory(currentCategory?.name ?? "", locale) });
 
   const hubResultsId = isVeturaHub
     ? "vetura-results"
@@ -1088,7 +1089,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-black text-gray-900">
           {isBrandLevel || isMotorBrandLeaf || isKamionBrandLeaf || isTelefonaBrandLeaf || isKompjuterBrandLeaf
-            ? `${translateCategory(currentCategory?.name ?? "", market.code)} — ${t.listings.toLowerCase()}`
+            ? `${translateCategory(currentCategory?.name ?? "", locale)} — ${t.listings.toLowerCase()}`
             : isTvElektronikeHub || isTelefonaHubPage
               ? t.listings
               : children.length > 0
@@ -1265,7 +1266,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
             </div>
             <div className="min-w-0 flex-1 pt-1 sm:pt-0">
               <h1 className="text-lg sm:text-2xl md:text-2xl font-black text-white hyphens-auto break-words">
-                {translateCategory(currentCategory?.name ?? "", market.code)}
+                {translateCategory(currentCategory?.name ?? "", locale)}
               </h1>
               {listingsData && listingsData.total > 0 && (
                 <div className="text-white/75 text-sm mt-1">{listingsData.total} {t.listings.toLowerCase()}</div>

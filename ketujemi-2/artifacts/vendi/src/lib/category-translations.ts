@@ -194,6 +194,6 @@ export const CAT_TRANSLATIONS: Record<string, Record<MarketCode, string>> = {
   "Aksesore kafshësh":     { ks: "Aksesore kafshësh",     al: "Aksesore kafshësh",     mk: "Акцесоари за животни",            mne: "Akcesori za životinje" },
 };
 
-export function translateCategory(name: string, marketCode: string): string {
-  return CAT_TRANSLATIONS[name]?.[marketCode as MarketCode] ?? name;
+export function translateCategory(name: string, localeCode: MarketCode): string {
+  return CAT_TRANSLATIONS[name]?.[localeCode] ?? name;
 }

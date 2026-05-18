@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import * as Icons from "lucide-react";
 import { useMarket } from "@/lib/market-context";
+import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { translateCategory } from "@/lib/category-translations";
 
 // ─── Cover photos keyed by category name prefix ───────────────────────────────
@@ -40,10 +41,11 @@ interface Props {
 }
 
 export default function CategoryCard({ category, onClick }: Props) {
-  const { market } = useMarket();
+  const { uiLang } = useMarket();
+  const locale = translationKeyForUiLang(uiLang);
   const IconComponent = (Icons as unknown as Record<string, React.ElementType>)[category.icon] ?? Icons.Tag;
 
-  const localName = translateCategory(category.name, market.code);
+  const localName = translateCategory(category.name, locale);
   const photoKey = Object.keys(CAT_PHOTOS).find((k) => category.name.startsWith(k));
   const photo = photoKey ? CAT_PHOTOS[photoKey] : null;
 
