@@ -1,0 +1,44 @@
+# KetuJemi (Vendi) — Render Blueprint
+#
+# Repo layout: app lives in ketujemi-2/ (pnpm monorepo).
+# When connecting GitHub, either:
+#   • Set Render "Root Directory" to ketujemi-2 and use this file as the Blueprint, or
+#   • Keep repo root and set Blueprint path to ketujemi-2/render.yaml (rootDir below applies).
+
+databases:
+  - name: ketujemi-db
+    databaseName: ketujemi
+    user: ketujemi
+    plan: free
+
+services:
+  - type: web
+    name: ketujemi
+    runtime: node
+    plan: starter
+    rootDir: ketujemi-2
+    buildCommand: >-
+      npm install -g pnpm@10.12.1 &&
+      pnpm install --frozen-lockfile &&
+      node ./scripts/build-production.mjs
+    preDeployCommand: pnpm run db:push
+    startCommand: node ./scripts/start-production.mjs
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ketujemi-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: VONAGE_API_KEY
+        sync: false
+      - key: VONAGE_API_SECRET
+        sync: false
+      # Optional: override auto-detected origin for auth email links
+      # - key: PUBLIC_APP_ORIGIN
+      #   value: https://ketujemi.onrender.com
