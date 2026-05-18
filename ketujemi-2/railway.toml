@@ -1,5 +1,6 @@
 [build]
 builder = "NIXPACKS"
+nixpacksConfigPath = "nixpacks.toml"
 buildCommand = "pnpm install --no-frozen-lockfile && NODE_ENV=production BASE_PATH=/ NODE_OPTIONS=--max-old-space-size=4096 pnpm run build:production"
 nixpacksPlan = { phases = { install = { cmds = ["pnpm install --no-frozen-lockfile"] } } }
 

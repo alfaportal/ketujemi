@@ -164,8 +164,8 @@ importers:
         specifier: 4.59.0
         version: 4.59.0
       '@tailwindcss/oxide-win32-x64-msvc':
-        specifier: ^4.3.0
-        version: 4.3.0
+        specifier: 4.2.1
+        version: 4.2.1
       lightningcss-win32-x64-msvc:
         specifier: ^1.32.0
         version: 1.32.0
@@ -180,7 +180,7 @@ importers:
         specifier: 4.59.0
         version: 4.59.0
       '@tailwindcss/oxide-linux-x64-gnu':
-        specifier: ^4.2.1
+        specifier: 4.2.1
         version: 4.2.1
       lightningcss-linux-x64-gnu:
         specifier: ^1.31.1
@@ -525,6 +525,12 @@ importers:
       '@replit/vite-plugin-runtime-error-modal':
         specifier: 'catalog:'
         version: 0.0.6
+      '@rollup/rollup-linux-x64-gnu':
+        specifier: 4.59.0
+        version: 4.59.0
+      '@tailwindcss/oxide-linux-x64-gnu':
+        specifier: 4.2.1
+        version: 4.2.1
       '@tailwindcss/typography':
         specifier: ^0.5.15
         version: 0.5.19(tailwindcss@4.2.1)
@@ -573,6 +579,9 @@ importers:
       input-otp:
         specifier: ^1.4.2
         version: 1.4.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      lightningcss-linux-x64-gnu:
+        specifier: 1.31.1
+        version: 1.31.1
       lucide-react:
         specifier: 'catalog:'
         version: 0.545.0(react@19.1.0)
@@ -624,16 +633,6 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 3.25.76
-    optionalDependencies:
-      '@rollup/rollup-linux-x64-gnu':
-        specifier: 4.59.0
-        version: 4.59.0
-      '@tailwindcss/oxide-linux-x64-gnu':
-        specifier: 4.2.1
-        version: 4.2.1
-      lightningcss-linux-x64-gnu:
-        specifier: 1.31.1
-        version: 1.31.1
 
   lib/api-client-react:
     dependencies:
@@ -1658,8 +1657,8 @@ packages:
       - '@emnapi/wasi-threads'
       - tslib
 
-  '@tailwindcss/oxide-win32-x64-msvc@4.3.0':
-    resolution: {integrity: sha512-Mvrf2kXW/yeW/OTezZlCGOirXRcUuLIBx/5Y12BaPM7wJoryG6dfS/NJL8aBPqtTEx/Vm4T4vKzFUcKDT+TKUA==}
+  '@tailwindcss/oxide-win32-x64-msvc@4.2.1':
+    resolution: {integrity: sha512-rbO34G5sMWWyrN/idLeVxAZgAKWrn5LiR3/I90Q9MkA67s6T1oB0xtTe+0heoBvHSpbU9Mk7i6uwJnpo4u21XQ==}
     engines: {node: '>= 20'}
     cpu: [x64]
     os: [win32]
@@ -4293,8 +4292,7 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.0-rc.3': {}
 
-  '@rollup/rollup-linux-x64-gnu@4.59.0':
-    optional: true
+  '@rollup/rollup-linux-x64-gnu@4.59.0': {}
 
   '@rollup/rollup-win32-x64-msvc@4.59.0': {}
 
@@ -4369,13 +4367,12 @@ snapshots:
       source-map-js: 1.2.1
       tailwindcss: 4.2.1
 
-  '@tailwindcss/oxide-linux-x64-gnu@4.2.1':
-    optional: true
+  '@tailwindcss/oxide-linux-x64-gnu@4.2.1': {}
 
   '@tailwindcss/oxide-wasm32-wasi@4.2.1':
     optional: true
 
-  '@tailwindcss/oxide-win32-x64-msvc@4.3.0': {}
+  '@tailwindcss/oxide-win32-x64-msvc@4.2.1': {}
 
   '@tailwindcss/oxide@4.2.1':
     optionalDependencies:
@@ -5102,8 +5099,7 @@ snapshots:
 
   leven@4.1.0: {}
 
-  lightningcss-linux-x64-gnu@1.31.1:
-    optional: true
+  lightningcss-linux-x64-gnu@1.31.1: {}
 
   lightningcss-win32-x64-msvc@1.32.0: {}
 

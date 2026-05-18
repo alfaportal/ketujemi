@@ -3,11 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "4.59.0",
-    "@tailwindcss/oxide-linux-x64-gnu": "4.2.1",
-    "lightningcss-linux-x64-gnu": "1.31.1"
-  },
   "scripts": {
     "dev": "vite --config vite.config.ts --host 0.0.0.0",
     "build": "vite build --config vite.config.ts",
@@ -47,13 +42,16 @@
     "@replit/vite-plugin-cartographer": "catalog:",
     "@replit/vite-plugin-dev-banner": "catalog:",
     "@replit/vite-plugin-runtime-error-modal": "catalog:",
+    "@tailwindcss/oxide-linux-x64-gnu": "4.2.1",
     "@tailwindcss/typography": "^0.5.15",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@rollup/rollup-linux-x64-gnu": "4.59.0",
     "@vitejs/plugin-react": "catalog:",
+    "lightningcss-linux-x64-gnu": "1.31.1",
     "@workspace/api-client-react": "workspace:*",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",

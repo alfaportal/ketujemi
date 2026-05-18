@@ -2,6 +2,10 @@
   "name": "workspace",
   "version": "0.0.0",
   "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": ">=22.12.0",
+    "pnpm": ">=10.12.1"
+  },
   "license": "MIT",
   "scripts": {
     "preinstall": "node ./scripts/check-pnpm.mjs",
@@ -21,14 +25,14 @@
   "devDependencies": {
     "@esbuild/win32-x64": "0.27.3",
     "@rollup/rollup-win32-x64-msvc": "4.59.0",
-    "@tailwindcss/oxide-win32-x64-msvc": "^4.3.0",
+    "@tailwindcss/oxide-win32-x64-msvc": "4.2.1",
     "lightningcss-win32-x64-msvc": "^1.32.0",
     "prettier": "^3.8.1",
     "typescript": "~5.9.2"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "4.59.0",
-    "@tailwindcss/oxide-linux-x64-gnu": "^4.2.1",
+    "@tailwindcss/oxide-linux-x64-gnu": "4.2.1",
     "lightningcss-linux-x64-gnu": "^1.31.1"
   }
 }
