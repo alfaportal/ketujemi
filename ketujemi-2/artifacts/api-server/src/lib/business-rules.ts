@@ -5,6 +5,7 @@
 
 /** Same per-root-category cap as private users (see category-quota). */
 export const BUSINESS_STANDARD_FREE_LISTINGS_PER_CATEGORY = 10;
+export const BUSINESS_EXTRA_POST_PRICE_EUR = 1;
 export const BUSINESS_VIP_MONTHLY_PRICE_EUR = 20;
 
 export const COMPLAINT_WARN_THRESHOLD = 3;

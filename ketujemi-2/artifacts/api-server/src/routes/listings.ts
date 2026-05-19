@@ -19,6 +19,7 @@ import {
   countUserActiveListingsInCategoryRoot,
 } from "../lib/category-quota";
 import { isBusinessAccount, isVipBusinessActive } from "../lib/business-rules";
+import { assertBusinessCategoryListingQuota } from "../lib/business-quota";
 import { assertBusinessListingCreate } from "../lib/business-listing-guard";
 import type { User } from "@workspace/db";
 
@@ -319,6 +320,11 @@ router.post("/listings", async (req, res) => {
     return;
   }
 
+  const paidExtraPost =
+    req.body && typeof req.body === "object" && "paid_extra_post" in req.body
+      ? Boolean((req.body as { paid_extra_post?: boolean }).paid_extra_post)
+      : false;
+
   try {
     await assertBusinessListingCreate(viewer, {
       title: parsed.data.title,
@@ -347,9 +353,30 @@ router.post("/listings", async (req, res) => {
     throw err;
   }
 
-  const skipCategoryQuota =
-    isBusinessAccount(viewer) && isVipBusinessActive(viewer);
-  if (!skipCategoryQuota) {
+  if (isBusinessAccount(viewer) && !isVipBusinessActive(viewer)) {
+    try {
+      await assertBusinessCategoryListingQuota(viewer, parsed.data.category_id, {
+        paidExtraPost,
+      });
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === "BUSINESS_QUOTA_EXCEEDED") {
+        const e = err as Error & {
+          used: number;
+          limit: number;
+          extraPostPriceEur: number;
+        };
+        res.status(402).json({
+          error: "BUSINESS_QUOTA_EXCEEDED",
+          message: `Keni arritur ${e.limit} njoftime falas për këtë kategori. Çdo njoftim shtesë kushton €${e.extraPostPriceEur}.`,
+          used: e.used,
+          limit: e.limit,
+          extraPostPriceEur: e.extraPostPriceEur,
+        });
+        return;
+      }
+      throw err;
+    }
+  } else if (!isBusinessAccount(viewer)) {
     try {
       await assertFreeListingQuota(viewer, parsed.data.category_id);
     } catch (err: unknown) {

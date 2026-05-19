@@ -33,8 +33,8 @@ Dokument referencë për zhvillim dhe moderim. Implementimi në kod:
 
 | Tier | Kuota |
 |------|--------|
-| Biznes Standard | 10 njoftime aktive falas për **çdo kategori** (si përdoruesit privatë) |
-| VIP Biznes ☆ | ∞ | €20 / muaj (`business_tier=vip`, `vip_expires_at`) |
+| Biznes Standard | 10 njoftime falas për **çdo kategori**; pas tyre **€1** për çdo njoftim shtesë (`paid_extra_post: true` në body) |
+| VIP Biznes ☆ | E pakufizuar — €20 / muaj (`business_tier=vip`, `vip_expires_at`) |
 
 API: `GET /auth/account/business-quota`, `GET /listings/free-quota?category_id=…`
 
