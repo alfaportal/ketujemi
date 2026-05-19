@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { FaEnvelope, FaFacebook, FaGoogle, FaInstagram } from "react-icons/fa";
+import { SiteLogo } from "@/components/site-logo";
 import { useMarket } from "@/lib/market-context";
 
 const FOOTER_LINKS = [
@@ -21,10 +22,7 @@ export function SiteFooter() {
     <footer className="bg-white border-t border-gray-100 mt-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center">
-            <span className="text-xl font-black text-gray-900">KetuJemi</span>
-            <span className="text-xl font-black text-blue-500">.com</span>
-          </div>
+          <SiteLogo imageClassName="h-10" />
           <nav className="flex flex-wrap justify-center gap-4 sm:gap-6 text-sm text-gray-500">
             <Link href="/terms" className="hover:text-gray-800 transition-colors min-h-11 inline-flex items-center">
               {t.terms}

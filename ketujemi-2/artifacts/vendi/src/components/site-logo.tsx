@@ -1,28 +1,31 @@
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 
+const LOGO_SRC = `${import.meta.env.BASE_URL}logo.png`;
+
 type Props = {
   className?: string;
+  imageClassName?: string;
   testId?: string;
 };
 
-/** Full KetuJemi.com wordmark — never truncated on mobile. */
-export function SiteLogo({ className, testId = "link-logo" }: Props) {
+/** KetuJemi.com company logo — links to home. */
+export function SiteLogo({ className, imageClassName, testId = "link-logo" }: Props) {
   return (
     <Link
       href="/"
       data-testid={testId}
-      className={cn(
-        "inline-flex shrink-0 items-baseline whitespace-nowrap select-none",
-        className,
-      )}
+      className={cn("inline-flex shrink-0 items-center select-none", className)}
+      aria-label="KetuJemi.com"
     >
-      <span className="text-sm font-black leading-none text-gray-900 sm:text-xl md:text-2xl">
-        KetuJemi
-      </span>
-      <span className="text-sm font-black leading-none text-blue-500 sm:text-xl md:text-2xl">
-        .com
-      </span>
+      <img
+        src={LOGO_SRC}
+        alt="KetuJemi.com"
+        width={220}
+        height={56}
+        className={cn("h-9 w-auto max-w-[min(220px,52vw)] object-contain sm:h-11 md:h-12", imageClassName)}
+        decoding="async"
+      />
     </Link>
   );
 }

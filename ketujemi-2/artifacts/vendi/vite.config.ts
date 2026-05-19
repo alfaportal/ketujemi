@@ -23,7 +23,7 @@ export default defineConfig(async ({ command }) => {
     VitePWA({
       injectRegister: null,
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg", "icons/pwa-192x192.png", "icons/pwa-512x512.png"],
+      includeAssets: ["logo.png", "icons/pwa-192x192.png", "icons/pwa-512x512.png"],
       manifest: {
         name: "KetuJemi.com",
         short_name: "KetuJemi",
