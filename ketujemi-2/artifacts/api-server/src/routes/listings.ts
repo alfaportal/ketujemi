@@ -18,6 +18,8 @@ import {
   assertFreeListingQuota,
   countUserActiveListingsInCategoryRoot,
 } from "../lib/category-quota";
+import { isBusinessAccount } from "../lib/business-rules";
+import { assertBusinessListingCreate } from "../lib/business-listing-guard";
 import type { User } from "@workspace/db";
 
 const router = Router();
@@ -317,19 +319,68 @@ router.post("/listings", async (req, res) => {
     return;
   }
 
+  const paidExtraPost =
+    req.body && typeof req.body === "object" && "paid_extra_post" in req.body
+      ? Boolean((req.body as { paid_extra_post?: boolean }).paid_extra_post)
+      : false;
+
   try {
-    await assertFreeListingQuota(viewer, parsed.data.category_id);
+    await assertBusinessListingCreate(
+      viewer,
+      {
+        title: parsed.data.title,
+        description: parsed.data.description,
+        price: parsed.data.price,
+        image_url: parsed.data.image_url,
+      },
+      { paidExtraPost },
+    );
   } catch (err: unknown) {
-    if (err instanceof Error && err.message === "FREE_QUOTA_EXCEEDED") {
-      const e = err as Error & { used: number; limit: number };
-      res.status(403).json({
-        error: "FREE_QUOTA_EXCEEDED",
-        used: e.used,
-        limit: e.limit,
-      });
-      return;
+    if (err instanceof Error) {
+      if (err.message === "BUSINESS_QUOTA_EXCEEDED") {
+        const e = err as Error & { quota?: unknown };
+        res.status(402).json({
+          error: "BUSINESS_QUOTA_EXCEEDED",
+          message:
+            "Keni arritur 1 postim falas për këtë muaj. Paguani €1 për postim shtesë ose aktivizoni VIP Biznes (€20/muaj).",
+          quota: e.quota,
+        });
+        return;
+      }
+      if (err.message === "BUSINESS_DUPLICATE_LISTING") {
+        res.status(409).json({
+          error: "BUSINESS_DUPLICATE_LISTING",
+          message: "Ky produkt është postuar tashmë. Përditësoni shpalljen ekzistuese.",
+        });
+        return;
+      }
+      if (err.message.startsWith("BUSINESS_")) {
+        const publicMessage = (err as Error & { publicMessage?: string }).publicMessage;
+        res.status(400).json({
+          error: err.message,
+          message: publicMessage ?? err.message,
+        });
+        return;
+      }
     }
     throw err;
+  }
+
+  if (!isBusinessAccount(viewer)) {
+    try {
+      await assertFreeListingQuota(viewer, parsed.data.category_id);
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === "FREE_QUOTA_EXCEEDED") {
+        const e = err as Error & { used: number; limit: number };
+        res.status(403).json({
+          error: "FREE_QUOTA_EXCEEDED",
+          used: e.used,
+          limit: e.limit,
+        });
+        return;
+      }
+      throw err;
+    }
   }
 
   const [row] = await db

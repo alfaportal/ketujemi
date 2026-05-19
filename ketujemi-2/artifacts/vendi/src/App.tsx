@@ -18,6 +18,7 @@ import PrivacyPage from "@/pages/privacy";
 import ContactPage from "@/pages/contact";
 import FaqPage from "@/pages/faq";
 import NotFound from "@/pages/not-found";
+import { AppLayout } from "@/components/app-layout";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,7 +31,7 @@ const queryClient = new QueryClient({
 
 function Router() {
   return (
-    <div className="min-h-screen bg-background">
+    <AppLayout>
       <main>
         <Switch>
           <Route path="/admin-secret-panel" component={AdminPanel} />
@@ -49,7 +50,7 @@ function Router() {
           <Route component={NotFound} />
         </Switch>
       </main>
-    </div>
+    </AppLayout>
   );
 }
 

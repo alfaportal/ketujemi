@@ -1,6 +1,5 @@
 import { Link } from "wouter";
 import { ArrowLeft } from "lucide-react";
-import { SiteFooter } from "@/components/site-footer";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { SiteLogo } from "@/components/site-logo";
 import { useMarket } from "@/lib/market-context";
@@ -34,7 +33,6 @@ export function StaticPageShell({ title, children }: StaticPageShellProps) {
         <div className="space-y-8 text-gray-700">{children}</div>
       </main>
 
-      <SiteFooter />
     </div>
   );
 }

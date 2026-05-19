@@ -354,7 +354,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <SiteFooter />
     </div>
   );
 }

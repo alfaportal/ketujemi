@@ -1,4 +1,10 @@
-import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+
+/** `private` = individual seller; `business` = registered company account. */
+export type AccountType = "private" | "business";
+
+/** Business subscription tier (see BUSINESS_RULES.md). */
+export type BusinessTier = "standard" | "vip";
 
 export const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -13,6 +19,14 @@ export const usersTable = pgTable("users", {
   city: text("city"),
   about_me: text("about_me"),
   email_verified_at: timestamp("email_verified_at"),
+  /** private | business — business accounts follow separate posting rules. */
+  account_type: text("account_type").notNull().default("private"),
+  business_name: text("business_name"),
+  business_tier: text("business_tier"),
+  vip_expires_at: timestamp("vip_expires_at"),
+  /** Temporary suspension (30-day strike); permanent ban uses banned_at. */
+  suspended_until: timestamp("suspended_until"),
+  strike_count: integer("strike_count").notNull().default(0),
   banned_at: timestamp("banned_at"),
   ban_reason: text("ban_reason"),
   created_at: timestamp("created_at").notNull().defaultNow(),

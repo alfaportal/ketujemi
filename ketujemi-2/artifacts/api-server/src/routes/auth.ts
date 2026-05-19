@@ -17,6 +17,8 @@ import {
 } from "../lib/user-session";
 import { normalizePhone } from "../lib/phone-prefixes";
 import { assertAccountActive, isUserBanned } from "../lib/user-ban";
+import { getBusinessQuotaStatus } from "../lib/business-quota";
+import { isBusinessAccount } from "../lib/business-rules";
 
 const router = Router();
 
@@ -347,6 +349,67 @@ router.patch("/auth/profile", async (req, res) => {
   }
 
   res.json({ user: publicUser(row, { self: true }) });
+});
+
+// ─── POST /auth/account/business — upgrade private → business (SMS + email required)
+router.post("/auth/account/business", async (req, res) => {
+  const id = await sessionUserId(req);
+  if (id == null) {
+    res.status(401).json({ error: "Not logged in" });
+    return;
+  }
+
+  const businessName =
+    typeof req.body?.business_name === "string" ? req.body.business_name.trim() : "";
+  if (businessName.length < 2) {
+    res.status(400).json({ error: "business_name required" });
+    return;
+  }
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  if (!user.email_verified_at || !user.phone_e164_digits) {
+    res.status(400).json({
+      error: "BUSINESS_VERIFICATION_REQUIRED",
+      message:
+        "Llogaria e biznesit kërkon email të verifikuar dhe numër telefoni të verifikuar me SMS.",
+    });
+    return;
+  }
+
+  const [row] = await db
+    .update(usersTable)
+    .set({
+      account_type: "business",
+      business_name: businessName.slice(0, 200),
+      business_tier: user.business_tier ?? "standard",
+    })
+    .where(eq(usersTable.id, id))
+    .returning();
+
+  res.json({ user: publicUser(row!, { self: true }) });
+});
+
+// ─── GET /auth/account/business-quota
+router.get("/auth/account/business-quota", async (req, res) => {
+  const id = await sessionUserId(req);
+  if (id == null) {
+    res.status(401).json({ error: "Not logged in" });
+    return;
+  }
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!user || !isBusinessAccount(user)) {
+    res.status(400).json({ error: "Not a business account" });
+    return;
+  }
+
+  const quota = await getBusinessQuotaStatus(user);
+  res.json({ quota });
 });
 
 // ─── POST /auth/sms/start ───────────────────────────────────────────────────

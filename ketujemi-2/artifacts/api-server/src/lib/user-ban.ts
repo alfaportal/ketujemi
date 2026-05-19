@@ -1,6 +1,7 @@
 import { db, usersTable, adminSettingsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import type { User } from "@workspace/db";
+import { isUserSuspended } from "./violation-escalation";
 
 const BANNED_PHONES_KEY = "banned_phones";
 
@@ -8,8 +9,8 @@ function digitsOnly(s: string): string {
   return s.replace(/\D/g, "");
 }
 
-export function isUserBanned(user: Pick<User, "banned_at">): boolean {
-  return user.banned_at != null;
+export function isUserBanned(user: Pick<User, "banned_at" | "suspended_until">): boolean {
+  return isUserSuspended(user);
 }
 
 export async function loadBannedPhoneSet(): Promise<Set<string>> {
@@ -44,7 +45,7 @@ export async function saveBannedPhoneSet(phones: Set<string>): Promise<void> {
 }
 
 export async function assertAccountActive(
-  user: Pick<User, "banned_at"> | null | undefined,
+  user: Pick<User, "banned_at" | "suspended_until"> | null | undefined,
   phone?: string,
 ): Promise<void> {
   if (user && isUserBanned(user)) {

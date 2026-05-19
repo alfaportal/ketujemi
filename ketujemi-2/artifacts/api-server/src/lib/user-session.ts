@@ -26,7 +26,7 @@ export function publicUser(u: User, opts?: { self?: boolean }) {
       ? rawName
       : sellerFirstName(rawName)
     : null;
-  return {
+  const base = {
     id: u.id,
     email: u.email,
     phone_e164_digits: u.phone_e164_digits,
@@ -35,5 +35,17 @@ export function publicUser(u: User, opts?: { self?: boolean }) {
     profile_photo_url: u.profile_photo_url ?? null,
     city: u.city ?? null,
     about_me: u.about_me ?? null,
+  };
+
+  if (!opts?.self) return base;
+
+  return {
+    ...base,
+    account_type: u.account_type ?? "private",
+    business_name: u.business_name ?? null,
+    business_tier: u.business_tier ?? null,
+    vip_expires_at: u.vip_expires_at ? u.vip_expires_at.toISOString() : null,
+    email_verified: u.email_verified_at != null,
+    strike_count: u.strike_count ?? 0,
   };
 }
