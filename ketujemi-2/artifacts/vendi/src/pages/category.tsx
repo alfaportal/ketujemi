@@ -25,7 +25,12 @@ import { translationKeyForUiLang } from "@/lib/ui-languages";
 import ListingCard from "@/components/listing-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { translateCategory } from "@/lib/category-translations";
-import { categoryPath, resolveCategoryId } from "@/lib/category-navigation";
+import {
+  categoryPath,
+  navigateToCategory,
+  resolveCategoryId,
+  useCategoryScroll,
+} from "@/lib/category-navigation";
 import {
   CategoryPageLoading,
   CategoryPageLoadError,
@@ -546,6 +551,8 @@ export default function CategoryPage() {
     const resolved = resolveCategoryId(segment, allCategories as any[] | undefined);
     return resolved ?? NaN;
   }, [segment, allCategories]);
+
+  useCategoryScroll(categoryId);
 
   const emptyListingsCopy = useMemo(() => {
     switch (market.code) {
@@ -1578,7 +1585,7 @@ export default function CategoryPage() {
                 <BodyTypeCard
                   key={sub.id}
                   category={sub}
-                  onClick={() => setLocation(categoryPath(sub.id))}
+                  onClick={() => navigateToCategory(setLocation, sub.id, categoryId)}
                 />
               ))}
             </div>
@@ -1604,7 +1611,7 @@ export default function CategoryPage() {
                 <BrandCard
                   key={brand.id}
                   category={brand}
-                  onClick={() => setLocation(categoryPath(brand.id))}
+                  onClick={() => navigateToCategory(setLocation, brand.id, categoryId)}
                 />
               ))}
             </div>

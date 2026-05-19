@@ -17,7 +17,7 @@ export const TEL_DEVICE_PHOTOS: Record<TelDeviceKey, string> = {
   smartphones:
     "https://images.pexels.com/photos/36680543/pexels-photo-36680543.jpeg?auto=compress&cs=tinysrgb&w=400",
   smartwatches:
-    "https://images.pexels.com/photos/4370373/pexels-photo-4370373.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/3935354/pexels-photo-3935354.jpeg?auto=compress&cs=tinysrgb&w=400",
   smart_bands:
     "https://images.pexels.com/photos/393047/pexels-photo-393047.jpeg?auto=compress&cs=tinysrgb&w=400",
   e_readers:

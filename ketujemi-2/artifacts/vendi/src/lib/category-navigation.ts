@@ -1,4 +1,9 @@
+import { useLayoutEffect } from "react";
+
 /** Shared category URL helpers — single source of truth for all category links. */
+
+/** In-memory scroll positions when drilling into a subcategory (restored on back). */
+const categoryScrollRestore = new Map<number, number>();
 
 export type CategoryRef = {
   id: number;
@@ -35,4 +40,45 @@ export function isUnknownCategorySegment(
   const raw = (segment ?? "").trim();
   if (!raw || !categories?.length) return false;
   return resolveCategoryId(raw, categories) === null;
+}
+
+/** Remember scroll position before opening a child category. */
+export function stashCategoryScroll(categoryId: number) {
+  if (!Number.isFinite(categoryId)) return;
+  categoryScrollRestore.set(categoryId, window.scrollY);
+}
+
+function takeCategoryScroll(categoryId: number): number | null {
+  const y = categoryScrollRestore.get(categoryId);
+  if (y == null) return null;
+  categoryScrollRestore.delete(categoryId);
+  return y;
+}
+
+/** Navigate to a category; optionally restore parent scroll when returning. */
+export function navigateToCategory(
+  setLocation: (path: string) => void,
+  toCategoryId: number,
+  fromCategoryId?: number | null,
+) {
+  if (fromCategoryId != null && Number.isFinite(fromCategoryId)) {
+    stashCategoryScroll(fromCategoryId);
+  }
+  setLocation(categoryPath(toCategoryId));
+}
+
+/**
+ * On category change: scroll to top for new visits, or restore position when
+ * returning from a subcategory (or browser back).
+ */
+export function useCategoryScroll(categoryId: number) {
+  useLayoutEffect(() => {
+    if (!Number.isFinite(categoryId)) return;
+    const saved = takeCategoryScroll(categoryId);
+    window.scrollTo({
+      top: saved ?? 0,
+      left: 0,
+      behavior: "auto",
+    });
+  }, [categoryId]);
 }
