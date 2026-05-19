@@ -37,7 +37,7 @@ export function LanguageSelector({ variant = "on-light", compact }: LanguageSele
         onClick={() => setOpen((v) => !v)}
         className={cn(
           primaryBlueButtonClass,
-          compact ? "w-full min-w-0 justify-center gap-0.5 px-2.5 min-h-11" : "gap-1 px-4",
+          compact ? "w-full min-w-0 justify-center gap-1 px-3 min-h-12 max-md:text-base" : "gap-1 px-4",
           onDark && "border border-white/25 bg-white/10 hover:bg-white/20 shadow-none",
         )}
       >

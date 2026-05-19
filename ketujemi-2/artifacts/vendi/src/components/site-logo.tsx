@@ -6,12 +6,15 @@ type Props = {
   testId?: string;
   /** header = nav (large); compact = footer */
   size?: "header" | "compact";
+  /** Slightly wider pill on phone header row */
+  mobileWide?: boolean;
 };
 
 const SIZE = {
   header: {
-    wrap: "rounded-2xl px-4 py-2.5 sm:px-5 sm:py-2.5 shadow-[0_4px_14px_rgba(37,99,235,0.45)]",
-    text: "text-[1.2rem] sm:text-[1.35rem] md:text-[1.5rem] leading-none",
+    wrap:
+      "rounded-2xl max-md:px-5 max-md:py-3 md:px-4 md:py-2.5 sm:px-5 sm:py-2.5 shadow-[0_4px_14px_rgba(37,99,235,0.45)]",
+    text: "text-[1.3rem] sm:text-[1.35rem] md:text-[1.5rem] leading-none max-md:tracking-tight",
     domain: "text-[0.92em] font-bold opacity-95",
   },
   compact: {
@@ -22,14 +25,18 @@ const SIZE = {
 } as const;
 
 /** KetuJemi.com brand mark — gradient pill wordmark, sharp on all screens. */
-export function SiteLogo({ className, testId = "link-logo", size = "header" }: Props) {
+export function SiteLogo({ className, testId = "link-logo", size = "header", mobileWide }: Props) {
   const s = SIZE[size];
 
   return (
     <Link
       href="/"
       data-testid={testId}
-      className={cn("inline-flex shrink-0 items-center select-none touch-manipulation", className)}
+      className={cn(
+        "inline-flex shrink-0 items-center select-none touch-manipulation",
+        mobileWide && "max-md:w-full max-md:justify-center",
+        className,
+      )}
       aria-label="KetuJemi.com"
     >
       <span
@@ -37,6 +44,7 @@ export function SiteLogo({ className, testId = "link-logo", size = "header" }: P
           "relative inline-flex items-center justify-center overflow-hidden border border-white/25",
           "bg-gradient-to-b from-[#4a9eff] via-[#2563eb] to-[#1d4ed8]",
           s.wrap,
+          mobileWide && size === "header" && "max-md:min-w-[min(100%,22rem)]",
         )}
       >
         <span

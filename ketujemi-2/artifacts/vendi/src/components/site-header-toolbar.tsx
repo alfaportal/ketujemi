@@ -11,7 +11,7 @@ type Props = {
 };
 
 const mobileBtn =
-  "w-full min-w-0 justify-center px-2 text-xs sm:text-sm font-bold";
+  "w-full min-w-0 justify-center px-2.5 text-sm font-bold max-md:min-h-12";
 
 /** Shared header actions: blue login + compact “Posto Falas” (all pages). */
 export function SiteHeaderToolbar({ className, mobileBar }: Props) {
@@ -23,7 +23,7 @@ export function SiteHeaderToolbar({ className, mobileBar }: Props) {
       <>
         <AuthToolbar
           variant="compact"
-          className={cn(mobileBtn, "[&_button]:w-full [&_button]:min-h-11 [&_button]:justify-center")}
+          className={cn(mobileBtn, "[&_button]:w-full [&_button]:min-h-12 [&_button]:justify-center max-md:[&_button]:text-sm")}
         />
         <button
           type="button"

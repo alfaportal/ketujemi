@@ -27,13 +27,13 @@ export function SiteHeader({ className, children, showViewAllListings }: SiteHea
         className,
       )}
     >
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-2 max-md:px-2.5 sm:px-6 lg:px-8">
         {/* —— Mobile: 2 rows —— */}
-        <div className="flex flex-col gap-2.5 py-2.5 md:hidden">
+        <div className="flex flex-col gap-3 py-3 md:hidden">
           <div className="flex justify-center w-full">
-            <SiteLogo />
+            <SiteLogo mobileWide />
           </div>
-          <div className="grid grid-cols-3 items-stretch gap-2 w-full">
+          <div className="grid grid-cols-3 items-stretch gap-2.5 w-full">
             <LanguageSelector compact />
             <SiteHeaderToolbar mobileBar />
           </div>
