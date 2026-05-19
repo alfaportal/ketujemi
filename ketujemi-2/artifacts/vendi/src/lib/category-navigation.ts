@@ -1,4 +1,4 @@
-import { useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 /** Shared category URL helpers — single source of truth for all category links. */
 
@@ -64,21 +64,56 @@ export function navigateToCategory(
   if (fromCategoryId != null && Number.isFinite(fromCategoryId)) {
     stashCategoryScroll(fromCategoryId);
   }
+  // Subcategory must always open at the top, never reuse an old saved position.
+  categoryScrollRestore.delete(toCategoryId);
   setLocation(categoryPath(toCategoryId));
 }
 
+function applyScrollY(top: number) {
+  window.scrollTo({ top, left: 0, behavior: "auto" });
+}
+
 /**
- * On category change: scroll to top for new visits, or restore position when
- * returning from a subcategory (or browser back).
+ * On category change: scroll to top for new visits (incl. subcategories), or
+ * restore position when returning to a parent category.
  */
-export function useCategoryScroll(categoryId: number) {
+export function useCategoryScroll(
+  categoryId: number,
+  options?: { contentReady?: boolean },
+) {
+  const restoredRef = useRef(false);
+
   useLayoutEffect(() => {
     if (!Number.isFinite(categoryId)) return;
+
+    const previousRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+
     const saved = takeCategoryScroll(categoryId);
-    window.scrollTo({
-      top: saved ?? 0,
-      left: 0,
-      behavior: "auto",
-    });
+    restoredRef.current = saved != null;
+    const top = saved ?? 0;
+
+    applyScrollY(top);
+    requestAnimationFrame(() => applyScrollY(top));
+
+    return () => {
+      window.history.scrollRestoration = previousRestoration;
+    };
   }, [categoryId]);
+
+  // After listings/filters render, keep subcategory pages at the top (not on listings).
+  useEffect(() => {
+    if (!Number.isFinite(categoryId)) return;
+    if (restoredRef.current) return;
+    if (options?.contentReady === false) return;
+
+    const top = 0;
+    applyScrollY(top);
+    const t1 = window.setTimeout(() => applyScrollY(top), 0);
+    const t2 = window.setTimeout(() => applyScrollY(top), 120);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [categoryId, options?.contentReady]);
 }

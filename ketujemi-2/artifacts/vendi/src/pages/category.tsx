@@ -552,8 +552,6 @@ export default function CategoryPage() {
     return resolved ?? NaN;
   }, [segment, allCategories]);
 
-  useCategoryScroll(categoryId);
-
   const emptyListingsCopy = useMemo(() => {
     switch (market.code) {
       case "ks":
@@ -945,6 +943,16 @@ export default function CategoryPage() {
       queryKey: getGetListingsQueryKey(listingsQueryParams),
       enabled: listingsQueryEnabled,
     },
+  });
+
+  const categoryScrollReady =
+    !categoriesLoading &&
+    !!allCategories &&
+    !!currentCategory &&
+    Number.isFinite(categoryId);
+
+  useCategoryScroll(categoryId, {
+    contentReady: categoryScrollReady && (!listingsQueryEnabled || !isLoading),
   });
 
   useEffect(() => {
