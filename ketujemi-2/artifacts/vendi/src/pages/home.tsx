@@ -124,7 +124,7 @@ export default function HomePage() {
       {/* -- Navbar -- */}
       <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-2 py-3 min-w-0 sm:h-16 sm:py-0">
+          <div className="flex items-center justify-between gap-2 py-2.5 min-w-0 sm:min-h-[4.25rem] sm:py-0">
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
               <SiteLogo />
               <LanguageSelector />

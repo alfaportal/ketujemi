@@ -22,7 +22,7 @@ export function SiteFooter() {
     <footer className="bg-white border-t border-gray-100 mt-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <SiteLogo imageClassName="h-11 sm:h-12" />
+          <SiteLogo size="compact" />
           <nav className="flex flex-wrap justify-center gap-4 sm:gap-6 text-sm text-gray-500">
             <Link href="/terms" className="hover:text-gray-800 transition-colors min-h-11 inline-flex items-center">
               {t.terms}
