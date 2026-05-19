@@ -17,6 +17,11 @@ import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
 import { LanguageSelector } from "@/components/language-selector";
 import { SiteFooter } from "@/components/site-footer";
 import { VipPartnersSection } from "@/components/vip-partners-section";
+import { cn } from "@/lib/utils";
+import {
+  cnPrimaryBlue,
+  filterToggleButtonBaseClass,
+} from "@/lib/primary-button-classes";
 
 // --- Cover photos by category slug (all 18 parent categories) ----------------
 const CAT_PHOTOS_BY_SLUG: Record<string, string> = {
@@ -166,10 +171,7 @@ export default function HomePage() {
                 className="w-full min-h-12 pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-base sm:text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all bg-gray-50 focus:bg-white touch-manipulation"
               />
             </div>
-            <button
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 md:py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap min-h-12 w-full md:w-auto shrink-0 touch-manipulation"
-            >
+            <button type="submit" className={cnPrimaryBlue("w-full md:w-auto")}>
               {t.searchBtn}
             </button>
           </form>
@@ -178,11 +180,12 @@ export default function HomePage() {
             <span className="text-sm font-bold text-gray-700">{t.title}</span>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex w-full md:w-auto justify-center items-center gap-2 px-4 py-3 md:py-2 rounded-xl border text-sm font-semibold transition-all min-h-12 touch-manipulation ${
+              className={cn(
+                filterToggleButtonBaseClass,
                 showFilters
-                  ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                  : "bg-white text-gray-700 border-gray-200 hover:border-blue-300"
-              }`}
+                  ? "bg-blue-600 text-white border-blue-600 shadow-md hover:bg-blue-700"
+                  : "bg-white text-gray-700 border-gray-200 hover:border-blue-300 shadow-none",
+              )}
             >
               <SlidersHorizontal size={15} />
               {t.filters}
@@ -269,8 +272,9 @@ export default function HomePage() {
               </div>
               <div className="flex justify-end mt-3">
                 <button
+                  type="button"
                   onClick={applyFilters}
-                  className="w-full md:w-auto px-6 py-3 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-sm min-h-12 touch-manipulation"
+                  className={cnPrimaryBlue("w-full md:w-auto font-bold")}
                 >
                   {t.apply}
                 </button>

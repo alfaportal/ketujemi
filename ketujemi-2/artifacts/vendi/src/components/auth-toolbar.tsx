@@ -2,6 +2,7 @@ import { useLocation } from "wouter";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { useMarket } from "@/lib/market-context";
 import { Button } from "@/components/ui/button";
+import { cnPrimaryBlue } from "@/lib/primary-button-classes";
 
 type Props = {
   variant?: "default" | "compact";
@@ -34,7 +35,7 @@ export function AuthToolbar({ variant = "default", className }: Props) {
   if (loading) {
     return (
       <span
-        className={`inline-block w-14 rounded-lg bg-muted/50 animate-pulse h-11 md:h-9 ${className ?? ""}`}
+        className={`inline-block h-12 w-14 rounded-xl bg-muted/50 animate-pulse ${className ?? ""}`}
         aria-hidden
       />
     );
@@ -46,7 +47,7 @@ export function AuthToolbar({ variant = "default", className }: Props) {
         type="button"
         data-testid="button-login-toolbar"
         onClick={goLogin}
-        className={`inline-flex shrink-0 items-center justify-center rounded-xl bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 min-h-12 touch-manipulation md:min-h-8 md:px-2.5 md:py-1.5 md:text-xs ${className ?? ""}`}
+        className={cnPrimaryBlue(className)}
       >
         {t.authLogin}
       </button>

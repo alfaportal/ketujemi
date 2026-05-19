@@ -12,6 +12,11 @@ import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { SiteLogo } from "@/components/site-logo";
 import { LanguageSelector } from "@/components/language-selector";
+import { cn } from "@/lib/utils";
+import {
+  cnPrimaryBlue,
+  filterToggleButtonBaseClass,
+} from "@/lib/primary-button-classes";
 
 // --- Skeleton Card ---
 function SkeletonCard() {
@@ -114,7 +119,7 @@ export default function Listings() {
               <button
                 type="submit"
                 data-testid="button-search-listings"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 md:py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap w-full md:w-auto min-h-12 shrink-0 touch-manipulation"
+                className={cnPrimaryBlue("w-full md:w-auto")}
               >
                 {t.searchBtn}
               </button>
@@ -139,11 +144,13 @@ export default function Listings() {
           <button
             data-testid="button-toggle-filters"
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center justify-center gap-2 px-4 py-3 md:py-2.5 rounded-xl border text-sm font-semibold transition-all w-full sm:w-auto min-h-12 shrink-0 touch-manipulation ${
+            className={cn(
+              filterToggleButtonBaseClass,
+              "w-full sm:w-auto",
               showFilters || hasActiveFilters
-                ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                : "bg-white text-gray-700 border-gray-200 hover:border-blue-300"
-            }`}
+                ? "bg-blue-600 text-white border-blue-600 shadow-md hover:bg-blue-700"
+                : "bg-white text-gray-700 border-gray-200 hover:border-blue-300 shadow-none",
+            )}
           >
             <SlidersHorizontal size={15} />
             {t.filters}
@@ -225,9 +232,10 @@ export default function Listings() {
                 </button>
               )}
               <button
+                type="button"
                 data-testid="button-apply-filters"
                 onClick={() => { applyFilters(); setShowFilters(false); }}
-                className="w-full sm:w-auto px-5 py-3 md:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all min-h-12 touch-manipulation"
+                className={cnPrimaryBlue("w-full sm:w-auto")}
               >
                 {t.apply}
               </button>

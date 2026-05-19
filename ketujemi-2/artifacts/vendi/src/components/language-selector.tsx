@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { primaryBlueButtonClass } from "@/lib/primary-button-classes";
 import { UI_LANGUAGES } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 
 type LanguageSelectorProps = {
   variant?: "on-dark" | "on-light";
 };
-
-const NAV_BTN =
-  "inline-flex h-12 min-h-12 items-center gap-1 rounded-xl border-0 bg-blue-600 px-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 touch-manipulation";
 
 export function LanguageSelector({ variant = "on-light" }: LanguageSelectorProps) {
   const { uiLang, setUiLang } = useMarket();
@@ -36,8 +34,9 @@ export function LanguageSelector({ variant = "on-light" }: LanguageSelectorProps
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          NAV_BTN,
-          onDark && "border border-white/25 bg-white/10 hover:bg-white/20",
+          primaryBlueButtonClass,
+          "gap-1 px-4",
+          onDark && "border border-white/25 bg-white/10 hover:bg-white/20 shadow-none",
         )}
       >
         <span className="text-base leading-none" aria-hidden>
