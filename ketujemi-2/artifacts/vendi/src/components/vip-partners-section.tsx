@@ -33,10 +33,6 @@ export function VipPartnersSection({
   variant = "hub",
 }: VipPartnersSectionProps) {
   const { t } = useMarket();
-
-  if (import.meta.env.VITE_SHOW_VIP_PARTNERS !== "true") {
-    return null;
-  }
   const config = VARIANT_CONFIG[variant];
   const placeholders = Array.from({ length: config.count }, (_, i) => i + 1);
   const slotLabel =
