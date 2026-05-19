@@ -21,7 +21,9 @@ import {
 import { isBusinessAccount, isVipBusinessActive } from "../lib/business-rules";
 import { assertBusinessCategoryListingQuota } from "../lib/business-quota";
 import { assertBusinessListingCreate } from "../lib/business-listing-guard";
-import { replaceDuplicateListingIfAny } from "../lib/listing-duplicate-guard";
+import { assertNoDuplicateListing } from "../lib/listing-duplicate-guard";
+import { repostListing } from "../lib/listing-repost";
+import { listingFeedOrderBy, isTopActive } from "../lib/listing-top";
 import { moderateListingContent } from "../lib/listing-ai-moderation";
 import { assertUserActiveListingCap } from "../lib/user-listing-limits";
 import { consumeExtraPostPayment } from "../lib/payments";
@@ -93,6 +95,12 @@ function formatListing(l: typeof listingsTable.$inferSelect, categoryName: strin
     expires_at: l.expires_at ? l.expires_at.toISOString() : null,
     days_left: daysLeft,
     is_expired: expires ? expires < now : false,
+    is_top: isTopActive(l),
+    top_until: l.top_until ? l.top_until.toISOString() : null,
+    top_count: l.top_count ?? 0,
+    listed_at: l.listed_at ? l.listed_at.toISOString() : l.created_at.toISOString(),
+    status: l.status ?? "active",
+    moderation_status: l.moderation_status ?? "approved",
     vehicle_year: l.vehicle_year ?? null,
     vehicle_mileage_km: l.vehicle_mileage_km ?? null,
     vehicle_fuel: l.vehicle_fuel ?? null,
@@ -115,7 +123,7 @@ function formatListing(l: typeof listingsTable.$inferSelect, categoryName: strin
 
 // ─── Filter: only active (non-expired) listings ───────────────────────────────
 function activeCondition() {
-  return gt(listingsTable.expires_at, new Date());
+  return and(gt(listingsTable.expires_at, new Date()), eq(listingsTable.status, "active"));
 }
 
 // ─── GET /listings ────────────────────────────────────────────────────────────
@@ -309,7 +317,7 @@ router.get("/listings", async (req, res) => {
       .select()
       .from(listingsTable)
       .where(where)
-      .orderBy(desc(listingsTable.created_at))
+      .orderBy(...listingFeedOrderBy)
       .limit(limit)
       .offset((page - 1) * limit),
   ]);
@@ -377,7 +385,20 @@ router.post("/listings", async (req, res) => {
     throw err;
   }
 
-  const duplicateReplace = await replaceDuplicateListingIfAny(viewer, parsed.data.title);
+  try {
+    await assertNoDuplicateListing(viewer, parsed.data.title);
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message === "DUPLICATE_LISTING") {
+      const e = err as Error & { publicMessage?: string; duplicateListingId?: number };
+      res.status(409).json({
+        error: "DUPLICATE_LISTING",
+        message: e.publicMessage,
+        duplicate_listing_id: e.duplicateListingId,
+      });
+      return;
+    }
+    throw err;
+  }
 
   try {
     await assertBusinessListingCreate(viewer, {
@@ -458,6 +479,8 @@ router.post("/listings", async (req, res) => {
   if (!moderation.approved) {
     res.status(403).json({
       error: "LISTING_MODERATION_REJECTED",
+      moderation_status: "rejected",
+      moderation_reason: moderation.reason,
       message:
         moderation.reason ||
         "Njoftimi nuk u miratua. Kontrolloni titullin, përshkrimin dhe çmimin.",
@@ -465,6 +488,7 @@ router.post("/listings", async (req, res) => {
     return;
   }
 
+  const now = new Date();
   const [row] = await db
     .insert(listingsTable)
     .values({
@@ -478,6 +502,11 @@ router.post("/listings", async (req, res) => {
       condition: parsed.data.condition,
       image_url: parsed.data.image_url ?? null,
       is_featured: parsed.data.is_featured ?? false,
+      listed_at: now,
+      created_at: now,
+      status: "active",
+      moderation_status: "approved",
+      moderation_reason: moderation.reason || null,
       expires_at: expiresAt30Days(),
       vehicle_year: parsed.data.vehicle_year ?? null,
       vehicle_mileage_km: parsed.data.vehicle_mileage_km ?? null,
@@ -506,16 +535,7 @@ router.post("/listings", async (req, res) => {
     .limit(1);
 
   const created = applyViewerContact(formatListing(row, cat[0]?.name ?? null), viewer);
-  res.status(201).json({
-    ...created,
-    replaced_duplicate: duplicateReplace.replaced,
-    ...(duplicateReplace.replaced
-      ? {
-          message:
-            "Njoftimi i vjetër i ngjashëm u zëvendësua automatikisht me këtë postim të ri.",
-        }
-      : {}),
-  });
+  res.status(201).json(created);
 });
 
 // ─── GET /listings/featured ───────────────────────────────────────────────────
@@ -525,7 +545,7 @@ router.get("/listings/featured", async (req, res) => {
     .select()
     .from(listingsTable)
     .where(and(eq(listingsTable.is_featured, true), activeCondition()))
-    .orderBy(desc(listingsTable.created_at))
+    .orderBy(...listingFeedOrderBy)
     .limit(8);
 
   const cats = await db.select().from(categoriesTable);
@@ -542,7 +562,7 @@ router.get("/listings/recent", async (req, res) => {
     .select()
     .from(listingsTable)
     .where(activeCondition())
-    .orderBy(desc(listingsTable.created_at))
+    .orderBy(...listingFeedOrderBy)
     .limit(12);
 
   const cats = await db.select().from(categoriesTable);
@@ -752,6 +772,51 @@ router.post("/listings/:id/complaint", async (req, res) => {
   });
 });
 
+// ─── POST /listings/:id/repost ──────────────────────────────────────────────────
+router.post("/listings/:id/repost", async (req, res) => {
+  const viewer = await getSessionUser(req);
+  if (!viewer) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+
+  const listingId = Number(req.params.id);
+  if (!Number.isFinite(listingId) || listingId < 1) {
+    res.status(400).json({ error: "Invalid listing id" });
+    return;
+  }
+
+  const result = await repostListing(viewer, listingId);
+  if (!result.ok) {
+    const status =
+      result.error === "NOT_FOUND" ? 404 : result.error === "FORBIDDEN" ? 403 : 409;
+    res.status(status).json({ error: result.error, message: result.message });
+    return;
+  }
+
+  const [row] = await db
+    .select()
+    .from(listingsTable)
+    .where(eq(listingsTable.id, listingId))
+    .limit(1);
+
+  const cat = row
+    ? await db
+        .select({ name: categoriesTable.name })
+        .from(categoriesTable)
+        .where(eq(categoriesTable.id, row.category_id))
+        .limit(1)
+    : [];
+
+  res.json({
+    ok: true,
+    message: "Njoftimi u rifillua dhe shfaqet përsëri në listë si i ri.",
+    listing: row
+      ? applyViewerContact(formatListing(row, cat[0]?.name ?? null), viewer)
+      : null,
+  });
+});
+
 // ─── GET /listings/:id ────────────────────────────────────────────────────────
 router.get("/listings/:id", async (req, res) => {
   const viewer = await getSessionUser(req);
@@ -771,12 +836,17 @@ router.get("/listings/:id", async (req, res) => {
     return;
   }
 
-  if (row.expires_at && new Date(row.expires_at) < new Date()) {
+  const isExpired = !!(row.expires_at && new Date(row.expires_at) < new Date());
+  const isOwner = !!(viewer && userOwnsListing(viewer, row));
+
+  if (isExpired && !isOwner) {
     res.status(404).json({ error: "Njoftimi ka skaduar" });
     return;
   }
 
-  await db.update(listingsTable).set({ views: row.views + 1 }).where(eq(listingsTable.id, row.id));
+  if (!isExpired) {
+    await db.update(listingsTable).set({ views: row.views + 1 }).where(eq(listingsTable.id, row.id));
+  }
 
   const cat = await db
     .select({ name: categoriesTable.name })
@@ -784,8 +854,15 @@ router.get("/listings/:id", async (req, res) => {
     .where(eq(categoriesTable.id, row.category_id))
     .limit(1);
 
-  const formatted = formatListing({ ...row, views: row.views + 1 }, cat[0]?.name ?? null);
-  res.json(applyViewerContact(formatted, viewer));
+  const formatted = formatListing(
+    { ...row, views: isExpired ? row.views : row.views + 1 },
+    cat[0]?.name ?? null,
+  );
+  const payload = applyViewerContact(formatted, viewer) as ReturnType<typeof formatListing> & {
+    can_repost: boolean;
+  };
+  payload.can_repost = isOwner && isExpired;
+  res.json(payload);
 });
 
 // ─── PATCH /listings/:id ──────────────────────────────────────────────────────

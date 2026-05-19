@@ -1,12 +1,13 @@
 import { db, listingsTable } from "@workspace/db";
 import type { User } from "@workspace/db";
-import { eq, gt } from "drizzle-orm";
+import { gt } from "drizzle-orm";
 import { userOwnsListing } from "./listing-ownership";
 import { normalizeTitleForDuplicate } from "./business-rules";
 
 export async function findDuplicateActiveListing(
   user: User,
   title: string,
+  excludeListingId?: number,
 ): Promise<number | null> {
   const norm = normalizeTitleForDuplicate(title);
   if (!norm) return null;
@@ -22,6 +23,7 @@ export async function findDuplicateActiveListing(
     .where(gt(listingsTable.expires_at, new Date()));
 
   for (const row of rows) {
+    if (excludeListingId != null && row.id === excludeListingId) continue;
     if (!userOwnsListing(user, row)) continue;
     if (normalizeTitleForDuplicate(row.title) === norm) {
       return row.id;
@@ -30,18 +32,21 @@ export async function findDuplicateActiveListing(
   return null;
 }
 
-/**
- * If user already has a similar active listing: delete the old one and allow the new post.
- */
-export async function replaceDuplicateListingIfAny(
+/** Block post if user already has the same active listing. */
+export async function assertNoDuplicateListing(
   user: User,
   title: string,
-): Promise<{ replaced: boolean; deletedListingId?: number }> {
-  const dupId = await findDuplicateActiveListing(user, title);
-  if (dupId == null) {
-    return { replaced: false };
-  }
+  excludeListingId?: number,
+): Promise<void> {
+  const dupId = await findDuplicateActiveListing(user, title, excludeListingId);
+  if (dupId == null) return;
 
-  await db.delete(listingsTable).where(eq(listingsTable.id, dupId));
-  return { replaced: true, deletedListingId: dupId };
+  const err = new Error("DUPLICATE_LISTING") as Error & {
+    duplicateListingId: number;
+    publicMessage: string;
+  };
+  err.duplicateListingId = dupId;
+  err.publicMessage =
+    "Keni një njoftim të ngjashëm aktiv. Fshijeni atë para se të postoni të riun.";
+  throw err;
 }

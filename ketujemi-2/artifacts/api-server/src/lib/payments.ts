@@ -6,8 +6,11 @@ import {
   BUSINESS_EXTRA_POST_PRICE_EUR,
   BUSINESS_VIP_MONTHLY_PRICE_EUR,
 } from "./business-rules";
+import { applyTopBoostToListing, isPhase2Enabled } from "./listing-top";
 
-export type PaymentPurpose = "extra_post" | "vip_month";
+export type PaymentPurpose = "extra_post" | "vip_month" | "top_listing";
+
+export const TOP_LISTING_PRICE_EUR = 1;
 
 function stripeSecret(): string | null {
   const key = process.env.STRIPE_SECRET_KEY?.trim();
@@ -26,14 +29,15 @@ export function devPaymentBypassEnabled(): boolean {
 }
 
 function amountCents(purpose: PaymentPurpose): number {
-  return purpose === "vip_month"
-    ? BUSINESS_VIP_MONTHLY_PRICE_EUR * 100
-    : BUSINESS_EXTRA_POST_PRICE_EUR * 100;
+  if (purpose === "vip_month") return BUSINESS_VIP_MONTHLY_PRICE_EUR * 100;
+  if (purpose === "top_listing") return TOP_LISTING_PRICE_EUR * 100;
+  return BUSINESS_EXTRA_POST_PRICE_EUR * 100;
 }
 
 export async function createPaymentRecord(
   userId: number,
   purpose: PaymentPurpose,
+  listingId?: number,
 ): Promise<{ token: string; amountCents: number }> {
   const token = randomUUID();
   const cents = amountCents(purpose);
@@ -41,6 +45,7 @@ export async function createPaymentRecord(
     token,
     user_id: userId,
     purpose,
+    listing_id: listingId ?? null,
     amount_cents: cents,
     status: devPaymentBypassEnabled() ? "paid" : "pending",
     paid_at: devPaymentBypassEnabled() ? new Date() : null,
@@ -52,16 +57,26 @@ export async function createStripeCheckout(
   user: User,
   purpose: PaymentPurpose,
   origin: string,
+  listingId?: number,
 ): Promise<{ url: string; token: string }> {
+  if (purpose === "top_listing" && !isPhase2Enabled()) {
+    throw new Error("PHASE_2_DISABLED");
+  }
+
   if (devPaymentBypassEnabled()) {
-    const { token } = await createPaymentRecord(user.id, purpose);
+    const { token } = await createPaymentRecord(user.id, purpose, listingId);
     if (purpose === "vip_month") {
       await activateVipFromPayment(user.id);
+    }
+    if (purpose === "top_listing" && listingId) {
+      await applyTopBoostToListing(listingId);
     }
     const url =
       purpose === "vip_month"
         ? `${origin}/profile?payment=success&purpose=vip`
-        : `${origin}/listings/new?payment_token=${encodeURIComponent(token)}`;
+        : purpose === "top_listing" && listingId
+          ? `${origin}/listings/${listingId}?top=success`
+          : `${origin}/listings/new?payment_token=${encodeURIComponent(token)}`;
     return { url, token };
   }
 
@@ -70,19 +85,23 @@ export async function createStripeCheckout(
     throw new Error("PAYMENTS_NOT_CONFIGURED");
   }
 
-  const { token, amountCents: cents } = await createPaymentRecord(user.id, purpose);
+  const { token, amountCents: cents } = await createPaymentRecord(user.id, purpose, listingId);
   const Stripe = (await import("stripe")).default;
   const stripe = new Stripe(secret);
 
   const successUrl =
     purpose === "vip_month"
       ? `${origin}/profile?payment=success&purpose=vip`
-      : `${origin}/listings/new?payment_token=${encodeURIComponent(token)}`;
+      : purpose === "top_listing" && listingId
+        ? `${origin}/listings/${listingId}?top=success`
+        : `${origin}/listings/new?payment_token=${encodeURIComponent(token)}`;
 
   const productName =
     purpose === "vip_month"
       ? "KetuJemi VIP Biznes (1 muaj)"
-      : "KetuJemi — njoftim shtesë biznes";
+      : purpose === "top_listing"
+        ? "KetuJemi TOP — njoftim në krye"
+        : "KetuJemi — njoftim shtesë biznes";
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -99,7 +118,12 @@ export async function createStripeCheckout(
     success_url: successUrl,
     cancel_url: `${origin}/profile?payment=cancelled`,
     client_reference_id: token,
-    metadata: { user_id: String(user.id), purpose, payment_token: token },
+    metadata: {
+      user_id: String(user.id),
+      purpose,
+      payment_token: token,
+      listing_id: listingId ? String(listingId) : "",
+    },
   });
 
   if (!session.url) {
@@ -130,6 +154,9 @@ export async function markPaymentPaidByToken(token: string): Promise<void> {
 
   if (row.purpose === "vip_month") {
     await activateVipFromPayment(row.user_id);
+  }
+  if (row.purpose === "top_listing" && row.listing_id) {
+    await applyTopBoostToListing(row.listing_id);
   }
 }
 

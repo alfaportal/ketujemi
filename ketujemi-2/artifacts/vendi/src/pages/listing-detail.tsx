@@ -1,5 +1,5 @@
 import { useRoute, useLocation } from "wouter";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useGetListing, useDeleteListing, getGetListingsQueryKey, getGetRecentListingsQueryKey, getGetFeaturedListingsQueryKey, getGetListingQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -129,6 +129,9 @@ export default function ListingDetail() {
 
   const [activePhoto, setActivePhoto] = useState(0);
   const [complaintBusy, setComplaintBusy] = useState(false);
+  const [repostBusy, setRepostBusy] = useState(false);
+  const [phase2, setPhase2] = useState(false);
+  const [topBusy, setTopBusy] = useState(false);
 
   const parsed = useMemo(() => {
     if (!listing) return { specs: {} as Record<string, string>, body: "" };
@@ -136,6 +139,63 @@ export default function ListingDetail() {
   }, [listing]);
 
   const canManage = !!(user && listing && userOwnsListing(user, listing));
+  const canRepost = !!(listing && (listing as { can_repost?: boolean }).can_repost);
+  const isExpired = !!(listing && (listing as { is_expired?: boolean }).is_expired);
+
+  useEffect(() => {
+    void fetch("/api/payments/status")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => setPhase2(!!(j as { phase2?: boolean })?.phase2));
+  }, []);
+
+  async function repostListing() {
+    if (!listing) return;
+    setRepostBusy(true);
+    try {
+      const res = await fetch(`/api/listings/${listing.id}/repost`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({
+          title: (data as { message?: string }).message ?? "Gabim",
+          variant: "destructive",
+        });
+        return;
+      }
+      toast({ title: (data as { message?: string }).message ?? "Njoftimi u rifillua!" });
+      queryClient.invalidateQueries({ queryKey: getGetListingQueryKey(listing.id) });
+      void queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
+    } finally {
+      setRepostBusy(false);
+    }
+  }
+
+  async function buyTop() {
+    if (!listing) return;
+    setTopBusy(true);
+    try {
+      const res = await fetch("/api/payments/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ purpose: "top_listing", listing_id: listing.id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({
+          title: (data as { message?: string }).message ?? "TOP nuk është i disponueshëm",
+          variant: "destructive",
+        });
+        return;
+      }
+      const url = (data as { url?: string }).url;
+      if (url) window.location.href = url;
+    } finally {
+      setTopBusy(false);
+    }
+  }
 
   async function submitNoResponseComplaint() {
     if (!listing) return;
@@ -236,8 +296,30 @@ export default function ListingDetail() {
           </button>
           <div className="flex gap-2 items-center flex-shrink-0">
             <SiteHeaderToolbar />
-            {canManage && (
+            {canRepost ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="gap-1.5 min-h-12 px-3 text-sm shrink-0 border-blue-300 text-blue-700"
+                disabled={repostBusy}
+                onClick={() => void repostListing()}
+              >
+                {repostBusy ? "…" : "🔄 Rifillo njoftimin"}
+              </Button>
+            ) : null}
+            {canManage && !isExpired ? (
               <>
+                {phase2 ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="gap-1.5 min-h-12 px-3 text-sm shrink-0 border-amber-300 text-amber-800"
+                    disabled={topBusy}
+                    onClick={() => void buyTop()}
+                  >
+                    {topBusy ? "…" : "TOP €1"}
+                  </Button>
+                ) : null}
                 <Button variant="outline" onClick={() => setLocation(`/listings/${listing.id}/edit`)}
                   className="gap-1.5 min-h-12 px-3 text-sm shrink-0" data-testid="button-edit-listing">
                   <Pencil className="h-3 w-3" /> {t.edit}
@@ -268,12 +350,17 @@ export default function ListingDetail() {
                   </AlertDialogContent>
                 </AlertDialog>
               </>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
+        {isExpired && canManage ? (
+          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            Ky njoftim ka skaduar. Klikoni <strong>Rifillo njoftimin</strong> për ta shfaqur përsëri në listë.
+          </div>
+        ) : null}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
           {/* ── Left: main content ── */}

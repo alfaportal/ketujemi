@@ -73,6 +73,7 @@ interface ListingCardProps {
     location?: string | null;
     image_url?: string | null;
     is_featured?: boolean;
+    is_top?: boolean;
     views?: number;
     created_at: string;
     expires_at?: string | null;
@@ -104,11 +105,15 @@ export default function ListingCard({ listing }: ListingCardProps) {
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           onError={(e) => { (e.target as HTMLImageElement).src = FALLBACKS[0]; }}
         />
-        {listing.is_featured && (
+        {listing.is_top ? (
+          <div className="absolute top-2 left-2 bg-[#1A56A0] text-white text-sm font-bold px-2.5 py-1 rounded-lg shadow-sm">
+            TOP
+          </div>
+        ) : listing.is_featured ? (
           <div className="absolute top-2 left-2 bg-amber-400 text-amber-900 text-sm font-bold px-2.5 py-1 rounded-lg shadow-sm">
             ⭐ Promovuar
           </div>
-        )}
+        ) : null}
         {isToday && (
           <div className="absolute top-2 right-2 bg-green-500 text-white text-sm font-bold px-2.5 py-1 rounded-lg shadow-sm">
             {t.today}

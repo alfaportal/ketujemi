@@ -14,6 +14,15 @@ export const listingsTable = pgTable("listings", {
   condition: text("condition").notNull(),
   views: integer("views").notNull().default(0),
   is_featured: boolean("is_featured").notNull().default(false),
+  /** Paid TOP boost — always sorted above normal listings while top_until > now. */
+  is_top: boolean("is_top").notNull().default(false),
+  top_until: timestamp("top_until"),
+  top_count: integer("top_count").notNull().default(0),
+  /** Sort key for feed position (repost resets to go to end of list). */
+  listed_at: timestamp("listed_at").notNull().defaultNow(),
+  status: text("status").notNull().default("active"),
+  moderation_status: text("moderation_status").notNull().default("approved"),
+  moderation_reason: text("moderation_reason"),
   image_url: text("image_url"),
   created_at: timestamp("created_at").notNull().defaultNow(),
   expires_at: timestamp("expires_at"),

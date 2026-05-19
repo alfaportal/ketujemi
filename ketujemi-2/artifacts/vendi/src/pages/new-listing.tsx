@@ -459,6 +459,13 @@ export default function NewListing() {
         const body = await res.json().catch(() => ({}));
         if (!res.ok) {
           const errData = body as { error?: string; message?: string };
+          if (errData.error === "DUPLICATE_LISTING") {
+            toast({
+              title: errData.message ?? "Keni një njoftim të ngjashëm aktiv.",
+              variant: "destructive",
+            });
+            return;
+          }
           if (errData.error === "LISTING_MODERATION_REJECTED") {
             toast({
               title: errData.message ?? "Njoftimi u bllokua nga moderimi automatik.",

@@ -6,6 +6,7 @@ export const businessPaymentsTable = pgTable("business_payments", {
   token: text("token").notNull().unique(),
   user_id: integer("user_id").notNull(),
   purpose: text("purpose").notNull(),
+  listing_id: integer("listing_id"),
   amount_cents: integer("amount_cents").notNull(),
   stripe_session_id: text("stripe_session_id"),
   status: text("status").notNull().default("pending"),
