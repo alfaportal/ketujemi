@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, Link } from "wouter";
+import { useLocation, Link, useRoute } from "wouter";
 import {
   useGetCategories,
   useGetListings,
@@ -513,11 +513,13 @@ function Breadcrumb({ items }: { items: { label: string; href?: string }[] }) {
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
-export default function CategoryPage({ params }: { params: { id: string } }) {
+export default function CategoryPage({ params }: { params?: { id?: string } }) {
   const [, setLocation] = useLocation();
+  const [, routeParams] = useRoute("/categories/:id");
   const goToPostListing = useGoToPostListing();
-  const { t, market } = useMarket();
-  const segment = params.id;
+  const { t, market, uiLang } = useMarket();
+  const locale = translationKeyForUiLang(uiLang);
+  const segment = params?.id ?? routeParams?.id ?? "";
   const resultsAnchorRef = useRef<HTMLDivElement | null>(null);
 
   const { data: allCategories } = useGetCategories();
