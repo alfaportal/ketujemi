@@ -21,10 +21,14 @@ export function SiteLogo({ className, imageClassName, testId = "link-logo" }: Pr
       <img
         src={LOGO_SRC}
         alt="KetuJemi.com"
-        width={220}
-        height={56}
-        className={cn("h-9 w-auto max-w-[min(220px,52vw)] object-contain sm:h-11 md:h-12", imageClassName)}
+        width={560}
+        height={410}
+        className={cn(
+          "h-10 w-auto max-w-[min(280px,72vw)] object-contain drop-shadow-sm sm:h-12 md:h-[3.25rem]",
+          imageClassName,
+        )}
         decoding="async"
+        fetchPriority="high"
       />
     </Link>
   );
