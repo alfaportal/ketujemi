@@ -15,6 +15,11 @@ export type AuthUser = {
   profile_photo_url: string | null;
   city: string | null;
   about_me: string | null;
+  account_type?: string | null;
+  business_name?: string | null;
+  business_tier?: string | null;
+  vip_expires_at?: string | null;
+  email_verified?: boolean;
 };
 
 type AuthContextValue = {

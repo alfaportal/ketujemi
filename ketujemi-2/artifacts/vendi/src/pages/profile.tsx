@@ -9,6 +9,7 @@ import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { useMarket } from "@/lib/market-context";
 import { useToast } from "@/hooks/use-toast";
 import { AuthToolbar } from "@/components/auth-toolbar";
+import { BusinessAccountCard } from "@/components/business-account-card";
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
@@ -101,6 +102,8 @@ export default function ProfilePage() {
             <h1 className="text-xl font-black text-gray-900">{t.profile_heading}</h1>
             <p className="text-sm text-gray-500 mt-1">{t.profile_sub}</p>
           </div>
+
+          <BusinessAccountCard user={user} />
 
           <form className="space-y-4" onSubmit={onSave}>
             <div className="space-y-2">

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { listingsTable, categoriesTable } from "@workspace/db";
+import { listingsTable, categoriesTable, listingReportsTable, usersTable } from "@workspace/db";
 import { eq, and, gte, lte, ilike, desc, sql, count, gt, or, isNull, inArray } from "drizzle-orm";
 import {
   GetListingsQueryParams,
@@ -21,7 +21,28 @@ import {
 import { isBusinessAccount, isVipBusinessActive } from "../lib/business-rules";
 import { assertBusinessCategoryListingQuota } from "../lib/business-quota";
 import { assertBusinessListingCreate } from "../lib/business-listing-guard";
+import { consumeExtraPostPayment } from "../lib/payments";
+import { handleSellerComplaint } from "../lib/violation-escalation";
 import type { User } from "@workspace/db";
+
+const reportRate = new Map<string, number[]>();
+
+function clientIp(req: { ip?: string; headers: Record<string, unknown> }): string {
+  const fwd = req.headers["x-forwarded-for"];
+  if (typeof fwd === "string") return fwd.split(",")[0]?.trim() ?? "unknown";
+  return req.ip ?? "unknown";
+}
+
+function rateLimitReport(ip: string): boolean {
+  const now = Date.now();
+  const windowMs = 60 * 60 * 1000;
+  const max = 8;
+  const hits = (reportRate.get(ip) ?? []).filter((t) => now - t < windowMs);
+  if (hits.length >= max) return false;
+  hits.push(now);
+  reportRate.set(ip, hits);
+  return true;
+}
 
 const router = Router();
 
@@ -320,10 +341,22 @@ router.post("/listings", async (req, res) => {
     return;
   }
 
-  const paidExtraPost =
-    req.body && typeof req.body === "object" && "paid_extra_post" in req.body
-      ? Boolean((req.body as { paid_extra_post?: boolean }).paid_extra_post)
-      : false;
+  const paymentToken =
+    req.body && typeof req.body === "object" && typeof (req.body as { payment_token?: string }).payment_token === "string"
+      ? (req.body as { payment_token: string }).payment_token.trim()
+      : "";
+
+  let hasPaidExtraPost = false;
+  if (paymentToken) {
+    hasPaidExtraPost = await consumeExtraPostPayment(viewer.id, paymentToken);
+    if (!hasPaidExtraPost) {
+      res.status(402).json({
+        error: "INVALID_PAYMENT_TOKEN",
+        message: "Pagesa nuk u verifikua. Paguani €1 për njoftim shtesë.",
+      });
+      return;
+    }
+  }
 
   try {
     await assertBusinessListingCreate(viewer, {
@@ -356,7 +389,7 @@ router.post("/listings", async (req, res) => {
   if (isBusinessAccount(viewer) && !isVipBusinessActive(viewer)) {
     try {
       await assertBusinessCategoryListingQuota(viewer, parsed.data.category_id, {
-        paidExtraPost,
+        hasPaidExtraPost,
       });
     } catch (err: unknown) {
       if (err instanceof Error && err.message === "BUSINESS_QUOTA_EXCEEDED") {
@@ -525,12 +558,148 @@ router.get("/listings/free-quota", async (req, res) => {
     viewer,
     categoryId,
   );
+
+  const isBusiness = isBusinessAccount(viewer) && !isVipBusinessActive(viewer);
+
   res.json({
     root_category_id: rootId,
     used,
     limit,
     remaining: Math.max(0, limit - used),
     allowed: used < limit,
+    account_type: viewer.account_type ?? "private",
+    business: isBusiness
+      ? {
+          extra_post_price_eur: 1,
+          needs_payment: used >= limit,
+        }
+      : null,
+  });
+});
+
+// ─── POST /listings/:id/report ────────────────────────────────────────────────
+router.post("/listings/:id/report", async (req, res) => {
+  const listingId = Number(req.params.id);
+  if (!Number.isFinite(listingId) || listingId < 1) {
+    res.status(400).json({ error: "Invalid listing id" });
+    return;
+  }
+
+  const ip = clientIp(req);
+  if (!rateLimitReport(ip)) {
+    res.status(429).json({ error: "Too many reports. Try again later." });
+    return;
+  }
+
+  const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+  if (reason.length < 10) {
+    res.status(400).json({ error: "reason must be at least 10 characters" });
+    return;
+  }
+
+  const [listing] = await db
+    .select({ id: listingsTable.id })
+    .from(listingsTable)
+    .where(eq(listingsTable.id, listingId))
+    .limit(1);
+
+  if (!listing) {
+    res.status(404).json({ error: "Listing not found" });
+    return;
+  }
+
+  const reporter = await getSessionUser(req);
+  const reporterName =
+    typeof req.body?.reporter_name === "string" && req.body.reporter_name.trim()
+      ? req.body.reporter_name.trim().slice(0, 120)
+      : reporter?.display_name?.trim() ?? "Anonim";
+
+  const [created] = await db
+    .insert(listingReportsTable)
+    .values({
+      listing_id: listingId,
+      reason: reason.slice(0, 2000),
+      reporter_name: reporterName,
+      status: "pending",
+    })
+    .returning();
+
+  res.status(201).json({
+    ok: true,
+    id: created.id,
+    message: "Raportimi u dërgua. Do ta shqyrtojmë brenda 24 orëve.",
+  });
+});
+
+// ─── POST /listings/:id/complaint ─────────────────────────────────────────────
+router.post("/listings/:id/complaint", async (req, res) => {
+  const viewer = await getSessionUser(req);
+  if (!viewer) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+
+  const listingId = Number(req.params.id);
+  if (!Number.isFinite(listingId) || listingId < 1) {
+    res.status(400).json({ error: "Invalid listing id" });
+    return;
+  }
+
+  const [listing] = await db
+    .select()
+    .from(listingsTable)
+    .where(eq(listingsTable.id, listingId))
+    .limit(1);
+
+  if (!listing) {
+    res.status(404).json({ error: "Listing not found" });
+    return;
+  }
+
+  if (userOwnsListing(viewer, listing)) {
+    res.status(400).json({ error: "Cannot complain about your own listing" });
+    return;
+  }
+
+  const phoneDigits = listing.seller_phone.replace(/\D/g, "");
+  const [sellerByPhone] = phoneDigits
+    ? await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.phone_e164_digits, phoneDigits))
+        .limit(1)
+    : [undefined];
+
+  const specEmail = listing.description.match(/Email:\s*([^\s·]+@[^\s·]+)/i)?.[1]?.toLowerCase();
+  const [sellerByEmail] = specEmail
+    ? await db.select().from(usersTable).where(eq(usersTable.email, specEmail)).limit(1)
+    : [undefined];
+
+  const seller = sellerByPhone ?? sellerByEmail ?? null;
+
+  if (!seller) {
+    res.status(400).json({
+      error: "SELLER_NOT_REGISTERED",
+      message: "Shitësi nuk ka llogari të regjistruar për ankesë automatike.",
+    });
+    return;
+  }
+
+  const contact =
+    typeof req.body?.contact === "string" ? req.body.contact.trim().slice(0, 200) : viewer.email ?? "";
+
+  const result = await handleSellerComplaint(
+    seller.id,
+    listingId,
+    typeof req.body?.reason === "string" ? req.body.reason.trim() : undefined,
+    contact || undefined,
+  );
+
+  res.json({
+    ok: true,
+    message: "Ankesa u regjistrua.",
+    total_complaints: result.total,
+    action: result.action,
   });
 });
 

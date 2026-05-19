@@ -48,14 +48,14 @@ export async function assertBusinessPostingAllowed(user: User): Promise<void> {
 export async function assertBusinessCategoryListingQuota(
   user: User,
   categoryId: number,
-  opts?: { paidExtraPost?: boolean },
+  opts?: { hasPaidExtraPost?: boolean },
 ): Promise<void> {
   if (!isBusinessAccount(user) || isVipBusinessActive(user)) return;
 
   const { used, limit } = await countUserActiveListingsInCategoryRoot(user, categoryId);
   if (used < limit) return;
 
-  if (opts?.paidExtraPost) return;
+  if (opts?.hasPaidExtraPost) return;
 
   const err = new Error("BUSINESS_QUOTA_EXCEEDED") as Error & {
     used: number;

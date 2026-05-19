@@ -33,7 +33,7 @@ Dokument referencë për zhvillim dhe moderim. Implementimi në kod:
 
 | Tier | Kuota |
 |------|--------|
-| Biznes Standard | 10 njoftime falas për **çdo kategori**; pas tyre **€1** për çdo njoftim shtesë (`paid_extra_post: true` në body) |
+| Biznes Standard | 10 njoftime falas për **çdo kategori**; pas tyre **€1** për çdo njoftim shtesë (`payment_token` nga Stripe checkout) |
 | VIP Biznes ☆ | E pakufizuar — €20 / muaj (`business_tier=vip`, `vip_expires_at`) |
 
 API: `GET /auth/account/business-quota`, `GET /listings/free-quota?category_id=…`
@@ -69,12 +69,14 @@ Në çdo faqe (përveç admin): **Kushtet**, **Bizneset**, **Privatësia**, **Ko
 Para prodhimit, ekzekuto migrimin:
 
 ```bash
-psql "$DATABASE_URL" -f ketujemi-2/lib/db/sql/business-rules-migration.sql
+psql "$DATABASE_URL" -f lib/db/sql/business-rules-migration.sql
+psql "$DATABASE_URL" -f lib/db/sql/business-payments-migration.sql
 ```
+
+Variabla mjedisi: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `PUBLIC_APP_ORIGIN` (shih `.env.example`).
 
 ## Jo ende në prodhim (planifikim)
 
-- Pagesa Stripe për VIP €20/muaj
-- UI regjistrimi biznesi në frontend
+- Moderim AI automatik në upload foto
 - Moderim AI automatik në upload foto
 - Email automatike për paralajmërime

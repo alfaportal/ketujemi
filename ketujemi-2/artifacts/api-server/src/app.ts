@@ -36,6 +36,15 @@ app.use(
 );
 app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser(sessionSecret));
+app.use(
+  "/api/payments/webhook",
+  express.raw({ type: "application/json" }),
+  (req, _res, next) => {
+    const r = req as express.Request & { rawBody?: Buffer };
+    r.rawBody = Buffer.isBuffer(r.body) ? r.body : Buffer.from("");
+    next();
+  },
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

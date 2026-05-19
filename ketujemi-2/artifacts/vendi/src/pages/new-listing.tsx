@@ -182,7 +182,13 @@ export default function NewListing() {
     remaining: number;
     limit: number;
     allowed: boolean;
+    business?: { needs_payment?: boolean; extra_post_price_eur?: number } | null;
   } | null>(null);
+  const [paymentToken, setPaymentToken] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return new URLSearchParams(window.location.search).get("payment_token");
+  });
+  const [payBusy, setPayBusy] = useState(false);
 
   const effectiveCategoryId =
     Number(brandCatId) || Number(bodyCatId) || Number(parentCatId);
@@ -229,6 +235,7 @@ export default function NewListing() {
           remaining: j.remaining ?? 0,
           limit: j.limit ?? 0,
           allowed: j.allowed ?? true,
+          business: j.business ?? null,
         });
       })
       .catch(() => {
@@ -252,8 +259,14 @@ export default function NewListing() {
           err instanceof ApiError
             ? (err.data as { error?: string } | null)
             : null;
-        if (data?.error === "FREE_QUOTA_EXCEEDED") {
-          toast({ title: t.postQuotaExceeded, variant: "destructive" });
+        if (data?.error === "FREE_QUOTA_EXCEEDED" || data?.error === "BUSINESS_QUOTA_EXCEEDED") {
+          toast({
+            title:
+              data?.error === "BUSINESS_QUOTA_EXCEEDED"
+                ? "Keni arritur limitin. Paguani €1 për njoftim shtesë."
+                : t.postQuotaExceeded,
+            variant: "destructive",
+          });
           return;
         }
         toast({ title: t.postError, variant: "destructive" });
@@ -353,9 +366,39 @@ export default function NewListing() {
     return Number.isFinite(n) ? n : undefined;
   };
 
+  async function payForExtraPost() {
+    setPayBusy(true);
+    try {
+      const res = await fetch("/api/payments/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ purpose: "extra_post" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({
+          title: (data as { message?: string }).message ?? "Pagesa nuk është e disponueshme",
+          variant: "destructive",
+        });
+        return;
+      }
+      const url = (data as { url?: string }).url;
+      if (url) window.location.href = url;
+    } finally {
+      setPayBusy(false);
+    }
+  }
+
   const onSubmit = (data: FormData) => {
-    if (freeQuota && !freeQuota.allowed) {
-      toast({ title: t.postQuotaExceeded, variant: "destructive" });
+    const needsPay = freeQuota?.business?.needs_payment && !paymentToken;
+    if (freeQuota && !freeQuota.allowed && !paymentToken) {
+      toast({
+        title: needsPay
+          ? "Paguani €1 për të vazhduar postimin."
+          : t.postQuotaExceeded,
+        variant: "destructive",
+      });
       return;
     }
     if (imageUrls.length === 0) {
@@ -379,29 +422,58 @@ export default function NewListing() {
         ? sellerContactFromUser(user)
         : { seller_name: data.seller_name, seller_phone: data.seller_phone };
 
-    createMutation.mutate({
-      data: {
-        title: data.title,
-        description: finalDescription,
-        price: data.price_agreement ? 0 : data.price,
-        category_id: data.brand_category_id || data.category_id || data.parent_category_id,
-        location: data.location,
-        seller_name: contact.seller_name,
-        seller_phone: contact.seller_phone,
-        condition: data.condition,
-        image_url: imageUrls.join(",") || undefined,
-        is_featured: false,
-        ...((isVetura(parentName) || isAutoPjese(parentName))
-          ? {
-              vehicle_year: parseVehicleYear(data.xViti) ?? null,
-              vehicle_mileage_km: isVetura(parentName) ? parseVehicleKm(data.xKm) ?? null : null,
-              vehicle_fuel: isVetura(parentName) ? data.xKarburanti || null : null,
-              vehicle_body_type: isVetura(parentName) ? data.xTipi || null : null,
-              vehicle_model: data.xModeli || null,
-            }
-          : {}),
-      },
-    });
+    const payload: Record<string, unknown> = {
+      title: data.title,
+      description: finalDescription,
+      price: data.price_agreement ? 0 : data.price,
+      category_id: data.brand_category_id || data.category_id || data.parent_category_id,
+      location: data.location,
+      seller_name: contact.seller_name,
+      seller_phone: contact.seller_phone,
+      condition: data.condition,
+      image_url: imageUrls.join(",") || undefined,
+      is_featured: false,
+      ...((isVetura(parentName) || isAutoPjese(parentName))
+        ? {
+            vehicle_year: parseVehicleYear(data.xViti) ?? null,
+            vehicle_mileage_km: isVetura(parentName) ? parseVehicleKm(data.xKm) ?? null : null,
+            vehicle_fuel: isVetura(parentName) ? data.xKarburanti || null : null,
+            vehicle_body_type: isVetura(parentName) ? data.xTipi || null : null,
+            vehicle_model: data.xModeli || null,
+          }
+        : {}),
+    };
+    if (paymentToken) payload.payment_token = paymentToken;
+
+    void fetch("/api/listings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    })
+      .then(async (res) => {
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const errData = body as { error?: string; message?: string };
+          if (errData.error === "FREE_QUOTA_EXCEEDED" || errData.error === "BUSINESS_QUOTA_EXCEEDED") {
+            toast({
+              title:
+                errData.error === "BUSINESS_QUOTA_EXCEEDED"
+                  ? "Keni arritur limitin. Paguani €1 për njoftim shtesë."
+                  : t.postQuotaExceeded,
+              variant: "destructive",
+            });
+            return;
+          }
+          toast({ title: errData.message ?? t.postError, variant: "destructive" });
+          return;
+        }
+        queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetRecentListingsQueryKey() });
+        toast({ title: t.successPost });
+        setLocation(`/listings/${(body as { id: number }).id}`);
+      })
+      .catch(() => toast({ title: t.postError, variant: "destructive" }));
   };
 
   const cityList = LOCATIONS[market.code] ?? LOCATIONS.ks;
@@ -440,17 +512,33 @@ export default function NewListing() {
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
         {freeQuota != null && effectiveCategoryId > 0 ? (
-          <p
-            className={`rounded-xl border px-4 py-3 text-sm font-medium ${
-              freeQuota.allowed
+          <div
+            className={`rounded-xl border px-4 py-3 text-sm font-medium space-y-2 ${
+              freeQuota.allowed || paymentToken
                 ? "border-blue-100 bg-blue-50 text-blue-800"
                 : "border-amber-200 bg-amber-50 text-amber-900"
             }`}
           >
-            {freeQuota.allowed
-              ? t.postQuotaRemaining.replace("{n}", String(freeQuota.remaining))
-              : t.postQuotaExceeded}
-          </p>
+            <p>
+              {paymentToken
+                ? "Pagesa u konfirmua — mund të postoni këtë njoftim."
+                : freeQuota.allowed
+                  ? t.postQuotaRemaining.replace("{n}", String(freeQuota.remaining))
+                  : freeQuota.business?.needs_payment
+                    ? `Keni arritur ${freeQuota.limit} njoftime falas në këtë kategori. Çdo shtesë kushton €1.`
+                    : t.postQuotaExceeded}
+            </p>
+            {!freeQuota.allowed && !paymentToken && freeQuota.business?.needs_payment ? (
+              <Button
+                type="button"
+                className="w-full min-h-11 bg-blue-600 hover:bg-blue-700"
+                disabled={payBusy}
+                onClick={() => void payForExtraPost()}
+              >
+                {payBusy ? "Duke hapur pagesën…" : "Paguaj €1 dhe vazhdo"}
+              </Button>
+            ) : null}
+          </div>
         ) : null}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

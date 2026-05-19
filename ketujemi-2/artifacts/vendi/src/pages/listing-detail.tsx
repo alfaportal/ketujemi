@@ -28,6 +28,7 @@ import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { userOwnsListing } from "@/lib/listing-ownership";
 import { sellerFirstName } from "@/lib/seller-display";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
+import { ReportListingDialog } from "@/components/report-listing-dialog";
 
 // ─── Spec parser ─────────────────────────────────────────────────────────────
 interface ParsedDesc { specs: Record<string, string>; body: string }
@@ -126,6 +127,7 @@ export default function ListingDetail() {
   });
 
   const [activePhoto, setActivePhoto] = useState(0);
+  const [complaintBusy, setComplaintBusy] = useState(false);
 
   const parsed = useMemo(() => {
     if (!listing) return { specs: {} as Record<string, string>, body: "" };
@@ -133,6 +135,30 @@ export default function ListingDetail() {
   }, [listing]);
 
   const canManage = !!(user && listing && userOwnsListing(user, listing));
+
+  async function submitNoResponseComplaint() {
+    if (!listing) return;
+    setComplaintBusy(true);
+    try {
+      const res = await fetch(`/api/listings/${listing.id}/complaint`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ contact: user?.email ?? user?.phone_e164_digits ?? "" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({
+          title: (data as { message?: string }).message ?? (data as { error?: string }).error ?? "Gabim",
+          variant: "destructive",
+        });
+        return;
+      }
+      toast({ title: (data as { message?: string }).message ?? "Ankesa u regjistrua." });
+    } finally {
+      setComplaintBusy(false);
+    }
+  }
 
   const deleteMutation = useDeleteListing({
     mutation: {
@@ -460,6 +486,23 @@ export default function ListingDetail() {
                 ) : null}
               </div>
             </div>
+
+            {!canManage ? (
+              <div className="space-y-2">
+                <ReportListingDialog listingId={listing.id} className="w-full min-h-12" />
+                {user ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full min-h-11 text-gray-600"
+                    disabled={complaintBusy}
+                    onClick={() => void submitNoResponseComplaint()}
+                  >
+                    {complaintBusy ? "Duke dërguar…" : "Shitësi nuk përgjigjet"}
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
 
             <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-sm space-y-2">
               <p className="font-semibold text-amber-800">{t.caution}</p>
