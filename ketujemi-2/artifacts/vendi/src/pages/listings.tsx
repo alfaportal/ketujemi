@@ -13,7 +13,7 @@ import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { SiteLogo } from "@/components/site-logo";
 import { LanguageSelector } from "@/components/language-selector";
 
-// â”€â”€â”€ Skeleton Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Skeleton Card ---
 function SkeletonCard() {
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-gray-100">
@@ -27,7 +27,7 @@ function SkeletonCard() {
   );
 }
 
-// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Main Component ---
 const PAGE_SIZE = 16;
 
 export default function Listings() {
@@ -88,7 +88,7 @@ export default function Listings() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* â”€â”€ Top bar â”€â”€ */}
+      {/* Top bar */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex flex-col gap-3">
@@ -125,7 +125,7 @@ export default function Listings() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
 
-        {/* â”€â”€ Header row â”€â”€ */}
+        {/* Header row */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-5">
           <div className="min-w-0">
             <h1 className="text-lg sm:text-2xl font-black text-gray-900">{t.title}</h1>
@@ -153,7 +153,7 @@ export default function Listings() {
           </button>
         </div>
 
-        {/* â”€â”€ Filters panel â”€â”€ */}
+        {/* Filters panel */}
         {showFilters && (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-5 shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -206,7 +206,7 @@ export default function Listings() {
                 <input
                   data-testid="input-max-price"
                   type="number"
-                  placeholder="âˆž"
+                  placeholder="∞"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
                   min="0"
@@ -235,7 +235,7 @@ export default function Listings() {
           </div>
         )}
 
-        {/* â”€â”€ Active filter badges â”€â”€ */}
+        {/* Active filter badges */}
         {hasActiveFilters && (
           <div className="flex flex-wrap gap-2 mb-5">
             {appliedSearch && (
@@ -258,14 +258,14 @@ export default function Listings() {
             )}
             {(appliedMinPrice || appliedMaxPrice) && (
               <span className="flex items-center gap-1.5 bg-amber-50 text-amber-700 text-sm font-semibold px-3 py-1.5 rounded-full border border-amber-200">
-                {appliedMinPrice || "0"} â€“ {appliedMaxPrice || "âˆž"} {market.symbol}
+                {appliedMinPrice || "0"} – {appliedMaxPrice || "∞"} {market.symbol}
                 <X size={12} className="cursor-pointer hover:text-amber-900" onClick={() => { setMinPrice(""); setMaxPrice(""); setAppliedMinPrice(""); setAppliedMaxPrice(""); setPage(1); }} />
               </span>
             )}
           </div>
         )}
 
-        {/* â”€â”€ Grid â”€â”€ */}
+        {/* Grid */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 min-[1200px]:grid-cols-3 gap-4">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}

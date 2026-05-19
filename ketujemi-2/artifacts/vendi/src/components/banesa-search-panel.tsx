@@ -295,7 +295,7 @@ export function BanesaSearchPanel({
   ]);
 
   const countLabel =
-    previewLoading || previewTotal === null ? "â€¦" : previewTotal.toLocaleString("de-DE");
+    previewLoading || previewTotal === null ? "…" : previewTotal.toLocaleString("de-DE");
   const listingLine = fillCount(t.hub_show_listings_m, countLabel);
 
   return (
@@ -400,32 +400,22 @@ export function BanesaSearchPanel({
             {t.hub_prop_priceParen}
           </Label>
           <div className="grid grid-cols-2 gap-3">
-            <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">
-                â‚¬
-              </span>
-              <Input
-                type="text"
-                inputMode="decimal"
-                placeholder={t.hub_fromPh}
-                value={priceMin}
-                onChange={(e) => setPriceMin(e.target.value)}
-                className="h-12 rounded-xl border-slate-200 pl-8"
-              />
-            </div>
-            <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">
-                â‚¬
-              </span>
-              <Input
-                type="text"
-                inputMode="decimal"
-                placeholder={t.hub_toPh}
-                value={priceMax}
-                onChange={(e) => setPriceMax(e.target.value)}
-                className="h-12 rounded-xl border-slate-200 pl-8"
-              />
-            </div>
+            <Input
+              type="text"
+              inputMode="decimal"
+              placeholder={t.hub_fromPh}
+              value={priceMin}
+              onChange={(e) => setPriceMin(e.target.value)}
+              className="h-12 rounded-xl border-slate-200"
+            />
+            <Input
+              type="text"
+              inputMode="decimal"
+              placeholder={t.hub_toPh}
+              value={priceMax}
+              onChange={(e) => setPriceMax(e.target.value)}
+              className="h-12 rounded-xl border-slate-200"
+            />
           </div>
         </div>
 
@@ -481,7 +471,7 @@ export function BanesaSearchPanel({
           <span>{t.hub_cta_search_property}</span>
           <span className="text-sm font-medium opacity-90">
             {listingLine}
-            {previewLoading ? " â€¦" : ""}
+            {previewLoading ? " …" : ""}
           </span>
         </span>
       </Button>
