@@ -36,6 +36,7 @@ import {
   CategoryPageLoadError,
   CategoryPageNotFound,
 } from "@/components/category-page-shell";
+import { VipPartnersSection } from "@/components/vip-partners-section";
 import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { SiteLogo } from "@/components/site-logo";
@@ -670,6 +671,26 @@ export default function CategoryPage() {
     !!(currentCategory as any) &&
     (currentCategory as any).slug === KOMPJUTERE_LAPTOP_HUB_SLUG &&
     !(currentCategory as any).parent_id;
+
+  const isParentCategoryHub =
+    isVeturaHub ||
+    isKamioneFurgoneHub ||
+    isBanesaShtepiHub ||
+    isMotorSkuterHub ||
+    isAutoPjesHub ||
+    isSportOutdoorHub ||
+    isLokaleZyreHub ||
+    isTelefonaHubPage ||
+    isArsimKurseHub ||
+    isMobiljeDekorimHub ||
+    isRrobaKepuceHub ||
+    isFemijeHub ||
+    isPuneSherbimeHub ||
+    isBujqesiBlegtoriHub ||
+    isMuzikeHobbyHub ||
+    isKafshetHub ||
+    isTvElektronikeHub ||
+    isKompjuterLaptopHub;
 
   const autoPjeseLeafCsv = useMemo(() => {
     if (!allCategories || !isAutoPjesHub) return "";
@@ -1424,6 +1445,7 @@ export default function CategoryPage() {
                 resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
               }
             />
+            {isParentCategoryHub ? <VipPartnersSection className="my-8" /> : null}
             {renderListingsSection()}
           </>
         ) : null}
@@ -1617,6 +1639,10 @@ export default function CategoryPage() {
             </div>
           </div>
         )}
+
+        {!isTelefonaHubPage && isParentCategoryHub ? (
+          <VipPartnersSection className="my-8" />
+        ) : null}
 
         {!isTelefonaHubPage && renderListingsSection()}
       </div>

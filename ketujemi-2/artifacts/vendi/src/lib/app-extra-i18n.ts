@@ -55,7 +55,7 @@ const KS_EXTRA: Record<string, string> = {
   home_carouselNext: "Pamja tjetër",
   home_carouselDot: "Shfaq slidën {n}",
   home_partnerHeading: "Partnerët tanë të besuar",
-  home_partnerPlaceholder: "Partner",
+  home_partnerPlaceholder: "VIP Partner",
   home_monthPartnerBadge: "Partner i muajit",
   nf_title: "Faqja nuk u gjet",
   nf_body: "Kjo faqe nuk ekziston ose është zhvendosur. Kontrollo adresën dhe provo përsëri.",
@@ -1676,7 +1676,7 @@ const MK_EXTRA: Record<string, string> = {
   home_carouselNext: "Следен слајд",
   home_carouselDot: "Прикажи слајд {n}",
   home_partnerHeading: "Наши доверливи партнери",
-  home_partnerPlaceholder: "Партнер",
+  home_partnerPlaceholder: "VIP партнер",
   home_monthPartnerBadge: "Партнер на месецот",
   nf_title: "Страницата не е пронајдена",
   nf_body:
@@ -3245,7 +3245,7 @@ const MNE_EXTRA: Record<string, string> = {
   home_carouselNext: "Sljedeći slajd",
   home_carouselDot: "Prikaži slajd {n}",
   home_partnerHeading: "Naši pouzdani partneri",
-  home_partnerPlaceholder: "Partner",
+  home_partnerPlaceholder: "VIP Partner",
   home_monthPartnerBadge: "Partner mjeseca",
   nf_title: "Stranica nije pronađena",
   nf_body:

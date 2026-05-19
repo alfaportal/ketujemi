@@ -16,6 +16,7 @@ import { categoryPath } from "@/lib/category-navigation";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
 import { LanguageSelector } from "@/components/language-selector";
 import { SiteFooter } from "@/components/site-footer";
+import { VipPartnersSection } from "@/components/vip-partners-section";
 
 // --- Cover photos by category slug (all 18 parent categories) ----------------
 const CAT_PHOTOS_BY_SLUG: Record<string, string> = {
@@ -74,33 +75,6 @@ function StatCounter({ value, label }: { value: number; label: string }) {
     </div>
   );
 }
-
-
-function SponsorsAboveFooterRow() {
-  const { t } = useMarket();
-  const placeholders = Array.from({ length: 12 }, (_, i) => i + 1);
-  return (
-    <section className="bg-gray-50 border-t border-gray-200/80" aria-labelledby="partners-heading">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <h2 id="partners-heading" className="text-center text-lg font-black text-gray-900 mb-8">
-          {t.home_partnerHeading}
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 sm:gap-6">
-          {placeholders.map((n) => (
-            <div
-              key={n}
-              className="h-14 sm:h-16 w-full rounded-xl bg-gray-200 border border-gray-300 flex items-center justify-center text-sm font-semibold text-gray-500 uppercase tracking-wide"
-              data-testid={`sponsor-placeholder-${n}`}
-            >
-              {t.home_partnerPlaceholder}
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 // --- Page ---------------------------------------------------------------------
 export default function HomePage() {
   const { market, t, uiLang } = useMarket();
@@ -359,7 +333,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <SponsorsAboveFooterRow />
+      <VipPartnersSection className="border-t border-gray-200/80" />
 
       {/* -- Market Banner -- */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
