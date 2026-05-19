@@ -8,11 +8,13 @@ import contactRouter from "./contact";
 
 import authRouter from "./auth";
 import paymentsRouter from "./payments";
+import aiRouter from "./ai";
 
 const router: IRouter = Router();
 
 router.use(authRouter);
 router.use(paymentsRouter);
+router.use(aiRouter);
 router.use(contactRouter);
 router.use(healthRouter);
 router.use(listingsRouter);

@@ -21,6 +21,9 @@ import {
 import { isBusinessAccount, isVipBusinessActive } from "../lib/business-rules";
 import { assertBusinessCategoryListingQuota } from "../lib/business-quota";
 import { assertBusinessListingCreate } from "../lib/business-listing-guard";
+import { replaceDuplicateListingIfAny } from "../lib/listing-duplicate-guard";
+import { moderateListingContent } from "../lib/listing-ai-moderation";
+import { assertUserActiveListingCap } from "../lib/user-listing-limits";
 import { consumeExtraPostPayment } from "../lib/payments";
 import { handleSellerComplaint } from "../lib/violation-escalation";
 import type { User } from "@workspace/db";
@@ -359,6 +362,24 @@ router.post("/listings", async (req, res) => {
   }
 
   try {
+    await assertUserActiveListingCap(viewer);
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message === "LISTING_MONTHLY_CAP") {
+      const e = err as Error & { publicMessage?: string; used: number; limit: number };
+      res.status(403).json({
+        error: "LISTING_MONTHLY_CAP",
+        message: e.publicMessage,
+        used: e.used,
+        limit: e.limit,
+      });
+      return;
+    }
+    throw err;
+  }
+
+  const duplicateReplace = await replaceDuplicateListingIfAny(viewer, parsed.data.title);
+
+  try {
     await assertBusinessListingCreate(viewer, {
       title: parsed.data.title,
       description: parsed.data.description,
@@ -367,13 +388,6 @@ router.post("/listings", async (req, res) => {
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
-      if (err.message === "BUSINESS_DUPLICATE_LISTING") {
-        res.status(409).json({
-          error: "BUSINESS_DUPLICATE_LISTING",
-          message: "Ky produkt është postuar tashmë. Përditësoni shpalljen ekzistuese.",
-        });
-        return;
-      }
       if (err.message.startsWith("BUSINESS_")) {
         const publicMessage = (err as Error & { publicMessage?: string }).publicMessage;
         res.status(400).json({
@@ -426,6 +440,31 @@ router.post("/listings", async (req, res) => {
     }
   }
 
+  const [catRow] = await db
+    .select({ name: categoriesTable.name })
+    .from(categoriesTable)
+    .where(eq(categoriesTable.id, parsed.data.category_id))
+    .limit(1);
+
+  const moderation = await moderateListingContent({
+    title: parsed.data.title,
+    description: parsed.data.description,
+    price: parsed.data.price,
+    category_name: catRow?.name ?? null,
+    image_url: parsed.data.image_url,
+    condition: parsed.data.condition,
+  });
+
+  if (!moderation.approved) {
+    res.status(403).json({
+      error: "LISTING_MODERATION_REJECTED",
+      message:
+        moderation.reason ||
+        "Njoftimi nuk u miratua. Kontrolloni titullin, përshkrimin dhe çmimin.",
+    });
+    return;
+  }
+
   const [row] = await db
     .insert(listingsTable)
     .values({
@@ -466,7 +505,17 @@ router.post("/listings", async (req, res) => {
     .where(eq(categoriesTable.id, row.category_id))
     .limit(1);
 
-  res.status(201).json(applyViewerContact(formatListing(row, cat[0]?.name ?? null), viewer));
+  const created = applyViewerContact(formatListing(row, cat[0]?.name ?? null), viewer);
+  res.status(201).json({
+    ...created,
+    replaced_duplicate: duplicateReplace.replaced,
+    ...(duplicateReplace.replaced
+      ? {
+          message:
+            "Njoftimi i vjetër i ngjashëm u zëvendësua automatikisht me këtë postim të ri.",
+        }
+      : {}),
+  });
 });
 
 // ─── GET /listings/featured ───────────────────────────────────────────────────

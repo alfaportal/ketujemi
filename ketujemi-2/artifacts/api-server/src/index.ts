@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { startExpiredListingsScheduler } from "./lib/expire-listings-job";
 
 const rawPort = process.env["API_PORT"] ?? process.env["PORT"];
 
@@ -22,4 +23,5 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+  startExpiredListingsScheduler();
 });

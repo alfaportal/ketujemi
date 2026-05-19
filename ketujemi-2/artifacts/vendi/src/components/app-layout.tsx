@@ -1,5 +1,6 @@
 import { useLocation } from "wouter";
 import { SiteFooter } from "@/components/site-footer";
+import { SupportChatWidget } from "@/components/support-chat-widget";
 
 type AppLayoutProps = {
   children: React.ReactNode;
@@ -14,6 +15,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     <div className="min-h-screen bg-background flex flex-col">
       <div className="flex-1">{children}</div>
       {!hideFooter ? <SiteFooter /> : null}
+      {!hideFooter ? <SupportChatWidget /> : null}
     </div>
   );
 }

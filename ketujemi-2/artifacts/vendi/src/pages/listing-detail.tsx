@@ -29,6 +29,7 @@ import { userOwnsListing } from "@/lib/listing-ownership";
 import { sellerFirstName } from "@/lib/seller-display";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { ReportListingDialog } from "@/components/report-listing-dialog";
+import { SimilarListingsSection } from "@/components/similar-listings-section";
 
 // ─── Spec parser ─────────────────────────────────────────────────────────────
 interface ParsedDesc { specs: Record<string, string>; body: string }
@@ -516,6 +517,8 @@ export default function ListingDetail() {
           </div>
 
         </div>
+
+        {listing ? <SimilarListingsSection listingId={listing.id} /> : null}
       </div>
     </div>
   );

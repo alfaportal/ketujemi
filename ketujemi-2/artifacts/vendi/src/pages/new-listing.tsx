@@ -30,6 +30,7 @@ import {
 } from "@/lib/auth-context";
 import { AuthToolbar } from "@/components/auth-toolbar";
 import { SellerProfileGate } from "@/components/seller-profile-gate";
+import { PostingAssistantPanel } from "@/components/posting-assistant-panel";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 const schema = z.object({
@@ -178,6 +179,9 @@ export default function NewListing() {
   const bodyCatId      = useWatch({ control: form.control, name: "category_id" });
   const brandCatId     = useWatch({ control: form.control, name: "brand_category_id" });
   const priceAgreement = useWatch({ control: form.control, name: "price_agreement" });
+  const watchTitle = useWatch({ control: form.control, name: "title" }) ?? "";
+  const watchDescription = useWatch({ control: form.control, name: "description" }) ?? "";
+  const watchPrice = useWatch({ control: form.control, name: "price" }) ?? 0;
   const [freeQuota, setFreeQuota] = useState<{
     remaining: number;
     limit: number;
@@ -455,6 +459,20 @@ export default function NewListing() {
         const body = await res.json().catch(() => ({}));
         if (!res.ok) {
           const errData = body as { error?: string; message?: string };
+          if (errData.error === "LISTING_MODERATION_REJECTED") {
+            toast({
+              title: errData.message ?? "Njoftimi u bllokua nga moderimi automatik.",
+              variant: "destructive",
+            });
+            return;
+          }
+          if (errData.error === "LISTING_MONTHLY_CAP") {
+            toast({
+              title: errData.message ?? "Keni arritur 10 njoftime aktive.",
+              variant: "destructive",
+            });
+            return;
+          }
           if (errData.error === "FREE_QUOTA_EXCEEDED" || errData.error === "BUSINESS_QUOTA_EXCEEDED") {
             toast({
               title:
@@ -470,7 +488,8 @@ export default function NewListing() {
         }
         queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetRecentListingsQueryKey() });
-        toast({ title: t.successPost });
+        const msg = (body as { message?: string }).message;
+        toast({ title: msg ?? t.successPost });
         setLocation(`/listings/${(body as { id: number }).id}`);
       })
       .catch(() => toast({ title: t.postError, variant: "destructive" }));
@@ -1211,6 +1230,15 @@ export default function NewListing() {
                 )}
               />
             </Section>
+
+            <PostingAssistantPanel
+              title={watchTitle}
+              description={watchDescription}
+              price={priceAgreement ? 0 : Number(watchPrice) || 0}
+              categoryName={brandCats.find((c: { id: number }) => c.id === Number(brandCatId))?.name ?? subCats.find((c: { id: number }) => c.id === Number(bodyCatId))?.name}
+              parentCategoryName={parentName}
+              imageCount={imageUrls.length}
+            />
 
             {/* ── Submit ── */}
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-20 sm:static sm:bg-transparent sm:border-none sm:p-0">

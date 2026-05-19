@@ -1,0 +1,83 @@
+import { useEffect, useState } from "react";
+import { Link } from "wouter";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useMarket } from "@/lib/market-context";
+
+type Similar = {
+  id: number;
+  title: string;
+  price: number;
+  image_url: string | null;
+  location: string;
+};
+
+type Props = { listingId: number };
+
+export function SimilarListingsSection({ listingId }: Props) {
+  const { t, market } = useMarket();
+  const [items, setItems] = useState<Similar[]>([]);
+  const [heading, setHeading] = useState("Mund të të interesojë gjithashtu");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    void fetch(`/api/ai/listings/${listingId}/similar`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (cancelled || !j) return;
+        setItems((j as { similar?: Similar[] }).similar ?? []);
+        const h = (j as { heading?: string }).heading;
+        if (h) setHeading(h);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [listingId]);
+
+  if (!loading && items.length === 0) return null;
+
+  const currency = market.symbol;
+
+  return (
+    <section className="mt-8 space-y-4">
+      <h2 className="text-lg font-bold text-gray-900">{heading}</h2>
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-36 rounded-xl" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {items.map((item) => {
+            const img = item.image_url?.split(",")[0]?.trim();
+            return (
+              <Link
+                key={item.id}
+                href={`/listings/${item.id}`}
+                className="block rounded-xl border border-gray-100 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="aspect-[4/3] bg-gray-100">
+                  {img ? (
+                    <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  ) : null}
+                </div>
+                <div className="p-3">
+                  <p className="font-semibold text-sm text-gray-900 line-clamp-2">{item.title}</p>
+                  <p className="text-blue-600 font-bold text-sm mt-1">
+                    {item.price > 0 ? `${item.price.toLocaleString()} ${currency}` : t.priceAgreement}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">{item.location}</p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
