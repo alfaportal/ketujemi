@@ -6,10 +6,12 @@ import { useMarket } from "@/lib/market-context";
 
 type StaticPageShellProps = {
   title: string;
+  subtitle?: string;
+  tagline?: string;
   children: React.ReactNode;
 };
 
-export function StaticPageShell({ title, children }: StaticPageShellProps) {
+export function StaticPageShell({ title, subtitle, tagline, children }: StaticPageShellProps) {
   const { t } = useMarket();
 
   return (
@@ -29,7 +31,15 @@ export function StaticPageShell({ title, children }: StaticPageShellProps) {
       </header>
 
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-10">
-        <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-8">{title}</h1>
+        <header className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900">{title}</h1>
+          {subtitle ? (
+            <p className="mt-2 text-lg font-bold text-blue-600">{subtitle}</p>
+          ) : null}
+          {tagline ? (
+            <p className="mt-1 text-sm sm:text-base font-medium text-gray-500">{tagline}</p>
+          ) : null}
+        </header>
         <div className="space-y-8 text-gray-700">{children}</div>
       </main>
 

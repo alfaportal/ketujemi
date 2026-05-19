@@ -9,10 +9,14 @@ type PageSection = {
   paragraphs?: string[];
   bulletsIntro?: string;
   bullets?: string[];
+  table?: { label: string; value: string }[];
 };
 
 export type TermsPrivacyCopy = {
   title: string;
+  subtitle?: string;
+  tagline?: string;
+  sanctionsTableHeaders?: { violation: string; consequence: string };
   sections: PageSection[];
   /** Privacy page only — label before support@ketujemi.com link */
   privacyEmailLabel?: string;
@@ -63,15 +67,18 @@ export type StaticPagesCopy = {
 const KS: StaticPagesCopy = {
   terms: {
     title: "Kushtet e Përdorimit",
+    subtitle: "KetuJemi.com",
+    tagline: "Platforma e Njoftimeve të Klasifikuara",
+    sanctionsTableHeaders: { violation: "Shkelja", consequence: "Pasoja" },
     sections: [
       {
         title: "Hyrje",
         paragraphs: [
-          "KetuJemi.com është platformë shpalljesh për Kosovë, Shqipëri, Maqedoni dhe Mal të Zi. Diaspora nga Gjermani, Zvicër, Austri, Francë, Itali, Angli dhe SHBA. Duke përdorur platformën, pranoni këto kushte.",
+          "KetuJemi.com është platformë shpalljesh që mbulon Kosovën, Shqipërinë, Maqedoninë dhe Malin e Zi, si dhe diasporën shqiptare në Gjermani, Zvicër, Austri, Francë, Itali, Angli dhe SHBA. Duke përdorur platformën, pranoni këto kushte.",
         ],
       },
       {
-        title: "Kush mund të përdorë platformën",
+        title: "Kush Mund të Përdorë Platformën",
         bullets: [
           "Çdo person mbi 18 vjeç",
           "Biznese të regjistruara",
@@ -85,14 +92,22 @@ const KS: StaticPagesCopy = {
           "Foto reale të produktit/shërbimit",
           "Çmim i saktë në Euro (€)",
           "Kontakt i vlefshëm",
+          "Pa dublikata: Ndalohet postimi i të njëjtit njoftim dy herë — njoftimi i vjetër fshihet automatikisht",
+          "Afati i njoftimit: Njoftimet qëndrojnë aktive për 1 muaj, pastaj fshihen automatikisht",
+          "Maksimumi 10 njoftime aktive për përdorues",
         ],
       },
       {
         title: "Shpalljet e Ndaluara",
         bullets: [
-          "Armë dhe municione",
+          "Armë automatike dhe municione",
           "Droga dhe substanca të ndaluara",
-          "Produkte të falsifikuara",
+          "Produkte të falsifikuara / replika / fake",
+          "Ilaçe, suplemente ushqimore, alkool, duhan, e-cigare",
+          "Skema piramidale (MLM), fitime të shpejta pa punë",
+          "Njoftime erotike ose takimesh",
+          "Kriptomonedha (Bitcoin etj.) ose llogari lojërash",
+          "Produkte të blera vetëm për rishitje të shpejtë nga personat fizikë",
           "Përmbajtje pornografike",
           "Kafshë të egra / të mbrojtura",
           "Shërbime ilegale",
@@ -100,9 +115,36 @@ const KS: StaticPagesCopy = {
       },
       {
         title: "Limitet e Shpalljeve Falas",
+        bullets: ["Përdorues Standard: 10 shpallje falas për kategori + verifikim"],
+      },
+      {
+        title: "Verifikimi i Përdoruesve",
         bullets: [
-          "Përdorues: 10 shpallje falas për kategori + verifikim",
-          "VIP: E pakufizuar (30€ muaj)",
+          "Verifikim me SMS i detyrueshëm për të postuar, parë numra telefoni ose dërguar email",
+          "Verifikimi vlen për 1 vit, pastaj ripërtërihet",
+        ],
+      },
+      {
+        title: "Renditja dhe Monetizimi",
+        bullets: [
+          "Renditja bazë bëhet sipas datës së postimit",
+          "Sistemi TOP: Pagesë për të shtyrë njoftimin në krye",
+          "Sistemi rregullon automatikisht ditët e reklamimit nëse dikush paguan shumë herë rresht, që të mos bllokohet faqja",
+        ],
+      },
+      {
+        title: "Mbrojtja e të Dhënave (GDPR / Privatësia)",
+        bullets: [
+          "Emrat, emailet dhe telefonat e njoftimeve të fshira fshihen plotësisht pas 6 muajsh",
+          "Të dhënat e verifikimit të llogarisë bankare ruhen 1 vit",
+          "Faturat dhe të dhënat e pagesave ruhen ligjërisht për 10 vjet",
+          "Platforma nuk mban përgjegjësi për cilësinë e mallit apo mashtrimet mes blerësit dhe shitësit",
+        ],
+      },
+      {
+        title: "Ndalimi i API-ve të Paautorizuara",
+        paragraphs: [
+          "Ndalohet përdorimi i aplikacioneve të palëve të treta që vjedhin njoftimet ose automatizojnë postimet pa lejen e platformës.",
         ],
       },
       {
@@ -113,10 +155,10 @@ const KS: StaticPagesCopy = {
       },
       {
         title: "Sanksionet",
-        bullets: [
-          "Paralajmërim i parë: fshirje shpalljeje",
-          "Shkelje e dytë: pezullim 30 ditë",
-          "Shkelje e tretë: bllokimi i përhershëm i llogarisë",
+        table: [
+          { label: "E parë", value: "Fshirje e shpalljes" },
+          { label: "E dytë", value: "Pezullim 30 ditë" },
+          { label: "E tretë", value: "Bllokimi i përhershëm" },
         ],
       },
     ],
@@ -321,11 +363,14 @@ const KS: StaticPagesCopy = {
 const MK: StaticPagesCopy = {
   terms: {
     title: "Услови за користење",
+    subtitle: "KetuJemi.com",
+    tagline: "Платформа за класифицирани огласи",
+    sanctionsTableHeaders: { violation: "Прекршување", consequence: "Последица" },
     sections: [
       {
         title: "Вовед",
         paragraphs: [
-          "KetuJemi.com е платформа за огласи за Косово, Албанија, Македонија и Црна Гора. Дијаспората од Германија, Швајцарија, Австрија, Франција, Италија, Англија и САД. Со користење на платформата, ги прифаќате овие услови.",
+          "KetuJemi.com е платформа за огласи која ги покрива Косово, Албанија, Македонија и Црна Гора, како и албанската дијаспора во Германија, Швајцарија, Австрија, Франција, Италија, Англија и САД. Со користење на платформата, ги прифаќате овие услови.",
         ],
       },
       {
@@ -343,14 +388,22 @@ const MK: StaticPagesCopy = {
           "Реални фотографии на производот/услугата",
           "Точна цена во евра (€)",
           "Важечки контакт",
+          "Без дупликати: Забрането е објавување на истиот оглас двапати — стариот оглас се брише автоматски",
+          "Траење на огласот: Огласите остануваат активни 1 месец, потоа се бришат автоматски",
+          "Максимум 10 активни огласи по корисник",
         ],
       },
       {
         title: "Забранети огласи",
         bullets: [
-          "Оружје и муниција",
+          "Автоматско оружје и муниција",
           "Дрога и забранети супстанци",
-          "Фалсификувани производи",
+          "Фалсификувани производи / реплики / fake",
+          "Лекови, додатоци во исхрана, алкохол, цигари, e-cigare",
+          "Пирамидални шеми (MLM), брзи профити без работа",
+          "Еротски огласи или огласи за состаноци",
+          "Криптовалути (Bitcoin итн.) или сметки за игри",
+          "Производи купени само за брза препродажба од физички лица",
           "Порнографска содржина",
           "Диви / заштитени животни",
           "Нелегални услуги",
@@ -358,9 +411,36 @@ const MK: StaticPagesCopy = {
       },
       {
         title: "Лимити на бесплатни огласи",
+        bullets: ["Стандарден корисник: 10 бесплатни огласи по категорија + верификација"],
+      },
+      {
+        title: "Верификација на корисниците",
         bullets: [
-          "Корисници: 10 бесплатни огласи по категорија + верификација",
-          "VIP: Неограничено (30€ месечно)",
+          "Задолжителна SMS верификација за објавување, гледање на телефонски броеви или испраќање email",
+          "Верификацијата важи 1 година, потоа се повторува",
+        ],
+      },
+      {
+        title: "Рангирање и монетизација",
+        bullets: [
+          "Основното рангирање е според датумот на објавување",
+          "TOP систем: Плаќање за истакнување на огласот на врвот",
+          "Системот автоматски ги прилагодува деновите на рекламирање ако некој плаќа повеќепати по ред, за да не се блокира страницата",
+        ],
+      },
+      {
+        title: "Заштита на податоци (GDPR / Приватност)",
+        bullets: [
+          "Имињата, email-ите и телефоните од избришани огласи се целосно бришат по 6 месеци",
+          "Податоците за верификација на банкарската сметка се чуваат 1 година",
+          "Фактурите и податоците за плаќање се чуваат законски 10 години",
+          "Платформата не носи одговорност за квалитетот на стоката или измамите помеѓу купувачот и продавачот",
+        ],
+      },
+      {
+        title: "Забрана на неовластени API",
+        paragraphs: [
+          "Забрането е користење на апликации од трети страни кои ги крадат огласите или автоматизираат објавувања без дозвола од платформата.",
         ],
       },
       {
@@ -371,10 +451,10 @@ const MK: StaticPagesCopy = {
       },
       {
         title: "Санкции",
-        bullets: [
-          "Прво предупредување: бришење на оглас",
-          "Второ прекршување: суспензија 30 дена",
-          "Трето прекршување: трајно блокирање на сметката",
+        table: [
+          { label: "Прво", value: "Бришење на огласот" },
+          { label: "Второ", value: "Суспензија 30 дена" },
+          { label: "Трето", value: "Трајно блокирање" },
         ],
       },
     ],
@@ -579,11 +659,14 @@ const MK: StaticPagesCopy = {
 const MNE: StaticPagesCopy = {
   terms: {
     title: "Uslovi korišćenja",
+    subtitle: "KetuJemi.com",
+    tagline: "Platforma za klasifikovane oglase",
+    sanctionsTableHeaders: { violation: "Kršenje", consequence: "Posljedica" },
     sections: [
       {
         title: "Uvod",
         paragraphs: [
-          "KetuJemi.com je platforma za oglase za Kosovo, Albaniju, Makedoniju i Crnu Goru. Dijaspora iz Njemačke, Švicarske, Austrije, Francuske, Italije, Engleske i SAD. Korišćenjem platforme prihvatate ove uslove.",
+          "KetuJemi.com je platforma za oglase koja pokriva Kosovo, Albaniju, Makedoniju i Crnu Goru, kao i albansku dijasporu u Njemačkoj, Švicarskoj, Austriji, Francuskoj, Italiji, Engleskoj i SAD. Korišćenjem platforme prihvatate ove uslove.",
         ],
       },
       {
@@ -601,14 +684,22 @@ const MNE: StaticPagesCopy = {
           "Stvarne fotografije proizvoda/usluge",
           "Tačna cijena u eurima (€)",
           "Važeći kontakt",
+          "Bez duplikata: Zabranjeno je objavljivanje istog oglasa dva puta — stari oglas se briše automatski",
+          "Trajanje oglasa: Oglasi ostaju aktivni 1 mjesec, zatim se brišu automatski",
+          "Maksimum 10 aktivnih oglasa po korisniku",
         ],
       },
       {
         title: "Zabranjeni oglasi",
         bullets: [
-          "Oružje i municija",
+          "Automatsko oružje i municija",
           "Droga i zabranjene supstance",
-          "Falsifikovani proizvodi",
+          "Falsifikovani proizvodi / replike / fake",
+          "Lijekovi, dodaci prehrani, alkohol, duhan, e-cigare",
+          "Piramidalne sheme (MLM), brzi profiti bez rada",
+          "Erotski oglasi ili oglasi za sastanke",
+          "Kriptovalute (Bitcoin itd.) ili računi za igre",
+          "Proizvodi kupljeni samo za brzu preprodaju od fizičkih lica",
           "Pornografski sadržaj",
           "Divlje / zaštićene životinje",
           "Ilegalne usluge",
@@ -616,9 +707,36 @@ const MNE: StaticPagesCopy = {
       },
       {
         title: "Limiti besplatnih oglasa",
+        bullets: ["Standardni korisnik: 10 besplatnih oglasa po kategoriji + verifikacija"],
+      },
+      {
+        title: "Verifikacija korisnika",
         bullets: [
-          "Korisnici: 10 besplatnih oglasa po kategoriji + verifikacija",
-          "VIP: Neograničeno (30€ mjesečno)",
+          "Obavezna SMS verifikacija za objavljivanje, pregled telefonskih brojeva ili slanje emaila",
+          "Verifikacija važi 1 godinu, zatim se ponavlja",
+        ],
+      },
+      {
+        title: "Rangiranje i monetizacija",
+        bullets: [
+          "Osnovno rangiranje je prema datumu objave",
+          "TOP sistem: Plaćanje za istaknuti oglas na vrhu",
+          "Sistem automatski prilagođava dane reklamiranja ako neko plati više puta zaredom, da se stranica ne blokira",
+        ],
+      },
+      {
+        title: "Zaštita podataka (GDPR / Privatnost)",
+        bullets: [
+          "Imena, emailovi i telefoni iz obrisanih oglasa potpuno se brišu nakon 6 mjeseci",
+          "Podaci o verifikaciji bankovnog računa čuvaju se 1 godinu",
+          "Fakture i podaci o plaćanju čuvaju se zakonski 10 godina",
+          "Platforma ne snosi odgovornost za kvalitet robe ili prevare između kupca i prodavca",
+        ],
+      },
+      {
+        title: "Zabrana neovlašćenih API-ja",
+        paragraphs: [
+          "Zabranjeno je korišćenje aplikacija trećih strana koje kradu oglase ili automatizuju objave bez dozvole platforme.",
         ],
       },
       {
@@ -629,10 +747,10 @@ const MNE: StaticPagesCopy = {
       },
       {
         title: "Sankcije",
-        bullets: [
-          "Prvo upozorenje: brisanje oglasa",
-          "Drugo kršenje: suspenzija 30 dana",
-          "Treće kršenje: trajno blokiranje naloga",
+        table: [
+          { label: "Prvo", value: "Brisanje oglasa" },
+          { label: "Drugo", value: "Suspenzija 30 dana" },
+          { label: "Treće", value: "Trajno blokiranje" },
         ],
       },
     ],
