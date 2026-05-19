@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { defineConfig, type PluginOption } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { VitePWA } from "vite-plugin-pwa";
 
 const configDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(configDir, "..", "..");
@@ -14,7 +15,81 @@ export default defineConfig(async ({ command }) => {
   const apiProxyTarget =
     process.env.API_PROXY_TARGET ?? "http://127.0.0.1:8080";
 
-  const plugins: PluginOption[] = [react(), tailwindcss()];
+  const pwaScope = basePath.endsWith("/") ? basePath : `${basePath}/`;
+
+  const plugins: PluginOption[] = [
+    react(),
+    tailwindcss(),
+    VitePWA({
+      injectRegister: "auto",
+      registerType: "autoUpdate",
+      includeAssets: ["favicon.svg", "icons/pwa-192x192.png", "icons/pwa-512x512.png"],
+      manifest: {
+        name: "KetuJemi.com",
+        short_name: "KetuJemi",
+        description:
+          "Platforma e njoftimeve të klasifikuara — Kosovë, Shqipëri, Maqedoni, Mal i Zi dhe diaspora shqiptare.",
+        theme_color: "#3b82f6",
+        background_color: "#ffffff",
+        display: "standalone",
+        orientation: "portrait-primary",
+        scope: pwaScope,
+        start_url: pwaScope,
+        lang: "sq",
+        dir: "ltr",
+        categories: ["shopping", "business"],
+        icons: [
+          {
+            src: `${pwaScope}icons/pwa-192x192.png`.replace(/\/+/g, "/"),
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any",
+          },
+          {
+            src: `${pwaScope}icons/pwa-512x512.png`.replace(/\/+/g, "/"),
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any",
+          },
+          {
+            src: `${pwaScope}icons/pwa-512x512.png`.replace(/\/+/g, "/"),
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
+        ],
+      },
+      workbox: {
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        navigateFallback: "index.html",
+        navigateFallbackDenylist: [/^\/api\//],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "google-fonts-cache",
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "gstatic-fonts-cache",
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
+      },
+      devOptions: {
+        enabled: false,
+      },
+    }),
+  ];
 
   if (command === "serve") {
     const { default: runtimeErrorOverlay } = await import(
