@@ -1,8 +1,4 @@
-import { Link } from "wouter";
-import { ArrowLeft } from "lucide-react";
-import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
-import { SiteLogo } from "@/components/site-logo";
-import { useMarket } from "@/lib/market-context";
+import { SiteHeader } from "@/components/site-header";
 
 type StaticPageShellProps = {
   title: string;
@@ -12,23 +8,9 @@ type StaticPageShellProps = {
 };
 
 export function StaticPageShell({ title, subtitle, tagline, children }: StaticPageShellProps) {
-  const { t } = useMarket();
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-3">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 min-h-11 touch-manipulation"
-          >
-            <ArrowLeft size={18} aria-hidden />
-            {t.nav_home}
-          </Link>
-          <SiteLogo />
-          <SiteHeaderToolbar />
-        </div>
-      </header>
+      <SiteHeader />
 
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <header className="mb-8">
@@ -42,7 +24,6 @@ export function StaticPageShell({ title, subtitle, tagline, children }: StaticPa
         </header>
         <div className="space-y-8 text-gray-700">{children}</div>
       </main>
-
     </div>
   );
 }

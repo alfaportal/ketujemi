@@ -38,8 +38,7 @@ import {
 } from "@/components/category-page-shell";
 import { VipPartnersSection } from "@/components/vip-partners-section";
 import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
-import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
-import { SiteLogo } from "@/components/site-logo";
+import { SiteHeader } from "@/components/site-header";
 import { getVeturaBrandLeafCategoryIds } from "@/lib/vetura-search-helpers";
 import { VeturaSearchPanel } from "@/components/vetura-search-panel";
 import { VeturaHeroSlideshow } from "@/components/vetura-hero-slideshow";
@@ -1220,23 +1219,7 @@ export default function CategoryPage() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* Navbar */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 min-w-0">
-          <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-none">
-            <SiteLogo />
-            <Link
-              href="/listings"
-              className="hidden md:inline-flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 min-h-[44px] whitespace-nowrap"
-            >
-              {t.viewAll}
-            </Link>
-          </div>
-          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end flex-wrap">
-            <SiteHeaderToolbar />
-          </div>
-        </div>
-      </div>
+      <SiteHeader className="z-30" showViewAllListings />
 
       {/* Hero banner */}
       <div

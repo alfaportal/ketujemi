@@ -9,9 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useMarket, MARKETS, LOCATIONS } from "@/lib/market-context";
 import SharedListingCard from "@/components/listing-card";
 import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
-import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
-import { SiteLogo } from "@/components/site-logo";
-import { LanguageSelector } from "@/components/language-selector";
+import { SiteHeader } from "@/components/site-header";
 import { cn } from "@/lib/utils";
 import {
   cnPrimaryBlue,
@@ -93,18 +91,8 @@ export default function Listings() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* Top bar */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-2 min-w-0">
-              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-                <SiteLogo />
-                <LanguageSelector />
-              </div>
-              <SiteHeaderToolbar className="shrink-0" />
-            </div>
-            <form onSubmit={applyFilters} className="flex flex-col gap-2 w-full md:flex-row md:items-center md:flex-nowrap md:gap-2">
+      <SiteHeader className="z-30">
+        <form onSubmit={applyFilters} className="flex flex-col gap-2 w-full md:flex-row md:items-center md:flex-nowrap md:gap-2 pt-1">
               <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
@@ -123,10 +111,8 @@ export default function Listings() {
               >
                 {t.searchBtn}
               </button>
-            </form>
-          </div>
-        </div>
-      </div>
+        </form>
+      </SiteHeader>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
 

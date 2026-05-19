@@ -8,13 +8,11 @@ import * as Icons from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMarket, LOCATIONS } from "@/lib/market-context";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
-import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
-import { SiteLogo } from "@/components/site-logo";
+import { SiteHeader } from "@/components/site-header";
 import { useGetCategories, getGetCategoriesQueryOptions } from "@workspace/api-client-react";
 import { translateCategory } from "@/lib/category-translations";
 import { categoryPath } from "@/lib/category-navigation";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
-import { LanguageSelector } from "@/components/language-selector";
 import { SiteFooter } from "@/components/site-footer";
 import { VipPartnersSection } from "@/components/vip-partners-section";
 import { cn } from "@/lib/utils";
@@ -121,18 +119,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* -- Navbar -- */}
-      <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-2 py-2.5 min-w-0 sm:min-h-[4.25rem] sm:py-0">
-            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-              <SiteLogo />
-              <LanguageSelector />
-            </div>
-            <SiteHeaderToolbar className="shrink-0" />
-          </div>
-        </div>
-      </nav>
+      <SiteHeader />
 
       {/* -- Hero -- */}
       <section className="relative w-full overflow-hidden bg-slate-800 h-[300px] sm:h-[380px] md:h-[480px] lg:h-[520px]">

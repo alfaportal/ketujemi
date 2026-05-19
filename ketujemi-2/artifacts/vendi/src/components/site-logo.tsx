@@ -10,8 +10,8 @@ type Props = {
 
 const SIZE = {
   header: {
-    wrap: "rounded-2xl px-3.5 py-2 sm:px-5 sm:py-2.5 shadow-[0_4px_14px_rgba(37,99,235,0.45)]",
-    text: "text-[1.05rem] sm:text-[1.35rem] md:text-[1.5rem] leading-none",
+    wrap: "rounded-2xl px-4 py-2.5 sm:px-5 sm:py-2.5 shadow-[0_4px_14px_rgba(37,99,235,0.45)]",
+    text: "text-[1.2rem] sm:text-[1.35rem] md:text-[1.5rem] leading-none",
     domain: "text-[0.92em] font-bold opacity-95",
   },
   compact: {
