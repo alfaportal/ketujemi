@@ -4,7 +4,7 @@ import type { Category, User } from "@workspace/db";
 import { and, gt, inArray } from "drizzle-orm";
 import { userOwnsListing } from "./listing-ownership";
 
-export const DEFAULT_FREE_LISTING_LIMIT = 5;
+export const DEFAULT_FREE_LISTING_LIMIT = 10;
 
 export function resolveRootCategoryId(
   categoryId: number,

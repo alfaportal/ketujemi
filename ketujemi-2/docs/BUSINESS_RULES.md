@@ -7,38 +7,36 @@ Dokument referencë për zhvillim dhe moderim. Implementimi në kod:
 | Skema DB | `lib/db/src/schema/users.ts`, `lib/db/src/schema/business.ts` |
 | Migrim SQL | `lib/db/sql/business-rules-migration.sql` |
 | Rregulla & validim | `artifacts/api-server/src/lib/business-rules.ts` |
-| Kuota postimesh | `artifacts/api-server/src/lib/business-quota.ts` |
+| Kuota postimesh | `artifacts/api-server/src/lib/category-quota.ts`, `business-quota.ts` |
 | Shkelje & ankesa | `artifacts/api-server/src/lib/violation-escalation.ts` |
 | Kontroll në postim | `artifacts/api-server/src/lib/business-listing-guard.ts` |
 | API | `artifacts/api-server/src/routes/listings.ts`, `auth.ts` |
-| Footer | `artifacts/vendi/src/components/app-layout.tsx`, `site-footer.tsx` |
+| Faqe publike | `artifacts/vendi/src/lib/static-pages-i18n.ts` → `/business-rules` |
 
 ## 1. Regjistrimi & verifikimi
 
 - Llogaria **business** është e ndarë (`users.account_type = 'business'`).
 - Upgrade: `POST /auth/account/business` me `business_name` — kërkon **email të verifikuar** + **telefon SMS**.
-- Llogaria private mbetet me rregullat ekzistuese (kuota për kategori).
 
 ## 2. Çfarë mund të postojnë bizneset
 
-**Lejohet:** produkt specifik, çmim real (> 0 €), foto aktuale, detaje.
+**Lejohet:** produkt specifik, çmim real (> 0 €), foto aktuale, detaje, kontakt (përfshirë WhatsApp, Instagram, Viber në përshkrim).
 
 **Bllokohet automatikisht** (`validateBusinessListing`):
 
 - Reklama të përgjithshme (“na kontaktoni”, “faqe zyrtare”, etj.)
 - Çmim 0 ose “me marrëveshje” / “na kontaktoni”
-- Kontakt jashtë platformës (WhatsApp, Instagram, etj.)
 - URL foto stock (pexels, unsplash, …)
 - Titull shumë i shkurtër / jo specifik
 
 ## 3. Limitet e postimeve
 
-| Tier | Falas / muaj | Shtesë |
-|------|----------------|--------|
-| Biznes Standard | 1 | €1 / postim (`paid_extra_post: true` në body) |
+| Tier | Kuota |
+|------|--------|
+| Biznes Standard | 10 njoftime aktive falas për **çdo kategori** (si përdoruesit privatë) |
 | VIP Biznes ☆ | ∞ | €20 / muaj (`business_tier=vip`, `vip_expires_at`) |
 
-API: `GET /auth/account/business-quota`
+API: `GET /auth/account/business-quota`, `GET /listings/free-quota?category_id=…`
 
 ## 4. Komunikimi me blerësit
 
@@ -48,7 +46,6 @@ API: `GET /auth/account/business-quota`
 
 ## 5. Ndalimet automatike
 
-- Kontakt off-platform (regex në përshkrim)
 - Duplicate: i njëjti titull aktiv për të njëjtin përdorues
 - Flamuj në `listing_moderation_flags` (duplicate, etj.)
 
@@ -65,7 +62,7 @@ Funksioni: `recordUserViolation(userId, code)`.
 
 ## 7. Footer
 
-Në çdo faqe (përveç admin): **Kushtet**, **Privatësia**, **Kontakti**, **FAQ** — `AppLayout` + `SiteFooter`.
+Në çdo faqe (përveç admin): **Kushtet**, **Bizneset**, **Privatësia**, **Kontakti**, **FAQ**.
 
 ## Deploy
 
@@ -77,7 +74,7 @@ psql "$DATABASE_URL" -f ketujemi-2/lib/db/sql/business-rules-migration.sql
 
 ## Jo ende në prodhim (planifikim)
 
-- Pagesa Stripe për €1 postim shtesë dhe VIP €20/muaj
+- Pagesa Stripe për VIP €20/muaj
 - UI regjistrimi biznesi në frontend
 - Moderim AI automatik në upload foto
 - Email automatike për paralajmërime

@@ -3,8 +3,8 @@
  * @see ketujemi-2/docs/BUSINESS_RULES.md
  */
 
-export const BUSINESS_STANDARD_FREE_POSTS_PER_MONTH = 1;
-export const BUSINESS_EXTRA_POST_PRICE_EUR = 1;
+/** Same per-root-category cap as private users (see category-quota). */
+export const BUSINESS_STANDARD_FREE_LISTINGS_PER_CATEGORY = 10;
 export const BUSINESS_VIP_MONTHLY_PRICE_EUR = 20;
 
 export const COMPLAINT_WARN_THRESHOLD = 3;
@@ -24,19 +24,6 @@ const GENERIC_AD_PATTERNS = [
   /\bfaqe zyrtare\b/i,
   /\breklam[ae]?\b/i,
   /\boferta speciale per kompanin\b/i,
-];
-
-const OFF_PLATFORM_PATTERNS = [
-  /\bwhatsapp\b/i,
-  /\bviber\b/i,
-  /\btelegram\b/i,
-  /\binstagram\.com\b/i,
-  /\bfb\.com\b/i,
-  /\bfacebook\.com\b/i,
-  /\btelegram\.me\b/i,
-  /\bna shkruani ne\b/i,
-  /\bpaguani jashte\b/i,
-  /\bpa platformen\b/i,
 ];
 
 const NO_REAL_PRICE_PATTERNS = [
@@ -107,16 +94,6 @@ export function validateBusinessListing(input: {
         ok: false,
         code: "BUSINESS_GENERIC_AD",
         message: "Reklamat e përgjithshme të kompanisë nuk lejohen — postoni produkt specifik.",
-      };
-    }
-  }
-
-  for (const re of OFF_PLATFORM_PATTERNS) {
-    if (re.test(combined)) {
-      return {
-        ok: false,
-        code: "BUSINESS_OFF_PLATFORM",
-        message: "Kontakti jashtë platformës nuk lejohet në përshkrim.",
       };
     }
   }

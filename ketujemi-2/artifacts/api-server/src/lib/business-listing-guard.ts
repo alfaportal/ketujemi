@@ -43,7 +43,6 @@ export async function assertBusinessListingCreate(
     price: number;
     image_url?: string | null;
   },
-  opts?: { paidExtraPost?: boolean },
 ): Promise<void> {
   if (!isBusinessAccount(user)) return;
 
@@ -54,7 +53,7 @@ export async function assertBusinessListingCreate(
     throw err;
   }
 
-  await assertBusinessPostingAllowed(user, opts);
+  await assertBusinessPostingAllowed(user);
 
   const dupId = await findDuplicateActiveListing(user, input.title);
   if (dupId != null) {

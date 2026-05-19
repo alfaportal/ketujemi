@@ -18,7 +18,7 @@ import {
   assertFreeListingQuota,
   countUserActiveListingsInCategoryRoot,
 } from "../lib/category-quota";
-import { isBusinessAccount } from "../lib/business-rules";
+import { isBusinessAccount, isVipBusinessActive } from "../lib/business-rules";
 import { assertBusinessListingCreate } from "../lib/business-listing-guard";
 import type { User } from "@workspace/db";
 
@@ -319,34 +319,15 @@ router.post("/listings", async (req, res) => {
     return;
   }
 
-  const paidExtraPost =
-    req.body && typeof req.body === "object" && "paid_extra_post" in req.body
-      ? Boolean((req.body as { paid_extra_post?: boolean }).paid_extra_post)
-      : false;
-
   try {
-    await assertBusinessListingCreate(
-      viewer,
-      {
-        title: parsed.data.title,
-        description: parsed.data.description,
-        price: parsed.data.price,
-        image_url: parsed.data.image_url,
-      },
-      { paidExtraPost },
-    );
+    await assertBusinessListingCreate(viewer, {
+      title: parsed.data.title,
+      description: parsed.data.description,
+      price: parsed.data.price,
+      image_url: parsed.data.image_url,
+    });
   } catch (err: unknown) {
     if (err instanceof Error) {
-      if (err.message === "BUSINESS_QUOTA_EXCEEDED") {
-        const e = err as Error & { quota?: unknown };
-        res.status(402).json({
-          error: "BUSINESS_QUOTA_EXCEEDED",
-          message:
-            "Keni arritur 1 postim falas për këtë muaj. Paguani €1 për postim shtesë ose aktivizoni VIP Biznes (€20/muaj).",
-          quota: e.quota,
-        });
-        return;
-      }
       if (err.message === "BUSINESS_DUPLICATE_LISTING") {
         res.status(409).json({
           error: "BUSINESS_DUPLICATE_LISTING",
@@ -366,7 +347,9 @@ router.post("/listings", async (req, res) => {
     throw err;
   }
 
-  if (!isBusinessAccount(viewer)) {
+  const skipCategoryQuota =
+    isBusinessAccount(viewer) && isVipBusinessActive(viewer);
+  if (!skipCategoryQuota) {
     try {
       await assertFreeListingQuota(viewer, parsed.data.category_id);
     } catch (err: unknown) {

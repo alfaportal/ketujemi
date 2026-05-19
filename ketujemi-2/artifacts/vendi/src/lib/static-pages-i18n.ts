@@ -175,7 +175,6 @@ const KS: StaticPagesCopy = {
         bullets: [
           "Llogaria business është e ndarë nga llogaria private.",
           "Për të kaluar në biznes: email i verifikuar + telefon SMS i verifikuar.",
-          "Emri i biznesit regjistrohet në platformë para postimit të parë si biznes.",
         ],
       },
       {
@@ -193,7 +192,6 @@ const KS: StaticPagesCopy = {
         bullets: [
           "Reklama të përgjithshme (“na kontaktoni”, “faqe zyrtare”, etj.)",
           "Çmim 0, “me marrëveshje” ose “na kontaktoni”",
-          "Kontakt jashtë platformës (WhatsApp, Instagram, Viber, etj.)",
           "Foto nga faqe stock (pexels, unsplash, etj.)",
           "Titull shumë i shkurtër ose jo specifik",
           "I njëjti titull dy herë (dublikatë)",
@@ -202,7 +200,7 @@ const KS: StaticPagesCopy = {
       {
         title: "Limitet e postimeve",
         bullets: [
-          "Biznes Standard: 1 njoftim falas në muaj; çdo postim shtesë €1",
+          "Biznes Standard: 10 njoftime falas për çdo kategori + verifikim",
           "VIP Biznes ☆: njoftime të pakufizuara për €20/muaj",
           "Kuota kontrollohet automatikisht në llogarinë tuaj",
         ],
@@ -539,7 +537,6 @@ const MK: StaticPagesCopy = {
         bullets: [
           "Бизнис сметката е одделена од приватната сметка.",
           "За преминување на бизнис: верифициран email + SMS телефон.",
-          "Името на бизнисот се регистрира пред првиот оглас како бизнис.",
         ],
       },
       {
@@ -557,7 +554,6 @@ const MK: StaticPagesCopy = {
         bullets: [
           "Општи реклами („контактирајте не“, „официјална страница“, итн.)",
           "Цена 0, „по договор“ или „контактирајте не“",
-          "Контакт надвор од платформата (WhatsApp, Instagram, Viber, итн.)",
           "Stock фотографии (pexels, unsplash, итн.)",
           "Премногу краток или неспецифичен наслов",
           "Ист наслов двапати (дупликат)",
@@ -566,7 +562,7 @@ const MK: StaticPagesCopy = {
       {
         title: "Лимити на објавување",
         bullets: [
-          "Стандарден бизнис: 1 бесплатен оглас месечно; секој дополнителен €1",
+          "Стандарден бизнис: 10 бесплатни огласи по категорија + верификација",
           "VIP Бизнис ☆: неограничени огласи за €20/месечно",
           "Квотата се проверува автоматски на вашата сметка",
         ],
@@ -903,7 +899,6 @@ const MNE: StaticPagesCopy = {
         bullets: [
           "Biznis nalog je odvojen od privatnog naloga.",
           "Za prelazak na biznis: verifikovan email + SMS telefon.",
-          "Naziv biznisa se registruje prije prvog oglasa kao biznis.",
         ],
       },
       {
@@ -921,7 +916,6 @@ const MNE: StaticPagesCopy = {
         bullets: [
           "Opšte reklame („kontaktirajte nas“, „zvanična stranica“, itd.)",
           "Cijena 0, „po dogovoru“ ili „kontaktirajte nas“",
-          "Kontakt van platforme (WhatsApp, Instagram, Viber, itd.)",
           "Stock fotografije (pexels, unsplash, itd.)",
           "Prekratak ili nespecifičan naslov",
           "Isti naslov dva puta (duplikat)",
@@ -930,7 +924,7 @@ const MNE: StaticPagesCopy = {
       {
         title: "Limiti objavljivanja",
         bullets: [
-          "Standardni biznis: 1 besplatan oglas mjesečno; svaki dodatni €1",
+          "Standardni biznis: 10 besplatnih oglasa po kategoriji + verifikacija",
           "VIP Biznis ☆: neograničeni oglasi za €20/mjesec",
           "Kvota se provjerava automatski na vašem nalogu",
         ],
