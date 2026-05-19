@@ -1445,7 +1445,7 @@ export default function CategoryPage() {
                 resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
               }
             />
-            {isParentCategoryHub ? <VipPartnersSection className="my-8" /> : null}
+            {isParentCategoryHub ? <VipPartnersSection variant="hub" className="my-8" /> : null}
             {renderListingsSection()}
           </>
         ) : null}
@@ -1641,7 +1641,7 @@ export default function CategoryPage() {
         )}
 
         {!isTelefonaHubPage && isParentCategoryHub ? (
-          <VipPartnersSection className="my-8" />
+          <VipPartnersSection variant="hub" className="my-8" />
         ) : null}
 
         {!isTelefonaHubPage && renderListingsSection()}
