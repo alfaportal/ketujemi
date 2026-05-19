@@ -20,7 +20,26 @@ export function attachStaticFrontend(app: Express): void {
   app.use(
     express.static(resolved, {
       index: false,
-      maxAge: process.env.NODE_ENV === "production" ? "1d" : 0,
+      maxAge: 0,
+      setHeaders(res, filePath) {
+        const base = path.basename(filePath);
+        const isHashedAsset = filePath.includes(`${path.sep}assets${path.sep}`);
+        const isShell =
+          base === "index.html" ||
+          base.endsWith(".webmanifest") ||
+          base === "sw.js" ||
+          base.startsWith("workbox-") ||
+          base === "registerSW.js";
+
+        if (isShell) {
+          res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+          res.setHeader("Pragma", "no-cache");
+          return;
+        }
+        if (isHashedAsset && process.env.NODE_ENV === "production") {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+      },
     }),
   );
 

@@ -20,12 +20,16 @@ import ContactPage from "@/pages/contact";
 import FaqPage from "@/pages/faq";
 import NotFound from "@/pages/not-found";
 import { AppLayout } from "@/components/app-layout";
+import { RefetchOnVisible } from "@/components/refetch-on-visible";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      staleTime: 30_000,
+      staleTime: 0,
+      refetchOnMount: true,
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
     },
   },
 });
@@ -59,6 +63,7 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <RefetchOnVisible />
       <AuthProvider>
         <TooltipProvider>
           <MarketProvider>

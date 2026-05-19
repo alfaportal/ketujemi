@@ -21,7 +21,7 @@ export default defineConfig(async ({ command }) => {
     react(),
     tailwindcss(),
     VitePWA({
-      injectRegister: "auto",
+      injectRegister: null,
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "icons/pwa-192x192.png", "icons/pwa-512x512.png"],
       manifest: {
@@ -61,10 +61,24 @@ export default defineConfig(async ({ command }) => {
       },
       workbox: {
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // Do not precache HTML — always prefer network for navigations.
+        globPatterns: ["**/*.{js,css,ico,png,svg,woff2}"],
         navigateFallback: "index.html",
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === "navigate",
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "ketujemi-pages",
+              networkTimeoutSeconds: 8,
+              expiration: { maxEntries: 4, maxAgeSeconds: 60 },
+            },
+          },
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith("/api/"),
+            handler: "NetworkOnly",
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: "CacheFirst",
