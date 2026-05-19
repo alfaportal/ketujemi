@@ -59,6 +59,7 @@ export type FaqCopy = {
 
 export type StaticPagesCopy = {
   terms: TermsPrivacyCopy;
+  businessRules: TermsPrivacyCopy;
   privacy: TermsPrivacyCopy;
   contact: ContactCopy;
   faq: FaqCopy;
@@ -159,6 +160,74 @@ const KS: StaticPagesCopy = {
           { label: "E parë", value: "Fshirje e shpalljes" },
           { label: "E dytë", value: "Pezullim 30 ditë" },
           { label: "E tretë", value: "Bllokimi i përhershëm" },
+        ],
+      },
+    ],
+  },
+  businessRules: {
+    title: "Rregullorja e Bizneseve",
+    subtitle: "KetuJemi.com",
+    tagline: "Njoftime për biznese të regjistruara",
+    sanctionsTableHeaders: { violation: "Shkelja", consequence: "Veprim" },
+    sections: [
+      {
+        title: "Regjistrimi & verifikimi",
+        bullets: [
+          "Llogaria business është e ndarë nga llogaria private.",
+          "Për të kaluar në biznes: email i verifikuar + telefon SMS i verifikuar.",
+          "Emri i biznesit regjistrohet në platformë para postimit të parë si biznes.",
+        ],
+      },
+      {
+        title: "Çfarë mund të postojnë bizneset",
+        bulletsIntro: "Lejohet vetëm njoftim specifik për produkt ose shërbim:",
+        bullets: [
+          "Produkt ose shërbim i qartë (jo reklamë e përgjithshme)",
+          "Çmim real në Euro (€), më i madh se 0",
+          "Foto aktuale të produktit (jo stock / internet)",
+          "Përshkrim me detaje të mjaftueshme",
+        ],
+      },
+      {
+        title: "Çfarë ndalohet automatikisht",
+        bullets: [
+          "Reklama të përgjithshme (“na kontaktoni”, “faqe zyrtare”, etj.)",
+          "Çmim 0, “me marrëveshje” ose “na kontaktoni”",
+          "Kontakt jashtë platformës (WhatsApp, Instagram, Viber, etj.)",
+          "Foto nga faqe stock (pexels, unsplash, etj.)",
+          "Titull shumë i shkurtër ose jo specifik",
+          "I njëjti titull dy herë (dublikatë)",
+        ],
+      },
+      {
+        title: "Limitet e postimeve",
+        bullets: [
+          "Biznes Standard: 1 njoftim falas në muaj; çdo postim shtesë €1",
+          "VIP Biznes ☆: njoftime të pakufizuara për €20/muaj",
+          "Kuota kontrollohet automatikisht në llogarinë tuaj",
+        ],
+      },
+      {
+        title: "Komunikimi me blerësit",
+        bullets: [
+          "Blerësit duhet të marrin përgjigje përmes platformës.",
+          "3 ankesa për mospërgjigje → paralajmërim me email",
+          "5 ankesa për mospërgjigje → pezullim 30 ditë",
+        ],
+      },
+      {
+        title: "Pasojat e shkeljeve",
+        table: [
+          { label: "1", value: "Email paralajmërues" },
+          { label: "2", value: "Heqje postimi" },
+          { label: "3", value: "Pezullim 30 ditë" },
+          { label: "4+", value: "Bllokim i përhershëm" },
+        ],
+      },
+      {
+        title: "Llogaritë private",
+        paragraphs: [
+          "Përdoruesit privatë kanë rregulla të ndryshme (10 njoftime falas për kategori, etj.). Shihni Kushtet e Përdorimit në footer.",
         ],
       },
     ],
@@ -459,6 +528,74 @@ const MK: StaticPagesCopy = {
       },
     ],
   },
+  businessRules: {
+    title: "Правила за бизниси",
+    subtitle: "KetuJemi.com",
+    tagline: "Огласи за регистрирани бизниси",
+    sanctionsTableHeaders: { violation: "Прекршување", consequence: "Мерка" },
+    sections: [
+      {
+        title: "Регистрација и верификација",
+        bullets: [
+          "Бизнис сметката е одделена од приватната сметка.",
+          "За преминување на бизнис: верифициран email + SMS телефон.",
+          "Името на бизнисот се регистрира пред првиот оглас како бизнис.",
+        ],
+      },
+      {
+        title: "Што можат да објавуваат бизнисите",
+        bulletsIntro: "Дозволен е само специфичен оглас за производ или услуга:",
+        bullets: [
+          "Јасен производ или услуга (не општа реклама)",
+          "Реална цена во евра (€), поголема од 0",
+          "Актуелни фотографии (не stock / интернет)",
+          "Доволно детален опис",
+        ],
+      },
+      {
+        title: "Што се блокира автоматски",
+        bullets: [
+          "Општи реклами („контактирајте не“, „официјална страница“, итн.)",
+          "Цена 0, „по договор“ или „контактирајте не“",
+          "Контакт надвор од платформата (WhatsApp, Instagram, Viber, итн.)",
+          "Stock фотографии (pexels, unsplash, итн.)",
+          "Премногу краток или неспецифичен наслов",
+          "Ист наслов двапати (дупликат)",
+        ],
+      },
+      {
+        title: "Лимити на објавување",
+        bullets: [
+          "Стандарден бизнис: 1 бесплатен оглас месечно; секој дополнителен €1",
+          "VIP Бизнис ☆: неограничени огласи за €20/месечно",
+          "Квотата се проверува автоматски на вашата сметка",
+        ],
+      },
+      {
+        title: "Комуникација со купувачите",
+        bullets: [
+          "Купувачите мора да добијат одговор преку платформата.",
+          "3 жалби за неодговор → предупредување по email",
+          "5 жалби за неодговор → суспензија 30 дена",
+        ],
+      },
+      {
+        title: "Последици од прекршувања",
+        table: [
+          { label: "1", value: "Email предупредување" },
+          { label: "2", value: "Бришење на оглас" },
+          { label: "3", value: "Суспензија 30 дена" },
+          { label: "4+", value: "Трајно блокирање" },
+        ],
+      },
+      {
+        title: "Приватни сметки",
+        paragraphs: [
+          "Приватните корисници имаат различни правила (10 бесплатни огласи по категорија, итн.). Погледнете Услови за користење во footer.",
+        ],
+      },
+    ],
+  },
   privacy: {
     title: "Политика на приватност",
     sections: [
@@ -751,6 +888,74 @@ const MNE: StaticPagesCopy = {
           { label: "Prvo", value: "Brisanje oglasa" },
           { label: "Drugo", value: "Suspenzija 30 dana" },
           { label: "Treće", value: "Trajno blokiranje" },
+        ],
+      },
+    ],
+  },
+  businessRules: {
+    title: "Pravila za biznise",
+    subtitle: "KetuJemi.com",
+    tagline: "Oglasi za registrovane biznise",
+    sanctionsTableHeaders: { violation: "Kršenje", consequence: "Mjera" },
+    sections: [
+      {
+        title: "Registracija i verifikacija",
+        bullets: [
+          "Biznis nalog je odvojen od privatnog naloga.",
+          "Za prelazak na biznis: verifikovan email + SMS telefon.",
+          "Naziv biznisa se registruje prije prvog oglasa kao biznis.",
+        ],
+      },
+      {
+        title: "Šta biznisi mogu objavljivati",
+        bulletsIntro: "Dozvoljen je samo specifičan oglas za proizvod ili uslugu:",
+        bullets: [
+          "Jasan proizvod ili usluga (ne opšta reklama)",
+          "Stvarna cijena u eurima (€), veća od 0",
+          "Aktuelne fotografije (ne stock / internet)",
+          "Dovoljno detaljan opis",
+        ],
+      },
+      {
+        title: "Šta se automatski blokira",
+        bullets: [
+          "Opšte reklame („kontaktirajte nas“, „zvanična stranica“, itd.)",
+          "Cijena 0, „po dogovoru“ ili „kontaktirajte nas“",
+          "Kontakt van platforme (WhatsApp, Instagram, Viber, itd.)",
+          "Stock fotografije (pexels, unsplash, itd.)",
+          "Prekratak ili nespecifičan naslov",
+          "Isti naslov dva puta (duplikat)",
+        ],
+      },
+      {
+        title: "Limiti objavljivanja",
+        bullets: [
+          "Standardni biznis: 1 besplatan oglas mjesečno; svaki dodatni €1",
+          "VIP Biznis ☆: neograničeni oglasi za €20/mjesec",
+          "Kvota se provjerava automatski na vašem nalogu",
+        ],
+      },
+      {
+        title: "Komunikacija sa kupcima",
+        bullets: [
+          "Kupci moraju dobiti odgovor preko platforme.",
+          "3 žalbe za neodgovor → upozorenje emailom",
+          "5 žalbi za neodgovor → suspenzija 30 dana",
+        ],
+      },
+      {
+        title: "Posljedice kršenja",
+        table: [
+          { label: "1", value: "Email upozorenje" },
+          { label: "2", value: "Brisanje oglasa" },
+          { label: "3", value: "Suspenzija 30 dana" },
+          { label: "4+", value: "Trajno blokiranje" },
+        ],
+      },
+      {
+        title: "Privatni nalozi",
+        paragraphs: [
+          "Privatni korisnici imaju drugačija pravila (10 besplatnih oglasa po kategoriji, itd.). Pogledajte Uslove korišćenja u footeru.",
         ],
       },
     ],

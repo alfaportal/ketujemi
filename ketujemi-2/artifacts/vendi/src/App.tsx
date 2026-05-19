@@ -14,6 +14,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import EditListing from "@/pages/edit-listing";
 import AdminPanel from "@/pages/admin/index";
 import TermsPage from "@/pages/terms";
+import BusinessRulesPage from "@/pages/business-rules";
 import PrivacyPage from "@/pages/privacy";
 import ContactPage from "@/pages/contact";
 import FaqPage from "@/pages/faq";
@@ -38,6 +39,7 @@ function Router() {
           <Route path="/login" component={LoginPage} />
           <Route path="/profile" component={ProfilePage} />
           <Route path="/terms" component={TermsPage} />
+          <Route path="/business-rules" component={BusinessRulesPage} />
           <Route path="/privacy" component={PrivacyPage} />
           <Route path="/contact" component={ContactPage} />
           <Route path="/faq" component={FaqPage} />

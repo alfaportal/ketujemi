@@ -29,6 +29,12 @@ export function SiteFooter() {
             <Link href="/terms" className="hover:text-gray-800 transition-colors min-h-11 inline-flex items-center">
               {t.terms}
             </Link>
+            <Link
+              href="/business-rules"
+              className="hover:text-gray-800 transition-colors min-h-11 inline-flex items-center"
+            >
+              {t.businessRules}
+            </Link>
             <Link href="/privacy" className="hover:text-gray-800 transition-colors min-h-11 inline-flex items-center">
               {t.privacy}
             </Link>
