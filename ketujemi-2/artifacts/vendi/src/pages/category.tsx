@@ -3,6 +3,7 @@ import { useLocation, Link, useRoute } from "wouter";
 import {
   useGetCategories,
   useGetListings,
+  getGetCategoriesQueryOptions,
   getGetListingsQueryKey,
 } from "@workspace/api-client-react";
 import type { GetListingsParams } from "@workspace/api-client-react";
@@ -24,6 +25,12 @@ import { translationKeyForUiLang } from "@/lib/ui-languages";
 import ListingCard from "@/components/listing-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { translateCategory } from "@/lib/category-translations";
+import { categoryPath, resolveCategoryId } from "@/lib/category-navigation";
+import {
+  CategoryPageLoading,
+  CategoryPageLoadError,
+  CategoryPageNotFound,
+} from "@/components/category-page-shell";
 import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { SiteLogo } from "@/components/site-logo";
@@ -513,24 +520,31 @@ function Breadcrumb({ items }: { items: { label: string; href?: string }[] }) {
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
-export default function CategoryPage({ params }: { params?: { id?: string } }) {
+export default function CategoryPage() {
   const [, setLocation] = useLocation();
   const [, routeParams] = useRoute("/categories/:id");
   const goToPostListing = useGoToPostListing();
   const { t, market, uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
-  const segment = params?.id ?? routeParams?.id ?? "";
+  const segment = routeParams?.id ?? "";
   const resultsAnchorRef = useRef<HTMLDivElement | null>(null);
 
-  const { data: allCategories } = useGetCategories();
+  const {
+    data: allCategories,
+    isLoading: categoriesLoading,
+    isError: categoriesError,
+    refetch: refetchCategories,
+  } = useGetCategories({
+    query: {
+      ...getGetCategoriesQueryOptions(),
+      staleTime: 5 * 60_000,
+      gcTime: 30 * 60_000,
+    },
+  });
 
   const categoryId = useMemo(() => {
-    const n = Number(segment);
-    if (Number.isFinite(n) && String(n) === segment) return n;
-    const row = (allCategories as any[] | undefined)?.find(
-      (c: any) => c.slug === segment,
-    );
-    return row?.id ?? NaN;
+    const resolved = resolveCategoryId(segment, allCategories as any[] | undefined);
+    return resolved ?? NaN;
   }, [segment, allCategories]);
 
   const emptyListingsCopy = useMemo(() => {
@@ -899,6 +913,7 @@ export default function CategoryPage({ params }: { params?: { id?: string } }) {
   ]);
 
   const listingsQueryEnabled =
+    Number.isFinite(categoryId) &&
     !!allCategories?.length &&
     (!isVeturaHub || veturaBrandLeafCsv.length > 0) &&
     (!isKamioneFurgoneHub || kamioneBrandLeafCsv.length > 0) &&
@@ -946,7 +961,18 @@ export default function CategoryPage({ params }: { params?: { id?: string } }) {
     setKompjuterListParams(null);
   }, [categoryId]);
 
-  if (!allCategories) return null;
+  if (categoriesLoading && !allCategories) {
+    return <CategoryPageLoading />;
+  }
+  if (categoriesError && !allCategories) {
+    return <CategoryPageLoadError onRetry={() => void refetchCategories()} />;
+  }
+  if (!allCategories) {
+    return <CategoryPageLoading />;
+  }
+  if (!Number.isFinite(categoryId) || !currentCategory) {
+    return <CategoryPageNotFound />;
+  }
 
   const parentCategory = currentCategory && (currentCategory as any).parent_id
     ? allCategories.find((c: any) => c.id === (currentCategory as any).parent_id)
@@ -1046,8 +1072,8 @@ export default function CategoryPage({ params }: { params?: { id?: string } }) {
   const Icon = getCatIcon(currentCategory?.icon ?? "Car");
 
   const crumbItems: { label: string; href?: string }[] = [{ label: "KetuJemi", href: "/" }];
-  if (grandparentCategory) crumbItems.push({ label: translateCategory(grandparentCategory.name, locale), href: `/categories/${grandparentCategory.id}` });
-  if (parentCategory) crumbItems.push({ label: translateCategory(parentCategory.name, locale), href: `/categories/${parentCategory.id}` });
+  if (grandparentCategory) crumbItems.push({ label: translateCategory(grandparentCategory.name, locale), href: categoryPath(grandparentCategory.id) });
+  if (parentCategory) crumbItems.push({ label: translateCategory(parentCategory.name, locale), href: categoryPath(parentCategory.id) });
   crumbItems.push({ label: translateCategory(currentCategory?.name ?? "", locale) });
 
   const hubResultsId = isVeturaHub
@@ -1552,7 +1578,7 @@ export default function CategoryPage({ params }: { params?: { id?: string } }) {
                 <BodyTypeCard
                   key={sub.id}
                   category={sub}
-                  onClick={() => setLocation(`/categories/${sub.id}`)}
+                  onClick={() => setLocation(categoryPath(sub.id))}
                 />
               ))}
             </div>
@@ -1578,7 +1604,7 @@ export default function CategoryPage({ params }: { params?: { id?: string } }) {
                 <BrandCard
                   key={brand.id}
                   category={brand}
-                  onClick={() => setLocation(`/categories/${brand.id}`)}
+                  onClick={() => setLocation(categoryPath(brand.id))}
                 />
               ))}
             </div>

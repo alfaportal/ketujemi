@@ -3,6 +3,7 @@ import { MapPin, Eye, Clock, AlertCircle } from "lucide-react";
 import { useMarket, convertPrice } from "@/lib/market-context";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { translateCategory } from "@/lib/category-translations";
+import { categoryPath } from "@/lib/category-navigation";
 
 // ─── Formatted timestamp ──────────────────────────────────────────────────────
 function formatDate(isoString: string): string {
@@ -155,7 +156,11 @@ export default function ListingCard({ listing }: ListingCardProps) {
         {catName && listing.category_id && (
           <div className="mt-1">
             <span
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/categories/${listing.category_id}`); }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (listing.category_id) navigate(categoryPath(listing.category_id));
+              }}
               className="text-sm bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md hover:bg-blue-100 hover:text-blue-600 transition-colors cursor-pointer"
             >
               {catName}

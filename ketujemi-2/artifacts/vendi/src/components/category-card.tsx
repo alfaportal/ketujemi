@@ -3,6 +3,7 @@ import * as Icons from "lucide-react";
 import { useMarket } from "@/lib/market-context";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { translateCategory } from "@/lib/category-translations";
+import { categoryPath } from "@/lib/category-navigation";
 
 // ─── Cover photos keyed by category name prefix ───────────────────────────────
 const CAT_PHOTOS: Record<string, string> = {
@@ -92,7 +93,7 @@ export default function CategoryCard({ category, onClick }: Props) {
 
   return (
     <Link
-      href={`/categories/${category.id}`}
+      href={categoryPath(category.id)}
       data-testid={`card-category-${category.id}`}
       className="block h-full"
     >

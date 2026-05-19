@@ -10,8 +10,9 @@ import { useMarket, LOCATIONS } from "@/lib/market-context";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { SiteLogo } from "@/components/site-logo";
-import { useGetCategories } from "@workspace/api-client-react";
+import { useGetCategories, getGetCategoriesQueryOptions } from "@workspace/api-client-react";
 import { translateCategory } from "@/lib/category-translations";
+import { categoryPath } from "@/lib/category-navigation";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
 import { LanguageSelector } from "@/components/language-selector";
 import { SiteFooter } from "@/components/site-footer";
@@ -105,7 +106,13 @@ export default function HomePage() {
   const { market, t, uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
   const [, setLocation] = useLocation();
-  const { data: apiCategories } = useGetCategories();
+  const { data: apiCategories } = useGetCategories({
+    query: {
+      ...getGetCategoriesQueryOptions(),
+      staleTime: 5 * 60_000,
+      gcTime: 30 * 60_000,
+    },
+  });
   const [filterSearch, setFilterSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterLoc, setFilterLoc] = useState("");
@@ -114,7 +121,10 @@ export default function HomePage() {
   const [showFilters, setShowFilters] = useState(true);
 
   const parentCategories = useMemo(
-    () => (apiCategories ?? []).filter((c: any) => !c.parent_id),
+    () =>
+      (apiCategories ?? []).filter(
+        (c: any) => !c.parent_id && c.id != null && Number(c.id) > 0,
+      ),
     [apiCategories],
   );
 
@@ -312,7 +322,7 @@ export default function HomePage() {
             return (
               <Link
                 key={cat.id}
-                href={`/categories/${cat.id}`}
+                href={categoryPath(cat.id)}
                 data-testid={`link-category-${cat.id}`}
                 className="group flex flex-col bg-white rounded-xl sm:rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-200 cursor-pointer"
               >
