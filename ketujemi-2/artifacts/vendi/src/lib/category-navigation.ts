@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useLayoutEffect } from "react";
 
 /** Shared category URL helpers — single source of truth for all category links. */
 
@@ -74,15 +74,10 @@ function applyScrollY(top: number) {
 }
 
 /**
- * On category change: scroll to top for new visits (incl. subcategories), or
- * restore position when returning to a parent category.
+ * On category id change only: scroll to top (new subcategory) or restore parent
+ * position when going back. Does not run again when filters/listings refetch.
  */
-export function useCategoryScroll(
-  categoryId: number,
-  options?: { contentReady?: boolean },
-) {
-  const restoredRef = useRef(false);
-
+export function useCategoryScroll(categoryId: number) {
   useLayoutEffect(() => {
     if (!Number.isFinite(categoryId)) return;
 
@@ -90,30 +85,21 @@ export function useCategoryScroll(
     window.history.scrollRestoration = "manual";
 
     const saved = takeCategoryScroll(categoryId);
-    restoredRef.current = saved != null;
     const top = saved ?? 0;
-
     applyScrollY(top);
-    requestAnimationFrame(() => applyScrollY(top));
+
+    // One layout pass for fresh pages only — never repeat on filter/search updates.
+    let raf = 0;
+    let t = 0;
+    if (saved == null) {
+      raf = requestAnimationFrame(() => applyScrollY(0));
+      t = window.setTimeout(() => applyScrollY(0), 50);
+    }
 
     return () => {
       window.history.scrollRestoration = previousRestoration;
+      cancelAnimationFrame(raf);
+      window.clearTimeout(t);
     };
   }, [categoryId]);
-
-  // After listings/filters render, keep subcategory pages at the top (not on listings).
-  useEffect(() => {
-    if (!Number.isFinite(categoryId)) return;
-    if (restoredRef.current) return;
-    if (options?.contentReady === false) return;
-
-    const top = 0;
-    applyScrollY(top);
-    const t1 = window.setTimeout(() => applyScrollY(top), 0);
-    const t2 = window.setTimeout(() => applyScrollY(top), 120);
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-    };
-  }, [categoryId, options?.contentReady]);
 }

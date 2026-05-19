@@ -945,15 +945,7 @@ export default function CategoryPage() {
     },
   });
 
-  const categoryScrollReady =
-    !categoriesLoading &&
-    !!allCategories &&
-    !!currentCategory &&
-    Number.isFinite(categoryId);
-
-  useCategoryScroll(categoryId, {
-    contentReady: categoryScrollReady && (!listingsQueryEnabled || !isLoading),
-  });
+  useCategoryScroll(categoryId);
 
   useEffect(() => {
     setVeturaListParams(null);
