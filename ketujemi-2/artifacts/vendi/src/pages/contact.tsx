@@ -63,14 +63,14 @@ export default function ContactPage() {
   }
 
   return (
-    <StaticPageShell title={c.title}>
+    <StaticPageShell title={c.title} tagline={c.tagline}>
       <Section title={c.contactSectionTitle}>
         <ul className="space-y-3 text-sm sm:text-base">
           <li>
             <span className="mr-2" aria-hidden>
               📧
             </span>
-            {c.emailLabel}{" "}
+            {c.officialEmailLabel}{" "}
             <a href={`mailto:${INFO_EMAIL}`} className="text-blue-600 font-semibold hover:underline">
               {INFO_EMAIL}
             </a>
@@ -79,10 +79,16 @@ export default function ContactPage() {
             <span className="mr-2" aria-hidden>
               📧
             </span>
-            {c.supportEmailLabel}{" "}
+            {c.technicalSupportLabel}{" "}
             <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 font-semibold hover:underline">
               {SUPPORT_EMAIL}
             </a>
+          </li>
+          <li>
+            <span className="mr-2" aria-hidden>
+              🕐
+            </span>
+            {c.hoursLabel} {c.hoursValue}
           </li>
           <li>
             <span className="mr-2" aria-hidden>

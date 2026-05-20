@@ -19,6 +19,8 @@ import BusinessRulesPage from "@/pages/business-rules";
 import PrivacyPage from "@/pages/privacy";
 import ContactPage from "@/pages/contact";
 import FaqPage from "@/pages/faq";
+import SecurityPage from "@/pages/security";
+import PressPage from "@/pages/press";
 import NotFound from "@/pages/not-found";
 import { AppLayout } from "@/components/app-layout";
 import { RefetchOnVisible } from "@/components/refetch-on-visible";
@@ -48,7 +50,13 @@ function Router() {
           <Route path="/business-rules" component={BusinessRulesPage} />
           <Route path="/privacy" component={PrivacyPage} />
           <Route path="/contact" component={ContactPage} />
+          <Route path="/kontakt" component={ContactPage} />
           <Route path="/faq" component={FaqPage} />
+          <Route path="/siguria" component={SecurityPage} />
+          <Route path="/bezbednost" component={SecurityPage} />
+          <Route path="/sigurnost" component={SecurityPage} />
+          <Route path="/shtypi" component={PressPage} />
+          <Route path="/mediji" component={PressPage} />
           <Route path="/" component={Home} />
           <Route path="/categories/:id" component={CategoryPage} />
           <Route path="/listings/new" component={NewListing} />

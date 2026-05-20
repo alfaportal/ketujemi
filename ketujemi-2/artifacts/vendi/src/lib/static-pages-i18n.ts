@@ -26,7 +26,12 @@ export type ContactSubject = { value: string; label: string };
 
 export type ContactCopy = {
   title: string;
+  tagline: string;
   contactSectionTitle: string;
+  officialEmailLabel: string;
+  technicalSupportLabel: string;
+  hoursLabel: string;
+  hoursValue: string;
   emailLabel: string;
   supportEmailLabel: string;
   facebookLabel: string;
@@ -54,7 +59,22 @@ export type FaqItemCopy = {
 
 export type FaqCopy = {
   title: string;
+  tagline: string;
+  featuredTitle: string;
+  featured: FaqItemCopy[];
   sections: { title: string; items: FaqItemCopy[] }[];
+};
+
+export type InfoPageCopy = {
+  title: string;
+  tagline: string;
+  sections: PageSection[];
+};
+
+export type PressPageCopy = {
+  title: string;
+  tagline: string;
+  mediaEmailLabel: string;
 };
 
 export type StaticPagesCopy = {
@@ -63,6 +83,8 @@ export type StaticPagesCopy = {
   privacy: TermsPrivacyCopy;
   contact: ContactCopy;
   faq: FaqCopy;
+  security: InfoPageCopy;
+  press: PressPageCopy;
 };
 
 const KS: StaticPagesCopy = {
@@ -286,9 +308,15 @@ const KS: StaticPagesCopy = {
   },
   contact: {
     title: "Na Kontaktoni",
+    tagline:
+      "Jemi këtu për t'ju ndihmuar për çdo pyetje, sugjerim apo mbështetje teknike. Ekipi ynë do t'ju përgjigjet brenda 24 orëve.",
     contactSectionTitle: "Kontakti",
-    emailLabel: "Info:",
-    supportEmailLabel: "Support:",
+    officialEmailLabel: "Email Zyrtar:",
+    technicalSupportLabel: "Suport Teknik:",
+    hoursLabel: "Orari i Punës:",
+    hoursValue: "E Hënë - E Premte, 09:00 - 17:00",
+    emailLabel: "Email Zyrtar:",
+    supportEmailLabel: "Suport Teknik:",
     facebookLabel: "Facebook:",
     instagramLabel: "Instagram:",
     formTitle: "Formulari i kontaktit",
@@ -311,48 +339,57 @@ const KS: StaticPagesCopy = {
     faqTitle: "Pyetje të shpeshta (FAQ)",
     faq: [
       {
-        q: "Si të postoj një shpallje?",
-        a: 'Klikoni "Posto Shpallje", zgjidhni kategorinë, plotësoni të dhënat dhe ngarkoni fotot.',
+        q: "Si mund të postoj një njoftim?",
+        a: "Kliko butonin «Posto Njoftim», plotëso të dhënat dhe ngarko fotot.",
       },
       {
-        q: "Sa kushton postimi?",
-        a: "10 shpallje falas për kategori për përdoruesit privatë.",
+        q: "Sa kushton postimi i njoftimeve?",
+        a: "Postimi për përdoruesit e thjeshtë është plotësisht falas.",
       },
       {
-        q: "Si të verifikoj llogarinë?",
-        a: "Me numrin e telefonit - do të merrni SMS me kod konfirmimi.",
-      },
-      {
-        q: "Çfarë bëj nëse dikush po mashtron?",
-        a: 'Klikoni "Raporto" në shpallje ose na kontaktoni direkt.',
-      },
-      {
-        q: "A mund të postoj nga jashtë vendit?",
-        a: "Po! Diaspora nga Gjermani, Zvicër, Austri, Francë, Itali, Angli dhe SHBA mund të postojë normalisht.",
+        q: "Si mund ta fshij ose modifikoj njoftimin tim?",
+        a: "Hyni në llogarinë tuaj te seksioni «Njoftimet e mia» për t'i menaxhuar ato.",
       },
     ],
   },
   faq: {
     title: "Pyetjet e Shpeshta (FAQ)",
+    tagline:
+      "Gjeni përgjigje të shpejta për pyetjet më të zakonshme rreth përdorimit të platformës KetuJemi.com.",
+    featuredTitle: "Pyetjet kryesore",
+    featured: [
+      {
+        q: "Si mund të postoj një njoftim?",
+        a: "Kliko butonin «Posto Njoftim», plotëso të dhënat dhe ngarko fotot.",
+      },
+      {
+        q: "Sa kushton postimi i njoftimeve?",
+        a: "Postimi për përdoruesit e thjeshtë është plotësisht falas.",
+      },
+      {
+        q: "Si mund ta fshij ose modifikoj njoftimin tim?",
+        a: "Hyni në llogarinë tuaj te seksioni «Njoftimet e mia» për t'i menaxhuar ato.",
+      },
+    ],
     sections: [
       {
-        title: "Postimi i Shpalljeve",
+        title: "Postimi i Njoftimeve",
         items: [
           {
-            q: "Si të postoj një shpallje?",
-            a: 'Klikoni "+ Posto Shpallje", zgjidhni kategorinë, plotësoni të dhënat dhe ngarkoni fotot. Shpallja publikohet menjëherë.',
+            q: "Si të postoj një njoftim?",
+            a: 'Klikoni «Posto Njoftim», zgjidhni kategorinë, plotësoni të dhënat dhe ngarkoni fotot. Njoftimi publikohet menjëherë.',
           },
           {
-            q: "Sa shpallje falas mund të postoj?",
-            a: "Përdoruesit kanë 10 shpallje falas për çdo kategori + verifikim.",
+            q: "Sa njoftime falas mund të postoj?",
+            a: "Përdoruesit kanë 10 njoftime falas për çdo kategori + verifikim.",
           },
           {
             q: "A mund të postoj nga jashtë vendit?",
             a: "Po! Diaspora nga Gjermani, Zvicër, Austri, Francë, Itali, Angli dhe SHBA mund të postojë normalisht me numrin e tyre të telefonit.",
           },
           {
-            q: "Sa foto mund të ngarkoi për një shpallje?",
-            a: "Deri në 10 foto për shpallje.",
+            q: "Sa foto mund të ngarkoi për një njoftim?",
+            a: "Deri në 10 foto për njoftim.",
           },
         ],
       },
@@ -382,12 +419,12 @@ const KS: StaticPagesCopy = {
           },
           {
             q: "Si të kontaktoj shitësin?",
-            a: 'Klikoni "Kontakto Shitësin" në shpallje dhe dërgoni mesazh direkt.',
+            a: 'Klikoni «Kontakto Shitësin» në njoftim dhe dërgoni mesazh direkt.',
           },
           {
             q: "Çfarë bëj nëse dikush po mashtron?",
             aEmail: {
-              before: 'Klikoni "Raporto" në shpallje ose na kontaktoni në ',
+              before: 'Klikoni «Raporto» në njoftim ose na kontaktoni në ',
               between: " dhe ",
               after: ". Veprojmë brenda 24 orëve.",
             },
@@ -403,7 +440,7 @@ const KS: StaticPagesCopy = {
         items: [
           {
             q: "Çfarë është paketa VIP?",
-            a: 'Paketa VIP ofron shpallje të pakufizuara, pozicion të lartë në kërkim dhe badge "VIP" për 30€ muaj.',
+            a: 'Paketa VIP ofron njoftime të pakufizuara, pozicion të lartë në kërkim dhe badge «VIP» për 30€ muaj.',
           },
           {
             q: "Kur aktivizohet paketa VIP?",
@@ -425,6 +462,27 @@ const KS: StaticPagesCopy = {
         ],
       },
     ],
+  },
+  security: {
+    title: "Siguria Online",
+    tagline:
+      "Këshilla dhe udhëzime zyrtare për t'u mbrojtur dhe për të pasur një eksperiencë të sigurt gjatë blerjeve dhe shitjeve në KetuJemi.com.",
+    sections: [
+      {
+        title: "Rregullat e Sigurisë",
+        bullets: [
+          "Mos dërgoni para parapagim (avans): Takohuni gjithmonë me shitësin në një vend publik për të parë produktin përpara se të kryeni pagesën.",
+          "Kontrolloni produktin: Përpara se të blini automjete apo pajisje elektronike, kontrollojeni gjendjen e tyre fizike dhe dokumentacionin ligjor.",
+          "Raportoni abuzimet: Nëse vëreni një njoftim të dyshimtë ose mashtrues, kliko butonin «Raporto» ose na shkruaj menjëherë në support@ketujemi.com.",
+        ],
+      },
+    ],
+  },
+  press: {
+    title: "Për Shtypin dhe Mediat",
+    tagline:
+      "Informacione zyrtare për mediat, gazetarët dhe partneritetet e marketingut. Na kontaktoni për deklarata zyrtare, intervista ose bashkëpunime mediale.",
+    mediaEmailLabel: "Email për Media:",
   },
 };
 
@@ -649,9 +707,15 @@ const MK: StaticPagesCopy = {
   },
   contact: {
     title: "Контактирајте нè",
+    tagline:
+      "Тука сме за секое прашање, предлог или техничка поддршка. Ќе ви одговориме во рок од 24 часа.",
     contactSectionTitle: "Контакт",
-    emailLabel: "Info:",
-    supportEmailLabel: "Support:",
+    officialEmailLabel: "Официјален email:",
+    technicalSupportLabel: "Техничка поддршка:",
+    hoursLabel: "Работно време:",
+    hoursValue: "Понеделник - Петок, 09:00 - 17:00",
+    emailLabel: "Официјален email:",
+    supportEmailLabel: "Техничка поддршка:",
     facebookLabel: "Facebook:",
     instagramLabel: "Instagram:",
     formTitle: "Контакт формулар",
@@ -669,34 +733,43 @@ const MK: StaticPagesCopy = {
     ],
     submitBtn: "Испрати порака",
     toastRequired: "Пополнете ги сите задолжителни полиња",
-    toastSuccess: "Пораката е испратена. Ќе ви одговориме наскоро.",
+    toastSuccess: "Пораката е испратена. Ќе ви одговориме во рок од 24 часа.",
     toastError: "Пораката не е испратена. Обидете се повторно или пишете ни на email.",
     faqTitle: "Често поставувани прашања (FAQ)",
     faq: [
       {
         q: "Како да објавам оглас?",
-        a: 'Кликнете "Објави оглас", изберете категорија, пополнете ги податоците и прикачете фотографии.',
+        a: "Кликнете «Објави оглас», пополнете ги податоците и прикачете фотографии.",
       },
       {
         q: "Колку чини објавувањето?",
-        a: "10 бесплатни огласи по категорија за приватни корисници.",
+        a: "Објавувањето за обични корисници е целосно бесплатно.",
       },
       {
-        q: "Како да ја верификувам сметката?",
-        a: "Со телефонски број — ќе добиете SMS со код за потврда.",
-      },
-      {
-        q: "Што да направам ако некој измамува?",
-        a: 'Кликнете "Пријави" на огласот или контактирајте нè директно.',
-      },
-      {
-        q: "Дали можам да објавувам од странство?",
-        a: "Да! Дијаспората од Германија, Швајцарија, Австрија, Франција, Италија, Англија и САД може нормално да објавува.",
+        q: "Како да го избришам или изменам огласот?",
+        a: "Најавете се и управувајте со огласите во секцијата «Мои огласи».",
       },
     ],
   },
   faq: {
     title: "Често поставувани прашања (FAQ)",
+    tagline:
+      "Најдете брзи одговори на најчестите прашања за користење на платформата KetuJemi.com.",
+    featuredTitle: "Главни прашања",
+    featured: [
+      {
+        q: "Како да објавам оглас?",
+        a: 'Кликнете «Објави оглас», пополнете ги податоците и прикачете фотографии.',
+      },
+      {
+        q: "Колку чини објавувањето?",
+        a: "Објавувањето за обични корисници е целосно бесплатно.",
+      },
+      {
+        q: "Како да го избришам или изменам огласот?",
+        a: "Најавете се и управувајте со огласите во секцијата «Мои огласи».",
+      },
+    ],
     sections: [
       {
         title: "Објавување огласи",
@@ -788,6 +861,27 @@ const MK: StaticPagesCopy = {
         ],
       },
     ],
+  },
+  security: {
+    title: "Онлајн безбедност",
+    tagline:
+      "Совети и официјални упатства за заштита и безбедно искуство при купување и продавање на KetuJemi.com.",
+    sections: [
+      {
+        title: "Правила за безбедност",
+        bullets: [
+          "Не испраќајте аванс: Секогаш се сретнете со продавачот на јавно место и проверете го производот пред плаќање.",
+          "Проверете го производот: Пред купување на возила или електроника, проверете ја физичката состојба и правната документација.",
+          "Пријавете злоупотреби: Ако забележите сомнителен оглас, кликнете «Пријави» или пишете на support@ketujemi.com.",
+        ],
+      },
+    ],
+  },
+  press: {
+    title: "За медиуми и печат",
+    tagline:
+      "Официјални информации за медиуми, новинари и маркетинг партнерства. Контактирајте нè за изјави, интервјуа или соработка.",
+    mediaEmailLabel: "Email за медиуми:",
   },
 };
 
@@ -1012,9 +1106,15 @@ const MNE: StaticPagesCopy = {
   },
   contact: {
     title: "Kontaktirajte nas",
+    tagline:
+      "Tu smo za svako pitanje, prijedlog ili tehničku podršku. Odgovorićemo vam u roku od 24 sata.",
     contactSectionTitle: "Kontakt",
-    emailLabel: "Info:",
-    supportEmailLabel: "Support:",
+    officialEmailLabel: "Zvanični email:",
+    technicalSupportLabel: "Tehnička podrška:",
+    hoursLabel: "Radno vrijeme:",
+    hoursValue: "Ponedjeljak - Petak, 09:00 - 17:00",
+    emailLabel: "Zvanični email:",
+    supportEmailLabel: "Tehnička podrška:",
     facebookLabel: "Facebook:",
     instagramLabel: "Instagram:",
     formTitle: "Kontakt formular",
@@ -1032,34 +1132,43 @@ const MNE: StaticPagesCopy = {
     ],
     submitBtn: "Pošalji poruku",
     toastRequired: "Popunite sva obavezna polja",
-    toastSuccess: "Poruka je poslata. Odgovorićemo vam uskoro.",
+    toastSuccess: "Poruka je poslata. Odgovorićemo vam u roku od 24 sata.",
     toastError: "Poruka nije poslata. Pokušajte ponovo ili nam pišite na email.",
     faqTitle: "Često postavljana pitanja (FAQ)",
     faq: [
       {
         q: "Kako da objavim oglas?",
-        a: 'Kliknite "Objavi oglas", izaberite kategoriju, popunite podatke i učitajte fotografije.',
+        a: "Kliknite «Objavi oglas», popunite podatke i učitajte fotografije.",
       },
       {
         q: "Koliko košta objavljivanje?",
-        a: "10 besplatnih oglasa po kategoriji za privatne korisnike.",
+        a: "Objavljivanje za obične korisnike je potpuno besplatno.",
       },
       {
-        q: "Kako da verifikujem nalog?",
-        a: "Putem broja telefona — dobićete SMS sa kodom za potvrdu.",
-      },
-      {
-        q: "Šta da uradim ako neko vara?",
-        a: 'Kliknite "Prijavi" na oglasu ili nas kontaktirajte direktno.',
-      },
-      {
-        q: "Mogu li da objavljujem iz inostranstva?",
-        a: "Da! Dijaspora iz Njemačke, Švicarske, Austrije, Francuske, Italije, Engleske i SAD može normalno da objavljuje.",
+        q: "Kako da obrišem ili izmijenim oglas?",
+        a: "Prijavite se i upravljajte oglasima u odjeljku «Moji oglasi».",
       },
     ],
   },
   faq: {
     title: "Često postavljana pitanja (FAQ)",
+    tagline:
+      "Pronađite brze odgovore na najčešća pitanja o korišćenju platforme KetuJemi.com.",
+    featuredTitle: "Glavna pitanja",
+    featured: [
+      {
+        q: "Kako da objavim oglas?",
+        a: 'Kliknite «Objavi oglas», popunite podatke i učitajte fotografije.',
+      },
+      {
+        q: "Koliko košta objavljivanje?",
+        a: "Objavljivanje za obične korisnike je potpuno besplatno.",
+      },
+      {
+        q: "Kako da obrišem ili izmijenim oglas?",
+        a: "Prijavite se i upravljajte oglasima u odjeljku «Moji oglasi».",
+      },
+    ],
     sections: [
       {
         title: "Objavljivanje oglasa",
@@ -1151,6 +1260,27 @@ const MNE: StaticPagesCopy = {
         ],
       },
     ],
+  },
+  security: {
+    title: "Online sigurnost",
+    tagline:
+      "Savjeti i zvanične smjernice za zaštitu i sigurno iskustvo pri kupovini i prodaji na KetuJemi.com.",
+    sections: [
+      {
+        title: "Pravila sigurnosti",
+        bullets: [
+          "Ne šaljite avans: Uvijek se sretnite sa prodavcem na javnom mjestu i provjerite proizvod prije plaćanja.",
+          "Provjerite proizvod: Prije kupovine vozila ili elektronike, provjerite fizičko stanje i pravnu dokumentaciju.",
+          "Prijavite zloupotrebe: Ako primijetite sumnjiv oglas, kliknite «Prijavi» ili pišite na support@ketujemi.com.",
+        ],
+      },
+    ],
+  },
+  press: {
+    title: "Za štampu i medije",
+    tagline:
+      "Zvanične informacije za medije, novinare i marketinška partnerstva. Kontaktirajte nas za izjave, intervjue ili saradnju.",
+    mediaEmailLabel: "Email za medije:",
   },
 };
 

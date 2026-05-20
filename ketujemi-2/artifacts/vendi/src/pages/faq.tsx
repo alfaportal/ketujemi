@@ -33,7 +33,23 @@ export default function FaqPage() {
   const { faq } = useStaticPages();
 
   return (
-    <StaticPageShell title={faq.title}>
+    <StaticPageShell title={faq.title} tagline={faq.tagline}>
+      <Section title={faq.featuredTitle}>
+        <div className="space-y-4">
+          {faq.featured.map((item) => (
+            <div
+              key={item.q}
+              className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm"
+            >
+              <h3 className="font-bold text-gray-900 text-sm sm:text-base mb-2">{item.q}</h3>
+              <div className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                <FaqAnswer item={item} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
       {faq.sections.map((section, index) => (
         <Section key={section.title} title={`${index + 1}. ${section.title}`}>
           <div className="space-y-4">

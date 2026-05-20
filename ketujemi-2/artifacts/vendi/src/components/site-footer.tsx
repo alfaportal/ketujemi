@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 import { SiPaypal } from "react-icons/si";
 import { MARKETS, useMarket, type Market } from "@/lib/market-context";
+import { staticPagePaths } from "@/lib/static-page-paths";
 import { cn } from "@/lib/utils";
 
 /** Tregjet kryesore në Ballkan */
@@ -196,16 +197,17 @@ function FooterMarketsColumn({
 }
 
 export function SiteFooter() {
-  const { market, setMarket, t } = useMarket();
+  const { market, setMarket, t, uiLang } = useMarket();
+  const paths = staticPagePaths(uiLang);
 
   const columns: FooterColumn[] = [
     {
       title: t.footer_colHelp ?? "NDIHMË",
       links: [
-        { href: "/contact", label: t.footer_contactUs ?? "Na kontaktoni" },
-        { href: "/faq", label: t.faq },
-        { href: "/faq", label: t.footer_onlineSecurity ?? "Siguria online" },
-        { href: "/contact", label: t.footer_press ?? "Shtypi" },
+        { href: paths.contact, label: t.footer_contactUs ?? "Na kontaktoni" },
+        { href: paths.faq, label: t.faq },
+        { href: paths.security, label: t.footer_onlineSecurity ?? "Siguria online" },
+        { href: paths.press, label: t.footer_press ?? "Shtypi" },
       ],
     },
     {
