@@ -3,9 +3,9 @@ import type { ChatMessage } from "./support-chatbot";
 import { isMarketplaceBrowseQuestion } from "./support-chat-screening";
 
 const ESCALATE: Record<UiLang, string> = {
-  sq: "Për këtë pyetje nuk kam informacion të mjaftueshëm. Shkruani te info.info@ketujemi.com dhe ekipi do t'ju përgjigjet.",
-  mk: "За ова прашање немам доволно информации. Пишете на info.info@ketujemi.com и тимот ќе ви одговори.",
-  me: "Za ovo pitanje nemam dovoljno informacija. Pišite na info.info@ketujemi.com i tim će vam odgovoriti.",
+  sq: "Për këtë pyetje nuk kam informacion të mjaftueshëm. Shkruani te info@ketujemi.com dhe ekipi do t'ju përgjigjet.",
+  mk: "За ова прашање немам доволно информации. Пишете на info@ketujemi.com и тимот ќе ви одговори.",
+  me: "Za ovo pitanje nemam dovoljno informacija. Pišite na info@ketujemi.com i tim će vam odgovoriti.",
 };
 
 type FaqEntry = { keywords: RegExp; reply: Record<UiLang, string> };

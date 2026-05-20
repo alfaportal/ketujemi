@@ -37,7 +37,7 @@ const SOCIAL_LINKS = [
     external: true,
   },
   {
-    href: "mailto:info.info@ketujemi.com,support@ketujemi.com",
+    href: "mailto:info@ketujemi.com,support@ketujemi.com",
     label: "Email",
     Icon: FaEnvelope,
     external: false,

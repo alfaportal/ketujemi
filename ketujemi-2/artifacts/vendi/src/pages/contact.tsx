@@ -14,7 +14,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useStaticPages } from "@/lib/static-pages-i18n";
 
-const INFO_EMAIL = "info.info@ketujemi.com";
+const INFO_EMAIL = "info@ketujemi.com";
 const SUPPORT_EMAIL = "support@ketujemi.com";
 
 export default function ContactPage() {

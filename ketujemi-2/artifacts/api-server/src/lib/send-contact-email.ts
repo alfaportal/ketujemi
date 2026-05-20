@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import { logger } from "./logger";
 
 export const CONTACT_INBOX =
-  process.env.CONTACT_INBOX?.trim() || "info.info@ketujemi.com";
+  process.env.CONTACT_INBOX?.trim() || "info@ketujemi.com";
 
 export type ContactFormPayload = {
   fromName: string;

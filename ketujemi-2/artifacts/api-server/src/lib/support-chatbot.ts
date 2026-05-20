@@ -15,7 +15,7 @@ import {
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
 
-const SUPPORT_EMAIL = "info.info@ketujemi.com";
+const SUPPORT_EMAIL = "info@ketujemi.com";
 
 const SUPPORT_SYSTEM = `You are the KetuJemi.com support assistant (classifieds: Kosovo, Albania, North Macedonia, Montenegro).
 
@@ -53,7 +53,7 @@ function clampEmailInReply(text: string, lastUser: string, lang: UiLang): string
 
   if (allowEmail) return text;
 
-  if (text.includes(SUPPORT_EMAIL) || text.toLowerCase().includes("info.info@")) {
+  if (text.includes(SUPPORT_EMAIL) || text.toLowerCase().includes("info@ketujemi.com")) {
     return invalidSupportQuestionReply(lang);
   }
 
