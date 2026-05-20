@@ -14,13 +14,16 @@ if (!process.env.DATABASE_URL) {
 export default defineConfig({
   schema: [
     "./src/schema/categories.ts",
-  "./src/schema/car-models.ts",
-  "./src/schema/truck-models.ts",
-  "./src/schema/motor-models.ts",
-  "./src/schema/listings.ts",
+    "./src/schema/car-models.ts",
+    "./src/schema/truck-models.ts",
+    "./src/schema/motor-models.ts",
+    "./src/schema/listings.ts",
     "./src/schema/admin.ts",
     "./src/schema/users.ts",
     "./src/schema/phone_verify.ts",
+    "./src/schema/email_verify.ts",
+    "./src/schema/business.ts",
+    "./src/schema/business_payments.ts",
   ],
   dialect: "postgresql",
   dbCredentials: {

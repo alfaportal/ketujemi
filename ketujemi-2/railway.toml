@@ -1,5 +1,7 @@
 # Required service variables (set in Railway dashboard or `pnpm run railway:env:vonage`):
 # DATABASE_URL, SESSION_SECRET (min 16 chars), VONAGE_API_KEY, VONAGE_API_SECRET
+# reCAPTCHA v2 (SMS): VITE_RECAPTCHA_SITE_KEY (build + runtime), RECAPTCHA_SECRET_KEY (API only)
+# Cloudinary photos: VITE_CLOUDINARY_CLOUD_NAME, VITE_CLOUDINARY_UPLOAD_PRESET (unsigned preset)
 # Contact form: EMAIL_USER, EMAIL_PASS (SMTP); optional CONTACT_INBOX=info.info@ketujemi.com
 
 [build]

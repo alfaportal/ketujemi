@@ -22,14 +22,41 @@ function digitsOnly(s: string): string {
   return s.replace(/\D/g, "");
 }
 
+/** Normalize local 04x… to 383… for ownership checks. */
+export function normalizePhoneDigits(digits: string): string {
+  const d = digitsOnly(digits);
+  if (!d) return d;
+  if (d.startsWith("04") && d.length >= 8 && d.length <= 10) {
+    return `383${d.slice(1)}`;
+  }
+  if (d.startsWith("07") && d.length === 9) {
+    return `389${d}`;
+  }
+  if (d.startsWith("06") && d.length === 9) {
+    return `382${d.slice(1)}`;
+  }
+  if (d.startsWith("06") && d.length === 10) {
+    return `355${d.slice(1)}`;
+  }
+  return d;
+}
+
+export function phonesMatch(a: string | null | undefined, b: string | null | undefined): boolean {
+  if (!a || !b) return false;
+  const na = normalizePhoneDigits(a);
+  const nb = normalizePhoneDigits(b);
+  if (na.length >= 8 && nb.length >= 8 && na === nb) return true;
+  if (na.length >= 8 && nb.length >= 8 && na.slice(-8) === nb.slice(-8)) return true;
+  return false;
+}
+
 /** Ownership without a listing.user_id column: match verified account phone or specs email. */
 export function userOwnsListing(
-  user: Pick<User, "email" | "phone_e164_digits">,
+  user: Pick<User, "email" | "phone_e164_digits" | "contact_phone">,
   listing: { seller_phone: string; description: string },
 ): boolean {
-  const ud = user.phone_e164_digits;
-  const lp = digitsOnly(listing.seller_phone);
-  if (ud && lp && ud === lp) return true;
+  if (phonesMatch(user.phone_e164_digits, listing.seller_phone)) return true;
+  if (phonesMatch(user.contact_phone, listing.seller_phone)) return true;
   const ue = user.email?.trim().toLowerCase() ?? "";
   const specEmail = parseSpecsEmailFromDescription(listing.description);
   if (ue && specEmail && ue === specEmail) return true;

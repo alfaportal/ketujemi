@@ -13,6 +13,7 @@ export type AuthUser = {
   display_name: string | null;
   contact_phone: string | null;
   profile_photo_url: string | null;
+  partner_logo_url?: string | null;
   city: string | null;
   about_me: string | null;
   account_type?: string | null;

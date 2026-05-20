@@ -10,6 +10,7 @@ import ListingDetail from "@/pages/listing-detail";
 import NewListing from "@/pages/new-listing";
 import LoginPage from "@/pages/login";
 import ProfilePage from "@/pages/profile";
+import BusinessProfilePage from "@/pages/business-profile";
 import { AuthProvider } from "@/lib/auth-context";
 import EditListing from "@/pages/edit-listing";
 import AdminPanel from "@/pages/admin/index";
@@ -42,6 +43,7 @@ function Router() {
           <Route path="/admin-secret-panel" component={AdminPanel} />
           <Route path="/login" component={LoginPage} />
           <Route path="/profile" component={ProfilePage} />
+          <Route path="/biznes/:id" component={BusinessProfilePage} />
           <Route path="/terms" component={TermsPage} />
           <Route path="/business-rules" component={BusinessRulesPage} />
           <Route path="/privacy" component={PrivacyPage} />

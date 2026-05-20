@@ -22,6 +22,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { useMarket, LOCATIONS, FORM_OPTIONS } from "@/lib/market-context";
 import { AP_PART_CONDITION_DESC } from "@/lib/auto-pjese-search-helpers";
+import { useListingImageUpload } from "@/lib/listing-image-upload";
 import {
   useAuth,
   loginUrlWithReturn,
@@ -31,6 +32,8 @@ import {
 import { AuthToolbar } from "@/components/auth-toolbar";
 import { SellerProfileGate } from "@/components/seller-profile-gate";
 import { PostingAssistantPanel } from "@/components/posting-assistant-panel";
+import { CardPaymentsPanel } from "@/components/card-payments-panel";
+import { PayWithCardButton } from "@/components/pay-with-card-button";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 const schema = z.object({
@@ -141,6 +144,7 @@ export default function NewListing() {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const uploadRef = useRef<HTMLInputElement>(null);
+  const imageUpload = useListingImageUpload();
 
   const mc = market.code;
   const fuelOpts         = FORM_OPTIONS.fuel[mc]         ?? FORM_OPTIONS.fuel.ks;
@@ -192,8 +196,6 @@ export default function NewListing() {
     if (typeof window === "undefined") return null;
     return new URLSearchParams(window.location.search).get("payment_token");
   });
-  const [payBusy, setPayBusy] = useState(false);
-
   const effectiveCategoryId =
     Number(brandCatId) || Number(bodyCatId) || Number(parentCatId);
 
@@ -278,25 +280,13 @@ export default function NewListing() {
     },
   });
 
-  const uploadToCloudinary = async (file: File): Promise<string> => {
-    const cloudName    = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-    if (!cloudName || !uploadPreset) throw new Error("Cloudinary config missing");
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("upload_preset", uploadPreset);
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-      method: "POST",
-      body: fd,
-    });
-    if (!res.ok) throw new Error("Upload failed");
-    const data = await res.json();
-    return data.secure_url as string;
-  };
-
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
+    if (!imageUpload.ready) {
+      toast({ title: t.uploadFailed, variant: "destructive" });
+      return;
+    }
     const remaining = 10 - imageUrls.length;
     const toUpload = files.slice(0, remaining);
     if (files.length > remaining) {
@@ -304,7 +294,7 @@ export default function NewListing() {
     }
     setIsUploading(true);
     try {
-      const urls = await Promise.all(toUpload.map(uploadToCloudinary));
+      const urls = await Promise.all(toUpload.map((file) => imageUpload.uploadFile(file)));
       setImageUrls((prev) => [...prev, ...urls]);
     } catch {
       toast({ title: t.uploadFailed, variant: "destructive" });
@@ -370,30 +360,6 @@ export default function NewListing() {
     return Number.isFinite(n) ? n : undefined;
   };
 
-  async function payForExtraPost() {
-    setPayBusy(true);
-    try {
-      const res = await fetch("/api/payments/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ purpose: "extra_post" }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        toast({
-          title: (data as { message?: string }).message ?? "Pagesa nuk është e disponueshme",
-          variant: "destructive",
-        });
-        return;
-      }
-      const url = (data as { url?: string }).url;
-      if (url) window.location.href = url;
-    } finally {
-      setPayBusy(false);
-    }
-  }
-
   const onSubmit = (data: FormData) => {
     const needsPay = freeQuota?.business?.needs_payment && !paymentToken;
     if (freeQuota && !freeQuota.allowed && !paymentToken) {
@@ -430,6 +396,8 @@ export default function NewListing() {
       title: data.title,
       description: finalDescription,
       price: data.price_agreement ? 0 : data.price,
+      price_agreement: data.price_agreement,
+      lang: market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq",
       category_id: data.brand_category_id || data.category_id || data.parent_category_id,
       location: data.location,
       seller_name: contact.seller_name,
@@ -462,6 +430,17 @@ export default function NewListing() {
           if (errData.error === "DUPLICATE_LISTING") {
             toast({
               title: errData.message ?? "Keni një njoftim të ngjashëm aktiv.",
+              variant: "destructive",
+            });
+            return;
+          }
+          if (
+            errData.error === "LISTING_POST_COOLDOWN" ||
+            errData.error === "LISTING_POST_IP_COOLDOWN"
+          ) {
+            toast({
+              title:
+                errData.message ?? "Ki pak durim, prisni 30 sekonda për postimin tjetër.",
               variant: "destructive",
             });
             return;
@@ -537,6 +516,7 @@ export default function NewListing() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
+        {user?.account_type === "business" ? <CardPaymentsPanel /> : null}
         {freeQuota != null && effectiveCategoryId > 0 ? (
           <div
             className={`rounded-xl border px-4 py-3 text-sm font-medium space-y-2 ${
@@ -555,14 +535,12 @@ export default function NewListing() {
                     : t.postQuotaExceeded}
             </p>
             {!freeQuota.allowed && !paymentToken && freeQuota.business?.needs_payment ? (
-              <Button
-                type="button"
+              <PayWithCardButton
+                purpose="extra_post"
                 className="w-full min-h-11 bg-blue-600 hover:bg-blue-700"
-                disabled={payBusy}
-                onClick={() => void payForExtraPost()}
               >
-                {payBusy ? "Duke hapur pagesën…" : "Paguaj €1 dhe vazhdo"}
-              </Button>
+                Paguaj €1 me kartë dhe vazhdo
+              </PayWithCardButton>
             ) : null}
           </div>
         ) : null}
@@ -1080,7 +1058,7 @@ export default function NewListing() {
                   <button
                     type="button"
                     onClick={() => uploadRef.current?.click()}
-                    disabled={isUploading}
+                    disabled={isUploading || !imageUpload.ready}
                     className="w-full border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl py-12 px-6 text-center transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none min-h-[10.5rem] touch-manipulation"
                   >
                     {isUploading ? (
@@ -1242,6 +1220,7 @@ export default function NewListing() {
               title={watchTitle}
               description={watchDescription}
               price={priceAgreement ? 0 : Number(watchPrice) || 0}
+              priceAgreement={!!priceAgreement}
               categoryName={brandCats.find((c: { id: number }) => c.id === Number(brandCatId))?.name ?? subCats.find((c: { id: number }) => c.id === Number(bodyCatId))?.name}
               parentCategoryName={parentName}
               imageCount={imageUrls.length}

@@ -16,6 +16,9 @@ ketujemi-2/artifacts/**/out/
 # Local TypeScript emit for lib packages (rebuilt via pnpm typecheck:libs)
 ketujemi-2/lib/**/dist/
 
+# Drizzle introspect scratch output (pnpm --filter @workspace/db run introspect)
+ketujemi-2/lib/db/drizzle/introspected/
+
 # Other generated caches
 **/.turbo/
 **/.next/

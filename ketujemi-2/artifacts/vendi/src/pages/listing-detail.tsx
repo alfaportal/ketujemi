@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useGetListing, useDeleteListing, getGetListingsQueryKey, getGetRecentListingsQueryKey, getGetFeaturedListingsQueryKey, getGetListingQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowLeft, MapPin, Phone, User, Eye, Star, Tag, Package, Clock, Pencil, Trash2,
+  ArrowLeft, MapPin, Phone, User, Eye, Star, Tag, Package, Clock, Pencil, Trash2, Crown,
   Fuel, Gauge, Calendar, Cog, Palette, Maximize2, Mail, Car, ChevronLeft, ChevronRight, MessageCircle, MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ import { sellerFirstName } from "@/lib/seller-display";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { ReportListingDialog } from "@/components/report-listing-dialog";
 import { SimilarListingsSection } from "@/components/similar-listings-section";
+import { CardPaymentsPanel } from "@/components/card-payments-panel";
 
 // ─── Spec parser ─────────────────────────────────────────────────────────────
 interface ParsedDesc { specs: Record<string, string>; body: string }
@@ -130,9 +131,6 @@ export default function ListingDetail() {
   const [activePhoto, setActivePhoto] = useState(0);
   const [complaintBusy, setComplaintBusy] = useState(false);
   const [repostBusy, setRepostBusy] = useState(false);
-  const [phase2, setPhase2] = useState(false);
-  const [topBusy, setTopBusy] = useState(false);
-
   const parsed = useMemo(() => {
     if (!listing) return { specs: {} as Record<string, string>, body: "" };
     return parseDescription(listing.description ?? "");
@@ -141,12 +139,6 @@ export default function ListingDetail() {
   const canManage = !!(user && listing && userOwnsListing(user, listing));
   const canRepost = !!(listing && (listing as { can_repost?: boolean }).can_repost);
   const isExpired = !!(listing && (listing as { is_expired?: boolean }).is_expired);
-
-  useEffect(() => {
-    void fetch("/api/payments/status")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j) => setPhase2(!!(j as { phase2?: boolean })?.phase2));
-  }, []);
 
   async function repostListing() {
     if (!listing) return;
@@ -169,31 +161,6 @@ export default function ListingDetail() {
       void queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
     } finally {
       setRepostBusy(false);
-    }
-  }
-
-  async function buyTop() {
-    if (!listing) return;
-    setTopBusy(true);
-    try {
-      const res = await fetch("/api/payments/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ purpose: "top_listing", listing_id: listing.id }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        toast({
-          title: (data as { message?: string }).message ?? "TOP nuk është i disponueshëm",
-          variant: "destructive",
-        });
-        return;
-      }
-      const url = (data as { url?: string }).url;
-      if (url) window.location.href = url;
-    } finally {
-      setTopBusy(false);
     }
   }
 
@@ -230,8 +197,18 @@ export default function ListingDetail() {
         toast({ title: t.deleteSuccess });
         setLocation("/listings");
       },
-      onError: () => {
-        toast({ title: t.deleteError, variant: "destructive" });
+      onError: (err: unknown) => {
+        const msg =
+          err &&
+          typeof err === "object" &&
+          "data" in err &&
+          err.data &&
+          typeof err.data === "object" &&
+          "message" in err.data &&
+          typeof (err.data as { message?: string }).message === "string"
+            ? (err.data as { message: string }).message
+            : t.deleteError;
+        toast({ title: msg, variant: "destructive" });
       },
     },
   });
@@ -264,6 +241,7 @@ export default function ListingDetail() {
 
   const { specs, body } = parsed;
   const allImages = (listing.image_url ?? "").split(",").map((s: string) => s.trim()).filter(Boolean);
+  const isVipSeller = !!(listing as { is_vip_seller?: boolean }).is_vip_seller;
 
   const sellerDigits = user ? (listing.seller_phone ?? "").replace(/\D/g, "") : "";
   const smsHref = user ? smsUriFromDigits(sellerDigits) : "sms:";
@@ -307,23 +285,14 @@ export default function ListingDetail() {
                 {repostBusy ? "…" : "🔄 Rifillo njoftimin"}
               </Button>
             ) : null}
-            {canManage && !isExpired ? (
+            {canManage ? (
               <>
-                {phase2 ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="gap-1.5 min-h-12 px-3 text-sm shrink-0 border-amber-300 text-amber-800"
-                    disabled={topBusy}
-                    onClick={() => void buyTop()}
-                  >
-                    {topBusy ? "…" : "TOP €1"}
+                {!isExpired ? (
+                  <Button variant="outline" onClick={() => setLocation(`/listings/${listing.id}/edit`)}
+                    className="gap-1.5 min-h-12 px-3 text-sm shrink-0" data-testid="button-edit-listing">
+                    <Pencil className="h-3 w-3" /> {t.edit}
                   </Button>
                 ) : null}
-                <Button variant="outline" onClick={() => setLocation(`/listings/${listing.id}/edit`)}
-                  className="gap-1.5 min-h-12 px-3 text-sm shrink-0" data-testid="button-edit-listing">
-                  <Pencil className="h-3 w-3" /> {t.edit}
-                </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="outline"
@@ -361,16 +330,31 @@ export default function ListingDetail() {
             Ky njoftim ka skaduar. Klikoni <strong>Rifillo njoftimin</strong> për ta shfaqur përsëri në listë.
           </div>
         ) : null}
+        {canManage && listing ? (
+          <div className="mb-4">
+            <CardPaymentsPanel listingId={listing.id} />
+          </div>
+        ) : null}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
           {/* ── Left: main content ── */}
           <div className="md:col-span-2 space-y-4">
 
             {/* Photo gallery */}
-            <div className="rounded-2xl overflow-hidden bg-gray-900">
+            <div
+              className={`rounded-2xl overflow-hidden bg-gray-900 ${
+                isVipSeller ? "ring-2 ring-amber-400 ring-offset-2 ring-offset-gray-50" : ""
+              }`}
+            >
               {allImages.length > 0 ? (
                 <div>
                   <div className="relative aspect-video">
+                    {isVipSeller ? (
+                      <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-amber-400 to-yellow-500 text-amber-950 text-sm font-black px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5">
+                        <Crown size={14} aria-hidden />
+                        VIP
+                      </div>
+                    ) : null}
                     <img
                       src={allImages[activePhoto]}
                       alt={listing.title}
@@ -422,16 +406,27 @@ export default function ListingDetail() {
             </div>
 
             {/* Title & price */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+            <div
+              className={`bg-white rounded-2xl border p-5 ${
+                isVipSeller ? "border-amber-300 shadow-sm shadow-amber-100/50" : "border-gray-100"
+              }`}
+            >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-snug" data-testid="text-listing-title">
                   {listing.title}
                 </h1>
-                {listing.is_featured && (
-                  <Badge className="bg-amber-500 text-white flex-shrink-0 gap-1">
-                    <Star className="h-3 w-3 fill-white" /> {t.promoted}
-                  </Badge>
-                )}
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  {isVipSeller ? (
+                    <Badge className="bg-gradient-to-r from-amber-400 to-yellow-500 text-amber-950 border-0 gap-1 font-black">
+                      <Crown className="h-3 w-3" /> VIP Partner
+                    </Badge>
+                  ) : null}
+                  {listing.is_featured ? (
+                    <Badge className="bg-amber-500 text-white gap-1">
+                      <Star className="h-3 w-3 fill-white" /> {t.promoted}
+                    </Badge>
+                  ) : null}
+                </div>
               </div>
 
               <div className="text-3xl font-black text-blue-600 mb-4" data-testid="text-listing-price">

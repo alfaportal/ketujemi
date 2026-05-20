@@ -9,9 +9,15 @@ import contactRouter from "./contact";
 import authRouter from "./auth";
 import paymentsRouter from "./payments";
 import aiRouter from "./ai";
+import configRouter from "./config";
+import uploadsRouter from "./uploads";
+import partnersRouter from "./partners";
 
 const router: IRouter = Router();
 
+router.use(configRouter);
+router.use(uploadsRouter);
+router.use(partnersRouter);
 router.use(authRouter);
 router.use(paymentsRouter);
 router.use(aiRouter);

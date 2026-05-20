@@ -43,6 +43,7 @@ export function publicUser(u: User, opts?: { self?: boolean }) {
     ...base,
     account_type: u.account_type ?? "private",
     business_name: u.business_name ?? null,
+    partner_logo_url: u.partner_logo_url ?? null,
     business_tier: u.business_tier ?? null,
     vip_expires_at: u.vip_expires_at ? u.vip_expires_at.toISOString() : null,
     email_verified: u.email_verified_at != null,

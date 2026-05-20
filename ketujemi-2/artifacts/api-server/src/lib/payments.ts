@@ -58,7 +58,7 @@ export async function createStripeCheckout(
   purpose: PaymentPurpose,
   origin: string,
   listingId?: number,
-): Promise<{ url: string; token: string }> {
+): Promise<{ url: string; token: string; sessionId: string | null }> {
   if (purpose === "top_listing" && !isPhase2Enabled()) {
     throw new Error("PHASE_2_DISABLED");
   }
@@ -77,7 +77,7 @@ export async function createStripeCheckout(
         : purpose === "top_listing" && listingId
           ? `${origin}/listings/${listingId}?top=success`
           : `${origin}/listings/new?payment_token=${encodeURIComponent(token)}`;
-    return { url, token };
+    return { url, token, sessionId: null };
   }
 
   const secret = stripeSecret();
@@ -135,7 +135,15 @@ export async function createStripeCheckout(
     .set({ stripe_session_id: session.id })
     .where(eq(businessPaymentsTable.token, token));
 
-  return { url: session.url, token };
+  return { url: session.url, token, sessionId: session.id };
+}
+
+export function stripePublishableKey(): string | null {
+  const key =
+    process.env.STRIPE_PUBLISHABLE_KEY?.trim() ||
+    process.env.VITE_STRIPE_PUBLISHABLE_KEY?.trim() ||
+    "";
+  return key || null;
 }
 
 export async function markPaymentPaidByToken(token: string): Promise<void> {

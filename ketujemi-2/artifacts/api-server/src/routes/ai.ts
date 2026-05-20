@@ -2,16 +2,10 @@ import { Router } from "express";
 import { getSessionUser } from "../lib/session-user";
 import { getPostingSuggestions } from "../lib/listing-posting-assistant";
 import { getSimilarListingsForListing } from "../lib/listing-ai-recommendations";
-import { runSupportChat, type ChatMessage } from "../lib/support-chatbot";
-import type { UiLang } from "../lib/claude-client";
-import { isClaudeConfigured } from "../lib/claude-client";
+import { runSupportChat, supportChatFallbackReply, type ChatMessage } from "../lib/support-chatbot";
+import { isClaudeConfigured, parseUiLang } from "../lib/claude-client";
 
 const router = Router();
-
-function parseUiLang(raw: unknown): UiLang {
-  if (raw === "mk" || raw === "me") return raw;
-  return "sq";
-}
 
 // ─── POST /ai/posting-suggestions ─────────────────────────────────────────────
 router.post("/ai/posting-suggestions", async (req, res) => {
@@ -25,6 +19,7 @@ router.post("/ai/posting-suggestions", async (req, res) => {
     title?: string;
     description?: string;
     price?: number;
+    price_agreement?: boolean;
     category_name?: string;
     parent_category_name?: string;
     image_count?: number;
@@ -36,6 +31,7 @@ router.post("/ai/posting-suggestions", async (req, res) => {
       title: typeof body.title === "string" ? body.title : "",
       description: typeof body.description === "string" ? body.description : "",
       price: Number(body.price) || 0,
+      price_agreement: !!body.price_agreement,
       category_name: body.category_name ?? null,
       parent_category_name: body.parent_category_name ?? null,
       image_count: Number(body.image_count) || 0,
@@ -75,7 +71,13 @@ router.post("/ai/support-chat", async (req, res) => {
     return;
   }
 
-  const reply = await runSupportChat(valid, parseUiLang(body.lang));
+  const lang = parseUiLang(body.lang);
+  let reply: string;
+  try {
+    reply = await runSupportChat(valid, lang);
+  } catch {
+    reply = supportChatFallbackReply(valid, lang);
+  }
   res.json({ reply, ai_enabled: isClaudeConfigured() });
 });
 

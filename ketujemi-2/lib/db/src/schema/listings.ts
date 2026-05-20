@@ -26,6 +26,8 @@ export const listingsTable = pgTable("listings", {
   image_url: text("image_url"),
   created_at: timestamp("created_at").notNull().defaultNow(),
   expires_at: timestamp("expires_at"),
+  expiry_reminder_3d_sent_at: timestamp("expiry_reminder_3d_sent_at"),
+  expiry_reminder_1d_sent_at: timestamp("expiry_reminder_1d_sent_at"),
   /** Optional structured Vetura filters (backward-compatible; NULL for legacy rows). */
   vehicle_year: integer("vehicle_year"),
   vehicle_mileage_km: integer("vehicle_mileage_km"),

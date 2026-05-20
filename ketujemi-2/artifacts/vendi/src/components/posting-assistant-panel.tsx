@@ -8,6 +8,7 @@ type Props = {
   title: string;
   description: string;
   price: number;
+  priceAgreement?: boolean;
   categoryName?: string;
   parentCategoryName?: string;
   imageCount: number;
@@ -17,6 +18,7 @@ export function PostingAssistantPanel({
   title,
   description,
   price,
+  priceAgreement = false,
   categoryName,
   parentCategoryName,
   imageCount,
@@ -27,8 +29,13 @@ export function PostingAssistantPanel({
 
   const lang = market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq";
 
+  const fieldsReady =
+    title.trim().length >= 3 &&
+    description.trim().length >= 10 &&
+    (priceAgreement || price > 0);
+
   useEffect(() => {
-    if (title.trim().length < 3 || description.trim().length < 10) {
+    if (!fieldsReady) {
       setSuggestions([]);
       return;
     }
@@ -43,6 +50,7 @@ export function PostingAssistantPanel({
           title,
           description,
           price,
+          price_agreement: priceAgreement,
           category_name: categoryName,
           parent_category_name: parentCategoryName,
           image_count: imageCount,
@@ -58,7 +66,7 @@ export function PostingAssistantPanel({
     }, 800);
 
     return () => clearTimeout(timer);
-  }, [title, description, price, categoryName, parentCategoryName, imageCount, lang]);
+  }, [fieldsReady, title, description, price, priceAgreement, categoryName, parentCategoryName, imageCount, lang]);
 
   if (suggestions.length === 0 && !loading) return null;
 

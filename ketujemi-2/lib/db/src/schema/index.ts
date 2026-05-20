@@ -9,3 +9,4 @@ export * from "./phone_verify";
 export * from "./email_verify";
 export * from "./business";
 export * from "./business_payments";
+export * from "./partner_logo_stats";

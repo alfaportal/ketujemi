@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
-import { MapPin, Eye, Clock, AlertCircle } from "lucide-react";
+import { MapPin, Eye, Clock, AlertCircle, Crown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useMarket, convertPrice } from "@/lib/market-context";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { translateCategory } from "@/lib/category-translations";
@@ -74,6 +75,7 @@ interface ListingCardProps {
     image_url?: string | null;
     is_featured?: boolean;
     is_top?: boolean;
+    is_vip_seller?: boolean;
     views?: number;
     created_at: string;
     expires_at?: string | null;
@@ -90,12 +92,18 @@ export default function ListingCard({ listing }: ListingCardProps) {
   const isToday = new Date(listing.created_at).toDateString() === new Date().toDateString();
   const daysLeft = getDaysLeft(listing.expires_at, market.code);
   const catName = translateCategory(listing.category_name ?? "", translationKeyForUiLang(uiLang));
+  const isVipSeller = !!listing.is_vip_seller;
 
   return (
     <Link
       href={`/listings/${listing.id}`}
       data-testid={`card-listing-${listing.id}`}
-      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-lg transition-all duration-200 block"
+      className={cn(
+        "group bg-white rounded-2xl overflow-hidden border hover:shadow-lg transition-all duration-200 block",
+        isVipSeller
+          ? "border-amber-300 ring-2 ring-amber-400/80 hover:border-amber-400 hover:ring-amber-400"
+          : "border-gray-100 hover:border-blue-200",
+      )}
     >
       {/* Photo */}
       <div className="relative overflow-hidden aspect-[4/3]">
@@ -114,11 +122,22 @@ export default function ListingCard({ listing }: ListingCardProps) {
             ⭐ Promovuar
           </div>
         ) : null}
-        {isToday && (
+        {isVipSeller ? (
+          <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-amber-950 text-xs font-black px-2 py-1 rounded-lg shadow-md flex items-center gap-1 z-[1]">
+            <Crown size={12} className="shrink-0" aria-hidden />
+            VIP
+          </div>
+        ) : null}
+        {isToday && !isVipSeller ? (
           <div className="absolute top-2 right-2 bg-green-500 text-white text-sm font-bold px-2.5 py-1 rounded-lg shadow-sm">
             {t.today}
           </div>
-        )}
+        ) : null}
+        {isToday && isVipSeller ? (
+          <div className="absolute top-10 right-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm">
+            {t.today}
+          </div>
+        ) : null}
         {daysLeft?.urgent && (
           <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-red-500 text-white text-sm font-bold px-2 py-1 rounded-lg shadow-sm">
             <AlertCircle size={11} />

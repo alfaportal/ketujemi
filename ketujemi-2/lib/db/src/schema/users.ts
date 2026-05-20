@@ -22,6 +22,8 @@ export const usersTable = pgTable("users", {
   /** private | business — business accounts follow separate posting rules. */
   account_type: text("account_type").notNull().default("private"),
   business_name: text("business_name"),
+  /** Logo shown in «Partnerët tanë të besuar» when VIP is active (falls back to profile_photo_url). */
+  partner_logo_url: text("partner_logo_url"),
   business_tier: text("business_tier"),
   vip_expires_at: timestamp("vip_expires_at"),
   /** Temporary suspension (30-day strike); permanent ban uses banned_at. */

@@ -7,18 +7,12 @@ export type PhonePrefixOption = {
   maxNational: number;
 };
 
+/** SMS OTP only for Balkan markets (cost control). Diaspora: use email registration. */
 export const SMS_PHONE_PREFIXES: PhonePrefixOption[] = [
   { dial: "383", flag: "🇽🇰", label: "Kosovë", minNational: 8, maxNational: 9 },
   { dial: "355", flag: "🇦🇱", label: "Shqipëri", minNational: 8, maxNational: 9 },
   { dial: "389", flag: "🇲🇰", label: "Maqedoni e Veriut", minNational: 8, maxNational: 9 },
   { dial: "382", flag: "🇲🇪", label: "Mal i Zi", minNational: 8, maxNational: 9 },
-  { dial: "49", flag: "🇩🇪", label: "Gjermani", minNational: 9, maxNational: 11 },
-  { dial: "43", flag: "🇦🇹", label: "Austri", minNational: 9, maxNational: 11 },
-  { dial: "41", flag: "🇨🇭", label: "Zvicër", minNational: 9, maxNational: 9 },
-  { dial: "39", flag: "🇮🇹", label: "Itali", minNational: 9, maxNational: 10 },
-  { dial: "33", flag: "🇫🇷", label: "Francë", minNational: 9, maxNational: 9 },
-  { dial: "44", flag: "🇬🇧", label: "Angli", minNational: 10, maxNational: 10 },
-  { dial: "1", flag: "🇺🇸", label: "SHBA", minNational: 10, maxNational: 10 },
 ];
 
 const BY_DIAL = new Map(SMS_PHONE_PREFIXES.map((p) => [p.dial, p]));

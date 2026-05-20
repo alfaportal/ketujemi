@@ -16,6 +16,8 @@ import {
   publicUser,
 } from "../lib/user-session";
 import { normalizePhone } from "../lib/phone-prefixes";
+import { assertSmsStartAllowed, clientIp } from "../lib/sms-rate-limit";
+import { isRecaptchaRequired, verifyRecaptchaToken } from "../lib/recaptcha-verify";
 import { assertAccountActive, isUserBanned } from "../lib/user-ban";
 import { getBusinessQuotaStatus } from "../lib/business-quota";
 import { isBusinessAccount } from "../lib/business-rules";
@@ -323,6 +325,10 @@ router.patch("/auth/profile", async (req, res) => {
     const v = body.profile_photo_url.trim();
     patch.profile_photo_url = v.length ? v.slice(0, 2048) : null;
   }
+  if (typeof body.partner_logo_url === "string") {
+    const v = body.partner_logo_url.trim();
+    patch.partner_logo_url = v.length ? v.slice(0, 2048) : null;
+  }
   if (typeof body.city === "string") {
     const v = body.city.trim();
     patch.city = v.length ? v.slice(0, 120) : null;
@@ -420,8 +426,36 @@ router.post("/auth/sms/start", async (req, res) => {
     const isRegister = req.body?.intent === "register";
 
     if (!phone) {
-      res.status(400).json({ error: "Invalid phone number" });
+      res.status(400).json({
+        error: "Invalid phone number",
+        message: "Numri i telefonit nuk është i vlefshëm.",
+      });
       return;
+    }
+
+    const recaptchaToken =
+      typeof req.body?.recaptcha_token === "string" ? req.body.recaptcha_token : "";
+
+    if (isRecaptchaRequired()) {
+      const captchaOk = await verifyRecaptchaToken(recaptchaToken, clientIp(req));
+      if (!captchaOk) {
+        res.status(400).json({
+          error: "CAPTCHA_FAILED",
+          message: "Plotësoni verifikimin «Nuk jam robot» para se të dërgoni SMS.",
+        });
+        return;
+      }
+    }
+
+    try {
+      await assertSmsStartAllowed(req, phone);
+    } catch (err: unknown) {
+      if (err instanceof Error && "publicMessage" in err) {
+        const e = err as Error & { publicMessage: string };
+        res.status(429).json({ error: err.message, message: e.publicMessage });
+        return;
+      }
+      throw err;
     }
 
     const [existing] = await db

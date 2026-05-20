@@ -2,13 +2,31 @@ import { claudeJsonCompletion, isClaudeConfigured, langLabel, type UiLang } from
 
 export type PostingSuggestion = { text: string };
 
+/** Spec: suggestions only after title + description + price are filled. */
+export function postingFieldsReady(input: {
+  title: string;
+  description: string;
+  price: number;
+  price_agreement?: boolean;
+}): boolean {
+  const title = input.title.trim();
+  const desc = input.description.trim();
+  if (title.length < 3 || desc.length < 10) return false;
+  if (input.price_agreement) return true;
+  return input.price > 0;
+}
+
 function ruleBasedSuggestions(input: {
   title: string;
   description: string;
   price: number;
+  price_agreement?: boolean;
   image_count: number;
+  parent_category_name?: string | null;
 }): PostingSuggestion[] {
   const out: PostingSuggestion[] = [];
+  const parent = (input.parent_category_name ?? "").toLowerCase();
+
   if (input.description.trim().length < 40) {
     out.push({ text: "Përshkrimi është shumë i shkurtër — shtoni më shumë detaje." });
   }
@@ -18,42 +36,51 @@ function ruleBasedSuggestions(input: {
   if (input.title.trim().length > 80) {
     out.push({ text: "Titulli është shumë i gjatë — shkurtësojeni." });
   }
-  if (input.price <= 0) {
+  if (!input.price_agreement && input.price <= 0) {
     out.push({ text: "Vendosni një çmim real ose zgjidhni “me marrëveshje”." });
   }
+  if ((parent.includes("vetur") || parent.includes("motor")) && !/\b(19|20)\d{2}\b/.test(input.description)) {
+    out.push({ text: "Shtoni vitin e prodhimit (p.sh. 2018)." });
+  }
+
   return out.slice(0, 3);
 }
 
-const ASSISTANT_SYSTEM = `You help users write better classified ads on KetuJemi.com.
+const ASSISTANT_SYSTEM = `You help users write classified ads on KetuJemi.com — a large marketplace with roughly 18 top-level categories (from phones and electronics to vehicles and more).
+
+CONTEXT — DUPLICATES:
+The platform blocks duplicate listings while another with the same title is still active. If the user's draft reads as almost copy-pasted, overly generic/template-like, or could be mistaken for something they likely already posted unchanged, include ONE friendly suggestion that matches this humane guidance — only when it genuinely applies (not on every listing).
+
+Use the user's reply language:
+- Albanian (sq): use this wording or equivalent: "Për të shmangur postimet e dyfishta dhe që njoftimi juaj të aprovohet më shpejt, ju lutem shtoni një detaj specifik (p.sh. numrin serial, ngjyrën ose një përshkrim të veçantë) që e dallon këtë artikull nga të tjerët."
+- Macedonian (mk) / Montenegrin (me): translate that same meaning naturally (serial, color, distinctive description).
+
+TECHNICAL OUTPUT:
 Reply ONLY with JSON: {"suggestions":["...","..."]}
 - Maximum 3 short suggestions (one sentence each).
-- Same language as requested (Albanian, Macedonian, or Montenegrin).
-- Practical tips: photos, year, mileage, price, title length, description detail.
-- Do not repeat obvious empty fields if already good.`;
+- Language = requested (sq / mk / me).
+- Also give practical tips when useful: photos (min 3), year/mileage for vehicles, realistic price, title length, richer description.`;
 
 export async function getPostingSuggestions(
   input: {
     title: string;
     description: string;
     price: number;
+    price_agreement?: boolean;
     category_name?: string | null;
     image_count: number;
     parent_category_name?: string | null;
   },
   lang: UiLang = "sq",
 ): Promise<PostingSuggestion[]> {
-  const title = input.title.trim();
-  const desc = input.description.trim();
-  if (title.length < 3 && desc.length < 10) {
+  if (!postingFieldsReady(input)) {
     return [];
   }
 
-  const fallback = ruleBasedSuggestions({
-    title,
-    description: desc,
-    price: input.price,
-    image_count: input.image_count,
-  });
+  const title = input.title.trim();
+  const desc = input.description.trim();
+
+  const fallback = ruleBasedSuggestions(input);
 
   if (!isClaudeConfigured()) {
     return fallback;
@@ -67,6 +94,7 @@ export async function getPostingSuggestions(
         title,
         description: desc.slice(0, 2000),
         price_eur: input.price,
+        price_agreement: !!input.price_agreement,
         category: input.category_name,
         parent_category: input.parent_category_name,
         image_count: input.image_count,

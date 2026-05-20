@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Loader2, Mail, Smartphone } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +10,11 @@ import { PhoneInput, defaultDialForMarket } from "@/components/phone-input";
 import { useAuth, safeAuthReturnUrl } from "@/lib/auth-context";
 import { useMarket } from "@/lib/market-context";
 import { isValidPhoneDigits } from "@/lib/phone-prefixes";
+import {
+  RecaptchaV2,
+  useRecaptchaSiteKey,
+  type RecaptchaV2Handle,
+} from "@/components/recaptcha-v2";
 
 type Flow = "register" | "login";
 type Channel = "email" | "sms";
@@ -38,6 +43,9 @@ export default function LoginPage() {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<RecaptchaV2Handle>(null);
+  const { captchaRequired, siteKey: recaptchaSiteKey } = useRecaptchaSiteKey();
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -61,6 +69,17 @@ export default function LoginPage() {
   function resetVerify() {
     setStep("credentials");
     setCode("");
+    setRecaptchaToken(null);
+    recaptchaRef.current?.reset();
+  }
+
+  function requireCaptcha(): boolean {
+    if (!captchaRequired || recaptchaToken) return true;
+    toast({
+      title: "Vendosni shenjën ✓ te «Nuk jam robot» para se të dërgoni SMS.",
+      variant: "destructive",
+    });
+    return false;
   }
 
   function switchFlow(next: Flow) {
@@ -99,16 +118,26 @@ export default function LoginPage() {
           toast({ title: t.toast_reqFail, variant: "destructive" });
           return;
         }
+        if (!requireCaptcha()) return;
         const res = await fetch("/api/auth/sms/start", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ phone, password, intent: "register" }),
+          body: JSON.stringify({
+            phone,
+            password,
+            intent: "register",
+            recaptcha_token: recaptchaToken ?? undefined,
+          }),
         });
         const data = await res.json().catch(() => ({}));
+        recaptchaRef.current?.reset();
         if (!res.ok) {
           toast({
-            title: (data as { error?: string }).error ?? t.toast_smsFail,
+            title:
+              (data as { message?: string }).message ??
+              (data as { error?: string }).error ??
+              t.toast_smsFail,
             variant: "destructive",
           });
           return;
@@ -194,18 +223,26 @@ export default function LoginPage() {
       toast({ title: t.toast_reqFail, variant: "destructive" });
       return;
     }
+    if (!requireCaptcha()) return;
     setBusy(true);
     try {
       const res = await fetch("/api/auth/sms/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({
+          phone,
+          recaptcha_token: recaptchaToken ?? undefined,
+        }),
       });
       const data = await res.json().catch(() => ({}));
+      recaptchaRef.current?.reset();
       if (!res.ok) {
         toast({
-          title: (data as { error?: string }).error ?? t.toast_smsFail,
+          title:
+            (data as { message?: string }).message ??
+            (data as { error?: string }).error ??
+            t.toast_smsFail,
           variant: "destructive",
         });
         return;
@@ -433,7 +470,16 @@ export default function LoginPage() {
                       className="min-h-12 h-12"
                     />
                   </div>
-                  <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
+                  <RecaptchaV2
+                    ref={recaptchaRef}
+                    siteKey={recaptchaSiteKey}
+                    onTokenChange={setRecaptchaToken}
+                  />
+                  <Button
+                    type="submit"
+                    className="w-full min-h-12 h-12 text-base"
+                    disabled={busy || (captchaRequired && !recaptchaToken)}
+                  >
                     {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_continueBtn}
                   </Button>
                 </form>
@@ -450,7 +496,16 @@ export default function LoginPage() {
                       nationalPlaceholder="XX XXX XXX"
                     />
                   </div>
-                  <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
+                  <RecaptchaV2
+                    ref={recaptchaRef}
+                    siteKey={recaptchaSiteKey}
+                    onTokenChange={setRecaptchaToken}
+                  />
+                  <Button
+                    type="submit"
+                    className="w-full min-h-12 h-12 text-base"
+                    disabled={busy || (captchaRequired && !recaptchaToken)}
+                  >
                     {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_sendSmsBtn}
                   </Button>
                 </form>

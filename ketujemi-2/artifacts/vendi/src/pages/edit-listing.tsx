@@ -18,6 +18,7 @@ import { useMarket, LOCATIONS } from "@/lib/market-context";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { userOwnsListing } from "@/lib/listing-ownership";
 import { AuthToolbar } from "@/components/auth-toolbar";
+import { CardPaymentsPanel } from "@/components/card-payments-panel";
 
 const schema = z.object({
   title: z.string().min(3),
@@ -157,6 +158,8 @@ export default function EditListing() {
 
       <div className="bg-card border border-border rounded-xl p-6">
         <h1 className="text-2xl font-bold mb-6">{t.editListingTitle}</h1>
+
+        <CardPaymentsPanel listingId={id} className="mb-6" />
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">

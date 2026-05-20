@@ -27,6 +27,7 @@ async function fetchCategoryCandidates(
     .where(
       and(
         eq(listingsTable.category_id, categoryId),
+        eq(listingsTable.status, "active"),
         ne(listingsTable.id, excludeId),
         gt(listingsTable.expires_at, new Date()),
       ),

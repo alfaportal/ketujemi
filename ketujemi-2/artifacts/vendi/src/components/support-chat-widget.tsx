@@ -6,10 +6,17 @@ import { cn } from "@/lib/utils";
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const WELCOME: Record<string, string> = {
-  ks: "Përshëndetje! Si mund t'ju ndihmoj me KetuJemi.com?",
-  al: "Përshëndetje! Si mund t'ju ndihmoj me KetuJemi.com?",
-  mk: "Здраво! Како можам да ви помогнам со KetuJemi.com?",
-  me: "Zdravo! Kako vam mogu pomoći sa KetuJemi.com?",
+  ks: "Përshëndetje! Pyetni për postim, skadim, TOP, biznes — përgjigjem unë. Për çështje të veçanta: info.info@ketujemi.com",
+  al: "Përshëndetje! Pyetni për postim, skadim, TOP, biznes — përgjigjem unë. Për çështje të veçanta: info.info@ketujemi.com",
+  mk: "Здраво! Прашајте за објава, истек, TOP, бизнис — ќе одговорам. За посебни прашања: info.info@ketujemi.com",
+  me: "Zdravo! Pitajte za objavu, istek, TOP, biznis — odgovaram ja. Za posebna pitanja: info.info@ketujemi.com",
+};
+
+const FALLBACK_BUSY: Record<string, string> = {
+  ks: "Nuk u lidh me serverin. Provoni përsëri ose shkruani info.info@ketujemi.com",
+  al: "Nuk u lidh me serverin. Provoni përsëri ose shkruani info.info@ketujemi.com",
+  mk: "Нема врска со серверот. Обидете се повторно или пишете на info.info@ketujemi.com",
+  me: "Nema veze sa serverom. Pokušajte ponovo ili pišite na info.info@ketujemi.com",
 };
 
 export function SupportChatWidget() {
@@ -52,16 +59,24 @@ export function SupportChatWidget() {
         }),
       });
       const data = await res.json().catch(() => ({}));
-      const reply =
-        (data as { reply?: string }).reply ??
-        "Për këtë çështje kontaktoni info.info@ketujemi.com";
+      const reply = (data as { reply?: string }).reply?.trim();
+      if (!reply) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: FALLBACK_BUSY[market.code] ?? FALLBACK_BUSY.ks,
+          },
+        ]);
+        return;
+      }
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } catch {
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: "Për këtë çështje kontaktoni info.info@ketujemi.com",
+          content: FALLBACK_BUSY[market.code] ?? FALLBACK_BUSY.ks,
         },
       ]);
     } finally {

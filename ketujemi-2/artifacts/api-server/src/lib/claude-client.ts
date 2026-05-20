@@ -2,6 +2,11 @@ import Anthropic from "@anthropic-ai/sdk";
 
 export type UiLang = "sq" | "mk" | "me";
 
+export function parseUiLang(raw: unknown): UiLang {
+  if (raw === "mk" || raw === "me") return raw;
+  return "sq";
+}
+
 export function getAnthropicApiKey(): string | undefined {
   const key = process.env.ANTHROPIC_API_KEY?.trim();
   return key || undefined;

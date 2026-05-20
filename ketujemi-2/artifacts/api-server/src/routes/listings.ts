@@ -22,13 +22,20 @@ import { isBusinessAccount, isVipBusinessActive } from "../lib/business-rules";
 import { assertBusinessCategoryListingQuota } from "../lib/business-quota";
 import { assertBusinessListingCreate } from "../lib/business-listing-guard";
 import { assertNoDuplicateListing } from "../lib/listing-duplicate-guard";
+import {
+  assertListingPostUserCooldown,
+  recordListingPostSuccessForUser,
+} from "../lib/listing-post-user-cooldown";
 import { repostListing } from "../lib/listing-repost";
 import { listingFeedOrderBy, isTopActive } from "../lib/listing-top";
 import { moderateListingContent } from "../lib/listing-ai-moderation";
+import { parseUiLang } from "../lib/claude-client";
 import { assertUserActiveListingCap } from "../lib/user-listing-limits";
 import { consumeExtraPostPayment } from "../lib/payments";
 import { handleSellerComplaint } from "../lib/violation-escalation";
+import { deleteListingCascade } from "../lib/delete-listing-cascade";
 import type { User } from "@workspace/db";
+import { annotateListingsWithVipFlag } from "../lib/vip-seller-lookup";
 
 const reportRate = new Map<string, number[]>();
 
@@ -325,8 +332,10 @@ router.get("/listings", async (req, res) => {
   const cats = await db.select().from(categoriesTable);
   const catMap = new Map(cats.map((c) => [c.id, c.name]));
 
-  const listings = rows.map((l) =>
-    applyViewerContact(formatListing(l, catMap.get(l.category_id) ?? null), viewer),
+  const listings = await annotateListingsWithVipFlag(
+    rows.map((l) =>
+      applyViewerContact(formatListing(l, catMap.get(l.category_id) ?? null), viewer),
+    ),
   );
   res.json({ listings, total: totalResult[0]?.total ?? 0, page, limit });
 });
@@ -386,7 +395,7 @@ router.post("/listings", async (req, res) => {
   }
 
   try {
-    await assertNoDuplicateListing(viewer, parsed.data.title);
+    await assertNoDuplicateListing(viewer, parsed.data.title, parsed.data.description);
   } catch (err: unknown) {
     if (err instanceof Error && err.message === "DUPLICATE_LISTING") {
       const e = err as Error & { publicMessage?: string; duplicateListingId?: number };
@@ -467,14 +476,20 @@ router.post("/listings", async (req, res) => {
     .where(eq(categoriesTable.id, parsed.data.category_id))
     .limit(1);
 
-  const moderation = await moderateListingContent({
-    title: parsed.data.title,
-    description: parsed.data.description,
-    price: parsed.data.price,
-    category_name: catRow?.name ?? null,
-    image_url: parsed.data.image_url,
-    condition: parsed.data.condition,
-  });
+  const bodyExtra = req.body as { price_agreement?: boolean; lang?: string };
+  const priceAgreement = !!bodyExtra.price_agreement;
+  const moderation = await moderateListingContent(
+    {
+      title: parsed.data.title,
+      description: parsed.data.description,
+      price: parsed.data.price,
+      price_agreement: priceAgreement,
+      category_name: catRow?.name ?? null,
+      image_url: parsed.data.image_url,
+      condition: parsed.data.condition,
+    },
+    parseUiLang(bodyExtra.lang),
+  );
 
   if (!moderation.approved) {
     res.status(403).json({
@@ -486,6 +501,20 @@ router.post("/listings", async (req, res) => {
         "Njoftimi nuk u miratua. Kontrolloni titullin, përshkrimin dhe çmimin.",
     });
     return;
+  }
+
+  try {
+    assertListingPostUserCooldown(viewer);
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message === "LISTING_POST_COOLDOWN") {
+      const e = err as Error & { publicMessage?: string };
+      res.status(429).json({
+        error: "LISTING_POST_COOLDOWN",
+        message: e.publicMessage ?? "Ki pak durim, prisni 30 sekonda për postimin tjetër.",
+      });
+      return;
+    }
+    throw err;
   }
 
   const now = new Date();
@@ -528,13 +557,17 @@ router.post("/listings", async (req, res) => {
     })
     .returning();
 
+  recordListingPostSuccessForUser(viewer);
+
   const cat = await db
     .select({ name: categoriesTable.name })
     .from(categoriesTable)
     .where(eq(categoriesTable.id, row.category_id))
     .limit(1);
 
-  const created = applyViewerContact(formatListing(row, cat[0]?.name ?? null), viewer);
+  const [created] = await annotateListingsWithVipFlag([
+    applyViewerContact(formatListing(row, cat[0]?.name ?? null), viewer),
+  ]);
   res.status(201).json(created);
 });
 
@@ -551,7 +584,11 @@ router.get("/listings/featured", async (req, res) => {
   const cats = await db.select().from(categoriesTable);
   const catMap = new Map(cats.map((c) => [c.id, c.name]));
   res.json(
-    rows.map((l) => applyViewerContact(formatListing(l, catMap.get(l.category_id) ?? null), viewer)),
+    await annotateListingsWithVipFlag(
+      rows.map((l) =>
+        applyViewerContact(formatListing(l, catMap.get(l.category_id) ?? null), viewer),
+      ),
+    ),
   );
 });
 
@@ -568,7 +605,11 @@ router.get("/listings/recent", async (req, res) => {
   const cats = await db.select().from(categoriesTable);
   const catMap = new Map(cats.map((c) => [c.id, c.name]));
   res.json(
-    rows.map((l) => applyViewerContact(formatListing(l, catMap.get(l.category_id) ?? null), viewer)),
+    await annotateListingsWithVipFlag(
+      rows.map((l) =>
+        applyViewerContact(formatListing(l, catMap.get(l.category_id) ?? null), viewer),
+      ),
+    ),
   );
 });
 
@@ -786,6 +827,20 @@ router.post("/listings/:id/repost", async (req, res) => {
     return;
   }
 
+  try {
+    assertListingPostUserCooldown(viewer);
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message === "LISTING_POST_COOLDOWN") {
+      const e = err as Error & { publicMessage?: string };
+      res.status(429).json({
+        error: "LISTING_POST_COOLDOWN",
+        message: e.publicMessage ?? "Ki pak durim, prisni 30 sekonda për postimin tjetër.",
+      });
+      return;
+    }
+    throw err;
+  }
+
   const result = await repostListing(viewer, listingId);
   if (!result.ok) {
     const status =
@@ -793,6 +848,8 @@ router.post("/listings/:id/repost", async (req, res) => {
     res.status(status).json({ error: result.error, message: result.message });
     return;
   }
+
+  recordListingPostSuccessForUser(viewer);
 
   const [row] = await db
     .select()
@@ -808,12 +865,16 @@ router.post("/listings/:id/repost", async (req, res) => {
         .limit(1)
     : [];
 
+  const listingOut = row
+    ? applyViewerContact(formatListing(row, cat[0]?.name ?? null), viewer)
+    : null;
+  const [listingAnnotated] = listingOut
+    ? await annotateListingsWithVipFlag([listingOut])
+    : [null];
   res.json({
     ok: true,
     message: "Njoftimi u rifillua dhe shfaqet përsëri në listë si i ri.",
-    listing: row
-      ? applyViewerContact(formatListing(row, cat[0]?.name ?? null), viewer)
-      : null,
+    listing: listingAnnotated,
   });
 });
 
@@ -862,7 +923,8 @@ router.get("/listings/:id", async (req, res) => {
     can_repost: boolean;
   };
   payload.can_repost = isOwner && isExpired;
-  res.json(payload);
+  const [out] = await annotateListingsWithVipFlag([payload]);
+  res.json({ ...out, can_repost: payload.can_repost });
 });
 
 // ─── PATCH /listings/:id ──────────────────────────────────────────────────────
@@ -902,6 +964,28 @@ router.patch("/listings/:id", async (req, res) => {
 
   const updates: Partial<typeof listingsTable.$inferInsert> = {};
   const body = bodyParsed.data;
+  const patchExtra = req.body as { price_agreement?: boolean; lang?: string };
+
+  const nextTitle = body.title ?? existing[0].title;
+  const nextDescription = body.description ?? existing[0].description;
+
+  if (body.title != null || body.description != null) {
+    try {
+      await assertNoDuplicateListing(viewer, nextTitle, nextDescription, paramsParsed.data.id);
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === "DUPLICATE_LISTING") {
+        const e = err as Error & { publicMessage?: string; duplicateListingId?: number };
+        res.status(409).json({
+          error: "DUPLICATE_LISTING",
+          message: e.publicMessage,
+          duplicate_listing_id: e.duplicateListingId,
+        });
+        return;
+      }
+      throw err;
+    }
+  }
+
   if (body.title != null) updates.title = body.title;
   if (body.description != null) updates.description = body.description;
   if (body.price != null) updates.price = String(body.price);
@@ -909,6 +993,44 @@ router.patch("/listings/:id", async (req, res) => {
   if (body.condition != null) updates.condition = body.condition;
   if (body.image_url != null) updates.image_url = body.image_url;
   if (body.is_featured != null) updates.is_featured = body.is_featured;
+
+  const nextPrice =
+    body.price != null ? body.price : Number(existing[0].price);
+  const contentChanged =
+    body.title != null || body.description != null || body.price != null;
+
+  if (contentChanged) {
+    const [catRow] = await db
+      .select({ name: categoriesTable.name })
+      .from(categoriesTable)
+      .where(eq(categoriesTable.id, existing[0].category_id))
+      .limit(1);
+
+    const moderation = await moderateListingContent(
+      {
+        title: nextTitle,
+        description: nextDescription,
+        price: nextPrice,
+        price_agreement: !!patchExtra.price_agreement,
+        category_name: catRow?.name ?? null,
+        image_url: body.image_url ?? existing[0].image_url,
+        condition: body.condition ?? existing[0].condition,
+      },
+      parseUiLang(patchExtra.lang),
+    );
+
+    if (!moderation.approved) {
+      res.status(403).json({
+        error: "LISTING_MODERATION_REJECTED",
+        moderation_status: "rejected",
+        moderation_reason: moderation.reason,
+        message:
+          moderation.reason ||
+          "Njoftimi nuk u miratua. Kontrolloni titullin, përshkrimin dhe çmimin.",
+      });
+      return;
+    }
+  }
 
   const [updated] = await db
     .update(listingsTable)
@@ -922,7 +1044,10 @@ router.patch("/listings/:id", async (req, res) => {
     .where(eq(categoriesTable.id, updated.category_id))
     .limit(1);
 
-  res.json(applyViewerContact(formatListing(updated, cat[0]?.name ?? null), viewer));
+  const [patched] = await annotateListingsWithVipFlag([
+    applyViewerContact(formatListing(updated, cat[0]?.name ?? null), viewer),
+  ]);
+  res.json(patched);
 });
 
 // ─── DELETE /listings/:id ─────────────────────────────────────────────────────
@@ -950,12 +1075,27 @@ router.delete("/listings/:id", async (req, res) => {
   }
 
   if (!userOwnsListing(viewer, existing[0])) {
-    res.status(403).json({ error: "Forbidden" });
+    res.status(403).json({
+      error: "Forbidden",
+      message: "Nuk keni të drejtë ta fshini këtë njoftim.",
+    });
     return;
   }
 
-  await db.delete(listingsTable).where(eq(listingsTable.id, parsed.data.id));
-  res.status(204).send();
+  try {
+    const removed = await deleteListingCascade(parsed.data.id);
+    if (!removed) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+    res.status(204).send();
+  } catch (err) {
+    req.log?.error({ err, listingId: parsed.data.id }, "delete listing failed");
+    res.status(500).json({
+      error: "DELETE_FAILED",
+      message: "Njoftimi nuk u fshi. Provoni përsëri.",
+    });
+  }
 });
 
 export default router;

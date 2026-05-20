@@ -15,6 +15,7 @@ import {
   getAdminBearerToken,
   adminAuthConfigured,
 } from "../lib/admin-auth";
+import { deleteListingCascade } from "../lib/delete-listing-cascade";
 import {
   getModerationState,
   updateModerationSettings,
@@ -201,7 +202,11 @@ router.patch("/admin/listings/:id", requireAdmin, async (req, res) => {
 router.delete("/admin/listings/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    await db.delete(listingsTable).where(eq(listingsTable.id, id));
+    const removed = await deleteListingCascade(id);
+    if (!removed) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
     res.json({ success: true });
   } catch (err) {
     req.log.error({ err }, "Admin delete listing error");

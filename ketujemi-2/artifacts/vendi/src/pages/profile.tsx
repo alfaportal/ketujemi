@@ -10,6 +10,8 @@ import { useMarket } from "@/lib/market-context";
 import { useToast } from "@/hooks/use-toast";
 import { AuthToolbar } from "@/components/auth-toolbar";
 import { BusinessAccountCard } from "@/components/business-account-card";
+import { CardPaymentsPanel } from "@/components/card-payments-panel";
+import { PartnerLogoAnalyticsCard } from "@/components/partner-logo-analytics-card";
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
@@ -20,6 +22,7 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
+  const [partnerLogoUrl, setPartnerLogoUrl] = useState("");
   const [city, setCity] = useState("");
   const [aboutMe, setAboutMe] = useState("");
   const [busy, setBusy] = useState(false);
@@ -41,12 +44,14 @@ export default function ProfilePage() {
           : "",
     );
     setPhotoUrl(user.profile_photo_url ?? "");
+    setPartnerLogoUrl(user.partner_logo_url ?? "");
     setCity(user.city ?? "");
     setAboutMe(user.about_me ?? "");
   }, [user, loading, setLocation]);
 
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
+    if (!user) return;
     setBusy(true);
     try {
       const res = await fetch("/api/auth/profile", {
@@ -57,6 +62,9 @@ export default function ProfilePage() {
           display_name: displayName,
           contact_phone: contactPhone,
           profile_photo_url: photoUrl,
+          ...(user.account_type === "business"
+            ? { partner_logo_url: partnerLogoUrl }
+            : {}),
           city,
           about_me: aboutMe,
         }),
@@ -105,6 +113,10 @@ export default function ProfilePage() {
 
           <BusinessAccountCard user={user} />
 
+          <PartnerLogoAnalyticsCard user={user} />
+
+          <CardPaymentsPanel />
+
           <form className="space-y-4" onSubmit={onSave}>
             <div className="space-y-2">
               <Label htmlFor="profile-name">{t.profile_fullName}</Label>
@@ -137,6 +149,22 @@ export default function ProfilePage() {
                 className="min-h-12 h-12"
               />
             </div>
+            {user.account_type === "business" ? (
+              <div className="space-y-2">
+                <Label htmlFor="profile-partner-logo">Logo partner (VIP)</Label>
+                <Input
+                  id="profile-partner-logo"
+                  type="url"
+                  value={partnerLogoUrl}
+                  onChange={(e) => setPartnerLogoUrl(e.target.value)}
+                  placeholder="https:// — shfaqet te «Partnerët tanë të besuar»"
+                  className="min-h-12 h-12"
+                />
+                <p className="text-xs text-gray-500">
+                  Ngarko URL-në e logos zyrtare me ngjyra. Pa logo, shfaqet emri i biznesit.
+                </p>
+              </div>
+            ) : null}
             <div className="space-y-2">
               <Label htmlFor="profile-city">{t.profile_city}</Label>
               <Input

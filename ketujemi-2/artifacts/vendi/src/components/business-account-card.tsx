@@ -7,27 +7,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth, type AuthUser } from "@/lib/auth-context";
 import { Link } from "wouter";
 
-async function startCheckout(purpose: "extra_post" | "vip_month"): Promise<string | null> {
-  const res = await fetch("/api/payments/checkout", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ purpose }),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error((data as { message?: string }).message ?? "Pagesa dështoi");
-  }
-  return (data as { url?: string }).url ?? null;
-}
-
 export function BusinessAccountCard({ user }: { user: AuthUser }) {
   const { refresh } = useAuth();
   const { toast } = useToast();
   const [businessName, setBusinessName] = useState(user.business_name ?? "");
   const [busy, setBusy] = useState(false);
-  const [payBusy, setPayBusy] = useState(false);
-
   const isBusiness = user.account_type === "business";
   const isVip =
     user.business_tier === "vip" &&
@@ -59,21 +43,6 @@ export function BusinessAccountCard({ user }: { user: AuthUser }) {
       toast({ title: "Llogaria u aktivizua si biznes!" });
     } finally {
       setBusy(false);
-    }
-  }
-
-  async function buyVip() {
-    setPayBusy(true);
-    try {
-      const url = await startCheckout("vip_month");
-      if (url) window.location.href = url;
-    } catch (e) {
-      toast({
-        title: e instanceof Error ? e.message : "Pagesa nuk është e disponueshme",
-        variant: "destructive",
-      });
-    } finally {
-      setPayBusy(false);
     }
   }
 
@@ -122,15 +91,9 @@ export function BusinessAccountCard({ user }: { user: AuthUser }) {
             )}
           </p>
           {!isVip ? (
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full min-h-12 border-amber-300 text-amber-800"
-              disabled={payBusy}
-              onClick={() => void buyVip()}
-            >
-              {payBusy ? <Loader2 className="h-5 w-5 animate-spin" /> : "VIP Biznes — €20/muaj"}
-            </Button>
+            <p className="text-xs text-amber-800">
+              VIP mund ta blini me kartë te seksioni «Paguaj me kartë» më poshtë.
+            </p>
           ) : null}
           <Link
             href="/business-rules"
