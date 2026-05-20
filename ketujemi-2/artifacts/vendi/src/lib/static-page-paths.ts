@@ -2,6 +2,46 @@ import type { UiLang } from "@/lib/ui-languages";
 
 export const PARTNER_SIGNUP_PATH = "/behu-partner";
 
+/** Rrugët e faqeve informative / ligjore — pa shiritin sticky të pagesave. */
+export const INFO_STATIC_PATHS = new Set([
+  "/kontakt",
+  "/contact",
+  "/faq",
+  "/siguria",
+  "/bezbednost",
+  "/sigurnost",
+  "/shtypi",
+  "/mediji",
+  "/rreth-nesh",
+  "/za-nas",
+  "/o-nama",
+  "/rregullat",
+  "/pravila",
+  "/privatesia",
+  "/privatnost",
+  "/cookies",
+  "/kolacinja",
+  "/kolacici",
+  "/kushtet",
+  "/uslovi",
+  "/terms",
+  "/privacy",
+  "/business-rules",
+  "/hap-shitore",
+  "/otvori-prodavnica",
+  "/otvori-prodavnicu",
+  "/vip",
+  "/reklamoni",
+  "/reklamiraj",
+  "/partneritet",
+  "/partnerstvo",
+  "/behu-partner",
+]);
+
+export function isInfoStaticPage(pathname: string): boolean {
+  return INFO_STATIC_PATHS.has(pathname);
+}
+
 export type StaticPagePaths = {
   contact: string;
   faq: string;
@@ -109,10 +149,10 @@ export function footerMarketsStripCopy(uiLang: UiLang): FooterMarketsStripCopy {
   return {
     title: "TREGJET ZYRTARE",
     primary: [
-      { marketCode: "ks", name: "Kosovo", iso: "XK" },
+      { marketCode: "ks", name: "Kosovë", iso: "XK" },
       { marketCode: "al", name: "Shqipëri", iso: "AL" },
       { marketCode: "mk", name: "Maqedoni", iso: "MK" },
     ],
-    diasporaLabel: "+8 Vende të Diasporës",
+    diasporaLabel: "+8 Diaspora",
   };
 }

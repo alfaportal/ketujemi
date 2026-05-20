@@ -117,7 +117,7 @@ const KS: StaticPagesCopy = {
   rules: {
     title: "Rregullat e Platformës",
     tagline:
-      "Ndalohet rreptësisht postimi i njoftimeve të njëjta (duplikate) brenda 24 orëve. Gjithashtu, duhet pritur të paktën 30 sekonda mes postimeve të njëpasnjëshme. Sistemi i bllokon shkelësit automatikisht për të parandaluar spam-in.",
+      "Njoftimet duhet të jenë të vërteta dhe në kategorinë e duhur. Nëse postoni përsëri të njëjtin njoftim (titull dhe përshkrim identik), versioni i vjetër fshihet automatikisht dhe mbetet vetëm i riu. Mes dy postimeve duhet të paktën 30 sekonda pritje.",
   },
   terms: {
     title: "Kushtet e Përdorimit",

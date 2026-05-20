@@ -13,7 +13,6 @@ import { useGetCategories, getGetCategoriesQueryOptions } from "@workspace/api-c
 import { translateCategory } from "@/lib/category-translations";
 import { categoryPath } from "@/lib/category-navigation";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
-import { SiteFooter } from "@/components/site-footer";
 import { VipPartnersSection } from "@/components/vip-partners-section";
 import { cn } from "@/lib/utils";
 import {

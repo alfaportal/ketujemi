@@ -3,6 +3,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SupportChatWidget } from "@/components/support-chat-widget";
 import { CardPaymentsPanel, listingIdFromPath } from "@/components/card-payments-panel";
 import { useAuth } from "@/lib/auth-context";
+import { isInfoStaticPage } from "@/lib/static-page-paths";
 
 type AppLayoutProps = {
   children: React.ReactNode;
@@ -15,6 +16,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const hideFooter = pathname.startsWith("/admin-secret-panel");
   const hidePaymentsStrip =
     hideFooter ||
+    isInfoStaticPage(pathname) ||
     pathname === "/login" ||
     pathname.startsWith("/listings/new") ||
     loading ||

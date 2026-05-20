@@ -8,14 +8,15 @@ type LuxuryStaticShellProps = {
   children?: React.ReactNode;
 };
 
+/** Faqe informative — header + përmbajtje; footer vjen nga AppLayout. */
 export function LuxuryStaticShell({ title, tagline, children }: LuxuryStaticShellProps) {
   return (
-    <div className="min-h-screen bg-[#f4f6f8] flex flex-col">
+    <div className="bg-[#f4f6f8]">
       <SiteHeader />
-      <main className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-        <header className="mb-8 sm:mb-10">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        <header className="mb-6 sm:mb-8">
           <div
-            className="h-1 w-12 rounded-full mb-5"
+            className="h-1 w-12 rounded-full mb-4"
             style={{ backgroundColor: BRAND_BLUE }}
             aria-hidden
           />
@@ -23,9 +24,7 @@ export function LuxuryStaticShell({ title, tagline, children }: LuxuryStaticShel
             {title}
           </h1>
           {tagline ? (
-            <p className="mt-4 text-base sm:text-lg text-gray-600 leading-relaxed font-normal">
-              {tagline}
-            </p>
+            <p className="mt-3 text-base sm:text-lg text-gray-600 leading-relaxed">{tagline}</p>
           ) : null}
         </header>
         {children ? (
@@ -33,7 +32,7 @@ export function LuxuryStaticShell({ title, tagline, children }: LuxuryStaticShel
             {children}
           </div>
         ) : null}
-      </main>
+      </div>
     </div>
   );
 }
@@ -67,20 +66,5 @@ export function InfoEmailLine({ label, email }: { label: string; email: string }
         {email}
       </a>
     </p>
-  );
-}
-
-export function InfoCtaButton({ href, label }: { href: string; label: string }) {
-  return (
-    <a
-      href={href}
-      className={cn(
-        "inline-flex items-center justify-center min-h-12 px-8 rounded-xl",
-        "text-sm sm:text-base font-bold text-white transition-opacity hover:opacity-90",
-      )}
-      style={{ backgroundColor: BRAND_BLUE }}
-    >
-      {label}
-    </a>
   );
 }

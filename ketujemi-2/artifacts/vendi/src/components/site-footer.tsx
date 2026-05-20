@@ -216,13 +216,13 @@ export function SiteFooter() {
   };
 
   return (
-    <footer className="bg-[#f8f9fa] border-t border-gray-200/90 mt-10 font-sans">
+    <footer className="bg-[#f8f9fa] border-t border-gray-200/90 mt-auto font-sans">
       <div className="max-w-7xl mx-auto">
         <div className="px-4 sm:px-6 lg:px-8 py-5 border-b border-gray-200/80 flex justify-center sm:justify-start">
           <FooterWordmark />
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 border-b border-gray-200/80">
+        <div className="grid grid-cols-1 sm:grid-cols-3 border-b border-gray-200/80">
           <FooterColumnBlock {...helpColumn} />
           <FooterColumnBlock {...infoColumn} />
           <FooterColumnBlock {...businessColumn} />
