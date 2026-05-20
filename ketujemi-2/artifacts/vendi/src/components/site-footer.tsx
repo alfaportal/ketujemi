@@ -11,9 +11,12 @@ import { SiPaypal } from "react-icons/si";
 import { MARKETS, useMarket, type Market } from "@/lib/market-context";
 import { cn } from "@/lib/utils";
 
-const REGION_MARKETS = MARKETS.filter((m) =>
-  (["ks", "al", "mk", "mne"] as const).includes(m.code as "ks" | "al" | "mk" | "mne"),
-);
+/** Të gjitha tregjet e platformës — rendi i kolonës TREGJET në footer. */
+const FOOTER_MARKETS: readonly Market[] = MARKETS;
+
+const FOOTER_MARKET_LABEL: Partial<Record<Market["code"], string>> = {
+  mk: "Maqedoni",
+};
 
 const SOCIAL_LINKS = [
   {
@@ -100,7 +103,7 @@ function MarketButton({ m, active, onSelect }: { m: Market; active: boolean; onS
       <span className="mr-1.5" aria-hidden>
         {m.flag}
       </span>
-      {m.name}
+      {FOOTER_MARKET_LABEL[m.code] ?? m.name}
     </button>
   );
 }
@@ -157,7 +160,7 @@ export function SiteFooter() {
               {columns[3]!.title}
             </h3>
             <ul className="space-y-2">
-              {REGION_MARKETS.map((m) => (
+              {FOOTER_MARKETS.map((m) => (
                 <li key={m.code}>
                   <MarketButton
                     m={m}
