@@ -1,12 +1,11 @@
-# Monorepo root — Railway service must use repo root OR set Root Directory = ketujemi-2.
-# This file ensures builds run from ketujemi-2 even when the service root is the git repo root.
+# Deploy KetuJemi — funksionon edhe me Root Directory = / apo ketujemi-2
 
 [build]
 builder = "NIXPACKS"
-buildCommand = "cd ketujemi-2 && pnpm install --no-frozen-lockfile && NODE_ENV=production BASE_PATH=/ NODE_OPTIONS=--max-old-space-size=4096 pnpm run build:production"
+buildCommand = "node scripts/railway-build.mjs"
 nixpacksConfigPath = "ketujemi-2/nixpacks.toml"
 
 [deploy]
-preDeployCommand = "cd ketujemi-2 && pnpm run db:push"
-startCommand = "cd ketujemi-2 && pnpm start"
+preDeployCommand = "node scripts/railway-predeploy.mjs"
+startCommand = "node scripts/railway-start.mjs"
 healthCheckPath = "/api/healthz"

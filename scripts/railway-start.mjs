@@ -1,0 +1,15 @@
+import { spawnSync } from "node:child_process";
+import { resolveAppRoot } from "./resolve-app-root.mjs";
+
+const root = resolveAppRoot();
+const shell = process.platform === "win32";
+
+console.log("[railway-start] app root:", root);
+
+const result = spawnSync("pnpm", ["start"], {
+  cwd: root,
+  stdio: "inherit",
+  shell,
+});
+
+process.exit(result.status ?? 0);

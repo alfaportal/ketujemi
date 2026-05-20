@@ -21,9 +21,20 @@ export default defineConfig(async ({ command }) => {
 
   const pwaScope = basePath.endsWith("/") ? basePath : `${basePath}/`;
 
+  const buildStampPlugin = (): PluginOption => ({
+    name: "ketujemi-build-stamp",
+    transformIndexHtml(html) {
+      return html.replace(
+        "</head>",
+        `    <!-- ketujemi-build:${buildId} -->\n  </head>`,
+      );
+    },
+  });
+
   const plugins: PluginOption[] = [
     react(),
     tailwindcss(),
+    buildStampPlugin(),
     VitePWA({
       injectRegister: null,
       registerType: "autoUpdate",

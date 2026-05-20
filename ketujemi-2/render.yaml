@@ -19,7 +19,7 @@ services:
     rootDir: ketujemi-2
     buildCommand: >-
       npm install -g pnpm@10.12.1 &&
-      pnpm install --frozen-lockfile &&
+      pnpm install --no-frozen-lockfile &&
       node ./scripts/build-production.mjs
     preDeployCommand: pnpm run db:push
     startCommand: node ./scripts/start-production.mjs
