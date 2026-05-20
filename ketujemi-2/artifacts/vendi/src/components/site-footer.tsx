@@ -213,11 +213,11 @@ export function SiteFooter() {
     {
       title: t.footer_colInfo ?? "INFORMATA",
       links: [
-        { href: "/contact", label: t.footer_aboutKetuJemi ?? "Rreth KetuJemi" },
-        { href: "/business-rules", label: t.footer_rules ?? "Rregullat" },
-        { href: "/privacy", label: t.privacy },
-        { href: "/privacy", label: t.footer_cookies ?? "Cookies" },
-        { href: "/terms", label: t.terms },
+        { href: paths.about, label: t.footer_aboutKetuJemi ?? "Rreth KetuJemi" },
+        { href: paths.rules, label: t.footer_rules ?? "Rregullat" },
+        { href: paths.privacy, label: t.privacy },
+        { href: paths.cookies, label: t.footer_cookies ?? "Cookies" },
+        { href: paths.terms, label: t.terms },
       ],
     },
     {

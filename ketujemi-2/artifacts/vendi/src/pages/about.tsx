@@ -1,7 +1,7 @@
 import { SimpleStaticPage } from "@/components/simple-static-page";
 import { useStaticPages } from "@/lib/static-pages-i18n";
 
-export default function PrivacyPage() {
-  const { privacy } = useStaticPages();
-  return <SimpleStaticPage copy={privacy} />;
+export default function AboutPage() {
+  const { about } = useStaticPages();
+  return <SimpleStaticPage copy={about} />;
 }

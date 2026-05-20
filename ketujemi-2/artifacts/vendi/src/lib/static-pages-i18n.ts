@@ -77,10 +77,18 @@ export type PressPageCopy = {
   mediaEmailLabel: string;
 };
 
+export type SimplePageCopy = {
+  title: string;
+  tagline: string;
+};
+
 export type StaticPagesCopy = {
-  terms: TermsPrivacyCopy;
+  about: SimplePageCopy;
+  rules: SimplePageCopy;
+  terms: SimplePageCopy;
+  privacy: SimplePageCopy;
+  cookies: SimplePageCopy;
   businessRules: TermsPrivacyCopy;
-  privacy: TermsPrivacyCopy;
   contact: ContactCopy;
   faq: FaqCopy;
   security: InfoPageCopy;
@@ -88,103 +96,30 @@ export type StaticPagesCopy = {
 };
 
 const KS: StaticPagesCopy = {
+  about: {
+    title: "Rreth KetuJemi.com",
+    tagline:
+      "KetuJemi.com është një nga platformat më të mëdha të shpalljeve falas, e shtrirë zyrtarisht në 11 tregje ndërkombëtare duke përfshirë Kosovën, Shqipërinë, Maqedoninë, Malin e Zi, si dhe mbarë diasporën shqiptare në Evropë (Gjermani, Zvicër, Austri, Francë, Itali, Angli) dhe SHBA. Misioni ynë është ndërlidhja e shpejtë, e pastër dhe e sigurt mes blerësve dhe shitësve në mbarë botën.",
+  },
+  rules: {
+    title: "Rregullat e Platformës",
+    tagline:
+      "Për të siguruar një treg online të ndershëm, njoftimet duhet të jenë reale, të sakta dhe të vendosura në kategorinë e duhur. Ndalohet rreptësisht postimi i njoftimeve të njëjta (duplikate) brenda 24 orëve. Gjithashtu, sistemi kërkon një kohë pritjeje prej të paktën 30 sekondash mes postimeve të njëpasnjëshme. Shkelësit bllokohen automatikisht nga sistemi.",
+  },
   terms: {
     title: "Kushtet e Përdorimit",
-    subtitle: "KetuJemi.com",
-    tagline: "Platforma e Njoftimeve të Klasifikuara",
-    sanctionsTableHeaders: { violation: "Shkelja", consequence: "Pasoja" },
-    sections: [
-      {
-        title: "Hyrje",
-        paragraphs: [
-          "KetuJemi.com është platformë shpalljesh që mbulon Kosovën, Shqipërinë, Maqedoninë dhe Malin e Zi, si dhe diasporën shqiptare në Gjermani, Zvicër, Austri, Francë, Itali, Angli dhe SHBA. Duke përdorur platformën, pranoni këto kushte.",
-        ],
-      },
-      {
-        title: "Kush Mund të Përdorë Platformën",
-        bullets: [
-          "Çdo person mbi 18 vjeç",
-          "Biznese të regjistruara",
-          "Diaspora shqiptare jashtë vendit",
-        ],
-      },
-      {
-        title: "Rregullat e Postimit",
-        bullets: [
-          "Shpalljet duhet të jenë të vërteta dhe të sakta",
-          "Foto reale të produktit/shërbimit",
-          "Çmim i saktë në Euro (€)",
-          "Kontakt i vlefshëm",
-          "Pa dublikata: Ndalohet postimi i të njëjtit njoftim dy herë — njoftimi i vjetër fshihet automatikisht",
-          "Afati i njoftimit: Njoftimet qëndrojnë aktive për 1 muaj, pastaj fshihen automatikisht",
-          "Maksimumi 10 njoftime aktive për përdorues",
-        ],
-      },
-      {
-        title: "Shpalljet e Ndaluara",
-        bullets: [
-          "Armë automatike dhe municione",
-          "Droga dhe substanca të ndaluara",
-          "Produkte të falsifikuara / replika / fake",
-          "Ilaçe, suplemente ushqimore, alkool, duhan, e-cigare",
-          "Skema piramidale (MLM), fitime të shpejta pa punë",
-          "Njoftime erotike ose takimesh",
-          "Kriptomonedha (Bitcoin etj.) ose llogari lojërash",
-          "Produkte të blera vetëm për rishitje të shpejtë nga personat fizikë",
-          "Përmbajtje pornografike",
-          "Kafshë të egra / të mbrojtura",
-          "Shërbime ilegale",
-        ],
-      },
-      {
-        title: "Limitet e Shpalljeve Falas",
-        bullets: ["Përdorues Standard: 10 shpallje falas për kategori + verifikim"],
-      },
-      {
-        title: "Verifikimi i Përdoruesve",
-        bullets: [
-          "Verifikim me SMS i detyrueshëm për të postuar, parë numra telefoni ose dërguar email",
-          "Verifikimi vlen për 1 vit, pastaj ripërtërihet",
-        ],
-      },
-      {
-        title: "Renditja dhe Monetizimi",
-        bullets: [
-          "Renditja bazë bëhet sipas datës së postimit",
-          "Sistemi TOP: Pagesë për të shtyrë njoftimin në krye",
-          "Sistemi rregullon automatikisht ditët e reklamimit nëse dikush paguan shumë herë rresht, që të mos bllokohet faqja",
-        ],
-      },
-      {
-        title: "Mbrojtja e të Dhënave (GDPR / Privatësia)",
-        bullets: [
-          "Emrat, emailet dhe telefonat e njoftimeve të fshira fshihen plotësisht pas 6 muajsh",
-          "Të dhënat e verifikimit të llogarisë bankare ruhen 1 vit",
-          "Faturat dhe të dhënat e pagesave ruhen ligjërisht për 10 vjet",
-          "Platforma nuk mban përgjegjësi për cilësinë e mallit apo mashtrimet mes blerësit dhe shitësit",
-        ],
-      },
-      {
-        title: "Ndalimi i API-ve të Paautorizuara",
-        paragraphs: [
-          "Ndalohet përdorimi i aplikacioneve të palëve të treta që vjedhin njoftimet ose automatizojnë postimet pa lejen e platformës.",
-        ],
-      },
-      {
-        title: "Përgjegjësia",
-        paragraphs: [
-          "KetuJemi.com nuk është palë në transaksione mes blerësit dhe shitësit. Platforma nuk mban përgjegjësi për mashtrime apo mosmarrëveshje mes palëve.",
-        ],
-      },
-      {
-        title: "Sanksionet",
-        table: [
-          { label: "E parë", value: "Fshirje e shpalljes" },
-          { label: "E dytë", value: "Pezullim 30 ditë" },
-          { label: "E tretë", value: "Bllokimi i përhershëm" },
-        ],
-      },
-    ],
+    tagline:
+      "Duke përdorur KetuJemi.com, ju pranoni se platforma shërben vetëm si një hapësirë ndërlidhëse ndërmjet palëve. Përdoruesi (postuesi) mban përgjegjësi të plotë dhe ekskluzive ligjore për vërtetësinë, origjinalitetin dhe ligjshmërinë e produkteve apo shërbimeve që reklamon në faqe.",
+  },
+  privacy: {
+    title: "Politika e Privatësisë",
+    tagline:
+      "Ne vlerësojmë lart privatësinë tuaj. Platforma mbledh vetëm të dhënat minimale të domosdoshme: Emrin, Email-in (për komunikim zyrtar përmes info@ketujemi.com ose support@ketujemi.com) dhe Adresën IP për qëllime të sigurisë dhe parandalimit të mashtrimeve online. Të dhënat tuaja janë të enkriptuara dhe nuk ndahen kurrë me palët e treta.",
+  },
+  cookies: {
+    title: "Politika e Cookies",
+    tagline:
+      "KetuJemi.com përdor cookie (skedarë të vegjël teksti) për të përmirësuar eksperiencën tuaj të lundrimit, për të mbajtur mend kyçjen tuaj dhe për të analizuar trafikun e faqes. Ju mund t'i menaxhoni ose t'i bllokoni ato në çdo kohë përmes cilësimeve të shfletuesit tuaj.",
   },
   businessRules: {
     title: "Rregullorja e Bizneseve",
@@ -252,59 +187,6 @@ const KS: StaticPagesCopy = {
         ],
       },
     ],
-  },
-  privacy: {
-    title: "Politika e Privatësisë",
-    sections: [
-      {
-        title: "Të dhënat që mbledhim",
-        bullets: [
-          "Emri dhe mbiemri",
-          "Numri i telefonit",
-          "Adresa email",
-          "Qyteti/Lokacioni",
-          "Fotot e ngarkuara",
-        ],
-      },
-      {
-        title: "Si i përdorim të dhënat",
-        bullets: [
-          "Për verifikimin e llogarisë (SMS)",
-          "Për komunikim mes blerësit dhe shitësit",
-          "Për përmirësimin e platformës",
-          "Për njoftime të rëndësishme",
-        ],
-      },
-      {
-        title: "Mbrojtja e të dhënave",
-        bullets: [
-          "Nuk i shesim të dhënat tuaja palëve të treta",
-          "Të dhënat ruhen në serverë të sigurt",
-          "Enkriptim SSL për të gjitha komunikimet",
-        ],
-      },
-      {
-        title: "Cookies",
-        bulletsIntro: "Platforma përdor cookies për:",
-        bullets: [
-          "Ruajtjen e sesionit të hyrjes",
-          "Preferencat e përdoruesit",
-          "Statistikat anonime",
-        ],
-      },
-      {
-        title: "E drejta juaj",
-        bullets: [
-          "Mund të kërkoni fshirjen e llogarisë",
-          "Mund të ndryshoni të dhënat personale",
-          "Mund të çaktivizoni cookies nga browser-i",
-        ],
-      },
-      {
-        title: "Kontakt për Privatësi",
-      },
-    ],
-    privacyEmailLabel: "Email:",
   },
   contact: {
     title: "Na Kontaktoni",
@@ -487,103 +369,30 @@ const KS: StaticPagesCopy = {
 };
 
 const MK: StaticPagesCopy = {
+  about: {
+    title: "За KetuJemi.com",
+    tagline:
+      "KetuJemi.com е една од најголемите платформи за бесплатни огласи, официјално распространета на 11 меѓународни пазари вклучувајќи Косово, Албанија, Македонија, Црна Гора, како и албанската дијаспора во Европа (Германија, Швајцарија, Австрија, Франција, Италија, Англија) и САД. Нашата мисија е брзо, чисто и безбедно поврзување на купувачи и продавачи низ целиот свет.",
+  },
+  rules: {
+    title: "Правила на платформата",
+    tagline:
+      "За да обезбедиме фер онлајн пазар, огласите мора да бидат вистинити, точни и во соодветната категорија. Строго е забрането објавување идентични дупликати во рок од 24 часа. Исто така, системот бара минимално чекање од 30 секунди меѓу последователните објави. Прекршителите се автоматски блокирани од системот.",
+  },
   terms: {
     title: "Услови за користење",
-    subtitle: "KetuJemi.com",
-    tagline: "Платформа за класифицирани огласи",
-    sanctionsTableHeaders: { violation: "Прекршување", consequence: "Последица" },
-    sections: [
-      {
-        title: "Вовед",
-        paragraphs: [
-          "KetuJemi.com е платформа за огласи која ги покрива Косово, Албанија, Македонија и Црна Гора, како и албанската дијаспора во Германија, Швајцарија, Австрија, Франција, Италија, Англија и САД. Со користење на платформата, ги прифаќате овие услови.",
-        ],
-      },
-      {
-        title: "Ко може да ја користи платформата",
-        bullets: [
-          "Секое лице над 18 години",
-          "Регистрирани бизниси",
-          "Албанска дијаспора надвор од земјата",
-        ],
-      },
-      {
-        title: "Правила за објавување",
-        bullets: [
-          "Огласите мора да бидат вистинити и точни",
-          "Реални фотографии на производот/услугата",
-          "Точна цена во евра (€)",
-          "Важечки контакт",
-          "Без дупликати: Забрането е објавување на истиот оглас двапати — стариот оглас се брише автоматски",
-          "Траење на огласот: Огласите остануваат активни 1 месец, потоа се бришат автоматски",
-          "Максимум 10 активни огласи по корисник",
-        ],
-      },
-      {
-        title: "Забранети огласи",
-        bullets: [
-          "Автоматско оружје и муниција",
-          "Дрога и забранети супстанци",
-          "Фалсификувани производи / реплики / fake",
-          "Лекови, додатоци во исхрана, алкохол, цигари, e-cigare",
-          "Пирамидални шеми (MLM), брзи профити без работа",
-          "Еротски огласи или огласи за состаноци",
-          "Криптовалути (Bitcoin итн.) или сметки за игри",
-          "Производи купени само за брза препродажба од физички лица",
-          "Порнографска содржина",
-          "Диви / заштитени животни",
-          "Нелегални услуги",
-        ],
-      },
-      {
-        title: "Лимити на бесплатни огласи",
-        bullets: ["Стандарден корисник: 10 бесплатни огласи по категорија + верификација"],
-      },
-      {
-        title: "Верификација на корисниците",
-        bullets: [
-          "Задолжителна SMS верификација за објавување, гледање на телефонски броеви или испраќање email",
-          "Верификацијата важи 1 година, потоа се повторува",
-        ],
-      },
-      {
-        title: "Рангирање и монетизација",
-        bullets: [
-          "Основното рангирање е според датумот на објавување",
-          "TOP систем: Плаќање за истакнување на огласот на врвот",
-          "Системот автоматски ги прилагодува деновите на рекламирање ако некој плаќа повеќепати по ред, за да не се блокира страницата",
-        ],
-      },
-      {
-        title: "Заштита на податоци (GDPR / Приватност)",
-        bullets: [
-          "Имињата, email-ите и телефоните од избришани огласи се целосно бришат по 6 месеци",
-          "Податоците за верификација на банкарската сметка се чуваат 1 година",
-          "Фактурите и податоците за плаќање се чуваат законски 10 години",
-          "Платформата не носи одговорност за квалитетот на стоката или измамите помеѓу купувачот и продавачот",
-        ],
-      },
-      {
-        title: "Забрана на неовластени API",
-        paragraphs: [
-          "Забрането е користење на апликации од трети страни кои ги крадат огласите или автоматизираат објавувања без дозвола од платформата.",
-        ],
-      },
-      {
-        title: "Одговорност",
-        paragraphs: [
-          "KetuJemi.com не е страна во трансакциите помеѓу купувачот и продавачот. Платформата не носи одговорност за измами или несогласувања помеѓу страните.",
-        ],
-      },
-      {
-        title: "Санкции",
-        table: [
-          { label: "Прво", value: "Бришење на огласот" },
-          { label: "Второ", value: "Суспензија 30 дена" },
-          { label: "Трето", value: "Трајно блокирање" },
-        ],
-      },
-    ],
+    tagline:
+      "Со користење на KetuJemi.com, прифаќате дека платформата служи само како посреднички простор меѓу страните. Корисникот (објавувачот) носи целосна и ексклузивна правна одговорност за вистинитоста, оригиналноста и законитоста на производите или услугите што ги рекламира.",
+  },
+  privacy: {
+    title: "Политика за приватност",
+    tagline:
+      "Ја цениме вашата приватност. Платформата собира само минимални неопходни податоци: Име, Email (за официјална комуникација преку info@ketujemi.com или support@ketujemi.com) и IP адреса за безбедност и спречување на онлајн измами. Вашите податоци се шифрирани и никогаш не се споделуваат со трети страни.",
+  },
+  cookies: {
+    title: "Политика за колачиња (Cookies)",
+    tagline:
+      "KetuJemi.com користи cookies (мали текстуални датотеки) за да ја подобри вашата навигација, да ја запомни најавата и да го анализира сообраќајот на страницата. Можете да ги управувате или блокирате во секое време преку поставките на прелистувачот.",
   },
   businessRules: {
     title: "Правила за бизниси",
@@ -651,59 +460,6 @@ const MK: StaticPagesCopy = {
         ],
       },
     ],
-  },
-  privacy: {
-    title: "Политика на приватност",
-    sections: [
-      {
-        title: "Податоци што ги собираме",
-        bullets: [
-          "Име и презиме",
-          "Телефонски број",
-          "Email адреса",
-          "Град/Локација",
-          "Прикачени фотографии",
-        ],
-      },
-      {
-        title: "Како ги користиме податоците",
-        bullets: [
-          "За верификација на сметката (SMS)",
-          "За комуникација помеѓу купувачот и продавачот",
-          "За подобрување на платформата",
-          "За важни известувања",
-        ],
-      },
-      {
-        title: "Заштита на податоците",
-        bullets: [
-          "Не ги продаваме вашите податоци на трети страни",
-          "Податоците се чуваат на безбедни сервери",
-          "SSL енкрипција за сета комуникација",
-        ],
-      },
-      {
-        title: "Cookies",
-        bulletsIntro: "Платформата користи cookies за:",
-        bullets: [
-          "Зачувување на сесијата за најава",
-          "Кориснички преференци",
-          "Анонимна статистика",
-        ],
-      },
-      {
-        title: "Вашите права",
-        bullets: [
-          "Можете да побарате бришење на сметката",
-          "Можете да ги промените личните податоци",
-          "Можете да оневозможите cookies од прелистувачот",
-        ],
-      },
-      {
-        title: "Контакт за приватност",
-      },
-    ],
-    privacyEmailLabel: "Email:",
   },
   contact: {
     title: "Контактирајте нè",
@@ -886,103 +642,30 @@ const MK: StaticPagesCopy = {
 };
 
 const MNE: StaticPagesCopy = {
+  about: {
+    title: "O KetuJemi.com",
+    tagline:
+      "KetuJemi.com je jedna od najvećih platformi za besplatne oglase, zvanično prisutna na 11 međunarodnih tržišta uključujući Kosovo, Albaniju, Makedoniju, Crnu Goru, kao i cijelu albansku dijasporu u Evropi (Njemačka, Švicarska, Austrija, Francuska, Italija, Engleska) i SAD. Naša misija je brzo, čisto i sigurno povezivanje kupaca i prodavaca širom svijeta.",
+  },
+  rules: {
+    title: "Pravila platforme",
+    tagline:
+      "Da bismo osigurali pošteno online tržište, oglasi moraju biti stvarni, tačni i u odgovarajućoj kategoriji. Strogo je zabranjeno objavljivanje identičnih duplikata u roku od 24 sata. Takođe, sistem zahtijeva minimalno čekanje od 30 sekundi između uzastopnih objava. Prekršioci se automatski blokiraju od strane sistema.",
+  },
   terms: {
     title: "Uslovi korišćenja",
-    subtitle: "KetuJemi.com",
-    tagline: "Platforma za klasifikovane oglase",
-    sanctionsTableHeaders: { violation: "Kršenje", consequence: "Posljedica" },
-    sections: [
-      {
-        title: "Uvod",
-        paragraphs: [
-          "KetuJemi.com je platforma za oglase koja pokriva Kosovo, Albaniju, Makedoniju i Crnu Goru, kao i albansku dijasporu u Njemačkoj, Švicarskoj, Austriji, Francuskoj, Italiji, Engleskoj i SAD. Korišćenjem platforme prihvatate ove uslove.",
-        ],
-      },
-      {
-        title: "Ko može koristiti platformu",
-        bullets: [
-          "Svaka osoba starija od 18 godina",
-          "Registrovani biznisi",
-          "Albanska dijaspora van zemlje",
-        ],
-      },
-      {
-        title: "Pravila objavljivanja",
-        bullets: [
-          "Oglasi moraju biti istiniti i tačni",
-          "Stvarne fotografije proizvoda/usluge",
-          "Tačna cijena u eurima (€)",
-          "Važeći kontakt",
-          "Bez duplikata: Zabranjeno je objavljivanje istog oglasa dva puta — stari oglas se briše automatski",
-          "Trajanje oglasa: Oglasi ostaju aktivni 1 mjesec, zatim se brišu automatski",
-          "Maksimum 10 aktivnih oglasa po korisniku",
-        ],
-      },
-      {
-        title: "Zabranjeni oglasi",
-        bullets: [
-          "Automatsko oružje i municija",
-          "Droga i zabranjene supstance",
-          "Falsifikovani proizvodi / replike / fake",
-          "Lijekovi, dodaci prehrani, alkohol, duhan, e-cigare",
-          "Piramidalne sheme (MLM), brzi profiti bez rada",
-          "Erotski oglasi ili oglasi za sastanke",
-          "Kriptovalute (Bitcoin itd.) ili računi za igre",
-          "Proizvodi kupljeni samo za brzu preprodaju od fizičkih lica",
-          "Pornografski sadržaj",
-          "Divlje / zaštićene životinje",
-          "Ilegalne usluge",
-        ],
-      },
-      {
-        title: "Limiti besplatnih oglasa",
-        bullets: ["Standardni korisnik: 10 besplatnih oglasa po kategoriji + verifikacija"],
-      },
-      {
-        title: "Verifikacija korisnika",
-        bullets: [
-          "Obavezna SMS verifikacija za objavljivanje, pregled telefonskih brojeva ili slanje emaila",
-          "Verifikacija važi 1 godinu, zatim se ponavlja",
-        ],
-      },
-      {
-        title: "Rangiranje i monetizacija",
-        bullets: [
-          "Osnovno rangiranje je prema datumu objave",
-          "TOP sistem: Plaćanje za istaknuti oglas na vrhu",
-          "Sistem automatski prilagođava dane reklamiranja ako neko plati više puta zaredom, da se stranica ne blokira",
-        ],
-      },
-      {
-        title: "Zaštita podataka (GDPR / Privatnost)",
-        bullets: [
-          "Imena, emailovi i telefoni iz obrisanih oglasa potpuno se brišu nakon 6 mjeseci",
-          "Podaci o verifikaciji bankovnog računa čuvaju se 1 godinu",
-          "Fakture i podaci o plaćanju čuvaju se zakonski 10 godina",
-          "Platforma ne snosi odgovornost za kvalitet robe ili prevare između kupca i prodavca",
-        ],
-      },
-      {
-        title: "Zabrana neovlašćenih API-ja",
-        paragraphs: [
-          "Zabranjeno je korišćenje aplikacija trećih strana koje kradu oglase ili automatizuju objave bez dozvole platforme.",
-        ],
-      },
-      {
-        title: "Odgovornost",
-        paragraphs: [
-          "KetuJemi.com nije strana u transakcijama između kupca i prodavca. Platforma ne snosi odgovornost za prevare ili nesporazume između strana.",
-        ],
-      },
-      {
-        title: "Sankcije",
-        table: [
-          { label: "Prvo", value: "Brisanje oglasa" },
-          { label: "Drugo", value: "Suspenzija 30 dana" },
-          { label: "Treće", value: "Trajno blokiranje" },
-        ],
-      },
-    ],
+    tagline:
+      "Korišćenjem KetuJemi.com prihvatate da platforma služi samo kao posrednički prostor između strana. Korisnik (objavljivač) snosi punu i isključivu pravnu odgovornost za istinitost, originalnost i zakonitost proizvoda ili usluga koje reklamira na sajtu.",
+  },
+  privacy: {
+    title: "Politika privatnosti",
+    tagline:
+      "Visoko cijenimo vašu privatnost. Platforma prikuplja samo minimalne neophodne podatke: Ime, Email (za zvaničnu komunikaciju putem info@ketujemi.com ili support@ketujemi.com) i IP adresu radi sigurnosti i sprečavanja online prevara. Vaši podaci su šifrovani i nikada se ne dijele sa trećim stranama.",
+  },
+  cookies: {
+    title: "Politika kolačića (Cookies)",
+    tagline:
+      "KetuJemi.com koristi kolačiće (male tekstualne datoteke) da poboljša vaše iskustvo pregledanja, zapamti prijavu i analizira saobraćaj na sajtu. Možete ih upravljati ili blokirati u bilo kom trenutku putem postavki pregledača.",
   },
   businessRules: {
     title: "Pravila za biznise",
@@ -1050,59 +733,6 @@ const MNE: StaticPagesCopy = {
         ],
       },
     ],
-  },
-  privacy: {
-    title: "Politika privatnosti",
-    sections: [
-      {
-        title: "Podaci koje prikupljamo",
-        bullets: [
-          "Ime i prezime",
-          "Broj telefona",
-          "Email adresa",
-          "Grad/Lokacija",
-          "Učitane fotografije",
-        ],
-      },
-      {
-        title: "Kako koristimo podatke",
-        bullets: [
-          "Za verifikaciju naloga (SMS)",
-          "Za komunikaciju između kupca i prodavca",
-          "Za poboljšanje platforme",
-          "Za važna obavještenja",
-        ],
-      },
-      {
-        title: "Zaštita podataka",
-        bullets: [
-          "Ne prodajemo vaše podatke trećim stranama",
-          "Podaci se čuvaju na sigurnim serverima",
-          "SSL enkripcija za svu komunikaciju",
-        ],
-      },
-      {
-        title: "Cookies",
-        bulletsIntro: "Platforma koristi cookies za:",
-        bullets: [
-          "Čuvanje sesije prijave",
-          "Korisničke preference",
-          "Anonimnu statistiku",
-        ],
-      },
-      {
-        title: "Vaša prava",
-        bullets: [
-          "Možete zatražiti brisanje naloga",
-          "Možete promijeniti lične podatke",
-          "Možete onemogućiti cookies u pregledaču",
-        ],
-      },
-      {
-        title: "Kontakt za privatnost",
-      },
-    ],
-    privacyEmailLabel: "Email:",
   },
   contact: {
     title: "Kontaktirajte nas",

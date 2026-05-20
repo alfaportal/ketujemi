@@ -17,6 +17,9 @@ import AdminPanel from "@/pages/admin/index";
 import TermsPage from "@/pages/terms";
 import BusinessRulesPage from "@/pages/business-rules";
 import PrivacyPage from "@/pages/privacy";
+import AboutPage from "@/pages/about";
+import RulesPage from "@/pages/rules";
+import CookiesPage from "@/pages/cookies";
 import ContactPage from "@/pages/contact";
 import FaqPage from "@/pages/faq";
 import SecurityPage from "@/pages/security";
@@ -46,6 +49,18 @@ function Router() {
           <Route path="/login" component={LoginPage} />
           <Route path="/profile" component={ProfilePage} />
           <Route path="/biznes/:id" component={BusinessProfilePage} />
+          <Route path="/rreth-nesh" component={AboutPage} />
+          <Route path="/za-nas" component={AboutPage} />
+          <Route path="/o-nama" component={AboutPage} />
+          <Route path="/rregullat" component={RulesPage} />
+          <Route path="/pravila" component={RulesPage} />
+          <Route path="/privatesia" component={PrivacyPage} />
+          <Route path="/privatnost" component={PrivacyPage} />
+          <Route path="/cookies" component={CookiesPage} />
+          <Route path="/kolacinja" component={CookiesPage} />
+          <Route path="/kolacici" component={CookiesPage} />
+          <Route path="/kushtet" component={TermsPage} />
+          <Route path="/uslovi" component={TermsPage} />
           <Route path="/terms" component={TermsPage} />
           <Route path="/business-rules" component={BusinessRulesPage} />
           <Route path="/privacy" component={PrivacyPage} />
