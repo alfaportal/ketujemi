@@ -7,25 +7,55 @@ import {
   FaInstagram,
   FaTiktok,
 } from "react-icons/fa";
-import { SiPaypal } from "react-icons/si";
+import { SiGoogle, SiPaypal, SiStripe } from "react-icons/si";
 import { MARKETS, useMarket, type Market } from "@/lib/market-context";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { footerMarketsStripCopy, staticPagePaths } from "@/lib/static-page-paths";
 import { cn } from "@/lib/utils";
 
+const SOCIAL_ICON_BTN =
+  "flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 hover:border-blue-200 transition-colors";
+
 const SOCIAL_LINKS = [
-  { href: "https://facebook.com/ketujemi", label: "Facebook", Icon: FaFacebook, external: true },
-  { href: "https://instagram.com/ketujemi", label: "Instagram", Icon: FaInstagram, external: true },
-  { href: "https://www.tiktok.com/@ketujemi", label: "TikTok", Icon: FaTiktok, external: true },
+  {
+    href: "https://facebook.com/ketujemi",
+    label: "Facebook",
+    Icon: FaFacebook,
+    external: true,
+    iconClass: "hover:text-[#1877F2]",
+  },
+  {
+    href: "https://instagram.com/ketujemi",
+    label: "Instagram",
+    Icon: FaInstagram,
+    external: true,
+    iconClass: "hover:text-[#E4405F]",
+  },
+  {
+    href: "https://www.tiktok.com/@ketujemi",
+    label: "TikTok",
+    Icon: FaTiktok,
+    external: true,
+    iconClass: "hover:text-gray-900",
+  },
+  {
+    href: "https://www.google.com/search?q=KetuJemi.com",
+    label: "Google",
+    Icon: SiGoogle,
+    external: true,
+    iconClass: "hover:text-[#4285F4]",
+  },
   {
     href: "mailto:info@ketujemi.com,support@ketujemi.com",
     label: "Email",
     Icon: FaEnvelope,
     external: false,
+    iconClass: "hover:text-[#1A56A0]",
   },
 ] as const;
 
 const PAYMENT_METHODS = [
+  { label: "Stripe", Icon: SiStripe, className: "text-[#635BFF]" },
   { label: "Visa", Icon: FaCcVisa, className: "text-[#1A1F71]" },
   { label: "Mastercard", Icon: FaCcMastercard, className: "text-[#EB001B]" },
   { label: "PayPal", Icon: SiPaypal, className: "text-[#003087]" },
@@ -202,39 +232,42 @@ export function SiteFooter() {
 
         <div
           className={cn(
-            "px-4 sm:px-6 lg:px-8 py-4",
-            "flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between",
+            "px-4 sm:px-6 lg:px-8 py-3.5 border-t border-gray-200/60",
+            "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
           )}
         >
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
-            {SOCIAL_LINKS.map(({ href, label, Icon, external }) => (
+          <div
+            className="flex flex-wrap items-center justify-center sm:justify-start gap-2"
+            aria-label="Rrjetet sociale"
+          >
+            {SOCIAL_LINKS.map(({ href, label, Icon, external, iconClass }) => (
               <a
                 key={label}
                 href={href}
                 {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 aria-label={label}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 hover:text-[#1A56A0] hover:border-blue-200 transition-colors"
+                className={cn(SOCIAL_ICON_BTN, iconClass)}
               >
-                <Icon className="h-4 w-4" aria-hidden />
+                <Icon className="h-4 w-4 shrink-0" aria-hidden />
               </a>
             ))}
           </div>
 
-          <div className="flex flex-col items-center sm:items-end gap-1.5">
+          <div className="flex flex-col items-center sm:items-end gap-1 sm:gap-1.5">
             <div
-              className="flex flex-wrap items-center justify-center sm:justify-end gap-3"
+              className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5 sm:gap-3"
               aria-label="Metodat e pagesës"
             >
               {PAYMENT_METHODS.map(({ label, Icon, className }) => (
                 <Icon
                   key={label}
-                  className={cn("h-6 w-9 sm:h-7 sm:w-10", className)}
+                  className={cn("h-5 w-auto sm:h-6 shrink-0", className)}
                   title={label}
                   aria-label={label}
                 />
               ))}
             </div>
-            <p className="text-xs sm:text-sm text-gray-500">© 2026 KetuJemi.com</p>
+            <p className="text-[11px] sm:text-xs text-gray-500">© 2026 KetuJemi.com</p>
           </div>
         </div>
       </div>
