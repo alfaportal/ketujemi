@@ -2,7 +2,7 @@ import { db, listingsTable } from "@workspace/db";
 import type { User } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { userOwnsListing } from "./listing-ownership";
-import { findDuplicateActiveListingFullMatch } from "./listing-duplicate-guard";
+import { removeUserDuplicateListingsForPost } from "./listing-duplicate-guard";
 
 function expiresAt30Days(): Date {
   const d = new Date();
@@ -40,15 +40,7 @@ export async function repostListing(
     };
   }
 
-  const dupId = await findDuplicateActiveListingFullMatch(user, row.title, row.description, listingId);
-  if (dupId != null) {
-    return {
-      ok: false,
-      error: "DUPLICATE_LISTING",
-      message:
-        "Keni një njoftim tjetër aktiv me të njëjtin titull dhe përshkrim. Ndryshoni tekstin ose fshini tjetrin para se të ripostoni këtë.",
-    };
-  }
+  await removeUserDuplicateListingsForPost(user, row.title, row.description, listingId);
 
   const now = new Date();
   await db

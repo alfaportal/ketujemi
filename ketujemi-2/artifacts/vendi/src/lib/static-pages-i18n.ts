@@ -104,7 +104,7 @@ const KS: StaticPagesCopy = {
   rules: {
     title: "Rregullat e Platformës",
     tagline:
-      "Për të siguruar një treg online të ndershëm, njoftimet duhet të jenë reale, të sakta dhe të vendosura në kategorinë e duhur. Ndalohet rreptësisht postimi i njoftimeve të njëjta (duplikate) brenda 24 orëve. Gjithashtu, sistemi kërkon një kohë pritjeje prej të paktën 30 sekondash mes postimeve të njëpasnjëshme. Shkelësit bllokohen automatikisht nga sistemi.",
+      "Për të siguruar një treg online të ndershëm, njoftimet duhet të jenë reale, të sakta dhe të vendosura në kategorinë e duhur. Nëse postoni përsëri të njëjtin njoftim (titull dhe përshkrim identik), sistemi fshin automatikisht versionet e vjetra dhe mbaj vetëm të riun. Gjithashtu kërkohet të paktën 30 sekonda pritje mes postimeve të njëpasnjëshme.",
   },
   terms: {
     title: "Kushtet e Përdorimit",
@@ -377,7 +377,7 @@ const MK: StaticPagesCopy = {
   rules: {
     title: "Правила на платформата",
     tagline:
-      "За да обезбедиме фер онлајн пазар, огласите мора да бидат вистинити, точни и во соодветната категорија. Строго е забрането објавување идентични дупликати во рок од 24 часа. Исто така, системот бара минимално чекање од 30 секунди меѓу последователните објави. Прекршителите се автоматски блокирани од системот.",
+      "За да обезбедиме фер онлајн пазар, огласите мора да бидат вистинити, точни и во соодветната категорија. Ако повторно објавите ист оглас (ист наслов и опис), системот автоматски ги брише постарите верзии и го задржува само новиот. Потребно е и минимум 30 секунди чекање меѓу последователни објави.",
   },
   terms: {
     title: "Услови за користење",
@@ -650,7 +650,7 @@ const MNE: StaticPagesCopy = {
   rules: {
     title: "Pravila platforme",
     tagline:
-      "Da bismo osigurali pošteno online tržište, oglasi moraju biti stvarni, tačni i u odgovarajućoj kategoriji. Strogo je zabranjeno objavljivanje identičnih duplikata u roku od 24 sata. Takođe, sistem zahtijeva minimalno čekanje od 30 sekundi između uzastopnih objava. Prekršioci se automatski blokiraju od strane sistema.",
+      "Da bismo osigurali pošteno online tržište, oglasi moraju biti stvarni, tačni i u odgovarajućoj kategoriji. Ako ponovo objavite isti oglas (identičan naslov i opis), sistem automatski briše starije verzije i zadržava samo novi. Potrebno je i najmanje 30 sekundi čekanja između uzastopnih objava.",
   },
   terms: {
     title: "Uslovi korišćenja",

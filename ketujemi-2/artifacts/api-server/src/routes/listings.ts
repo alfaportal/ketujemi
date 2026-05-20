@@ -21,7 +21,7 @@ import {
 import { isBusinessAccount, isVipBusinessActive } from "../lib/business-rules";
 import { assertBusinessCategoryListingQuota } from "../lib/business-quota";
 import { assertBusinessListingCreate } from "../lib/business-listing-guard";
-import { assertNoDuplicateListing } from "../lib/listing-duplicate-guard";
+import { removeUserDuplicateListingsForPost } from "../lib/listing-duplicate-guard";
 import {
   assertListingPostUserCooldown,
   recordListingPostSuccessForUser,
@@ -394,20 +394,11 @@ router.post("/listings", async (req, res) => {
     throw err;
   }
 
-  try {
-    await assertNoDuplicateListing(viewer, parsed.data.title, parsed.data.description);
-  } catch (err: unknown) {
-    if (err instanceof Error && err.message === "DUPLICATE_LISTING") {
-      const e = err as Error & { publicMessage?: string; duplicateListingId?: number };
-      res.status(409).json({
-        error: "DUPLICATE_LISTING",
-        message: e.publicMessage,
-        duplicate_listing_id: e.duplicateListingId,
-      });
-      return;
-    }
-    throw err;
-  }
+  await removeUserDuplicateListingsForPost(
+    viewer,
+    parsed.data.title,
+    parsed.data.description,
+  );
 
   try {
     await assertBusinessListingCreate(viewer, {
@@ -970,20 +961,12 @@ router.patch("/listings/:id", async (req, res) => {
   const nextDescription = body.description ?? existing[0].description;
 
   if (body.title != null || body.description != null) {
-    try {
-      await assertNoDuplicateListing(viewer, nextTitle, nextDescription, paramsParsed.data.id);
-    } catch (err: unknown) {
-      if (err instanceof Error && err.message === "DUPLICATE_LISTING") {
-        const e = err as Error & { publicMessage?: string; duplicateListingId?: number };
-        res.status(409).json({
-          error: "DUPLICATE_LISTING",
-          message: e.publicMessage,
-          duplicate_listing_id: e.duplicateListingId,
-        });
-        return;
-      }
-      throw err;
-    }
+    await removeUserDuplicateListingsForPost(
+      viewer,
+      nextTitle,
+      nextDescription,
+      paramsParsed.data.id,
+    );
   }
 
   if (body.title != null) updates.title = body.title;
