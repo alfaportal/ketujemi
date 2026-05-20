@@ -343,16 +343,16 @@ export default function ListingDetail() {
             {/* Photo gallery */}
             <div
               className={`rounded-2xl overflow-hidden bg-gray-900 ${
-                isVipSeller ? "ring-2 ring-amber-400 ring-offset-2 ring-offset-gray-50" : ""
+                isVipSeller ? "ring-2 ring-[#1A56A0] ring-offset-2 ring-offset-gray-50" : ""
               }`}
             >
               {allImages.length > 0 ? (
                 <div>
                   <div className="relative aspect-video">
                     {isVipSeller ? (
-                      <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-amber-400 to-yellow-500 text-amber-950 text-sm font-black px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5">
+                      <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-[#1A56A0] to-[#2563eb] text-white text-xs sm:text-sm font-black px-2.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5">
                         <Crown size={14} aria-hidden />
-                        VIP
+                        VIP PARTNER
                       </div>
                     ) : null}
                     <img
@@ -408,7 +408,7 @@ export default function ListingDetail() {
             {/* Title & price */}
             <div
               className={`bg-white rounded-2xl border p-5 ${
-                isVipSeller ? "border-amber-300 shadow-sm shadow-amber-100/50" : "border-gray-100"
+                isVipSeller ? "border-[#1A56A0]/30 shadow-sm shadow-blue-100/40" : "border-gray-100"
               }`}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
@@ -417,8 +417,8 @@ export default function ListingDetail() {
                 </h1>
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   {isVipSeller ? (
-                    <Badge className="bg-gradient-to-r from-amber-400 to-yellow-500 text-amber-950 border-0 gap-1 font-black">
-                      <Crown className="h-3 w-3" /> VIP Partner
+                    <Badge className="bg-gradient-to-r from-[#1A56A0] to-[#2563eb] text-white border-0 gap-1 font-black">
+                      <Crown className="h-3 w-3" /> VIP PARTNER
                     </Badge>
                   ) : null}
                   {listing.is_featured ? (

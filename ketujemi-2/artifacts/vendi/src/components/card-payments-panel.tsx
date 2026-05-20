@@ -104,8 +104,8 @@ export function CardPaymentsPanel({
           size={compact ? "sm" : "default"}
           className={
             compact
-              ? "min-h-10 border-amber-300 text-amber-900 bg-white"
-              : "min-h-11 flex-1 border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100"
+              ? "min-h-10 border-[#1A56A0]/40 text-[#1A56A0] bg-white"
+              : "min-h-11 flex-1 border-[#1A56A0]/40 bg-blue-50 text-[#1A56A0] hover:bg-blue-100"
           }
           title={!paymentsReady ? "Konfiguroni Stripe në server" : undefined}
         >
@@ -199,7 +199,7 @@ export function CardPaymentsPanel({
       <ul className="text-xs text-gray-500 flex flex-wrap gap-x-4 gap-y-1">
         {showVip ? (
           <li className="flex items-center gap-1">
-            <Crown className="h-3 w-3" /> VIP — njoftime të pakufizuara
+            <Crown className="h-3 w-3 text-[#1A56A0]" /> VIP — njoftime të pakufizuara
           </li>
         ) : null}
         {showExtraPost ? (

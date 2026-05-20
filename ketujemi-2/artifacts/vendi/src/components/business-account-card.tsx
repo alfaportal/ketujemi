@@ -83,7 +83,7 @@ export function BusinessAccountCard({ user }: { user: AuthUser }) {
           <p className="text-sm text-gray-700">
             <span className="font-semibold">{user.business_name}</span>
             {isVip ? (
-              <span className="ml-2 inline-flex items-center gap-1 text-amber-700">
+              <span className="ml-2 inline-flex items-center gap-1 text-[#1A56A0]">
                 <Crown className="h-4 w-4" /> VIP aktiv
               </span>
             ) : (
@@ -91,7 +91,7 @@ export function BusinessAccountCard({ user }: { user: AuthUser }) {
             )}
           </p>
           {!isVip ? (
-            <p className="text-xs text-amber-800">
+            <p className="text-xs text-[#1A56A0]/90">
               VIP mund ta blini me kartë te seksioni «Paguaj me kartë» më poshtë.
             </p>
           ) : null}

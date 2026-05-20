@@ -128,8 +128,8 @@ export default function BusinessProfilePage() {
               <div className="flex-1 min-w-0">
                 <h1 className="text-2xl font-black text-gray-900">{profile.business_name}</h1>
                 {profile.is_vip ? (
-                  <p className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-amber-700">
-                    <Crown className="h-4 w-4" /> Partner VIP
+                  <p className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-[#1A56A0]">
+                    <Crown className="h-4 w-4" /> VIP PARTNER
                   </p>
                 ) : null}
                 {profile.city ? (

@@ -11,7 +11,6 @@ import { SiPaypal } from "react-icons/si";
 import { MARKETS, useMarket, type Market } from "@/lib/market-context";
 import { cn } from "@/lib/utils";
 
-/** Të gjitha tregjet e platformës — rendi i kolonës TREGJET në footer. */
 const FOOTER_MARKETS: readonly Market[] = MARKETS;
 
 const FOOTER_MARKET_LABEL: Partial<Record<Market["code"], string>> = {
@@ -51,24 +50,43 @@ const PAYMENT_METHODS = [
   { label: "PayPal", Icon: SiPaypal, className: "text-[#003087]" },
 ] as const;
 
+const COLUMN_TITLE_CLASS =
+  "text-xs font-bold uppercase tracking-wider text-[#1A56A0] mb-3";
+
+const LINK_CLASS =
+  "text-sm text-gray-600 hover:text-[#1A56A0] transition-colors inline-block py-0.5";
+
 type FooterLink = { href: string; label: string; external?: boolean };
 
 type FooterColumn = { title: string; links: FooterLink[] };
 
-function FooterLinkItem({ href, label, external }: FooterLink) {
-  const className =
-    "text-sm text-gray-600 hover:text-[#1A56A0] transition-colors inline-block py-0.5";
+function FooterWordmark() {
+  return (
+    <Link
+      href="/"
+      className="inline-flex shrink-0 select-none touch-manipulation"
+      aria-label="KetuJemi.com"
+      data-testid="link-footer-logo"
+    >
+      <span className="text-lg sm:text-xl font-black tracking-tight text-[#1A56A0] whitespace-nowrap">
+        KetuJemi
+        <span className="text-[#2563eb]">.com</span>
+      </span>
+    </Link>
+  );
+}
 
+function FooterLinkItem({ href, label, external }: FooterLink) {
   if (external) {
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+      <a href={href} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
         {label}
       </a>
     );
   }
 
   return (
-    <Link href={href} className={className}>
+    <Link href={href} className={LINK_CLASS}>
       {label}
     </Link>
   );
@@ -76,8 +94,8 @@ function FooterLinkItem({ href, label, external }: FooterLink) {
 
 function FooterColumnBlock({ title, links }: FooterColumn) {
   return (
-    <div>
-      <h3 className="text-xs font-bold uppercase tracking-wider text-gray-900 mb-3">{title}</h3>
+    <div className="p-5">
+      <h3 className={COLUMN_TITLE_CLASS}>{title}</h3>
       <ul className="space-y-2">
         {links.map((link) => (
           <li key={`${title}-${link.label}`}>
@@ -140,25 +158,26 @@ export function SiteFooter() {
         { href: "/contact", label: t.footer_partnership ?? "Partneritet" },
       ],
     },
-    {
-      title: t.footer_colMarkets ?? "TREGJET",
-      links: [],
-    },
   ];
+
+  const marketsTitle = t.footer_colMarkets ?? "TREGJET";
 
   return (
     <footer className="bg-[#f8f9fa] border-t border-gray-200 mt-10 font-sans">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-        {/* ZONA 1 — 4 kolona */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10">
-          {columns.slice(0, 3).map((col) => (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Rreshti 1 */}
+        <div className="py-5 flex justify-center sm:justify-start border-b border-gray-200/80">
+          <FooterWordmark />
+        </div>
+
+        {/* Zona e kolonave — mes rreshtit 1 dhe 2 */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 border-b border-gray-200/80">
+          {columns.map((col) => (
             <FooterColumnBlock key={col.title} {...col} />
           ))}
 
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-900 mb-3">
-              {columns[3]!.title}
-            </h3>
+          <div className="p-5">
+            <h3 className={COLUMN_TITLE_CLASS}>{marketsTitle}</h3>
             <ul className="space-y-2">
               {FOOTER_MARKETS.map((m) => (
                 <li key={m.code}>
@@ -173,10 +192,10 @@ export function SiteFooter() {
           </div>
         </div>
 
-        {/* ZONA 2 — rreshti i fundit */}
+        {/* Rreshti 2 */}
         <div
           className={cn(
-            "mt-8 pt-6 border-t border-gray-200",
+            "py-5",
             "flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between",
           )}
         >

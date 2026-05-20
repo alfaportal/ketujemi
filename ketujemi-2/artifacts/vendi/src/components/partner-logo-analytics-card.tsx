@@ -45,15 +45,15 @@ export function PartnerLogoAnalyticsCard({ user }: { user: AuthUser }) {
   const vip = isVipActive(user);
 
   return (
-    <div className="rounded-2xl border border-amber-200/80 bg-amber-50/50 p-5 space-y-3">
+    <div className="rounded-2xl border border-[#1A56A0]/25 bg-blue-50/40 p-5 space-y-3">
       <div className="flex items-center gap-2">
-        <BarChart3 className="h-5 w-5 text-amber-700" aria-hidden />
+        <BarChart3 className="h-5 w-5 text-[#1A56A0]" aria-hidden />
         <h2 className="font-bold text-gray-900">Statistika e logos (partner)</h2>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-4">
-          <Loader2 className="h-6 w-6 animate-spin text-amber-700" />
+          <Loader2 className="h-6 w-6 animate-spin text-[#1A56A0]" />
         </div>
       ) : !vip ? (
         <p className="text-sm text-gray-600">
@@ -63,9 +63,9 @@ export function PartnerLogoAnalyticsCard({ user }: { user: AuthUser }) {
       ) : stats ? (
         <p className="text-sm text-gray-800 leading-relaxed">
           Logoja juaj është parë{" "}
-          <span className="font-black text-amber-800">{stats.views.toLocaleString()}</span> herë
+          <span className="font-black text-[#1A56A0]">{stats.views.toLocaleString()}</span> herë
           këtë muaj dhe është klikuar{" "}
-          <span className="font-black text-amber-800">{stats.clicks.toLocaleString()}</span> herë.
+          <span className="font-black text-[#1A56A0]">{stats.clicks.toLocaleString()}</span> herë.
         </p>
       ) : (
         <p className="text-sm text-gray-600">

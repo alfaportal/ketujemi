@@ -40,10 +40,13 @@ const VARIANT_CONFIG: Record<
 
 const PARTNER_SLOT_FRAME = cn(
   "h-14 sm:h-16 w-full rounded-xl overflow-hidden transition-all duration-200",
-  "border-2 border-amber-400/75 bg-gradient-to-br from-white via-amber-50/40 to-amber-100/30",
-  "shadow-[0_2px_10px_rgba(245,158,11,0.12)]",
-  "hover:border-amber-500 hover:shadow-[0_4px_16px_rgba(245,158,11,0.22)]",
+  "border-2 border-[#1A56A0]/60 bg-gradient-to-br from-white via-blue-50/50 to-blue-100/25",
+  "shadow-[0_2px_10px_rgba(26,86,160,0.12)]",
+  "hover:border-[#2563eb] hover:shadow-[0_4px_16px_rgba(26,86,160,0.2)]",
 );
+
+const VIP_PARTNER_BADGE =
+  "absolute top-0 right-0 z-[2] bg-gradient-to-l from-[#1A56A0] to-[#2563eb] text-[7px] sm:text-[8px] font-black text-white px-1 py-0.5 rounded-bl-md tracking-wide leading-tight";
 
 function partnerImageUrl(p: TrustedPartner): string | null {
   const url = p.partner_logo_url?.trim() || p.profile_photo_url?.trim();
@@ -66,13 +69,7 @@ function recordPartnerClick(partnerId: number) {
   }).catch(() => {});
 }
 
-function PartnerLogoSlot({
-  partner,
-  variant,
-}: {
-  partner: TrustedPartner;
-  variant: VipPartnersSectionVariant;
-}) {
+function PartnerLogoSlot({ partner }: { partner: TrustedPartner }) {
   const img = partnerImageUrl(partner);
   const href = partner.profile_path;
 
@@ -82,16 +79,12 @@ function PartnerLogoSlot({
       onClick={() => recordPartnerClick(partner.id)}
       className={cn(
         PARTNER_SLOT_FRAME,
-        "relative group block focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2",
+        "relative group block focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1A56A0] focus-visible:ring-offset-2",
       )}
       title={partner.business_name}
       data-testid={`trusted-partner-${partner.id}`}
     >
-      {variant === "hub" ? (
-        <span className="absolute top-0 right-0 z-[2] bg-gradient-to-l from-amber-500 to-yellow-400 text-[8px] font-black text-amber-950 px-1.5 py-0.5 rounded-bl-md tracking-wide">
-          VIP
-        </span>
-      ) : null}
+      <span className={VIP_PARTNER_BADGE}>VIP PARTNER</span>
       {img ? (
         <img
           src={img}
@@ -121,13 +114,13 @@ function EmptyPartnerSlot({ label }: { label: string }) {
     <div
       className={cn(
         PARTNER_SLOT_FRAME,
-        "relative flex flex-col items-center justify-center gap-0.5 px-2 border-dashed border-amber-400/90",
-        "from-amber-50/80 via-white to-amber-50/50",
+        "relative flex flex-col items-center justify-center gap-0.5 px-2 border-dashed border-[#1A56A0]/70",
+        "from-blue-50/80 via-white to-blue-50/40",
       )}
       aria-hidden
     >
-      <Sparkles className="h-3.5 w-3.5 text-amber-500/90" strokeWidth={2.25} />
-      <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-amber-700/90 text-center leading-tight">
+      <Sparkles className="h-3.5 w-3.5 text-[#1A56A0]" strokeWidth={2.25} />
+      <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#1A56A0] text-center leading-tight">
         {label}
       </span>
     </div>
@@ -194,7 +187,7 @@ export function VipPartnersSection({
       className={cn(
         variant === "home"
           ? "bg-gray-50 border-t border-gray-200/80"
-          : "bg-gradient-to-b from-amber-50/30 to-gray-50 rounded-2xl border border-amber-200/60 shadow-sm",
+          : "bg-gradient-to-b from-blue-50/25 to-gray-50 rounded-2xl border border-[#1A56A0]/20 shadow-sm",
         className,
       )}
       aria-labelledby="vip-partners-heading"
@@ -211,7 +204,7 @@ export function VipPartnersSection({
         </h2>
         <div className={config.gridClass}>
           {partners.map((p) => (
-            <PartnerLogoSlot key={p.id} partner={p} variant={variant} />
+            <PartnerLogoSlot key={p.id} partner={p} />
           ))}
           {loaded && emptySlots > 0
             ? Array.from({ length: emptySlots }, (_, i) => (
@@ -222,7 +215,7 @@ export function VipPartnersSection({
             ? Array.from({ length: config.limit }, (_, i) => (
                 <div
                   key={`sk-${i}`}
-                  className={cn(PARTNER_SLOT_FRAME, "animate-pulse border-amber-200/60 bg-amber-50/50")}
+                  className={cn(PARTNER_SLOT_FRAME, "animate-pulse border-blue-200/60 bg-blue-50/40")}
                 />
               ))
             : null}
