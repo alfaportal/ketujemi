@@ -14,6 +14,10 @@ export default defineConfig(async ({ command }) => {
   const basePath = process.env.BASE_PATH?.trim() || "/";
   const apiProxyTarget =
     process.env.API_PROXY_TARGET ?? "http://127.0.0.1:8080";
+  const buildId =
+    process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ??
+    process.env.GITHUB_SHA?.slice(0, 7) ??
+    "dev";
 
   const pwaScope = basePath.endsWith("/") ? basePath : `${basePath}/`;
 
@@ -70,7 +74,7 @@ export default defineConfig(async ({ command }) => {
             urlPattern: ({ request }) => request.mode === "navigate",
             handler: "NetworkFirst",
             options: {
-              cacheName: "ketujemi-pages",
+              cacheName: "ketujemi-pages-v3",
               networkTimeoutSeconds: 8,
               expiration: { maxEntries: 4, maxAgeSeconds: 60 },
             },
@@ -132,6 +136,9 @@ export default defineConfig(async ({ command }) => {
   return {
     envDir: repoRoot,
     base: basePath,
+    define: {
+      __APP_BUILD_ID__: JSON.stringify(buildId),
+    },
     plugins,
     resolve: {
       alias: {

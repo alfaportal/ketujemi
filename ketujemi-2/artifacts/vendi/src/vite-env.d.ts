@@ -11,3 +11,6 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/** Injected at build time (git SHA on Railway). Shown in footer to verify deploy. */
+declare const __APP_BUILD_ID__: string;

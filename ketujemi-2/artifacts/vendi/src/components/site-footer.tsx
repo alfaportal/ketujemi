@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   FaCcMastercard,
   FaCcVisa,
@@ -85,6 +85,35 @@ function FooterWordmark() {
 }
 
 function FooterLinkItem({ href, label }: FooterLink) {
+  const [pathname, setLocation] = useLocation();
+  const isInternal = href.startsWith("/") && !href.startsWith("//");
+
+  if (isInternal) {
+    return (
+      <a
+        href={href}
+        className={LINK_CLASS}
+        onClick={(e) => {
+          if (
+            e.defaultPrevented ||
+            e.button !== 0 ||
+            e.metaKey ||
+            e.ctrlKey ||
+            e.shiftKey ||
+            e.altKey
+          ) {
+            return;
+          }
+          e.preventDefault();
+          if (pathname !== href) setLocation(href);
+          window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        }}
+      >
+        {label}
+      </a>
+    );
+  }
+
   return (
     <Link href={href} className={LINK_CLASS}>
       {label}
@@ -267,7 +296,15 @@ export function SiteFooter() {
                 />
               ))}
             </div>
-            <p className="text-[11px] sm:text-xs text-gray-500">© 2026 KetuJemi.com</p>
+            <p className="text-[11px] sm:text-xs text-gray-500">
+              © 2026 KetuJemi.com
+              {typeof __APP_BUILD_ID__ !== "undefined" && __APP_BUILD_ID__ ? (
+                <span className="text-gray-400" title="Versioni i deploy-it">
+                  {" "}
+                  · {__APP_BUILD_ID__}
+                </span>
+              ) : null}
+            </p>
           </div>
         </div>
       </div>

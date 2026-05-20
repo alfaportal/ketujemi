@@ -1,0 +1,12 @@
+# Monorepo root — Railway service must use repo root OR set Root Directory = ketujemi-2.
+# This file ensures builds run from ketujemi-2 even when the service root is the git repo root.
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "cd ketujemi-2 && pnpm install --no-frozen-lockfile && NODE_ENV=production BASE_PATH=/ NODE_OPTIONS=--max-old-space-size=4096 pnpm run build:production"
+nixpacksConfigPath = "ketujemi-2/nixpacks.toml"
+
+[deploy]
+preDeployCommand = "cd ketujemi-2 && pnpm run db:push"
+startCommand = "cd ketujemi-2 && pnpm start"
+healthCheckPath = "/api/healthz"

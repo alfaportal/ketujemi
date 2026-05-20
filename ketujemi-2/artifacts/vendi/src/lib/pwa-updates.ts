@@ -10,7 +10,7 @@ export function setupPwaUpdates(): void {
       if (!registration) return;
       const check = () => void registration.update();
       check();
-      window.setInterval(check, 60 * 60 * 1000);
+      window.setInterval(check, 5 * 60 * 1000);
     },
     onNeedRefresh() {
       void updateSW(true);
