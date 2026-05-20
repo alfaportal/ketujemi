@@ -71,7 +71,48 @@ export function staticPagePaths(uiLang: UiLang): StaticPagePaths {
   };
 }
 
-/** 11 tregje — shiriti i footer-it (tekst i vetëm). */
-export const FOOTER_MARKETS_STRIP_LABEL = "KetuJemi në 11 tregje";
-export const FOOTER_MARKETS_STRIP_COUNTRIES =
-  "Kosovë - Shqipëri - Maqedoni - Mal i Zi - Gjermani - Zvicër - Austri - Francë - Itali - Angli - SHBA";
+export type FooterMarketChip = {
+  marketCode?: "ks" | "al" | "mk";
+  name: string;
+  iso: string;
+};
+
+export type FooterMarketsStripCopy = {
+  title: string;
+  primary: FooterMarketChip[];
+  diasporaLabel: string;
+};
+
+export function footerMarketsStripCopy(uiLang: UiLang): FooterMarketsStripCopy {
+  if (uiLang === "mk") {
+    return {
+      title: "СЛУЖБЕНИ ПАЗАРИ",
+      primary: [
+        { marketCode: "ks", name: "Косово", iso: "XK" },
+        { marketCode: "al", name: "Албанија", iso: "AL" },
+        { marketCode: "mk", name: "Македонија", iso: "MK" },
+      ],
+      diasporaLabel: "+8 земји од дијаспората",
+    };
+  }
+  if (uiLang === "mne") {
+    return {
+      title: "SLUŽBENA TRŽIŠTA",
+      primary: [
+        { marketCode: "ks", name: "Kosovo", iso: "XK" },
+        { marketCode: "al", name: "Albanija", iso: "AL" },
+        { marketCode: "mk", name: "Makedonija", iso: "MK" },
+      ],
+      diasporaLabel: "+8 zemalja dijaspore",
+    };
+  }
+  return {
+    title: "TREGJET ZYRTARE",
+    primary: [
+      { marketCode: "ks", name: "Kosovo", iso: "XK" },
+      { marketCode: "al", name: "Shqipëri", iso: "AL" },
+      { marketCode: "mk", name: "Maqedoni", iso: "MK" },
+    ],
+    diasporaLabel: "+8 Vende të Diasporës",
+  };
+}

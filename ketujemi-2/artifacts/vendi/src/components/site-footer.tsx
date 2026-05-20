@@ -8,13 +8,9 @@ import {
   FaTiktok,
 } from "react-icons/fa";
 import { SiPaypal } from "react-icons/si";
-import { useMarket } from "@/lib/market-context";
+import { MARKETS, useMarket, type Market } from "@/lib/market-context";
 import { BRAND_BLUE } from "@/lib/brand-colors";
-import {
-  FOOTER_MARKETS_STRIP_COUNTRIES,
-  FOOTER_MARKETS_STRIP_LABEL,
-  staticPagePaths,
-} from "@/lib/static-page-paths";
+import { footerMarketsStripCopy, staticPagePaths } from "@/lib/static-page-paths";
 import { cn } from "@/lib/utils";
 
 const SOCIAL_LINKS = [
@@ -36,10 +32,10 @@ const PAYMENT_METHODS = [
 ] as const;
 
 const COLUMN_TITLE_CLASS =
-  "text-[11px] font-bold uppercase tracking-[0.14em] mb-4";
+  "text-[11px] font-bold uppercase tracking-[0.14em] mb-3";
 
 const LINK_CLASS =
-  "text-sm text-gray-600 hover:text-[#1A56A0] transition-colors inline-block py-1";
+  "text-sm text-gray-600 hover:text-[#1A56A0] transition-colors";
 
 type FooterLink = { href: string; label: string };
 
@@ -68,11 +64,11 @@ function FooterLinkItem({ href, label }: FooterLink) {
 
 function FooterColumnBlock({ title, links }: { title: string; links: FooterLink[] }) {
   return (
-    <div className="py-6 sm:py-8 px-4 sm:px-6">
+    <div className="py-4 px-4 sm:px-5">
       <h3 className={COLUMN_TITLE_CLASS} style={{ color: BRAND_BLUE }}>
         {title}
       </h3>
-      <ul className="space-y-1">
+      <ul className="space-y-0.5">
         {links.map((link) => (
           <li key={`${title}-${link.href}`}>
             <FooterLinkItem {...link} />
@@ -83,24 +79,79 @@ function FooterColumnBlock({ title, links }: { title: string; links: FooterLink[
   );
 }
 
-function FooterMarketsStrip() {
+function FooterMarketsStrip({
+  market,
+  setMarket,
+  uiLang,
+}: {
+  market: Market;
+  setMarket: (m: Market) => void;
+  uiLang: Parameters<typeof footerMarketsStripCopy>[0];
+}) {
+  const copy = footerMarketsStripCopy(uiLang);
+
   return (
     <div
-      className="py-5 sm:py-6 px-4 sm:px-6 text-center"
+      className="border-t border-[#0f2744]/20 py-2.5 sm:py-3 px-3 sm:px-6"
       style={{ backgroundColor: "#0f2744" }}
     >
-      <p className="text-sm sm:text-base font-bold text-white tracking-wide mb-2">
-        {FOOTER_MARKETS_STRIP_LABEL}
-      </p>
-      <p className="text-xs sm:text-sm text-blue-100/90 font-medium leading-relaxed">
-        {FOOTER_MARKETS_STRIP_COUNTRIES}
-      </p>
+      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs sm:text-[13px]">
+        <span className="font-bold text-white/95 uppercase tracking-[0.12em] mr-1 sm:mr-2 shrink-0">
+          {copy.title}
+        </span>
+        <span className="text-white/35 hidden sm:inline" aria-hidden>
+          ·
+        </span>
+        {copy.primary.map((item, index) => (
+          <span key={item.iso} className="inline-flex items-center gap-1.5 shrink-0">
+            {index > 0 ? (
+              <span className="text-white/35 mx-0.5 sm:mx-1" aria-hidden>
+                ·
+              </span>
+            ) : null}
+            {item.marketCode ? (
+              <button
+                type="button"
+                onClick={() => {
+                  const m = MARKETS.find((x) => x.code === item.marketCode);
+                  if (m) setMarket(m);
+                }}
+                className={cn(
+                  "inline-flex items-baseline gap-1 font-medium transition-colors",
+                  market.code === item.marketCode
+                    ? "text-white underline decoration-white/50 underline-offset-2"
+                    : "text-blue-100/95 hover:text-white",
+                )}
+              >
+                <span>{item.name}</span>
+                <span className="text-[10px] sm:text-[11px] text-white/55 font-semibold">
+                  ({item.iso})
+                </span>
+              </button>
+            ) : (
+              <span className="text-blue-100/95 font-medium">
+                {item.name}{" "}
+                <span className="text-white/55 text-[10px] sm:text-[11px]">({item.iso})</span>
+              </span>
+            )}
+          </span>
+        ))}
+        <span className="text-white/35 mx-0.5 sm:mx-1" aria-hidden>
+          ·
+        </span>
+        <span
+          className="text-white/75 font-medium shrink-0"
+          title="Gjermani, Zvicër, Austri, Francë, Itali, Angli, SHBA, Mal i Zi"
+        >
+          {copy.diasporaLabel}
+        </span>
+      </div>
     </div>
   );
 }
 
 export function SiteFooter() {
-  const { t, uiLang } = useMarket();
+  const { market, setMarket, t, uiLang } = useMarket();
   const paths = staticPagePaths(uiLang);
 
   const helpColumn = {
@@ -135,52 +186,55 @@ export function SiteFooter() {
   };
 
   return (
-    <footer className="bg-[#f8f9fa] border-t border-gray-200/90 mt-12 font-sans">
+    <footer className="bg-[#f8f9fa] border-t border-gray-200/90 mt-10 font-sans">
       <div className="max-w-7xl mx-auto">
-        <div className="px-4 sm:px-6 lg:px-8 py-8 border-b border-gray-200/80 flex justify-center sm:justify-start">
+        <div className="px-4 sm:px-6 lg:px-8 py-5 border-b border-gray-200/80 flex justify-center sm:justify-start">
           <FooterWordmark />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 border-b border-gray-200/80">
+        <div className="grid grid-cols-2 sm:grid-cols-3 border-b border-gray-200/80">
           <FooterColumnBlock {...helpColumn} />
           <FooterColumnBlock {...infoColumn} />
           <FooterColumnBlock {...businessColumn} />
         </div>
 
-        <FooterMarketsStrip />
+        <FooterMarketsStrip market={market} setMarket={setMarket} uiLang={uiLang} />
 
         <div
           className={cn(
-            "px-4 sm:px-6 lg:px-8 py-6",
-            "flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between",
+            "px-4 sm:px-6 lg:px-8 py-4",
+            "flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between",
           )}
         >
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
             {SOCIAL_LINKS.map(({ href, label, Icon, external }) => (
               <a
                 key={label}
                 href={href}
                 {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 aria-label={label}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 hover:text-[#1A56A0] hover:border-blue-200 transition-colors"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 hover:text-[#1A56A0] hover:border-blue-200 transition-colors"
               >
-                <Icon className="h-5 w-5" aria-hidden />
+                <Icon className="h-4 w-4" aria-hidden />
               </a>
             ))}
           </div>
 
-          <div className="flex flex-col items-center sm:items-end gap-2">
-            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4" aria-label="Metodat e pagesës">
+          <div className="flex flex-col items-center sm:items-end gap-1.5">
+            <div
+              className="flex flex-wrap items-center justify-center sm:justify-end gap-3"
+              aria-label="Metodat e pagesës"
+            >
               {PAYMENT_METHODS.map(({ label, Icon, className }) => (
                 <Icon
                   key={label}
-                  className={cn("h-7 w-10 sm:h-8 sm:w-11", className)}
+                  className={cn("h-6 w-9 sm:h-7 sm:w-10", className)}
                   title={label}
                   aria-label={label}
                 />
               ))}
             </div>
-            <p className="text-sm text-gray-500">© 2026 KetuJemi.com</p>
+            <p className="text-xs sm:text-sm text-gray-500">© 2026 KetuJemi.com</p>
           </div>
         </div>
       </div>
