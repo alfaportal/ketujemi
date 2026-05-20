@@ -350,8 +350,8 @@ export default function ListingDetail() {
                 <div>
                   <div className="relative aspect-video">
                     {isVipSeller ? (
-                      <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-[#1A56A0] to-[#2563eb] text-white text-xs sm:text-sm font-black px-2.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5">
-                        <Crown size={14} aria-hidden />
+                      <div className="absolute top-3 left-3 z-10 bg-[#1A56A0] text-white text-xs sm:text-sm font-black px-2.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5">
+                        <Crown size={14} className="text-white" aria-hidden />
                         VIP PARTNER
                       </div>
                     ) : null}
@@ -417,8 +417,8 @@ export default function ListingDetail() {
                 </h1>
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   {isVipSeller ? (
-                    <Badge className="bg-gradient-to-r from-[#1A56A0] to-[#2563eb] text-white border-0 gap-1 font-black">
-                      <Crown className="h-3 w-3" /> VIP PARTNER
+                    <Badge className="bg-[#1A56A0] text-white border-0 gap-1 font-black hover:bg-[#1A56A0]">
+                      <Crown className="h-3 w-3 text-white" /> VIP PARTNER
                     </Badge>
                   ) : null}
                   {listing.is_featured ? (

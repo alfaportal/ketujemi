@@ -40,13 +40,13 @@ const VARIANT_CONFIG: Record<
 
 const PARTNER_SLOT_FRAME = cn(
   "h-14 sm:h-16 w-full rounded-xl overflow-hidden transition-all duration-200",
-  "border-2 border-[#1A56A0]/60 bg-gradient-to-br from-white via-blue-50/50 to-blue-100/25",
+  "border-2 border-[#1A56A0]/60 bg-gradient-to-br from-white via-blue-50/40 to-blue-50/20",
   "shadow-[0_2px_10px_rgba(26,86,160,0.12)]",
-  "hover:border-[#2563eb] hover:shadow-[0_4px_16px_rgba(26,86,160,0.2)]",
+  "hover:border-[#1A56A0] hover:shadow-[0_4px_16px_rgba(26,86,160,0.22)]",
 );
 
 const VIP_PARTNER_BADGE =
-  "absolute top-0 right-0 z-[2] bg-gradient-to-l from-[#1A56A0] to-[#2563eb] text-[7px] sm:text-[8px] font-black text-white px-1 py-0.5 rounded-bl-md tracking-wide leading-tight";
+  "absolute top-0 right-0 z-[2] bg-[#1A56A0] text-[7px] sm:text-[8px] font-black text-white px-1 py-0.5 rounded-bl-md tracking-wide leading-tight";
 
 function partnerImageUrl(p: TrustedPartner): string | null {
   const url = p.partner_logo_url?.trim() || p.profile_photo_url?.trim();
@@ -94,7 +94,7 @@ function PartnerLogoSlot({ partner }: { partner: TrustedPartner }) {
         />
       ) : (
         <div
-          className="relative z-[1] h-full w-full flex flex-col items-center justify-center px-2 bg-gradient-to-br from-[#1A56A0] to-[#2563b8] text-white"
+          className="relative z-[1] h-full w-full flex flex-col items-center justify-center px-2 bg-[#1A56A0] text-white"
           aria-hidden
         >
           <span className="text-lg sm:text-xl font-black leading-none">
@@ -119,7 +119,7 @@ function EmptyPartnerSlot({ label }: { label: string }) {
       )}
       aria-hidden
     >
-      <Sparkles className="h-3.5 w-3.5 text-[#1A56A0]" strokeWidth={2.25} />
+      <Sparkles className="h-3.5 w-3.5 text-[#1A56A0]" strokeWidth={2.25} aria-hidden />
       <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#1A56A0] text-center leading-tight">
         {label}
       </span>

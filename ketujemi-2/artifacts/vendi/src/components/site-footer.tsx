@@ -11,11 +11,18 @@ import { SiPaypal } from "react-icons/si";
 import { MARKETS, useMarket, type Market } from "@/lib/market-context";
 import { cn } from "@/lib/utils";
 
-const FOOTER_MARKETS: readonly Market[] = MARKETS;
+/** Tregjet kryesore në Ballkan */
+const PRIMARY_MARKET_CODES = ["ks", "al", "mk", "mne"] as const;
+/** Diaspora — 7 tregje (Gjermani … SHBA) */
+const DIASPORA_MARKET_CODES = ["de", "at", "ch", "it", "fr", "gb", "us"] as const;
 
 const FOOTER_MARKET_LABEL: Partial<Record<Market["code"], string>> = {
   mk: "Maqedoni",
 };
+
+function marketsByCodes(codes: readonly string[]): Market[] {
+  return MARKETS.filter((m) => (codes as readonly string[]).includes(m.code));
+}
 
 const SOCIAL_LINKS = [
   {
@@ -52,6 +59,12 @@ const PAYMENT_METHODS = [
 
 const COLUMN_TITLE_CLASS =
   "text-xs font-bold uppercase tracking-wider text-[#1A56A0] mb-3";
+
+const MARKET_PRIMARY_BTN =
+  "text-sm font-bold text-left py-0.5 transition-colors w-full text-[#1A56A0] hover:text-[#134a8a]";
+
+const MARKET_DIASPORA_BTN =
+  "text-xs font-normal text-left py-0.5 transition-colors w-full text-gray-600 hover:text-[#1A56A0]";
 
 const LINK_CLASS =
   "text-sm text-gray-600 hover:text-[#1A56A0] transition-colors inline-block py-0.5";
@@ -107,15 +120,23 @@ function FooterColumnBlock({ title, links }: FooterColumn) {
   );
 }
 
-function MarketButton({ m, active, onSelect }: { m: Market; active: boolean; onSelect: () => void }) {
+function MarketButton({
+  m,
+  active,
+  onSelect,
+  variant,
+}: {
+  m: Market;
+  active: boolean;
+  onSelect: () => void;
+  variant: "primary" | "diaspora";
+}) {
+  const base = variant === "primary" ? MARKET_PRIMARY_BTN : MARKET_DIASPORA_BTN;
   return (
     <button
       type="button"
       onClick={onSelect}
-      className={cn(
-        "text-sm text-left py-0.5 transition-colors w-full",
-        active ? "text-[#1A56A0] font-semibold" : "text-gray-600 hover:text-[#1A56A0]",
-      )}
+      className={cn(base, active && "underline decoration-2 underline-offset-2")}
       aria-current={active ? "true" : undefined}
     >
       <span className="mr-1.5" aria-hidden>
@@ -123,6 +144,54 @@ function MarketButton({ m, active, onSelect }: { m: Market; active: boolean; onS
       </span>
       {FOOTER_MARKET_LABEL[m.code] ?? m.name}
     </button>
+  );
+}
+
+function FooterMarketsColumn({
+  title,
+  diasporaLabel,
+  market,
+  setMarket,
+}: {
+  title: string;
+  diasporaLabel: string;
+  market: Market;
+  setMarket: (m: Market) => void;
+}) {
+  const primary = marketsByCodes(PRIMARY_MARKET_CODES);
+  const diaspora = marketsByCodes(DIASPORA_MARKET_CODES);
+
+  return (
+    <div className="p-5">
+      <h3 className={COLUMN_TITLE_CLASS}>{title}</h3>
+      <ul className="space-y-2 mb-4">
+        {primary.map((m) => (
+          <li key={m.code}>
+            <MarketButton
+              m={m}
+              active={market.code === m.code}
+              onSelect={() => setMarket(m)}
+              variant="primary"
+            />
+          </li>
+        ))}
+      </ul>
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-2">
+        {diasporaLabel}
+      </p>
+      <ul className="space-y-1.5">
+        {diaspora.map((m) => (
+          <li key={m.code}>
+            <MarketButton
+              m={m}
+              active={market.code === m.code}
+              onSelect={() => setMarket(m)}
+              variant="diaspora"
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -176,20 +245,12 @@ export function SiteFooter() {
             <FooterColumnBlock key={col.title} {...col} />
           ))}
 
-          <div className="p-5">
-            <h3 className={COLUMN_TITLE_CLASS}>{marketsTitle}</h3>
-            <ul className="space-y-2">
-              {FOOTER_MARKETS.map((m) => (
-                <li key={m.code}>
-                  <MarketButton
-                    m={m}
-                    active={market.code === m.code}
-                    onSelect={() => setMarket(m)}
-                  />
-                </li>
-              ))}
-            </ul>
-          </div>
+          <FooterMarketsColumn
+            title={marketsTitle}
+            diasporaLabel={t.footer_diaspora ?? "Diaspora"}
+            market={market}
+            setMarket={setMarket}
+          />
         </div>
 
         {/* Rreshti 2 */}

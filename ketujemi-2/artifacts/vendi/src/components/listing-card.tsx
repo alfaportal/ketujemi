@@ -101,7 +101,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
       className={cn(
         "group bg-white rounded-2xl overflow-hidden border hover:shadow-lg transition-all duration-200 block",
         isVipSeller
-          ? "border-[#1A56A0]/40 ring-2 ring-[#1A56A0]/50 hover:border-[#2563eb] hover:ring-[#2563eb]/60"
+          ? "border-[#1A56A0]/40 ring-2 ring-[#1A56A0]/50 hover:border-[#1A56A0] hover:ring-[#1A56A0]/70"
           : "border-gray-100 hover:border-blue-200",
       )}
     >
@@ -123,8 +123,8 @@ export default function ListingCard({ listing }: ListingCardProps) {
           </div>
         ) : null}
         {isVipSeller ? (
-          <div className="absolute top-2 right-2 bg-gradient-to-r from-[#1A56A0] to-[#2563eb] text-white text-[10px] font-black px-1.5 py-1 rounded-lg shadow-md flex items-center gap-0.5 z-[1] leading-none">
-            <Crown size={11} className="shrink-0" aria-hidden />
+          <div className="absolute top-2 right-2 bg-[#1A56A0] text-white text-[10px] font-black px-1.5 py-1 rounded-lg shadow-md flex items-center gap-0.5 z-[1] leading-none">
+            <Crown size={11} className="shrink-0 text-white" aria-hidden />
             VIP PARTNER
           </div>
         ) : null}
