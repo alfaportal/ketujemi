@@ -72,12 +72,7 @@ export default defineConfig(async ({ command }) => {
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.mode === "navigate",
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "ketujemi-pages-v3",
-              networkTimeoutSeconds: 8,
-              expiration: { maxEntries: 4, maxAgeSeconds: 60 },
-            },
+            handler: "NetworkOnly",
           },
           {
             urlPattern: ({ url }) => url.pathname.startsWith("/api/"),

@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -45,9 +45,11 @@ const queryClient = new QueryClient({
 });
 
 function Router() {
+  const [pathname] = useLocation();
+
   return (
     <AppLayout>
-      <main>
+      <main key={pathname}>
         <Switch>
           <Route path="/admin-secret-panel" component={AdminPanel} />
           <Route path="/login" component={LoginPage} />
