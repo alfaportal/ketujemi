@@ -1,4 +1,4 @@
-import { StaticPageShell } from "@/components/static-page-shell";
+import { InfoEmailLine, LuxuryStaticShell } from "@/components/luxury-static-shell";
 import { useStaticPages } from "@/lib/static-pages-i18n";
 
 const INFO_EMAIL = "info@ketujemi.com";
@@ -7,13 +7,8 @@ export default function PressPage() {
   const { press } = useStaticPages();
 
   return (
-    <StaticPageShell title={press.title} tagline={press.tagline}>
-      <p className="text-sm sm:text-base">
-        {press.mediaEmailLabel}{" "}
-        <a href={`mailto:${INFO_EMAIL}`} className="text-blue-600 font-semibold hover:underline">
-          {INFO_EMAIL}
-        </a>
-      </p>
-    </StaticPageShell>
+    <LuxuryStaticShell title={press.title} tagline={press.tagline}>
+      <InfoEmailLine label={press.mediaEmailLabel} email={INFO_EMAIL} />
+    </LuxuryStaticShell>
   );
 }

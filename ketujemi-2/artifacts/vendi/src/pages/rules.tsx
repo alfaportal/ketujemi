@@ -1,7 +1,7 @@
-import { SimpleStaticPage } from "@/components/simple-static-page";
+import { LuxuryStaticShell } from "@/components/luxury-static-shell";
 import { useStaticPages } from "@/lib/static-pages-i18n";
 
 export default function RulesPage() {
   const { rules } = useStaticPages();
-  return <SimpleStaticPage copy={rules} />;
+  return <LuxuryStaticShell title={rules.title} tagline={rules.tagline} />;
 }

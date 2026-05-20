@@ -24,6 +24,10 @@ import ContactPage from "@/pages/contact";
 import FaqPage from "@/pages/faq";
 import SecurityPage from "@/pages/security";
 import PressPage from "@/pages/press";
+import OpenShopPage from "@/pages/open-shop";
+import VipPackagesPage from "@/pages/vip-packages";
+import AdvertisePage from "@/pages/advertise";
+import PartnershipPage from "@/pages/partnership";
 import NotFound from "@/pages/not-found";
 import { AppLayout } from "@/components/app-layout";
 import { RefetchOnVisible } from "@/components/refetch-on-visible";
@@ -72,6 +76,15 @@ function Router() {
           <Route path="/sigurnost" component={SecurityPage} />
           <Route path="/shtypi" component={PressPage} />
           <Route path="/mediji" component={PressPage} />
+          <Route path="/hap-shitore" component={OpenShopPage} />
+          <Route path="/otvori-prodavnica" component={OpenShopPage} />
+          <Route path="/otvori-prodavnicu" component={OpenShopPage} />
+          <Route path="/vip" component={VipPackagesPage} />
+          <Route path="/reklamoni" component={AdvertisePage} />
+          <Route path="/reklamiraj" component={AdvertisePage} />
+          <Route path="/partneritet" component={PartnershipPage} />
+          <Route path="/partnerstvo" component={PartnershipPage} />
+          <Route path="/behu-partner" component={ProfilePage} />
           <Route path="/" component={Home} />
           <Route path="/categories/:id" component={CategoryPage} />
           <Route path="/listings/new" component={NewListing} />

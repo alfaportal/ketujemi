@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { StaticPageShell, Section } from "@/components/static-page-shell";
+import { InfoEmailLine, LuxuryStaticShell } from "@/components/luxury-static-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useStaticPages } from "@/lib/static-pages-i18n";
+import { BRAND_BLUE } from "@/lib/brand-colors";
 
 const INFO_EMAIL = "info@ketujemi.com";
 const SUPPORT_EMAIL = "support@ketujemi.com";
@@ -46,9 +47,7 @@ export default function ContactPage() {
         }),
       });
 
-      if (!res.ok) {
-        throw new Error("send failed");
-      }
+      if (!res.ok) throw new Error("send failed");
 
       toast({ title: c.toastSuccess });
       setName("");
@@ -63,67 +62,18 @@ export default function ContactPage() {
   }
 
   return (
-    <StaticPageShell title={c.title} tagline={c.tagline}>
-      <Section title={c.contactSectionTitle}>
-        <ul className="space-y-3 text-sm sm:text-base">
-          <li>
-            <span className="mr-2" aria-hidden>
-              📧
-            </span>
-            {c.officialEmailLabel}{" "}
-            <a href={`mailto:${INFO_EMAIL}`} className="text-blue-600 font-semibold hover:underline">
-              {INFO_EMAIL}
-            </a>
-          </li>
-          <li>
-            <span className="mr-2" aria-hidden>
-              📧
-            </span>
-            {c.technicalSupportLabel}{" "}
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 font-semibold hover:underline">
-              {SUPPORT_EMAIL}
-            </a>
-          </li>
-          <li>
-            <span className="mr-2" aria-hidden>
-              🕐
-            </span>
-            {c.hoursLabel} {c.hoursValue}
-          </li>
-          <li>
-            <span className="mr-2" aria-hidden>
-              📘
-            </span>
-            {c.facebookLabel}{" "}
-            <a
-              href="https://facebook.com/ketujemi"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 font-semibold hover:underline"
-            >
-              facebook.com/ketujemi
-            </a>
-          </li>
-          <li>
-            <span className="mr-2" aria-hidden>
-              📸
-            </span>
-            {c.instagramLabel}{" "}
-            <a
-              href="https://instagram.com/ketujemi"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 font-semibold hover:underline"
-            >
-              instagram.com/ketujemi
-            </a>
-          </li>
-        </ul>
-      </Section>
+    <LuxuryStaticShell title={c.title} tagline={c.tagline}>
+      <div className="space-y-4 pb-2 border-b border-gray-100">
+        <InfoEmailLine label={c.officialEmailLabel} email={INFO_EMAIL} />
+        <InfoEmailLine label={c.technicalSupportLabel} email={SUPPORT_EMAIL} />
+        <p className="text-sm sm:text-base">
+          <span className="font-semibold text-gray-800">{c.hoursLabel}</span> {c.hoursValue}
+        </p>
+      </div>
 
-      <section>
-        <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">{c.formTitle}</h2>
-        <form onSubmit={onSubmit} className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 sm:p-6 shadow-sm">
+      <div>
+        <h2 className="text-base font-bold text-gray-900 mb-4">{c.formTitle}</h2>
+        <form onSubmit={onSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="contact-name">
               {c.nameLabel} <span className="text-red-500">*</span>
@@ -181,23 +131,16 @@ export default function ContactPage() {
               className="min-h-[8rem] text-base resize-y"
             />
           </div>
-          <Button type="submit" className="w-full min-h-12 h-12 text-base font-semibold" disabled={busy}>
+          <Button
+            type="submit"
+            className="w-full min-h-12 h-12 text-base font-semibold text-white"
+            style={{ backgroundColor: BRAND_BLUE }}
+            disabled={busy}
+          >
             {busy ? "…" : c.submitBtn}
           </Button>
         </form>
-      </section>
-
-      <section>
-        <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">{c.faqTitle}</h2>
-        <div className="space-y-4">
-          {c.faq.map((item) => (
-            <div key={item.q} className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
-              <h3 className="font-bold text-gray-900 text-sm sm:text-base mb-2">{item.q}</h3>
-              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{item.a}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-    </StaticPageShell>
+      </div>
+    </LuxuryStaticShell>
   );
 }

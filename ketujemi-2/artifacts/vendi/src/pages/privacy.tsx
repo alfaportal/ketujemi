@@ -1,7 +1,7 @@
-import { SimpleStaticPage } from "@/components/simple-static-page";
+import { LuxuryStaticShell } from "@/components/luxury-static-shell";
 import { useStaticPages } from "@/lib/static-pages-i18n";
 
 export default function PrivacyPage() {
   const { privacy } = useStaticPages();
-  return <SimpleStaticPage copy={privacy} />;
+  return <LuxuryStaticShell title={privacy.title} tagline={privacy.tagline} />;
 }

@@ -82,12 +82,25 @@ export type SimplePageCopy = {
   tagline: string;
 };
 
+export type BusinessLandingCopy = {
+  title: string;
+  tagline: string;
+  bullets?: string[];
+  ctaLabel?: string;
+  contactLabel?: string;
+  contactEmail?: string;
+};
+
 export type StaticPagesCopy = {
   about: SimplePageCopy;
   rules: SimplePageCopy;
   terms: SimplePageCopy;
   privacy: SimplePageCopy;
   cookies: SimplePageCopy;
+  openShop: BusinessLandingCopy;
+  vipPackages: BusinessLandingCopy;
+  advertise: BusinessLandingCopy;
+  partnership: BusinessLandingCopy;
   businessRules: TermsPrivacyCopy;
   contact: ContactCopy;
   faq: FaqCopy;
@@ -99,27 +112,56 @@ const KS: StaticPagesCopy = {
   about: {
     title: "Rreth KetuJemi.com",
     tagline:
-      "KetuJemi.com është një nga platformat më të mëdha të shpalljeve falas, e shtrirë zyrtarisht në 11 tregje ndërkombëtare duke përfshirë Kosovën, Shqipërinë, Maqedoninë, Malin e Zi, si dhe mbarë diasporën shqiptare në Evropë (Gjermani, Zvicër, Austri, Francë, Itali, Angli) dhe SHBA. Misioni ynë është ndërlidhja e shpejtë, e pastër dhe e sigurt mes blerësve dhe shitësve në mbarë botën.",
+      "KetuJemi.com është një nga platformat më të mëdha të shpalljeve falas, e shtrirë zyrtarisht në 11 tregje ndërkombëtare duke përfshirë Kosovën, Shqipërinë, Maqedoninë, Malin e Zi, si dhe mbarë diasporën shqiptare në Evropë (Gjermani, Zvicër, Austri, Francë, Itali, Angli) dhe SHBA. Misioni ynë është ndërlidhja e shpejtë dhe e sigurt mes blerësve dhe shitësve.",
   },
   rules: {
     title: "Rregullat e Platformës",
     tagline:
-      "Për të siguruar një treg online të ndershëm, njoftimet duhet të jenë reale, të sakta dhe të vendosura në kategorinë e duhur. Nëse postoni përsëri të njëjtin njoftim (titull dhe përshkrim identik), sistemi fshin automatikisht versionet e vjetra dhe mbaj vetëm të riun. Gjithashtu kërkohet të paktën 30 sekonda pritje mes postimeve të njëpasnjëshme.",
+      "Ndalohet rreptësisht postimi i njoftimeve të njëjta (duplikate) brenda 24 orëve. Gjithashtu, duhet pritur të paktën 30 sekonda mes postimeve të njëpasnjëshme. Sistemi i bllokon shkelësit automatikisht për të parandaluar spam-in.",
   },
   terms: {
     title: "Kushtet e Përdorimit",
     tagline:
-      "Duke përdorur KetuJemi.com, ju pranoni se platforma shërben vetëm si një hapësirë ndërlidhëse ndërmjet palëve. Përdoruesi (postuesi) mban përgjegjësi të plotë dhe ekskluzive ligjore për vërtetësinë, origjinalitetin dhe ligjshmërinë e produkteve apo shërbimeve që reklamon në faqe.",
+      "Platforma shërben vetëm si hapësirë ndërlidhëse. Përdoruesi mban përgjegjësi të plotë dhe ekskluzive ligjore për vërtetësinë dhe ligjshmërinë e produkteve apo shërbimeve që poston në faqe.",
   },
   privacy: {
     title: "Politika e Privatësisë",
     tagline:
-      "Ne vlerësojmë lart privatësinë tuaj. Platforma mbledh vetëm të dhënat minimale të domosdoshme: Emrin, Email-in (për komunikim zyrtar përmes info@ketujemi.com ose support@ketujemi.com) dhe Adresën IP për qëllime të sigurisë dhe parandalimit të mashtrimeve online. Të dhënat tuaja janë të enkriptuara dhe nuk ndahen kurrë me palët e treta.",
+      "Ne mbledhim vetëm Emrin, Email-in (për komunikim përmes info@ketujemi.com ose support@ketujemi.com) dhe Adresën IP për qëllime të sigurisë dhe parandalimit të mashtrimeve online. Të dhënat janë të enkriptuara dhe nuk shiten te palët e treta.",
   },
   cookies: {
     title: "Politika e Cookies",
     tagline:
-      "KetuJemi.com përdor cookie (skedarë të vegjël teksti) për të përmirësuar eksperiencën tuaj të lundrimit, për të mbajtur mend kyçjen tuaj dhe për të analizuar trafikun e faqes. Ju mund t'i menaxhoni ose t'i bllokoni ato në çdo kohë përmes cilësimeve të shfletuesit tuaj.",
+      "KetuJemi.com përdor cookie për të përmirësuar eksperiencën e lundrimit, për të mbajtur mend kyçjen tuaj dhe për të analizuar trafikun. Ju mund t'i fikni ato në cilësimet e shfletuesit tuaj.",
+  },
+  openShop: {
+    title: "Hap Shitoren Tënde",
+    tagline:
+      "Krijo profilin e biznesit tënd në KetuJemi.com. Regjistro kompaninë, shto logon dhe fillo të shesësh produktet e tua te mijëra klientë në 11 tregje ndërkombëtare.",
+    ctaLabel: "Fillo Tani",
+  },
+  vipPackages: {
+    title: "Paketat e Biznesit & VIP",
+    tagline: "Zgjidhni paketën që i përshtatet biznesit tuaj:",
+    bullets: [
+      "Dyqan Standard (€30/muaj): Shpallje të pakufizuara, profil publik i biznesit, suport 24/7.",
+      "VIP Partner (€50/muaj): Çdo gjë nga Standard + shfaqje me logo në faqen kryesore (random), badge VIP në njoftime dhe statistika të shikimeve të logos.",
+    ],
+    ctaLabel: "Zgjidh Paketën Tënde",
+  },
+  advertise: {
+    title: "Reklamoni në KetuJemi.com",
+    tagline:
+      "Ofrojmë hapësira ekskluzive për Banner (Leaderboard), njoftime të sponsorizuara në krye të kategorive dhe paketa të personalizuara për biznese të mëdha.",
+    contactLabel: "Kontakt:",
+    contactEmail: "info@ketujemi.com",
+  },
+  partnership: {
+    title: "Bashkëpunim & Partneritet",
+    tagline:
+      "KetuJemi.com mirëpret mundësitë e bashkëpunimit dhe partneriteteve strategjike për të rritur tregun tonë në 11 shtete.",
+    contactLabel: "Kontakt:",
+    contactEmail: "support@ketujemi.com",
   },
   businessRules: {
     title: "Rregullorja e Bizneseve",
@@ -241,16 +283,16 @@ const KS: StaticPagesCopy = {
     featuredTitle: "Pyetjet kryesore",
     featured: [
       {
-        q: "Si mund të postoj një njoftim?",
+        q: "Si të postoj njoftim?",
         a: "Kliko butonin «Posto Njoftim», plotëso të dhënat dhe ngarko fotot.",
       },
       {
-        q: "Sa kushton postimi i njoftimeve?",
-        a: "Postimi për përdoruesit e thjeshtë është plotësisht falas.",
+        q: "Sa kushton?",
+        a: "Plotësisht falas për përdoruesit e thjeshtë.",
       },
       {
-        q: "Si mund ta fshij ose modifikoj njoftimin tim?",
-        a: "Hyni në llogarinë tuaj te seksioni «Njoftimet e mia» për t'i menaxhuar ato.",
+        q: "Si ta fshij njoftimin?",
+        a: "Hyni në llogarinë tuaj te Profili / «Njoftimet e mia» për ta menaxhuar ose fshirë.",
       },
     ],
     sections: [
@@ -348,14 +390,14 @@ const KS: StaticPagesCopy = {
   security: {
     title: "Siguria Online",
     tagline:
-      "Këshilla dhe udhëzime zyrtare për t'u mbrojtur dhe për të pasur një eksperiencë të sigurt gjatë blerjeve dhe shitjeve në KetuJemi.com.",
+      "Këshilla dhe udhëzime zyrtare për t'u mbrojtur gjatë blerjeve dhe shitjeve online në KetuJemi.com.",
     sections: [
       {
         title: "Rregullat e Sigurisë",
         bullets: [
-          "Mos dërgoni para parapagim (avans): Takohuni gjithmonë me shitësin në një vend publik për të parë produktin përpara se të kryeni pagesën.",
-          "Kontrolloni produktin: Përpara se të blini automjete apo pajisje elektronike, kontrollojeni gjendjen e tyre fizike dhe dokumentacionin ligjor.",
-          "Raportoni abuzimet: Nëse vëreni një njoftim të dyshimtë ose mashtrues, kliko butonin «Raporto» ose na shkruaj menjëherë në support@ketujemi.com.",
+          "Mos dërgoni para avans pa u takuar me shitësin në vend publik.",
+          "Kontrolloni produktin dhe dokumentet përpara pagesës.",
+          "Raportoni njoftimet e dyshimta në support@ketujemi.com.",
         ],
       },
     ],
@@ -363,7 +405,7 @@ const KS: StaticPagesCopy = {
   press: {
     title: "Për Shtypin dhe Mediat",
     tagline:
-      "Informacione zyrtare për mediat, gazetarët dhe partneritetet e marketingut. Na kontaktoni për deklarata zyrtare, intervista ose bashkëpunime mediale.",
+      "Informacione zyrtare për mediat, gazetarët dhe partneritetet e marketingut.",
     mediaEmailLabel: "Email për Media:",
   },
 };
@@ -377,7 +419,7 @@ const MK: StaticPagesCopy = {
   rules: {
     title: "Правила на платформата",
     tagline:
-      "За да обезбедиме фер онлајн пазар, огласите мора да бидат вистинити, точни и во соодветната категорија. Ако повторно објавите ист оглас (ист наслов и опис), системот автоматски ги брише постарите верзии и го задржува само новиот. Потребно е и минимум 30 секунди чекање меѓу последователни објави.",
+      "Строго е забрането објавување идентични дупликати во рок од 24 часа. Потребно е минимум 30 секунди меѓу последователни објави. Системот автоматски ги блокира прекршителите за спречување на спам.",
   },
   terms: {
     title: "Услови за користење",
@@ -392,7 +434,34 @@ const MK: StaticPagesCopy = {
   cookies: {
     title: "Политика за колачиња (Cookies)",
     tagline:
-      "KetuJemi.com користи cookies (мали текстуални датотеки) за да ја подобри вашата навигација, да ја запомни најавата и да го анализира сообраќајот на страницата. Можете да ги управувате или блокирате во секое време преку поставките на прелистувачот.",
+      "KetuJemi.com користи cookies за подобра навигација, најава и анализа на сообраќај. Можете да ги исклучите во прелистувачот.",
+  },
+  openShop: {
+    title: "Отвори ја твојата продавница",
+    tagline:
+      "Креирај бизнис профил на KetuJemi.com. Регистрирај ја компанијата, додај лого и продавај на 11 пазари.",
+    ctaLabel: "Започни сега",
+  },
+  vipPackages: {
+    title: "Бизнис и VIP пакети",
+    tagline: "Изберете пакет:",
+    bullets: [
+      "Стандарден дуќан (€30/месец): Неограничени огласи, јавен бизнис профил, поддршка 24/7.",
+      "VIP Partner (€50/месец): Сè од Standard + лого на почетна, VIP badge и статистика.",
+    ],
+    ctaLabel: "Избери пакет",
+  },
+  advertise: {
+    title: "Рекламирај на KetuJemi.com",
+    tagline: "Banner, спонзорирани огласи и прилагодени пакети за големи бизниси.",
+    contactLabel: "Контакт:",
+    contactEmail: "info@ketujemi.com",
+  },
+  partnership: {
+    title: "Партнерство",
+    tagline: "Стратешко партнерство за раст на 11 пазари.",
+    contactLabel: "Контакт:",
+    contactEmail: "support@ketujemi.com",
   },
   businessRules: {
     title: "Правила за бизниси",
@@ -650,7 +719,7 @@ const MNE: StaticPagesCopy = {
   rules: {
     title: "Pravila platforme",
     tagline:
-      "Da bismo osigurali pošteno online tržište, oglasi moraju biti stvarni, tačni i u odgovarajućoj kategoriji. Ako ponovo objavite isti oglas (identičan naslov i opis), sistem automatski briše starije verzije i zadržava samo novi. Potrebno je i najmanje 30 sekundi čekanja između uzastopnih objava.",
+      "Strogo je zabranjeno objavljivanje identičnih duplikata u roku od 24 sata. Potrebno je najmanje 30 sekundi između uzastopnih objava. Sistem automatski blokira prekršioce radi sprečavanja spama.",
   },
   terms: {
     title: "Uslovi korišćenja",
@@ -665,7 +734,34 @@ const MNE: StaticPagesCopy = {
   cookies: {
     title: "Politika kolačića (Cookies)",
     tagline:
-      "KetuJemi.com koristi kolačiće (male tekstualne datoteke) da poboljša vaše iskustvo pregledanja, zapamti prijavu i analizira saobraćaj na sajtu. Možete ih upravljati ili blokirati u bilo kom trenutku putem postavki pregledača.",
+      "KetuJemi.com koristi kolačiće za pregled, prijavu i analizu saobraćaja. Možete ih isključiti u pregledaču.",
+  },
+  openShop: {
+    title: "Otvori svoju prodavnicu",
+    tagline:
+      "Kreiraj biznis profil na KetuJemi.com. Registruj firmu, dodaj logo i prodaji na 11 tržišta.",
+    ctaLabel: "Počni odmah",
+  },
+  vipPackages: {
+    title: "Biznis i VIP paketi",
+    tagline: "Izaberite paket:",
+    bullets: [
+      "Standard prodavnica (€30/mjesec): Neograničeni oglasi, javni profil, podrška 24/7.",
+      "VIP Partner (€50/mjesec): Sve iz Standard + logo na početnoj, VIP bedž i statistika.",
+    ],
+    ctaLabel: "Izaberi paket",
+  },
+  advertise: {
+    title: "Reklamiraj na KetuJemi.com",
+    tagline: "Banner, sponzorisani oglasi i prilagođeni paketi za velike biznise.",
+    contactLabel: "Kontakt:",
+    contactEmail: "info@ketujemi.com",
+  },
+  partnership: {
+    title: "Partnerstvo",
+    tagline: "Strateško partnerstvo za rast na 11 tržišta.",
+    contactLabel: "Kontakt:",
+    contactEmail: "support@ketujemi.com",
   },
   businessRules: {
     title: "Pravila za biznise",
