@@ -15,6 +15,7 @@ export default defineConfig(async ({ command }) => {
   const apiProxyTarget =
     process.env.API_PROXY_TARGET ?? "http://127.0.0.1:8080";
   const buildId =
+    process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ??
     process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ??
     process.env.GITHUB_SHA?.slice(0, 7) ??
     "dev";

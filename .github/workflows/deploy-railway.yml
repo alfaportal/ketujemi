@@ -1,4 +1,4 @@
-# Verifikon build-in në çdo push në master (Railway deploy-on automatikisht nga GitHub).
+# Verifikon build-in (frontend + API bundle për Vercel) në çdo push në master.
 name: Build KetuJemi
 
 on:
@@ -22,10 +22,10 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install and build production
+      - name: Install and build (Vercel layout)
         run: |
           pnpm install --no-frozen-lockfile
-          NODE_ENV=production BASE_PATH=/ NODE_OPTIONS=--max-old-space-size=4096 pnpm -C ketujemi-2 run build:production
+          pnpm run build
 
       - name: Build OK
-        run: echo "Frontend + API u build-uan. Railway duhet të deploy-ojë nëse deploys nuk janë paused."
+        run: echo "Frontend + api/handler.mjs u build-uan. Deploy në Vercel nga GitHub."

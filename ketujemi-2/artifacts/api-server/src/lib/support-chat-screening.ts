@@ -49,6 +49,16 @@ export function supportsEmailEscalation(content: string): boolean {
   );
 }
 
+/** Phone / call / contact channel — always give support phone + email in chat. */
+export function isSupportContactQuestion(content: string): boolean {
+  const t = content.trim().normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+  if (t.length < 4) return false;
+
+  return /telefon|numër|numer|numri|phone|kontakt|thirr|call|whatsapp|viber|instagram|adres|email\s*juaj|si\s+ju\s+(kontaktoj|telefonoj)|broj\s+telefona|телефон|контакт/i.test(
+    t,
+  );
+}
+
 /** Finding/buying on the site (not account/legal) — answer in chat, do not default to email. */
 export function isMarketplaceBrowseQuestion(content: string): boolean {
   const t = content.trim().normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();

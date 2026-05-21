@@ -6,10 +6,10 @@ import { cn } from "@/lib/utils";
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const WELCOME: Record<string, string> = {
-  ks: "Përshëndetje! Pyetni për postim, skadim, TOP, biznes — përgjigjem unë. Për çështje të veçanta: info@ketujemi.com",
-  al: "Përshëndetje! Pyetni për postim, skadim, TOP, biznes — përgjigjem unë. Për çështje të veçanta: info@ketujemi.com",
-  mk: "Здраво! Прашајте за објава, истек, TOP, бизнис — ќе одговорам. За посебни прашања: info@ketujemi.com",
-  me: "Zdravo! Pitajte za objavu, istek, TOP, biznis — odgovaram ja. Za posebna pitanja: info@ketujemi.com",
+  ks: "Përshëndetje! Pyetni ku të gjeni një produkt, si të postoni ose si të blini — udhëzim i saktë, pa përgjigje të vagë.",
+  al: "Përshëndetje! Pyetni ku të gjeni një produkt, si të postoni ose si të blini — udhëzim i saktë, pa përgjigje të vagë.",
+  mk: "Здраво! Прашајте каде да најдете производ, како да објавите или купите — конкретни чекори.",
+  me: "Zdravo! Pitajte gdje pronaći proizvod, kako objaviti ili kupiti — konkretni koraci.",
 };
 
 const FALLBACK_BUSY: Record<string, string> = {

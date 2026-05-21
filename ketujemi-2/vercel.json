@@ -1,17 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "corepack enable && corepack prepare pnpm@10.12.1 --activate && cd .. && pnpm config set minimum-release-age 0 && pnpm install --no-frozen-lockfile",
+  "installCommand": "cd .. && corepack enable && corepack prepare pnpm@10.12.1 --activate && pnpm install --no-frozen-lockfile",
   "buildCommand": "cd .. && pnpm run build",
-  "outputDirectory": "artifacts/vendi/dist/public",
-  "framework": null,
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://ketujemi-production.up.railway.app/api/:path*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "outputDirectory": "artifacts/vendi/dist/public"
 }

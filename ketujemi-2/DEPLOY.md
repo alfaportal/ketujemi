@@ -1,44 +1,53 @@
-# Deploy KetuJemi.com (Railway / Vercel / Render)
+# Deploy KetuJemi — vetëm Vercel
 
-## Vercel (frontend + API proxy)
+Railway **nuk përdoret më**. Frontend + API + cron janë në **një projekt Vercel** (`alfaportal/ketujemi`).
 
-Monorepo: `pnpm-workspace.yaml` dhe `pnpm-lock.yaml` janë në **root** të repo-s; paketat janë nën `ketujemi-2/`. Root ka `package.json` + `vercel.json`.
-
-**Vercel Dashboard → Project Settings:**
+## Vercel Dashboard
 
 | Setting | Vlera |
 |--------|--------|
 | **Repository** | `alfaportal/ketujemi` |
 | **Branch** | `master` |
-| **Root Directory** | *(lëre bosh — rekomandohet)* ose `ketujemi-2` (përdor `ketujemi-2/vercel.json` që ngjitet në root) |
+| **Root Directory** | *(bosh — root i repo-s)* |
 | **Framework** | Other |
-| **Install Command** | *(lëre bosh — lexohet nga vercel.json)* |
-| **Build Command** | *(lëre bosh — lexohet nga vercel.json)* |
-| **Output Directory** | *(lëre bosh — lexohet nga vercel.json)* |
+| Install / Build / Output | *(bosh — lexohen nga `vercel.json` në root)* |
 
-**Shënim:** Vercel shërben vetëm **frontend-in** (Vite). Kërkesat `/api/*` ridrejtohen te Railway (`ketujemi-production.up.railway.app`). Për app të plotë me DB, mbaj edhe **Railway** si backend.
+## Çfarë bën build-i
 
-Pas deploy: hap URL-n e Vercel-it → duhet faqja kryesore, jo 404.
+1. `pnpm install` (monorepo root)
+2. Build Vite → `ketujemi-2/artifacts/vendi/dist/public`
+3. Bundle API Express → `api/handler.mjs` (serverless)
+4. Bundle cron → `api/cron/jobs.mjs`
 
----
+## Variablat e detyrueshëm (Vercel → Settings → Environment Variables)
 
-## Railway (rekomanduar për backend + frontend së bashku)
+| Variabël | Përshkrim |
+|----------|-----------|
+| `DATABASE_URL` | Postgres (Neon, Supabase, etj.) |
+| `SESSION_SECRET` | Min. 16 karaktere (cookies) |
+| `ANTHROPIC_API_KEY` | Chatbot + moderim (opsional por rekomandohet) |
+| `CRON_SECRET` | Mbrojtje për `/api/cron/jobs` (Vercel e dërgon si Bearer) |
 
-1. **Settings → Root Directory:** `ketujemi-2` **ose** lëre bosh (repo root) — skriptet funksionojnë për të dyja.
-2. **Settings → Deploy:** lidh repo `alfaportal/ketujemi`, branch `master`.
-3. Pas çdo push, prit **Deploy succeeded** (3–8 min).
-4. **Verifikim:** hap `https://ketujemi.com/api/healthz`  
-   Duhet: `"buildId":"5343b28"` (ose commit i ri) dhe `"hasFrontend":true`.
+Opsionale sipas funksioneve: `VONAGE_*`, `EMAIL_*`, `STRIPE_*`, `RECAPTCHA_*`, `SUPPORT_PHONE`, `CLOUDINARY_*`, etj. (shiko `ketujemi-2/.env.example`).
 
-## Nëse faqja duket e vjetër
+## Pas deploy
 
-1. Railway → **Deployments** → shiko nëse build-i i fundit **failed** (i kuq).
-2. **Redeploy** commit-in `master` të fundit.
-3. Shfletues: **Incognito** ose fshi PWA «Add to Home Screen».
-4. Cloudflare (nëse përdoret): **Purge cache** për `ketujemi.com`.
+- Faqja: URL e Vercel-it ose `ketujemi.com` (DNS → Vercel)
+- API: `/api/healthz`, `/api/ai/support-chat` — **në të njëjtin domain**, pa Railway
+- Verifikim: footer me hash commit; chatbot përgjigjet në shqip
 
-## Footer i ri (si duhet të duket)
+## Cron (skadim njoftimesh + email rikujtues)
 
-- **3 kolona:** NDIHMË · INFORMATA · BIZNESE (jo 4 me TREGJET të madhe)
-- Shirit i errët: **TREGJET ZYRTARE · Kosovë · Shqipëri · Maqedoni · +8 Diaspora**
-- Copyright: `© 2026 KetuJemi.com · abc1234` (hash i commit-it)
+`vercel.json` planifikon `GET /api/cron/jobs` çdo orë. Kërkon **CRON_SECRET** dhe plan Vercel që mbështet cron.
+
+## Lokal
+
+```bash
+# nga root i repo-s
+pnpm install
+pnpm run build
+# frontend: ketujemi-2/artifacts/vendi
+# API bundle: api/handler.mjs
+```
+
+Për dev lokal me API të vazhdueshëm: `pnpm -C ketujemi-2 run dev` (Express në :8080 + Vite proxy).

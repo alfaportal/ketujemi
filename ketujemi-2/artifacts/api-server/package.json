@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "node ./build.mjs",
+    "build:vercel": "node ./build-vercel.mjs",
     "build:watch": "node ./build.mjs --watch",
     "dev": "node ./dev-watch.mjs",
     "dev:once": "pnpm run build && pnpm run start",
@@ -25,9 +26,11 @@
     "nodemailer": "^7.0.6",
     "pino": "^9",
     "pino-http": "^10",
+    "serverless-http": "^3.2.0",
     "stripe": "^22.1.1"
   },
   "devDependencies": {
+    "@vercel/node": "^5.0.0",
     "@types/bcryptjs": "^3.0.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
