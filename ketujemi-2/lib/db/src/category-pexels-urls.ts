@@ -1,6 +1,6 @@
 /** Canonical Pexels JPEG URL (Pexels free licence). Every {@link SUBCATEGORY_IMAGE_URL_BY_SLUG} entry uses a distinct photo id. */
-export function pexelsPhoto(id: number): string {
-  return `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg`;
+export function pexelsPhoto(id: number, w = 800): string {
+  return `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${w}`;
 }
 
 /** filippofilip95/car-logos-dataset publishes **PNG** under `logos/optimized` on `master` (older `.svg` paths 404). */
@@ -197,14 +197,14 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "muzike-type-studio": pexelsPhoto(3783471),
   "muzike-type-art-teater-film": pexelsPhoto(713149),
 
-  // —— Vetura body —————————————————————————————————————————————————————————————
-  sedan: pexelsPhoto(712618),
-  hatchback: pexelsPhoto(112460),
-  "suv-jeep": pexelsPhoto(1519812),
-  "kombi-minivan": pexelsPhoto(8867093),
-  "kabriolet-sportive": pexelsPhoto(6914852),
+  // —— Vetura body (same Pexels ids as vendi vetura-body-images.ts) —————————————
+  sedan: pexelsPhoto(170811),
+  hatchback: pexelsPhoto(5976596),
+  "suv-jeep": pexelsPhoto(116675),
+  "kombi-minivan": pexelsPhoto(1149831),
+  "kabriolet-sportive": pexelsPhoto(3752169),
   kupe: pexelsPhoto(3764984),
-  "elektrike-hibride": pexelsPhoto(9799996),
+  "elektrike-hibride": pexelsPhoto(110844),
   pickup: pexelsPhoto(3422964),
   "klasike-vintage": pexelsPhoto(2127022),
 

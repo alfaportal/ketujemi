@@ -1,6 +1,6 @@
 import { SUBCATEGORY_IMAGE_URL_BY_SLUG } from "@workspace/category-images";
+import { HUB_HERO_IMAGE_BY_SLUG } from "@/lib/category-hub-hero-images";
 import { VETURA_BODY_IMAGE_BY_SLUG } from "@/lib/vetura-body-images";
-
 /** Prefix fallback when slug is missing from the curated map (parent hub pages). */
 const NAME_PREFIX_PHOTOS: [string, string][] = [
   ["Vetura", "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80"],
@@ -38,8 +38,9 @@ export function resolveCategoryImageUrl(cat: {
 }): string | null {
   const slug = cat.slug?.trim();
   if (slug) {
-    if (SUBCATEGORY_IMAGE_URL_BY_SLUG[slug]) return SUBCATEGORY_IMAGE_URL_BY_SLUG[slug];
     if (VETURA_BODY_IMAGE_BY_SLUG[slug]) return VETURA_BODY_IMAGE_BY_SLUG[slug];
+    if (HUB_HERO_IMAGE_BY_SLUG[slug]) return HUB_HERO_IMAGE_BY_SLUG[slug];
+    if (SUBCATEGORY_IMAGE_URL_BY_SLUG[slug]) return SUBCATEGORY_IMAGE_URL_BY_SLUG[slug];
   }
 
   const fromDb = typeof cat.image_url === "string" ? cat.image_url.trim() : "";

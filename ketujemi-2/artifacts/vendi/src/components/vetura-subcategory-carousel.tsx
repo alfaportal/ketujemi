@@ -5,10 +5,7 @@ import { useMarket } from "@/lib/market-context";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { translateCategory } from "@/lib/category-translations";
 import { categoryPath } from "@/lib/category-navigation";
-import {
-  VETURA_BODY_IMAGE_BY_SLUG,
-  VETURA_BODY_SLUG_ORDER,
-} from "@/lib/vetura-body-images";
+import { buildVeturaCarouselSlides } from "@/lib/vetura-body-match";
 import { cn } from "@/lib/utils";
 
 const ROTATE_MS = 5_000;
@@ -28,35 +25,22 @@ export function VeturaSubcategoryCarousel({ categories }: Props) {
   const { t, uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
 
-  const slides = useMemo(() => {
-    const vetura = categories.find((c) => c.slug === "vetura");
-    if (!vetura) return [];
-
-    const bySlug = new Map(
-      categories
-        .filter((c) => c.parent_id === vetura.id && c.slug)
-        .map((c) => [c.slug as string, c]),
-    );
-
-    return VETURA_BODY_SLUG_ORDER.flatMap((slug) => {
-      const cat = bySlug.get(slug);
-      if (!cat) return [];
-      const imageUrl = VETURA_BODY_IMAGE_BY_SLUG[slug];
-      if (!imageUrl) return [];
-      return [
-        {
-          id: cat.id,
-          slug,
-          name: translateCategory(cat.name, locale),
-          imageUrl,
-          href: categoryPath(cat.id),
-        },
-      ];
-    });
-  }, [categories, locale]);
+  const slides = useMemo(
+    () =>
+      buildVeturaCarouselSlides(
+        categories,
+        (name) => translateCategory(name, locale),
+        categoryPath,
+      ),
+    [categories, locale],
+  );
 
   const [index, setIndex] = useState(0);
   const count = slides.length;
+
+  useEffect(() => {
+    setIndex(0);
+  }, [count]);
 
   useEffect(() => {
     if (count < 2) return;

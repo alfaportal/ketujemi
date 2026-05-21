@@ -12,7 +12,10 @@ import { SiteHeader } from "@/components/site-header";
 import { useGetCategories, getGetCategoriesQueryOptions } from "@workspace/api-client-react";
 import { translateCategory } from "@/lib/category-translations";
 import { categoryPath } from "@/lib/category-navigation";
+import { isRootCategory, sortRootCategories } from "@/lib/parent-category-slugs";
+import { resolveCategoryImageUrl } from "@/lib/resolve-category-image";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
+import { Skeleton } from "@/components/ui/skeleton";
 import { VeturaSubcategoryCarousel } from "@/components/vetura-subcategory-carousel";
 import { VipPartnersSection } from "@/components/vip-partners-section";
 import { cn } from "@/lib/utils";
@@ -83,7 +86,11 @@ export default function HomePage() {
   const { market, t, uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
   const [, setLocation] = useLocation();
-  const { data: apiCategories } = useGetCategories({
+  const {
+    data: apiCategories,
+    isLoading: categoriesLoading,
+    isError: categoriesError,
+  } = useGetCategories({
     query: {
       ...getGetCategoriesQueryOptions(),
       staleTime: 5 * 60_000,
@@ -98,10 +105,7 @@ export default function HomePage() {
   const [showFilters, setShowFilters] = useState(true);
 
   const parentCategories = useMemo(
-    () =>
-      (apiCategories ?? []).filter(
-        (c: any) => !c.parent_id && c.id != null && Number(c.id) > 0,
-      ),
+    () => sortRootCategories((apiCategories ?? []).filter((c: any) => isRootCategory(c))),
     [apiCategories],
   );
 
@@ -282,9 +286,20 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-          {parentCategories.map((cat: any) => {
+          {categoriesLoading
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="aspect-[5/3] w-full rounded-xl sm:rounded-2xl" />
+              ))
+            : null}
+          {categoriesError && !categoriesLoading ? (
+            <p className="col-span-full text-sm text-red-600 py-4">
+              Kategoritë nuk u ngarkuan. Rifreskoni faqen.
+            </p>
+          ) : null}
+          {!categoriesLoading && !categoriesError
+            ? parentCategories.map((cat: any) => {
             const localName = translateCategory(cat.name, locale);
-            const photo = getCatPhoto(cat.slug);
+            const photo = resolveCategoryImageUrl(cat) || getCatPhoto(cat.slug);
             const IconComp = getCategoryLucideIcon(cat.icon);
             return (
               <Link
@@ -322,7 +337,8 @@ export default function HomePage() {
                 </div>
               </Link>
             );
-          })}
+          })
+            : null}
         </div>
       </section>
 
