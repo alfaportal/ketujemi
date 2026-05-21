@@ -1,11 +1,16 @@
 import type { UiLang } from "./claude-client";
+import { inferSupportLang } from "./infer-support-lang";
 import type { ChatMessage } from "./support-chatbot";
 import {
   getSupportPhoneDisplay,
   SUPPORT_EMAIL,
   supportFallbackLine,
 } from "./support-contact";
-import { isMarketplaceBrowseQuestion, isSupportContactQuestion } from "./support-chat-screening";
+import {
+  getLastUserMessage,
+  isMarketplaceBrowseQuestion,
+  isSupportContactQuestion,
+} from "./support-chat-screening";
 
 type FaqEntry = { keywords: RegExp; reply: Record<UiLang, string> };
 
@@ -252,16 +257,21 @@ export function browsePlatformReply(lang: UiLang): string {
   return copy[lang] ?? copy.sq;
 }
 
-export function tryBrowseOrFaqAnswer(messages: ChatMessage[], lang: UiLang): string | null {
-  const lastUser = [...messages].reverse().find((m) => m.role === "user");
-  if (lastUser && isSupportContactQuestion(lastUser.content)) {
+export function tryBrowseOrFaqAnswer(
+  messages: ChatMessage[],
+  langHint: UiLang = "sq",
+): string | null {
+  const lastUserText = getLastUserMessage(messages);
+  const lang = inferSupportLang(lastUserText, langHint);
+
+  if (lastUserText && isSupportContactQuestion(lastUserText)) {
     return phoneReply(lang);
   }
 
   const faq = tryOfflineFaqAnswer(messages, lang);
   if (faq) return faq;
 
-  if (lastUser && isMarketplaceBrowseQuestion(lastUser.content)) {
+  if (lastUserText && isMarketplaceBrowseQuestion(lastUserText)) {
     return browsePlatformReply(lang);
   }
 

@@ -5,6 +5,7 @@ import {
   langLabel,
   type UiLang,
 } from "./claude-client";
+import { inferSupportLang } from "./infer-support-lang";
 import {
   getSupportPhoneDisplay,
   SUPPORT_EMAIL,
@@ -23,40 +24,40 @@ import {
 export type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const SUPPORT_PHONE = getSupportPhoneDisplay();
-const UNKNOWN_FALLBACK_SQ = `Kontakto: ${SUPPORT_EMAIL}`;
 
-function buildSupportSystem(lang: UiLang): string {
-  const fallback = supportFallbackLine(lang);
+function buildSupportSystem(replyLang: UiLang): string {
+  const fallback = supportFallbackLine(replyLang);
 
-  return `Ti je asistenti zyrtar i mbështetjes së KetuJemi.com — si një punonjës që e njeh platformën nga brenda, jo si bot i përgjithshëm.
+  return `Ti je asistenti zyrtar i mbështetjes së KetuJemi.com — si punonjës që e njeh platformën nga brenda.
 
-IDENTITETI YT
-• E njeh plotësisht strukturën e faqes: kategori, njoftime, postim, rregulla, blerës vs shitës.
-• Udhëzon me hapa konkretë (emra të kategorive si në faqe), kurrë me fraza të vagë si «shfleto kategoritë» pa treguar cilën.
-• Nuk përsërit të njëjtën informacion nëse e ke thënë tashmë në bisedë — përgjigju vetëm pyetjes së re.
+GJUHËT (obligativ)
+• Mbështet: shqip (sq), maqedonisht (mk), malazezisht (me).
+• Përgjigju GJITHMONË në të njëjtën gjuhë si mesazhi i fundit i përdoruesit (shqip / maqedonisht / malazezisht).
+• Nëse përdoruesi ndërron gjuhë, ndiq gjuhën e mesazhit të ri.
+• UI labels mund të mbeten si në faqe (p.sh. «Posto Falas», «Njoftimet»).
 
-STILI I PËRGJIGJES (obligativ)
-• Shqip profesional, i shkurtër, direkt (zakonisht 1–4 fjali; hapa të numëruara vetëm kur duhen).
-• Përdor gjuhën e përdoruesit sipas rreshtit «User language» më poshtë (shqip, maqedonisht, malazezisht).
-• Mos hyrje të gjata, mos përsëritje, mos paragrafë të panevojshëm.
+STILI (obligativ)
+• Profesional, i shkurtër, i drejtë — zakonisht 1–4 fjali; hapa të numëruara vetëm kur duhen.
+• Mos përsërit informacion që e ke dhënë tashmë në bisedë.
+• Mos fraza të vagë («shfleto kategoritë») — emër kategori konkret + hapa.
 
-SI TË PËRGJIGJESH SIPAS LLOJIT TË PYETJES
-1) Produkt / «ku e gjej X» → trego rrugën e saktë: Faqja kryesore → [kategoria] → [nën-kategoria nëse ka] → hap njoftimin. Përdor tabelën e kategorive nga njohuria e platformës.
-2) «Si të postoj» → hapat e shitësit (regjistrim, verifikim, Posto Falas, kategori, foto, çmim, 30 ditë).
-3) Çmim / artikull specifik (p.sh. «sa kushton iPhone 15») → shpjego që çdo njoftim ka çmimin e vet; oriento te kategoria e duhur, hap 2–3 njoftime dhe krahaso; kontakt me shitësin nga faqja e njoftimit.
-4) Si blerës → kategori → njoftim → kontakt shitësi; si shitës → postim + rregulla.
-5) Telefon / kontakt KetuJemi → menjëherë: ${SUPPORT_PHONE} dhe ${SUPPORT_EMAIL}.
-6) Nuk e di nga njohuria më poshtë → një fjali e vetme që mbaron me: «${fallback}» (mos shto telefon në këtë rast nëse përdoruesi nuk pyeti për kontakt).
+SI TË PËRGJIGJESH
+1) Produkt / «ku e gjej» → Faqja kryesore → [kategoria e saktë] → njoftimet → hap njoftimin.
+2) «Si të postoj» → regjistrim, verifikim, Posto Falas, kategori, foto, çmim, 30 ditë.
+3) Çmim artikulli → çdo njoftim ka çmimin e vet; kategoria → krahaso njoftime → kontakt shitësi.
+4) Blerës / shitës → udhëzo sipas rolit.
+5) Pyetje për telefon/email të KetuJemi → ${SUPPORT_PHONE}, ${SUPPORT_EMAIL}.
+6) Nuk e di → një fjali: «${fallback}»
 
 ÇKA NUK BËN
-• Mos jep vetëm email për pyetje navigimi ose produkti.
-• Mos hamendëso çmime, politika apo funksione që nuk janë në njohuri.
-• Mos përgjigju vulgaritet/spam — një fjali refuzimi, pa kontakt.
+• Mos jep vetëm email për navigim ose produkt.
+• Mos hamendëso çmime apo politika.
+• Spam/vulgaritet → një fjali refuzimi, pa kontakt.
 
 ${KETUJEMI_PLATFORM_KNOWLEDGE}`;
 }
 
-function clampSupportReply(text: string, lastUser: string, lang: UiLang): string {
+function clampSupportReply(text: string, lastUser: string, replyLang: UiLang): string {
   const allowContact =
     supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser);
 
@@ -68,30 +69,35 @@ function clampSupportReply(text: string, lastUser: string, lang: UiLang): string
     lower.includes("info@ketujemi.com") ||
     text.includes(SUPPORT_PHONE)
   ) {
-    return invalidSupportQuestionReply(lang);
+    return invalidSupportQuestionReply(replyLang);
   }
 
   return text;
 }
 
+function resolveReplyLang(messages: ChatMessage[], hint: UiLang): UiLang {
+  return inferSupportLang(getLastUserMessage(messages), hint);
+}
+
 export async function runSupportChat(
   messages: ChatMessage[],
-  lang: UiLang = "sq",
+  langHint: UiLang = "sq",
 ): Promise<string> {
   const lastUser = getLastUserMessage(messages);
+  const replyLang = resolveReplyLang(messages, langHint);
 
   if (screenSupportUserMessage(lastUser) === "invalid") {
-    return invalidSupportQuestionReply(lang);
+    return invalidSupportQuestionReply(replyLang);
   }
 
-  const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, lang);
+  const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, langHint);
 
   if (!isClaudeConfigured()) {
     if (offlineOrBrowse) return offlineOrBrowse;
     if (supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser)) {
-      return escalateToEmailReply(lang);
+      return escalateToEmailReply(replyLang);
     }
-    return invalidSupportQuestionReply(lang);
+    return invalidSupportQuestionReply(replyLang);
   }
 
   const client = getAnthropicClient();
@@ -99,8 +105,8 @@ export async function runSupportChat(
 
   const response = await client.messages.create({
     model: getClaudeModel(),
-    max_tokens: 520,
-    system: `${buildSupportSystem(lang)}\n\nUser language: ${langLabel(lang)}.`,
+    max_tokens: 380,
+    system: `${buildSupportSystem(replyLang)}\n\nGjuha e mesazhit të fundit të përdoruesit (përgjigju në këtë gjuhë): ${langLabel(replyLang)}.`,
     messages: trimmed.map((m) => ({
       role: m.role,
       content: m.content.slice(0, 2000),
@@ -114,31 +120,31 @@ export async function runSupportChat(
     .trim();
 
   if (text) {
-    return clampSupportReply(text, lastUser, lang);
+    return clampSupportReply(text, lastUser, replyLang);
   }
 
   if (offlineOrBrowse) return offlineOrBrowse;
   if (supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser)) {
-    return escalateToEmailReply(lang);
+    return escalateToEmailReply(replyLang);
   }
-  return invalidSupportQuestionReply(lang);
+  return invalidSupportQuestionReply(replyLang);
 }
 
-/** When API fails entirely — try FAQ before email. */
-export function supportChatFallbackReply(messages: ChatMessage[], lang: UiLang): string {
+export function supportChatFallbackReply(
+  messages: ChatMessage[],
+  langHint: UiLang = "sq",
+): string {
   const lastUser = getLastUserMessage(messages);
+  const replyLang = resolveReplyLang(messages, langHint);
 
   if (screenSupportUserMessage(lastUser) === "invalid") {
-    return invalidSupportQuestionReply(lang);
+    return invalidSupportQuestionReply(replyLang);
   }
 
-  const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, lang);
+  const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, langHint);
   if (offlineOrBrowse) return offlineOrBrowse;
   if (supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser)) {
-    return escalateToEmailReply(lang);
+    return escalateToEmailReply(replyLang);
   }
-  return invalidSupportQuestionReply(lang);
+  return invalidSupportQuestionReply(replyLang);
 }
-
-/** @internal — sq fallback phrase for tests/docs */
-export const SUPPORT_UNKNOWN_FALLBACK_SQ = UNKNOWN_FALLBACK_SQ;

@@ -6,17 +6,17 @@ import { cn } from "@/lib/utils";
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const WELCOME: Record<string, string> = {
-  ks: "Përshëndetje! Pyetni ku të gjeni një produkt, si të postoni ose si të blini — udhëzim i saktë, pa përgjigje të vagë.",
-  al: "Përshëndetje! Pyetni ku të gjeni një produkt, si të postoni ose si të blini — udhëzim i saktë, pa përgjigje të vagë.",
-  mk: "Здраво! Прашајте каде да најдете производ, како да објавите или купите — конкретни чекори.",
-  me: "Zdravo! Pitajte gdje pronaći proizvod, kako objaviti ili kupiti — konkretni koraci.",
+  ks: "Përshëndetje! Si mund t'ju ndihmoj?",
+  al: "Përshëndetje! Si mund t'ju ndihmoj?",
+  mk: "Здраво! Како можам да ви помогнам?",
+  me: "Zdravo! Kako vam mogu pomoći?",
 };
 
 const FALLBACK_BUSY: Record<string, string> = {
-  ks: "Nuk u lidh me serverin. Provoni përsëri ose shkruani info@ketujemi.com",
-  al: "Nuk u lidh me serverin. Provoni përsëri ose shkruani info@ketujemi.com",
-  mk: "Нема врска со серверот. Обидете се повторно или пишете на info@ketujemi.com",
-  me: "Nema veze sa serverom. Pokušajte ponovo ili pišite na info@ketujemi.com",
+  ks: "Nuk u lidh me serverin. Provoni përsëri.",
+  al: "Nuk u lidh me serverin. Provoni përsëri.",
+  mk: "Нема врска со серверот. Обидете се повторно.",
+  me: "Nema veze sa serverom. Pokušajte ponovo.",
 };
 
 export function SupportChatWidget() {
