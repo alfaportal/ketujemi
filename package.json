@@ -7,6 +7,8 @@
     "node": "22.x"
   },
   "scripts": {
-    "build": "cd ketujemi-2 && pnpm install --no-frozen-lockfile && pnpm --filter @workspace/vendi run build"
+    "preinstall": "node ketujemi-2/scripts/check-pnpm.mjs",
+    "build": "pnpm --filter @workspace/vendi run build",
+    "build:production": "pnpm -C ketujemi-2 run build:production"
   }
 }

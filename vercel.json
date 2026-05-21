@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "cd ketujemi-2 && pnpm install --no-frozen-lockfile",
-  "buildCommand": "cd ketujemi-2 && pnpm --filter @workspace/vendi run build",
+  "installCommand": "corepack enable && corepack prepare pnpm@10.12.1 --activate && pnpm config set minimum-release-age 0 && pnpm install --no-frozen-lockfile",
+  "buildCommand": "pnpm run build",
   "outputDirectory": "ketujemi-2/artifacts/vendi/dist/public",
   "framework": null,
   "rewrites": [

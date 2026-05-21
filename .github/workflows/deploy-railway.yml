@@ -9,9 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ketujemi-2
     steps:
       - uses: actions/checkout@v4
 
@@ -23,12 +20,12 @@ jobs:
         with:
           node-version: "22.12.0"
           cache: pnpm
-          cache-dependency-path: ketujemi-2/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install and build production
         run: |
           pnpm install --no-frozen-lockfile
-          NODE_ENV=production BASE_PATH=/ NODE_OPTIONS=--max-old-space-size=4096 pnpm run build:production
+          NODE_ENV=production BASE_PATH=/ NODE_OPTIONS=--max-old-space-size=4096 pnpm -C ketujemi-2 run build:production
 
       - name: Build OK
         run: echo "Frontend + API u build-uan. Railway duhet të deploy-ojë nëse deploys nuk janë paused."

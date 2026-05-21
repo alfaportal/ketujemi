@@ -6,7 +6,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const monorepoRoot = fs.existsSync(path.join(appRoot, "..", "pnpm-workspace.yaml"))
+  ? path.resolve(appRoot, "..")
+  : appRoot;
+const root = appRoot;
 
 function parseCatalog(yamlText) {
   const catalog = {};
@@ -75,7 +79,7 @@ function walkPackageJson(dir, catalog) {
   }
 }
 
-const workspaceYaml = fs.readFileSync(path.join(root, "pnpm-workspace.yaml"), "utf8");
+const workspaceYaml = fs.readFileSync(path.join(monorepoRoot, "pnpm-workspace.yaml"), "utf8");
 const catalog = parseCatalog(workspaceYaml);
 walkPackageJson(root, catalog);
 console.log("[prepare-npm-install] catalog: entries resolved for npm");
