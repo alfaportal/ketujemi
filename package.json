@@ -13,5 +13,10 @@
     "preinstall": "node ketujemi-2/scripts/check-pnpm.mjs",
     "build": "node scripts/with-node-options.mjs pnpm --filter @workspace/vendi run build && node scripts/with-node-options.mjs pnpm --filter @workspace/api-server run build:vercel",
     "build:production": "pnpm -C ketujemi-2 run build:production"
+  },
+  "devDependencies": {
+    "@rollup/rollup-win32-x64-msvc": "4.60.4",
+    "@tailwindcss/oxide-win32-x64-msvc": "4.3.0",
+    "lightningcss-win32-x64-msvc": "1.31.1"
   }
 }
