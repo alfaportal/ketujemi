@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "Vendi.com"
+title = "KetuJemi — Bli & Shit"
 version = "1.0.0"
 id = "artifacts/vendi"
 router = "path"
