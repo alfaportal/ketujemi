@@ -203,7 +203,9 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "suv-jeep": pexelsPhoto(1519812),
   "kombi-minivan": pexelsPhoto(8867093),
   "kabriolet-sportive": pexelsPhoto(6914852),
+  kupe: pexelsPhoto(3764984),
   "elektrike-hibride": pexelsPhoto(9799996),
+  pickup: pexelsPhoto(3422964),
   "klasike-vintage": pexelsPhoto(2127022),
 
   // —— Vetura › Sedan (official brand marks from car-logos dataset PNG) —————————————

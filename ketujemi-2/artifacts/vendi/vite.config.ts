@@ -151,6 +151,7 @@ export default defineConfig(async ({ command }) => {
       alias: {
         "@": path.resolve(configDir, "src"),
         "@assets": path.resolve(repoRoot, "attached_assets"),
+        "@workspace/category-images": path.resolve(repoRoot, "lib/db/src/category-pexels-urls.ts"),
       },
       dedupe: ["react", "react-dom"],
     },

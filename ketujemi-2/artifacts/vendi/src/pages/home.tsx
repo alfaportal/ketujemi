@@ -13,6 +13,7 @@ import { useGetCategories, getGetCategoriesQueryOptions } from "@workspace/api-c
 import { translateCategory } from "@/lib/category-translations";
 import { categoryPath } from "@/lib/category-navigation";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
+import { VeturaSubcategoryCarousel } from "@/components/vetura-subcategory-carousel";
 import { VipPartnersSection } from "@/components/vip-partners-section";
 import { cn } from "@/lib/utils";
 import {
@@ -140,6 +141,8 @@ export default function HomePage() {
           </svg>
         </div>
       </section>
+
+      <VeturaSubcategoryCarousel categories={(apiCategories ?? []) as any} />
 
       {/* -- Filter bar -- */}
       <section className="bg-white border-b border-gray-100 shadow-sm">

@@ -34,7 +34,9 @@ const VETURA_BODY_TYPES: { name: string; slug: string; icon: string }[] = [
   { name: "SUV & Jeep", slug: "suv-jeep", icon: "Car" },
   { name: "Kombi & Minivan", slug: "kombi-minivan", icon: "Car" },
   { name: "Kabriolet & Sportive", slug: "kabriolet-sportive", icon: "Car" },
+  { name: "Kupe", slug: "kupe", icon: "Car" },
   { name: "Elektrike & Hibride", slug: "elektrike-hibride", icon: "Zap" },
+  { name: "Pickup", slug: "pickup", icon: "Car" },
   { name: "Klasike & Vintage", slug: "klasike-vintage", icon: "Car" },
 ];
 

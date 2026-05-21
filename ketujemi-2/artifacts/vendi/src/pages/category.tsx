@@ -41,24 +41,9 @@ import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
 import { SiteHeader } from "@/components/site-header";
 import { getVeturaBrandLeafCategoryIds } from "@/lib/vetura-search-helpers";
 import { VeturaSearchPanel } from "@/components/vetura-search-panel";
-import { VeturaHeroSlideshow } from "@/components/vetura-hero-slideshow";
-import { MotorrHeroSlideshow } from "@/components/motorr-hero-slideshow";
-import { KamioneHeroSlideshow } from "@/components/kamione-hero-slideshow";
-import { AutoPjeseHeroSlideshow } from "@/components/auto-pjese-hero-slideshow";
-import { BanesaHeroSlideshow } from "@/components/banesa-hero-slideshow";
-import { LokaleZyreHeroSlideshow } from "@/components/lokale-zyre-hero-slideshow";
-import { TelefonaHeroSlideshow } from "@/components/telefona-hero-slideshow";
-import { KompjuterLaptopHeroSlideshow } from "@/components/kompjuter-laptop-hero-slideshow";
-import { TvElektronikeHeroSlideshow } from "@/components/tv-elektronike-hero-slideshow";
-import { MobiljeDekorimHeroSlideshow } from "@/components/mobilje-dekorim-hero-slideshow";
-import { RrobaKepuceHeroSlideshow } from "@/components/rroba-kepuce-hero-slideshow";
-import { FemijeHeroSlideshow } from "@/components/femije-hero-slideshow";
-import { SportOutdoorHeroSlideshow } from "@/components/sport-outdoor-hero-slideshow";
-import { ArsimKurseHeroSlideshow } from "@/components/arsim-kurse-hero-slideshow";
-import { MuzikeHobbyHeroSlideshow } from "@/components/muzike-hobby-hero-slideshow";
-import { BujqesiBlegtoriHeroSlideshow } from "@/components/bujqesi-blegtori-hero-slideshow";
-import { PuneSherbimeHeroSlideshow } from "@/components/pune-sherbime-hero-slideshow";
-import { KafshetHeroSlideshow } from "@/components/kafshet-hero-slideshow";
+import { CategoryHubHeroStatic } from "@/components/category-hub-hero-static";
+import { HUB_HERO_IMAGE_BY_SLUG } from "@/lib/category-hub-hero-images";
+import { resolveCategoryImageUrl } from "@/lib/resolve-category-image";
 import {
   KAMION_SEARCH_BRAND_ORDER,
   getKamioneBrandLeafCategoryIds,
@@ -382,7 +367,7 @@ function sortChildrenByNameOrder(childrenIn: unknown[], order: readonly string[]
 
 // ─── Level 1 subcategory card (body types) ────────────────────────────────────
 function BodyTypeCard({ category, onClick }: { category: any; onClick: () => void }) {
-  const photo = (typeof category.image_url === "string" && category.image_url.trim()) || getCatPhoto(category.name);
+  const photo = resolveCategoryImageUrl(category) || getCatPhoto(category.name);
   const Icon = getCatIcon(category.icon);
   return (
     <button
@@ -391,7 +376,7 @@ function BodyTypeCard({ category, onClick }: { category: any; onClick: () => voi
     >
       {photo ? (
         <div className="relative h-28 overflow-hidden">
-          <img src={photo} alt={category.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <img src={photo} alt={category.name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between">
             <span className="text-white font-bold text-sm sm:text-base drop-shadow leading-snug line-clamp-2">
@@ -1084,18 +1069,58 @@ export default function CategoryPage() {
     (KOMPJUTER_TYPE_ORDER as readonly string[]).includes(currentCategory?.name ?? "") ||
     (KOMPJUTER_BRAND_ORDER as readonly string[]).includes(currentCategory?.name ?? "");
 
-  const photo = isBanesaShtepiHub
-    ? BANESA_HERO_PHOTO
+  const hubHeroSlug = isVeturaHub
+    ? VETURA_HUB_SLUG
     : isMotorSkuterHub
-      ? MOTORR_HERO_PHOTO
-      : isAutoPjesHub
-        ? AUTO_PJESE_HERO_PHOTO
-        : isLokaleZyreHub
-            ? LOKALE_ZYRE_HERO_PHOTO
-            : (typeof (currentCategory as any)?.image_url === "string" &&
-                String((currentCategory as any).image_url).trim()) ||
-              getCatPhoto(currentCategory?.name ?? "") ||
-              "";
+      ? MOTOR_SKUTER_HUB_SLUG
+      : isKamioneFurgoneHub
+        ? KAMIONE_FURGONE_HUB_SLUG
+        : isAutoPjesHub
+          ? AUTO_PJESE_HUB_SLUG
+          : isBanesaShtepiHub
+            ? BANESA_SHTEPI_HUB_SLUG
+            : isLokaleZyreHub
+              ? LOKALE_ZYRE_HUB_SLUG
+              : isTelefonaHubPage
+                ? TELEFONA_HUB_SLUG
+                : isKompjuterLaptopHub
+                  ? KOMPJUTERE_LAPTOP_HUB_SLUG
+                  : isTvElektronikeHub
+                    ? TV_ELEKTRONIKE_HUB_SLUG
+                    : isMobiljeDekorimHub
+                      ? MOBILJE_DEKORIM_HUB_SLUG
+                      : isRrobaKepuceHub
+                        ? RROBA_KEPUCE_HUB_SLUG
+                        : isFemijeHub
+                          ? FEMIJE_HUB_SLUG
+                          : isSportOutdoorHub
+                            ? SPORT_OUTDOOR_HUB_SLUG
+                            : isArsimKurseHub
+                              ? ARSIM_KURSE_HUB_SLUG
+                              : isMuzikeHobbyHub
+                                ? MUZIKE_HOBBY_HUB_SLUG
+                                : isBujqesiBlegtoriHub
+                                  ? BUJQESI_BLEGTORI_HUB_SLUG
+                                  : isPuneSherbimeHub
+                                    ? PUNE_SHERBIME_HUB_SLUG
+                                    : isKafshetHub
+                                      ? KAFSHET_HUB_SLUG
+                                      : null;
+  const hubHeroImage = hubHeroSlug ? HUB_HERO_IMAGE_BY_SLUG[hubHeroSlug] : null;
+
+  const photo = hubHeroImage
+    ? ""
+    : isBanesaShtepiHub
+      ? BANESA_HERO_PHOTO
+      : isMotorSkuterHub
+        ? MOTORR_HERO_PHOTO
+        : isAutoPjesHub
+          ? AUTO_PJESE_HERO_PHOTO
+          : isLokaleZyreHub
+              ? LOKALE_ZYRE_HERO_PHOTO
+              : resolveCategoryImageUrl(currentCategory as any) ||
+                getCatPhoto(currentCategory?.name ?? "") ||
+                "";
   const Icon = getCatIcon(currentCategory?.icon ?? "Car");
 
   const crumbItems: { label: string; href?: string }[] = [{ label: "KetuJemi", href: "/" }];
@@ -1246,42 +1271,8 @@ export default function CategoryPage() {
             : "relative min-h-[10rem] h-44 sm:h-40 w-full max-w-[100vw] overflow-hidden isolate"
         }
       >
-        {isVeturaHub ? (
-          <VeturaHeroSlideshow />
-        ) : isMotorSkuterHub ? (
-          <MotorrHeroSlideshow />
-        ) : isKamioneFurgoneHub ? (
-          <KamioneHeroSlideshow />
-        ) : isAutoPjesHub ? (
-          <AutoPjeseHeroSlideshow />
-        ) : isBanesaShtepiHub ? (
-          <BanesaHeroSlideshow />
-        ) : isLokaleZyreHub ? (
-          <LokaleZyreHeroSlideshow />
-        ) : isTelefonaHubPage ? (
-          <TelefonaHeroSlideshow />
-        ) : isKompjuterLaptopHub ? (
-          <KompjuterLaptopHeroSlideshow />
-        ) : isTvElektronikeHub ? (
-          <TvElektronikeHeroSlideshow />
-        ) : isMobiljeDekorimHub ? (
-          <MobiljeDekorimHeroSlideshow />
-        ) : isRrobaKepuceHub ? (
-          <RrobaKepuceHeroSlideshow />
-        ) : isFemijeHub ? (
-          <FemijeHeroSlideshow />
-        ) : isSportOutdoorHub ? (
-          <SportOutdoorHeroSlideshow />
-        ) : isArsimKurseHub ? (
-          <ArsimKurseHeroSlideshow />
-        ) : isMuzikeHobbyHub ? (
-          <MuzikeHobbyHeroSlideshow />
-        ) : isBujqesiBlegtoriHub ? (
-          <BujqesiBlegtoriHeroSlideshow />
-        ) : isPuneSherbimeHub ? (
-          <PuneSherbimeHeroSlideshow />
-        ) : isKafshetHub ? (
-          <KafshetHeroSlideshow />
+        {hubHeroImage ? (
+          <CategoryHubHeroStatic imageUrl={hubHeroImage} alt={currentCategory?.name} />
         ) : photo ? (
           <img src={photo} alt={currentCategory?.name} className="absolute inset-0 w-full h-full object-cover max-w-none" sizes="100vw" />
         ) : (
