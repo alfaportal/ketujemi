@@ -243,12 +243,12 @@ export function SiteFooter() {
 
         <div
           className={cn(
-            "px-4 sm:px-6 lg:px-8 py-3.5 border-t border-gray-200/60",
-            "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
+            "relative px-4 sm:px-6 lg:px-8 py-3.5 border-t border-gray-200/60",
+            "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end",
           )}
         >
           <div
-            className="flex flex-wrap items-center justify-center sm:justify-start gap-2"
+            className="flex flex-wrap items-center justify-center gap-2 sm:absolute sm:left-1/2 sm:-translate-x-1/2"
             aria-label="Rrjetet sociale"
           >
             {SOCIAL_LINKS.map(({ href, label, Icon, external, iconClass }) => (

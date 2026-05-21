@@ -88,7 +88,7 @@ export function SupportChatWidget() {
     <>
       {open ? (
         <div
-          className="fixed bottom-20 right-4 z-[60] w-[min(320px,calc(100vw-2rem))] rounded-2xl border border-gray-200 bg-white shadow-2xl flex flex-col overflow-hidden"
+          className="fixed bottom-20 left-4 z-[60] w-[min(320px,calc(100vw-2rem))] rounded-2xl border border-gray-200 bg-white shadow-2xl flex flex-col overflow-hidden"
           style={{ maxHeight: "min(420px, 70vh)" }}
         >
           <div className="flex items-center justify-between px-4 py-3 bg-[#1A56A0] text-white">
@@ -152,7 +152,7 @@ export function SupportChatWidget() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-4 right-4 z-[60] flex items-center gap-2 rounded-full bg-[#1A56A0] text-white px-4 py-3 shadow-lg font-bold text-sm min-h-12 hover:bg-[#164a8c] transition-colors"
+        className="fixed bottom-4 left-4 z-[60] flex items-center gap-2 rounded-full bg-[#1A56A0] text-white px-4 py-3 shadow-lg font-bold text-sm min-h-12 hover:bg-[#164a8c] transition-colors"
         data-testid="button-support-chat"
       >
         <MessageCircle className="h-5 w-5" />
