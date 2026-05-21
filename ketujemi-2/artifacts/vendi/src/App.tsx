@@ -1,9 +1,11 @@
 import { lazy, Suspense } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { MarketProvider } from "@/lib/market-context";
+
+const AppProviders = lazy(() =>
+  import("@/components/app-providers").then((m) => ({ default: m.AppProviders })),
+);
 import { AuthProvider } from "@/lib/auth-context";
 import { AppLayout } from "@/components/app-layout";
 import { RefetchOnVisible } from "@/components/refetch-on-visible";
@@ -110,14 +112,15 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <RefetchOnVisible />
       <AuthProvider>
-        <TooltipProvider>
-          <MarketProvider>
-            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-              <Router />
-            </WouterRouter>
-            <Toaster />
-          </MarketProvider>
-        </TooltipProvider>
+        <Suspense fallback={null}>
+          <AppProviders>
+            <MarketProvider>
+              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                <Router />
+              </WouterRouter>
+            </MarketProvider>
+          </AppProviders>
+        </Suspense>
       </AuthProvider>
     </QueryClientProvider>
   );

@@ -5,6 +5,7 @@ import { defineConfig, type PluginOption } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { viteManualChunks } from "./src/lib/vite-manual-chunks.ts";
 
 const configDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(configDir, "..", "..");
@@ -33,7 +34,10 @@ export default defineConfig(async ({ command }) => {
   });
 
   const plugins: PluginOption[] = [
-    react(),
+    react({
+      // Radix / "use client" packages ship broken sourcemaps; avoid noisy build errors.
+      jsxRuntime: "automatic",
+    }),
     tailwindcss(),
     buildStampPlugin(),
     VitePWA({
@@ -156,6 +160,9 @@ export default defineConfig(async ({ command }) => {
       dedupe: ["react", "react-dom"],
     },
     root: configDir,
+    css: {
+      devSourcemap: false,
+    },
     build: {
       outDir: path.resolve(configDir, "dist/public"),
       emptyOutDir: true,
@@ -163,20 +170,18 @@ export default defineConfig(async ({ command }) => {
       target: "es2022",
       chunkSizeWarningLimit: 500,
       rollupOptions: {
+        onwarn(warning, defaultHandler) {
+          if (
+            warning.code === "SOURCEMAP_ERROR" ||
+            (typeof warning.message === "string" &&
+              warning.message.includes("Error when using sourcemap"))
+          ) {
+            return;
+          }
+          defaultHandler(warning);
+        },
         output: {
-          manualChunks(id) {
-            if (!id.includes("node_modules")) return;
-            if (id.includes("react-dom") || /[/\\]react[/\\]/.test(id)) {
-              return "react-vendor";
-            }
-            if (id.includes("@tanstack")) return "tanstack";
-            if (id.includes("lucide-react")) return "lucide";
-            if (id.includes("@radix-ui")) return "radix-ui";
-            if (id.includes("recharts") || id.includes("d3-")) return "charts";
-            if (id.includes("workbox")) return "workbox";
-            if (id.includes("wouter")) return "router";
-            return "vendor";
-          },
+          manualChunks: viteManualChunks,
         },
       },
     },
