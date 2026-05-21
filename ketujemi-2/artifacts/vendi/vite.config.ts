@@ -40,10 +40,10 @@ export default defineConfig(async ({ command }) => {
       registerType: "autoUpdate",
       includeAssets: ["logo.png", "logo-header.png", "icons/pwa-192x192.png", "icons/pwa-512x512.png"],
       manifest: {
-        name: "KetuJemi.com",
+        name: "KetuJemi — Bli & Shit",
         short_name: "KetuJemi",
         description:
-          "Platforma e njoftimeve të klasifikuara — Kosovë, Shqipëri, Maqedoni, Mal i Zi dhe diaspora shqiptare.",
+          "KetuJemi — Bli & Shit. Kosovë, Shqipëri, Maqedoni, Mal i Zi dhe diaspora shqiptare.",
         theme_color: "#3b82f6",
         background_color: "#ffffff",
         display: "standalone",

@@ -108,9 +108,9 @@ export type StaticPagesCopy = {
 
 const KS: StaticPagesCopy = {
   about: {
-    title: "Rreth KetuJemi.com",
+    title: "Rreth KetuJemi — Bli & Shit",
     tagline:
-      "KetuJemi.com është një nga platformat më të mëdha të shpalljeve falas, e shtrirë zyrtarisht në 11 tregje ndërkombëtare.",
+      "KetuJemi — Bli & Shit është platforma e shpalljeve falas në 11 tregje: Kosovë, Shqipëri, Maqedoni, Mal i Zi dhe diaspora shqiptare.",
     sections: [
       {
         title: "Misioni ynë",
