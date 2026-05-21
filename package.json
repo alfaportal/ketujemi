@@ -9,6 +9,11 @@
   "dependencies": {
     "punycode": "2.3.1"
   },
+  "devDependencies": {
+    "@rollup/rollup-win32-x64-msvc": "4.60.4",
+    "@tailwindcss/oxide-win32-x64-msvc": "4.3.0",
+    "lightningcss-win32-x64-msvc": "1.31.1"
+  },
   "scripts": {
     "preinstall": "node ketujemi-2/scripts/check-pnpm.mjs",
     "build": "node scripts/with-node-options.mjs pnpm --filter @workspace/vendi run build && node scripts/with-node-options.mjs pnpm --filter @workspace/api-server run build:vercel",
