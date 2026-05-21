@@ -1,6 +1,28 @@
-# Deploy KetuJemi.com (Railway / Render)
+# Deploy KetuJemi.com (Railway / Vercel / Render)
 
-## Railway (rekomanduar)
+## Vercel (frontend + API proxy)
+
+Repo root tani ka `package.json` dhe `vercel.json` — Vercel nuk duhet të japë më 404 për “no package.json”.
+
+**Vercel Dashboard → Project Settings:**
+
+| Setting | Vlera |
+|--------|--------|
+| **Repository** | `alfaportal/ketujemi` |
+| **Branch** | `master` |
+| **Root Directory** | *(lëre bosh)* ose `ketujemi-2` (përdor `ketujemi-2/vercel.json`) |
+| **Framework** | Other |
+| **Install Command** | *(lëre bosh — lexohet nga vercel.json)* |
+| **Build Command** | *(lëre bosh — lexohet nga vercel.json)* |
+| **Output Directory** | *(lëre bosh — lexohet nga vercel.json)* |
+
+**Shënim:** Vercel shërben vetëm **frontend-in** (Vite). Kërkesat `/api/*` ridrejtohen te Railway (`ketujemi-production.up.railway.app`). Për app të plotë me DB, mbaj edhe **Railway** si backend.
+
+Pas deploy: hap URL-n e Vercel-it → duhet faqja kryesore, jo 404.
+
+---
+
+## Railway (rekomanduar për backend + frontend së bashku)
 
 1. **Settings → Root Directory:** `ketujemi-2` **ose** lëre bosh (repo root) — skriptet funksionojnë për të dyja.
 2. **Settings → Deploy:** lidh repo `alfaportal/ketujemi`, branch `master`.
