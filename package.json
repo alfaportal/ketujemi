@@ -6,9 +6,12 @@
   "engines": {
     "node": "22.x"
   },
+  "dependencies": {
+    "punycode": "2.3.1"
+  },
   "scripts": {
     "preinstall": "node ketujemi-2/scripts/check-pnpm.mjs",
-    "build": "pnpm --filter @workspace/vendi run build && pnpm --filter @workspace/api-server run build:vercel",
+    "build": "node scripts/with-node-options.mjs pnpm --filter @workspace/vendi run build && node scripts/with-node-options.mjs pnpm --filter @workspace/api-server run build:vercel",
     "build:production": "pnpm -C ketujemi-2 run build:production"
   }
 }

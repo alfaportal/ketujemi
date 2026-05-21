@@ -44,6 +44,8 @@ onlyBuiltDependencies:
   - esbuild
 
 overrides:
+  # Node 22+ deprecates built-in `punycode`; force userland package for transitive deps (tr46, uri-js, whatwg-url).
+  punycode: npm:punycode@2.3.1
   "esbuild>@esbuild/darwin-arm64": "-"
   "esbuild>@esbuild/darwin-x64": "-"
   "esbuild>@esbuild/freebsd-arm64": "-"

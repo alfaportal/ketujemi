@@ -71,6 +71,7 @@ catalogs:
       version: 3.25.76
 
 overrides:
+  punycode: npm:punycode@2.3.1
   esbuild>@esbuild/darwin-arm64: '-'
   esbuild>@esbuild/darwin-x64: '-'
   esbuild>@esbuild/freebsd-arm64: '-'
@@ -155,7 +156,11 @@ overrides:
 
 importers:
 
-  .: {}
+  .:
+    dependencies:
+      punycode:
+        specifier: npm:punycode@2.3.1
+        version: 2.3.1
 
   ketujemi-2/artifacts/api-server:
     dependencies:
