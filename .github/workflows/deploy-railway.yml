@@ -1,0 +1,34 @@
+# Verifikon build-in në çdo push në master (Railway deploy-on automatikisht nga GitHub).
+name: Build KetuJemi
+
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ketujemi-2
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: pnpm
+          cache-dependency-path: ketujemi-2/pnpm-lock.yaml
+
+      - name: Install and build production
+        run: |
+          pnpm install --no-frozen-lockfile
+          NODE_ENV=production BASE_PATH=/ NODE_OPTIONS=--max-old-space-size=4096 pnpm run build:production
+
+      - name: Build OK
+        run: echo "Frontend + API u build-uan. Railway duhet të deploy-ojë nëse deploys nuk janë paused."

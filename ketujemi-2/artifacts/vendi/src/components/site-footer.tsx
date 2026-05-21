@@ -1,4 +1,4 @@
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import {
   FaCcMastercard,
   FaCcVisa,
@@ -65,7 +65,7 @@ const COLUMN_TITLE_CLASS =
   "text-[11px] font-bold uppercase tracking-[0.14em] mb-3";
 
 const LINK_CLASS =
-  "text-sm text-gray-600 hover:text-[#1A56A0] transition-colors";
+  "text-sm text-gray-600 hover:text-[#1A56A0] transition-colors inline-block py-1.5 min-h-[44px] leading-snug";
 
 type FooterLink = { href: string; label: string };
 
@@ -84,31 +84,13 @@ function FooterWordmark() {
   );
 }
 
+/** Lidhje footer — navigim i plotë në faqe (kontakt, FAQ, etj.), jo vetëm scroll. */
 function FooterLinkItem({ href, label }: FooterLink) {
-  const [pathname, setLocation] = useLocation();
   const isInternal = href.startsWith("/") && !href.startsWith("//");
 
   if (isInternal) {
     return (
-      <a
-        href={href}
-        className={LINK_CLASS}
-        onClick={(e) => {
-          if (
-            e.defaultPrevented ||
-            e.button !== 0 ||
-            e.metaKey ||
-            e.ctrlKey ||
-            e.shiftKey ||
-            e.altKey
-          ) {
-            return;
-          }
-          e.preventDefault();
-          if (pathname !== href) setLocation(href);
-          window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-        }}
-      >
+      <a href={href} className={LINK_CLASS}>
         {label}
       </a>
     );
