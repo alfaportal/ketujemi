@@ -4,8 +4,8 @@ import {
   Zap, Mail, Smartphone, Tag,
   ChevronRight, Globe, SlidersHorizontal, Search,
 } from "lucide-react";
-import * as Icons from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getCategoryLucideIcon } from "@/lib/category-lucide-icon";
 import { useMarket, LOCATIONS } from "@/lib/market-context";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { SiteHeader } from "@/components/site-header";
@@ -285,7 +285,7 @@ export default function HomePage() {
           {parentCategories.map((cat: any) => {
             const localName = translateCategory(cat.name, locale);
             const photo = getCatPhoto(cat.slug);
-            const IconComp = (Icons as unknown as Record<string, React.ElementType>)[cat.icon] ?? Icons.Tag;
+            const IconComp = getCategoryLucideIcon(cat.icon);
             return (
               <Link
                 key={cat.id}

@@ -15,12 +15,11 @@ import {
   Truck,
   Wrench,
   House,
-  Tag,
   Smartphone,
   Laptop,
 } from "lucide-react";
-import * as Icons from "lucide-react";
 import { useMarket } from "@/lib/market-context";
+import { getCategoryLucideIcon } from "@/lib/category-lucide-icon";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import ListingCard from "@/components/listing-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -163,7 +162,7 @@ function getCatPhoto(name: string): string | null {
 }
 
 function getCatIcon(iconName: string): React.ElementType {
-  return (Icons as unknown as Record<string, React.ElementType>)[iconName] ?? Tag;
+  return getCategoryLucideIcon(iconName);
 }
 
 // ─── Brand logos ──────────────────────────────────────────────────────────────

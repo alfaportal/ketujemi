@@ -1,10 +1,16 @@
+import { lazy, Suspense } from "react";
 import { useLocation } from "wouter";
 import { SiteFooter } from "@/components/site-footer";
-import { SupportChatWidget } from "@/components/support-chat-widget";
 import { CardPaymentsPanel, listingIdFromPath } from "@/components/card-payments-panel";
 import { useFreshPageOnRoute } from "@/hooks/use-fresh-page-on-route";
 import { useAuth } from "@/lib/auth-context";
 import { isInfoStaticPage } from "@/lib/static-page-paths";
+
+const SupportChatWidget = lazy(() =>
+  import("@/components/support-chat-widget").then((m) => ({
+    default: m.SupportChatWidget,
+  })),
+);
 
 type AppLayoutProps = {
   children: React.ReactNode;
@@ -33,7 +39,11 @@ export function AppLayout({ children }: AppLayoutProps) {
         <CardPaymentsPanel listingId={listingId} compact className="sticky bottom-0 z-20" />
       ) : null}
       {!hideFooter ? <SiteFooter /> : null}
-      {!hideFooter ? <SupportChatWidget /> : null}
+      {!hideFooter ? (
+        <Suspense fallback={null}>
+          <SupportChatWidget />
+        </Suspense>
+      ) : null}
     </div>
   );
 }

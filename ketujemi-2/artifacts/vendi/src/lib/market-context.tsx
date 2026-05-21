@@ -1,5 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
-import { EXTRA_TRANSLATIONS } from "./app-extra-i18n";
+import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from "react";
 import {
   DEFAULT_UI_LANG,
   isUiLang,
@@ -737,13 +736,20 @@ const MarketContext = createContext<MarketContextType>({
   uiLang: DEFAULT_UI_LANG,
   setUiLang: () => {},
   rates: { EUR: 1, ALL: 109.5, MKD: 61.5 },
-  t: { ...TRANSLATIONS.ks, ...EXTRA_TRANSLATIONS.ks },
+  t: TRANSLATIONS.ks,
 });
 
 export function MarketProvider({ children }: { children: ReactNode }) {
   const [market, setMarketState] = useState<Market>(MARKETS[0]);
   const [uiLang, setUiLangState] = useState<UiLang>(DEFAULT_UI_LANG);
   const [rates, setRates] = useState<Record<string, number>>({ EUR: 1, ALL: 109.5, MKD: 61.5 });
+  const [extraTranslations, setExtraTranslations] = useState<
+    Record<string, Record<string, string>> | null
+  >(null);
+
+  useEffect(() => {
+    void import("./app-extra-i18n").then((m) => setExtraTranslations(m.EXTRA_TRANSLATIONS));
+  }, []);
 
   useEffect(() => {
     fetchLiveRates().then(setRates);
@@ -777,10 +783,13 @@ export function MarketProvider({ children }: { children: ReactNode }) {
   };
 
   const translationCode = translationKeyForUiLang(uiLang);
-  const tMerged = {
-    ...TRANSLATIONS[translationCode],
-    ...EXTRA_TRANSLATIONS[translationCode],
-  };
+  const tMerged = useMemo(
+    () => ({
+      ...TRANSLATIONS[translationCode],
+      ...(extraTranslations?.[translationCode] ?? {}),
+    }),
+    [translationCode, extraTranslations],
+  );
 
   return (
     <MarketContext.Provider value={{ market, setMarket, uiLang, setUiLang, rates, t: tMerged }}>

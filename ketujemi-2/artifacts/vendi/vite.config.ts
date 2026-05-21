@@ -161,6 +161,24 @@ export default defineConfig(async ({ command }) => {
       emptyOutDir: true,
       sourcemap: false,
       target: "es2022",
+      chunkSizeWarningLimit: 500,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes("node_modules")) return;
+            if (id.includes("react-dom") || /[/\\]react[/\\]/.test(id)) {
+              return "react-vendor";
+            }
+            if (id.includes("@tanstack")) return "tanstack";
+            if (id.includes("lucide-react")) return "lucide";
+            if (id.includes("@radix-ui")) return "radix-ui";
+            if (id.includes("recharts") || id.includes("d3-")) return "charts";
+            if (id.includes("workbox")) return "workbox";
+            if (id.includes("wouter")) return "router";
+            return "vendor";
+          },
+        },
+      },
     },
     server: {
       port,

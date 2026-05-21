@@ -1,6 +1,6 @@
 import { Link } from "wouter";
-import * as Icons from "lucide-react";
 import { useMarket } from "@/lib/market-context";
+import { getCategoryLucideIcon } from "@/lib/category-lucide-icon";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { translateCategory } from "@/lib/category-translations";
 import { categoryPath } from "@/lib/category-navigation";
@@ -44,7 +44,7 @@ interface Props {
 export default function CategoryCard({ category, onClick }: Props) {
   const { uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
-  const IconComponent = (Icons as unknown as Record<string, React.ElementType>)[category.icon] ?? Icons.Tag;
+  const IconComponent = getCategoryLucideIcon(category.icon);
 
   const localName = translateCategory(category.name, locale);
   const photoKey = Object.keys(CAT_PHOTOS).find((k) => category.name.startsWith(k));
