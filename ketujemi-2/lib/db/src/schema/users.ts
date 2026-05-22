@@ -6,6 +6,11 @@ export type AccountType = "private" | "business";
 /** Business subscription tier (see BUSINESS_RULES.md). */
 export type BusinessTier = "standard" | "vip";
 
+/** Partner program lifecycle (business accounts). */
+export type BusinessStatus = "pending" | "active" | "blocked";
+
+export type PartnerLinkType = "website" | "instagram" | "facebook";
+
 export const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").unique(),
@@ -25,6 +30,13 @@ export const usersTable = pgTable("users", {
   /** Logo shown in «Partnerët tanë të besuar» when VIP is active (falls back to profile_photo_url). */
   partner_logo_url: text("partner_logo_url"),
   business_tier: text("business_tier"),
+  /** pending until admin activates; blocked hides partner strip and posting. */
+  business_status: text("business_status"),
+  /** Single outbound link (website / Instagram / Facebook) after activation. */
+  partner_link_url: text("partner_link_url"),
+  partner_link_type: text("partner_link_type"),
+  /** JSON string array — up to 5 banner image URLs for VIP carousel. */
+  partner_banner_urls: text("partner_banner_urls"),
   vip_expires_at: timestamp("vip_expires_at"),
   /** Temporary suspension (30-day strike); permanent ban uses banned_at. */
   suspended_until: timestamp("suspended_until"),

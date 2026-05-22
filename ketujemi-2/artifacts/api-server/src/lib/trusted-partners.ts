@@ -2,6 +2,11 @@ import { db, listingsTable, usersTable } from "@workspace/db";
 import type { User } from "@workspace/db";
 import { and, eq, gt, inArray, isNull, or, sql } from "drizzle-orm";
 import { isVipBusinessActive } from "./business-rules";
+import {
+  isBusinessPartnerActive,
+  parsePartnerBannerUrls,
+  resolvePartnerClickUrl,
+} from "./business-partner";
 import { getCategoryTreeIds } from "./category-tree";
 import { userOwnsListing } from "./listing-ownership";
 
@@ -11,6 +16,9 @@ export type TrustedPartnerDto = {
   partner_logo_url: string | null;
   profile_photo_url: string | null;
   profile_path: string;
+  click_url: string | null;
+  tier: PartnerTier;
+  banner_urls: string[];
 };
 
 export function partnerDisplayName(user: Pick<User, "business_name" | "display_name">): string {
@@ -60,7 +68,9 @@ export async function fetchTrustedVipPartners(): Promise<User[]> {
       ),
     );
 
-  return rows.filter((u) => isVipBusinessActive(u) && isAccountActive(u));
+  return rows.filter(
+    (u) => isVipBusinessActive(u) && isAccountActive(u) && isBusinessPartnerActive(u),
+  );
 }
 
 /** VIP partners with at least one active listing in the given category tree. */
@@ -112,7 +122,9 @@ export async function fetchTrustedStandardPartners(): Promise<User[]> {
       ),
     );
 
-  return rows.filter((u) => !isVipBusinessActive(u) && isAccountActive(u));
+  return rows.filter(
+    (u) => !isVipBusinessActive(u) && isAccountActive(u) && isBusinessPartnerActive(u),
+  );
 }
 
 /** Standard partners with at least one active listing in the given category tree. */
@@ -150,13 +162,17 @@ export async function fetchTrustedStandardPartnersForCategory(
   return matched;
 }
 
-export function toTrustedPartnerDto(user: User): TrustedPartnerDto {
+export function toTrustedPartnerDto(user: User, tier: PartnerTier): TrustedPartnerDto {
   return {
     id: user.id,
     business_name: partnerDisplayName(user),
     partner_logo_url: user.partner_logo_url?.trim() || null,
     profile_photo_url: user.profile_photo_url?.trim() || null,
     profile_path: `/biznes/${user.id}`,
+    click_url: resolvePartnerClickUrl(user),
+    tier,
+    banner_urls:
+      tier === "vip" ? parsePartnerBannerUrls(user.partner_banner_urls) : [],
   };
 }
 
@@ -185,5 +201,5 @@ export async function getTrustedPartnersShuffled(
   const cap = Math.max(1, Math.min(24, Math.floor(limit)));
   const pool = await fetchTrustedPartnersPool(tier, categoryId);
   const partners = shuffle(pool).slice(0, cap);
-  return partners.map(toTrustedPartnerDto);
+  return partners.map((u) => toTrustedPartnerDto(u, tier));
 }

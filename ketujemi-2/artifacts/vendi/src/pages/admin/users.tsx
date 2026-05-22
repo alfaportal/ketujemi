@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import {
   getAdminUsers,
   getRegisteredUsers,
+  getAdminBusinesses,
+  activateAdminBusiness,
+  blockAdminBusiness,
   getUserListings,
   banRegisteredUser,
   unbanRegisteredUser,
@@ -11,19 +14,21 @@ import {
   type AdminSeller,
   type RegisteredUser,
   type AdminListing,
+  type AdminBusinessAccount,
 } from "@/lib/admin-api";
-import { Search, ChevronDown, ChevronUp, User, Phone, FileText, Clock, Ban, Trash2 } from "lucide-react";
+import { Search, ChevronDown, ChevronUp, User, Phone, Clock, Ban, Trash2, Building2, CheckCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useMarket } from "@/lib/market-context";
 import { dateFnsLocale, fillPlaceholders } from "@/lib/app-extra-i18n";
 
-type Tab = "registered" | "sellers";
+type Tab = "registered" | "sellers" | "businesses";
 
 export default function AdminUsers() {
   const { t, market } = useMarket();
-  const [tab, setTab] = useState<Tab>("registered");
+  const [tab, setTab] = useState<Tab>("businesses");
   const [sellers, setSellers] = useState<AdminSeller[]>([]);
   const [registered, setRegistered] = useState<RegisteredUser[]>([]);
+  const [businesses, setBusinesses] = useState<AdminBusinessAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -33,9 +38,14 @@ export default function AdminUsers() {
   const reload = async () => {
     setLoading(true);
     try {
-      const [s, r] = await Promise.all([getAdminUsers(), getRegisteredUsers()]);
+      const [s, r, b] = await Promise.all([
+        getAdminUsers(),
+        getRegisteredUsers(),
+        getAdminBusinesses(),
+      ]);
       setSellers(s);
       setRegistered(r);
+      setBusinesses(b);
     } finally {
       setLoading(false);
     }
@@ -72,6 +82,13 @@ export default function AdminUsers() {
   const filteredSellers = sellers.filter(
     (u) => u.seller_name.toLowerCase().includes(q) || u.seller_phone.includes(q),
   );
+  const filteredBusinesses = businesses.filter(
+    (b) =>
+      (b.business_name ?? "").toLowerCase().includes(q) ||
+      (b.email ?? "").toLowerCase().includes(q) ||
+      (b.phone_e164_digits ?? "").includes(q),
+  );
+  const pendingCount = businesses.filter((b) => b.business_status === "pending").length;
 
   return (
     <div className="space-y-4">
@@ -104,6 +121,20 @@ export default function AdminUsers() {
         >
           {t.adm_users_tab_sellers}
         </button>
+        <button
+          type="button"
+          onClick={() => setTab("businesses")}
+          className={`px-4 py-2 rounded-xl text-sm font-bold relative ${
+            tab === "businesses" ? "bg-blue-600 text-white" : "bg-white border border-gray-200 text-gray-600"
+          }`}
+        >
+          Bizneset / Partner
+          {pendingCount > 0 ? (
+            <span className="ml-1.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-amber-400 text-amber-950 text-[10px] font-black">
+              {pendingCount}
+            </span>
+          ) : null}
+        </button>
       </div>
 
       <div className="relative">
@@ -120,6 +151,79 @@ export default function AdminUsers() {
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         {loading ? (
           <div className="px-5 py-16 text-center text-gray-400">{t.adm_users_loading}</div>
+        ) : tab === "businesses" ? (
+          filteredBusinesses.length === 0 ? (
+            <div className="px-5 py-16 text-center text-gray-400">Nuk ka llogari biznesi</div>
+          ) : (
+            <div className="divide-y divide-gray-50">
+              {filteredBusinesses.map((b) => (
+                <div key={b.id} className="px-5 py-4 flex flex-wrap items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1A56A0] to-blue-600 flex items-center justify-center flex-shrink-0">
+                    <Building2 size={18} className="text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-gray-800">
+                      {b.business_name ?? "—"}
+                      <span
+                        className={`ml-2 text-xs font-bold uppercase ${
+                          b.business_tier === "vip" ? "text-amber-700" : "text-[#1A56A0]"
+                        }`}
+                      >
+                        {b.business_tier === "vip" ? "VIP" : "Partner"}
+                      </span>
+                      <span
+                        className={`ml-2 text-xs font-bold uppercase ${
+                          b.business_status === "active"
+                            ? "text-green-700"
+                            : b.business_status === "pending"
+                              ? "text-amber-700"
+                              : "text-red-600"
+                        }`}
+                      >
+                        {b.business_status === "active"
+                          ? "Aktiv"
+                          : b.business_status === "pending"
+                            ? "Në pritje"
+                            : "Bllokuar"}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      {b.email ?? "—"} · {b.phone_e164_digits ?? "—"}
+                      {b.partner_link_url ? ` · Link: ${b.partner_link_type}` : " · Pa link"}
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    {b.business_status === "pending" ? (
+                      <button
+                        type="button"
+                        onClick={() => activateAdminBusiness(b.id).then(reload)}
+                        className="text-xs font-bold text-green-800 px-3 py-1.5 rounded-lg bg-green-50 flex items-center gap-1"
+                      >
+                        <CheckCircle size={12} /> Aktivizo
+                      </button>
+                    ) : null}
+                    {b.business_status !== "blocked" ? (
+                      <button
+                        type="button"
+                        onClick={() => blockAdminBusiness(b.id).then(reload)}
+                        className="text-xs font-bold text-red-700 px-3 py-1.5 rounded-lg bg-red-50 flex items-center gap-1"
+                      >
+                        <Ban size={12} /> Blloko
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => activateAdminBusiness(b.id).then(reload)}
+                        className="text-xs font-bold text-green-700 px-3 py-1.5 rounded-lg bg-green-50"
+                      >
+                        Riaktivizo
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
         ) : tab === "registered" ? (
           filteredRegistered.length === 0 ? (
             <div className="px-5 py-16 text-center text-gray-400">{t.adm_users_none}</div>

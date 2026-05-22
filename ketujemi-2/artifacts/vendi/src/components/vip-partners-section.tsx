@@ -1,18 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "wouter";
 import { Sparkles, Star } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
 import { cn } from "@/lib/utils";
+import { PartnerSlot, type PartnerSlotData } from "@/components/partner-slot";
 
 export type VipPartnersSectionVariant = "home" | "hub";
 
-type TrustedPartner = {
-  id: number;
-  business_name: string;
-  partner_logo_url: string | null;
-  profile_photo_url: string | null;
-  profile_path: string;
-};
+type TrustedPartner = PartnerSlotData;
 
 type PartnerTier = "vip" | "standard";
 
@@ -51,87 +45,6 @@ const VIP_SLOT_FRAME = cn(
   "shadow-[0_2px_12px_rgba(217,119,6,0.2)]",
   "hover:border-amber-500 hover:shadow-[0_4px_18px_rgba(217,119,6,0.32)]",
 );
-
-const VIP_BADGE =
-  "absolute top-0 right-0 z-[2] flex items-center gap-0.5 bg-gradient-to-r from-amber-500 to-yellow-600 text-[7px] sm:text-[8px] font-black text-white px-1 py-0.5 rounded-bl-md tracking-wide leading-tight";
-
-const STANDARD_BADGE =
-  "absolute top-0 right-0 z-[2] bg-[#1A56A0] text-[7px] sm:text-[8px] font-black text-white px-1 py-0.5 rounded-bl-md tracking-wide leading-tight";
-
-function partnerImageUrl(p: TrustedPartner): string | null {
-  const url = p.partner_logo_url?.trim() || p.profile_photo_url?.trim();
-  return url || null;
-}
-
-function partnerInitials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "B";
-  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
-  return (parts[0]![0]! + parts[1]![0]!).toUpperCase();
-}
-
-function recordPartnerClick(partnerId: number) {
-  void fetch("/api/partners/analytics/click", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ partner_id: partnerId }),
-  }).catch(() => {});
-}
-
-function PartnerLogoSlot({
-  partner,
-  tier,
-}: {
-  partner: TrustedPartner;
-  tier: PartnerTier;
-}) {
-  const img = partnerImageUrl(partner);
-  const isVip = tier === "vip";
-  const frame = isVip ? VIP_SLOT_FRAME : STANDARD_SLOT_FRAME;
-
-  return (
-    <Link
-      href={partner.profile_path}
-      onClick={() => recordPartnerClick(partner.id)}
-      className={cn(
-        frame,
-        "relative group block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-        isVip ? "focus-visible:ring-amber-500" : "focus-visible:ring-[#1A56A0]",
-      )}
-      title={partner.business_name}
-      data-testid={`trusted-partner-${tier}-${partner.id}`}
-    >
-      <span className={isVip ? VIP_BADGE : STANDARD_BADGE}>
-        {isVip ? <Star className="h-2.5 w-2.5 fill-white shrink-0" aria-hidden /> : null}
-        {isVip ? "VIP Partner" : "Partner"}
-      </span>
-      {img ? (
-        <img
-          src={img}
-          alt={partner.business_name}
-          className="relative z-[1] h-full w-full object-contain p-2 bg-white/90 group-hover:scale-[1.03] transition-transform"
-          loading="lazy"
-        />
-      ) : (
-        <div
-          className={cn(
-            "relative z-[1] h-full w-full flex flex-col items-center justify-center px-2 text-white",
-            isVip ? "bg-gradient-to-br from-amber-600 to-yellow-600" : "bg-[#1A56A0]",
-          )}
-          aria-hidden
-        >
-          <span className="text-lg sm:text-xl font-black leading-none">
-            {partnerInitials(partner.business_name)}
-          </span>
-          <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide mt-1 text-center line-clamp-2 leading-tight opacity-95">
-            {partner.business_name}
-          </span>
-        </div>
-      )}
-    </Link>
-  );
-}
 
 function EmptyPartnerSlot({
   label,
@@ -206,7 +119,11 @@ function PartnerRow({
       </p>
       <div className={gridClass}>
         {partners.map((p) => (
-          <PartnerLogoSlot key={p.id} partner={p} tier={tier} />
+          <PartnerSlot
+            key={p.id}
+            partner={{ ...p, tier }}
+            frameClass={tier === "vip" ? VIP_SLOT_FRAME : STANDARD_SLOT_FRAME}
+          />
         ))}
         {loaded && emptySlots > 0
           ? Array.from({ length: emptySlots }, (_, i) => (
@@ -241,8 +158,14 @@ async function fetchTierPartners(
   }
   const r = await fetch(`/api/partners/trusted?${params}`, { credentials: "include" });
   if (!r.ok) return [];
-  const data = (await r.json()) as { partners?: TrustedPartner[] };
-  return Array.isArray(data.partners) ? data.partners : [];
+  const data = (await r.json()) as { partners?: PartnerSlotData[] };
+  const list = Array.isArray(data.partners) ? data.partners : [];
+  return list.map((p) => ({
+    ...p,
+    click_url: p.click_url ?? null,
+    tier: p.tier ?? tier,
+    banner_urls: Array.isArray(p.banner_urls) ? p.banner_urls : [],
+  }));
 }
 
 export function VipPartnersSection({

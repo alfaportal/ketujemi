@@ -12,6 +12,7 @@ import { AuthToolbar } from "@/components/auth-toolbar";
 import { BusinessAccountCard } from "@/components/business-account-card";
 import { CardPaymentsPanel } from "@/components/card-payments-panel";
 import { PartnerLogoAnalyticsCard } from "@/components/partner-logo-analytics-card";
+import { PartnerProfilePanel } from "@/components/partner-profile-panel";
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
@@ -113,6 +114,8 @@ export default function ProfilePage() {
 
           <BusinessAccountCard user={user} />
 
+          <PartnerProfilePanel user={user} />
+
           <PartnerLogoAnalyticsCard user={user} />
 
           <CardPaymentsPanel />
@@ -149,9 +152,9 @@ export default function ProfilePage() {
                 className="min-h-12 h-12"
               />
             </div>
-            {user.account_type === "business" ? (
+            {user.account_type === "business" && user.business_status === "active" ? (
               <div className="space-y-2">
-                <Label htmlFor="profile-partner-logo">Logo partner (VIP)</Label>
+                <Label htmlFor="profile-partner-logo">Logo partner</Label>
                 <Input
                   id="profile-partner-logo"
                   type="url"
@@ -161,7 +164,8 @@ export default function ProfilePage() {
                   className="min-h-12 h-12"
                 />
                 <p className="text-xs text-gray-500">
-                  Ngarko URL-në e logos zyrtare me ngjyra. Pa logo, shfaqet emri i biznesit.
+                  URL e logos. Pa logo, shfaqet emri i biznesit. Klikimi hap linkun nga seksioni partner
+                  më sipër.
                 </p>
               </div>
             ) : null}

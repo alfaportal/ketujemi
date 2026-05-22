@@ -7,7 +7,9 @@ import {
   adminSettingsTable,
   usersTable,
 } from "@workspace/db";
-import { eq, desc, sql, count, gte } from "drizzle-orm";
+import { eq, desc, sql, count, gte, and } from "drizzle-orm";
+import { isVipBusinessActive } from "../lib/business-rules";
+import { getBusinessStatus } from "../lib/business-partner";
 import { CreateListingBody } from "@workspace/api-zod";
 import {
   verifyAdminPassword,
@@ -359,6 +361,97 @@ router.post("/admin/registered-users/:id/unban", requireAdmin, async (req, res) 
     res.json({ id: updated.id, banned_at: null });
   } catch (err) {
     req.log.error({ err }, "Admin unban user error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── GET /admin/businesses — partner program accounts ─────────────────────────
+router.get("/admin/businesses", requireAdmin, async (req, res) => {
+  try {
+    const rows = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.account_type, "business"))
+      .orderBy(desc(usersTable.created_at));
+
+    res.json(
+      rows.map((u) => ({
+        id: u.id,
+        email: u.email,
+        phone_e164_digits: u.phone_e164_digits,
+        business_name: u.business_name,
+        business_tier: u.business_tier,
+        business_status: getBusinessStatus(u),
+        partner_link_url: u.partner_link_url,
+        partner_link_type: u.partner_link_type,
+        partner_logo_url: u.partner_logo_url,
+        banned_at: u.banned_at ? u.banned_at.toISOString() : null,
+        vip_expires_at: u.vip_expires_at ? u.vip_expires_at.toISOString() : null,
+        is_vip_active: isVipBusinessActive(u),
+        created_at: u.created_at.toISOString(),
+      })),
+    );
+  } catch (err) {
+    req.log.error({ err }, "Admin businesses error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── POST /admin/businesses/:id/activate ─────────────────────────────────────
+router.post("/admin/businesses/:id/activate", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+    if (!user || user.account_type !== "business") {
+      res.status(404).json({ error: "Business account not found" });
+      return;
+    }
+
+    const patch: Partial<typeof usersTable.$inferInsert> = {
+      business_status: "active",
+      banned_at: null,
+      ban_reason: null,
+    };
+    if (user.business_tier === "vip") {
+      const exp = new Date();
+      exp.setDate(exp.getDate() + 30);
+      patch.vip_expires_at = exp;
+    }
+
+    const [updated] = await db
+      .update(usersTable)
+      .set(patch)
+      .where(eq(usersTable.id, id))
+      .returning();
+
+    res.json({
+      id: updated!.id,
+      business_status: getBusinessStatus(updated!),
+      vip_expires_at: updated!.vip_expires_at?.toISOString() ?? null,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Admin activate business error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── POST /admin/businesses/:id/block ────────────────────────────────────────
+router.post("/admin/businesses/:id/block", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const reason = typeof req.body?.reason === "string" ? req.body.reason.slice(0, 500) : null;
+    const [updated] = await db
+      .update(usersTable)
+      .set({ business_status: "blocked", ban_reason: reason })
+      .where(and(eq(usersTable.id, id), eq(usersTable.account_type, "business")))
+      .returning();
+    if (!updated) {
+      res.status(404).json({ error: "Business account not found" });
+      return;
+    }
+    res.json({ id: updated.id, business_status: "blocked" });
+  } catch (err) {
+    req.log.error({ err }, "Admin block business error");
     res.status(500).json({ error: "Internal server error" });
   }
 });

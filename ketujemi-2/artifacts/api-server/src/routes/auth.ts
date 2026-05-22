@@ -21,6 +21,12 @@ import { isRecaptchaRequired, verifyRecaptchaToken } from "../lib/recaptcha-veri
 import { assertAccountActive, isUserBanned } from "../lib/user-ban";
 import { getBusinessQuotaStatus } from "../lib/business-quota";
 import { isBusinessAccount } from "../lib/business-rules";
+import {
+  isBusinessPartnerActive,
+  normalizePartnerLink,
+  serializePartnerBannerUrls,
+  type PartnerLinkType,
+} from "../lib/business-partner";
 
 const router = Router();
 
@@ -325,9 +331,62 @@ router.patch("/auth/profile", async (req, res) => {
     const v = body.profile_photo_url.trim();
     patch.profile_photo_url = v.length ? v.slice(0, 2048) : null;
   }
+  const [existing] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!existing) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
   if (typeof body.partner_logo_url === "string") {
+    if (!isBusinessPartnerActive(existing)) {
+      res.status(403).json({
+        error: "BUSINESS_NOT_ACTIVE",
+        message: "Logo partner mund të ndryshohet vetëm pas aktivizimit nga administratori.",
+      });
+      return;
+    }
     const v = body.partner_logo_url.trim();
     patch.partner_logo_url = v.length ? v.slice(0, 2048) : null;
+  }
+
+  if (body.partner_link != null && isBusinessAccount(existing)) {
+    if (!isBusinessPartnerActive(existing)) {
+      res.status(403).json({
+        error: "BUSINESS_NOT_ACTIVE",
+        message: "Linku mund të shtohet vetëm pas aktivizimit nga administratori.",
+      });
+      return;
+    }
+    const type = String((body.partner_link as { type?: string })?.type ?? "").trim() as PartnerLinkType;
+    const url = String((body.partner_link as { url?: string })?.url ?? "").trim();
+    if (!["website", "instagram", "facebook"].includes(type)) {
+      res.status(400).json({ error: "Invalid partner_link.type" });
+      return;
+    }
+    const norm = normalizePartnerLink(type, url);
+    if (!norm.ok) {
+      res.status(400).json({ error: norm.message });
+      return;
+    }
+    patch.partner_link_type = norm.type;
+    patch.partner_link_url = norm.url;
+  }
+
+  if (Array.isArray(body.partner_banner_urls) && isBusinessAccount(existing)) {
+    if (!isBusinessPartnerActive(existing)) {
+      res.status(403).json({
+        error: "BUSINESS_NOT_ACTIVE",
+        message: "Bannerët mund të shtohen vetëm pas aktivizimit.",
+      });
+      return;
+    }
+    if (existing.business_tier !== "vip") {
+      res.status(403).json({ error: "VIP_REQUIRED", message: "Bannerët lëvizës janë vetëm për VIP Partner." });
+      return;
+    }
+    patch.partner_banner_urls = serializePartnerBannerUrls(
+      body.partner_banner_urls.map((u: unknown) => String(u ?? "")),
+    );
   }
   if (typeof body.city === "string") {
     const v = body.city.trim();
@@ -349,12 +408,7 @@ router.patch("/auth/profile", async (req, res) => {
     .where(eq(usersTable.id, id))
     .returning();
 
-  if (!row) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
-
-  res.json({ user: publicUser(row, { self: true }) });
+  res.json({ user: publicUser(row!, { self: true }) });
 });
 
 // ─── POST /auth/account/business — upgrade private → business (SMS + email required)
@@ -372,6 +426,9 @@ router.post("/auth/account/business", async (req, res) => {
     return;
   }
 
+  const pkgRaw = String(req.body?.package ?? "partner").toLowerCase();
+  const packageTier = pkgRaw === "vip" ? "vip" : "standard";
+
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
   if (!user) {
     res.status(404).json({ error: "User not found" });
@@ -387,17 +444,29 @@ router.post("/auth/account/business", async (req, res) => {
     return;
   }
 
+  if (isBusinessAccount(user)) {
+    res.status(400).json({ error: "ALREADY_BUSINESS", message: "Llogaria është tashmë biznes." });
+    return;
+  }
+
   const [row] = await db
     .update(usersTable)
     .set({
       account_type: "business",
       business_name: businessName.slice(0, 200),
-      business_tier: user.business_tier ?? "standard",
+      business_tier: packageTier,
+      business_status: "pending",
+      vip_expires_at: null,
     })
     .where(eq(usersTable.id, id))
     .returning();
 
-  res.json({ user: publicUser(row!, { self: true }) });
+  res.json({
+    user: publicUser(row!, { self: true }),
+    package: packageTier === "vip" ? "vip" : "partner",
+    message:
+      "Aplikimi u pranua. Llogaria do të aktivizohet nga administratori pas verifikimit të pagesës.",
+  });
 });
 
 // ─── GET /auth/account/business-quota

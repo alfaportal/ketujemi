@@ -101,6 +101,39 @@ export function deleteRegisteredUser(id: number) {
   return request<{ success: boolean }>(`/registered-users/${id}`, { method: "DELETE" });
 }
 
+export interface AdminBusinessAccount {
+  id: number;
+  email: string | null;
+  phone_e164_digits: string | null;
+  business_name: string | null;
+  business_tier: string | null;
+  business_status: string | null;
+  partner_link_url: string | null;
+  partner_link_type: string | null;
+  partner_logo_url: string | null;
+  banned_at: string | null;
+  vip_expires_at: string | null;
+  is_vip_active: boolean;
+  created_at: string;
+}
+
+export function getAdminBusinesses() {
+  return request<AdminBusinessAccount[]>("/businesses");
+}
+
+export function activateAdminBusiness(id: number) {
+  return request<{ id: number; business_status: string | null }>(`/businesses/${id}/activate`, {
+    method: "POST",
+  });
+}
+
+export function blockAdminBusiness(id: number, reason?: string) {
+  return request<{ id: number; business_status: string }>(`/businesses/${id}/block`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+}
+
 export function banSellerPhone(phone: string) {
   return request<{ success: boolean }>(`/sellers/${encodeURIComponent(phone)}/ban`, { method: "POST" });
 }
