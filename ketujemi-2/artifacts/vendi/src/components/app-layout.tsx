@@ -21,7 +21,10 @@ export function AppLayout({ children }: AppLayoutProps) {
   useFreshPageOnRoute();
   const [pathname] = useLocation();
   const { user, loading } = useAuth();
-  const hideFooter = pathname.startsWith("/admin-secret-panel");
+  const hideFooter =
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/") ||
+    pathname.startsWith("/admin-secret-panel");
   const hidePaymentsStrip =
     hideFooter ||
     isInfoStaticPage(pathname) ||

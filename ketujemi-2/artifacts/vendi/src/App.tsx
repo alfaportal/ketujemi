@@ -57,6 +57,7 @@ function Router() {
       <main key={pathname}>
         <Suspense fallback={<RouteLoading />}>
           <Switch>
+            <Route path="/admin" component={AdminPanel} />
             <Route path="/admin-secret-panel" component={AdminPanel} />
             <Route path="/login" component={LoginPage} />
             <Route path="/profile" component={ProfilePage} />
