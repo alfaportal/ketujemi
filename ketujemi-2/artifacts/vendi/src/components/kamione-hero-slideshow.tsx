@@ -1,20 +1,13 @@
 import { useEffect, useState } from "react";
-import { pexelsPhoto } from "@workspace/category-images";
+import { KAMIONE_HUB_SLIDESHOW_URLS } from "@/lib/category-hub-hero-images";
 import { cn } from "@/lib/utils";
 
 const KAMIONE_HERO_SLIDESHOW_MS = 5_000;
 
-/** Kamionë hub banner — truck / van / bus (not passenger car). */
-const KAMIONE_HERO_IMAGES = [
-  pexelsPhoto(1716158, 1920),
-  pexelsPhoto(4484078, 1920),
-  pexelsPhoto(8760712, 1920),
-] as const;
-
 /** Full-bleed background slideshow for the Kamionë & Furgonë hub hero only. */
 export function KamioneHeroSlideshow() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const count = KAMIONE_HERO_IMAGES.length;
+  const count = KAMIONE_HUB_SLIDESHOW_URLS.length;
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -25,7 +18,7 @@ export function KamioneHeroSlideshow() {
 
   return (
     <div className="absolute inset-0" aria-hidden>
-      {KAMIONE_HERO_IMAGES.map((url, i) => (
+      {KAMIONE_HUB_SLIDESHOW_URLS.map((url, i) => (
         <img
           key={url}
           src={url}

@@ -1,14 +1,14 @@
 import { SUBCATEGORY_IMAGE_URL_BY_SLUG } from "@workspace/category-images";
 import {
-  getParentCategoryThumb,
-  HUB_HERO_IMAGE_BY_SLUG,
-  isKnownParentSlug,
-  PARENT_NAME_TO_SLUG,
-} from "@/lib/category-hub-hero-images";
+  isParentCategorySlug,
+  PARENT_CATEGORY_HERO_BY_SLUG,
+  PARENT_CATEGORY_NAME_TO_SLUG,
+  resolveParentCategoryThumb,
+} from "../../../../lib/db/src/parent-category-images.ts";
 import { isRootCategory } from "@/lib/parent-category-slugs";
 import { VETURA_BODY_IMAGE_BY_SLUG } from "@/lib/vetura-body-images";
 
-/** Prefix fallback when slug is missing from the curated map (parent hub pages). */
+/** Prefix fallback for subcategories / legacy names. */
 const NAME_PREFIX_PHOTOS: [string, string][] = [
   ["Vetura", "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80"],
   ["Motorr", "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80"],
@@ -29,14 +29,6 @@ const NAME_PREFIX_PHOTOS: [string, string][] = [
   ["Arsim", "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&q=80"],
   ["Muzikë", "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&q=80"],
   ["Kafshë", "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=800&q=80"],
-  ["SUV", "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800&q=80"],
-  ["Kombi", "https://images.unsplash.com/photo-1532974297617-c0f05fe48bff?w=800&q=80"],
-  ["Kabriolet", "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80"],
-  ["Elektrike", "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=400&q=80"],
-  ["Sedan", "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&q=80"],
-  ["Hatchback", "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=400&q=80"],
-  ["Pickup", "https://images.pexels.com/photos/3422964/pexels-photo-3422964.jpeg?auto=compress&cs=tinysrgb&w=800"],
-  ["Kupe", "https://images.pexels.com/photos/3764984/pexels-photo-3764984.jpeg?auto=compress&cs=tinysrgb&w=800"],
 ];
 
 export function resolveCategoryImageUrl(cat: {
@@ -46,13 +38,12 @@ export function resolveCategoryImageUrl(cat: {
 }): string | null {
   const slug = cat.slug?.trim();
 
-  if (isRootCategory(cat) || (slug && isKnownParentSlug(slug))) {
-    const thumb = getParentCategoryThumb(slug, cat.name);
+  if (isRootCategory(cat) || (slug && isParentCategorySlug(slug))) {
+    const thumb = resolveParentCategoryThumb(slug, cat.name);
     if (thumb) return thumb;
-    const mapped = cat.name?.trim() ? PARENT_NAME_TO_SLUG[cat.name.trim()] : undefined;
-    if (mapped && HUB_HERO_IMAGE_BY_SLUG[mapped]) {
-      return HUB_HERO_IMAGE_BY_SLUG[mapped].replace(/w=\d+/, "w=600");
-    }
+    const mapped = cat.name?.trim() ? PARENT_CATEGORY_NAME_TO_SLUG[cat.name.trim()] : undefined;
+    if (mapped) return PARENT_CATEGORY_HERO_BY_SLUG[mapped].replace(/w=\d+/, "w=600");
+    return null;
   }
 
   if (slug) {

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { categoriesTable, listingsTable, carModelsTable, truckModelsTable, motorModelsTable } from "@workspace/db";
+import { resolveParentCategoryThumb } from "../../../../lib/db/src/parent-category-images.js";
 import { asc, sql } from "drizzle-orm";
 
 const router = Router();
@@ -57,10 +58,15 @@ router.get("/categories", async (req, res) => {
 
     const countMap = new Map(counts.map((c) => [c.category_id, c.count]));
 
-    const result = categories.map((cat) => ({
-      ...cat,
-      listing_count: countMap.get(cat.id) ?? 0,
-    }));
+    const result = categories.map((cat) => {
+      const slug = typeof cat.slug === "string" ? cat.slug.trim() : "";
+      const curated = resolveParentCategoryThumb(slug, cat.name);
+      return {
+        ...cat,
+        image_url: curated ?? cat.image_url,
+        listing_count: countMap.get(cat.id) ?? 0,
+      };
+    });
 
     res.json(result);
   } catch (err) {

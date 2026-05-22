@@ -17,7 +17,6 @@ import {
   getParentCategoryThumb,
   HUB_THUMB_FALLBACK_BY_SLUG,
 } from "@/lib/category-hub-hero-images";
-import { resolveCategoryImageUrl } from "@/lib/resolve-category-image";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VipPartnersSection } from "@/components/vip-partners-section";
@@ -303,12 +302,8 @@ export default function HomePage() {
             ? parentCategories.map((cat: any) => {
             const localName = translateCategory(cat.name, locale);
             const slug = cat.slug?.trim() ?? "";
-            const photo =
-              getParentCategoryThumb(slug, cat.name) ||
-              resolveCategoryImageUrl(cat);
-            const photoFallback =
-              getParentCategoryThumb(slug, cat.name) ||
-              (slug ? HUB_THUMB_FALLBACK_BY_SLUG[slug] : undefined);
+            const photo = getParentCategoryThumb(slug, cat.name);
+            const photoFallback = slug ? HUB_THUMB_FALLBACK_BY_SLUG[slug] : undefined;
             const IconComp = getCategoryLucideIcon(cat.icon);
             return (
               <Link
