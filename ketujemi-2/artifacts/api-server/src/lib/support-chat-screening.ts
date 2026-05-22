@@ -1,4 +1,5 @@
 import type { UiLang } from "./claude-client";
+import { MARKETPLACE_CATEGORY_HINT } from "./support-category-catalog";
 
 /** Fixed reply — never escalate to email. */
 export const INVALID_SUPPORT_REPLY: Record<UiLang, string> = {
@@ -59,16 +60,21 @@ export function isSupportContactQuestion(content: string): boolean {
   );
 }
 
-/** Product/category terms — short messages like «goma», «rrotat» are valid marketplace questions. */
+/** Product/category terms — short messages like «goma», «vetura» are valid marketplace questions. */
 export const MARKETPLACE_PRODUCT_HINT =
-  /goma|gomat|felne|fellne|rrot|disk|amortiz|fren|karoseri|akumulator|vajra|filtra|auto\s*pjes|auto-pjes|pjese\s+aut|pjese\s+vet|iphone|samsung|vetur|makina|banes|telefon|laptop|mobilje|muzik|instrument|gitar|liber|libra|kafsh|biciklet|skuter|motor|kamion|furgon|frigorifer|tv\b|kompjuter|regjistr|posto|njoftim|partner|biznes|stripe|top\b/i;
+  /goma|gomat|felne|fellne|rrot|disk|amortiz|fren|karoseri|akumulator|vajra|filtra|auto\s*pjes|auto-pjes|pjese\s+aut|pjese\s+vet|iphone|samsung|regjistr|posto|njoftim|partner|biznes|stripe|top\b|kategori/i;
 
 export function isRecognizedMarketplaceQuery(content: string): boolean {
   const t = content.trim().normalize("NFD").replace(/\p{M}/gu, "");
   if (t.length < 2) return false;
   const stripped = t.replace(/^po\s+/i, "").trim();
   if (stripped.length < 2) return false;
-  return MARKETPLACE_PRODUCT_HINT.test(stripped) || MARKETPLACE_PRODUCT_HINT.test(t);
+  return (
+    MARKETPLACE_PRODUCT_HINT.test(stripped) ||
+    MARKETPLACE_PRODUCT_HINT.test(t) ||
+    MARKETPLACE_CATEGORY_HINT.test(stripped) ||
+    MARKETPLACE_CATEGORY_HINT.test(t)
+  );
 }
 
 /** Finding/buying on the site (not account/legal) — answer in chat, do not default to email. */

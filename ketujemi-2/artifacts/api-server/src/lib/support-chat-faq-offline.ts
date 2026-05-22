@@ -6,6 +6,7 @@ import {
   SUPPORT_EMAIL,
   supportFallbackLine,
 } from "./support-contact";
+import { matchCategoryRoute } from "./support-category-catalog";
 import {
   getLastUserMessage,
   isMarketplaceBrowseQuestion,
@@ -48,156 +49,6 @@ function phoneReply(lang: UiLang): string {
   };
   return copy[lang] ?? copy.sq;
 }
-
-/** Specific product → exact category path (checked before generic answers). */
-const PRODUCT_ROUTES: FaqEntry[] = [
-  {
-    keywords: /iphone|samsung|xiaomi|telefon|smartphone|huawei|oneplus/i,
-    reply: {
-      sq: "Telefona: faqja kryesore → **Telefona** → Smartphones (ose marka: Apple, Samsung…) → hapni njoftimin. Kërkim i shpejtë: «Njoftimet» + modeli (p.sh. iPhone 13).",
-      mk: "Телефони: почетна → **Телефони** → Smartphones → отворете оглас.",
-      me: "Telefoni: početna → **Telefoni** → Smartphones → otvorite oglas.",
-    },
-  },
-  {
-    keywords: /laptop|macbook|kompjuter|notebook|\bpc\b/i,
-    reply: {
-      sq: "Kompjuterë: faqja kryesore → **Kompjuterë & Laptopë** → nën-kategoria (Laptop, Gaming…) → njoftimet.",
-      mk: "Компјутери: почетна → **Компјутери и лаптопи** → огласи.",
-      me: "Kompjuteri: početna → **Kompjuteri i laptopi** → oglasi.",
-    },
-  },
-  {
-    keywords: /makina|vetur|automobil|audi|bmw|mercedes|golf|opel|ford/i,
-    reply: {
-      sq: "Vetura: faqja kryesore → **Vetura** → lloji (SUV, Sedan, Hatchback…) → shfletoni njoftimet e makinës që ju intereson.",
-      mk: "Возила: почетна → **Возила** → тип → огласи.",
-      me: "Vozila: početna → **Vozila** → tip → oglasi.",
-    },
-  },
-  {
-    keywords: /motor|skuter|vespa|moped/i,
-    reply: {
-      sq: "Motorr & Skuter: faqja kryesore → **Motorr & Skuter** → markë/lloj → njoftimet.",
-      mk: "Мотори: почетна → **Мотори и скутери** → огласи.",
-      me: "Motori: početna → **Motori i skuteri** → oglasi.",
-    },
-  },
-  {
-    keywords:
-      /goma|gomat|felne|fellne|rrot|disk|amortiz|fren|karoseri|akumulator|vajra|filtra|auto\s*pjes|auto-pjes|pjese\s+aut|pjese\s+vet|drita\s+led|led\s+drita/i,
-    reply: {
-      sq: "**Auto Pjesë**: faqja kryesore → **Auto Pjesë** → **Fellne & Goma** (për goma/rrota), ose Amortizerë, Sisteme Frenimi, Motorrë, Pjesë Karoserie, Vajra & Filtra, etj. Kërkim: «Njoftimet» + «goma 205» ose «rrota BMW».",
-      mk: "Авто делови: почетна → **Авто делови** → **Гуми и фелни** (гуми/тркала).",
-      me: "Auto dijelovi: početna → **Auto dijelovi** → **Gume i felne** (gume/točkovi).",
-    },
-  },
-  {
-    keywords: /kamion|furgon|rimorkio|trailer|autobus/i,
-    reply: {
-      sq: "Kamionë & Furgonë: faqja kryesore → **Kamionë & Furgonë** → lloji (Furgonë, Kamionë, Trailer…) → njoftimet.",
-      mk: "Камиони: почетна → **Камиони и комбе** → огласи.",
-      me: "Kamioni: početna → **Kamioni i kombiji** → oglasi.",
-    },
-  },
-  {
-    keywords: /lokal|zyre|depo|garazh|afarist/i,
-    reply: {
-      sq: "Lokale & Zyrë: faqja kryesore → **Lokale & Zyrë** → Depo, Garazha, Lokale Afariste, Zyrë…",
-      mk: "Локали: почетна → **Локали и канцеларии** → огласи.",
-      me: "Lokali: početna → **Lokali i kancelarije** → oglasi.",
-    },
-  },
-  {
-    keywords: /biciklet|fitnes|joga|kampingu|sport(?!.*muzik)/i,
-    reply: {
-      sq: "**Sport & Outdoor**: faqja kryesore → **Sport & Outdoor** → Biçikleta, Fitnes & Joga, Pajisje Kampingu, Sportet me Top… (jo muzikë — ajo është te **Muzikë & Hobby**).",
-      mk: "Спорт: почетна → **Спорт и аутдор** → огласи.",
-      me: "Sport: početna → **Sport i outdoor** → oglasi.",
-    },
-  },
-  {
-    keywords: /bujq|blegt|bageti|farer|makineri\s+bujq/i,
-    reply: {
-      sq: "Bujqësi & Blegtori: faqja kryesore → **Bujqësi & Blegtori** → Bagëti, Makineri, Farëra…",
-      mk: "Земјоделство: почетна → **Земјоделство** → огласи.",
-      me: "Poljoprivreda: početna → **Poljoprivreda** → oglasi.",
-    },
-  },
-  {
-    keywords: /kurs|arsim|mesim|trajnim|gjuh/i,
-    reply: {
-      sq: "Arsim & Kurse: faqja kryesore → **Arsim & Kurse** → Gjuhë të Huaja, Kurse Profesionale, Trajnime IT…",
-      mk: "Образование: почетна → **Образование и курсеви** → огласи.",
-      me: "Obrazovanje: početna → **Obrazovanje i kursevi** → oglasi.",
-    },
-  },
-  {
-    keywords: /banes|apartament|shtëpi|shtepi|pron/i,
-    reply: {
-      sq: "Prona: faqja kryesore → **Banesa & Shtëpi** → shfletoni apartamente/shtëpi sipas qytetit dhe çmimit.",
-      mk: "Домови: почетна → **Домови и станови** → огласи.",
-      me: "Stanovi: početna → **Domovi i stanovi** → oglasi.",
-    },
-  },
-  {
-    keywords: /mobilje|divan|tavolin|karrige|sofa/i,
-    reply: {
-      sq: "Mobilje: faqja kryesore → **Mobilje & Dekorime** → njoftimet.",
-      mk: "Мебел: почетна → **Мебел** → огласи.",
-      me: "Namještaj: početna → **Namještaj** → oglasi.",
-    },
-  },
-  {
-    keywords: /tv\b|frigorifer|elektroshtëpiake|pajisje\s+shtëpi/i,
-    reply: {
-      sq: "Elektronikë shtëpiake: faqja kryesore → **Elektronikë & Pajisje Shtëpiake** → njoftimet.",
-      mk: "Електроника: почетна → **Електроника за дома** → огласи.",
-      me: "Elektronika: početna → **Elektronika za dom** → oglasi.",
-    },
-  },
-  {
-    keywords:
-      /muzik|muzike|muzikë|hobi|hobby|instrument|gitar|piano|korde|vinil|studio|mikrofon|amplifikator|bass|drum|violin/i,
-    reply: {
-      sq: "**Muzikë & Hobby** (kategori kryesore, jo Sport & Outdoor): faqja kryesore → **Muzikë & Hobby** → Instrumente Frymore / me Tela / me Tastierë / Libra / Pajisje Studio / Art Teatër & Film → njoftimet. Shitje: «Posto Falas» → **Muzikë & Hobby**.",
-      mk: "Музика: почетна → **Музика и хоби** → подкатегории → оглас.",
-      me: "Muzika: početna → **Muzika i hobi** → podkategorije → oglasi.",
-    },
-  },
-  {
-    keywords: /libër|libra|liber|knig|cd\b|vinil/i,
-    reply: {
-      sq: "Libra & media: **Muzikë & Hobby** → **Libra** (ose Art, Teatër & Film) → njoftimet.",
-      mk: "Книги: **Музика и хоби** → **Книги** → огласи.",
-      me: "Knjige: **Muzika i hobi** → **Knjige** → oglasi.",
-    },
-  },
-  {
-    keywords: /punë|pune|shërbim|sherbim|ofertë\s+pune|vend\s+pune/i,
-    reply: {
-      sq: "Punë: faqja kryesore → **Punë & Shërbime** → shfletoni ofertat e punës ose shërbimeve.",
-      mk: "Работа: почетна → **Работа и услуги** → огласи.",
-      me: "Posao: početna → **Posao i usluge** → oglasi.",
-    },
-  },
-  {
-    keywords: /kafsh|qen|mace|mac(e|ë)\b|kote|papagall|zog/i,
-    reply: {
-      sq: "Kafshë: faqja kryesore → **Kafshë** → njoftimet.",
-      mk: "Животни: почетна → **Животни** → огласи.",
-      me: "Životinje: početna → **Životinje** → oglasi.",
-    },
-  },
-  {
-    keywords: /rrob|vesh|këpuc|kepuc|nike|adidas/i,
-    reply: {
-      sq: "Veshje: faqja kryesore → **Rroba & Këpucë** → njoftimet.",
-      mk: "Облека: почетна → **Облека и обувки** → огласи.",
-      me: "Odjeća: početna → **Odjeća i obuća** → oglasi.",
-    },
-  },
-];
 
 const COMPOSITE_INTENTS: { test: (t: string) => boolean; reply: Record<UiLang, string> }[] = [
   {
@@ -296,6 +147,15 @@ const DETAILED_FAQ: FaqEntry[] = [
     },
   },
   {
+    keywords:
+      /kategor|çfarë\s+kategori|cilat\s+kategori|18\s+kategori|lista\s+e\s+kategori|te\s+gjithe\s+kategori/i,
+    reply: {
+      sq: "**18 kategoritë** në KetuJemi: 1) Vetura 2) Motorr & Skuter 3) Kamionë & Furgonë 4) Auto Pjesë 5) Banesa & Shtëpi 6) Lokale & Zyrë 7) Telefona 8) Kompjuterë & Laptopë 9) Elektronikë & Pajisje Shtëpiake 10) Mobilje & Dekorime 11) Rroba & Këpucë 12) Fëmijë 13) Sport & Outdoor 14) Punë & Shërbime 15) Bujqësi & Blegtori 16) Arsim & Kurse 17) Muzikë & Hobby 18) Kafshë. Shkruani produktin (p.sh. «goma», «banesë») për rrugën e saktë.",
+      mk: "**18 категории**: Возила, Мотори, Камиони, Авто делови, Домови, Локали, Телефони, Компјутери, Електроника, Мебел, Облека, Деца, Спорт, Работа, Земјоделство, Образование, Музика, Животни.",
+      me: "**18 kategorija**: Vozila, Motori, Kamioni, Auto dijelovi, Stanovi, Lokali, Telefoni, Kompjuteri, Elektronika, Namještaj, Odjeća, Djeca, Sport, Posao, Poljoprivreda, Obrazovanje, Muzika, Životinje.",
+    },
+  },
+  {
     keywords: /treg|market|diaspor|kosov|shqip|maqedon|mal\s+i\s+zi|gjermani|zvic|austri|shba|angli/i,
     reply: {
       sq: "KetuJemi funksionon në **11 tregje**: Kosovë, Shqipëri, Maqedoni e Veriut, Mal i Zi + diaspora (Gjermani, Austri, Zvicër, Itali, Francë, Angli, SHBA). Zgjidhni tregun në footer — ndikon në monedhën e shfaqur. Diaspora regjistrohet kryesisht me **email**; Ballkan edhe me SMS.",
@@ -330,12 +190,7 @@ const DETAILED_FAQ: FaqEntry[] = [
 ];
 
 function tryProductCategoryAnswer(text: string, lang: UiLang): string | null {
-  for (const entry of PRODUCT_ROUTES) {
-    if (entry.keywords.test(text)) {
-      return entry.reply[lang] ?? entry.reply.sq;
-    }
-  }
-  return null;
+  return matchCategoryRoute(text, lang);
 }
 
 function tryCompositeAnswer(text: string, lang: UiLang): string | null {
