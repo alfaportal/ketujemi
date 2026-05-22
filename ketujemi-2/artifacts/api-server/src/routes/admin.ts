@@ -6,6 +6,7 @@ import {
   listingReportsTable,
   adminSettingsTable,
   usersTable,
+  partnersTable,
 } from "@workspace/db";
 import { eq, desc, sql, count, gte, and } from "drizzle-orm";
 import { isVipBusinessActive } from "../lib/business-rules";
@@ -15,6 +16,11 @@ import {
   partnerPackageLabel,
 } from "../lib/business-partner";
 import { loadPaymentSummariesByUserIds } from "../lib/admin-partner-payments";
+import {
+  countByStatus,
+  listAdminPartnerApplications,
+} from "../lib/admin-partner-applications";
+import { syncPartnerStatusToUser } from "../lib/partner-activate";
 import { sendPartnerActivationEmail } from "../lib/send-email";
 import { CreateListingBody } from "@workspace/api-zod";
 import {
@@ -379,7 +385,133 @@ function adminAppOrigin(req: { get: (name: string) => string | undefined }): str
   return host ? `${proto}://${host}` : "http://localhost:5173";
 }
 
-// ─── GET /admin/businesses — partner program accounts ─────────────────────────
+// ─── GET /admin/partner-applications — /partner registrations ─────────────────
+router.get("/admin/partner-applications", requireAdmin, async (req, res) => {
+  try {
+    const applications = await listAdminPartnerApplications();
+    res.json({
+      applications,
+      stats: countByStatus(applications),
+    });
+  } catch (err) {
+    req.log.error({ err }, "Admin partner applications error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/admin/partner-applications/:id/reject", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const reason =
+      typeof req.body?.reason === "string" ? req.body.reason.trim().slice(0, 500) : "";
+    if (!reason) {
+      res.status(400).json({ error: "reason required" });
+      return;
+    }
+    const [updated] = await db
+      .update(partnersTable)
+      .set({
+        status: "rejected",
+        rejected_reason: reason,
+        rejected_at: new Date(),
+      })
+      .where(eq(partnersTable.id, id))
+      .returning();
+    if (!updated) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+    await syncPartnerStatusToUser(id, "rejected");
+    res.json({ ok: true, id: updated.id, status: updated.status });
+  } catch (err) {
+    req.log.error({ err }, "Admin reject partner");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/admin/partner-applications/:id/suspend", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const [updated] = await db
+      .update(partnersTable)
+      .set({ status: "suspended", suspended_at: new Date() })
+      .where(eq(partnersTable.id, id))
+      .returning();
+    if (!updated) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+    await syncPartnerStatusToUser(id, "suspended");
+    res.json({ ok: true, id: updated.id, status: updated.status });
+  } catch (err) {
+    req.log.error({ err }, "Admin suspend partner");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/admin/partner-applications/:id/reactivate", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const [row] = await db.select().from(partnersTable).where(eq(partnersTable.id, id)).limit(1);
+    if (!row) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+    const nextStatus = row.payment_status === "paid" ? "active" : "pending";
+    const [updated] = await db
+      .update(partnersTable)
+      .set({
+        status: nextStatus,
+        suspended_at: null,
+        rejected_at: null,
+        rejected_reason: null,
+      })
+      .where(eq(partnersTable.id, id))
+      .returning();
+    await syncPartnerStatusToUser(id, nextStatus);
+    res.json({ ok: true, id: updated!.id, status: updated!.status });
+  } catch (err) {
+    req.log.error({ err }, "Admin reactivate partner");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.patch("/admin/partner-applications/:id/package", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const pkg = String(req.body?.package ?? "").toLowerCase();
+    if (pkg !== "standard" && pkg !== "vip") {
+      res.status(400).json({ error: "package must be standard or vip" });
+      return;
+    }
+    const [updated] = await db
+      .update(partnersTable)
+      .set({ package: pkg })
+      .where(eq(partnersTable.id, id))
+      .returning();
+    if (!updated) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+    if (updated.user_id) {
+      await db
+        .update(usersTable)
+        .set({ business_tier: pkg })
+        .where(eq(usersTable.id, updated.user_id));
+    }
+    res.json({
+      ok: true,
+      id: updated.id,
+      package: updated.package,
+      package_label: partnerPackageLabel(pkg),
+    });
+  } catch (err) {
+    req.log.error({ err }, "Admin change partner package");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── GET /admin/businesses — legacy business users (in-app upgrades) ─────────
 router.get("/admin/businesses", requireAdmin, async (req, res) => {
   try {
     const rows = await db

@@ -58,6 +58,14 @@ router.post("/payments/webhook", async (req, res) => {
         await markPaymentPaidByToken(token);
         const purpose = session.metadata?.purpose;
         const userId = Number(session.metadata?.user_id);
+        const partnerId = Number(session.metadata?.partner_id);
+        if (
+          (purpose === "partner_standard" || purpose === "partner_vip") &&
+          Number.isFinite(partnerId)
+        ) {
+          const { activatePartnerFromPayment } = await import("../lib/partner-activate");
+          await activatePartnerFromPayment(partnerId);
+        }
         if (purpose === "vip_month" && Number.isFinite(userId)) {
           await activateVipFromPayment(userId);
         }

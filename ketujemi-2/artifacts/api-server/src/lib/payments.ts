@@ -6,16 +6,22 @@ import {
   BUSINESS_EXTRA_POST_PRICE_EUR,
   BUSINESS_VIP_MONTHLY_PRICE_EUR,
 } from "./business-rules";
+import { PARTNER_PACKAGE_PRICE_CENTS } from "./business-partner";
 import { applyTopBoostToListing, isPhase2Enabled } from "./listing-top";
 
-export type PaymentPurpose = "extra_post" | "vip_month" | "top_listing";
+export type PaymentPurpose =
+  | "extra_post"
+  | "vip_month"
+  | "top_listing"
+  | "partner_standard"
+  | "partner_vip";
 
-export const TOP_LISTING_PRICE_EUR = 1;
-
-function stripeSecret(): string | null {
+export function stripeSecret(): string | null {
   const key = process.env.STRIPE_SECRET_KEY?.trim();
   return key || null;
 }
+
+export const TOP_LISTING_PRICE_EUR = 1;
 
 export function paymentsConfigured(): boolean {
   return stripeSecret() != null;
@@ -31,6 +37,8 @@ export function devPaymentBypassEnabled(): boolean {
 function amountCents(purpose: PaymentPurpose): number {
   if (purpose === "vip_month") return BUSINESS_VIP_MONTHLY_PRICE_EUR * 100;
   if (purpose === "top_listing") return TOP_LISTING_PRICE_EUR * 100;
+  if (purpose === "partner_vip") return PARTNER_PACKAGE_PRICE_CENTS.vip;
+  if (purpose === "partner_standard") return PARTNER_PACKAGE_PRICE_CENTS.partner;
   return BUSINESS_EXTRA_POST_PRICE_EUR * 100;
 }
 
@@ -165,6 +173,13 @@ export async function markPaymentPaidByToken(token: string): Promise<void> {
   }
   if (row.purpose === "top_listing" && row.listing_id) {
     await applyTopBoostToListing(row.listing_id);
+  }
+  if (
+    (row.purpose === "partner_standard" || row.purpose === "partner_vip") &&
+    row.partner_id
+  ) {
+    const { activatePartnerFromPayment } = await import("./partner-activate");
+    await activatePartnerFromPayment(row.partner_id);
   }
 }
 

@@ -5,6 +5,7 @@ export const businessPaymentsTable = pgTable("business_payments", {
   id: serial("id").primaryKey(),
   token: text("token").notNull().unique(),
   user_id: integer("user_id").notNull(),
+  partner_id: integer("partner_id"),
   purpose: text("purpose").notNull(),
   listing_id: integer("listing_id"),
   amount_cents: integer("amount_cents").notNull(),

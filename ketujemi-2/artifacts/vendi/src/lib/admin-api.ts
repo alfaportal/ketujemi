@@ -134,6 +134,71 @@ export function getAdminBusinesses() {
   return request<AdminBusinessAccount[]>("/businesses");
 }
 
+export interface AdminPartnerApplication {
+  id: number;
+  user_id: number | null;
+  business_name: string;
+  contact_name: string;
+  email: string;
+  phone: string;
+  iban: string;
+  package: string;
+  package_label: string;
+  logo_url: string | null;
+  link_url: string;
+  link_type: string | null;
+  status: string;
+  payment_status: string;
+  payment_label: string;
+  rejected_reason: string | null;
+  created_at: string;
+  last_payment_at: string | null;
+  suspended_at: string | null;
+  accepted_terms: boolean;
+  client_ip: string | null;
+}
+
+export interface AdminPartnerApplicationsResponse {
+  applications: AdminPartnerApplication[];
+  stats: {
+    pending: number;
+    active: number;
+    suspended: number;
+    rejected: number;
+  };
+}
+
+export function getAdminPartnerApplications() {
+  return request<AdminPartnerApplicationsResponse>("/partner-applications");
+}
+
+export function rejectAdminPartner(id: number, reason: string) {
+  return request<{ ok: boolean; id: number; status: string }>(`/partner-applications/${id}/reject`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export function suspendAdminPartner(id: number) {
+  return request<{ ok: boolean; id: number; status: string }>(`/partner-applications/${id}/suspend`, {
+    method: "POST",
+  });
+}
+
+export function reactivateAdminPartner(id: number) {
+  return request<{ ok: boolean; id: number; status: string }>(
+    `/partner-applications/${id}/reactivate`,
+    { method: "POST" },
+  );
+}
+
+export function changeAdminPartnerPackage(id: number, pkg: "standard" | "vip") {
+  return request<{ ok: boolean; id: number; package: string; package_label: string }>(
+    `/partner-applications/${id}/package`,
+    { method: "PATCH", body: JSON.stringify({ package: pkg }) },
+  );
+}
+
 export function activateAdminBusiness(id: number) {
   return request<{
     id: number;

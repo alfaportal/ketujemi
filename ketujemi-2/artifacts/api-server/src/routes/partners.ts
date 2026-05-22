@@ -26,6 +26,17 @@ import {
   sendPartnerRegistrationAdminNotify,
   sendPartnerRegistrationConfirmation,
 } from "../lib/send-partner-registration-email";
+import { ensurePartnerUserAccount } from "../lib/partner-activate";
+import { createPartnerStripeCheckout } from "../lib/partner-stripe";
+import { paymentsConfigured, devPaymentBypassEnabled } from "../lib/payments";
+
+function appOrigin(req: { get: (name: string) => string | undefined }): string {
+  const fromEnv = process.env.PUBLIC_APP_ORIGIN?.trim();
+  if (fromEnv) return fromEnv.replace(/\/$/, "");
+  const host = req.get("x-forwarded-host") ?? req.get("host");
+  const proto = req.get("x-forwarded-proto") ?? "https";
+  return host ? `${proto}://${host}` : "https://ketujemi.com";
+}
 
 const router = Router();
 
@@ -70,23 +81,89 @@ router.post("/partners/register", async (req, res) => {
       linkUrl: data.link_url,
     };
 
+    const partnerId = row?.id ?? 0;
+    const [partner] = await db
+      .select()
+      .from(partnersTable)
+      .where(eq(partnersTable.id, partnerId))
+      .limit(1);
+
+    if (!partner) {
+      res.status(500).json({ error: "Regjistrimi dështoi." });
+      return;
+    }
+
+    const userId = await ensurePartnerUserAccount(partner);
+
+    let checkoutUrl: string | null = null;
+    if (paymentsConfigured() || devPaymentBypassEnabled()) {
+      try {
+        const checkout = await createPartnerStripeCheckout(
+          partner,
+          appOrigin(req),
+          userId,
+        );
+        checkoutUrl = checkout.url;
+      } catch (checkoutErr) {
+        req.log?.error({ err: checkoutErr, partnerId }, "partner checkout creation failed");
+      }
+    }
+
     await Promise.all([
-      sendPartnerRegistrationConfirmation(emailPayload),
+      sendPartnerRegistrationConfirmation({
+        ...emailPayload,
+      }),
       sendPartnerRegistrationAdminNotify({
         ...emailPayload,
-        applicationId: row?.id ?? 0,
+        applicationId: partnerId,
         clientIp,
       }),
     ]);
 
     res.json({
       ok: true,
-      message:
-        "Kërkesa juaj u dërgua! Admini do t'ju aktivizojë brenda 24 orëve.",
+      partner_id: partnerId,
+      checkout_url: checkoutUrl,
+      message: checkoutUrl
+        ? "Kërkesa u regjistrua! Përfundoni pagesën për aktivizim automatik."
+        : "Kërkesa juaj u dërgua! Pagesa me kartë do të aktivizohet së shpejti.",
     });
   } catch (err) {
     req.log?.error({ err }, "partner registration");
     res.status(500).json({ error: "Regjistrimi dështoi. Provoni përsëri." });
+  }
+});
+
+router.post("/partners/:id/checkout", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!Number.isFinite(id) || id < 1) {
+      res.status(400).json({ error: "Invalid partner id" });
+      return;
+    }
+    const [partner] = await db.select().from(partnersTable).where(eq(partnersTable.id, id)).limit(1);
+    if (!partner) {
+      res.status(404).json({ error: "Partner not found" });
+      return;
+    }
+    if (partner.status === "rejected") {
+      res.status(400).json({ error: "Aplikimi u refuzua." });
+      return;
+    }
+    if (partner.payment_status === "paid" && partner.status === "active") {
+      res.status(400).json({ error: "Partneri është tashmë aktiv." });
+      return;
+    }
+    const userId = await ensurePartnerUserAccount(partner);
+    if (!paymentsConfigured() && !devPaymentBypassEnabled()) {
+      res.status(503).json({ error: "Pagesa me kartë nuk është e disponueshme." });
+      return;
+    }
+    const checkout = await createPartnerStripeCheckout(partner, appOrigin(req), userId);
+    res.json({ checkout_url: checkout.url, token: checkout.token });
+  } catch (err) {
+    req.log?.error({ err }, "partner checkout resume");
+    res.status(500).json({ error: "Gabim gjatë hapjes së pagesës." });
   }
 });
 

@@ -1,57 +1,73 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  activateAdminBusiness,
-  blockAdminBusiness,
-  deactivateAdminBusiness,
-  getAdminBusinesses,
-  type AdminBusinessAccount,
+  changeAdminPartnerPackage,
+  getAdminPartnerApplications,
+  reactivateAdminPartner,
+  rejectAdminPartner,
+  suspendAdminPartner,
+  type AdminPartnerApplication,
+  type AdminPartnerApplicationsResponse,
 } from "@/lib/admin-api";
+import { PARTNER_CONTRACT_TEXT } from "@/lib/partner-contract-text";
 import {
   Ban,
   Building2,
-  CheckCircle,
+  Eye,
+  FileText,
   Loader2,
-  Mail,
-  Phone,
+  Pencil,
   RefreshCw,
+  RotateCcw,
   Search,
   Star,
-  XCircle,
+  X,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { useMarket } from "@/lib/market-context";
 import { dateFnsLocale } from "@/lib/app-extra-i18n";
 import { cn } from "@/lib/utils";
 
-type Filter = "all" | "pending" | "active" | "blocked";
+type Filter = "all" | "pending" | "active" | "suspended" | "rejected";
 
-function statusBadge(status: string | null) {
+function statusBadge(status: string) {
   if (status === "active") return "bg-green-100 text-green-800 border-green-200";
   if (status === "pending") return "bg-amber-100 text-amber-900 border-amber-200";
-  if (status === "blocked") return "bg-red-100 text-red-800 border-red-200";
+  if (status === "suspended") return "bg-orange-100 text-orange-900 border-orange-200";
+  if (status === "rejected") return "bg-red-100 text-red-800 border-red-200";
   return "bg-gray-100 text-gray-700 border-gray-200";
 }
 
-function paymentBadge(payment: AdminBusinessAccount["payment"]) {
-  if (!payment) return "bg-gray-100 text-gray-600";
-  if (payment.status === "paid") return "bg-emerald-100 text-emerald-800";
-  if (payment.status === "pending") return "bg-orange-100 text-orange-800";
+function paymentBadge(paymentStatus: string) {
+  if (paymentStatus === "paid") return "bg-emerald-100 text-emerald-800";
+  if (paymentStatus === "pending") return "bg-orange-100 text-orange-800";
   return "bg-gray-100 text-gray-600";
+}
+
+function statusLabel(status: string) {
+  if (status === "active") return "Aktiv";
+  if (status === "pending") return "Në pritje";
+  if (status === "suspended") return "Pezulluar";
+  if (status === "rejected") return "Refuzuar";
+  return status;
 }
 
 export default function AdminPartners() {
   const { market } = useMarket();
-  const [rows, setRows] = useState<AdminBusinessAccount[]>([]);
+  const [data, setData] = useState<AdminPartnerApplicationsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [busyId, setBusyId] = useState<number | null>(null);
   const [toast, setToast] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const [contractRow, setContractRow] = useState<AdminPartnerApplication | null>(null);
+  const [rejectRow, setRejectRow] = useState<AdminPartnerApplication | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [packageRow, setPackageRow] = useState<AdminPartnerApplication | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      setRows(await getAdminBusinesses());
+      setData(await getAdminPartnerApplications());
     } catch {
       setToast({ type: "err", text: "S’u ngarkua lista e partnerëve." });
     } finally {
@@ -69,17 +85,21 @@ export default function AdminPartners() {
     return () => clearTimeout(t);
   }, [toast]);
 
-  const pendingCount = rows.filter((r) => r.business_status === "pending").length;
+  const rows = data?.applications ?? [];
+  const stats = data?.stats ?? { pending: 0, active: 0, suspended: 0, rejected: 0 };
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return rows.filter((r) => {
-      if (filter !== "all" && r.business_status !== filter) return false;
+      if (filter === "pending") {
+        if (!(r.status === "pending" && r.payment_status !== "paid")) return false;
+      } else if (filter !== "all" && r.status !== filter) return false;
       if (!q) return true;
       return (
-        (r.business_name ?? "").toLowerCase().includes(q) ||
-        (r.email ?? "").toLowerCase().includes(q) ||
-        (r.phone_e164_digits ?? "").includes(q)
+        r.business_name.toLowerCase().includes(q) ||
+        r.email.toLowerCase().includes(q) ||
+        r.phone.includes(q) ||
+        r.contact_name.toLowerCase().includes(q)
       );
     });
   }, [rows, search, filter]);
@@ -102,9 +122,10 @@ export default function AdminPartners() {
 
   const filters: { id: Filter; label: string; count?: number }[] = [
     { id: "all", label: "Të gjithë" },
-    { id: "pending", label: "Në pritje", count: pendingCount },
-    { id: "active", label: "Aktivë" },
-    { id: "blocked", label: "Bllokuar" },
+    { id: "pending", label: "Në pritje", count: stats.pending },
+    { id: "active", label: "Aktiv", count: stats.active },
+    { id: "suspended", label: "Pezulluar", count: stats.suspended },
+    { id: "rejected", label: "Refuzuar", count: stats.rejected },
   ];
 
   return (
@@ -116,8 +137,7 @@ export default function AdminPartners() {
             Partnerët
           </h2>
           <p className="text-sm text-gray-500 mt-1">
-            {rows.length} regjistruar
-            {pendingCount > 0 ? ` · ${pendingCount} në pritje` : ""}
+            Aktivizimi automatik pas pagesës Stripe — vetëm veprime manuale këtu.
           </p>
         </div>
         <button
@@ -129,6 +149,22 @@ export default function AdminPartners() {
         >
           <RefreshCw className={cn("h-5 w-5", loading && "animate-spin")} />
         </button>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {(
+          [
+            ["Në pritje", stats.pending, "text-amber-800 bg-amber-50 border-amber-200"],
+            ["Aktiv", stats.active, "text-green-800 bg-green-50 border-green-200"],
+            ["Pezulluar", stats.suspended, "text-orange-800 bg-orange-50 border-orange-200"],
+            ["Refuzuar", stats.rejected, "text-red-800 bg-red-50 border-red-200"],
+          ] as const
+        ).map(([label, count, cls]) => (
+          <div key={label} className={cn("rounded-xl border px-3 py-2.5 text-center", cls)}>
+            <p className="text-[10px] font-bold uppercase tracking-wide opacity-80">{label}</p>
+            <p className="text-2xl font-black">{count}</p>
+          </div>
+        ))}
       </div>
 
       {toast ? (
@@ -170,7 +206,7 @@ export default function AdminPartners() {
           >
             {f.label}
             {f.count != null && f.count > 0 ? (
-              <span className="ml-1.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-amber-400 text-amber-950 text-[10px]">
+              <span className="ml-1.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-white/25 text-[10px]">
                 {f.count}
               </span>
             ) : null}
@@ -186,36 +222,35 @@ export default function AdminPartners() {
         <div className="text-center py-16 text-gray-400 text-sm">Nuk u gjet asnjë partner.</div>
       ) : (
         <ul className="space-y-3">
-          {filtered.map((b) => {
-            const isVip = b.business_tier === "vip";
-            const busy = busyId === b.id;
+          {filtered.map((p) => {
+            const isVip = p.package === "vip";
+            const busy = busyId === p.id;
             return (
               <li
-                key={b.id}
+                key={p.id}
                 className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
               >
                 <div className="p-4 space-y-3">
                   <div className="flex items-start gap-3">
                     <div
                       className={cn(
-                        "w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0",
+                        "w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden",
                         isVip ? "bg-amber-100" : "bg-blue-100",
                       )}
                     >
-                      {isVip ? (
+                      {p.logo_url ? (
+                        <img src={p.logo_url} alt="" className="w-full h-full object-contain" />
+                      ) : isVip ? (
                         <Star className="h-5 w-5 text-amber-600 fill-amber-400" />
                       ) : (
                         <Building2 className="h-5 w-5 text-[#1A56A0]" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900 truncate">
-                        {b.business_name ?? "—"}
-                      </p>
+                      <p className="font-bold text-gray-900 truncate">{p.business_name}</p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {b.package_label ?? (isVip ? "VIP Partner" : "Partner")}
-                        {" · "}
-                        {formatDistanceToNow(new Date(b.created_at), {
+                        {p.package_label} · {p.contact_name} · #
+                        {formatDistanceToNow(new Date(p.created_at), {
                           addSuffix: true,
                           locale: dateFnsLocale(market.code),
                         })}
@@ -227,149 +262,114 @@ export default function AdminPartners() {
                     <span
                       className={cn(
                         "text-xs font-bold uppercase px-2.5 py-1 rounded-lg border",
-                        statusBadge(b.business_status),
+                        statusBadge(p.status),
                       )}
                     >
-                      {b.business_status === "active"
-                        ? "Aktiv"
-                        : b.business_status === "pending"
-                          ? "Në pritje"
-                          : b.business_status === "blocked"
-                            ? "Bllokuar"
-                            : b.business_status ?? "—"}
+                      {statusLabel(p.status)}
                     </span>
                     <span
                       className={cn(
                         "text-xs font-semibold px-2.5 py-1 rounded-lg",
-                        paymentBadge(b.payment),
+                        paymentBadge(p.payment_status),
                       )}
                     >
-                      {b.payment?.label ?? "Pa pagesë"}
+                      {p.payment_label}
                     </span>
                   </div>
 
                   <div className="space-y-1 text-sm text-gray-600">
-                    {b.email ? (
-                      <p className="flex items-center gap-2 min-w-0">
-                        <Mail className="h-4 w-4 shrink-0 text-gray-400" />
-                        <span className="truncate">{b.email}</span>
-                      </p>
-                    ) : (
-                      <p className="text-amber-700 text-xs font-medium">Pa email — nuk dërgohet aktivizimi</p>
-                    )}
-                    {b.phone_e164_digits ? (
-                      <p className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 shrink-0 text-gray-400" />
-                        +{b.phone_e164_digits}
-                      </p>
-                    ) : null}
-                    {b.partner_activation_code ? (
-                      <p className="text-xs font-mono bg-gray-50 rounded-lg px-2 py-1.5 border border-gray-100">
-                        Kodi: <strong>{b.partner_activation_code}</strong>
-                        {b.partner_activation_sent_at ? " · email dërguar" : ""}
+                    <p className="truncate">
+                      <span className="font-medium text-gray-700">Email:</span> {p.email}
+                    </p>
+                    <p>
+                      <span className="font-medium text-gray-700">Tel:</span> {p.phone}
+                    </p>
+                    <p className="font-mono text-xs break-all">
+                      <span className="font-medium text-gray-700 font-sans">IBAN:</span> {p.iban}
+                    </p>
+                    <p className="text-xs truncate">
+                      <span className="font-medium text-gray-700">Link:</span> {p.link_url}
+                    </p>
+                    {p.last_payment_at ? (
+                      <p className="text-xs text-gray-500">
+                        Pagesa e fundit: {format(new Date(p.last_payment_at), "dd.MM.yyyy HH:mm")}
                       </p>
                     ) : null}
-                    {b.partner_link_url ? (
-                      <p className="text-xs text-[#1A56A0] truncate">
-                        Link: {b.partner_link_type} → {b.partner_link_url}
+                    {p.rejected_reason ? (
+                      <p className="text-xs text-red-700 bg-red-50 rounded-lg px-2 py-1">
+                        Refuzuar: {p.rejected_reason}
                       </p>
                     ) : null}
                   </div>
 
-                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 pt-1">
-                    {b.business_status === "pending" ? (
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => setContractRow(p)}
+                      className="min-h-11 flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-700 touch-manipulation"
+                    >
+                      <Eye className="h-4 w-4" />
+                      Shiko Kontratën
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy || p.status === "rejected"}
+                      onClick={() => setPackageRow(p)}
+                      className="min-h-11 flex items-center justify-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 text-[#1A56A0] text-sm font-bold touch-manipulation"
+                    >
+                      <Pencil className="h-4 w-4" />
+                      Ndrysho Paketën
+                    </button>
+                    {p.status !== "rejected" && p.status !== "suspended" ? (
                       <button
                         type="button"
-                        disabled={busy || !b.email}
-                        onClick={() =>
-                          void (async () => {
-                            setBusyId(b.id);
-                            try {
-                              const res = await activateAdminBusiness(b.id);
-                              const msg = res.email_sent
-                                ? `Aktivizuar. Kodi ${res.partner_activation_code ?? ""} u dërgua me email.`
-                                : res.email_error
-                                  ? `Aktivizuar, por emaili dështoi: ${res.email_error}`
-                                  : "Aktivizuar.";
-                              setToast({ type: "ok", text: msg });
-                              await load();
-                            } catch (e) {
-                              setToast({
-                                type: "err",
-                                text: e instanceof Error ? e.message : "Aktivizimi dështoi.",
-                              });
-                            } finally {
-                              setBusyId(null);
-                            }
-                          })()
-                        }
-                        className="min-h-12 w-full flex items-center justify-center gap-2 rounded-xl bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm font-bold touch-manipulation"
+                        disabled={busy}
+                        onClick={() => setRejectRow(p)}
+                        className="min-h-11 flex items-center justify-center gap-1.5 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 text-sm font-bold touch-manipulation"
                       >
-                        {busy ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <CheckCircle className="h-4 w-4" />
-                        )}
-                        Aktivizo
+                        <Ban className="h-4 w-4" />
+                        Refuzo
                       </button>
                     ) : null}
-                    {b.business_status === "active" ? (
+                    {p.status === "active" || (p.status === "pending" && p.payment_status === "paid") ? (
                       <button
                         type="button"
                         disabled={busy}
                         onClick={() =>
-                          void runAction(
-                            b.id,
-                            () => deactivateAdminBusiness(b.id),
-                            "Partneri u çaktivizua.",
-                          )
+                          void runAction(p.id, () => suspendAdminPartner(p.id), "Partneri u pezullua.")
                         }
-                        className="min-h-12 w-full flex items-center justify-center gap-2 rounded-xl border-2 border-amber-300 bg-amber-50 text-amber-900 text-sm font-bold touch-manipulation"
-                      >
-                        {busy ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <XCircle className="h-4 w-4" />
-                        )}
-                        Çaktivizo
-                      </button>
-                    ) : null}
-                    {b.business_status !== "blocked" ? (
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() =>
-                          void runAction(
-                            b.id,
-                            () => blockAdminBusiness(b.id),
-                            "Partneri u bllokua.",
-                          )
-                        }
-                        className="min-h-12 w-full flex items-center justify-center gap-2 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 text-sm font-bold touch-manipulation"
+                        className="min-h-11 flex items-center justify-center gap-1.5 rounded-xl border-2 border-orange-200 bg-orange-50 text-orange-900 text-sm font-bold touch-manipulation"
                       >
                         {busy ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <Ban className="h-4 w-4" />
                         )}
-                        Blloko
+                        Pezullo
                       </button>
-                    ) : (
+                    ) : null}
+                    {p.status === "suspended" || p.status === "rejected" ? (
                       <button
                         type="button"
-                        disabled={busy || !b.email}
+                        disabled={busy}
                         onClick={() =>
                           void runAction(
-                            b.id,
-                            () => activateAdminBusiness(b.id),
+                            p.id,
+                            () => reactivateAdminPartner(p.id),
                             "Partneri u riaktivizua.",
                           )
                         }
-                        className="min-h-12 w-full flex items-center justify-center gap-2 rounded-xl bg-green-600 text-white text-sm font-bold touch-manipulation"
+                        className="col-span-2 min-h-11 flex items-center justify-center gap-1.5 rounded-xl bg-green-600 text-white text-sm font-bold touch-manipulation"
                       >
-                        Riaktivizo
+                        {busy ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <RotateCcw className="h-4 w-4" />
+                        )}
+                        Riktivo
                       </button>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </li>
@@ -377,6 +377,139 @@ export default function AdminPartners() {
           })}
         </ul>
       )}
+
+      {contractRow ? (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-2xl max-h-[85vh] w-full max-w-lg overflow-hidden flex flex-col shadow-xl">
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-[#1A56A0]" />
+                Kontrata — {contractRow.business_name}
+              </h3>
+              <button type="button" onClick={() => setContractRow(null)} aria-label="Mbyll">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto space-y-3 text-sm">
+              <p>
+                <strong>Kontakt:</strong> {contractRow.contact_name} · {contractRow.email}
+              </p>
+              <p>
+                <strong>IBAN:</strong> {contractRow.iban}
+              </p>
+              <p>
+                <strong>Pranuar kushtet:</strong> {contractRow.accepted_terms ? "Po" : "Jo"} · IP:{" "}
+                {contractRow.client_ip ?? "—"}
+              </p>
+              <pre
+                className="whitespace-pre-wrap font-sans leading-relaxed border-t pt-3"
+                style={{ fontSize: "11px", color: "#999" }}
+              >
+                {PARTNER_CONTRACT_TEXT}
+              </pre>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {rejectRow ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-2xl w-full max-w-md p-5 space-y-4 shadow-xl">
+            <h3 className="font-bold text-gray-900">Refuzo — {rejectRow.business_name}</h3>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Arsyeja e refuzimit…"
+              className="w-full min-h-[100px] rounded-xl border border-gray-200 p-3 text-sm"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="flex-1 min-h-11 rounded-xl border font-bold"
+                onClick={() => {
+                  setRejectRow(null);
+                  setRejectReason("");
+                }}
+              >
+                Anulo
+              </button>
+              <button
+                type="button"
+                disabled={!rejectReason.trim() || busyId === rejectRow.id}
+                className="flex-1 min-h-11 rounded-xl bg-red-600 text-white font-bold disabled:opacity-50"
+                onClick={() =>
+                  void runAction(
+                    rejectRow.id,
+                    () => rejectAdminPartner(rejectRow.id, rejectReason.trim()),
+                    "Partneri u refuzua.",
+                  ).then(() => {
+                    setRejectRow(null);
+                    setRejectReason("");
+                  })
+                }
+              >
+                Refuzo
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {packageRow ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-xl">
+            <h3 className="font-bold text-gray-900">Ndrysho paketën</h3>
+            <p className="text-sm text-gray-600">{packageRow.business_name}</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                disabled={busyId === packageRow.id}
+                className={cn(
+                  "min-h-12 rounded-xl border-2 font-bold text-sm",
+                  packageRow.package === "standard"
+                    ? "border-[#1A56A0] bg-blue-50 text-[#1A56A0]"
+                    : "border-gray-200",
+                )}
+                onClick={() =>
+                  void runAction(
+                    packageRow.id,
+                    () => changeAdminPartnerPackage(packageRow.id, "standard"),
+                    "Paketa u ndryshua në Standard.",
+                  ).then(() => setPackageRow(null))
+                }
+              >
+                Standard €30
+              </button>
+              <button
+                type="button"
+                disabled={busyId === packageRow.id}
+                className={cn(
+                  "min-h-12 rounded-xl border-2 font-bold text-sm",
+                  packageRow.package === "vip"
+                    ? "border-amber-500 bg-amber-50 text-amber-900"
+                    : "border-gray-200",
+                )}
+                onClick={() =>
+                  void runAction(
+                    packageRow.id,
+                    () => changeAdminPartnerPackage(packageRow.id, "vip"),
+                    "Paketa u ndryshua në VIP.",
+                  ).then(() => setPackageRow(null))
+                }
+              >
+                VIP €50
+              </button>
+            </div>
+            <button
+              type="button"
+              className="w-full min-h-10 text-sm text-gray-500"
+              onClick={() => setPackageRow(null)}
+            >
+              Mbyll
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +50,27 @@ export default function PartnerPage() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [paymentPending, setPaymentPending] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment") === "success") {
+      setPaymentPending(false);
+      setSuccess(true);
+      window.history.replaceState({}, "", "/partner");
+      return;
+    }
+    const resumeId = params.get("resume");
+    if (resumeId) {
+      void fetch(`/api/partners/${resumeId}/checkout`, { method: "POST" })
+        .then((r) => r.json())
+        .then((data: { checkout_url?: string; error?: string }) => {
+          if (data.checkout_url) window.location.href = data.checkout_url;
+          else setError(data.error ?? "S’u hap pagesa.");
+        })
+        .catch(() => setError("S’u lidh me serverin për pagesë."));
+    }
+  }, []);
 
   async function onLogoFile(file: File) {
     if (!cloudinary.ready) {
@@ -106,11 +127,20 @@ export default function PartnerPage() {
           accepted_terms: true,
         }),
       });
-      const data = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        message?: string;
+        checkout_url?: string;
+      };
       if (!res.ok) {
         setError(data.error ?? "Regjistrimi dështoi.");
         return;
       }
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+        return;
+      }
+      setPaymentPending(true);
       setSuccess(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
@@ -133,7 +163,9 @@ export default function PartnerPage() {
           </div>
           <h1 className="text-2xl font-black text-gray-900 mb-3">Faleminderit!</h1>
           <p className="text-lg text-gray-700 leading-relaxed">
-            Kërkesa juaj u dërgua! Admini do t&apos;ju aktivizojë brenda 24 orëve.
+            {paymentPending
+              ? "Kërkesa u regjistrua. Kontrolloni emailin për lidhjen e pagesës — pas pagesës aktivizoheni automatikisht."
+              : "Pagesa u konfirmua! Llogaria juaj Partner është aktive. Kontrolloni emailin për kodin e aktivizimit dhe hyni në /login."}
           </p>
           <Button
             className="mt-8"

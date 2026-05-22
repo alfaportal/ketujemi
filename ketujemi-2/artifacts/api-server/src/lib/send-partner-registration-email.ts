@@ -69,8 +69,8 @@ export async function sendPartnerRegistrationConfirmation(
     "Faleminderit që u regjistruat si Partner në KetuJemi.com.",
     `Paketa: ${packageLabel}`,
     "",
-    "Kërkesa juaj është në pritje. Admini do t'ju aktivizojë brenda 24 orëve.",
-    "Do të merrni një email kur llogaria të jetë gati.",
+    "Për të aktivizuar llogarinë, përfundoni pagesën me kartë (lidhja që hapët pas regjistrimit).",
+    "Pas pagesës, llogaria aktivizohet automatikisht dhe merrni email me kod aktivizimi.",
     "",
     "KetuJemi.com",
   ].join("\n");
@@ -79,8 +79,8 @@ export async function sendPartnerRegistrationConfirmation(
     <p>Përshëndetje <strong>${escapeHtml(businessName)}</strong>,</p>
     <p>Faleminderit që u regjistruat si Partner në KetuJemi.com.</p>
     <p><strong>Paketa:</strong> ${escapeHtml(packageLabel)}</p>
-    <p>Kërkesa juaj është në pritje. <strong>Admini do t'ju aktivizojë brenda 24 orëve.</strong></p>
-    <p>Do të merrni një email kur llogaria të jetë gati.</p>
+    <p><strong>Përfundoni pagesën me kartë</strong> për të aktivizuar llogarinë automatikisht.</p>
+    <p>Pas pagesës do të merrni email me kod aktivizimi dhe akses në panel.</p>
   `;
 
   await sendResendEmail({ to: [email], subject, text, html });
@@ -137,4 +137,57 @@ export async function sendPartnerRegistrationAdminNotify(
     html,
     replyTo: email,
   });
+}
+
+export async function sendPartnerUnpaidReminderEmail(opts: {
+  to: string;
+  businessName: string;
+  packageLabel: string;
+  payUrl: string;
+  daysUnpaid: number;
+}): Promise<void> {
+  const { to, businessName, packageLabel, payUrl, daysUnpaid } = opts;
+  const subject =
+    daysUnpaid >= 15
+      ? "Paralajmërim: pezullim pas 30 ditësh — KetuJemi Partner"
+      : `Kujtesë pagesë Partner (${daysUnpaid} ditë) — KetuJemi`;
+  const text = [
+    `Përshëndetje ${businessName},`,
+    "",
+    `Paketa juaj ${packageLabel} në KetuJemi ende nuk është paguar (${daysUnpaid} ditë).`,
+    "",
+    `Përfundoni pagesën këtu: ${payUrl}`,
+    "",
+    "KetuJemi.com",
+  ].join("\n");
+  const html = `
+    <p>Përshëndetje <strong>${escapeHtml(businessName)}</strong>,</p>
+    <p>Paketa <strong>${escapeHtml(packageLabel)}</strong> nuk është paguar ende (${daysUnpaid} ditë).</p>
+    <p><a href="${escapeHtml(payUrl)}">Përfundoni pagesën me kartë</a></p>
+  `;
+  await sendResendEmail({ to: [to], subject, text, html });
+}
+
+export async function sendPartnerSuspensionWarningEmail(opts: {
+  to: string;
+  businessName: string;
+  packageLabel: string;
+  payUrl: string;
+}): Promise<void> {
+  const { to, businessName, packageLabel, payUrl } = opts;
+  const subject = "Llogaria Partner u pezullua — KetuJemi";
+  const text = [
+    `Përshëndetje ${businessName},`,
+    "",
+    `Pas 30 ditësh pa pagesë për ${packageLabel}, llogaria juaj Partner është pezulluar.`,
+    `Për ta riaktivizuar, përfundoni pagesën: ${payUrl}`,
+    "",
+    "KetuJemi.com",
+  ].join("\n");
+  const html = `
+    <p>Përshëndetje <strong>${escapeHtml(businessName)}</strong>,</p>
+    <p>Llogaria Partner (<strong>${escapeHtml(packageLabel)}</strong>) u <strong>pezullua</strong> pas 30 ditësh pa pagesë.</p>
+    <p><a href="${escapeHtml(payUrl)}">Përfundoni pagesën për riaktivizim</a></p>
+  `;
+  await sendResendEmail({ to: [to], subject, text, html });
 }
