@@ -58,6 +58,10 @@ export default function LoginPage() {
     if (ch === "email" || ch === "sms") {
       setChannel(ch);
     }
+    const ret = params.get("return") ?? "";
+    if (ret.includes("step=partner") || ret.includes("/partner")) {
+      setFlow("register");
+    }
     if (params.get("error") === "verify") {
       toast({ title: t.toast_verifyFail, variant: "destructive" });
     }

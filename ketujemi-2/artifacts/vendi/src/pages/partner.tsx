@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "wouter";
 import { SiteHeader } from "@/components/site-header";
+import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,21 +36,31 @@ const CARD_COLORS = [
 
 type PartnerPhase = "landing" | "register" | "success";
 
-function openRegisterFromUrl(): boolean {
+const PARTNER_FORM_STEP = "partner";
+
+function partnerFormReturnPath(): string {
+  return `/partner?step=${PARTNER_FORM_STEP}#regjistrohu`;
+}
+
+function wantsPartnerFormFromUrl(): boolean {
   if (typeof window === "undefined") return false;
   const params = new URLSearchParams(window.location.search);
-  return params.get("regjistrohu") === "1" || window.location.hash === "#regjistrohu";
+  return (
+    params.get("step") === PARTNER_FORM_STEP ||
+    params.get("regjistrohu") === "1" ||
+    window.location.hash === "#regjistrohu"
+  );
 }
 
 export default function PartnerPage() {
   const c = usePartnerPage();
+  const [, setLocation] = useLocation();
+  const { user, loading: authLoading } = useAuth();
   const cloudinary = useCloudinaryConfig();
   const fileRef = useRef<HTMLInputElement>(null);
   const registerRef = useRef<HTMLDivElement>(null);
 
-  const [phase, setPhase] = useState<PartnerPhase>(() =>
-    openRegisterFromUrl() ? "register" : "landing",
-  );
+  const [phase, setPhase] = useState<PartnerPhase>("landing");
   const [businessName, setBusinessName] = useState("");
   const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
@@ -78,6 +90,10 @@ export default function PartnerPage() {
     }
     const resumeId = params.get("resume");
     if (resumeId) {
+      if (!authLoading && !user) {
+        setLocation(loginUrlWithReturn(`${partnerFormReturnPath()}&resume=${resumeId}`));
+        return;
+      }
       setPhase("register");
       void fetch(`/api/partners/${resumeId}/checkout`, { method: "POST" })
         .then((r) => r.json())
@@ -87,7 +103,20 @@ export default function PartnerPage() {
         })
         .catch(() => setError(c.errServer));
     }
-  }, [c.errPaymentOpen, c.errServer]);
+  }, [authLoading, user, setLocation, c.errPaymentOpen, c.errServer]);
+
+  useEffect(() => {
+    if (!wantsPartnerFormFromUrl()) return;
+    if (authLoading) return;
+    if (!user) {
+      setLocation(loginUrlWithReturn(partnerFormReturnPath()));
+      return;
+    }
+    setPhase("register");
+    if (user.email?.trim()) setEmail(user.email.trim());
+    const phoneDigits = user.contact_phone?.trim() || user.phone_e164_digits?.trim() || "";
+    if (phoneDigits) setPhone(phoneDigits.startsWith("+") ? phoneDigits : `+${phoneDigits}`);
+  }, [authLoading, user, setLocation]);
 
   useEffect(() => {
     if (phase === "register" && registerRef.current) {
@@ -96,8 +125,12 @@ export default function PartnerPage() {
   }, [phase]);
 
   function goToRegister() {
-    setPhase("register");
-    window.history.replaceState({}, "", "/partner#regjistrohu");
+    if (user) {
+      setPhase("register");
+      window.history.replaceState({}, "", partnerFormReturnPath());
+      return;
+    }
+    setLocation(loginUrlWithReturn(partnerFormReturnPath()));
   }
 
   async function onLogoFile(file: File) {
@@ -236,31 +269,31 @@ export default function PartnerPage() {
       </section>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 -mt-6 pb-16 space-y-10">
-        <section className="pt-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-5 text-center">{c.benefitsTitle}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {c.benefits.map((b, i) => (
-              <div
-                key={b.title}
-                className={cn(
-                  "rounded-2xl p-4 text-white shadow-lg bg-gradient-to-br",
-                  CARD_COLORS[i % CARD_COLORS.length],
-                )}
-              >
-                <span className="text-2xl" aria-hidden>
-                  {b.icon}
-                </span>
-                <p className="mt-2 font-bold text-[15px] leading-snug">
-                  {b.title}
-                  {b.desc ? (
-                    <span className="font-normal opacity-90"> — {b.desc}</span>
-                  ) : null}
-                </p>
-              </div>
-            ))}
-          </div>
+        {phase === "landing" ? (
+          <section className="pt-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-5 text-center">{c.benefitsTitle}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {c.benefits.map((b, i) => (
+                <div
+                  key={b.title}
+                  className={cn(
+                    "rounded-2xl p-4 text-white shadow-lg bg-gradient-to-br",
+                    CARD_COLORS[i % CARD_COLORS.length],
+                  )}
+                >
+                  <span className="text-2xl" aria-hidden>
+                    {b.icon}
+                  </span>
+                  <p className="mt-2 font-bold text-[15px] leading-snug">
+                    {b.title}
+                    {b.desc ? (
+                      <span className="font-normal opacity-90"> — {b.desc}</span>
+                    ) : null}
+                  </p>
+                </div>
+              ))}
+            </div>
 
-          {phase === "landing" ? (
             <div className="mt-10 text-center">
               <Button
                 type="button"
@@ -272,8 +305,8 @@ export default function PartnerPage() {
               </Button>
               <p className="mt-3 text-sm text-gray-500 max-w-md mx-auto">{c.landingCtaHint}</p>
             </div>
-          ) : null}
-        </section>
+          </section>
+        ) : null}
 
         {phase === "register" ? (
           <div ref={registerRef} id="regjistrohu" className="space-y-10 scroll-mt-24">

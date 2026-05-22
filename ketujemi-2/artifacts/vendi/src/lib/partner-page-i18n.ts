@@ -176,7 +176,8 @@ me datë, orë dhe IP adresë.`,
     "Pagesa u konfirmua! Llogaria juaj Partner është aktive. Kontrolloni SMS/email për kodin e aktivizimit dhe hyni në /login.",
   successHome: "Kthehu në faqen kryesore",
   landingCta: "Regjistrohu si Partner",
-  landingCtaHint: "Zgjidhni paketën dhe plotësoni formularin — aktivizimi pas pagesës.",
+  landingCtaHint:
+    "Së pari krijoni llogarinë (email ose telefon), pastaj zgjidhni paketën dhe plotësoni formularin partner.",
   termsOpenHint: "Lexoni kushtet e plota (hapen poshtë)",
   successNoticeEmail:
     "Kontrolloni emailin tuaj — aty do të gjeni konfirmimin e regjistrimit dhe udhëzimet e hapësirës.",
@@ -288,7 +289,8 @@ KetuJemi.com може да ги промени цените со
     "Плаќањето е потврдено! Вашата Partner сметка е активна. Проверете SMS/email за код и најавете се на /login.",
   successHome: "Назад на почетна",
   landingCta: "Регистрирај се како партнер",
-  landingCtaHint: "Изберете пакет и пополнете го формуларот — активација по плаќање.",
+  landingCtaHint:
+    "Прво отворете сметка (email или телефон), потоа изберете пакет и пополнете го партнерскиот формулар.",
   termsOpenHint: "Прочитајте ги целосните услови (се отвораат подолу)",
   successNoticeEmail:
     "Проверете го email — таму ќе го најдете потврдувањето и инструкциите за продавницата.",
@@ -399,7 +401,8 @@ Klik na „Registruj se kao partner" smatra se važećim elektronskim potpisom.`
     "Plaćanje potvrđeno! Vaš Partner nalog je aktivan. Provjerite SMS/email za kod i prijavite se na /login.",
   successHome: "Nazad na početnu",
   landingCta: "Registruj se kao partner",
-  landingCtaHint: "Izaberite paket i popunite formular — aktivacija nakon plaćanja.",
+  landingCtaHint:
+    "Prvo otvorite nalog (email ili telefon), zatim izaberite paket i popunite partnerski formular.",
   termsOpenHint: "Pročitajte potpune uslove (otvaraju se ispod)",
   successNoticeEmail:
     "Provjerite email — tamo su potvrda registracije i upute za vašu prodavnicu.",
