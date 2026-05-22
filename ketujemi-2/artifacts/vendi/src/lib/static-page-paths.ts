@@ -1,6 +1,6 @@
 import type { UiLang } from "@/lib/ui-languages";
 
-export const PARTNER_SIGNUP_PATH = "/behu-partner";
+export const PARTNER_SIGNUP_PATH = "/partner";
 
 /** Rrugët e faqeve informative / ligjore — pa shiritin sticky të pagesave. */
 export const INFO_STATIC_PATHS = new Set([
@@ -72,10 +72,10 @@ export function staticPagePaths(uiLang: UiLang): StaticPagePaths {
       privacy: "/privatnost",
       cookies: "/kolacinja",
       terms: "/uslovi",
-      openShop: "/otvori-prodavnica",
+      openShop: "/partner",
       vip: "/vip",
       advertise: "/reklamiraj",
-      partnership: "/partnerstvo",
+      partnership: "/partner",
     };
   }
   if (uiLang === "mne") {
@@ -89,10 +89,10 @@ export function staticPagePaths(uiLang: UiLang): StaticPagePaths {
       privacy: "/privatnost",
       cookies: "/kolacici",
       terms: "/uslovi",
-      openShop: "/otvori-prodavnicu",
+      openShop: "/partner",
       vip: "/vip",
       advertise: "/reklamiraj",
-      partnership: "/partnerstvo",
+      partnership: "/partner",
     };
   }
   return {
@@ -105,10 +105,10 @@ export function staticPagePaths(uiLang: UiLang): StaticPagePaths {
     privacy: "/privatesia",
     cookies: "/cookies",
     terms: "/kushtet",
-    openShop: "/hap-shitore",
+    openShop: "/partner",
     vip: "/vip",
     advertise: "/reklamoni",
-    partnership: "/partneritet",
+    partnership: "/partner",
   };
 }
 

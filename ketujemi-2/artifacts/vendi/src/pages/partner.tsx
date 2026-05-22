@@ -17,7 +17,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { BRAND_BLUE } from "@/lib/brand-colors";
-import { PARTNER_BENEFITS, PARTNER_CONTRACT_TEXT } from "@/lib/partner-contract-text";
+import { usePartnerPage } from "@/lib/partner-page-i18n";
 import { uploadImageToCloudinary, useCloudinaryConfig } from "@/lib/cloudinary-config";
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown, Loader2, Upload } from "lucide-react";
@@ -33,6 +33,7 @@ const CARD_COLORS = [
 ];
 
 export default function PartnerPage() {
+  const c = usePartnerPage();
   const cloudinary = useCloudinaryConfig();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -53,6 +54,10 @@ export default function PartnerPage() {
   const [paymentPending, setPaymentPending] = useState(false);
 
   useEffect(() => {
+    document.title = c.docTitle;
+  }, [c.docTitle]);
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("payment") === "success") {
       setPaymentPending(false);
@@ -66,15 +71,15 @@ export default function PartnerPage() {
         .then((r) => r.json())
         .then((data: { checkout_url?: string; error?: string }) => {
           if (data.checkout_url) window.location.href = data.checkout_url;
-          else setError(data.error ?? "S’u hap pagesa.");
+          else setError(data.error ?? c.errPaymentOpen);
         })
-        .catch(() => setError("S’u lidh me serverin për pagesë."));
+        .catch(() => setError(c.errServer));
     }
-  }, []);
+  }, [c.errPaymentOpen, c.errServer]);
 
   async function onLogoFile(file: File) {
     if (!cloudinary.ready) {
-      setError("Ngarkimi i logos nuk është i disponueshëm — vendosni URL.");
+      setError(c.errLogoUnavailable);
       return;
     }
     setUploading(true);
@@ -83,7 +88,7 @@ export default function PartnerPage() {
       const url = await uploadImageToCloudinary(file, cloudinary);
       setLogoUrl(url);
     } catch {
-      setError("Ngarkimi i logos dështoi.");
+      setError(c.errUploadFailed);
     } finally {
       setUploading(false);
     }
@@ -102,11 +107,11 @@ export default function PartnerPage() {
       !pkg ||
       !link.trim()
     ) {
-      setError("Plotësoni të gjitha fushat e detyrueshme.");
+      setError(c.errRequired);
       return;
     }
     if (!terms) {
-      setError("Duhet të pranoni kushtet e kontratës.");
+      setError(c.errTerms);
       return;
     }
 
@@ -133,7 +138,7 @@ export default function PartnerPage() {
         checkout_url?: string;
       };
       if (!res.ok) {
-        setError(data.error ?? "Regjistrimi dështoi.");
+        setError(data.error ?? c.errRegisterFailed);
         return;
       }
       if (data.checkout_url) {
@@ -144,7 +149,7 @@ export default function PartnerPage() {
       setSuccess(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
-      setError("Lidhja me serverin dështoi. Provoni përsëri.");
+      setError(c.errServer);
     } finally {
       setBusy(false);
     }
@@ -161,18 +166,16 @@ export default function PartnerPage() {
           >
             <Check className="h-8 w-8" aria-hidden />
           </div>
-          <h1 className="text-2xl font-black text-gray-900 mb-3">Faleminderit!</h1>
+          <h1 className="text-2xl font-black text-gray-900 mb-3">{c.successTitle}</h1>
           <p className="text-lg text-gray-700 leading-relaxed">
-            {paymentPending
-              ? "Kërkesa u regjistrua. Kontrolloni emailin për lidhjen e pagesës — pas pagesës aktivizoheni automatikisht."
-              : "Pagesa u konfirmua! Llogaria juaj Partner është aktive. Kontrolloni emailin për kodin e aktivizimit dhe hyni në /login."}
+            {paymentPending ? c.successPending : c.successPaid}
           </p>
           <Button
             className="mt-8"
             style={{ backgroundColor: BRAND_BLUE }}
             onClick={() => (window.location.href = "/")}
           >
-            Kthehu në faqen kryesore
+            {c.successHome}
           </Button>
         </div>
       </div>
@@ -183,7 +186,6 @@ export default function PartnerPage() {
     <div className="min-h-screen bg-[#f0f4f9]">
       <SiteHeader />
 
-      {/* Hero */}
       <section
         className="relative overflow-hidden text-white px-4 py-14 sm:py-20"
         style={{
@@ -193,23 +195,20 @@ export default function PartnerPage() {
         <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_30%_20%,white,transparent_50%)]" />
         <div className="relative max-w-4xl mx-auto text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-blue-100 mb-3">
-            Programi Partner
+            {c.heroBadge}
           </p>
           <h1 className="text-3xl sm:text-4xl md:text-[2.5rem] font-black leading-tight tracking-tight">
-            Rrit Biznesin Tënd me KetuJemi.com
+            {c.heroTitle}
           </h1>
-          <p className="mt-4 text-lg sm:text-xl text-blue-50 font-medium">
-            Mbi 50,000 klientë të mundshëm çdo muaj
-          </p>
+          <p className="mt-4 text-lg sm:text-xl text-blue-50 font-medium">{c.heroSubtitle}</p>
         </div>
       </section>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 -mt-6 pb-16 space-y-12">
-        {/* Benefits */}
         <section className="pt-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-5 text-center">Përfitimet tuaja</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-5 text-center">{c.benefitsTitle}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {PARTNER_BENEFITS.map((b, i) => (
+            {c.benefits.map((b, i) => (
               <div
                 key={b.title}
                 className={cn(
@@ -231,46 +230,32 @@ export default function PartnerPage() {
           </div>
         </section>
 
-        {/* Pricing */}
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-5 text-center">Paketat</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-5 text-center">{c.packagesTitle}</h2>
           <div className="grid md:grid-cols-2 gap-4">
             <PricingCard
-              title="PARTNER STANDARD"
-              price="€30"
-              period="/muaj"
+              title={c.standardTitle}
+              price={c.standardPrice}
+              period={c.periodPerMonth}
               highlight={false}
-              features={[
-                "Dyqan i personalizuar në KetuJemi.com",
-                "Deri 100 njoftime aktive",
-                "Logo e biznesit me link në faqen kryesore",
-                'Badge "Partner i Verifikuar"',
-              ]}
+              features={c.standardFeatures}
             />
             <PricingCard
-              title="VIP PARTNER"
-              price="€50"
-              period="/muaj"
+              title={c.vipTitle}
+              price={c.vipPrice}
+              period={c.periodPerMonth}
               highlight
-              features={[
-                "Gjithçka e Standard +",
-                "Deri 200 njoftime aktive",
-                "Pozicion prioritar në kërkim (del i pari)",
-                "Badge VIP i dukshëm",
-                "Statistika të avancuara",
-                "Logo e madhe e biznesit me link në faqen kryesore",
-              ]}
+              features={c.vipFeatures}
             />
           </div>
         </section>
 
-        {/* Form */}
         <section className="rounded-2xl border border-gray-200 bg-white shadow-[0_12px_40px_rgba(26,86,160,0.08)] p-5 sm:p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Regjistrohu si Partner</h2>
-          <p className="text-sm text-gray-500 mb-6">Plotësoni formularin — aktivizimi brenda 24 orëve.</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">{c.formTitle}</h2>
+          <p className="text-sm text-gray-500 mb-6">{c.formSubtitle}</p>
 
           <form onSubmit={onSubmit} className="space-y-4">
-            <Field label="Emri i Biznesit" required>
+            <Field label={c.labelBusinessName} required>
               <Input
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
@@ -278,7 +263,7 @@ export default function PartnerPage() {
                 autoComplete="organization"
               />
             </Field>
-            <Field label="Emri i Kontaktit" required>
+            <Field label={c.labelContactName} required>
               <Input
                 value={contactName}
                 onChange={(e) => setContactName(e.target.value)}
@@ -287,7 +272,7 @@ export default function PartnerPage() {
               />
             </Field>
             <div className="grid sm:grid-cols-2 gap-4">
-              <Field label="Email" required>
+              <Field label={c.labelEmail} required>
                 <Input
                   type="email"
                   value={email}
@@ -295,7 +280,7 @@ export default function PartnerPage() {
                   autoComplete="email"
                 />
               </Field>
-              <Field label="Telefon" required>
+              <Field label={c.labelPhone} required>
                 <Input
                   type="tel"
                   value={phone}
@@ -304,7 +289,7 @@ export default function PartnerPage() {
                 />
               </Field>
             </div>
-            <Field label="IBAN" required>
+            <Field label={c.labelIban} required>
               <Input
                 value={iban}
                 onChange={(e) => setIban(e.target.value)}
@@ -312,23 +297,23 @@ export default function PartnerPage() {
                 autoComplete="off"
               />
             </Field>
-            <Field label="Paketa" required>
+            <Field label={c.labelPackage} required>
               <Select value={pkg} onValueChange={setPkg}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Zgjidhni paketën" />
+                  <SelectValue placeholder={c.packagePlaceholder} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="standard">Partner Standard €30</SelectItem>
-                  <SelectItem value="vip">VIP Partner €50</SelectItem>
+                  <SelectItem value="standard">{c.packageStandard}</SelectItem>
+                  <SelectItem value="vip">{c.packageVip}</SelectItem>
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Logo URL ose upload logo">
+            <Field label={c.labelLogo}>
               <div className="flex flex-col sm:flex-row gap-2">
                 <Input
                   value={logoUrl}
                   onChange={(e) => setLogoUrl(e.target.value)}
-                  placeholder="https://..."
+                  placeholder={c.logoUrlPlaceholder}
                   className="flex-1"
                 />
                 <input
@@ -354,15 +339,15 @@ export default function PartnerPage() {
                   ) : (
                     <Upload className="h-4 w-4 mr-2" />
                   )}
-                  Ngarko
+                  {c.uploadLogo}
                 </Button>
               </div>
             </Field>
-            <Field label="Linku juaj (website, Instagram ose Facebook — 1 link)" required>
+            <Field label={c.labelLink} required>
               <Input
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
-                placeholder="https://instagram.com/..."
+                placeholder={c.linkPlaceholder}
               />
             </Field>
 
@@ -373,7 +358,7 @@ export default function PartnerPage() {
                 onCheckedChange={(v) => setTerms(v === true)}
               />
               <label htmlFor="partner-terms" className="text-sm text-gray-700 leading-snug cursor-pointer">
-                Kam lexuar dhe pranoj kushtet e kontratës
+                {c.termsLabel}
               </label>
             </div>
 
@@ -389,16 +374,15 @@ export default function PartnerPage() {
               className="w-full h-12 text-base font-bold text-white hover:opacity-95"
               style={{ backgroundColor: BRAND_BLUE }}
             >
-              {busy ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Regjistrohu si Partner"}
+              {busy ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : c.submitButton}
             </Button>
           </form>
         </section>
 
-        {/* Contract */}
         <Collapsible open={contractOpen} onOpenChange={setContractOpen}>
           <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
             <CollapsibleTrigger className="flex w-full items-center justify-between px-5 py-4 text-left font-bold text-gray-900 hover:bg-gray-50 transition-colors">
-              Kushtet e Plota
+              {c.contractTitle}
               <ChevronDown
                 className={cn("h-5 w-5 text-gray-500 transition-transform", contractOpen && "rotate-180")}
               />
@@ -408,7 +392,7 @@ export default function PartnerPage() {
                 className="px-5 pb-5 whitespace-pre-wrap font-sans leading-relaxed border-t border-gray-100 pt-4"
                 style={{ fontSize: "11px", color: "#999" }}
               >
-                {PARTNER_CONTRACT_TEXT}
+                {c.contractText}
               </pre>
             </CollapsibleContent>
           </section>

@@ -31,10 +31,8 @@ const ContactPage = lazy(() => import("@/pages/contact"));
 const FaqPage = lazy(() => import("@/pages/faq"));
 const SecurityPage = lazy(() => import("@/pages/security"));
 const PressPage = lazy(() => import("@/pages/press"));
-const OpenShopPage = lazy(() => import("@/pages/open-shop"));
 const VipPackagesPage = lazy(() => import("@/pages/vip-packages"));
 const AdvertisePage = lazy(() => import("@/pages/advertise"));
-const PartnershipPage = lazy(() => import("@/pages/partnership"));
 const PartnerRegisterPage = lazy(() => import("@/pages/partner"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
@@ -86,15 +84,15 @@ function Router() {
             <Route path="/sigurnost" component={SecurityPage} />
             <Route path="/shtypi" component={PressPage} />
             <Route path="/mediji" component={PressPage} />
-            <Route path="/hap-shitore" component={OpenShopPage} />
-            <Route path="/otvori-prodavnica" component={OpenShopPage} />
-            <Route path="/otvori-prodavnicu" component={OpenShopPage} />
+            <Route path="/hap-shitore" component={PartnerRegisterPage} />
+            <Route path="/otvori-prodavnica" component={PartnerRegisterPage} />
+            <Route path="/otvori-prodavnicu" component={PartnerRegisterPage} />
             <Route path="/vip" component={VipPackagesPage} />
             <Route path="/reklamoni" component={AdvertisePage} />
             <Route path="/reklamiraj" component={AdvertisePage} />
             <Route path="/partner" component={PartnerRegisterPage} />
-            <Route path="/partneritet" component={PartnershipPage} />
-            <Route path="/partnerstvo" component={PartnershipPage} />
+            <Route path="/partneritet" component={PartnerRegisterPage} />
+            <Route path="/partnerstvo" component={PartnerRegisterPage} />
             <Route path="/behu-partner" component={ProfilePage} />
             <Route path="/" component={Home} />
             <Route path="/categories/:id" component={CategoryPage} />
