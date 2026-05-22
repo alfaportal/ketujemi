@@ -112,7 +112,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <RefetchOnVisible />
       <AuthProvider>
-        <Suspense fallback={null}>
+        <Suspense fallback={<RouteLoading />}>
           <AppProviders>
             <MarketProvider>
               <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>

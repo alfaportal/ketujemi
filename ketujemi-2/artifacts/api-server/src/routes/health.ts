@@ -17,11 +17,19 @@ function readBuildId(): string {
 router.get("/healthz", (_req, res) => {
   const staticRoot = process.env.STATIC_ROOT?.trim();
   let hasFrontend = false;
+  let frontendBuilt = false;
   if (staticRoot) {
     try {
-      hasFrontend = fs.existsSync(path.join(path.resolve(staticRoot), "index.html"));
+      const indexPath = path.join(path.resolve(staticRoot), "index.html");
+      hasFrontend = fs.existsSync(indexPath);
+      if (hasFrontend) {
+        const html = fs.readFileSync(indexPath, "utf8");
+        frontendBuilt =
+          html.includes("/assets/") && !html.includes('src="/src/main.tsx"');
+      }
     } catch {
       hasFrontend = false;
+      frontendBuilt = false;
     }
   }
 
@@ -31,6 +39,7 @@ router.get("/healthz", (_req, res) => {
     ...data,
     buildId: readBuildId(),
     hasFrontend,
+    frontendBuilt,
   });
 });
 

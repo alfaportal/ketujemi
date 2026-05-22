@@ -17,8 +17,16 @@ if (!fs.existsSync(apiEntry)) {
   console.error("[start-production] Missing API build. Run: node ./scripts/build-production.mjs");
   process.exit(1);
 }
-if (!fs.existsSync(path.join(staticRoot, "index.html"))) {
+const indexPath = path.join(staticRoot, "index.html");
+if (!fs.existsSync(indexPath)) {
   console.error("[start-production] Missing frontend build. Run: node ./scripts/build-production.mjs");
+  process.exit(1);
+}
+const indexHtml = fs.readFileSync(indexPath, "utf8");
+if (indexHtml.includes('src="/src/main.tsx"') || !indexHtml.includes("/assets/")) {
+  console.error(
+    "[start-production] index.html is not a Vite production build (missing /assets/ bundle). Run: node ./scripts/build-production.mjs",
+  );
   process.exit(1);
 }
 
