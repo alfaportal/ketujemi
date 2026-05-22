@@ -9,6 +9,7 @@ import {
 import {
   getLastUserMessage,
   isMarketplaceBrowseQuestion,
+  isRecognizedMarketplaceQuery,
   isSupportContactQuestion,
 } from "./support-chat-screening";
 
@@ -16,6 +17,26 @@ type FaqEntry = { keywords: RegExp; reply: Record<UiLang, string> };
 
 function normalizeText(raw: string): string {
   return raw.normalize("NFD").replace(/\p{M}/gu, "");
+}
+
+/** «po goma», «edhe rrotat» — strip filler so short follow-ups still match products. */
+function expandUserQuery(raw: string): string {
+  let t = normalizeText(raw).trim();
+  t = t
+    .replace(/^po\s+/i, "")
+    .replace(/^edhe\s+/i, "")
+    .replace(/^dhe\s+/i, "")
+    .replace(/^a\s+/i, "")
+    .trim();
+  return t || normalizeText(raw).trim();
+}
+
+function getUserSearchContext(messages: ChatMessage[]): string {
+  const parts = messages
+    .filter((m) => m.role === "user")
+    .slice(-4)
+    .map((m) => expandUserQuery(m.content));
+  return parts.join(" ");
 }
 
 function phoneReply(lang: UiLang): string {
@@ -60,6 +81,55 @@ const PRODUCT_ROUTES: FaqEntry[] = [
       sq: "Motorr & Skuter: faqja kryesore → **Motorr & Skuter** → markë/lloj → njoftimet.",
       mk: "Мотори: почетна → **Мотори и скутери** → огласи.",
       me: "Motori: početna → **Motori i skuteri** → oglasi.",
+    },
+  },
+  {
+    keywords:
+      /goma|gomat|felne|fellne|rrot|disk|amortiz|fren|karoseri|akumulator|vajra|filtra|auto\s*pjes|auto-pjes|pjese\s+aut|pjese\s+vet|drita\s+led|led\s+drita/i,
+    reply: {
+      sq: "**Auto Pjesë**: faqja kryesore → **Auto Pjesë** → **Fellne & Goma** (për goma/rrota), ose Amortizerë, Sisteme Frenimi, Motorrë, Pjesë Karoserie, Vajra & Filtra, etj. Kërkim: «Njoftimet» + «goma 205» ose «rrota BMW».",
+      mk: "Авто делови: почетна → **Авто делови** → **Гуми и фелни** (гуми/тркала).",
+      me: "Auto dijelovi: početna → **Auto dijelovi** → **Gume i felne** (gume/točkovi).",
+    },
+  },
+  {
+    keywords: /kamion|furgon|rimorkio|trailer|autobus/i,
+    reply: {
+      sq: "Kamionë & Furgonë: faqja kryesore → **Kamionë & Furgonë** → lloji (Furgonë, Kamionë, Trailer…) → njoftimet.",
+      mk: "Камиони: почетна → **Камиони и комбе** → огласи.",
+      me: "Kamioni: početna → **Kamioni i kombiji** → oglasi.",
+    },
+  },
+  {
+    keywords: /lokal|zyre|depo|garazh|afarist/i,
+    reply: {
+      sq: "Lokale & Zyrë: faqja kryesore → **Lokale & Zyrë** → Depo, Garazha, Lokale Afariste, Zyrë…",
+      mk: "Локали: почетна → **Локали и канцеларии** → огласи.",
+      me: "Lokali: početna → **Lokali i kancelarije** → oglasi.",
+    },
+  },
+  {
+    keywords: /biciklet|fitnes|joga|kampingu|sport(?!.*muzik)/i,
+    reply: {
+      sq: "**Sport & Outdoor**: faqja kryesore → **Sport & Outdoor** → Biçikleta, Fitnes & Joga, Pajisje Kampingu, Sportet me Top… (jo muzikë — ajo është te **Muzikë & Hobby**).",
+      mk: "Спорт: почетна → **Спорт и аутдор** → огласи.",
+      me: "Sport: početna → **Sport i outdoor** → oglasi.",
+    },
+  },
+  {
+    keywords: /bujq|blegt|bageti|farer|makineri\s+bujq/i,
+    reply: {
+      sq: "Bujqësi & Blegtori: faqja kryesore → **Bujqësi & Blegtori** → Bagëti, Makineri, Farëra…",
+      mk: "Земјоделство: почетна → **Земјоделство** → огласи.",
+      me: "Poljoprivreda: početna → **Poljoprivreda** → oglasi.",
+    },
+  },
+  {
+    keywords: /kurs|arsim|mesim|trajnim|gjuh/i,
+    reply: {
+      sq: "Arsim & Kurse: faqja kryesore → **Arsim & Kurse** → Gjuhë të Huaja, Kurse Profesionale, Trajnime IT…",
+      mk: "Образование: почетна → **Образование и курсеви** → огласи.",
+      me: "Obrazovanje: početna → **Obrazovanje i kursevi** → oglasi.",
     },
   },
   {
@@ -112,7 +182,7 @@ const PRODUCT_ROUTES: FaqEntry[] = [
     },
   },
   {
-    keywords: /kafsh|qen|mac|kote|papagall|zog/i,
+    keywords: /kafsh|qen|mace|mac(e|ë)\b|kote|papagall|zog/i,
     reply: {
       sq: "Kafshë: faqja kryesore → **Kafshë** → njoftimet.",
       mk: "Животни: почетна → **Животни** → огласи.",
@@ -294,7 +364,8 @@ export function tryPrioritySupportAnswer(
   const lastUser = getLastUserMessage(messages);
   if (!lastUser) return null;
 
-  const text = normalizeText(lastUser);
+  const text = expandUserQuery(lastUser);
+  const context = getUserSearchContext(messages);
   const lang = inferSupportLang(lastUser, langHint);
 
   if (isSupportContactQuestion(text)) {
@@ -304,7 +375,9 @@ export function tryPrioritySupportAnswer(
   return (
     tryCompositeAnswer(text, lang) ??
     tryProductCategoryAnswer(text, lang) ??
-    tryDetailedFaqAnswer(text, lang)
+    tryProductCategoryAnswer(context, lang) ??
+    tryDetailedFaqAnswer(text, lang) ??
+    tryDetailedFaqAnswer(context, lang)
   );
 }
 
@@ -336,9 +409,32 @@ export function tryBrowseOrFaqAnswer(
   const priority = tryPrioritySupportAnswer(messages, langHint);
   if (priority) return priority;
 
-  if (lastUserText && isMarketplaceBrowseQuestion(lastUserText)) {
+  if (
+    lastUserText &&
+    (isMarketplaceBrowseQuestion(lastUserText) || isRecognizedMarketplaceQuery(lastUserText))
+  ) {
     return browsePlatformReply(lang);
   }
 
   return null;
+}
+
+/** When Claude fails or returns unusable text — never «pyetje e pavlefshme» for real product words. */
+export function supportUnknownQueryReply(
+  messages: ChatMessage[],
+  langHint: UiLang = "sq",
+): string {
+  const lastUser = getLastUserMessage(messages);
+  const lang = inferSupportLang(lastUser, langHint);
+  const priority = tryPrioritySupportAnswer(messages, langHint);
+  if (priority) return priority;
+  if (lastUser && isRecognizedMarketplaceQuery(lastUser)) {
+    return browsePlatformReply(lang);
+  }
+  const copy: Record<UiLang, string> = {
+    sq: "Më shkruani pak më qartë çfarë kërkoni (p.sh. «goma veture», «banesë Prishtinë», «iPhone 13») — do t'ju tregoj kategorinë e saktë në KetuJemi.",
+    mk: "Напишете појасно што барате (на пр. «гуми», «стан») за точна категорија.",
+    me: "Napišite jasnije šta tražite (npr. «gume», «stan») za tačnu kategoriju.",
+  };
+  return copy[lang] ?? copy.sq;
 }

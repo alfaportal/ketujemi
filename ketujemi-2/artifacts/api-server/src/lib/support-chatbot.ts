@@ -13,6 +13,7 @@ import {
 } from "./support-contact";
 import {
   escalateToEmailReply,
+  supportUnknownQueryReply,
   tryBrowseOrFaqAnswer,
   tryPrioritySupportAnswer,
 } from "./support-chat-faq-offline";
@@ -69,6 +70,27 @@ ${KETUJEMI_PLATFORM_KNOWLEDGE}`;
 const GENERIC_BROWSE_MARKERS =
   /zgjidh\s+kategorinë\s+që\s+përshtatet|shih\s+telefona,\s*vetura|hap\s+faqen\s+kryesore\s*→\s*zgjidh\s+kategorinë|shiko\s+faqen\s+kryesore|kontrollo\s+homepage|check\s+the\s+homepage/i;
 
+function hasSubstantiveSupportContent(text: string): boolean {
+  return /posto\s*falas|kategori|njoftim|→|regjistro|vetur|telefon|muzik|auto\s*pjes|goma|felne|rrot|profil|bler|shit|\d\)|hapni|faqja\s+kryesore/i.test(
+    text,
+  );
+}
+
+function stripContactLines(text: string): string {
+  const phoneEsc = SUPPORT_PHONE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return text
+    .split("\n")
+    .filter(
+      (line) =>
+        !new RegExp(SUPPORT_EMAIL, "i").test(line) &&
+        !/support@ketujemi\.com|info@ketujemi\.com/i.test(line) &&
+        !new RegExp(phoneEsc).test(line),
+    )
+    .join("\n")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 function clampSupportReply(
   text: string,
   lastUser: string,
@@ -82,13 +104,19 @@ function clampSupportReply(
   if (allowContact) return text;
 
   const lower = text.toLowerCase();
-  if (
+  const hasContact =
     lower.includes(SUPPORT_EMAIL) ||
     lower.includes("support@ketujemi.com") ||
     lower.includes("info@ketujemi.com") ||
-    text.includes(SUPPORT_PHONE)
-  ) {
-    return invalidSupportQuestionReply(replyLang);
+    text.includes(SUPPORT_PHONE);
+
+  if (hasContact) {
+    if (hasSubstantiveSupportContent(text)) {
+      const stripped = stripContactLines(text);
+      if (stripped.length >= 40) return stripped;
+    } else {
+      return invalidSupportQuestionReply(replyLang);
+    }
   }
 
   if (GENERIC_BROWSE_MARKERS.test(text)) {
@@ -129,7 +157,7 @@ export async function runSupportChat(
     if (supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser)) {
       return escalateToEmailReply(replyLang);
     }
-    return invalidSupportQuestionReply(replyLang);
+    return supportUnknownQueryReply(messages, langHint);
   }
 
   const client = getAnthropicClient();
@@ -159,7 +187,7 @@ export async function runSupportChat(
   if (supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser)) {
     return escalateToEmailReply(replyLang);
   }
-  return invalidSupportQuestionReply(replyLang);
+  return supportUnknownQueryReply(messages, langHint);
 }
 
 export function supportChatFallbackReply(
@@ -181,5 +209,5 @@ export function supportChatFallbackReply(
   if (supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser)) {
     return escalateToEmailReply(replyLang);
   }
-  return invalidSupportQuestionReply(replyLang);
+  return supportUnknownQueryReply(messages, langHint);
 }

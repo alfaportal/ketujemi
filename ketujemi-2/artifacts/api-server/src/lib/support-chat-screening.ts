@@ -59,10 +59,24 @@ export function isSupportContactQuestion(content: string): boolean {
   );
 }
 
+/** Product/category terms — short messages like «goma», «rrotat» are valid marketplace questions. */
+export const MARKETPLACE_PRODUCT_HINT =
+  /goma|gomat|felne|fellne|rrot|disk|amortiz|fren|karoseri|akumulator|vajra|filtra|auto\s*pjes|auto-pjes|pjese\s+aut|pjese\s+vet|iphone|samsung|vetur|makina|banes|telefon|laptop|mobilje|muzik|instrument|gitar|liber|libra|kafsh|biciklet|skuter|motor|kamion|furgon|frigorifer|tv\b|kompjuter|regjistr|posto|njoftim|partner|biznes|stripe|top\b/i;
+
+export function isRecognizedMarketplaceQuery(content: string): boolean {
+  const t = content.trim().normalize("NFD").replace(/\p{M}/gu, "");
+  if (t.length < 2) return false;
+  const stripped = t.replace(/^po\s+/i, "").trim();
+  if (stripped.length < 2) return false;
+  return MARKETPLACE_PRODUCT_HINT.test(stripped) || MARKETPLACE_PRODUCT_HINT.test(t);
+}
+
 /** Finding/buying on the site (not account/legal) — answer in chat, do not default to email. */
 export function isMarketplaceBrowseQuestion(content: string): boolean {
   const t = content.trim().normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
-  if (t.length < 8) return false;
+  if (t.length < 4) return false;
+
+  if (isRecognizedMarketplaceQuery(t)) return true;
 
   return /ku\s+(mund|e\s+gjej|ta\s+gjej|gjen)|si\s+(mund|ta\s+gjej|gjen)|a\s+mund\s+ta\s+gjej|where\s+(can|do)\s+i\s+find|how\s+to\s+find|kërko|kerko|pretra|pronađ|gjej|blej|bler|shit|shpall|liber|libra|libër|knig|book|auto|makina|telefon|banes|shtëpi|shtepi|kategori|categori|elektronik|mobilje|rroba|sport|punë|pune|muzik|kafsh|njoftimet|listimet|shfleton|browse/i.test(
     t,
