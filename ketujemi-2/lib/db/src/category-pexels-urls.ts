@@ -139,7 +139,7 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "tv-type-projektore": pexelsPhoto(768816),
 
   // —— Mobilje ————————————————————————————————————————————————————————————————
-  "mobilje-type-sallone-ulese": pexelsPhoto(3769020),
+  "mobilje-type-sallone-ulese": pexelsPhoto(1646792),
   "mobilje-type-kuzhina": pexelsPhoto(1646792),
   "mobilje-type-dhoma-gjumit": pexelsPhoto(1646975),
   "mobilje-type-kopsht-terasa": pexelsPhoto(1350193),
@@ -151,7 +151,7 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "rroba-type-kepuce": pexelsPhoto(267320),
   "rroba-type-veshje-femra": pexelsPhoto(1927258),
   "rroba-type-veshje-femije": pexelsPhoto(1927257),
-  "rroba-type-veshje-meshkuj": pexelsPhoto(1927256),
+  "rroba-type-veshje-meshkuj": pexelsPhoto(267320),
 
   // —— Fëmijë ——————————————————————————————————————————————————————————————————
   "femije-type-karroca": pexelsPhoto(1007773),

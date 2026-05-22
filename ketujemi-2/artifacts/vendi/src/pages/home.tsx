@@ -13,7 +13,10 @@ import { useGetCategories, getGetCategoriesQueryOptions } from "@workspace/api-c
 import { translateCategory } from "@/lib/category-translations";
 import { categoryPath } from "@/lib/category-navigation";
 import { isRootCategory, sortRootCategories } from "@/lib/parent-category-slugs";
-import { HUB_THUMB_IMAGE_BY_SLUG } from "@/lib/category-hub-hero-images";
+import {
+  HUB_THUMB_FALLBACK_BY_SLUG,
+  HUB_THUMB_IMAGE_BY_SLUG,
+} from "@/lib/category-hub-hero-images";
 import { resolveCategoryImageUrl } from "@/lib/resolve-category-image";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,6 +30,34 @@ import {
 function getCatPhoto(slug: string | null | undefined): string | null {
   if (!slug) return null;
   return HUB_THUMB_IMAGE_BY_SLUG[slug] ?? null;
+}
+
+function CategoryThumb({
+  src,
+  fallback,
+  alt,
+}: {
+  src: string;
+  fallback?: string;
+  alt: string;
+}) {
+  const [url, setUrl] = useState(src);
+  useEffect(() => {
+    setUrl(src);
+  }, [src]);
+  return (
+    <img
+      src={url}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+      onError={() => {
+        if (fallback && url !== fallback) setUrl(fallback);
+      }}
+      className="absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-300 group-hover:opacity-95"
+    />
+  );
 }
 
 // --- Animated stat counter ----------------------------------------------------
@@ -110,8 +141,8 @@ export default function HomePage() {
         </div>
         <div className="pointer-events-none absolute inset-0 z-[1] bg-black/15" aria-hidden />
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-start px-4 pt-[30px] text-center sm:px-6">
-          <h1 className="w-full max-w-xl text-[1.2rem] leading-[1.2] font-black tracking-tight text-[#1A6FD4] drop-shadow-[0_1px_6px_rgba(255,255,255,0.9)] sm:text-5xl lg:text-6xl">
-            {t.hero}
+          <h1 className="mx-auto max-w-[calc(100vw-2rem)] whitespace-nowrap text-[clamp(0.9rem,4.5vw,3.75rem)] font-black leading-none tracking-tighter text-[#1A6FD4] drop-shadow-[0_1px_6px_rgba(255,255,255,0.9)] sm:text-5xl sm:tracking-tight lg:text-6xl">
+            {t.hero.replace(/ /g, "\u00a0")}
           </h1>
           <p className="mt-1.5 w-full max-w-xl text-sm leading-snug font-medium text-white/95 drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] sm:mt-2 sm:text-xl sm:text-blue-100">
             {t.heroSub}
@@ -275,7 +306,9 @@ export default function HomePage() {
           {!categoriesLoading && !categoriesError
             ? parentCategories.map((cat: any) => {
             const localName = translateCategory(cat.name, locale);
-            const photo = resolveCategoryImageUrl(cat) || getCatPhoto(cat.slug);
+            const slug = cat.slug?.trim() ?? "";
+            const photo = resolveCategoryImageUrl(cat) || getCatPhoto(slug);
+            const photoFallback = slug ? HUB_THUMB_FALLBACK_BY_SLUG[slug] : undefined;
             const IconComp = getCategoryLucideIcon(cat.icon);
             return (
               <Link
@@ -286,14 +319,7 @@ export default function HomePage() {
               >
                 {photo ? (
                   <div className="relative aspect-[5/3] w-full shrink-0 overflow-hidden rounded-t-xl sm:rounded-t-2xl bg-gray-100">
-                    <img
-                      src={photo}
-                      alt={localName}
-                      loading="lazy"
-                      decoding="async"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
-                      className="absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-300 group-hover:opacity-95"
-                    />
+                    <CategoryThumb src={photo} fallback={photoFallback} alt={localName} />
                     <div className="absolute bottom-1 right-1 sm:bottom-1.5 sm:right-1.5 w-5 h-5 sm:w-6 sm:h-6 rounded-md sm:rounded-lg bg-blue-600/90 flex items-center justify-center shadow-sm">
                       <IconComp size={11} className="text-white sm:hidden" />
                       <IconComp size={13} className="text-white hidden sm:block" />

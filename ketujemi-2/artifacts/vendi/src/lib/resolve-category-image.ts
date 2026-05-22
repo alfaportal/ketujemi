@@ -1,6 +1,13 @@
 import { SUBCATEGORY_IMAGE_URL_BY_SLUG } from "@workspace/category-images";
-import { HUB_HERO_IMAGE_BY_SLUG } from "@/lib/category-hub-hero-images";
+import {
+  HUB_HERO_IMAGE_BY_SLUG,
+  HUB_THUMB_IMAGE_BY_SLUG,
+} from "@/lib/category-hub-hero-images";
+import { PARENT_CATEGORY_SLUG_ORDER } from "@/lib/parent-category-slugs";
 import { VETURA_BODY_IMAGE_BY_SLUG } from "@/lib/vetura-body-images";
+
+const PARENT_SLUGS = new Set<string>(PARENT_CATEGORY_SLUG_ORDER);
+
 /** Prefix fallback when slug is missing from the curated map (parent hub pages). */
 const NAME_PREFIX_PHOTOS: [string, string][] = [
   ["Vetura", "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80"],
@@ -11,6 +18,7 @@ const NAME_PREFIX_PHOTOS: [string, string][] = [
   ["Lokale", "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80"],
   ["Telefona", "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=80"],
   ["Kompjuter", "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&q=80"],
+  ["Elektronik", "https://images.unsplash.com/photo-1593344484962-796055d4a3a4?w=800&q=80"],
   ["TV", "https://images.unsplash.com/photo-1593344484962-796055d4a3a4?w=800&q=80"],
   ["Mobilje", "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80"],
   ["Rroba", "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800&q=80"],
@@ -37,14 +45,18 @@ export function resolveCategoryImageUrl(cat: {
   image_url?: string | null;
 }): string | null {
   const slug = cat.slug?.trim();
+
+  if (slug && PARENT_SLUGS.has(slug)) {
+    return HUB_THUMB_IMAGE_BY_SLUG[slug] ?? HUB_HERO_IMAGE_BY_SLUG[slug] ?? null;
+  }
+
   if (slug) {
     if (VETURA_BODY_IMAGE_BY_SLUG[slug]) return VETURA_BODY_IMAGE_BY_SLUG[slug];
-    if (HUB_HERO_IMAGE_BY_SLUG[slug]) return HUB_HERO_IMAGE_BY_SLUG[slug];
     if (SUBCATEGORY_IMAGE_URL_BY_SLUG[slug]) return SUBCATEGORY_IMAGE_URL_BY_SLUG[slug];
   }
 
   const fromDb = typeof cat.image_url === "string" ? cat.image_url.trim() : "";
-  if (fromDb) return fromDb;
+  if (fromDb && !fromDb.includes(".svg") && !fromDb.includes("wikimedia")) return fromDb;
 
   const name = cat.name ?? "";
   for (const [prefix, url] of NAME_PREFIX_PHOTOS) {
