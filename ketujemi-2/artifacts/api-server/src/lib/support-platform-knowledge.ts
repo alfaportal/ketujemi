@@ -12,9 +12,12 @@ Platformë njoftimesh (shpallje) për Kosovë, Shqipëri, Maqedoni, Mal i Zi dhe
 • Faqja kryesore: kategoritë kryesore, njoftime të fundit, TOP.
 • «Njoftimet» (/listings): të gjitha njoftimet + kërkim sipas titullit/fjalëve.
 • Kategori: klikoni kategorinë → nën-kategori (nëse ka) → lista e njoftimeve → klikoni njoftimin për detaje.
-• Faqja e njoftimit: foto, titull, përshkrim, çmim (€), butona «Telefono» / WhatsApp te shitësi.
+• Faqja e njoftimit: foto, titull, përshkrim, çmim (€), sy + numër shikimesh, «Telefono» / WhatsApp te shitësi.
 • «Posto Falas» / Posto Shpallje: krijon njoftim të ri (/listings/new).
-• Hyrje/regjistrim: email+fjalëkalim ose SMS (+383, +355, +389, +382).
+• Hyrje/regjistrim: «Hyr» → «Regjistrohu» — email+fjalëkalim ose SMS (+383, +355, +389, +382).
+• Profili (/profile): njoftimet e mia, ndryshim, fshirje.
+• Footer BIZNESE: «Hap shitore» dhe «Partneritet» → /partner (regjistrim partneri).
+• FAQ, Kontakt, Rregullat: faqe informuese në footer.
 • Tregu (Kosovë/AL/MK/ME) zgjidhet në faqe — ndikon në monedhë dhe kontekst.
 
 === 18 KATEGORITË KRYESORE (rruga e saktë) ===
@@ -35,10 +38,17 @@ Platformë njoftimesh (shpallje) për Kosovë, Shqipëri, Maqedoni, Mal i Zi dhe
 | Punë, shërbim, kurse pune | Punë & Shërbime |
 | Bujqësi, bagëti | Bujqësi & Blegtori |
 | Kurse, shkollë | Arsim & Kurse |
-| Instrument, libër, koleksion | Muzikë & Hobby |
+| Instrument, libër, koleksion, muzikë | Muzikë & Hobby → Instrumente / Libra / Studio / Art & Film |
 | Qen, macë, kafshë | Kafshë |
 
-Kur produkti nuk përshtatet: «Njoftimet» + kërkim me fjalë (p.sh. «sofa», «iPhone 13»).
+Muzikë & Hobby — nën-kategori: Instrumente Frymore, me Tela, me Tastierë, Libra, Pajisje Studio, Art Teatër & Film.
+
+Kur produkti nuk përshtatet: «Njoftimet» + kërkim me fjalë (p.sh. «sofa», «iPhone 13», «gitar»).
+
+=== PARTNER BIZNESI (/partner) ===
+• Footer → Hap shitore / Partneritet → faqja /partner.
+• Paketa: Partner Standard €30/muaj, VIP Partner €50/muaj.
+• Formular regjistrimi + pagesë online; aktivizim automatik pas pagesës.
 
 === SI BLERËS ===
 1) Gjeni kategorinë e duhur (tabela më sipër) ose kërkoni te «Njoftimet».

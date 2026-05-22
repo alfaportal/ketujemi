@@ -11,7 +11,11 @@ import {
   SUPPORT_EMAIL,
   supportFallbackLine,
 } from "./support-contact";
-import { escalateToEmailReply, tryBrowseOrFaqAnswer } from "./support-chat-faq-offline";
+import {
+  escalateToEmailReply,
+  tryBrowseOrFaqAnswer,
+  tryPrioritySupportAnswer,
+} from "./support-chat-faq-offline";
 import { KETUJEMI_PLATFORM_KNOWLEDGE } from "./support-platform-knowledge";
 import {
   getLastUserMessage,
@@ -28,36 +32,47 @@ const SUPPORT_PHONE = getSupportPhoneDisplay();
 function buildSupportSystem(replyLang: UiLang): string {
   const fallback = supportFallbackLine(replyLang);
 
-  return `Ti je asistenti zyrtar i mbështetjes së KetuJemi.com — si punonjës që e njeh platformën nga brenda.
+  return `Ti je eksperti zyrtar i mbështetjes së KetuJemi.com — enciklopedi e platformës (si punonjës senior që e njeh çdo faqe, kategori dhe rregull).
 
 GJUHËT (obligativ)
 • Mbështet: shqip (sq), maqedonisht (mk), malazezisht (me).
-• Përgjigju GJITHMONË në të njëjtën gjuhë si mesazhi i fundit i përdoruesit (shqip / maqedonisht / malazezisht).
-• Nëse përdoruesi ndërron gjuhë, ndiq gjuhën e mesazhit të ri.
-• UI labels mund të mbeten si në faqe (p.sh. «Posto Falas», «Njoftimet»).
+• Përgjigju GJITHMONË në të njëjtën gjuhë si mesazhi i fundit i përdoruesit.
+• Emrat e UI mbeten si në faqe: «Posto Falas», «Njoftimet», «Hyr», «Muzikë & Hobby».
 
 STILI (obligativ)
-• Profesional, i shkurtër, i drejtë — zakonisht 1–4 fjali; hapa të numëruara vetëm kur duhen.
-• Mos përsërit informacion që e ke dhënë tashmë në bisedë.
-• Mos fraza të vagë («shfleto kategoritë») — emër kategori konkret + hapa.
+• Profesional, miqësor, saktë — 2–5 fjali ose hapa të numëruara kur duhen.
+• Jep rrugë KONKRETE: emër i kategorisë + çfarë të klikojë (mos përgjigje të përgjithshme pa kategori).
+• Nëse pyetja përmend «regjistrohu» — sqaro: llogari («Hyr» → «Regjistrohu») VS postim njoftimi («Posto Falas» + kategori).
+• Nëse pyetja është «muzikë» → **Muzikë & Hobby** (Instrumente, Libra, Studio…), jo vetëm «shfletoni kategoritë».
+• Mos përsërit të njëjtën përgjigje në bisedë; mos kopjo fjali të përgjithshme nga FAQ nëse pyetja është specifike.
 
-SI TË PËRGJIGJESH
-1) Produkt / «ku e gjej» → Faqja kryesore → [kategoria e saktë] → njoftimet → hap njoftimin.
-2) «Si të postoj» → regjistrim, verifikim, Posto Falas, kategori, foto, çmim, 30 ditë.
-3) Çmim artikulli → çdo njoftim ka çmimin e vet; kategoria → krahaso njoftime → kontakt shitësi.
-4) Blerës / shitës → udhëzo sipas rolit.
-5) Pyetje për telefon/email të KetuJemi → ${SUPPORT_PHONE}, ${SUPPORT_EMAIL}.
-6) Nuk e di → një fjali: «${fallback}»
+SI TË PËRGJIGJESH (prioritet)
+1) «Ku e gjej X» → Faqja kryesore → [kategoria e saktë nga enciklopedia] → nën-kategori nëse ka → hap njoftimin. Opsional: «Njoftimet» + fjalë kyçe.
+2) «Regjistrohu për X» → sqaro llogari + si të postosh në atë kategori nëse është shitës.
+3) «Si të postoj» → Hyr/Regjistrohu → verifikim → Posto Falas → kategori → detaje → 30 ditë.
+4) Çmim artikulli → çmimi është në çdo njoftim; krahaso njoftime; kontakto shitësin.
+5) Partner biznesi → footer BIZNESE → /partner (Standard €30, VIP €50).
+6) Kontakt KetuJemi → ${SUPPORT_PHONE}, ${SUPPORT_EMAIL} (vetëm për pyetje platforme/mbështetje).
+7) Nuk e di → «${fallback}»
 
-ÇKA NUK BËN
-• Mos jep vetëm email për navigim ose produkt.
-• Mos hamendëso çmime apo politika.
-• Spam/vulgaritet → një fjali refuzimi, pa kontakt.
+NDALON
+• Mos thuaj vetëm «zgjidh kategorinë që përshtatet» pa emër kategorie.
+• Mos jep email/telefon për pyetje produkti ose navigimi.
+• Mos shpik çmime, politika ose funksione që nuk janë në enciklopedi.
 
 ${KETUJEMI_PLATFORM_KNOWLEDGE}`;
 }
 
-function clampSupportReply(text: string, lastUser: string, replyLang: UiLang): string {
+const GENERIC_BROWSE_MARKERS =
+  /zgjidh\s+kategorinë\s+që\s+përshtatet|shih\s+telefona,\s*vetura|hap\s+faqen\s+kryesore\s*→\s*zgjidh\s+kategorinë/i;
+
+function clampSupportReply(
+  text: string,
+  lastUser: string,
+  replyLang: UiLang,
+  messages: ChatMessage[],
+  langHint: UiLang,
+): string {
   const allowContact =
     supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser);
 
@@ -70,6 +85,14 @@ function clampSupportReply(text: string, lastUser: string, replyLang: UiLang): s
     text.includes(SUPPORT_PHONE)
   ) {
     return invalidSupportQuestionReply(replyLang);
+  }
+
+  if (GENERIC_BROWSE_MARKERS.test(text)) {
+    const priority = tryPrioritySupportAnswer(
+      [{ role: "user", content: lastUser }],
+      langHint,
+    );
+    if (priority) return priority;
   }
 
   return text;
@@ -90,6 +113,11 @@ export async function runSupportChat(
     return invalidSupportQuestionReply(replyLang);
   }
 
+  const priorityAnswer = tryPrioritySupportAnswer(messages, langHint);
+  if (priorityAnswer) {
+    return priorityAnswer;
+  }
+
   const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, langHint);
 
   if (!isClaudeConfigured()) {
@@ -105,7 +133,7 @@ export async function runSupportChat(
 
   const response = await client.messages.create({
     model: getClaudeModel(),
-    max_tokens: 380,
+    max_tokens: 520,
     system: `${buildSupportSystem(replyLang)}\n\nGjuha e mesazhit të fundit të përdoruesit (përgjigju në këtë gjuhë): ${langLabel(replyLang)}.`,
     messages: trimmed.map((m) => ({
       role: m.role,
@@ -120,7 +148,7 @@ export async function runSupportChat(
     .trim();
 
   if (text) {
-    return clampSupportReply(text, lastUser, replyLang);
+    return clampSupportReply(text, lastUser, replyLang, messages, langHint);
   }
 
   if (offlineOrBrowse) return offlineOrBrowse;
@@ -140,6 +168,9 @@ export function supportChatFallbackReply(
   if (screenSupportUserMessage(lastUser) === "invalid") {
     return invalidSupportQuestionReply(replyLang);
   }
+
+  const priorityAnswer = tryPrioritySupportAnswer(messages, langHint);
+  if (priorityAnswer) return priorityAnswer;
 
   const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, langHint);
   if (offlineOrBrowse) return offlineOrBrowse;
