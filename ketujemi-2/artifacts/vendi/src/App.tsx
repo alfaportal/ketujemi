@@ -35,6 +35,7 @@ const OpenShopPage = lazy(() => import("@/pages/open-shop"));
 const VipPackagesPage = lazy(() => import("@/pages/vip-packages"));
 const AdvertisePage = lazy(() => import("@/pages/advertise"));
 const PartnershipPage = lazy(() => import("@/pages/partnership"));
+const PartnerRegisterPage = lazy(() => import("@/pages/partner"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 const queryClient = new QueryClient({
@@ -91,6 +92,7 @@ function Router() {
             <Route path="/vip" component={VipPackagesPage} />
             <Route path="/reklamoni" component={AdvertisePage} />
             <Route path="/reklamiraj" component={AdvertisePage} />
+            <Route path="/partner" component={PartnerRegisterPage} />
             <Route path="/partneritet" component={PartnershipPage} />
             <Route path="/partnerstvo" component={PartnershipPage} />
             <Route path="/behu-partner" component={ProfilePage} />

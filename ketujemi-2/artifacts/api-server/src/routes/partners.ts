@@ -1,11 +1,11 @@
 import { Router } from "express";
+import { db, categoriesTable, listingsTable, partnersTable } from "@workspace/db";
 import { getTrustedPartnersShuffled } from "../lib/trusted-partners";
 import {
   buildPublicBusinessProfile,
   getActiveListingsForBusinessUser,
   getBusinessUserById,
 } from "../lib/business-profile";
-import { db, categoriesTable, listingsTable } from "@workspace/db";
 import { eq, inArray } from "drizzle-orm";
 import { sellerFirstName, maskEmailInListingDescription } from "../lib/contact-mask";
 import { isTopActive } from "../lib/listing-top";
@@ -17,8 +17,78 @@ import {
 } from "../lib/partner-logo-analytics";
 import { getSessionUser } from "../lib/session-user";
 import { isBusinessAccount, isVipBusinessActive } from "../lib/business-rules";
+import {
+  clientIpFromRequest,
+  packageLabelFromTier,
+  validatePartnerRegistration,
+} from "../lib/partner-registration";
+import {
+  sendPartnerRegistrationAdminNotify,
+  sendPartnerRegistrationConfirmation,
+} from "../lib/send-partner-registration-email";
 
 const router = Router();
+
+router.post("/partners/register", async (req, res) => {
+  try {
+    const validated = validatePartnerRegistration(req.body);
+    if (!validated.ok) {
+      res.status(400).json({ error: validated.message });
+      return;
+    }
+
+    const { data } = validated;
+    const clientIp = clientIpFromRequest(req);
+
+    const [row] = await db
+      .insert(partnersTable)
+      .values({
+        business_name: data.business_name,
+        contact_name: data.contact_name,
+        email: data.email,
+        phone: data.phone,
+        iban: data.iban,
+        package: data.package,
+        logo_url: data.logo_url,
+        link_url: data.link_url,
+        link_type: data.link_type,
+        status: "pending",
+        accepted_terms: true,
+        client_ip: clientIp,
+      })
+      .returning({ id: partnersTable.id });
+
+    const packageLabel = packageLabelFromTier(data.package);
+    const emailPayload = {
+      businessName: data.business_name,
+      contactName: data.contact_name,
+      email: data.email,
+      phone: data.phone,
+      iban: data.iban,
+      packageLabel,
+      logoUrl: data.logo_url,
+      linkUrl: data.link_url,
+    };
+
+    await Promise.all([
+      sendPartnerRegistrationConfirmation(emailPayload),
+      sendPartnerRegistrationAdminNotify({
+        ...emailPayload,
+        applicationId: row?.id ?? 0,
+        clientIp,
+      }),
+    ]);
+
+    res.json({
+      ok: true,
+      message:
+        "Kërkesa juaj u dërgua! Admini do t'ju aktivizojë brenda 24 orëve.",
+    });
+  } catch (err) {
+    req.log?.error({ err }, "partner registration");
+    res.status(500).json({ error: "Regjistrimi dështoi. Provoni përsëri." });
+  }
+});
 
 function formatListingPublic(
   l: typeof listingsTable.$inferSelect,

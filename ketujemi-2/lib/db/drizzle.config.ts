@@ -24,6 +24,7 @@ export default defineConfig({
     "./src/schema/email_verify.ts",
     "./src/schema/business.ts",
     "./src/schema/business_payments.ts",
+    "./src/schema/partners.ts",
   ],
   dialect: "postgresql",
   dbCredentials: {

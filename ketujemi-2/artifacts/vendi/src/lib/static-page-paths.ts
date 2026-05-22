@@ -33,6 +33,7 @@ export const INFO_STATIC_PATHS = new Set([
   "/vip",
   "/reklamoni",
   "/reklamiraj",
+  "/partner",
   "/partneritet",
   "/partnerstvo",
   "/behu-partner",
