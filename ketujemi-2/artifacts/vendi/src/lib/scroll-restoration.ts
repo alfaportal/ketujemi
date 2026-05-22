@@ -44,12 +44,22 @@ export function consumePopNavigation(): boolean {
 }
 
 export function restoreScrollY(y: number) {
-  const apply = () => window.scrollTo({ top: y, left: 0, behavior: "auto" });
+  window.scrollTo({ top: Math.max(0, y), left: 0, behavior: "auto" });
+}
+
+/** Re-apply scroll after listings/images load (category pages, home, etj.). */
+export function scheduleRestoreScrollY(y: number): () => void {
+  const apply = () => restoreScrollY(y);
   apply();
+  const timers: ReturnType<typeof setTimeout>[] = [];
   requestAnimationFrame(() => {
     apply();
     requestAnimationFrame(apply);
   });
+  for (const ms of [50, 150, 350, 600]) {
+    timers.push(setTimeout(apply, ms));
+  }
+  return () => timers.forEach(clearTimeout);
 }
 
 /** Track window scroll for the active route (call once at app shell). */

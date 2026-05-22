@@ -5,12 +5,12 @@ import {
   ensureScrollRestorationListeners,
   getScrollPosition,
   markScrollPosition,
-  restoreScrollY,
+  scheduleRestoreScrollY,
   scrollLocationKey,
 } from "@/lib/scroll-restoration";
 
 /**
- * Browser back/forward → restore prior scrollY for that URL.
+ * Browser back/forward → restore prior scrollY for that URL (kategori, home, njoftime…).
  * Forward navigation (links) → scroll to top.
  */
 export function useScrollRestoration() {
@@ -22,16 +22,22 @@ export function useScrollRestoration() {
   }, []);
 
   useLayoutEffect(() => {
+    const previousKey = activeKeyRef.current;
     const key = scrollLocationKey(pathname);
+
+    if (previousKey !== key) {
+      markScrollPosition(previousKey, window.scrollY);
+    }
+
     activeKeyRef.current = key;
 
     const isPop = consumePopNavigation();
     if (isPop) {
       const saved = getScrollPosition(key);
       if (saved != null) {
-        restoreScrollY(saved);
-        return;
+        return scheduleRestoreScrollY(saved);
       }
+      return;
     }
 
     if (shouldPreservePartnerFormScroll(pathname)) {

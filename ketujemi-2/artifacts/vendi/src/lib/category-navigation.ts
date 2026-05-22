@@ -1,9 +1,14 @@
 import { useLayoutEffect } from "react";
-import { peekPopNavigation } from "@/lib/scroll-restoration";
+import {
+  lastRouteChangeWasPop,
+  markScrollPosition,
+  scheduleRestoreScrollY,
+  scrollLocationKey,
+} from "@/lib/scroll-restoration";
 
 /** Shared category URL helpers — single source of truth for all category links. */
 
-/** In-memory scroll positions when drilling into a subcategory (restored on back). */
+/** Backup scroll when drilling subcategory (restored on back if URL cache misses). */
 const categoryScrollRestore = new Map<number, number>();
 
 export type CategoryRef = {
@@ -56,7 +61,7 @@ function takeCategoryScroll(categoryId: number): number | null {
   return y;
 }
 
-/** Navigate to a category; optionally restore parent scroll when returning. */
+/** Navigate to a category; stash parent scroll so back returns where you were. */
 export function navigateToCategory(
   setLocation: (path: string) => void,
   toCategoryId: number,
@@ -64,44 +69,39 @@ export function navigateToCategory(
 ) {
   if (fromCategoryId != null && Number.isFinite(fromCategoryId)) {
     stashCategoryScroll(fromCategoryId);
+    markScrollPosition(scrollLocationKey(window.location.pathname), window.scrollY);
   }
-  // Subcategory must always open at the top, never reuse an old saved position.
   categoryScrollRestore.delete(toCategoryId);
   setLocation(categoryPath(toCategoryId));
 }
 
-function applyScrollY(top: number) {
-  window.scrollTo({ top, left: 0, behavior: "auto" });
-}
-
 /**
- * On category id change only: scroll to top (new subcategory) or restore parent
- * position when going back. Does not run again when filters/listings refetch.
+ * Category drill-down: forward → top; back (browser or UI) → restore prior scroll.
+ * Works with useScrollRestoration (URL keys) — never forces top on popstate.
  */
 export function useCategoryScroll(categoryId: number) {
   useLayoutEffect(() => {
     if (!Number.isFinite(categoryId)) return;
-    if (peekPopNavigation()) return;
 
-    const previousRestoration = window.history.scrollRestoration;
-    window.history.scrollRestoration = "manual";
+    const isPop = lastRouteChangeWasPop;
 
-    const saved = takeCategoryScroll(categoryId);
-    const top = saved ?? 0;
-    applyScrollY(top);
-
-    // One layout pass for fresh pages only — never repeat on filter/search updates.
-    let raf = 0;
-    let t = 0;
-    if (saved == null) {
-      raf = requestAnimationFrame(() => applyScrollY(0));
-      t = window.setTimeout(() => applyScrollY(0), 50);
+    if (isPop) {
+      const stashed = takeCategoryScroll(categoryId);
+      if (stashed != null) {
+        return scheduleRestoreScrollY(stashed);
+      }
+      return;
     }
 
-    return () => {
-      window.history.scrollRestoration = previousRestoration;
-      cancelAnimationFrame(raf);
-      window.clearTimeout(t);
-    };
+    const stashed = takeCategoryScroll(categoryId);
+    if (stashed != null) {
+      return scheduleRestoreScrollY(stashed);
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    const timers = [0, 50].map((ms) =>
+      window.setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }), ms),
+    );
+    return () => timers.forEach(clearTimeout);
   }, [categoryId]);
 }
