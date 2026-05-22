@@ -9,6 +9,7 @@ export function setUserSessionCookie(res: Response, userId: number): void {
   res.cookie(COOKIE, String(userId), {
     signed: true,
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: MAX_AGE_MS,

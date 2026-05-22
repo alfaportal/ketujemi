@@ -1,7 +1,8 @@
 import { spawnSync } from "node:child_process";
-import { resolveAppRoot } from "./resolve-app-root.mjs";
+import { resolveAppRoot, resolveMonorepoRoot } from "./resolve-app-root.mjs";
 
-const root = resolveAppRoot();
+const appRoot = resolveAppRoot();
+const monorepoRoot = resolveMonorepoRoot(appRoot);
 const shell = process.platform === "win32";
 
 const env = {
@@ -11,13 +12,14 @@ const env = {
   NODE_OPTIONS: process.env.NODE_OPTIONS ?? "--max-old-space-size=4096",
 };
 
-console.log("[railway-build] app root:", root);
+console.log("[railway-build] monorepo root:", monorepoRoot);
+console.log("[railway-build] app root:", appRoot);
 
-function run(args) {
-  const result = spawnSync("pnpm", args, { cwd: root, env, stdio: "inherit", shell });
+function run(args, cwd) {
+  const result = spawnSync("pnpm", args, { cwd, env, stdio: "inherit", shell });
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
-run(["install", "--no-frozen-lockfile"]);
-run(["run", "build:production"]);
+run(["install", "--no-frozen-lockfile"], monorepoRoot);
+run(["run", "build:production"], appRoot);
 console.log("[railway-build] done");

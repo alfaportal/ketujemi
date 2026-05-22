@@ -1,4 +1,6 @@
-# Deploy KetuJemi — funksionon edhe me Root Directory = / apo ketujemi-2
+# KetuJemi production on Railway (ketujemi.com). Link GitHub repo alfaportal/ketujemi, branch master.
+# Required: DATABASE_URL, SESSION_SECRET (16+ chars), PUBLIC_APP_ORIGIN=https://ketujemi.com
+# VITE_* vars must be set before build (Cloudinary, reCAPTCHA, Stripe publishable).
 
 [build]
 builder = "NIXPACKS"

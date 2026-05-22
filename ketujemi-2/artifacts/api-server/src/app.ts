@@ -8,6 +8,10 @@ import { attachStaticFrontend } from "./lib/serve-static";
 
 const app: Express = express();
 
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret || sessionSecret.length < 16) {
   throw new Error(

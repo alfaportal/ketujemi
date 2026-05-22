@@ -20,3 +20,10 @@ export function resolveAppRoot() {
     "S'u gjet ketujemi-2. Vendos Railway Root Directory = ketujemi-2 ose build nga monorepo root.",
   );
 }
+
+/** pnpm workspace root (repo root) when ketujemi-2 is a subfolder. */
+export function resolveMonorepoRoot(appRoot = resolveAppRoot()) {
+  const parent = path.dirname(appRoot);
+  if (fs.existsSync(path.join(parent, "pnpm-workspace.yaml"))) return parent;
+  return appRoot;
+}

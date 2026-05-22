@@ -1,53 +1,66 @@
-# Deploy KetuJemi — vetëm Vercel
+# Deploy KetuJemi — Railway (production)
 
-Railway **nuk përdoret më**. Frontend + API + cron janë në **një projekt Vercel** (`alfaportal/ketujemi`).
+**ketujemi.com** duhet të përdorë **Railway** për hosting (jo Vercel). Një shërbim: API Express + frontend statik në të njëjtin port.
 
-## Vercel Dashboard
+## Railway — lidhja me GitHub
 
-| Setting | Vlera |
-|--------|--------|
-| **Repository** | `alfaportal/ketujemi` |
-| **Branch** | `master` |
-| **Root Directory** | *(bosh — root i repo-s)* |
-| **Framework** | Other |
-| Install / Build / Output | *(bosh — lexohen nga `vercel.json` në root)* |
+1. [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**
+2. Zgjidh: **`alfaportal/ketujemi`**
+3. Branch: **`master`**
+4. **Root Directory:** lëre **bosh** (repo root) — `railway.toml` në root lexohet automatikisht  
+   *(Alternativë: Root = `ketujemi-2` — përdor `ketujemi-2/railway.toml`)*
+
+Çdo **push** në `master` → Railway build + deploy automatik.
+
+## DNS për ketujemi.com
+
+Në registrar-in e domain-it (ku e ke blerë ketujemi.com):
+
+1. Hiq / mos përdor më DNS që tregon te **Vercel**
+2. Në **Railway** → shërbimi → **Settings → Networking** → **Custom Domain** → shto `ketujemi.com` dhe `www.ketujemi.com`
+3. Vendos rekordet që të jep Railway (zakonisht **CNAME** te `xxxx.up.railway.app`)
+
+Pas propagimit DNS (5 min – 48 orë), faqja hapet nga Railway.
 
 ## Çfarë bën build-i
 
 1. `pnpm install` (monorepo root)
-2. Build Vite → `ketujemi-2/artifacts/vendi/dist/public`
-3. Bundle API Express → `api/handler.mjs` (serverless)
-4. Bundle cron → `api/cron/jobs.mjs`
+2. `pnpm run build:production` në `ketujemi-2` → Vite + API bundle
+3. **preDeploy:** `pnpm run db:push` (skema DB)
+4. **start:** `node` API me `STATIC_ROOT` = frontend `dist/public`
 
-## Variablat e detyrueshëm (Vercel → Settings → Environment Variables)
+Health check: **`GET /api/healthz`** (duhet `hasFrontend: true`).
+
+## Variablat e detyrueshëm (Railway → Variables)
 
 | Variabël | Përshkrim |
 |----------|-----------|
-| `DATABASE_URL` | Postgres (Neon, Supabase, etj.) |
-| `SESSION_SECRET` | Min. 16 karaktere (cookies) |
-| `ANTHROPIC_API_KEY` | Chatbot + moderim (opsional por rekomandohet) |
-| `CRON_SECRET` | Mbrojtje për `/api/cron/jobs` (Vercel e dërgon si Bearer) |
+| `DATABASE_URL` | Postgres (Railway Postgres ose Neon) |
+| `SESSION_SECRET` | Min. 16 karaktere |
+| `PUBLIC_APP_ORIGIN` | `https://ketujemi.com` (email, linke njoftimesh) |
 
-Opsionale sipas funksioneve: `VONAGE_*`, `EMAIL_*`, `STRIPE_*`, `RECAPTCHA_*`, `SUPPORT_PHONE`, `CLOUDINARY_*`, etj. (shiko `ketujemi-2/.env.example`).
+Rekomandohen: `ANTHROPIC_API_KEY`, `VONAGE_*`, `RECAPTCHA_*`, `VITE_RECAPTCHA_SITE_KEY`, `EMAIL_*`, `VITE_CLOUDINARY_*`, `STRIPE_*` — shiko `ketujemi-2/.env.example`.
 
-## Pas deploy
+**VITE_*** duhen vendosur **para build-it** (Railway i injoron në fazën e build).
 
-- Faqja: URL e Vercel-it ose `ketujemi.com` (DNS → Vercel)
-- API: `/api/healthz`, `/api/ai/support-chat` — **në të njëjtin domain**, pa Railway
-- Verifikim: footer me hash commit; chatbot përgjigjet në shqip
+## Verifikim pas deploy
 
-## Cron (skadim njoftimesh + email rikujtues)
+- `https://ketujemi.com/api/healthz` → `{"status":"ok","hasFrontend":true,...}`
+- Faqja kryesore hapet, footer tregon hash commit (`buildId`)
+- Chat «Ndihmë» majtas, kategoritë + carousel Vetura
 
-`vercel.json` planifikon `GET /api/cron/jobs` çdo orë. Kërkon **CRON_SECRET** dhe plan Vercel që mbështet cron.
-
-## Lokal
+## Lokal (si Railway prod)
 
 ```bash
-# nga root i repo-s
-pnpm install
-pnpm run build
-# frontend: ketujemi-2/artifacts/vendi
-# API bundle: api/handler.mjs
+cd ketujemi-2
+cp .env.example .env   # plotëso DATABASE_URL, SESSION_SECRET, ...
+pnpm install           # nga repo root: cd .. && pnpm install
+node ./scripts/build-production.mjs
+pnpm start
 ```
 
-Për dev lokal me API të vazhdueshëm: `pnpm -C ketujemi-2 run dev` (Express në :8080 + Vite proxy).
+→ http://localhost:8080
+
+## Vercel (jo aktiv për prod)
+
+`vercel.json` mbetet në repo për referencë; **mos** lidh ketujemi.com me Vercel nëse përdor Railway.
