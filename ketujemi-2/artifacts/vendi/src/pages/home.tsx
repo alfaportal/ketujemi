@@ -14,8 +14,8 @@ import { translateCategory } from "@/lib/category-translations";
 import { categoryPath } from "@/lib/category-navigation";
 import { isRootCategory, sortRootCategories } from "@/lib/parent-category-slugs";
 import {
+  getParentCategoryThumb,
   HUB_THUMB_FALLBACK_BY_SLUG,
-  HUB_THUMB_IMAGE_BY_SLUG,
 } from "@/lib/category-hub-hero-images";
 import { resolveCategoryImageUrl } from "@/lib/resolve-category-image";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
@@ -27,10 +27,6 @@ import {
   filterToggleButtonBaseClass,
 } from "@/lib/primary-button-classes";
 
-function getCatPhoto(slug: string | null | undefined): string | null {
-  if (!slug) return null;
-  return HUB_THUMB_IMAGE_BY_SLUG[slug] ?? null;
-}
 
 function CategoryThumb({
   src,
@@ -307,8 +303,12 @@ export default function HomePage() {
             ? parentCategories.map((cat: any) => {
             const localName = translateCategory(cat.name, locale);
             const slug = cat.slug?.trim() ?? "";
-            const photo = resolveCategoryImageUrl(cat) || getCatPhoto(slug);
-            const photoFallback = slug ? HUB_THUMB_FALLBACK_BY_SLUG[slug] : undefined;
+            const photo =
+              getParentCategoryThumb(slug, cat.name) ||
+              resolveCategoryImageUrl(cat);
+            const photoFallback =
+              getParentCategoryThumb(slug, cat.name) ||
+              (slug ? HUB_THUMB_FALLBACK_BY_SLUG[slug] : undefined);
             const IconComp = getCategoryLucideIcon(cat.icon);
             return (
               <Link

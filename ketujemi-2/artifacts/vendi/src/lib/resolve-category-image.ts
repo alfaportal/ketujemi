@@ -1,12 +1,12 @@
 import { SUBCATEGORY_IMAGE_URL_BY_SLUG } from "@workspace/category-images";
 import {
+  getParentCategoryThumb,
   HUB_HERO_IMAGE_BY_SLUG,
-  HUB_THUMB_IMAGE_BY_SLUG,
+  isKnownParentSlug,
+  PARENT_NAME_TO_SLUG,
 } from "@/lib/category-hub-hero-images";
-import { PARENT_CATEGORY_SLUG_ORDER } from "@/lib/parent-category-slugs";
+import { isRootCategory } from "@/lib/parent-category-slugs";
 import { VETURA_BODY_IMAGE_BY_SLUG } from "@/lib/vetura-body-images";
-
-const PARENT_SLUGS = new Set<string>(PARENT_CATEGORY_SLUG_ORDER);
 
 /** Prefix fallback when slug is missing from the curated map (parent hub pages). */
 const NAME_PREFIX_PHOTOS: [string, string][] = [
@@ -46,8 +46,13 @@ export function resolveCategoryImageUrl(cat: {
 }): string | null {
   const slug = cat.slug?.trim();
 
-  if (slug && PARENT_SLUGS.has(slug)) {
-    return HUB_THUMB_IMAGE_BY_SLUG[slug] ?? HUB_HERO_IMAGE_BY_SLUG[slug] ?? null;
+  if (isRootCategory(cat) || (slug && isKnownParentSlug(slug))) {
+    const thumb = getParentCategoryThumb(slug, cat.name);
+    if (thumb) return thumb;
+    const mapped = cat.name?.trim() ? PARENT_NAME_TO_SLUG[cat.name.trim()] : undefined;
+    if (mapped && HUB_HERO_IMAGE_BY_SLUG[mapped]) {
+      return HUB_HERO_IMAGE_BY_SLUG[mapped].replace(/w=\d+/, "w=600");
+    }
   }
 
   if (slug) {
