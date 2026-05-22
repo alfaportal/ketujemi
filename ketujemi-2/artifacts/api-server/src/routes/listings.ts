@@ -27,6 +27,7 @@ import {
   recordListingPostSuccessForUser,
 } from "../lib/listing-post-user-cooldown";
 import { repostListing } from "../lib/listing-repost";
+import { incrementListingView } from "../lib/listing-view";
 import { listingFeedOrderBy, isTopActive } from "../lib/listing-top";
 import { moderateListingContent } from "../lib/listing-ai-moderation";
 import { parseUiLang } from "../lib/claude-client";
@@ -877,6 +878,17 @@ router.post("/listings/:id/repost", async (req, res) => {
   });
 });
 
+// ─── POST /listings/:id/view ──────────────────────────────────────────────────
+router.post("/listings/:id/view", async (req, res) => {
+  const id = Number(req.params.id);
+  const result = await incrementListingView(id);
+  if (!result.ok) {
+    res.status(result.status).json({ error: result.status === 404 ? "Not found" : "Invalid id" });
+    return;
+  }
+  res.json({ ok: true, views: result.views });
+});
+
 // ─── GET /listings/:id ────────────────────────────────────────────────────────
 router.get("/listings/:id", async (req, res) => {
   const viewer = await getSessionUser(req);
@@ -904,20 +916,13 @@ router.get("/listings/:id", async (req, res) => {
     return;
   }
 
-  if (!isExpired) {
-    await db.update(listingsTable).set({ views: row.views + 1 }).where(eq(listingsTable.id, row.id));
-  }
-
   const cat = await db
     .select({ name: categoriesTable.name })
     .from(categoriesTable)
     .where(eq(categoriesTable.id, row.category_id))
     .limit(1);
 
-  const formatted = formatListing(
-    { ...row, views: isExpired ? row.views : row.views + 1 },
-    cat[0]?.name ?? null,
-  );
+  const formatted = formatListing(row, cat[0]?.name ?? null);
   const payload = applyViewerContact(formatted, viewer) as ReturnType<typeof formatListing> & {
     can_repost: boolean;
   };

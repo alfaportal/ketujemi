@@ -31,6 +31,7 @@ import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { ReportListingDialog } from "@/components/report-listing-dialog";
 import { SimilarListingsSection } from "@/components/similar-listings-section";
 import { CardPaymentsPanel } from "@/components/card-payments-panel";
+import { recordListingView } from "@/lib/record-listing-view";
 
 // ─── Spec parser ─────────────────────────────────────────────────────────────
 interface ParsedDesc { specs: Record<string, string>; body: string }
@@ -127,6 +128,11 @@ export default function ListingDetail() {
       queryKey: [...getGetListingQueryKey(id), user?.id ?? "guest"],
     },
   });
+
+  useEffect(() => {
+    if (!id || isLoading || !listing) return;
+    void recordListingView(id, queryClient);
+  }, [id, isLoading, listing?.id, queryClient]);
 
   const [activePhoto, setActivePhoto] = useState(0);
   const [complaintBusy, setComplaintBusy] = useState(false);

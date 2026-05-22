@@ -159,13 +159,23 @@ export default function ListingCard({ listing }: ListingCardProps) {
           {listing.price ? convertPrice(listing.price, market, rates) : t.agreement}
         </div>
 
-        <div className="flex items-center justify-between text-sm text-gray-400 mb-1.5">
-          {listing.location && (
-            <span className="flex items-center gap-1"><MapPin size={11} />{listing.location}</span>
+        <div className="flex items-center justify-between text-sm text-gray-400 mb-1.5 gap-2">
+          {listing.location ? (
+            <span className="flex items-center gap-1 min-w-0 truncate">
+              <MapPin size={11} className="shrink-0" />
+              {listing.location}
+            </span>
+          ) : (
+            <span />
           )}
-          {listing.views !== undefined && (
-            <span className="flex items-center gap-1"><Eye size={11} />{listing.views}</span>
-          )}
+          <span
+            className="flex items-center gap-1 shrink-0 font-medium text-gray-500"
+            title={t.views}
+            data-testid={`text-views-${listing.id}`}
+          >
+            <Eye size={11} aria-hidden />
+            {Number(listing.views ?? 0).toLocaleString()}
+          </span>
         </div>
 
         <div className="flex items-center gap-1 text-sm text-gray-400 mb-1.5">

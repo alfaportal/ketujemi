@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
+import { Eye } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMarket } from "@/lib/market-context";
 
@@ -9,6 +10,7 @@ type Similar = {
   price: number;
   image_url: string | null;
   location: string;
+  views?: number;
 };
 
 type Props = { listingId: number };
@@ -71,7 +73,13 @@ export function SimilarListingsSection({ listingId }: Props) {
                   <p className="text-blue-600 font-bold text-sm mt-1">
                     {item.price > 0 ? `${item.price.toLocaleString()} ${currency}` : t.priceAgreement}
                   </p>
-                  <p className="text-xs text-gray-500 mt-0.5">{item.location}</p>
+                  <div className="flex items-center justify-between gap-2 mt-0.5">
+                    <p className="text-xs text-gray-500 truncate">{item.location}</p>
+                    <span className="flex items-center gap-0.5 text-xs text-gray-500 shrink-0">
+                      <Eye size={10} aria-hidden />
+                      {Number(item.views ?? 0).toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               </Link>
             );

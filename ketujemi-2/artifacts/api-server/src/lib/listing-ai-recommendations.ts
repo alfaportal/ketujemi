@@ -8,6 +8,7 @@ export type SimilarListingCard = {
   price: number;
   image_url: string | null;
   location: string;
+  views: number;
 };
 
 async function fetchCategoryCandidates(
@@ -22,6 +23,7 @@ async function fetchCategoryCandidates(
       price: listingsTable.price,
       image_url: listingsTable.image_url,
       location: listingsTable.location,
+      views: listingsTable.views,
     })
     .from(listingsTable)
     .where(
@@ -41,6 +43,7 @@ async function fetchCategoryCandidates(
     price: Number(r.price),
     image_url: r.image_url,
     location: r.location,
+    views: r.views ?? 0,
   }));
 }
 
@@ -72,6 +75,7 @@ export async function getSimilarListingsForListing(listingId: number): Promise<S
     price: Number(current.price),
     image_url: current.image_url,
     location: current.location,
+    views: current.views ?? 0,
   };
 
   if (!isClaudeConfigured() || candidates.length <= 3) {
