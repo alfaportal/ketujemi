@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
+import { useSecretAdminTap } from "@/lib/secret-admin-tap";
 import { cn } from "@/lib/utils";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
@@ -21,6 +22,7 @@ const FALLBACK_BUSY: Record<string, string> = {
 
 export function SupportChatWidget() {
   const { market } = useMarket();
+  const { registerTap } = useSecretAdminTap();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -151,7 +153,10 @@ export function SupportChatWidget() {
 
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          if (registerTap()) return;
+          setOpen((v) => !v);
+        }}
         className="fixed bottom-4 left-4 z-[60] flex items-center gap-2 rounded-full bg-[#1A56A0] text-white px-4 py-3 shadow-lg font-bold text-sm min-h-12 hover:bg-[#164a8c] transition-colors"
         data-testid="button-support-chat"
       >

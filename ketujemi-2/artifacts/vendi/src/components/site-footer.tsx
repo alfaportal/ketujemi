@@ -1,4 +1,5 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { useSecretAdminTap } from "@/lib/secret-admin-tap";
 import {
   FaCcMastercard,
   FaCcVisa,
@@ -70,17 +71,24 @@ const LINK_CLASS =
 type FooterLink = { href: string; label: string };
 
 function FooterWordmark() {
+  const [, setLocation] = useLocation();
+  const { registerTap } = useSecretAdminTap();
+
   return (
-    <Link
-      href="/"
-      className="inline-flex shrink-0 select-none touch-manipulation"
+    <button
+      type="button"
+      onClick={() => {
+        if (registerTap()) return;
+        setLocation("/");
+      }}
+      className="inline-flex shrink-0 select-none touch-manipulation bg-transparent border-0 p-0 cursor-pointer"
       aria-label="KetuJemi.com"
     >
       <span className="text-xl sm:text-2xl font-black tracking-tight text-[#1A56A0] whitespace-nowrap">
         KetuJemi
         <span className="text-[#2563eb]">.com</span>
       </span>
-    </Link>
+    </button>
   );
 }
 

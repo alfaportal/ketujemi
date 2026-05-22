@@ -5,6 +5,7 @@ import { CardPaymentsPanel, listingIdFromPath } from "@/components/card-payments
 import { useFreshPageOnRoute } from "@/hooks/use-fresh-page-on-route";
 import { useAuth } from "@/lib/auth-context";
 import { isInfoStaticPage } from "@/lib/static-page-paths";
+import { SecretAdminTapProvider } from "@/lib/secret-admin-tap";
 
 const SupportChatWidget = lazy(() =>
   import("@/components/support-chat-widget").then((m) => ({
@@ -36,17 +37,19 @@ export function AppLayout({ children }: AppLayoutProps) {
   const listingId = listingIdFromPath(pathname);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="flex-1">{children}</div>
-      {!hidePaymentsStrip ? (
-        <CardPaymentsPanel listingId={listingId} compact className="sticky bottom-0 z-20" />
-      ) : null}
-      {!hideFooter ? <SiteFooter /> : null}
-      {!hideFooter ? (
-        <Suspense fallback={null}>
-          <SupportChatWidget />
-        </Suspense>
-      ) : null}
-    </div>
+    <SecretAdminTapProvider>
+      <div className="min-h-screen bg-background flex flex-col">
+        <div className="flex-1">{children}</div>
+        {!hidePaymentsStrip ? (
+          <CardPaymentsPanel listingId={listingId} compact className="sticky bottom-0 z-20" />
+        ) : null}
+        {!hideFooter ? <SiteFooter /> : null}
+        {!hideFooter ? (
+          <Suspense fallback={null}>
+            <SupportChatWidget />
+          </Suspense>
+        ) : null}
+      </div>
+    </SecretAdminTapProvider>
   );
 }
