@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { SiteHeader } from "@/components/site-header";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
@@ -118,11 +118,21 @@ export default function PartnerPage() {
     if (phoneDigits) setPhone(phoneDigits.startsWith("+") ? phoneDigits : `+${phoneDigits}`);
   }, [authLoading, user, setLocation]);
 
-  useEffect(() => {
-    if (phase === "register" && registerRef.current) {
-      registerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [phase]);
+  const scrollToPartnerForm = useCallback(() => {
+    const run = () => {
+      const el = registerRef.current ?? document.getElementById("regjistrohu");
+      if (!el) return;
+      const headerOffset = 72;
+      const top = el.getBoundingClientRect().top + window.scrollY - headerOffset;
+      window.scrollTo({ top: Math.max(0, top), behavior: "auto" });
+    };
+    requestAnimationFrame(() => requestAnimationFrame(run));
+  }, []);
+
+  useLayoutEffect(() => {
+    if (phase !== "register") return;
+    scrollToPartnerForm();
+  }, [phase, scrollToPartnerForm]);
 
   function goToRegister() {
     if (user) {
@@ -250,25 +260,45 @@ export default function PartnerPage() {
     <div className="min-h-screen bg-[#f0f4f9]">
       <SiteHeader />
 
-      <section
-        className="relative overflow-hidden text-white px-4 py-14 sm:py-20"
-        style={{
-          background: `linear-gradient(135deg, ${BRAND_BLUE} 0%, #2563eb 50%, #1e40af 100%)`,
-        }}
-      >
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_30%_20%,white,transparent_50%)]" />
-        <div className="relative max-w-4xl mx-auto text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-blue-100 mb-3">
-            {c.heroBadge}
-          </p>
-          <h1 className="text-3xl sm:text-4xl md:text-[2.5rem] font-black leading-tight tracking-tight">
-            {c.heroTitle}
-          </h1>
-          <p className="mt-4 text-lg sm:text-xl text-blue-50 font-medium">{c.heroSubtitle}</p>
-        </div>
-      </section>
+      {phase === "landing" ? (
+        <section
+          className="relative overflow-hidden text-white px-4 py-14 sm:py-20"
+          style={{
+            background: `linear-gradient(135deg, ${BRAND_BLUE} 0%, #2563eb 50%, #1e40af 100%)`,
+          }}
+        >
+          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_30%_20%,white,transparent_50%)]" />
+          <div className="relative max-w-4xl mx-auto text-center">
+            <p className="text-sm font-semibold uppercase tracking-widest text-blue-100 mb-3">
+              {c.heroBadge}
+            </p>
+            <h1 className="text-3xl sm:text-4xl md:text-[2.5rem] font-black leading-tight tracking-tight">
+              {c.heroTitle}
+            </h1>
+            <p className="mt-4 text-lg sm:text-xl text-blue-50 font-medium">{c.heroSubtitle}</p>
+          </div>
+        </section>
+      ) : (
+        <section
+          className="border-b border-gray-200 bg-white px-4 py-5 sm:py-6"
+          aria-label={c.formTitle}
+        >
+          <div className="max-w-4xl mx-auto">
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600 mb-1">
+              {c.heroBadge}
+            </p>
+            <h1 className="text-xl sm:text-2xl font-black text-gray-900">{c.formTitle}</h1>
+            <p className="mt-1 text-sm text-gray-500">{c.formSubtitle}</p>
+          </div>
+        </section>
+      )}
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 -mt-6 pb-16 space-y-10">
+      <div
+        className={cn(
+          "max-w-4xl mx-auto px-4 sm:px-6 pb-16 space-y-10",
+          phase === "landing" ? "-mt-6" : "pt-6",
+        )}
+      >
         {phase === "landing" ? (
           <section className="pt-8">
             <h2 className="text-xl font-bold text-gray-900 mb-5 text-center">{c.benefitsTitle}</h2>
@@ -331,9 +361,6 @@ export default function PartnerPage() {
             </section>
 
             <section className="rounded-2xl border border-gray-200 bg-white shadow-[0_12px_40px_rgba(26,86,160,0.08)] p-5 sm:p-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-1">{c.formTitle}</h2>
-              <p className="text-sm text-gray-500 mb-6">{c.formSubtitle}</p>
-
               <form onSubmit={onSubmit} className="space-y-4">
                 <Field label={c.labelBusinessName} required>
                   <Input

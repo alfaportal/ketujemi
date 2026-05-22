@@ -34,7 +34,23 @@ export function useScrollRestoration() {
       }
     }
 
+    if (shouldPreservePartnerFormScroll(pathname)) {
+      return;
+    }
+
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     markScrollPosition(key, 0);
   }, [pathname]);
+}
+
+/** Partner form step: page scrolls to #regjistrohu, not top. */
+function shouldPreservePartnerFormScroll(pathname: string): boolean {
+  if (typeof window === "undefined") return false;
+  if (!/^\/partner(itet|stvo)?$/.test(pathname)) return false;
+  const params = new URLSearchParams(window.location.search);
+  return (
+    params.get("step") === "partner" ||
+    params.get("regjistrohu") === "1" ||
+    window.location.hash === "#regjistrohu"
+  );
 }
