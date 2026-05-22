@@ -20,7 +20,7 @@ import { BRAND_BLUE } from "@/lib/brand-colors";
 import { usePartnerPage } from "@/lib/partner-page-i18n";
 import { uploadImageToCloudinary, useCloudinaryConfig } from "@/lib/cloudinary-config";
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown, Loader2, Upload } from "lucide-react";
+import { Check, ChevronDown, Loader2, Mail, CreditCard, KeyRound, Upload } from "lucide-react";
 
 const CARD_COLORS = [
   "from-blue-600 to-blue-500",
@@ -32,11 +32,23 @@ const CARD_COLORS = [
   "from-blue-800 to-blue-600",
 ];
 
+type PartnerPhase = "landing" | "register" | "success";
+
+function openRegisterFromUrl(): boolean {
+  if (typeof window === "undefined") return false;
+  const params = new URLSearchParams(window.location.search);
+  return params.get("regjistrohu") === "1" || window.location.hash === "#regjistrohu";
+}
+
 export default function PartnerPage() {
   const c = usePartnerPage();
   const cloudinary = useCloudinaryConfig();
   const fileRef = useRef<HTMLInputElement>(null);
+  const registerRef = useRef<HTMLDivElement>(null);
 
+  const [phase, setPhase] = useState<PartnerPhase>(() =>
+    openRegisterFromUrl() ? "register" : "landing",
+  );
   const [businessName, setBusinessName] = useState("");
   const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
@@ -50,7 +62,6 @@ export default function PartnerPage() {
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [paymentPending, setPaymentPending] = useState(false);
 
   useEffect(() => {
@@ -61,12 +72,13 @@ export default function PartnerPage() {
     const params = new URLSearchParams(window.location.search);
     if (params.get("payment") === "success") {
       setPaymentPending(false);
-      setSuccess(true);
+      setPhase("success");
       window.history.replaceState({}, "", "/partner");
       return;
     }
     const resumeId = params.get("resume");
     if (resumeId) {
+      setPhase("register");
       void fetch(`/api/partners/${resumeId}/checkout`, { method: "POST" })
         .then((r) => r.json())
         .then((data: { checkout_url?: string; error?: string }) => {
@@ -76,6 +88,17 @@ export default function PartnerPage() {
         .catch(() => setError(c.errServer));
     }
   }, [c.errPaymentOpen, c.errServer]);
+
+  useEffect(() => {
+    if (phase === "register" && registerRef.current) {
+      registerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [phase]);
+
+  function goToRegister() {
+    setPhase("register");
+    window.history.replaceState({}, "", "/partner#regjistrohu");
+  }
 
   async function onLogoFile(file: File) {
     if (!cloudinary.ready) {
@@ -134,7 +157,6 @@ export default function PartnerPage() {
       });
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
-        message?: string;
         checkout_url?: string;
       };
       if (!res.ok) {
@@ -146,7 +168,7 @@ export default function PartnerPage() {
         return;
       }
       setPaymentPending(true);
-      setSuccess(true);
+      setPhase("success");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
       setError(c.errServer);
@@ -155,23 +177,32 @@ export default function PartnerPage() {
     }
   }
 
-  if (success) {
+  if (phase === "success") {
     return (
       <div className="min-h-screen bg-[#f0f4f9]">
         <SiteHeader />
-        <div className="max-w-lg mx-auto px-4 py-16 text-center">
-          <div
-            className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full text-white"
-            style={{ backgroundColor: BRAND_BLUE }}
-          >
-            <Check className="h-8 w-8" aria-hidden />
+        <div className="max-w-lg mx-auto px-4 py-12 sm:py-16">
+          <div className="text-center mb-8">
+            <div
+              className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full text-white"
+              style={{ backgroundColor: BRAND_BLUE }}
+            >
+              <Check className="h-8 w-8" aria-hidden />
+            </div>
+            <h1 className="text-2xl font-black text-gray-900 mb-3">{c.successTitle}</h1>
+            <p className="text-lg text-gray-700 leading-relaxed">
+              {paymentPending ? c.successPending : c.successPaid}
+            </p>
           </div>
-          <h1 className="text-2xl font-black text-gray-900 mb-3">{c.successTitle}</h1>
-          <p className="text-lg text-gray-700 leading-relaxed">
-            {paymentPending ? c.successPending : c.successPaid}
-          </p>
+
+          <div className="space-y-3">
+            <SuccessNotice icon={Mail} title={c.successNoticeEmail} />
+            <SuccessNotice icon={CreditCard} title={c.successNoticePayment} />
+            <SuccessNotice icon={KeyRound} title={c.successNoticeActivate} />
+          </div>
+
           <Button
-            className="mt-8"
+            className="mt-8 w-full"
             style={{ backgroundColor: BRAND_BLUE }}
             onClick={() => (window.location.href = "/")}
           >
@@ -204,7 +235,7 @@ export default function PartnerPage() {
         </div>
       </section>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 -mt-6 pb-16 space-y-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 -mt-6 pb-16 space-y-10">
         <section className="pt-8">
           <h2 className="text-xl font-bold text-gray-900 mb-5 text-center">{c.benefitsTitle}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -228,176 +259,224 @@ export default function PartnerPage() {
               </div>
             ))}
           </div>
-        </section>
 
-        <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-5 text-center">{c.packagesTitle}</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            <PricingCard
-              title={c.standardTitle}
-              price={c.standardPrice}
-              period={c.periodPerMonth}
-              highlight={false}
-              features={c.standardFeatures}
-            />
-            <PricingCard
-              title={c.vipTitle}
-              price={c.vipPrice}
-              period={c.periodPerMonth}
-              highlight
-              features={c.vipFeatures}
-            />
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-gray-200 bg-white shadow-[0_12px_40px_rgba(26,86,160,0.08)] p-5 sm:p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-1">{c.formTitle}</h2>
-          <p className="text-sm text-gray-500 mb-6">{c.formSubtitle}</p>
-
-          <form onSubmit={onSubmit} className="space-y-4">
-            <Field label={c.labelBusinessName} required>
-              <Input
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                maxLength={200}
-                autoComplete="organization"
-              />
-            </Field>
-            <Field label={c.labelContactName} required>
-              <Input
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                maxLength={120}
-                autoComplete="name"
-              />
-            </Field>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <Field label={c.labelEmail} required>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                />
-              </Field>
-              <Field label={c.labelPhone} required>
-                <Input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  autoComplete="tel"
-                />
-              </Field>
-            </div>
-            <Field label={c.labelIban} required>
-              <Input
-                value={iban}
-                onChange={(e) => setIban(e.target.value)}
-                placeholder="AL00 0000 0000 0000 0000 0000 0000"
-                autoComplete="off"
-              />
-            </Field>
-            <Field label={c.labelPackage} required>
-              <Select value={pkg} onValueChange={setPkg}>
-                <SelectTrigger>
-                  <SelectValue placeholder={c.packagePlaceholder} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="standard">{c.packageStandard}</SelectItem>
-                  <SelectItem value="vip">{c.packageVip}</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-            <Field label={c.labelLogo}>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Input
-                  value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                  placeholder={c.logoUrlPlaceholder}
-                  className="flex-1"
-                />
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) void onLogoFile(f);
-                    e.target.value = "";
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="shrink-0"
-                  disabled={uploading}
-                  onClick={() => fileRef.current?.click()}
-                >
-                  {uploading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Upload className="h-4 w-4 mr-2" />
-                  )}
-                  {c.uploadLogo}
-                </Button>
-              </div>
-            </Field>
-            <Field label={c.labelLink} required>
-              <Input
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
-                placeholder={c.linkPlaceholder}
-              />
-            </Field>
-
-            <div className="flex items-start gap-3 pt-2">
-              <Checkbox
-                id="partner-terms"
-                checked={terms}
-                onCheckedChange={(v) => setTerms(v === true)}
-              />
-              <label htmlFor="partner-terms" className="text-sm text-gray-700 leading-snug cursor-pointer">
-                {c.termsLabel}
-              </label>
-            </div>
-
-            {error ? (
-              <p className="text-sm text-red-600 font-medium" role="alert">
-                {error}
-              </p>
-            ) : null}
-
-            <Button
-              type="submit"
-              disabled={busy}
-              className="w-full h-12 text-base font-bold text-white hover:opacity-95"
-              style={{ backgroundColor: BRAND_BLUE }}
-            >
-              {busy ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : c.submitButton}
-            </Button>
-          </form>
-        </section>
-
-        <Collapsible open={contractOpen} onOpenChange={setContractOpen}>
-          <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
-            <CollapsibleTrigger className="flex w-full items-center justify-between px-5 py-4 text-left font-bold text-gray-900 hover:bg-gray-50 transition-colors">
-              {c.contractTitle}
-              <ChevronDown
-                className={cn("h-5 w-5 text-gray-500 transition-transform", contractOpen && "rotate-180")}
-              />
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <pre
-                className="px-5 pb-5 whitespace-pre-wrap font-sans leading-relaxed border-t border-gray-100 pt-4"
-                style={{ fontSize: "11px", color: "#999" }}
+          {phase === "landing" ? (
+            <div className="mt-10 text-center">
+              <Button
+                type="button"
+                className="h-12 px-8 text-base font-bold text-white hover:opacity-95"
+                style={{ backgroundColor: BRAND_BLUE }}
+                onClick={goToRegister}
               >
-                {c.contractText}
-              </pre>
-            </CollapsibleContent>
-          </section>
-        </Collapsible>
+                {c.landingCta}
+              </Button>
+              <p className="mt-3 text-sm text-gray-500 max-w-md mx-auto">{c.landingCtaHint}</p>
+            </div>
+          ) : null}
+        </section>
+
+        {phase === "register" ? (
+          <div ref={registerRef} id="regjistrohu" className="space-y-10 scroll-mt-24">
+            <section>
+              <h2 className="text-xl font-bold text-gray-900 mb-5 text-center">{c.packagesTitle}</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                <PricingCard
+                  title={c.standardTitle}
+                  price={c.standardPrice}
+                  period={c.periodPerMonth}
+                  highlight={false}
+                  features={c.standardFeatures}
+                />
+                <PricingCard
+                  title={c.vipTitle}
+                  price={c.vipPrice}
+                  period={c.periodPerMonth}
+                  highlight
+                  features={c.vipFeatures}
+                />
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-gray-200 bg-white shadow-[0_12px_40px_rgba(26,86,160,0.08)] p-5 sm:p-8">
+              <h2 className="text-xl font-bold text-gray-900 mb-1">{c.formTitle}</h2>
+              <p className="text-sm text-gray-500 mb-6">{c.formSubtitle}</p>
+
+              <form onSubmit={onSubmit} className="space-y-4">
+                <Field label={c.labelBusinessName} required>
+                  <Input
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    maxLength={200}
+                    autoComplete="organization"
+                  />
+                </Field>
+                <Field label={c.labelContactName} required>
+                  <Input
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
+                    maxLength={120}
+                    autoComplete="name"
+                  />
+                </Field>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Field label={c.labelEmail} required>
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      autoComplete="email"
+                    />
+                  </Field>
+                  <Field label={c.labelPhone} required>
+                    <Input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      autoComplete="tel"
+                    />
+                  </Field>
+                </div>
+                <Field label={c.labelIban} required>
+                  <Input
+                    value={iban}
+                    onChange={(e) => setIban(e.target.value)}
+                    placeholder="AL00 0000 0000 0000 0000 0000 0000"
+                    autoComplete="off"
+                  />
+                </Field>
+                <Field label={c.labelPackage} required>
+                  <Select value={pkg} onValueChange={setPkg}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={c.packagePlaceholder} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="standard">{c.packageStandard}</SelectItem>
+                      <SelectItem value="vip">{c.packageVip}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label={c.labelLogo}>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Input
+                      value={logoUrl}
+                      onChange={(e) => setLogoUrl(e.target.value)}
+                      placeholder={c.logoUrlPlaceholder}
+                      className="flex-1"
+                    />
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) void onLogoFile(f);
+                        e.target.value = "";
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="shrink-0"
+                      disabled={uploading}
+                      onClick={() => fileRef.current?.click()}
+                    >
+                      {uploading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Upload className="h-4 w-4 mr-2" />
+                      )}
+                      {c.uploadLogo}
+                    </Button>
+                  </div>
+                </Field>
+                <Field label={c.labelLink} required>
+                  <Input
+                    value={link}
+                    onChange={(e) => setLink(e.target.value)}
+                    placeholder={c.linkPlaceholder}
+                  />
+                </Field>
+
+                <div className="flex items-start gap-3 pt-2">
+                  <Checkbox
+                    id="partner-terms"
+                    checked={terms}
+                    onCheckedChange={(v) => setTerms(v === true)}
+                  />
+                  <label htmlFor="partner-terms" className="text-sm text-gray-700 leading-snug cursor-pointer">
+                    {c.termsLabel}{" "}
+                    <button
+                      type="button"
+                      className="text-blue-600 font-medium underline underline-offset-2 hover:text-blue-800"
+                      onClick={() => setContractOpen(true)}
+                    >
+                      ({c.termsOpenHint})
+                    </button>
+                  </label>
+                </div>
+
+                {error ? (
+                  <p className="text-sm text-red-600 font-medium" role="alert">
+                    {error}
+                  </p>
+                ) : null}
+
+                <Button
+                  type="submit"
+                  disabled={busy}
+                  className="w-full h-12 text-base font-bold text-white hover:opacity-95"
+                  style={{ backgroundColor: BRAND_BLUE }}
+                >
+                  {busy ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : c.submitButton}
+                </Button>
+              </form>
+            </section>
+
+            <Collapsible open={contractOpen} onOpenChange={setContractOpen}>
+              <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
+                <CollapsibleTrigger className="flex w-full items-center justify-between px-5 py-4 text-left font-bold text-gray-900 hover:bg-gray-50 transition-colors">
+                  {c.contractTitle}
+                  <ChevronDown
+                    className={cn(
+                      "h-5 w-5 text-gray-500 transition-transform",
+                      contractOpen && "rotate-180",
+                    )}
+                  />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <pre
+                    className="px-5 pb-5 whitespace-pre-wrap font-sans leading-relaxed border-t border-gray-100 pt-4 max-h-[min(50vh,320px)] overflow-y-auto"
+                    style={{ fontSize: "11px", color: "#999" }}
+                  >
+                    {c.contractText}
+                  </pre>
+                </CollapsibleContent>
+              </section>
+            </Collapsible>
+          </div>
+        ) : null}
       </div>
+    </div>
+  );
+}
+
+function SuccessNotice({
+  icon: Icon,
+  title,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+}) {
+  return (
+    <div className="flex gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white"
+        style={{ backgroundColor: BRAND_BLUE }}
+      >
+        <Icon className="h-5 w-5" aria-hidden />
+      </div>
+      <p className="text-sm text-gray-700 leading-relaxed pt-1.5">{title}</p>
     </div>
   );
 }

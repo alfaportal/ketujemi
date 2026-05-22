@@ -50,6 +50,12 @@ export type PartnerPageCopy = {
   successPending: string;
   successPaid: string;
   successHome: string;
+  landingCta: string;
+  landingCtaHint: string;
+  termsOpenHint: string;
+  successNoticeEmail: string;
+  successNoticePayment: string;
+  successNoticeActivate: string;
 };
 
 const SQ: PartnerPageCopy = {
@@ -169,6 +175,15 @@ me datë, orë dhe IP adresë.`,
   successPaid:
     "Pagesa u konfirmua! Llogaria juaj Partner është aktive. Kontrolloni SMS/email për kodin e aktivizimit dhe hyni në /login.",
   successHome: "Kthehu në faqen kryesore",
+  landingCta: "Regjistrohu si Partner",
+  landingCtaHint: "Zgjidhni paketën dhe plotësoni formularin — aktivizimi pas pagesës.",
+  termsOpenHint: "Lexoni kushtet e plota (hapen poshtë)",
+  successNoticeEmail:
+    "Kontrolloni emailin tuaj — aty do të gjeni konfirmimin e regjistrimit dhe udhëzimet e hapësirës.",
+  successNoticePayment:
+    "Pagesa e paketës bëhet online me Stripe. Pas pagesës, llogaria Partner aktivizohet automatikisht.",
+  successNoticeActivate:
+    "Pas aktivizimit, hyni në /login me emailin e biznesit për të menaxhuar shpalljet.",
 };
 
 const MK: PartnerPageCopy = {
@@ -272,6 +287,15 @@ KetuJemi.com може да ги промени цените со
   successPaid:
     "Плаќањето е потврдено! Вашата Partner сметка е активна. Проверете SMS/email за код и најавете се на /login.",
   successHome: "Назад на почетна",
+  landingCta: "Регистрирај се како партнер",
+  landingCtaHint: "Изберете пакет и пополнете го формуларот — активација по плаќање.",
+  termsOpenHint: "Прочитајте ги целосните услови (се отвораат подолу)",
+  successNoticeEmail:
+    "Проверете го email — таму ќе го најдете потврдувањето и инструкциите за продавницата.",
+  successNoticePayment:
+    "Плаќањето е онлајн преку Stripe. По плаќање, Partner сметката се активира автоматски.",
+  successNoticeActivate:
+    "По активација, најавете се на /login со email на бизнисот за да ги управувате огласите.",
 };
 
 const MNE: PartnerPageCopy = {
@@ -374,6 +398,15 @@ Klik na „Registruj se kao partner" smatra se važećim elektronskim potpisom.`
   successPaid:
     "Plaćanje potvrđeno! Vaš Partner nalog je aktivan. Provjerite SMS/email za kod i prijavite se na /login.",
   successHome: "Nazad na početnu",
+  landingCta: "Registruj se kao partner",
+  landingCtaHint: "Izaberite paket i popunite formular — aktivacija nakon plaćanja.",
+  termsOpenHint: "Pročitajte potpune uslove (otvaraju se ispod)",
+  successNoticeEmail:
+    "Provjerite email — tamo su potvrda registracije i upute za vašu prodavnicu.",
+  successNoticePayment:
+    "Plaćanje paketa je online putem Stripe-a. Nakon plaćanja, Partner nalog se aktivira automatski.",
+  successNoticeActivate:
+    "Nakon aktivacije, prijavite se na /login sa poslovnim emailom za upravljanje oglasima.",
 };
 
 const BY_LOCALE: Record<PartnerPageLocaleKey, PartnerPageCopy> = {
