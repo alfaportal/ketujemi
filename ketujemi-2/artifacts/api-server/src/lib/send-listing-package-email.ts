@@ -49,7 +49,7 @@ export async function sendListingPackageConfirmationEmail(opts: {
     `Skadon më: ${expiryStr}`,
     "",
     `Kodi juaj i aktivizimit: ${activationCode}`,
-    "(Përdoreni në një pajisje tjetër nëse keni nevojë — duhet të jeni i kyçur me të njëjtën llogari.)",
+    "(SMS-i kryesor u dërgua në telefonin tuaj. Kodi mund të përdoret edhe në pajisje tjetër — e njëjta llogari.)",
     "",
     "Mund të postoni menjëherë në KetuJemi.com.",
     "",
@@ -65,7 +65,7 @@ export async function sendListingPackageConfirmationEmail(opts: {
       <li>Skadon: <strong>${escapeHtml(expiryStr)}</strong></li>
     </ul>
     <p style="font-size:18px;font-weight:bold;letter-spacing:2px;margin:16px 0">${escapeHtml(activationCode)}</p>
-    <p style="color:#666;font-size:13px">Kodi për pajisje tjetër (e njëjta llogari).</p>
+    <p style="color:#666;font-size:13px">Kodi u dërgua edhe me SMS. Për pajisje tjetër — e njëjta llogari.</p>
     <p>Mund të postoni menjëherë.</p>
   `;
 

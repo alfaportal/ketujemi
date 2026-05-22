@@ -5,32 +5,32 @@ import { and, eq, gt, gte, sql } from "drizzle-orm";
 import { DEFAULT_FREE_LISTING_LIMIT } from "./category-quota";
 import { MAX_ACTIVE_LISTINGS_PER_USER } from "./user-listing-limits";
 import { isBusinessAccount } from "./business-rules";
-import { sendListingPackageConfirmationEmail } from "./send-listing-package-email";
+import { notifyListingPackageActivated } from "./send-listing-package-notifications";
 import { logger } from "./logger";
 
 export const LISTING_PACKAGE_CATALOG = {
   s: {
     id: "s" as const,
     name: "Paketa S",
-    price_eur: 5,
-    price_cents: 500,
-    extra_slots: 20,
+    price_eur: 1,
+    price_cents: 100,
+    extra_slots: 5,
     days: 30,
   },
   m: {
     id: "m" as const,
     name: "Paketa M",
-    price_eur: 10,
-    price_cents: 1000,
-    extra_slots: 50,
+    price_eur: 5,
+    price_cents: 500,
+    extra_slots: 25,
     days: 30,
   },
   l: {
     id: "l" as const,
     name: "Paketa L",
-    price_eur: 20,
-    price_cents: 2000,
-    extra_slots: 120,
+    price_eur: 8,
+    price_cents: 800,
+    extra_slots: 50,
     days: 30,
   },
 } as const;
@@ -161,20 +161,16 @@ export async function activateListingPackageFromPayment(
   const pkg = purchase.package as ListingPackageId;
   const capacity = user ? await getUserListingCapacity(user) : null;
 
-  if (user?.email) {
-    try {
-      await sendListingPackageConfirmationEmail({
-        to: user.email,
-        displayName: user.display_name?.trim() || "Përdorues",
-        packageName: packageLabel(pkg),
-        extraSlots: purchase.extra_slots,
-        effectiveLimit: capacity?.effective_limit ?? DEFAULT_FREE_LISTING_LIMIT + purchase.extra_slots,
-        expiresAt: expires,
-        activationCode: purchase.activation_code,
-      });
-    } catch (err) {
-      logger.error({ err, purchaseId }, "listing package confirmation email failed");
-    }
+  if (user) {
+    await notifyListingPackageActivated({
+      user,
+      packageName: packageLabel(pkg),
+      extraSlots: purchase.extra_slots,
+      effectiveLimit:
+        capacity?.effective_limit ?? DEFAULT_FREE_LISTING_LIMIT + purchase.extra_slots,
+      expiresAt: expires,
+      activationCode: purchase.activation_code,
+    });
   }
 
   return { activationCode: purchase.activation_code };

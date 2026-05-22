@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X, Loader2, Package, Check } from "lucide-react";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
@@ -11,17 +11,17 @@ export type ListingPackageOffer = {
   days: number;
 };
 
+const FALLBACK_PACKAGES: ListingPackageOffer[] = [
+  { id: "s", name: "Paketa S", price_eur: 1, extra_slots: 5, days: 30 },
+  { id: "m", name: "Paketa M", price_eur: 5, extra_slots: 25, days: 30 },
+  { id: "l", name: "Paketa L", price_eur: 8, extra_slots: 50, days: 30 },
+];
+
 type Props = {
   open: boolean;
   onClose: () => void;
   message?: string;
 };
-
-const DEFAULT_PACKAGES: ListingPackageOffer[] = [
-  { id: "s", name: "Paketa S", price_eur: 5, extra_slots: 20, days: 30 },
-  { id: "m", name: "Paketa M", price_eur: 10, extra_slots: 50, days: 30 },
-  { id: "l", name: "Paketa L", price_eur: 20, extra_slots: 120, days: 30 },
-];
 
 export function ListingPackagesModal({ open, onClose, message }: Props) {
   const [busy, setBusy] = useState<string | null>(null);
@@ -29,6 +29,19 @@ export function ListingPackagesModal({ open, onClose, message }: Props) {
   const [redeemCode, setRedeemCode] = useState("");
   const [redeemBusy, setRedeemBusy] = useState(false);
   const [redeemOk, setRedeemOk] = useState<string | null>(null);
+  const [packages, setPackages] = useState<ListingPackageOffer[]>(FALLBACK_PACKAGES);
+
+  useEffect(() => {
+    if (!open) return;
+    void fetch("/api/listing-packages/catalog", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { packages?: ListingPackageOffer[] } | null) => {
+        if (data?.packages?.length) {
+          setPackages(data.packages as ListingPackageOffer[]);
+        }
+      })
+      .catch(() => setPackages(FALLBACK_PACKAGES));
+  }, [open]);
 
   if (!open) return null;
 
@@ -106,7 +119,7 @@ export function ListingPackagesModal({ open, onClose, message }: Props) {
           </p>
 
           <div className="space-y-2">
-            {DEFAULT_PACKAGES.map((p) => (
+            {packages.map((p) => (
               <button
                 key={p.id}
                 type="button"
@@ -191,7 +204,7 @@ export function ListingPackageSuccessBanner({
       <p className="mt-1">Mund të postoni menjëherë. Kodi juaj:</p>
       <p className="mt-2 font-mono text-base font-black tracking-wider">{code}</p>
       <p className="mt-1 text-xs text-green-800">
-        Kodi u dërgua edhe me email. Ruajeni për pajisje tjetër (e njëjta llogari).
+        Kodi u dërgua me SMS në telefonin tuaj dhe me email nëse keni adresë të verifikuar.
       </p>
       <button
         type="button"

@@ -42,6 +42,9 @@ function amountCents(purpose: PaymentPurpose): number {
   if (purpose === "top_listing") return TOP_LISTING_PRICE_EUR * 100;
   if (purpose === "partner_vip") return PARTNER_PACKAGE_PRICE_CENTS.vip;
   if (purpose === "partner_standard") return PARTNER_PACKAGE_PRICE_CENTS.partner;
+  if (purpose === "listing_package_s") return 100;
+  if (purpose === "listing_package_m") return 500;
+  if (purpose === "listing_package_l") return 800;
   return BUSINESS_EXTRA_POST_PRICE_EUR * 100;
 }
 
