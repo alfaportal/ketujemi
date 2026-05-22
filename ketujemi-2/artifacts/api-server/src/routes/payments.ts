@@ -59,12 +59,22 @@ router.post("/payments/webhook", async (req, res) => {
         const purpose = session.metadata?.purpose;
         const userId = Number(session.metadata?.user_id);
         const partnerId = Number(session.metadata?.partner_id);
+        const packagePurchaseId = Number(session.metadata?.listing_package_purchase_id);
         if (
           (purpose === "partner_standard" || purpose === "partner_vip") &&
           Number.isFinite(partnerId)
         ) {
           const { activatePartnerFromPayment } = await import("../lib/partner-activate");
           await activatePartnerFromPayment(partnerId);
+        }
+        if (
+          (purpose === "listing_package_s" ||
+            purpose === "listing_package_m" ||
+            purpose === "listing_package_l") &&
+          Number.isFinite(packagePurchaseId)
+        ) {
+          const { activateListingPackageFromPayment } = await import("../lib/listing-packages");
+          await activateListingPackageFromPayment(packagePurchaseId);
         }
         if (purpose === "vip_month" && Number.isFinite(userId)) {
           await activateVipFromPayment(userId);

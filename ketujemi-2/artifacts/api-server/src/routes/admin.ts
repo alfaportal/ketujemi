@@ -7,6 +7,7 @@ import {
   adminSettingsTable,
   usersTable,
   partnersTable,
+  listingPackagePurchasesTable,
 } from "@workspace/db";
 import { eq, desc, sql, count, gte, and } from "drizzle-orm";
 import { isVipBusinessActive } from "../lib/business-rules";
@@ -21,6 +22,10 @@ import {
   listAdminPartnerApplications,
 } from "../lib/admin-partner-applications";
 import { syncPartnerStatusToUser } from "../lib/partner-activate";
+import {
+  getMonthlyPackageRevenueCents,
+  LISTING_PACKAGE_CATALOG,
+} from "../lib/listing-packages";
 import { sendPartnerActivationEmail } from "../lib/send-email";
 import { CreateListingBody } from "@workspace/api-zod";
 import {
@@ -507,6 +512,68 @@ router.patch("/admin/partner-applications/:id/package", requireAdmin, async (req
     });
   } catch (err) {
     req.log.error({ err }, "Admin change partner package");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── GET /admin/listing-package-purchases — Pagesat (listing packages) ────────
+router.get("/admin/listing-package-purchases", requireAdmin, async (req, res) => {
+  try {
+    const packageFilter = String(req.query.package ?? "")
+      .trim()
+      .toLowerCase();
+    const rows = await db
+      .select({
+        purchase: listingPackagePurchasesTable,
+        user_email: usersTable.email,
+        user_name: usersTable.display_name,
+      })
+      .from(listingPackagePurchasesTable)
+      .leftJoin(usersTable, eq(usersTable.id, listingPackagePurchasesTable.user_id))
+      .orderBy(desc(listingPackagePurchasesTable.created_at))
+      .limit(500);
+
+    const purchases = rows
+      .filter((r) => !packageFilter || r.purchase.package === packageFilter)
+      .map((r) => {
+        const pkg = r.purchase.package as keyof typeof LISTING_PACKAGE_CATALOG;
+        const def =
+          pkg in LISTING_PACKAGE_CATALOG
+            ? LISTING_PACKAGE_CATALOG[pkg]
+            : null;
+        return {
+          id: r.purchase.id,
+          user_id: r.purchase.user_id,
+          user_email: r.user_email,
+          user_name: r.user_name,
+          package: r.purchase.package,
+          package_label: def?.name ?? r.purchase.package,
+          amount_eur: r.purchase.amount_cents / 100,
+          extra_slots: r.purchase.extra_slots,
+          activation_code: r.purchase.activation_code,
+          status: r.purchase.status,
+          purchased_at: r.purchase.purchased_at?.toISOString() ?? null,
+          expires_at: r.purchase.expires_at?.toISOString() ?? null,
+          created_at: r.purchase.created_at.toISOString(),
+        };
+      });
+
+    const revenueMonthCents = await getMonthlyPackageRevenueCents();
+    res.json({
+      purchases,
+      revenue_month_eur: revenueMonthCents / 100,
+      stats: {
+        total: purchases.length,
+        paid: purchases.filter((p) => p.status === "paid").length,
+        by_package: {
+          s: purchases.filter((p) => p.package === "s").length,
+          m: purchases.filter((p) => p.package === "m").length,
+          l: purchases.filter((p) => p.package === "l").length,
+        },
+      },
+    });
+  } catch (err) {
+    req.log.error({ err }, "Admin listing package purchases");
     res.status(500).json({ error: "Internal server error" });
   }
 });

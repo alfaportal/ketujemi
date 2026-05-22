@@ -25,6 +25,7 @@ export default defineConfig({
     "./src/schema/business.ts",
     "./src/schema/business_payments.ts",
     "./src/schema/partners.ts",
+    "./src/schema/listing_package_purchases.ts",
   ],
   dialect: "postgresql",
   dbCredentials: {

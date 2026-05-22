@@ -388,6 +388,7 @@ router.post("/listings", async (req, res) => {
         message: e.publicMessage,
         used: e.used,
         limit: e.limit,
+        show_packages: (e as Error & { show_packages?: boolean }).show_packages ?? false,
       });
       return;
     }
@@ -452,8 +453,10 @@ router.post("/listings", async (req, res) => {
         const e = err as Error & { used: number; limit: number };
         res.status(403).json({
           error: "FREE_QUOTA_EXCEEDED",
+          message: "Ke arritur limitin falas. Zgjero me një paketë shtesë.",
           used: e.used,
           limit: e.limit,
+          show_packages: (e as Error & { show_packages?: boolean }).show_packages ?? true,
         });
         return;
       }
@@ -655,20 +658,25 @@ router.get("/listings/free-quota", async (req, res) => {
     return;
   }
 
-  const { rootId, used, limit } = await countUserActiveListingsInCategoryRoot(
-    viewer,
-    categoryId,
-  );
+  const { rootId, used, limit, base_limit, extra_slots } =
+    await countUserActiveListingsInCategoryRoot(viewer, categoryId);
 
   const isBusiness = isBusinessAccount(viewer) && !isVipBusinessActive(viewer);
+  const { getUserListingCapacity } = await import("../lib/listing-packages");
+  const globalCap = await getUserListingCapacity(viewer);
 
   res.json({
     root_category_id: rootId,
     used,
     limit,
+    base_limit,
+    extra_slots,
     remaining: Math.max(0, limit - used),
     allowed: used < limit,
     account_type: viewer.account_type ?? "private",
+    global_active: globalCap.active_count,
+    global_limit: globalCap.effective_limit,
+    show_packages: !isBusinessAccount(viewer) && (used >= limit || globalCap.remaining <= 0),
     business: isBusiness
       ? {
           extra_post_price_eur: 1,

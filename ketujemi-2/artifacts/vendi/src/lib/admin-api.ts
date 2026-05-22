@@ -192,6 +192,31 @@ export function reactivateAdminPartner(id: number) {
   );
 }
 
+export interface AdminListingPackagePurchase {
+  id: number;
+  user_id: number;
+  user_email: string | null;
+  user_name: string | null;
+  package: string;
+  package_label: string;
+  amount_eur: number;
+  extra_slots: number;
+  activation_code: string;
+  status: string;
+  purchased_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+}
+
+export function getAdminListingPackagePurchases(packageFilter?: "s" | "m" | "l") {
+  const qs = packageFilter ? `?package=${packageFilter}` : "";
+  return request<{
+    purchases: AdminListingPackagePurchase[];
+    revenue_month_eur: number;
+    stats: { total: number; paid: number; by_package: { s: number; m: number; l: number } };
+  }>(`/listing-package-purchases${qs}`);
+}
+
 export function changeAdminPartnerPackage(id: number, pkg: "standard" | "vip") {
   return request<{ ok: boolean; id: number; package: string; package_label: string }>(
     `/partner-applications/${id}/package`,

@@ -14,7 +14,10 @@ export type PaymentPurpose =
   | "vip_month"
   | "top_listing"
   | "partner_standard"
-  | "partner_vip";
+  | "partner_vip"
+  | "listing_package_s"
+  | "listing_package_m"
+  | "listing_package_l";
 
 export function stripeSecret(): string | null {
   const key = process.env.STRIPE_SECRET_KEY?.trim();
@@ -155,6 +158,15 @@ export function stripePublishableKey(): string | null {
 }
 
 export async function markPaymentPaidByToken(token: string): Promise<void> {
+  const { findPackagePurchaseByToken, activateListingPackageFromPayment } = await import(
+    "./listing-packages"
+  );
+  const pkgPurchase = await findPackagePurchaseByToken(token);
+  if (pkgPurchase && pkgPurchase.status === "pending") {
+    await activateListingPackageFromPayment(pkgPurchase.id);
+    return;
+  }
+
   const [row] = await db
     .select()
     .from(businessPaymentsTable)

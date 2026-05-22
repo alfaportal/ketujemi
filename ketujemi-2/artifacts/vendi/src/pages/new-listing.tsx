@@ -34,6 +34,10 @@ import { SellerProfileGate } from "@/components/seller-profile-gate";
 import { PostingAssistantPanel } from "@/components/posting-assistant-panel";
 import { CardPaymentsPanel } from "@/components/card-payments-panel";
 import { PayWithCardButton } from "@/components/pay-with-card-button";
+import {
+  ListingPackagesModal,
+  ListingPackageSuccessBanner,
+} from "@/components/listing-packages-modal";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 const schema = z.object({
@@ -196,6 +200,25 @@ export default function NewListing() {
     if (typeof window === "undefined") return null;
     return new URLSearchParams(window.location.search).get("payment_token");
   });
+  const [showPackagesModal, setShowPackagesModal] = useState(false);
+  const [packagesModalMessage, setPackagesModalMessage] = useState<string | undefined>();
+  const [packageSuccessCode, setPackageSuccessCode] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("package_payment") === "success") {
+      return params.get("code");
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    if (packageSuccessCode && typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("package_payment");
+      url.searchParams.delete("code");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
+  }, [packageSuccessCode]);
   const effectiveCategoryId =
     Number(brandCatId) || Number(bodyCatId) || Number(parentCatId);
 
@@ -265,12 +288,14 @@ export default function NewListing() {
           err instanceof ApiError
             ? (err.data as { error?: string } | null)
             : null;
-        if (data?.error === "FREE_QUOTA_EXCEEDED" || data?.error === "BUSINESS_QUOTA_EXCEEDED") {
+        if (data?.error === "FREE_QUOTA_EXCEEDED") {
+          setPackagesModalMessage("Ke arritur limitin falas. Zgjero me një paketë shtesë.");
+          setShowPackagesModal(true);
+          return;
+        }
+        if (data?.error === "BUSINESS_QUOTA_EXCEEDED") {
           toast({
-            title:
-              data?.error === "BUSINESS_QUOTA_EXCEEDED"
-                ? "Keni arritur limitin. Paguani €1 për njoftim shtesë."
-                : t.postQuotaExceeded,
+            title: "Keni arritur limitin. Paguani €1 për njoftim shtesë.",
             variant: "destructive",
           });
           return;
@@ -363,12 +388,15 @@ export default function NewListing() {
   const onSubmit = (data: FormData) => {
     const needsPay = freeQuota?.business?.needs_payment && !paymentToken;
     if (freeQuota && !freeQuota.allowed && !paymentToken) {
-      toast({
-        title: needsPay
-          ? "Paguani €1 për të vazhduar postimin."
-          : t.postQuotaExceeded,
-        variant: "destructive",
-      });
+      if (needsPay) {
+        toast({
+          title: "Paguani €1 për të vazhduar postimin.",
+          variant: "destructive",
+        });
+      } else {
+        setPackagesModalMessage("Ke arritur limitin falas. Zgjero me një paketë shtesë.");
+        setShowPackagesModal(true);
+      }
       return;
     }
     if (imageUrls.length === 0) {
@@ -453,18 +481,20 @@ export default function NewListing() {
             return;
           }
           if (errData.error === "LISTING_MONTHLY_CAP") {
-            toast({
-              title: errData.message ?? "Keni arritur 10 njoftime aktive.",
-              variant: "destructive",
-            });
+            setPackagesModalMessage(
+              errData.message ?? "Ke arritur limitin falas. Zgjero me një paketë shtesë.",
+            );
+            setShowPackagesModal(true);
             return;
           }
-          if (errData.error === "FREE_QUOTA_EXCEEDED" || errData.error === "BUSINESS_QUOTA_EXCEEDED") {
+          if (errData.error === "FREE_QUOTA_EXCEEDED") {
+            setPackagesModalMessage("Ke arritur limitin falas. Zgjero me një paketë shtesë.");
+            setShowPackagesModal(true);
+            return;
+          }
+          if (errData.error === "BUSINESS_QUOTA_EXCEEDED") {
             toast({
-              title:
-                errData.error === "BUSINESS_QUOTA_EXCEEDED"
-                  ? "Keni arritur limitin. Paguani €1 për njoftim shtesë."
-                  : t.postQuotaExceeded,
+              title: "Keni arritur limitin. Paguani €1 për njoftim shtesë.",
               variant: "destructive",
             });
             return;
@@ -494,6 +524,27 @@ export default function NewListing() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <ListingPackagesModal
+        open={showPackagesModal}
+        onClose={() => {
+          setShowPackagesModal(false);
+          void fetch(`/api/listings/free-quota?category_id=${effectiveCategoryId}`, {
+            credentials: "include",
+          })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((j) => {
+              if (!j) return;
+              setFreeQuota({
+                remaining: j.remaining ?? 0,
+                limit: j.limit ?? 0,
+                allowed: j.allowed ?? true,
+                business: j.business ?? null,
+              });
+            })
+            .catch(() => undefined);
+        }}
+        message={packagesModalMessage}
+      />
       {userNeedsSellerProfile(user) ? (
         <SellerProfileGate onReady={() => void refresh()} />
       ) : null}
@@ -516,6 +567,12 @@ export default function NewListing() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
+        {packageSuccessCode ? (
+          <ListingPackageSuccessBanner
+            code={packageSuccessCode}
+            onDismiss={() => setPackageSuccessCode(null)}
+          />
+        ) : null}
         {user?.account_type === "business" ? <CardPaymentsPanel /> : null}
         {freeQuota != null && effectiveCategoryId > 0 ? (
           <div

@@ -12,12 +12,14 @@ import aiRouter from "./ai";
 import configRouter from "./config";
 import uploadsRouter from "./uploads";
 import partnersRouter from "./partners";
+import listingPackagesRouter from "./listing-packages";
 
 const router: IRouter = Router();
 
 router.use(configRouter);
 router.use(uploadsRouter);
 router.use(partnersRouter);
+router.use(listingPackagesRouter);
 router.use(authRouter);
 router.use(paymentsRouter);
 router.use(aiRouter);

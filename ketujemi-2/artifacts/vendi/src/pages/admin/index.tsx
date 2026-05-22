@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard, FileText, Users, Tag, AlertTriangle, Settings,
-  LogOut, Menu, X, Lock, Eye, EyeOff, ShieldCheck, Building2,
+  LogOut, Menu, X, Lock, Eye, EyeOff, ShieldCheck, Building2, CreditCard,
 } from "lucide-react";
 import { adminLogin, adminLogout, isAdminLoggedIn } from "@/lib/admin-api";
 import { useMarket } from "@/lib/market-context";
@@ -231,6 +231,7 @@ export default function AdminPanel() {
   const SectionComponent = {
     dashboard:  Dashboard,
     partners:   AdminPartners,
+    payments:   AdminPayments,
     listings:   AdminListings,
     users:      AdminUsers,
     categories: AdminCategories,

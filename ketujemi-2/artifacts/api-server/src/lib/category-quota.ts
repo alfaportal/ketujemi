@@ -3,6 +3,8 @@ import { categoriesTable, listingsTable } from "@workspace/db";
 import type { Category, User } from "@workspace/db";
 import { and, gt, inArray } from "drizzle-orm";
 import { userOwnsListing } from "./listing-ownership";
+import { isBusinessAccount } from "./business-rules";
+import { getUserExtraListingSlots, effectiveCategoryLimit } from "./listing-packages";
 
 export const DEFAULT_FREE_LISTING_LIMIT = 10;
 
@@ -55,15 +57,17 @@ export async function loadAllCategories(): Promise<{
 export async function countUserActiveListingsInCategoryRoot(
   user: User,
   categoryId: number,
-): Promise<{ rootId: number; used: number; limit: number }> {
+): Promise<{ rootId: number; used: number; limit: number; base_limit: number; extra_slots: number }> {
   const { list, byId } = await loadAllCategories();
   const rootId = resolveRootCategoryId(categoryId, byId);
   const root = byId.get(rootId);
-  const limit = freeLimitForRoot(root);
+  const baseLimit = freeLimitForRoot(root);
+  const extra = isBusinessAccount(user) ? 0 : await getUserExtraListingSlots(user.id);
+  const limit = effectiveCategoryLimit(baseLimit, extra);
   const treeIds = [...collectDescendantCategoryIds(rootId, list)];
 
   if (treeIds.length === 0) {
-    return { rootId, used: 0, limit };
+    return { rootId, used: 0, limit, base_limit: baseLimit, extra_slots: extra };
   }
 
   const rows = await db
@@ -80,21 +84,30 @@ export async function countUserActiveListingsInCategoryRoot(
     );
 
   const used = rows.filter((l) => userOwnsListing(user, l)).length;
-  return { rootId, used, limit };
+  return { rootId, used, limit, base_limit: baseLimit, extra_slots: extra };
 }
 
 export async function assertFreeListingQuota(
   user: User,
   categoryId: number,
 ): Promise<void> {
-  const { used, limit } = await countUserActiveListingsInCategoryRoot(user, categoryId);
+  const { used, limit, base_limit, extra_slots } = await countUserActiveListingsInCategoryRoot(
+    user,
+    categoryId,
+  );
   if (used >= limit) {
     const err = new Error("FREE_QUOTA_EXCEEDED") as Error & {
       used: number;
       limit: number;
+      base_limit: number;
+      extra_slots: number;
+      show_packages: boolean;
     };
     err.used = used;
     err.limit = limit;
+    err.base_limit = base_limit;
+    err.extra_slots = extra_slots;
+    err.show_packages = !isBusinessAccount(user);
     throw err;
   }
 }
