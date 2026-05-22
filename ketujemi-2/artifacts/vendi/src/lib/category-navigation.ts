@@ -1,4 +1,5 @@
 import { useLayoutEffect } from "react";
+import { peekPopNavigation } from "@/lib/scroll-restoration";
 
 /** Shared category URL helpers — single source of truth for all category links. */
 
@@ -80,6 +81,7 @@ function applyScrollY(top: number) {
 export function useCategoryScroll(categoryId: number) {
   useLayoutEffect(() => {
     if (!Number.isFinite(categoryId)) return;
+    if (peekPopNavigation()) return;
 
     const previousRestoration = window.history.scrollRestoration;
     window.history.scrollRestoration = "manual";

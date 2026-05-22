@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { SiteFooter } from "@/components/site-footer";
 import { CardPaymentsPanel, listingIdFromPath } from "@/components/card-payments-panel";
 import { useFreshPageOnRoute } from "@/hooks/use-fresh-page-on-route";
+import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { useAuth } from "@/lib/auth-context";
 import { isInfoStaticPage } from "@/lib/static-page-paths";
 import { SecretAdminTapProvider } from "@/lib/secret-admin-tap";
@@ -19,6 +20,7 @@ type AppLayoutProps = {
 
 /** Wraps main app routes; footer legal links on every page except admin. */
 export function AppLayout({ children }: AppLayoutProps) {
+  useScrollRestoration();
   useFreshPageOnRoute();
   const [pathname] = useLocation();
   const { user, loading } = useAuth();
