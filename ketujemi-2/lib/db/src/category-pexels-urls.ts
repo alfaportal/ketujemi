@@ -32,7 +32,7 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
 
   // —— Motorr types ————————————————————————————————————————————————————————
   "motorr-type-chopper": pexelsPhoto(8911262),
-  "motorr-type-enduro": pexelsPhoto(7561172),
+  "motorr-type-enduro": pexelsPhoto(1715193),
   "motorr-type-motokros": pexelsPhoto(30706046),
   "motorr-type-sportiv": pexelsPhoto(5720562),
   "motorr-type-quad-atv": pexelsPhoto(6598203),

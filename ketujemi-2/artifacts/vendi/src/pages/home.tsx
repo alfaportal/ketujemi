@@ -13,10 +13,10 @@ import { useGetCategories, getGetCategoriesQueryOptions } from "@workspace/api-c
 import { translateCategory } from "@/lib/category-translations";
 import { categoryPath } from "@/lib/category-navigation";
 import { isRootCategory, sortRootCategories } from "@/lib/parent-category-slugs";
+import { HUB_THUMB_IMAGE_BY_SLUG } from "@/lib/category-hub-hero-images";
 import { resolveCategoryImageUrl } from "@/lib/resolve-category-image";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
 import { Skeleton } from "@/components/ui/skeleton";
-import { VeturaSubcategoryCarousel } from "@/components/vetura-subcategory-carousel";
 import { VipPartnersSection } from "@/components/vip-partners-section";
 import { cn } from "@/lib/utils";
 import {
@@ -24,31 +24,9 @@ import {
   filterToggleButtonBaseClass,
 } from "@/lib/primary-button-classes";
 
-// --- Cover photos by category slug (all 18 parent categories) ----------------
-const CAT_PHOTOS_BY_SLUG: Record<string, string> = {
-  vetura: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&q=85",
-  "motorr-skuter": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=85",
-  "kamione-furgone": "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&q=85",
-  "auto-pjese": "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&q=85",
-  "banesa-shtepi": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=85",
-  "lokale-zyre": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=85",
-  telefona: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&q=85",
-  "kompjutere-laptope": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&q=85",
-  "tv-elektronike": "https://images.unsplash.com/photo-1593344484962-796055d4a3a4?w=600&q=85",
-  "mobilje-dekorime": "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=85",
-  "rroba-kepuce": "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&q=85",
-  femije: "https://images.pexels.com/photos/8924170/pexels-photo-8924170.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "sport-outdoor": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=85",
-  "pune-sherbime": "https://images.pexels.com/photos/15635241/pexels-photo-15635241.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "bujqesi-blegtori": "https://images.pexels.com/photos/2933243/pexels-photo-2933243.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "arsim-kurse": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=85",
-  "muzike-hobby": "https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=600",
-  kafshet: "https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=600",
-};
-
 function getCatPhoto(slug: string | null | undefined): string | null {
   if (!slug) return null;
-  return CAT_PHOTOS_BY_SLUG[slug] ?? null;
+  return HUB_THUMB_IMAGE_BY_SLUG[slug] ?? null;
 }
 
 // --- Animated stat counter ----------------------------------------------------
@@ -145,8 +123,6 @@ export default function HomePage() {
           </svg>
         </div>
       </section>
-
-      <VeturaSubcategoryCarousel categories={(apiCategories ?? []) as any} />
 
       {/* -- Filter bar -- */}
       <section className="bg-white border-b border-gray-100 shadow-sm">

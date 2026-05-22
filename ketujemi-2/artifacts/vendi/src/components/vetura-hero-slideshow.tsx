@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
+import {
+  VETURA_BODY_IMAGE_BY_SLUG,
+  VETURA_BODY_SLUG_ORDER,
+} from "@/lib/vetura-body-images";
 import { cn } from "@/lib/utils";
 
 const VETURA_HERO_SLIDESHOW_MS = 5_000;
-const VETURA_HERO_IMAGES = [
-  "https://images.pexels.com/photos/32364051/pexels-photo-32364051.jpeg?auto=compress&cs=tinysrgb&w=1920",
-  "https://images.pexels.com/photos/32692341/pexels-photo-32692341.jpeg?auto=compress&cs=tinysrgb&w=1920",
-  "https://images.pexels.com/photos/36740264/pexels-photo-36740264.jpeg?auto=compress&cs=tinysrgb&w=1920",
-] as const;
+const VETURA_HERO_IMAGES = VETURA_BODY_SLUG_ORDER.map(
+  (slug) => VETURA_BODY_IMAGE_BY_SLUG[slug],
+).filter((url): url is string => !!url);
 
 /** Full-bleed background slideshow for the Vetura hub hero only. */
 export function VeturaHeroSlideshow() {
@@ -14,11 +16,14 @@ export function VeturaHeroSlideshow() {
   const count = VETURA_HERO_IMAGES.length;
 
   useEffect(() => {
+    if (count < 2) return;
     const intervalId = window.setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % count);
     }, VETURA_HERO_SLIDESHOW_MS);
     return () => window.clearInterval(intervalId);
   }, [count]);
+
+  if (count === 0) return null;
 
   return (
     <div className="absolute inset-0" aria-hidden>

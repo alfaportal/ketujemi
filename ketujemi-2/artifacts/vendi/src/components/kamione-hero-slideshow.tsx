@@ -1,12 +1,20 @@
 import { useEffect, useState } from "react";
+import { SUBCATEGORY_IMAGE_URL_BY_SLUG } from "@workspace/category-images";
 import { cn } from "@/lib/utils";
 
 const KAMIONE_HERO_SLIDESHOW_MS = 5_000;
+const w1920 = (url: string) => url.replace(/w=\d+/, "w=1920");
+
 const KAMIONE_HERO_IMAGES = [
-  "https://images.pexels.com/photos/19871521/pexels-photo-19871521.jpeg?auto=compress&cs=tinysrgb&w=1920",
-  "https://images.pexels.com/photos/18468424/pexels-photo-18468424.jpeg?auto=compress&cs=tinysrgb&w=1920",
-  "https://images.pexels.com/photos/16100083/pexels-photo-16100083.jpeg?auto=compress&cs=tinysrgb&w=1920",
-] as const;
+  "kamione-type-kamione",
+  "kamione-type-furgone",
+  "kamione-type-autobuse",
+  "kamione-type-auto-bartes",
+  "kamione-type-mauna",
+]
+  .map((slug) => SUBCATEGORY_IMAGE_URL_BY_SLUG[slug])
+  .filter((url): url is string => !!url)
+  .map(w1920);
 
 /** Full-bleed background slideshow for the Kamionë & Furgonë hub hero only. */
 export function KamioneHeroSlideshow() {
@@ -14,11 +22,14 @@ export function KamioneHeroSlideshow() {
   const count = KAMIONE_HERO_IMAGES.length;
 
   useEffect(() => {
+    if (count < 2) return;
     const intervalId = window.setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % count);
     }, KAMIONE_HERO_SLIDESHOW_MS);
     return () => window.clearInterval(intervalId);
   }, [count]);
+
+  if (count === 0) return null;
 
   return (
     <div className="absolute inset-0" aria-hidden>
