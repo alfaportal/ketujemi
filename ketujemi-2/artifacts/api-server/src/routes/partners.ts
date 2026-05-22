@@ -51,15 +51,17 @@ function formatListingPublic(
   };
 }
 
-/** VIP partners for home (12) or category hub (8) — shuffled each request. */
+/** VIP or standard partners for home, hubs, or category pages — shuffled each request. */
 router.get("/partners/trusted", async (req, res) => {
   const rawLimit = Number(req.query.limit);
   const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 12;
   const rawCategoryId = Number(req.query.category_id);
   const categoryId =
     Number.isFinite(rawCategoryId) && rawCategoryId > 0 ? rawCategoryId : undefined;
-  const partners = await getTrustedPartnersShuffled(limit, categoryId);
-  res.json({ partners, count: partners.length, category_id: categoryId ?? null });
+  const tierRaw = String(req.query.tier ?? "vip").toLowerCase();
+  const tier = tierRaw === "standard" ? "standard" : "vip";
+  const partners = await getTrustedPartnersShuffled(limit, categoryId, tier);
+  res.json({ partners, count: partners.length, category_id: categoryId ?? null, tier });
 });
 
 router.get("/businesses/:id", async (req, res) => {

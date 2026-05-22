@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Star } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
 import { cn } from "@/lib/utils";
 
@@ -14,38 +14,48 @@ type TrustedPartner = {
   profile_path: string;
 };
 
+type PartnerTier = "vip" | "standard";
+
 type VipPartnersSectionProps = {
   className?: string;
-  /** home = up to 12 partners (6×2); hub = up to 8 (4×2) */
+  /** home = 6 VIP + 6 standard per row; hub = 4 + 4 */
   variant?: VipPartnersSectionVariant;
-  /** When set (category hub), API returns only VIP partners with listings in this category tree. */
+  /** When set (category hub), API returns partners with listings in this category tree. */
   categoryId?: number;
 };
 
 const VARIANT_CONFIG: Record<
   VipPartnersSectionVariant,
-  { limit: number; gridClass: string; testIdPrefix: string }
+  { rowLimit: number; gridClass: string }
 > = {
   home: {
-    limit: 12,
+    rowLimit: 6,
     gridClass: "grid grid-cols-2 md:grid-cols-6 gap-4 sm:gap-6",
-    testIdPrefix: "trusted-partner",
   },
   hub: {
-    limit: 8,
+    rowLimit: 4,
     gridClass: "grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4",
-    testIdPrefix: "trusted-partner",
   },
 };
 
-const PARTNER_SLOT_FRAME = cn(
+const STANDARD_SLOT_FRAME = cn(
   "h-14 sm:h-16 w-full rounded-xl overflow-hidden transition-all duration-200",
   "border-2 border-[#1A56A0]/60 bg-gradient-to-br from-white via-blue-50/40 to-blue-50/20",
   "shadow-[0_2px_10px_rgba(26,86,160,0.12)]",
   "hover:border-[#1A56A0] hover:shadow-[0_4px_16px_rgba(26,86,160,0.22)]",
 );
 
-const VIP_PARTNER_BADGE =
+const VIP_SLOT_FRAME = cn(
+  "h-14 sm:h-16 w-full rounded-xl overflow-hidden transition-all duration-200",
+  "border-2 border-amber-400/90 bg-gradient-to-br from-amber-50 via-yellow-50/90 to-amber-100/50",
+  "shadow-[0_2px_12px_rgba(217,119,6,0.2)]",
+  "hover:border-amber-500 hover:shadow-[0_4px_18px_rgba(217,119,6,0.32)]",
+);
+
+const VIP_BADGE =
+  "absolute top-0 right-0 z-[2] flex items-center gap-0.5 bg-gradient-to-r from-amber-500 to-yellow-600 text-[7px] sm:text-[8px] font-black text-white px-1 py-0.5 rounded-bl-md tracking-wide leading-tight";
+
+const STANDARD_BADGE =
   "absolute top-0 right-0 z-[2] bg-[#1A56A0] text-[7px] sm:text-[8px] font-black text-white px-1 py-0.5 rounded-bl-md tracking-wide leading-tight";
 
 function partnerImageUrl(p: TrustedPartner): string | null {
@@ -69,22 +79,33 @@ function recordPartnerClick(partnerId: number) {
   }).catch(() => {});
 }
 
-function PartnerLogoSlot({ partner }: { partner: TrustedPartner }) {
+function PartnerLogoSlot({
+  partner,
+  tier,
+}: {
+  partner: TrustedPartner;
+  tier: PartnerTier;
+}) {
   const img = partnerImageUrl(partner);
-  const href = partner.profile_path;
+  const isVip = tier === "vip";
+  const frame = isVip ? VIP_SLOT_FRAME : STANDARD_SLOT_FRAME;
 
   return (
     <Link
-      href={href}
+      href={partner.profile_path}
       onClick={() => recordPartnerClick(partner.id)}
       className={cn(
-        PARTNER_SLOT_FRAME,
-        "relative group block focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1A56A0] focus-visible:ring-offset-2",
+        frame,
+        "relative group block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+        isVip ? "focus-visible:ring-amber-500" : "focus-visible:ring-[#1A56A0]",
       )}
       title={partner.business_name}
-      data-testid={`trusted-partner-${partner.id}`}
+      data-testid={`trusted-partner-${tier}-${partner.id}`}
     >
-      <span className={VIP_PARTNER_BADGE}>VIP PARTNER</span>
+      <span className={isVip ? VIP_BADGE : STANDARD_BADGE}>
+        {isVip ? <Star className="h-2.5 w-2.5 fill-white shrink-0" aria-hidden /> : null}
+        {isVip ? "VIP Partner" : "Partner"}
+      </span>
       {img ? (
         <img
           src={img}
@@ -94,7 +115,10 @@ function PartnerLogoSlot({ partner }: { partner: TrustedPartner }) {
         />
       ) : (
         <div
-          className="relative z-[1] h-full w-full flex flex-col items-center justify-center px-2 bg-[#1A56A0] text-white"
+          className={cn(
+            "relative z-[1] h-full w-full flex flex-col items-center justify-center px-2 text-white",
+            isVip ? "bg-gradient-to-br from-amber-600 to-yellow-600" : "bg-[#1A56A0]",
+          )}
           aria-hidden
         >
           <span className="text-lg sm:text-xl font-black leading-none">
@@ -109,22 +133,116 @@ function PartnerLogoSlot({ partner }: { partner: TrustedPartner }) {
   );
 }
 
-function EmptyPartnerSlot({ label }: { label: string }) {
+function EmptyPartnerSlot({
+  label,
+  tier,
+}: {
+  label: string;
+  tier: PartnerTier;
+}) {
+  const isVip = tier === "vip";
   return (
     <div
       className={cn(
-        PARTNER_SLOT_FRAME,
-        "relative flex flex-col items-center justify-center gap-0.5 px-2 border-dashed border-[#1A56A0]/70",
-        "from-blue-50/80 via-white to-blue-50/40",
+        isVip ? VIP_SLOT_FRAME : STANDARD_SLOT_FRAME,
+        "relative flex flex-col items-center justify-center gap-0.5 px-2 border-dashed",
+        isVip ? "border-amber-400/80" : "border-[#1A56A0]/70",
       )}
       aria-hidden
     >
-      <Sparkles className="h-3.5 w-3.5 text-[#1A56A0]" strokeWidth={2.25} aria-hidden />
-      <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#1A56A0] text-center leading-tight">
+      {isVip ? (
+        <Star className="h-3.5 w-3.5 text-amber-600 fill-amber-400" aria-hidden />
+      ) : (
+        <Sparkles className="h-3.5 w-3.5 text-[#1A56A0]" strokeWidth={2.25} aria-hidden />
+      )}
+      <span
+        className={cn(
+          "text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-center leading-tight",
+          isVip ? "text-amber-700" : "text-[#1A56A0]",
+        )}
+      >
         {label}
       </span>
     </div>
   );
+}
+
+function PartnerRow({
+  tier,
+  partners,
+  loaded,
+  limit,
+  gridClass,
+  emptyLabel,
+  rowLabel,
+}: {
+  tier: PartnerTier;
+  partners: TrustedPartner[];
+  loaded: boolean;
+  limit: number;
+  gridClass: string;
+  emptyLabel: string;
+  rowLabel: string;
+}) {
+  const emptySlots = Math.max(0, limit - partners.length);
+  const isVip = tier === "vip";
+
+  return (
+    <div className="space-y-3 sm:space-y-4">
+      <p
+        className={cn(
+          "text-center text-xs sm:text-sm font-black uppercase tracking-wider",
+          isVip ? "text-amber-700" : "text-[#1A56A0]",
+        )}
+      >
+        {isVip ? (
+          <span className="inline-flex items-center gap-1.5">
+            <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" aria-hidden />
+            {rowLabel}
+          </span>
+        ) : (
+          rowLabel
+        )}
+      </p>
+      <div className={gridClass}>
+        {partners.map((p) => (
+          <PartnerLogoSlot key={p.id} partner={p} tier={tier} />
+        ))}
+        {loaded && emptySlots > 0
+          ? Array.from({ length: emptySlots }, (_, i) => (
+              <EmptyPartnerSlot key={`empty-${tier}-${i}`} label={emptyLabel} tier={tier} />
+            ))
+          : null}
+        {!loaded
+          ? Array.from({ length: limit }, (_, i) => (
+              <div
+                key={`sk-${tier}-${i}`}
+                className={cn(
+                  isVip ? VIP_SLOT_FRAME : STANDARD_SLOT_FRAME,
+                  "animate-pulse",
+                  isVip ? "border-amber-200/60 bg-amber-50/50" : "border-blue-200/60 bg-blue-50/40",
+                )}
+              />
+            ))
+          : null}
+      </div>
+    </div>
+  );
+}
+
+async function fetchTierPartners(
+  tier: PartnerTier,
+  limit: number,
+  categoryId?: number,
+): Promise<TrustedPartner[]> {
+  const params = new URLSearchParams({ limit: String(limit), tier });
+  if (categoryId != null && categoryId > 0) {
+    params.set("category_id", String(categoryId));
+  }
+  const r = await fetch(`/api/partners/trusted?${params}`, { credentials: "include" });
+  if (!r.ok) return [];
+  const data = (await r.json()) as { partners?: TrustedPartner[] };
+  return Array.isArray(data.partners) ? data.partners : [];
 }
 
 export function VipPartnersSection({
@@ -134,7 +252,8 @@ export function VipPartnersSection({
 }: VipPartnersSectionProps) {
   const { t } = useMarket();
   const config = VARIANT_CONFIG[variant];
-  const [partners, setPartners] = useState<TrustedPartner[]>([]);
+  const [vipPartners, setVipPartners] = useState<TrustedPartner[]>([]);
+  const [standardPartners, setStandardPartners] = useState<TrustedPartner[]>([]);
   const [loaded, setLoaded] = useState(false);
   const impressionsSent = useRef(false);
 
@@ -143,44 +262,47 @@ export function VipPartnersSection({
     impressionsSent.current = false;
     setLoaded(false);
 
-    const params = new URLSearchParams({ limit: String(config.limit) });
-    if (categoryId != null && categoryId > 0) {
-      params.set("category_id", String(categoryId));
-    }
-
-    void fetch(`/api/partners/trusted?${params}`, { credentials: "include" })
-      .then((r) => (r.ok ? r.json() : { partners: [] }))
-      .then((data: { partners?: TrustedPartner[] }) => {
+    void Promise.all([
+      fetchTierPartners("vip", config.rowLimit, categoryId),
+      fetchTierPartners("standard", config.rowLimit, categoryId),
+    ])
+      .then(([vip, standard]) => {
         if (!cancelled) {
-          setPartners(Array.isArray(data.partners) ? data.partners : []);
+          setVipPartners(vip);
+          setStandardPartners(standard);
           setLoaded(true);
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setPartners([]);
+          setVipPartners([]);
+          setStandardPartners([]);
           setLoaded(true);
         }
       });
+
     return () => {
       cancelled = true;
     };
-  }, [config.limit, categoryId]);
+  }, [config.rowLimit, categoryId]);
+
+  const allPartners = [...vipPartners, ...standardPartners];
 
   useEffect(() => {
-    if (!loaded || partners.length === 0 || impressionsSent.current) return;
+    if (!loaded || allPartners.length === 0 || impressionsSent.current) return;
     impressionsSent.current = true;
     void fetch("/api/partners/analytics/impressions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ partner_ids: partners.map((p) => p.id) }),
+      body: JSON.stringify({ partner_ids: allPartners.map((p) => p.id) }),
     }).catch(() => {});
-  }, [loaded, partners]);
+  }, [loaded, allPartners]);
 
-  const emptySlots = Math.max(0, config.limit - partners.length);
-  const emptyLabel =
-    variant === "home" ? t.home_partnerPlaceholder : t.hub_partnerPlaceholder;
+  const vipEmpty =
+    variant === "home" ? t.home_partnerVipPlaceholder : t.hub_partnerVipPlaceholder;
+  const standardEmpty =
+    variant === "home" ? t.home_partnerStandardPlaceholder : t.hub_partnerStandardPlaceholder;
 
   return (
     <section
@@ -202,23 +324,25 @@ export function VipPartnersSection({
         >
           {t.home_partnerHeading}
         </h2>
-        <div className={config.gridClass}>
-          {partners.map((p) => (
-            <PartnerLogoSlot key={p.id} partner={p} />
-          ))}
-          {loaded && emptySlots > 0
-            ? Array.from({ length: emptySlots }, (_, i) => (
-                <EmptyPartnerSlot key={`empty-${i}`} label={emptyLabel} />
-              ))
-            : null}
-          {!loaded
-            ? Array.from({ length: config.limit }, (_, i) => (
-                <div
-                  key={`sk-${i}`}
-                  className={cn(PARTNER_SLOT_FRAME, "animate-pulse border-blue-200/60 bg-blue-50/40")}
-                />
-              ))
-            : null}
+        <div className="space-y-8 sm:space-y-10">
+          <PartnerRow
+            tier="vip"
+            partners={vipPartners}
+            loaded={loaded}
+            limit={config.rowLimit}
+            gridClass={config.gridClass}
+            emptyLabel={vipEmpty}
+            rowLabel={t.home_partnerVipRowLabel}
+          />
+          <PartnerRow
+            tier="standard"
+            partners={standardPartners}
+            loaded={loaded}
+            limit={config.rowLimit}
+            gridClass={config.gridClass}
+            emptyLabel={standardEmpty}
+            rowLabel={t.home_partnerStandardRowLabel}
+          />
         </div>
       </div>
     </section>

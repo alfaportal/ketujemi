@@ -42,6 +42,8 @@ function isAccountActive(user: User): boolean {
   return true;
 }
 
+export type PartnerTier = "vip" | "standard";
+
 /** Active VIP business accounts eligible for the trusted partners strip. */
 export async function fetchTrustedVipPartners(): Promise<User[]> {
   const now = new Date();
@@ -96,6 +98,58 @@ export async function fetchTrustedVipPartnersForCategory(
   return matched;
 }
 
+/** Active standard (non-VIP) business accounts for the partner strip. */
+export async function fetchTrustedStandardPartners(): Promise<User[]> {
+  const now = new Date();
+  const rows = await db
+    .select()
+    .from(usersTable)
+    .where(
+      and(
+        eq(usersTable.account_type, "business"),
+        isNull(usersTable.banned_at),
+        or(isNull(usersTable.suspended_until), sql`${usersTable.suspended_until} <= ${now}`),
+      ),
+    );
+
+  return rows.filter((u) => !isVipBusinessActive(u) && isAccountActive(u));
+}
+
+/** Standard partners with at least one active listing in the given category tree. */
+export async function fetchTrustedStandardPartnersForCategory(
+  categoryId: number,
+): Promise<User[]> {
+  const categoryIds = await getCategoryTreeIds(categoryId);
+  if (categoryIds.length === 0) return [];
+
+  const standardUsers = await fetchTrustedStandardPartners();
+  if (standardUsers.length === 0) return [];
+
+  const now = new Date();
+  const listings = await db
+    .select({
+      seller_phone: listingsTable.seller_phone,
+      description: listingsTable.description,
+    })
+    .from(listingsTable)
+    .where(
+      and(
+        inArray(listingsTable.category_id, categoryIds),
+        gt(listingsTable.expires_at, now),
+        eq(listingsTable.status, "active"),
+      ),
+    );
+
+  if (listings.length === 0) return [];
+
+  const matched: User[] = [];
+  for (const user of standardUsers) {
+    const hasListing = listings.some((l) => userOwnsListing(user, l));
+    if (hasListing) matched.push(user);
+  }
+  return matched;
+}
+
 export function toTrustedPartnerDto(user: User): TrustedPartnerDto {
   return {
     id: user.id,
@@ -106,16 +160,30 @@ export function toTrustedPartnerDto(user: User): TrustedPartnerDto {
   };
 }
 
-/** Random order on every request — fair rotation for paying VIP partners. */
+async function fetchTrustedPartnersPool(
+  tier: PartnerTier,
+  categoryId?: number,
+): Promise<User[]> {
+  const scoped =
+    categoryId != null && Number.isFinite(categoryId) && categoryId > 0;
+  if (tier === "standard") {
+    return scoped
+      ? await fetchTrustedStandardPartnersForCategory(categoryId!)
+      : await fetchTrustedStandardPartners();
+  }
+  return scoped
+    ? await fetchTrustedVipPartnersForCategory(categoryId!)
+    : await fetchTrustedVipPartners();
+}
+
+/** Random order on every request — fair rotation for VIP / standard partners. */
 export async function getTrustedPartnersShuffled(
   limit: number,
   categoryId?: number,
+  tier: PartnerTier = "vip",
 ): Promise<TrustedPartnerDto[]> {
   const cap = Math.max(1, Math.min(24, Math.floor(limit)));
-  const pool =
-    categoryId != null && Number.isFinite(categoryId) && categoryId > 0
-      ? await fetchTrustedVipPartnersForCategory(categoryId)
-      : await fetchTrustedVipPartners();
+  const pool = await fetchTrustedPartnersPool(tier, categoryId);
   const partners = shuffle(pool).slice(0, cap);
   return partners.map(toTrustedPartnerDto);
 }

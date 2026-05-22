@@ -36,6 +36,7 @@ import {
   CategoryPageNotFound,
 } from "@/components/category-page-shell";
 import { VipPartnersSection } from "@/components/vip-partners-section";
+import { CategoryPartnersBanner } from "@/components/category-partners-banner";
 import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
 import { SiteHeader } from "@/components/site-header";
 import { getVeturaBrandLeafCategoryIds } from "@/lib/vetura-search-helpers";
@@ -1313,6 +1314,10 @@ export default function CategoryPage() {
           </div>
         </div>
       </div>
+
+      {!isParentCategoryHub ? (
+        <CategoryPartnersBanner categoryId={categoryId} />
+      ) : null}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
 

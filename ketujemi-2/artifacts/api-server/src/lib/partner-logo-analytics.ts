@@ -1,6 +1,9 @@
 import { db, partnerLogoStatsTable } from "@workspace/db";
 import { and, eq, sql } from "drizzle-orm";
-import { fetchTrustedVipPartners } from "./trusted-partners";
+import {
+  fetchTrustedStandardPartners,
+  fetchTrustedVipPartners,
+} from "./trusted-partners";
 
 export function currentStatsMonth(): string {
   const d = new Date();
@@ -35,10 +38,13 @@ async function incrementStat(
     });
 }
 
-/** Only count stats for active VIP partners shown in the trusted strip. */
+/** Only count stats for active VIP / standard partners shown in partner strips. */
 export async function filterTrustedPartnerIds(ids: number[]): Promise<number[]> {
-  const trusted = await fetchTrustedVipPartners();
-  const allowed = new Set(trusted.map((u) => u.id));
+  const [vip, standard] = await Promise.all([
+    fetchTrustedVipPartners(),
+    fetchTrustedStandardPartners(),
+  ]);
+  const allowed = new Set([...vip, ...standard].map((u) => u.id));
   return [...new Set(ids.filter((id) => Number.isFinite(id) && id > 0 && allowed.has(id)))];
 }
 
