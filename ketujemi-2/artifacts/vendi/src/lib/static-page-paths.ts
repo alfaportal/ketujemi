@@ -2,6 +2,11 @@ import type { UiLang } from "@/lib/ui-languages";
 
 export const PARTNER_SIGNUP_PATH = "/partner";
 
+/** Footer BIZNESE column — same path for all UI languages */
+export const FOOTER_BUSINESS_OPEN_SHOP_PATH = "/partner";
+export const FOOTER_BUSINESS_VIP_PATH = "/vip";
+export const FOOTER_BUSINESS_PARTNERSHIP_PATH = "/partner";
+
 /** Rrugët e faqeve informative / ligjore — pa shiritin sticky të pagesave. */
 export const INFO_STATIC_PATHS = new Set([
   "/kontakt",
@@ -72,10 +77,10 @@ export function staticPagePaths(uiLang: UiLang): StaticPagePaths {
       privacy: "/privatnost",
       cookies: "/kolacinja",
       terms: "/uslovi",
-      openShop: "/partner",
-      vip: "/vip",
+      openShop: FOOTER_BUSINESS_OPEN_SHOP_PATH,
+      vip: FOOTER_BUSINESS_VIP_PATH,
       advertise: "/reklamiraj",
-      partnership: "/partner",
+      partnership: FOOTER_BUSINESS_PARTNERSHIP_PATH,
     };
   }
   if (uiLang === "mne") {
@@ -89,10 +94,10 @@ export function staticPagePaths(uiLang: UiLang): StaticPagePaths {
       privacy: "/privatnost",
       cookies: "/kolacici",
       terms: "/uslovi",
-      openShop: "/partner",
-      vip: "/vip",
+      openShop: FOOTER_BUSINESS_OPEN_SHOP_PATH,
+      vip: FOOTER_BUSINESS_VIP_PATH,
       advertise: "/reklamiraj",
-      partnership: "/partner",
+      partnership: FOOTER_BUSINESS_PARTNERSHIP_PATH,
     };
   }
   return {
@@ -105,10 +110,10 @@ export function staticPagePaths(uiLang: UiLang): StaticPagePaths {
     privacy: "/privatesia",
     cookies: "/cookies",
     terms: "/kushtet",
-    openShop: "/partner",
-    vip: "/vip",
+    openShop: FOOTER_BUSINESS_OPEN_SHOP_PATH,
+    vip: FOOTER_BUSINESS_VIP_PATH,
     advertise: "/reklamoni",
-    partnership: "/partner",
+    partnership: FOOTER_BUSINESS_PARTNERSHIP_PATH,
   };
 }
 

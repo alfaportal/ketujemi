@@ -11,7 +11,13 @@ import {
 import { SiGoogle, SiPaypal, SiStripe } from "react-icons/si";
 import { MARKETS, useMarket, type Market } from "@/lib/market-context";
 import { BRAND_BLUE } from "@/lib/brand-colors";
-import { footerMarketsStripCopy, staticPagePaths } from "@/lib/static-page-paths";
+import {
+  FOOTER_BUSINESS_OPEN_SHOP_PATH,
+  FOOTER_BUSINESS_PARTNERSHIP_PATH,
+  FOOTER_BUSINESS_VIP_PATH,
+  footerMarketsStripCopy,
+  staticPagePaths,
+} from "@/lib/static-page-paths";
 import { cn } from "@/lib/utils";
 
 const SOCIAL_ICON_BTN =
@@ -227,10 +233,10 @@ export function SiteFooter() {
   const businessColumn = {
     title: t.footer_colBusiness ?? "BIZNESE",
     links: [
-      { href: paths.openShop, label: t.footer_openShop ?? "Hap shitore" },
-      { href: paths.vip, label: t.footer_vipPackages ?? "Paketa VIP" },
+      { href: FOOTER_BUSINESS_OPEN_SHOP_PATH, label: t.footer_openShop ?? "Hap shitore" },
+      { href: FOOTER_BUSINESS_VIP_PATH, label: t.footer_vipPackages ?? "Paketa VIP" },
       { href: paths.advertise, label: t.footer_advertise ?? "Reklamoni" },
-      { href: paths.partnership, label: t.footer_partnership ?? "Partneritet" },
+      { href: FOOTER_BUSINESS_PARTNERSHIP_PATH, label: t.footer_partnership ?? "Partneritet" },
     ],
   };
 
