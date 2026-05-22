@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import type { User } from "@workspace/db";
 import { isBusinessAccount, isVipBusinessActive } from "./business-rules";
 
@@ -5,6 +6,21 @@ export type BusinessStatus = "pending" | "active" | "blocked";
 export type PartnerLinkType = "website" | "instagram" | "facebook";
 
 export const PARTNER_PACKAGE_PRICE_EUR = { partner: 30, vip: 50 } as const;
+
+export const PARTNER_PACKAGE_PRICE_CENTS = { partner: 3000, vip: 5000 } as const;
+
+/** 8-digit activation code (easy to read on mobile). */
+export function generatePartnerActivationCode(): string {
+  return String(randomInt(10_000_000, 100_000_000));
+}
+
+export function partnerPackageLabel(tier: string | null | undefined): string {
+  return tier === "vip" ? "VIP Partner" : "Partner";
+}
+
+export function expectedPackagePriceCents(tier: string | null | undefined): number {
+  return tier === "vip" ? PARTNER_PACKAGE_PRICE_CENTS.vip : PARTNER_PACKAGE_PRICE_CENTS.partner;
+}
 
 export function getBusinessStatus(user: Pick<User, "account_type" | "business_status">): BusinessStatus | null {
   if (!isBusinessAccount(user)) return null;

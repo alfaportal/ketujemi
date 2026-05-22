@@ -23,6 +23,7 @@ export type AuthUser = {
   partner_link_url?: string | null;
   partner_link_type?: string | null;
   partner_banner_urls?: string | null;
+  partner_activation_code?: string | null;
   vip_expires_at?: string | null;
   email_verified?: boolean;
 };

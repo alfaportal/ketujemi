@@ -50,6 +50,7 @@ export function publicUser(u: User, opts?: { self?: boolean }) {
     partner_link_url: u.partner_link_url ?? null,
     partner_link_type: u.partner_link_type ?? null,
     partner_banner_urls: u.partner_banner_urls ?? null,
+    partner_activation_code: u.partner_activation_code ?? null,
     vip_expires_at: u.vip_expires_at ? u.vip_expires_at.toISOString() : null,
     email_verified: u.email_verified_at != null,
     strike_count: u.strike_count ?? 0,

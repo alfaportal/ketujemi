@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard, FileText, Users, Tag, AlertTriangle, Settings,
-  LogOut, Menu, X, Lock, Eye, EyeOff, ShieldCheck,
+  LogOut, Menu, X, Lock, Eye, EyeOff, ShieldCheck, Building2,
 } from "lucide-react";
 import { adminLogin, adminLogout, isAdminLoggedIn } from "@/lib/admin-api";
 import { useMarket } from "@/lib/market-context";
@@ -12,11 +12,21 @@ import AdminCategories from "./categories";
 import AdminReports from "./reports";
 import AdminSettings from "./settings";
 import AdminModeration from "./moderation";
+import AdminPartners from "./partners";
 
-type Section = "dashboard" | "listings" | "users" | "categories" | "reports" | "moderation" | "settings";
+type Section =
+  | "dashboard"
+  | "partners"
+  | "listings"
+  | "users"
+  | "categories"
+  | "reports"
+  | "moderation"
+  | "settings";
 
 const NAV: { id: Section; icon: React.ElementType }[] = [
   { id: "dashboard", icon: LayoutDashboard },
+  { id: "partners", icon: Building2 },
   { id: "listings", icon: FileText },
   { id: "users", icon: Users },
   { id: "categories", icon: Tag },
@@ -27,6 +37,7 @@ const NAV: { id: Section; icon: React.ElementType }[] = [
 
 const NAV_TITLE_KEY: Record<Section, string> = {
   dashboard: "adm_nav_dash",
+  partners: "adm_nav_partners",
   listings: "adm_nav_list",
   users: "adm_nav_users",
   categories: "adm_nav_cats",
@@ -198,7 +209,7 @@ function Sidebar({
 export default function AdminPanel() {
   const { t } = useMarket();
   const [loggedIn, setLoggedIn] = useState(isAdminLoggedIn());
-  const [section, setSection] = useState<Section>("dashboard");
+  const [section, setSection] = useState<Section>("partners");
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -219,6 +230,7 @@ export default function AdminPanel() {
 
   const SectionComponent = {
     dashboard:  Dashboard,
+    partners:   AdminPartners,
     listings:   AdminListings,
     users:      AdminUsers,
     categories: AdminCategories,

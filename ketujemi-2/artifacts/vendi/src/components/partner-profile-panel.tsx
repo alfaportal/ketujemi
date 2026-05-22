@@ -122,6 +122,11 @@ export function PartnerProfilePanel({ user }: { user: AuthUser }) {
         <p className="text-sm text-gray-600 mt-1">
           Një link i vetëm — hapet kur vizitorët klikojnë logon ose bannerin tuaj.
         </p>
+        {user.partner_activation_code ? (
+          <p className="mt-2 text-sm font-mono bg-white/80 border border-blue-100 rounded-lg px-3 py-2">
+            Kodi i aktivizimit: <strong>{user.partner_activation_code}</strong>
+          </p>
+        ) : null}
       </div>
 
       <div className="space-y-2">

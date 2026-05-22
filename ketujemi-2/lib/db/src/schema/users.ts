@@ -37,6 +37,9 @@ export const usersTable = pgTable("users", {
   partner_link_type: text("partner_link_type"),
   /** JSON string array — up to 5 banner image URLs for VIP carousel. */
   partner_banner_urls: text("partner_banner_urls"),
+  /** Sent to business email when admin activates partner account. */
+  partner_activation_code: text("partner_activation_code"),
+  partner_activation_sent_at: timestamp("partner_activation_sent_at"),
   vip_expires_at: timestamp("vip_expires_at"),
   /** Temporary suspension (30-day strike); permanent ban uses banned_at. */
   suspended_until: timestamp("suspended_until"),

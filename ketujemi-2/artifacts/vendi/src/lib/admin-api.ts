@@ -101,20 +101,33 @@ export function deleteRegisteredUser(id: number) {
   return request<{ success: boolean }>(`/registered-users/${id}`, { method: "DELETE" });
 }
 
+export interface PartnerPaymentSummary {
+  status: "none" | "pending" | "paid" | "partial";
+  label: string;
+  expected_eur: number;
+  latest_amount_eur: number | null;
+  latest_purpose: string | null;
+  paid_at: string | null;
+}
+
 export interface AdminBusinessAccount {
   id: number;
   email: string | null;
   phone_e164_digits: string | null;
   business_name: string | null;
   business_tier: string | null;
+  package_label?: string | null;
   business_status: string | null;
   partner_link_url: string | null;
   partner_link_type: string | null;
   partner_logo_url: string | null;
+  partner_activation_code?: string | null;
+  partner_activation_sent_at?: string | null;
   banned_at: string | null;
   vip_expires_at: string | null;
   is_vip_active: boolean;
   created_at: string;
+  payment?: PartnerPaymentSummary | null;
 }
 
 export function getAdminBusinesses() {
@@ -122,7 +135,19 @@ export function getAdminBusinesses() {
 }
 
 export function activateAdminBusiness(id: number) {
-  return request<{ id: number; business_status: string | null }>(`/businesses/${id}/activate`, {
+  return request<{
+    id: number;
+    business_status: string | null;
+    partner_activation_code?: string;
+    email_sent?: boolean;
+    email_error?: string | null;
+  }>(`/businesses/${id}/activate`, {
+    method: "POST",
+  });
+}
+
+export function deactivateAdminBusiness(id: number) {
+  return request<{ id: number; business_status: string }>(`/businesses/${id}/deactivate`, {
     method: "POST",
   });
 }

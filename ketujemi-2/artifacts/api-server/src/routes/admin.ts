@@ -9,7 +9,13 @@ import {
 } from "@workspace/db";
 import { eq, desc, sql, count, gte, and } from "drizzle-orm";
 import { isVipBusinessActive } from "../lib/business-rules";
-import { getBusinessStatus } from "../lib/business-partner";
+import {
+  generatePartnerActivationCode,
+  getBusinessStatus,
+  partnerPackageLabel,
+} from "../lib/business-partner";
+import { loadPaymentSummariesByUserIds } from "../lib/admin-partner-payments";
+import { sendPartnerActivationEmail } from "../lib/send-email";
 import { CreateListingBody } from "@workspace/api-zod";
 import {
   verifyAdminPassword,
@@ -365,6 +371,14 @@ router.post("/admin/registered-users/:id/unban", requireAdmin, async (req, res) 
   }
 });
 
+function adminAppOrigin(req: { get: (name: string) => string | undefined }): string {
+  const env = process.env["PUBLIC_APP_ORIGIN"]?.replace(/\/$/, "");
+  if (env) return env;
+  const host = req.get("x-forwarded-host") ?? req.get("host");
+  const proto = req.get("x-forwarded-proto") ?? "http";
+  return host ? `${proto}://${host}` : "http://localhost:5173";
+}
+
 // ─── GET /admin/businesses — partner program accounts ─────────────────────────
 router.get("/admin/businesses", requireAdmin, async (req, res) => {
   try {
@@ -374,6 +388,12 @@ router.get("/admin/businesses", requireAdmin, async (req, res) => {
       .where(eq(usersTable.account_type, "business"))
       .orderBy(desc(usersTable.created_at));
 
+    const tierMap = new Map(rows.map((u) => [u.id, u.business_tier]));
+    const payments = await loadPaymentSummariesByUserIds(
+      rows.map((u) => u.id),
+      tierMap,
+    );
+
     res.json(
       rows.map((u) => ({
         id: u.id,
@@ -381,14 +401,20 @@ router.get("/admin/businesses", requireAdmin, async (req, res) => {
         phone_e164_digits: u.phone_e164_digits,
         business_name: u.business_name,
         business_tier: u.business_tier,
+        package_label: partnerPackageLabel(u.business_tier),
         business_status: getBusinessStatus(u),
         partner_link_url: u.partner_link_url,
         partner_link_type: u.partner_link_type,
         partner_logo_url: u.partner_logo_url,
+        partner_activation_code: u.partner_activation_code ?? null,
+        partner_activation_sent_at: u.partner_activation_sent_at
+          ? u.partner_activation_sent_at.toISOString()
+          : null,
         banned_at: u.banned_at ? u.banned_at.toISOString() : null,
         vip_expires_at: u.vip_expires_at ? u.vip_expires_at.toISOString() : null,
         is_vip_active: isVipBusinessActive(u),
         created_at: u.created_at.toISOString(),
+        payment: payments.get(u.id) ?? null,
       })),
     );
   } catch (err) {
@@ -406,11 +432,22 @@ router.post("/admin/businesses/:id/activate", requireAdmin, async (req, res) => 
       res.status(404).json({ error: "Business account not found" });
       return;
     }
+    if (!user.email?.trim()) {
+      res.status(400).json({
+        error: "NO_EMAIL",
+        message: "Biznesi nuk ka email — shtoni email në llogari para aktivizimit.",
+      });
+      return;
+    }
 
+    const activationCode = generatePartnerActivationCode();
+    const now = new Date();
     const patch: Partial<typeof usersTable.$inferInsert> = {
       business_status: "active",
       banned_at: null,
       ban_reason: null,
+      partner_activation_code: activationCode,
+      partner_activation_sent_at: now,
     };
     if (user.business_tier === "vip") {
       const exp = new Date();
@@ -424,13 +461,52 @@ router.post("/admin/businesses/:id/activate", requireAdmin, async (req, res) => 
       .where(eq(usersTable.id, id))
       .returning();
 
+    let email_sent = false;
+    let email_error: string | null = null;
+    try {
+      await sendPartnerActivationEmail({
+        to: user.email!.trim(),
+        businessName: user.business_name?.trim() || "Partner",
+        activationCode,
+        packageLabel: partnerPackageLabel(user.business_tier),
+        profileUrl: `${adminAppOrigin(req)}/profile`,
+      });
+      email_sent = true;
+    } catch (mailErr) {
+      email_error = mailErr instanceof Error ? mailErr.message : "Email failed";
+      req.log.error({ err: mailErr, userId: id }, "partner activation email");
+    }
+
     res.json({
       id: updated!.id,
       business_status: getBusinessStatus(updated!),
       vip_expires_at: updated!.vip_expires_at?.toISOString() ?? null,
+      partner_activation_code: activationCode,
+      email_sent,
+      email_error,
     });
   } catch (err) {
     req.log.error({ err }, "Admin activate business error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── POST /admin/businesses/:id/deactivate ───────────────────────────────────
+router.post("/admin/businesses/:id/deactivate", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const [updated] = await db
+      .update(usersTable)
+      .set({ business_status: "pending" })
+      .where(and(eq(usersTable.id, id), eq(usersTable.account_type, "business")))
+      .returning();
+    if (!updated) {
+      res.status(404).json({ error: "Business account not found" });
+      return;
+    }
+    res.json({ id: updated.id, business_status: "pending" });
+  } catch (err) {
+    req.log.error({ err }, "Admin deactivate business error");
     res.status(500).json({ error: "Internal server error" });
   }
 });
