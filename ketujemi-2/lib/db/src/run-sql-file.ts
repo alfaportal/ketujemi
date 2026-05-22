@@ -1,0 +1,56 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { config as loadEnv } from "dotenv";
+import pg from "pg";
+
+const dbDir = path.dirname(fileURLToPath(import.meta.url));
+const ketujemi2Root = path.resolve(dbDir, "..", "..");
+const envCandidates = [
+  path.join(ketujemi2Root, ".env"),
+  path.resolve(ketujemi2Root, "..", ".env"),
+  path.resolve(process.cwd(), ".env"),
+  path.resolve(process.cwd(), "../../.env"),
+];
+for (const envPath of envCandidates) {
+  loadEnv({ path: envPath });
+  if (process.env.DATABASE_URL?.trim()) break;
+}
+
+const fileArg = process.argv[2] ?? "partner-activation-code-migration.sql";
+const sqlPath = path.isAbsolute(fileArg)
+  ? fileArg
+  : path.join(dbDir, "..", "sql", fileArg);
+
+const url = process.env.DATABASE_URL?.trim();
+if (!url) {
+  console.error("DATABASE_URL is not set in ketujemi-2/.env");
+  process.exit(1);
+}
+
+const sql = readFileSync(sqlPath, "utf8");
+const pool = new pg.Pool({
+  connectionString: url,
+  connectionTimeoutMillis: 20_000,
+});
+
+async function main() {
+  console.log(`Running SQL: ${path.basename(sqlPath)}`);
+  await pool.query(sql);
+  const { rows } = await pool.query<{ column_name: string }>(`
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'users'
+      AND column_name IN ('partner_activation_code', 'partner_activation_sent_at')
+    ORDER BY column_name
+  `);
+  console.log("OK — columns present:", rows.map((r) => r.column_name).join(", ") || "(none)");
+}
+
+main()
+  .catch((err) => {
+    console.error("Failed:", err instanceof Error ? err.message : err);
+    process.exit(1);
+  })
+  .finally(() => pool.end());
