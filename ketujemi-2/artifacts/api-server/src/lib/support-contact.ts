@@ -1,7 +1,7 @@
 /** Public support channels for chatbot and escalations. */
 
-export const SUPPORT_EMAIL = "info@ketujemi.com";
-export const SUPPORT_EMAIL_ALT = "support@ketujemi.com";
+export const SUPPORT_EMAIL = "support@ketujemi.com";
+export const SUPPORT_EMAIL_ALT = "info@ketujemi.com";
 
 /** E.164 or spaced display; set SUPPORT_PHONE in Vercel env (e.g. +383 44 123 456). */
 export function getSupportPhoneDisplay(): string {

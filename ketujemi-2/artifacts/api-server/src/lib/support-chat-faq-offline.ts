@@ -90,7 +90,7 @@ const PRODUCT_ROUTES: FaqEntry[] = [
     keywords:
       /muzik|muzike|muzikë|hobi|hobby|instrument|gitar|piano|korde|vinil|studio|mikrofon|amplifikator|bass|drum|violin/i,
     reply: {
-      sq: "Muzikë & Hobby: faqja kryesore → **Muzikë & Hobby** → nën-kategori (Instrumente, Libra, Pajisje Studio, Art & Film…) → hapni njoftimin. Për të shitur: «Posto Falas» → zgjidhni **Muzikë & Hobby**.",
+      sq: "**Muzikë & Hobby** (kategori kryesore, jo Sport & Outdoor): faqja kryesore → **Muzikë & Hobby** → Instrumente Frymore / me Tela / me Tastierë / Libra / Pajisje Studio / Art Teatër & Film → njoftimet. Shitje: «Posto Falas» → **Muzikë & Hobby**.",
       mk: "Музика: почетна → **Музика и хоби** → подкатегории → оглас.",
       me: "Muzika: početna → **Muzika i hobi** → podkategorije → oglasi.",
     },
@@ -162,7 +162,7 @@ const DETAILED_FAQ: FaqEntry[] = [
     keywords:
       /regjistr|regjistro|krijoj\s+llogari|hap\s+llogari|sign\s*up|create\s+account|otvori\s+nalog|регистр/i,
     reply: {
-      sq: "Regjistrimi: klikoni **«Hyr»** (këndi i djathtë lart) → **«Regjistrohu»** me email+fjalëkalim ose telefon (+383, +355, +389, +382) + SMS. Pas verifikimit mund të postoni («Posto Falas») ose të blini nga kategoritë.",
+      sq: "Regjistrimi (hap pas hapi): 1) **«Hyr»** → **«Regjistrohu»**. 2) Email+fjalëkalim (min. 8 shkronja) + verifikim me kod në email, OSE telefon Ballkan (+383/+355/+389/+382) + SMS 6-shifror. 3) Diaspora: përdorni email. 4) Pas verifikimit: shfletoni kategori ose **«Posto Falas»** për të shitur. Regjistrim ≠ postim — për muzikë/instrumente postimi bëhet te **Muzikë & Hobby**.",
       mk: "Регистрација: **Најава** → регистрација (email или SMS). Потоа **Posto Falas** или пребарување.",
       me: "Registracija: **Prijava** → registracija (email ili SMS). Zatim **Posto Falas** ili pretraga.",
     },
@@ -180,7 +180,7 @@ const DETAILED_FAQ: FaqEntry[] = [
     keywords:
       /posto|postim|si\s+(te|të)\s+post|si\s+postoj|how\s+to\s+post|објав|objav|kako\s+da\s+post|shitës|shites|shese|shes\b/i,
     reply: {
-      sq: "Si shitës: 1) Regjistrohu + verifiko email/SMS. 2) **«Posto Falas»**. 3) Zgjidh kategorinë e saktë (p.sh. Muzikë & Hobby për instrumente). 4) Titull, përshkrim, foto, çmim €. 5) Publiko — **30 ditë** aktiv. Max **10** njoftime njëkohësisht.",
+      sq: "Postimi (hap pas hapi): 1) Hyr + verifikim email/SMS. 2) **«Posto Falas»**. 3) Kategori + nënkategori e saktë. 4) Titull, përshkrim, çmim €, deri **10 foto**. 5) Publiko (moderim AI) — **30 ditë** aktiv. Limit: **10 falas për kategori** + max **10 aktive** total. TOP €1 opsional. Rifillo pas skadimit nga njoftimi juaj.",
       mk: "Продавач: регистрација, верификација, **Posto Falas**, точна категорија, детали — 30 дена.",
       me: "Prodavač: registracija, verifikacija, **Posto Falas**, tačna kategorija, detalji — 30 dana.",
     },
@@ -223,6 +223,30 @@ const DETAILED_FAQ: FaqEntry[] = [
       sq: "Verifikoni **email** dhe **SMS** (+383, +355, +389, +382). Pa verifikim, postimi mund të mos funksionojë plotësisht.",
       mk: "Верификација email + SMS.",
       me: "Verifikacija email + SMS.",
+    },
+  },
+  {
+    keywords: /treg|market|diaspor|kosov|shqip|maqedon|mal\s+i\s+zi|gjermani|zvic|austri|shba|angli/i,
+    reply: {
+      sq: "KetuJemi funksionon në **11 tregje**: Kosovë, Shqipëri, Maqedoni e Veriut, Mal i Zi + diaspora (Gjermani, Austri, Zvicër, Itali, Francë, Angli, SHBA). Zgjidhni tregun në footer — ndikon në monedhën e shfaqur. Diaspora regjistrohet kryesisht me **email**; Ballkan edhe me SMS.",
+      mk: "11 пазари: Косово, Албанија, МК, Црна Гора + дијаспора (DE, AT, CH, IT, FR, GB, US).",
+      me: "11 tržišta: KS, AL, MK, ME + dijaspora (DE, AT, CH, IT, FR, GB, US).",
+    },
+  },
+  {
+    keywords: /stripe|kart|card|pages|pay|checkout|bler pages/i,
+    reply: {
+      sq: "Pagesat online në KetuJemi bëhen me **Stripe** (kartë bankare): partner **/partner** (Standard €30 / VIP €50), **TOP** njoftimi €1, paketa shtesë njoftimesh S/M/L. Blerja e produktit te shitësi **nuk** paguhet përmes KetuJemi — kontakt direkt me shitësin.",
+      mk: "Stripe за partner, TOP, пакети. Купување од продавач — директно, не преку платформата.",
+      me: "Stripe za partner, TOP, pakete. Kupovina od prodavača — direktno.",
+    },
+  },
+  {
+    keywords: /sigur|safe|mashtr|scam|kujdes|raporto/i,
+    reply: {
+      sq: "Siguria: mos dërgoni para avans; takohuni publik; kontrolloni produktin; përdorni «Telefono»/WhatsApp nga njoftimi; **«Raporto»** për mashtrim; email **support@ketujemi.com**. KetuJemi nuk garanton produktin — marrëveshja është me shitësin.",
+      mk: "Безбедност: без аванс; лично средба; «Пријави»; support@ketujemi.com.",
+      me: "Bezbednost: bez avansa; lično; «Prijavi»; support@ketujemi.com.",
     },
   },
   {
