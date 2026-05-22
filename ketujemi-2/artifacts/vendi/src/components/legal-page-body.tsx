@@ -21,6 +21,9 @@ export function LegalPageBody({ copy }: LegalPageBodyProps) {
               ))}
             </ul>
           ) : null}
+          {section.paragraphsAfter?.map((p) => (
+            <p key={p}>{p}</p>
+          ))}
           {section.table ? (
             <div className="overflow-x-auto rounded-xl border border-gray-200">
               <table className="w-full text-sm">

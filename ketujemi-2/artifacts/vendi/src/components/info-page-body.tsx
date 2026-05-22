@@ -16,6 +16,11 @@ export function InfoPageBody({ copy }: { copy: InfoPageCopy }) {
             <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3">{section.bulletsIntro}</p>
           ) : null}
           {section.bullets?.length ? <InfoBulletList items={section.bullets} /> : null}
+          {section.paragraphsAfter?.map((p) => (
+            <p key={p} className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 last:mb-0 mt-3">
+              {p}
+            </p>
+          ))}
         </section>
       ))}
     </div>

@@ -9,6 +9,8 @@ type PageSection = {
   paragraphs?: string[];
   bulletsIntro?: string;
   bullets?: string[];
+  /** Rendered after bullets (e.g. closing note on a rules section). */
+  paragraphsAfter?: string[];
   table?: { label: string; value: string }[];
 };
 
@@ -152,6 +154,22 @@ const KS: StaticPagesCopy = {
         paragraphs: [
           "Nëse postoni përsëri të njëjtin njoftim (titull dhe përshkrim identik), versioni i vjetër fshihet automatikisht dhe mbetet vetëm i riu.",
           "Mes dy postimeve radhazi duhet të paktën 30 sekonda pritje.",
+        ],
+      },
+      {
+        title: "Limitet e Njoftimeve",
+        paragraphs: [
+          "Çdo përdorues fillon me 10 njoftime aktive falas. Kur një njoftim fshihet ose skadon, vendi lirohet automatikisht dhe mund të postohet njoftim i ri pa kosto shtesë.",
+        ],
+        bulletsIntro:
+          "Për përdoruesit që kanë nevojë për më shumë njoftime aktive njëkohësisht, ofrojmë paketa shtesë:",
+        bullets: [
+          "5 njoftime shtesë — €1",
+          "25 njoftime shtesë — €5",
+          "50 njoftime shtesë — €8",
+        ],
+        paragraphsAfter: [
+          "Njoftime shtesë të blera mbeten aktive derisa të fshihen nga përdoruesi. Çdo njoftim lejon ngarkimin e deri 10 fotografive.",
         ],
       },
       {
@@ -592,6 +610,22 @@ const MK: StaticPagesCopy = {
         ],
       },
       {
+        title: "Лимити на огласи",
+        paragraphs: [
+          "Секој корисник започнува со 10 активни бесплатни огласи. Кога оглас се избрише или истече, местото се ослободува автоматски и може да се објави нов без дополнителен трошок.",
+        ],
+        bulletsIntro:
+          "За корисници кои имаат потреба од повеќе активни огласи истовремено, нудиме дополнителни пакети:",
+        bullets: [
+          "5 дополнителни огласи — €1",
+          "25 дополнителни огласи — €5",
+          "50 дополнителни огласи — €8",
+        ],
+        paragraphsAfter: [
+          "Купените дополнителни огласи остануваат активни додека корисникот не ги избрише. Секој оглас дозволува до 10 фотографии.",
+        ],
+      },
+      {
         title: "Што е забрането",
         bullets: [
           "Спам, измама, навредлива или незаконска содржина",
@@ -1022,6 +1056,22 @@ const MNE: StaticPagesCopy = {
         paragraphs: [
           "Ako ponovo objavite isti oglas (isti naslov i opis), stari se automatski briše i ostaje samo novi.",
           "Potrebno je najmanje 30 sekundi između dvije uzastopne objave.",
+        ],
+      },
+      {
+        title: "Limiti oglasa",
+        paragraphs: [
+          "Svaki korisnik počinje sa 10 aktivnih besplatnih oglasa. Kada se oglas obriše ili istekne, mjesto se automatski oslobađa i može se objaviti novi bez dodatnog troška.",
+        ],
+        bulletsIntro:
+          "Za korisnike kojima treba više aktivnih oglasa istovremeno, nudimo dodatne pakete:",
+        bullets: [
+          "5 dodatnih oglasa — €1",
+          "25 dodatnih oglasa — €5",
+          "50 dodatnih oglasa — €8",
+        ],
+        paragraphsAfter: [
+          "Kupljeni dodatni oglasi ostaju aktivni dok ih korisnik ne obriše. Svaki oglas dozvoljava do 10 fotografija.",
         ],
       },
       {
