@@ -11,7 +11,8 @@
     "moduleResolution": "bundler",
     "types": ["node", "vite/client", "vite-plugin-pwa/client"],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@workspace/category-images": ["../../lib/db/src/category-pexels-urls.ts"]
     }
   }
 }

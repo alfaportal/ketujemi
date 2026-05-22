@@ -7,7 +7,7 @@ export type PartnerRegisterBody = {
   email: string;
   phone: string;
   iban: string;
-  package: string;
+  package: "standard" | "vip";
   logo_url: string | null;
   link: string;
   accepted_terms: boolean;

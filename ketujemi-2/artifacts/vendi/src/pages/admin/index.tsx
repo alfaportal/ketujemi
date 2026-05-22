@@ -13,10 +13,12 @@ import AdminReports from "./reports";
 import AdminSettings from "./settings";
 import AdminModeration from "./moderation";
 import AdminPartners from "./partners";
+import AdminPayments from "./payments";
 
 type Section =
   | "dashboard"
   | "partners"
+  | "payments"
   | "listings"
   | "users"
   | "categories"
@@ -27,6 +29,7 @@ type Section =
 const NAV: { id: Section; icon: React.ElementType }[] = [
   { id: "dashboard", icon: LayoutDashboard },
   { id: "partners", icon: Building2 },
+  { id: "payments", icon: CreditCard },
   { id: "listings", icon: FileText },
   { id: "users", icon: Users },
   { id: "categories", icon: Tag },
@@ -38,6 +41,7 @@ const NAV: { id: Section; icon: React.ElementType }[] = [
 const NAV_TITLE_KEY: Record<Section, string> = {
   dashboard: "adm_nav_dash",
   partners: "adm_nav_partners",
+  payments: "adm_nav_payments",
   listings: "adm_nav_list",
   users: "adm_nav_users",
   categories: "adm_nav_cats",

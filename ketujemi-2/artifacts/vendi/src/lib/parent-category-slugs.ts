@@ -37,6 +37,7 @@ export function sortRootCategories<T extends { slug?: string | null }>(items: T[
   const rank = new Map(PARENT_CATEGORY_SLUG_ORDER.map((s, i) => [s, i]));
   return [...items].sort(
     (a, b) =>
-      (rank.get(a.slug?.trim() ?? "") ?? 999) - (rank.get(b.slug?.trim() ?? "") ?? 999),
+      (rank.get((a.slug?.trim() ?? "") as (typeof PARENT_CATEGORY_SLUG_ORDER)[number]) ?? 999) -
+      (rank.get((b.slug?.trim() ?? "") as (typeof PARENT_CATEGORY_SLUG_ORDER)[number]) ?? 999),
   );
 }
