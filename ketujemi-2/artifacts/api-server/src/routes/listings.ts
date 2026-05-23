@@ -30,6 +30,7 @@ import { repostListing } from "../lib/listing-repost";
 import { incrementListingView } from "../lib/listing-view";
 import { listingFeedOrderBy, isTopActive } from "../lib/listing-top";
 import { moderateListingContent } from "../lib/listing-ai-moderation";
+import { logListingModerationRejection } from "../lib/listing-moderation-rejection-log";
 import { parseUiLang } from "../lib/claude-client";
 import { assertUserActiveListingCap } from "../lib/user-listing-limits";
 import { consumeExtraPostPayment } from "../lib/payments";
@@ -487,6 +488,12 @@ router.post("/listings", async (req, res) => {
   );
 
   if (!moderation.approved) {
+    void logListingModerationRejection({
+      title: parsed.data.title,
+      reason: moderation.reason || "Moderim automatik",
+      categoryId: parsed.data.category_id,
+      userId: viewer.id,
+    }).catch(() => undefined);
     res.status(403).json({
       error: "LISTING_MODERATION_REJECTED",
       moderation_status: "rejected",
@@ -1016,6 +1023,12 @@ router.patch("/listings/:id", async (req, res) => {
     );
 
     if (!moderation.approved) {
+      void logListingModerationRejection({
+        title: nextTitle,
+        reason: moderation.reason || "Moderim automatik",
+        categoryId: existing[0].category_id,
+        userId: viewer.id,
+      }).catch(() => undefined);
       res.status(403).json({
         error: "LISTING_MODERATION_REJECTED",
         moderation_status: "rejected",

@@ -1,6 +1,7 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { db, listingsTable, listingReportsTable, adminSettingsTable } from "@workspace/db";
-import { desc, eq } from "drizzle-orm";
+import { claudeTextCompletion } from "./claude-client";
+import { gatherAdminOperatorContext } from "./admin-operator-context";
+import { db, adminSettingsTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 
 const KEYS = {
   enabled: "ai_moderation_enabled",
@@ -10,11 +11,12 @@ const KEYS = {
   lastRunAt: "ai_moderation_last_run_at",
 } as const;
 
-const DEFAULT_SYSTEM = `You are a private moderation assistant for a classifieds marketplace.
+const DEFAULT_SYSTEM = `You are a private moderation assistant for KetuJemi.com (classifieds marketplace).
 The operator is the sole platform owner. Follow their instructions precisely.
 Never mention or invent an owner name, company name, or brand identity.
 Respond in the same language as the owner's command (Albanian, Macedonian, or English).
-When suggesting actions, be concrete (listing IDs, user IDs, short reasons).`;
+When suggesting actions, be concrete (listing IDs, user IDs, short reasons).
+Use the platform context JSON to answer — do not invent data not present in the snapshot.`;
 
 async function getSetting(key: string): Promise<string | null> {
   const [row] = await db
@@ -63,70 +65,20 @@ export async function runModerationCommand(command: string): Promise<{ reply: st
     throw new Error("Command too short");
   }
 
-  const recentListings = await db
-    .select({
-      id: listingsTable.id,
-      title: listingsTable.title,
-      seller_name: listingsTable.seller_name,
-      seller_phone: listingsTable.seller_phone,
-      created_at: listingsTable.created_at,
-    })
-    .from(listingsTable)
-    .orderBy(desc(listingsTable.created_at))
-    .limit(25);
-
-  const pendingReports = await db
-    .select()
-    .from(listingReportsTable)
-    .where(eq(listingReportsTable.status, "pending"))
-    .orderBy(desc(listingReportsTable.created_at))
-    .limit(15);
-
-  const context = JSON.stringify(
-    {
-      recent_listings: recentListings.map((l) => ({
-        id: l.id,
-        title: l.title,
-        seller_name: l.seller_name,
-        seller_phone: l.seller_phone.replace(/\d(?=\d{4})/g, "*"),
-        created_at: l.created_at.toISOString(),
-      })),
-      pending_reports: pendingReports.map((r) => ({
-        id: r.id,
-        listing_id: r.listing_id,
-        reason: r.reason,
-        status: r.status,
-      })),
-    },
-    null,
-    0,
-  );
-
-  const client = new Anthropic({ apiKey });
+  const context = await gatherAdminOperatorContext();
   const system = state.system_prompt || DEFAULT_SYSTEM;
 
-  const message = await client.messages.create({
-    model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-5",
-    max_tokens: 2048,
+  const reply = await claudeTextCompletion({
     system,
-    messages: [
-      {
-        role: "user",
-        content: `Platform snapshot (phones partially masked):\n${context}\n\nOwner command:\n${trimmed}`,
-      },
-    ],
+    user: `Platform context (JSON):\n${JSON.stringify(context, null, 2)}\n\nOwner command:\n${trimmed}`,
+    maxTokens: 2048,
   });
 
-  const reply =
-    message.content
-      .filter((b) => b.type === "text")
-      .map((b) => b.text)
-      .join("\n")
-      .trim() || "(no response)";
+  const text = reply.trim() || "(no response)";
 
   await setSetting(KEYS.lastCommand, trimmed);
-  await setSetting(KEYS.lastReply, reply);
+  await setSetting(KEYS.lastReply, text);
   await setSetting(KEYS.lastRunAt, new Date().toISOString());
 
-  return { reply };
+  return { reply: text };
 }

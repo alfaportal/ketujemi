@@ -24,6 +24,18 @@ export const listingDeletionLogTable = pgTable("listing_deletion_log", {
 
 export type ListingDeletionLog = typeof listingDeletionLogTable.$inferSelect;
 
+/** Moderation blocks before insert — logged for admin AI context. */
+export const listingModerationRejectionsTable = pgTable("listing_moderation_rejections", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  reason: text("reason").notNull(),
+  category_id: integer("category_id"),
+  user_id: integer("user_id"),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+});
+
+export type ListingModerationRejection = typeof listingModerationRejectionsTable.$inferSelect;
+
 export const adminSettingsTable = pgTable("admin_settings", {
   id: serial("id").primaryKey(),
   key: text("key").notNull().unique(),
