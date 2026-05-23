@@ -1,18 +1,24 @@
 import { db, listingsTable } from "@workspace/db";
 import { lt } from "drizzle-orm";
 import { logger } from "./logger";
+import { deleteListingCascade } from "./delete-listing-cascade";
 
 /** Delete listings past expires_at (1 month rule). */
 export async function purgeExpiredListings(): Promise<number> {
-  const deleted = await db
-    .delete(listingsTable)
-    .where(lt(listingsTable.expires_at, new Date()))
-    .returning({ id: listingsTable.id });
+  const expiring = await db
+    .select({ id: listingsTable.id })
+    .from(listingsTable)
+    .where(lt(listingsTable.expires_at, new Date()));
 
-  if (deleted.length > 0) {
-    logger.info({ count: deleted.length }, "Purged expired listings");
+  let removed = 0;
+  for (const row of expiring) {
+    if (await deleteListingCascade(row.id, "expiry")) removed++;
   }
-  return deleted.length;
+
+  if (removed > 0) {
+    logger.info({ count: removed }, "Purged expired listings");
+  }
+  return removed;
 }
 
 const INTERVAL_MS = 60 * 60 * 1000;

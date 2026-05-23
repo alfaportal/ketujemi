@@ -40,6 +40,7 @@ import {
   updateModerationSettings,
   runModerationCommand,
 } from "../lib/admin-moderation";
+import { generateAdminAiDailyReport } from "../lib/admin-ai-daily-report";
 import { loadBannedPhoneSet, saveBannedPhoneSet } from "../lib/user-ban";
 
 const router = Router();
@@ -221,7 +222,7 @@ router.patch("/admin/listings/:id", requireAdmin, async (req, res) => {
 router.delete("/admin/listings/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const removed = await deleteListingCascade(id);
+    const removed = await deleteListingCascade(id, "admin");
     if (!removed) {
       res.status(404).json({ error: "Not found" });
       return;
@@ -990,6 +991,20 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     res.json(obj);
   } catch (err) {
     req.log.error({ err }, "Admin update settings error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── GET /admin/ai-report ─────────────────────────────────────────────────────
+router.get("/admin/ai-report", requireAdmin, async (req, res) => {
+  try {
+    const result = await generateAdminAiDailyReport();
+    res.json({
+      ...result,
+      generated_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    req.log.error({ err }, "Admin AI report error");
     res.status(500).json({ error: "Internal server error" });
   }
 });

@@ -73,3 +73,26 @@ export async function claudeJsonCompletion<T>(opts: {
 
   return parseJsonObject<T>(text);
 }
+
+/** Plain-text Claude reply (admin reports, chat). */
+export async function claudeTextCompletion(opts: {
+  system: string;
+  user: string;
+  maxTokens?: number;
+}): Promise<string> {
+  const client = getAnthropicClient();
+  const message = await client.messages.create({
+    model: getClaudeModel(),
+    max_tokens: opts.maxTokens ?? 2048,
+    system: opts.system,
+    messages: [{ role: "user", content: opts.user }],
+  });
+
+  return (
+    message.content
+      .filter((b) => b.type === "text")
+      .map((b) => b.text)
+      .join("\n")
+      .trim() || ""
+  );
+}

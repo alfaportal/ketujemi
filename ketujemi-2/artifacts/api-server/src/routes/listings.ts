@@ -1079,7 +1079,7 @@ router.delete("/listings/:id", async (req, res) => {
   }
 
   try {
-    const removed = await deleteListingCascade(parsed.data.id);
+    const removed = await deleteListingCascade(parsed.data.id, "owner");
     if (!removed) {
       res.status(404).json({ error: "Not found" });
       return;

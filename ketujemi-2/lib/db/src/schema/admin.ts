@@ -11,6 +11,19 @@ export const listingReportsTable = pgTable("listing_reports", {
 
 export type ListingReport = typeof listingReportsTable.$inferSelect;
 
+/** Audit trail when a listing row is removed (admin, owner, expiry job). */
+export const listingDeletionLogTable = pgTable("listing_deletion_log", {
+  id: serial("id").primaryKey(),
+  listing_id: integer("listing_id").notNull(),
+  title: text("title").notNull(),
+  category_id: integer("category_id"),
+  price: text("price"),
+  source: text("source").notNull(),
+  deleted_at: timestamp("deleted_at").notNull().defaultNow(),
+});
+
+export type ListingDeletionLog = typeof listingDeletionLogTable.$inferSelect;
+
 export const adminSettingsTable = pgTable("admin_settings", {
   id: serial("id").primaryKey(),
   key: text("key").notNull().unique(),
