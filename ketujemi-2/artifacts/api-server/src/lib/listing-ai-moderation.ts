@@ -11,16 +11,32 @@ export type ModerationResult = {
 };
 
 const BLOCK_PATTERNS: { re: RegExp; reason: string }[] = [
-  { re: /\b(armë|arme|pistol|rifle|kalashnikov|bomba)\b/i, reason: "Shitja e armëve nuk lejohet." },
-  { re: /\b(droga|kokain|heroin|kanabis|marijuana|ekstazi)\b/i, reason: "Shitja e drogës nuk lejohet." },
-  { re: /\b(alkool|verë|rakija|birrë|beer|whisky|vodka)\b/i, reason: "Alkooli dhe pijet alkoolike nuk lejohen." },
-  { re: /\b(duhan|duhani|cigare|tobacco|cigar)\b/i, reason: "Duhani dhe cigaret nuk lejohen." },
-  { re: /\b(vape|e-cig|ecig|puff)\b/i, reason: "Cigaret elektronike nuk lejohen." },
-  { re: /\b(crypto|bitcoin|ethereum|nft|binance)\b/i, reason: "Kriptomonedhat nuk lejohen." },
-  { re: /\b(mlm|piramid|ponzi|skemë piramidale)\b/i, reason: "Skemat piramidale / MLM nuk lejohen." },
-  { re: /\b(escort|prostitut|takime intime|seks|porno)\b/i, reason: "Përmbajtja erotike nuk lejohet." },
-  { re: /\b(kazino|casino|baste|lojëra fati|gambling)\b/i, reason: "Llogaritë e lojërave / baste nuk lejohen." },
-  { re: /\b(replika|kopje|fake|counterfeit|imitation|1:1)\b/i, reason: "Produktet e falsifikuara / replika nuk lejohen." },
+  // Armë
+  { re: /\b(armë|arme|pistol|rifle|kalashnikov|bomba|granata|thikë luftarake|municion)\b/i, reason: "Shitja e armëve nuk lejohet." },
+  // Drogë
+  { re: /\b(droga|kokain|heroin|kanabis|marijuana|ekstazi|amfetamin|metadon|lsd|kep)\b/i, reason: "Shitja e drogës nuk lejohet." },
+  // Alkool
+  { re: /\b(alkool|verë|rakija|birrë|beer|whisky|vodka|raki|konjak|liquor)\b/i, reason: "Alkooli dhe pijet alkoolike nuk lejohen." },
+  // Duhan
+  { re: /\b(duhan|duhani|cigare|tobacco|cigar|tytyn)\b/i, reason: "Duhani dhe cigaret nuk lejohen." },
+  // Vape
+  { re: /\b(vape|e-cig|ecig|puff|juul|iqos|heets)\b/i, reason: "Cigaret elektronike nuk lejohen." },
+  // Crypto
+  { re: /\b(crypto|bitcoin|ethereum|nft|binance|usdt|dogecoin|blockchain|token|coin)\b/i, reason: "Kriptomonedhat nuk lejohen." },
+  // MLM
+  { re: /\b(mlm|piramid|ponzi|skemë piramidale|network marketing|passive income|fitim pasiv)\b/i, reason: "Skemat piramidale / MLM nuk lejohen." },
+  // Erotik
+  { re: /\b(escort|prostitut|takime intime|seks|porno|strip|onlyfans|fetish)\b/i, reason: "Përmbajtja erotike nuk lejohet." },
+  // Kazino
+  { re: /\b(kazino|casino|baste|lojëra fati|gambling|poker|slot|bet|1xbet|betsson)\b/i, reason: "Llogaritë e lojërave / baste nuk lejohen." },
+  // Replika
+  { re: /\b(replika|kopje|fake|counterfeit|imitation|1:1|superfake|aaa grade)\b/i, reason: "Produktet e falsifikuara / replika nuk lejohen." },
+  // Kontakt në titull
+  { re: /(\+3[0-9]{11}|00[0-9]{10}|\b(viber|whatsapp|telegram|signal)\b)/i, reason: "Mos vendos kontakt në titull ose përshkrim." },
+  // Spam fjalë
+  { re: /\b(klikoni|kliko|shko te|vizito|instagram|facebook\.com|tiktok|youtube\.com)\b/i, reason: "Linqet dhe rrjetet sociale nuk lejohen në shpallje." },
+  // Fjalë mashtruese
+  { re: /\b(fitoni|fitonni|bëhu i pasur|mundësi e artë|invest|investim i sigurt|garanci 100%)\b/i, reason: "Oferta mashtruese nuk lejohen." },
 ];
 
 function ruleBasedModeration(input: {
@@ -34,20 +50,35 @@ function ruleBasedModeration(input: {
   const desc = input.description.trim();
   const combined = `${title}\n${desc}`;
 
-  if (title.length < 3) {
-    return { approved: false, reason: "Titulli është shumë i shkurtër ose bosh." };
-  }
-  if (desc.length < 10) {
-    return { approved: false, reason: "Përshkrimi është shumë i shkurtër." };
-  }
-  if (title.length > 120) {
-    return { approved: false, reason: "Titulli është shumë i gjatë." };
-  }
+  // Gjatësia e titullit
+  if (title.length < 5)
+    return { approved: false, reason: "Titulli është shumë i shkurtër." };
+  if (title.length > 120)
+    return { approved: false, reason: "Titulli është shumë i gjatë (max 120 karaktere)." };
 
-  if (!input.price_agreement && input.price <= 0) {
+  // Gjatësia e përshkrimit
+  if (desc.length < 20)
+    return { approved: false, reason: "Përshkrimi është shumë i shkurtër (min 20 karaktere)." };
+
+  // Titull vetëm me numra
+  if (/^\d+$/.test(title))
+    return { approved: false, reason: "Titulli nuk mund të jetë vetëm numra." };
+
+  // ALL CAPS spam
+  if (title.length > 10 && title === title.toUpperCase())
+    return { approved: false, reason: "Mos shkruaj titullin me shkronja të mëdha (ALL CAPS)." };
+
+  // Çmim
+  if (!input.price_agreement && input.price <= 0)
     return { approved: false, reason: "Vendosni një çmim real (jo 0 €)." };
-  }
+  if (!input.price_agreement && input.price > 10000000)
+    return { approved: false, reason: "Çmimi duket jorealiste — kontrolloje." };
 
+  // Foto
+  if (!input.image_url)
+    return { approved: false, reason: "Ju lutem ngarkoni të paktën një foto." };
+
+  // Fjalë të ndaluara
   for (const { re, reason } of BLOCK_PATTERNS) {
     if (re.test(combined)) {
       return { approved: false, reason };
