@@ -69,7 +69,21 @@ BLOCK (approved false):
 - Crypto / gambling account sales
 - Empty, spam, or meaningless title/description
 - Price 0 or clearly unrealistic for the category (unless price_agreement is true)
-- Duplicate-looking spam or off-platform-only ads with no real product`;
+- Duplicate-looking spam or off-platform-only ads with no real product
+- Listings with 0 images
+- Titles under 3 words or descriptions under 10 words
+- Contact info (phone/email/WhatsApp) in title or description
+- External links or social media handles in description
+- All-caps titles that look like spam
+- Misleading category (car listed under electronics, etc.)
+
+APPROVE if:
+- Real product with honest title and description
+- Realistic price for category
+- At least 1 image
+- No prohibited content
+
+Be strict but fair. When in doubt, approve.`;
 
 export async function moderateListingContent(
   input: {
