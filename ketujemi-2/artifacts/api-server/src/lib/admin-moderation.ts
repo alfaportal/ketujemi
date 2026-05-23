@@ -106,7 +106,7 @@ export async function runModerationCommand(command: string): Promise<{ reply: st
   const system = state.system_prompt || DEFAULT_SYSTEM;
 
   const message = await client.messages.create({
-    model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514",
+    model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-5",
     max_tokens: 2048,
     system,
     messages: [

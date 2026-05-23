@@ -1,13 +1,14 @@
 import { Router } from "express";
 import {
-  activateVipFromPayment,
   devPaymentBypassEnabled,
-  markPaymentPaidByToken,
   paymentsConfigured,
   stripePublishableKey,
+  stripeSecret,
 } from "../lib/payments";
 import { isPhase2Enabled } from "../lib/listing-top";
 import { handleCreateCheckoutSession } from "../lib/create-checkout-session-handler";
+import { fulfillPaidCheckoutSession } from "../lib/stripe-fulfill-session";
+import { getSessionUser } from "../lib/session-user";
 
 const router = Router();
 
@@ -51,46 +52,61 @@ router.post("/payments/webhook", async (req, res) => {
     const event = stripe.webhooks.constructEvent(rawBody, sig, secret);
 
     if (event.type === "checkout.session.completed") {
-      const session = event.data.object;
-      const token =
-        session.metadata?.payment_token ?? session.client_reference_id ?? "";
-      if (token) {
-        await markPaymentPaidByToken(token);
-        const purpose = session.metadata?.purpose;
-        const userId = Number(session.metadata?.user_id);
-        const partnerId = Number(session.metadata?.partner_id);
-        const packagePurchaseId = Number(session.metadata?.listing_package_purchase_id);
-        if (
-          (purpose === "partner_standard" || purpose === "partner_vip") &&
-          Number.isFinite(partnerId)
-        ) {
-          const { activatePartnerFromPayment } = await import("../lib/partner-activate");
-          await activatePartnerFromPayment(partnerId);
-        }
-        if (
-          (purpose === "listing_package_s" ||
-            purpose === "listing_package_m" ||
-            purpose === "listing_package_l") &&
-          Number.isFinite(packagePurchaseId)
-        ) {
-          const { activateListingPackageFromPayment } = await import("../lib/listing-packages");
-          await activateListingPackageFromPayment(packagePurchaseId);
-        }
-        if (purpose === "vip_month" && Number.isFinite(userId)) {
-          await activateVipFromPayment(userId);
-        }
-        const listingId = Number(session.metadata?.listing_id);
-        if (purpose === "top_listing" && Number.isFinite(listingId)) {
-          const { applyTopBoostToListing } = await import("../lib/listing-top");
-          await applyTopBoostToListing(listingId);
-        }
-      }
+      await fulfillPaidCheckoutSession(event.data.object);
     }
 
     res.json({ received: true });
   } catch (err) {
     req.log.error({ err }, "Stripe webhook error");
     res.status(400).end();
+  }
+});
+
+/** After Stripe redirect — confirm payment if webhook is delayed (logged-in users). */
+router.post("/payments/confirm-session", async (req, res) => {
+  const sessionId = String(req.body?.session_id ?? "").trim();
+  if (!sessionId.startsWith("cs_")) {
+    res.status(400).json({ error: "Invalid session_id" });
+    return;
+  }
+
+  const secret = stripeSecret();
+  if (!secret) {
+    res.status(503).json({ error: "PAYMENTS_NOT_CONFIGURED" });
+    return;
+  }
+
+  const user = await getSessionUser(req);
+  if (!user) {
+    res.status(401).json({ error: "Not logged in" });
+    return;
+  }
+
+  try {
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(secret);
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    const ownerId = Number(session.metadata?.user_id);
+    if (Number.isFinite(ownerId) && ownerId !== user.id) {
+      res.status(403).json({ error: "Session does not belong to this account" });
+      return;
+    }
+
+    if (session.payment_status === "paid") {
+      await fulfillPaidCheckoutSession(session);
+    }
+
+    res.json({
+      ok: true,
+      paid: session.payment_status === "paid",
+      purpose: session.metadata?.purpose ?? null,
+      partner_id: session.metadata?.partner_id ?? null,
+      activation_code: session.metadata?.activation_code?.trim() || null,
+    });
+  } catch (err) {
+    req.log.error({ err }, "confirm-session error");
+    res.status(500).json({ error: "Confirm failed" });
   }
 });
 

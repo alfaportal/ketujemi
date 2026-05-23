@@ -103,12 +103,13 @@ export async function createStripeCheckout(
   const Stripe = (await import("stripe")).default;
   const stripe = new Stripe(secret);
 
+  const sessionQuery = "session_id={CHECKOUT_SESSION_ID}";
   const successUrl =
     purpose === "vip_month"
-      ? `${origin}/profile?payment=success&purpose=vip`
+      ? `${origin}/profile?payment=success&purpose=vip&${sessionQuery}`
       : purpose === "top_listing" && listingId
-        ? `${origin}/listings/${listingId}?top=success`
-        : `${origin}/listings/new?payment_token=${encodeURIComponent(token)}`;
+        ? `${origin}/listings/${listingId}?top=success&${sessionQuery}`
+        : `${origin}/listings/new?payment_token=${encodeURIComponent(token)}&${sessionQuery}`;
 
   const productName =
     purpose === "vip_month"

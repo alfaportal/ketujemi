@@ -83,6 +83,17 @@ export default function PartnerPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("payment") === "success") {
+      const sessionId = params.get("session_id")?.trim();
+      if (sessionId?.startsWith("cs_")) {
+        setPaymentPending(true);
+        setPhase("success");
+        void import("@/lib/stripe-checkout")
+          .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId))
+          .then((r) => setPaymentPending(!r.paid))
+          .catch(() => setPaymentPending(true))
+          .finally(() => window.history.replaceState({}, "", "/partner"));
+        return;
+      }
       setPaymentPending(false);
       setPhase("success");
       window.history.replaceState({}, "", "/partner");

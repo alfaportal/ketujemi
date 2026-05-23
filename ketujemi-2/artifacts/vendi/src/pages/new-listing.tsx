@@ -212,13 +212,32 @@ export default function NewListing() {
   });
 
   useEffect(() => {
-    if (packageSuccessCode && typeof window !== "undefined") {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id")?.trim();
+    if (params.get("package_payment") === "success" && sessionId?.startsWith("cs_")) {
+      void import("@/lib/stripe-checkout")
+        .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId))
+        .catch(() => undefined);
+    }
+    if (packageSuccessCode) {
       const url = new URL(window.location.href);
       url.searchParams.delete("package_payment");
       url.searchParams.delete("code");
+      url.searchParams.delete("session_id");
       window.history.replaceState({}, "", url.pathname + url.search);
     }
   }, [packageSuccessCode]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id")?.trim();
+    if (!paymentToken || !sessionId?.startsWith("cs_")) return;
+    void import("@/lib/stripe-checkout")
+      .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId))
+      .catch(() => undefined);
+  }, [paymentToken]);
   const effectiveCategoryId =
     Number(brandCatId) || Number(bodyCatId) || Number(parentCatId);
 

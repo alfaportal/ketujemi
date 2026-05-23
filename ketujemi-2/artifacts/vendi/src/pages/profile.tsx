@@ -29,6 +29,52 @@ export default function ProfilePage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    if (loading || !user || typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment") !== "success") return;
+
+    const sessionId = params.get("session_id")?.trim();
+    const purpose = params.get("purpose");
+
+    const finish = () => {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("payment");
+      url.searchParams.delete("purpose");
+      url.searchParams.delete("session_id");
+      window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+    };
+
+    if (sessionId?.startsWith("cs_")) {
+      void import("@/lib/stripe-checkout")
+        .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId))
+        .then(async () => {
+          await refresh();
+          if (purpose === "vip") {
+            toast({
+              title: "VIP Biznes u aktivizua!",
+              description: "Mund të postoni pa kufirin e zakonshëm të biznesit.",
+            });
+          } else {
+            toast({ title: "Pagesa u konfirmua." });
+          }
+        })
+        .catch(() => {
+          toast({
+            title: "Pagesa në proces",
+            description: "Nëse VIP nuk shfaqet, rifreskoni faqen pas pak sekondash.",
+          });
+        })
+        .finally(finish);
+      return;
+    }
+
+    finish();
+    if (purpose === "vip") {
+      toast({ title: "Faleminderit për pagesën!" });
+    }
+  }, [loading, user, refresh, toast]);
+
+  useEffect(() => {
     if (loading) return;
     if (!user) {
       setLocation(loginUrlWithReturn("/profile"));

@@ -88,7 +88,7 @@ export async function createPartnerStripeCheckout(
         quantity: 1,
       },
     ],
-    success_url: `${origin}/partner?payment=success&partner_id=${partner.id}`,
+    success_url: `${origin}/partner?payment=success&partner_id=${partner.id}&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/partner?payment=cancelled&partner_id=${partner.id}`,
     client_reference_id: token,
     metadata: {

@@ -134,6 +134,40 @@ export default function ListingDetail() {
     void recordListingView(id, queryClient);
   }, [id, isLoading, listing?.id, queryClient]);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || !user) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("top") !== "success") return;
+    const sessionId = params.get("session_id")?.trim();
+    const finish = () => {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("top");
+      url.searchParams.delete("session_id");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    };
+    if (sessionId?.startsWith("cs_")) {
+      void import("@/lib/stripe-checkout")
+        .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId))
+        .then(() => {
+          void queryClient.invalidateQueries({ queryKey: getGetListingQueryKey(id) });
+          toast({
+            title: "TOP u aktivizua!",
+            description: "Njoftimi juaj shfaqet në krye të listës.",
+          });
+        })
+        .catch(() => {
+          toast({
+            title: "Pagesa TOP në proces",
+            description: "Rifreskoni faqen pas pak sekondash.",
+          });
+        })
+        .finally(finish);
+      return;
+    }
+    finish();
+    toast({ title: "Faleminderit! TOP do të shfaqet së shpejti." });
+  }, [user, id, queryClient, toast]);
+
   const [activePhoto, setActivePhoto] = useState(0);
   const [complaintBusy, setComplaintBusy] = useState(false);
   const [repostBusy, setRepostBusy] = useState(false);

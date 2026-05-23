@@ -59,7 +59,7 @@ export async function createListingPackageStripeCheckout(
         quantity: 1,
       },
     ],
-    success_url: `${origin}/listings/new?package_payment=success&code=${encodeURIComponent(activationCode)}`,
+    success_url: `${origin}/listings/new?package_payment=success&code=${encodeURIComponent(activationCode)}&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/listings/new?package_payment=cancelled`,
     client_reference_id: token,
     metadata: {
@@ -68,6 +68,7 @@ export async function createListingPackageStripeCheckout(
       payment_token: token,
       listing_package_purchase_id: String(purchaseId),
       package: pkg,
+      activation_code: activationCode,
     },
   });
 

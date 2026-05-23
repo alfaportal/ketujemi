@@ -126,3 +126,37 @@ export async function redirectToStripeCheckout(body: CreateCheckoutSessionBody):
 
   throw new Error("Nuk u krijua sesioni i pagesës");
 }
+
+export type ConfirmStripeSessionResult = {
+  ok: boolean;
+  paid: boolean;
+  purpose: string | null;
+  partner_id: string | null;
+  activation_code: string | null;
+};
+
+/** Confirm payment after Stripe redirect (backup when webhook is slow). */
+export async function confirmStripeCheckoutSession(
+  sessionId: string,
+): Promise<ConfirmStripeSessionResult> {
+  const res = await fetch("/api/payments/confirm-session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ session_id: sessionId }),
+  });
+  const data = (await res.json().catch(() => ({}))) as ConfirmStripeSessionResult & {
+    error?: string;
+  };
+  if (!res.ok) {
+    throw new Error(data.error ?? "Konfirmimi i pagesës dështoi");
+  }
+  return data;
+}
+
+/** Read `session_id` from current URL (Stripe success redirect). */
+export function stripeSessionIdFromLocation(): string | null {
+  if (typeof window === "undefined") return null;
+  const id = new URLSearchParams(window.location.search).get("session_id")?.trim() ?? "";
+  return id.startsWith("cs_") ? id : null;
+}

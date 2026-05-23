@@ -17,7 +17,7 @@ export function isClaudeConfigured(): boolean {
 }
 
 export function getClaudeModel(): string {
-  return process.env.ANTHROPIC_MODEL?.trim() || "claude-sonnet-4-20250514";
+  return process.env.ANTHROPIC_MODEL?.trim() || "claude-sonnet-4-5";
 }
 
 export function getAnthropicClient(): Anthropic {
