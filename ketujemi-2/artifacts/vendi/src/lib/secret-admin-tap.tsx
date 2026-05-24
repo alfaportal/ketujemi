@@ -74,9 +74,10 @@ function SecretAdminPasswordDialog({
         <form className="space-y-3" onSubmit={(e) => void submit(e)}>
           <Input
             type="password"
+            name="ketujemi-admin-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            autoComplete="off"
+            autoComplete="new-password"
             className="min-h-11"
             autoFocus
           />

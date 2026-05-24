@@ -23,6 +23,16 @@ type Step = "credentials" | "verify";
 
 const MIN_PASSWORD = 6;
 
+/** Browser password managers sometimes inject admin-panel junk into the email field. */
+function isJunkAutofillEmail(value: string): boolean {
+  const v = value.trim().toLowerCase();
+  return !v.includes("@") && (v === "admin_panel" || v === "admin" || v === "username");
+}
+
+function emailFromInput(value: string): string {
+  return isJunkAutofillEmail(value) ? "" : value;
+}
+
 export default function LoginPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -49,6 +59,7 @@ export default function LoginPage() {
   const [facebookOAuthEnabled, setFacebookOAuthEnabled] = useState(false);
   const [instagramOAuthEnabled, setInstagramOAuthEnabled] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const [blockAutofill, setBlockAutofill] = useState(true);
   const recaptchaRef = useRef<RecaptchaV2Handle>(null);
   const { captchaRequired, siteKey: recaptchaSiteKey } = useRecaptchaSiteKey();
 
@@ -134,9 +145,22 @@ export default function LoginPage() {
     return false;
   }
 
+  useEffect(() => {
+    setEmail("");
+    setPassword("");
+    setBlockAutofill(true);
+  }, [flow, step]);
+
+  function unlockFields() {
+    setBlockAutofill(false);
+  }
+
   function switchFlow(next: Flow) {
     setFlow(next);
     resetVerify();
+    setEmail("");
+    setPassword("");
+    setBlockAutofill(true);
   }
 
   function switchChannel(next: Channel) {
@@ -431,15 +455,18 @@ export default function LoginPage() {
                     </Button>
                   </form>
                 ) : (
-                  <form className="space-y-4" onSubmit={onRegisterCredentials}>
+                  <form className="space-y-4" onSubmit={onRegisterCredentials} autoComplete="off">
                     <div className="space-y-2">
                       <Label htmlFor="reg-email">{t.login_emailLbl}</Label>
                       <Input
                         id="reg-email"
+                        name="ketujemi-register-email"
                         type="email"
-                        autoComplete="email"
+                        autoComplete="off"
+                        readOnly={blockAutofill}
+                        onFocus={unlockFields}
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => setEmail(emailFromInput(e.target.value))}
                         required
                         placeholder={t.login_emailPh}
                         className="min-h-12 h-12"
@@ -449,8 +476,11 @@ export default function LoginPage() {
                       <Label htmlFor="reg-password">{t.login_passLbl}</Label>
                       <Input
                         id="reg-password"
+                        name="ketujemi-register-password"
                         type="password"
                         autoComplete="new-password"
+                        readOnly={blockAutofill}
+                        onFocus={unlockFields}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -465,15 +495,18 @@ export default function LoginPage() {
                   </form>
                 )
               ) : (
-                <form className="space-y-4" onSubmit={onLoginEmail}>
+                <form className="space-y-4" onSubmit={onLoginEmail} autoComplete="off">
                   <div className="space-y-2">
                     <Label htmlFor="login-email">{t.login_emailLbl}</Label>
                     <Input
                       id="login-email"
+                      name="ketujemi-login-email"
                       type="email"
-                      autoComplete="email"
+                      autoComplete="off"
+                      readOnly={blockAutofill}
+                      onFocus={unlockFields}
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => setEmail(emailFromInput(e.target.value))}
                       required
                       placeholder={t.login_emailPh}
                       className="min-h-12 h-12"
@@ -483,8 +516,11 @@ export default function LoginPage() {
                     <Label htmlFor="login-password">{t.login_passLbl}</Label>
                     <Input
                       id="login-password"
+                      name="ketujemi-login-password"
                       type="password"
-                      autoComplete="current-password"
+                      autoComplete="off"
+                      readOnly={blockAutofill}
+                      onFocus={unlockFields}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required

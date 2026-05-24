@@ -89,7 +89,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <h2 className="text-xl font-bold text-gray-900 mb-6">{t.adm_signInHeading}</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
             <div>
               <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
                 {t.adm_password}
@@ -97,10 +97,11 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
               <div className="relative">
                 <input
                   type={showPw ? "text" : "password"}
+                  name="ketujemi-admin-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-11 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all"
                   required
                 />
