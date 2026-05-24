@@ -1,23 +1,19 @@
 import { logger } from "./logger";
+import {
+  cleanTwilioEnv,
+  getTwilioAuth,
+  hasTwilioSmsCreds,
+  parseTwilioJson,
+  TwilioApiError,
+  type TwilioAuth,
+} from "./twilio-auth";
 
-export function hasTwilioSmsCreds(): boolean {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID?.trim();
-  const authToken = process.env.TWILIO_AUTH_TOKEN?.trim();
-  const from = process.env.TWILIO_PHONE_NUMBER?.trim();
-  return Boolean(accountSid && authToken && from);
-}
-
-function twilioBasicAuth(): string | null {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID?.trim();
-  const authToken = process.env.TWILIO_AUTH_TOKEN?.trim();
-  if (!accountSid || !authToken) return null;
-  return `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString("base64")}`;
-}
+export { hasTwilioSmsCreds, hasTwilioApiCreds } from "./twilio-auth";
 
 /** E.164 with leading + for Twilio REST API. */
 export function toTwilioE164(phoneDigits: string): string {
   const digits = phoneDigits.replace(/\D/g, "");
-  return digits.startsWith("+") ? digits : `+${digits}`;
+  return `+${digits}`;
 }
 
 /**
@@ -25,42 +21,57 @@ export function toTwilioE164(phoneDigits: string): string {
  * Returns true when Twilio accepts the message (status queued/sent).
  */
 export async function twilioSendSms(phoneDigits: string, text: string): Promise<boolean> {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID?.trim();
-  const from = process.env.TWILIO_PHONE_NUMBER?.trim();
-  const auth = twilioBasicAuth();
+  const auth = getTwilioAuth();
+  const from = cleanTwilioEnv("TWILIO_PHONE_NUMBER");
+  const accountSid = auth?.accountSid;
 
-  if (!accountSid || !from || !auth) {
-    logger.warn({ phoneDigits: phoneDigits.slice(-4) }, "twilio sms skipped (no TWILIO creds)");
+  if (!auth || !from || !accountSid) {
+    logger.warn(
+      { phoneDigits: phoneDigits.slice(-4), hasAuth: Boolean(auth), hasFrom: Boolean(from) },
+      "twilio sms skipped (need AC+token or SK+secret, TWILIO_PHONE_NUMBER)",
+    );
     return false;
   }
 
-  const body = new URLSearchParams({
-    To: toTwilioE164(phoneDigits),
-    From: from,
-    Body: text.slice(0, 1600),
+  try {
+    await twilioPostForm(
+      auth,
+      `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+      {
+        To: toTwilioE164(phoneDigits),
+        From: from,
+        Body: text.slice(0, 1600),
+      },
+    );
+    return true;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "unknown";
+    logger.error({ phoneDigits: phoneDigits.slice(-4), err: message }, "twilio sms failed");
+    return false;
+  }
+}
+
+export async function twilioPostForm(
+  auth: TwilioAuth,
+  url: string,
+  fields: Record<string, string>,
+): Promise<Record<string, unknown>> {
+  const body = new URLSearchParams(fields);
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: auth.authorization,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body,
   });
 
-  const res = await fetch(
-    `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: auth,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body,
-    },
-  );
-
-  const data = (await res.json()) as { sid?: string; message?: string; code?: number };
-
-  if (res.ok && data.sid) {
-    return true;
+  const data = await parseTwilioJson(res);
+  if (!res.ok) {
+    const message =
+      typeof data.message === "string" ? data.message : `Twilio HTTP ${res.status}`;
+    const code = typeof data.code === "number" ? data.code : undefined;
+    throw new TwilioApiError(message, res.status, code);
   }
-
-  logger.error(
-    { phoneDigits: phoneDigits.slice(-4), code: data.code, message: data.message },
-    "twilio sms failed",
-  );
-  return false;
+  return data;
 }

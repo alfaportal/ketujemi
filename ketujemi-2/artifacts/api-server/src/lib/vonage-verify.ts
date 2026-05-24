@@ -68,8 +68,17 @@ async function vonageVerifyCheckOnly(requestId: string, code: string): Promise<v
   }
 }
 
-/** Start phone OTP — Vonage first, Twilio Verify fallback. */
+function preferTwilioForVerify(): boolean {
+  const raw = process.env.SMS_PREFER_TWILIO?.trim().toLowerCase();
+  return raw === "true" || raw === "1" || raw === "yes";
+}
+
+/** Start phone OTP — Vonage first (unless SMS_PREFER_TWILIO), Twilio Verify fallback. */
 export async function vonageVerifyRequest(phoneDigits: string): Promise<string> {
+  if (hasTwilioVerifyCreds() && preferTwilioForVerify()) {
+    return twilioVerifyRequest(phoneDigits);
+  }
+
   if (hasVonageSmsCreds()) {
     try {
       return await vonageVerifyRequestOnly(phoneDigits);

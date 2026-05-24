@@ -2,6 +2,7 @@ import app from "./app";
 import { ensureFiscalSchema, ensureWalletSchema, pool } from "@workspace/db";
 import { logger } from "./lib/logger";
 import { logPaymentStackReadiness } from "./lib/payment-policy";
+import { twilioConfigSummary } from "./lib/twilio-auth";
 import { startExpiredListingsScheduler } from "./lib/expire-listings-job";
 import { startExpiryReminderScheduler } from "./lib/listing-expiry-reminders";
 import { startPartnerUnpaidReminderScheduler } from "./lib/partner-unpaid-reminders";
@@ -27,6 +28,7 @@ async function startServer(): Promise<void> {
     await ensureFiscalSchema(pool);
     logger.info("Fiscal schema verified (fiscal_receipts)");
     logPaymentStackReadiness(logger);
+    logger.info(twilioConfigSummary(), "twilio config (masked)");
   } catch (err) {
     logger.error({ err }, "Database schema migration failed");
     process.exit(1);

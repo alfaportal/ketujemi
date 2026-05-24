@@ -1,11 +1,11 @@
 /** Phone sign-up/login via SMS OTP (Vonage Verify, Twilio Verify fallback). */
 
 import { hasVonageSmsCreds } from "./vonage-sms";
-import { hasTwilioSmsCreds } from "./twilio-sms";
+import { hasTwilioApiCreds, hasTwilioSmsCreds } from "./twilio-sms";
 import { hasTwilioVerifyCreds } from "./twilio-verify";
 
 export function hasSmsProviderCreds(): boolean {
-  return hasVonageSmsCreds() || hasTwilioSmsCreds();
+  return hasVonageSmsCreds() || hasTwilioSmsCreds() || hasTwilioApiCreds();
 }
 
 /** At least one OTP provider: Vonage Verify or Twilio Verify service. */

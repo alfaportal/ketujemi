@@ -616,7 +616,13 @@ router.post("/auth/sms/start", async (req, res) => {
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "SMS start failed";
     req.log?.error({ err }, "sms start");
-    res.status(502).json({ error: msg });
+    const authHint = /authenticate|bad credentials|20003/i.test(msg);
+    res.status(502).json({
+      error: authHint ? "SMS_PROVIDER_AUTH_FAILED" : "SMS_START_FAILED",
+      message: authHint
+        ? "Konfigurimi SMS (Twilio/Vonage) nuk u pranua. Kontrollo Account SID (AC…), Auth Token, dhe Verify Service SID (VA…) në Railway."
+        : msg,
+    });
   }
 });
 
