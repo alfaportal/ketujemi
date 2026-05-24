@@ -3,13 +3,14 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config as loadEnv } from "dotenv";
 import pg from "pg";
+import { normalizeDatabaseUrl } from "./normalize-database-url.js";
 
 const dbDir = path.dirname(fileURLToPath(import.meta.url));
 const ketujemi2Root = path.resolve(dbDir, "..", "..");
 
 /** Railway / CI inject DATABASE_URL — never overwrite with a local .env file. */
 function resolveDatabaseUrl(): string {
-  const injected = process.env.DATABASE_URL?.trim();
+  const injected = normalizeDatabaseUrl(process.env.DATABASE_URL);
   if (injected) {
     return injected;
   }
@@ -24,7 +25,7 @@ function resolveDatabaseUrl(): string {
   for (const envPath of envCandidates) {
     if (!existsSync(envPath)) continue;
     loadEnv({ path: envPath });
-    const loaded = process.env.DATABASE_URL?.trim();
+    const loaded = normalizeDatabaseUrl(process.env.DATABASE_URL);
     if (loaded) return loaded;
   }
 

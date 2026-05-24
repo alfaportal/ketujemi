@@ -8,7 +8,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const shell = process.platform === "win32";
 const envFile = path.join(root, ".env");
 const staticRoot = path.join(root, "artifacts/vendi/dist/public");
 const apiEntry = path.join(root, "artifacts/api-server/dist/index.mjs");
@@ -31,6 +30,10 @@ if (indexHtml.includes('src="/src/main.tsx"') || !indexHtml.includes("/assets/")
 }
 
 const port = process.env.PORT ?? process.env.API_PORT ?? "8080";
+const onRailway =
+  Boolean(process.env.RAILWAY_ENVIRONMENT) ||
+  Boolean(process.env.RAILWAY_PROJECT_ID) ||
+  Boolean(process.env.RAILWAY_SERVICE_ID);
 
 const env = {
   ...process.env,
@@ -41,13 +44,17 @@ const env = {
 };
 
 const args = ["--enable-source-maps", apiEntry];
-if (fs.existsSync(envFile)) args.unshift("--env-file", envFile);
+// On Railway, never load ketujemi-2/.env — unquoted `&` in DATABASE_URL breaks Node --env-file
+// and can truncate the URL (ENOTFOUND host "base"). Use platform Variables only.
+if (fs.existsSync(envFile) && !onRailway && process.env.USE_ENV_FILE !== "0") {
+  args.unshift("--env-file", envFile);
+}
 
 const child = spawn("node", args, {
   cwd: root,
   env,
   stdio: "inherit",
-  shell,
+  shell: false,
 });
 
 child.on("exit", (code) => process.exit(code ?? 0));

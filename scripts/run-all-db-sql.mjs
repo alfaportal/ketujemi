@@ -7,6 +7,10 @@ import { createRequire } from "node:module";
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  assertValidDatabaseUrl,
+  normalizeDatabaseUrl,
+} from "./database-url.mjs";
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(scriptsDir, "..", "ketujemi-2");
@@ -15,27 +19,18 @@ const orderFile = path.join(sqlDir, "migration-order.json");
 const require = createRequire(path.join(appRoot, "lib", "db", "package.json"));
 const pg = require("pg");
 
-const databaseUrl = process.env.DATABASE_URL?.trim();
 const soft = process.argv.includes("--soft");
-if (!databaseUrl) {
-  console.error("[run-all-db-sql] DATABASE_URL is not set in the environment.");
-  process.exit(1);
-}
-
-if (!databaseUrl.startsWith("postgres://") && !databaseUrl.startsWith("postgresql://")) {
-  console.error("[run-all-db-sql] DATABASE_URL must be a postgres:// or postgresql:// URL.");
-  process.exit(1);
-}
-
-let host = "(unknown)";
+let databaseUrl;
+let host;
 try {
-  const normalized = databaseUrl
-    .replace(/^postgresql:/, "https:")
-    .replace(/^postgres:/, "https:");
-  host = new URL(normalized).hostname;
-} catch {
-  console.error("[run-all-db-sql] DATABASE_URL is not a valid URL.");
-  process.exit(1);
+  ({ url: databaseUrl, host } = assertValidDatabaseUrl(
+    normalizeDatabaseUrl(process.env.DATABASE_URL),
+    { label: "[run-all-db-sql] DATABASE_URL" },
+  ));
+  process.env.DATABASE_URL = databaseUrl;
+} catch (err) {
+  console.error(err instanceof Error ? err.message : err);
+  process.exit(soft ? 0 : 1);
 }
 
 function migrationFiles() {

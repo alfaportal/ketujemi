@@ -1,9 +1,15 @@
 import { spawnSync } from "node:child_process";
+import { resolveDatabaseUrlFromEnv } from "./database-url.mjs";
 import { resolveAppRoot, resolveMonorepoRoot } from "./resolve-app-root.mjs";
 
 const appRoot = resolveAppRoot();
 const monorepoRoot = resolveMonorepoRoot(appRoot);
-const shell = process.platform === "win32";
+
+try {
+  resolveDatabaseUrlFromEnv();
+} catch {
+  /* build can run before DATABASE_URL is wired; db steps are not in build */
+}
 
 const env = {
   ...process.env,
@@ -16,7 +22,12 @@ console.log("[railway-build] monorepo root:", monorepoRoot);
 console.log("[railway-build] app root:", appRoot);
 
 function run(args, cwd) {
-  const result = spawnSync("pnpm", args, { cwd, env, stdio: "inherit", shell });
+  const result = spawnSync("pnpm", args, {
+    cwd,
+    env,
+    stdio: "inherit",
+    shell: false,
+  });
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 

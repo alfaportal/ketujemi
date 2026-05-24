@@ -1,50 +1,80 @@
 /**
- * Railway preDeploy — best-effort SQL migrations only.
- * Never blocks deploy: build already ran in railway-build.mjs; schema is also
- * guarded at API boot (ensureWalletSchema). Migrations were applied manually on Neon.
+ * Railway preDeploy — SQL migrations only (best-effort, never blocks deploy).
  */
+import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { assertValidDatabaseUrl, normalizeDatabaseUrl } from "./database-url.mjs";
 import { resolveAppRoot, resolveMonorepoRoot } from "./resolve-app-root.mjs";
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = resolveAppRoot();
 const monorepoRoot = resolveMonorepoRoot(appRoot);
 
-const databaseUrl = process.env.DATABASE_URL?.trim();
-
 console.log("[railway-predeploy] monorepo root:", monorepoRoot);
 console.log("[railway-predeploy] app root:", appRoot);
 
-if (!databaseUrl) {
+/** Ensure pg is resolvable (preDeploy can run after build; pnpm hoists to workspace root). */
+function ensureNodeModules() {
+  try {
+    createRequire(path.join(appRoot, "lib", "db", "package.json"))("pg");
+    console.log("[railway-predeploy] node_modules OK (pg resolvable)");
+    return;
+  } catch {
+    /* install below */
+  }
+
+  console.log("[railway-predeploy] node_modules missing — running pnpm install …");
+  const result = spawnSync(
+    "pnpm",
+    ["install", "--no-frozen-lockfile"],
+    {
+      cwd: monorepoRoot,
+      env: {
+        ...process.env,
+        NODE_ENV: "development",
+        NPM_CONFIG_PRODUCTION: "false",
+        CI: "true",
+      },
+      stdio: "inherit",
+      shell: false,
+    },
+  );
+
+  if (result.status !== 0) {
+    console.warn(
+      `[railway-predeploy] pnpm install failed (exit ${result.status ?? 1}) — skipping SQL migrations.`,
+    );
+    process.exit(0);
+  }
+}
+
+ensureNodeModules();
+
+const rawUrl = process.env.DATABASE_URL?.trim();
+if (!rawUrl) {
   console.warn(
     "[railway-predeploy] DATABASE_URL not set — skipping SQL migrations. Deploy continues.",
   );
   process.exit(0);
 }
 
-if (
-  !databaseUrl.startsWith("postgres://") &&
-  !databaseUrl.startsWith("postgresql://")
-) {
+let databaseUrl;
+try {
+  databaseUrl = assertValidDatabaseUrl(normalizeDatabaseUrl(rawUrl)).url;
+  process.env.DATABASE_URL = databaseUrl;
+} catch (err) {
   console.warn(
-    "[railway-predeploy] DATABASE_URL is not a postgres URL — skipping migrations. Deploy continues.",
+    `[railway-predeploy] ${err instanceof Error ? err.message : err} — skipping migrations. Deploy continues.`,
   );
   process.exit(0);
 }
 
-try {
-  const normalized = databaseUrl
-    .replace(/^postgresql:/, "https:")
-    .replace(/^postgres:/, "https:");
-  console.log("[railway-predeploy] DATABASE_URL host:", new URL(normalized).hostname);
-} catch {
-  console.warn(
-    "[railway-predeploy] DATABASE_URL is not a valid URL — skipping migrations. Deploy continues.",
-  );
-  process.exit(0);
-}
+console.log(
+  "[railway-predeploy] DATABASE_URL host:",
+  assertValidDatabaseUrl(databaseUrl).host,
+);
 
 console.log("[railway-predeploy] Applying SQL migrations (best-effort, non-blocking) …");
 
@@ -58,7 +88,7 @@ const result = spawnSync(process.execPath, [allSqlRunner, "--soft"], {
 
 if (result.status !== 0) {
   console.warn(
-    `[railway-predeploy] SQL migrations exited ${result.status ?? 1} — deploy continues (schema may already be applied).`,
+    `[railway-predeploy] SQL migrations exited ${result.status ?? 1} — deploy continues.`,
   );
 } else {
   console.log("[railway-predeploy] SQL migrations completed.");

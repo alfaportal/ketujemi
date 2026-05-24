@@ -8,6 +8,10 @@ import { createRequire } from "node:module";
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  assertValidDatabaseUrl,
+  normalizeDatabaseUrl,
+} from "./database-url.mjs";
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(scriptsDir, "..", "ketujemi-2");
@@ -20,14 +24,15 @@ if (!sqlName?.trim()) {
   process.exit(1);
 }
 
-const databaseUrl = process.env.DATABASE_URL?.trim();
-if (!databaseUrl) {
-  console.error("[run-db-sql] DATABASE_URL is not set in the environment.");
-  process.exit(1);
-}
-
-if (!databaseUrl.startsWith("postgres://") && !databaseUrl.startsWith("postgresql://")) {
-  console.error("[run-db-sql] DATABASE_URL must be a postgres:// or postgresql:// URL.");
+let databaseUrl;
+try {
+  ({ url: databaseUrl } = assertValidDatabaseUrl(
+    normalizeDatabaseUrl(process.env.DATABASE_URL),
+    { label: "[run-db-sql] DATABASE_URL" },
+  ));
+  process.env.DATABASE_URL = databaseUrl;
+} catch (err) {
+  console.error(err instanceof Error ? err.message : err);
   process.exit(1);
 }
 
@@ -37,15 +42,7 @@ if (!existsSync(sqlPath)) {
   process.exit(1);
 }
 
-let host = "(unknown)";
-try {
-  const normalized = databaseUrl.replace(/^postgresql:/, "https:").replace(/^postgres:/, "https:");
-  host = new URL(normalized).hostname;
-} catch {
-  console.error("[run-db-sql] DATABASE_URL is not a valid URL.");
-  process.exit(1);
-}
-
+const host = assertValidDatabaseUrl(databaseUrl).host;
 console.log(`[run-db-sql] Running ${sqlName} → host ${host}`);
 
 const pool = new pg.Pool({

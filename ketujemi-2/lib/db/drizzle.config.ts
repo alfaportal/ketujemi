@@ -2,10 +2,15 @@ import { config as loadEnv } from "dotenv";
 import { defineConfig } from "drizzle-kit";
 import path from "path";
 import { fileURLToPath } from "url";
+import { applyDatabaseUrlFromEnv } from "./src/normalize-database-url.ts";
 
 const dbDir = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(dbDir, "..", "..");
-loadEnv({ path: path.join(rootDir, ".env") });
+
+if (!process.env.DATABASE_URL?.trim()) {
+  loadEnv({ path: path.join(rootDir, ".env") });
+}
+applyDatabaseUrlFromEnv();
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL, ensure the database is provisioned");
