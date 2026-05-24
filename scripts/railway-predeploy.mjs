@@ -1,30 +1,28 @@
 import { spawnSync } from "node:child_process";
-import { resolveAppRoot } from "./resolve-app-root.mjs";
+import { resolveAppRoot, resolveMonorepoRoot } from "./resolve-app-root.mjs";
 
-const root = resolveAppRoot();
+const appRoot = resolveAppRoot();
+const monorepoRoot = resolveMonorepoRoot(appRoot);
 const shell = process.platform === "win32";
 
-console.log("[railway-predeploy] app root:", root);
+function run(args, cwd) {
+  const result = spawnSync("pnpm", args, { cwd, env: process.env, stdio: "inherit", shell });
+  if (result.status !== 0) process.exit(result.status ?? 1);
+}
 
-const result = spawnSync("pnpm", ["run", "db:push"], {
-  cwd: root,
-  stdio: "inherit",
-  shell,
-});
+console.log("[railway-predeploy] monorepo root:", monorepoRoot);
+console.log("[railway-predeploy] app root:", appRoot);
 
-if (result.status !== 0) process.exit(result.status ?? 1);
+console.log("[railway-predeploy] Installing dependencies …");
+run(["install", "--no-frozen-lockfile"], monorepoRoot);
+
+console.log("[railway-predeploy] drizzle-kit push …");
+run(["run", "db:push"], appRoot);
 
 console.log("[railway-predeploy] Applying wallet-migration.sql …");
-const wallet = spawnSync(
-  "pnpm",
-  ["--filter", "@workspace/db", "sql:run", "wallet-migration.sql"],
-  { cwd: root, stdio: "inherit", shell },
-);
-if (wallet.status !== 0) process.exit(wallet.status ?? 1);
+run(["--filter", "@workspace/db", "sql:run", "wallet-migration.sql"], appRoot);
 
-const images = spawnSync("pnpm", ["run", "db:seed:parent-images"], {
-  cwd: root,
-  stdio: "inherit",
-  shell,
-});
-if (images.status !== 0) process.exit(images.status ?? 1);
+console.log("[railway-predeploy] Seeding parent category images …");
+run(["run", "db:seed:parent-images"], appRoot);
+
+console.log("[railway-predeploy] done");
