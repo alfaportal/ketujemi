@@ -47,13 +47,19 @@ export function isInstagramOAuthEnabled(): boolean {
   return Boolean(instagramAppId() && instagramAppSecret());
 }
 
-/** Public Facebook Page URL (footer / contact) — not OAuth. */
-export function facebookPageUrl(): string {
-  return (
-    cleanMetaEnv("FACEBOOK_PAGE_URL") ??
-    cleanMetaEnv("VITE_FACEBOOK_PAGE_URL") ??
-    "https://www.facebook.com/KetuJemi.com"
-  );
+/**
+ * Public Facebook Page URL (footer) — not OAuth.
+ * Emri i faqes në Meta (p.sh. "KetuJemi.com") ≠ URL publike; vendos linkun e saktë në env.
+ */
+export function facebookPageUrl(): string | null {
+  const direct =
+    cleanMetaEnv("FACEBOOK_PAGE_URL") ?? cleanMetaEnv("VITE_FACEBOOK_PAGE_URL");
+  if (direct) return direct;
+
+  const pageId = cleanMetaEnv("FACEBOOK_PAGE_ID");
+  if (pageId) return `https://www.facebook.com/profile.php?id=${encodeURIComponent(pageId)}`;
+
+  return null;
 }
 
 export function instagramProfileUrl(): string {

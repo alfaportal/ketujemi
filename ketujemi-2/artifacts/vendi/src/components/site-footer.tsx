@@ -24,14 +24,23 @@ import { cn } from "@/lib/utils";
 const SOCIAL_ICON_BTN =
   "flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 hover:border-blue-200 transition-colors";
 
-const DEFAULT_SOCIAL_LINKS = [
-  {
-    href: "https://www.facebook.com/KetuJemi.com",
-    label: "Facebook",
-    Icon: FaFacebook,
-    external: true,
-    iconClass: "hover:text-[#1877F2]",
-  },
+type SocialLink = {
+  href: string;
+  label: string;
+  Icon: typeof FaInstagram;
+  external: boolean;
+  iconClass: string;
+};
+
+const FACEBOOK_LINK: SocialLink = {
+  href: "",
+  label: "Facebook",
+  Icon: FaFacebook,
+  external: true,
+  iconClass: "hover:text-[#1877F2]",
+};
+
+const BASE_SOCIAL_LINKS: SocialLink[] = [
   {
     href: "https://www.instagram.com/jemi.ketu",
     label: "Instagram",
@@ -60,7 +69,7 @@ const DEFAULT_SOCIAL_LINKS = [
     external: false,
     iconClass: "hover:text-[#1A56A0]",
   },
-] as const;
+];
 
 const PAYMENT_METHODS = [
   { label: "Stripe", Icon: SiStripe, className: "text-[#635BFF]" },
@@ -209,24 +218,24 @@ function FooterMarketsStrip({
 export function SiteFooter() {
   const { market, setMarket, t, uiLang } = useMarket();
   const paths = staticPagePaths(uiLang);
-  const [socialLinks, setSocialLinks] = useState(DEFAULT_SOCIAL_LINKS);
+  const [socialLinks, setSocialLinks] = useState(BASE_SOCIAL_LINKS);
 
   useEffect(() => {
     void fetch("/api/config/public", { credentials: "include" })
       .then((res) => (res.ok ? res.json() : null))
-      .then((data: { facebookPageUrl?: string; instagramProfileUrl?: string } | null) => {
+      .then((data: { facebookPageUrl?: string | null; instagramProfileUrl?: string } | null) => {
         if (!data) return;
-        setSocialLinks((prev) =>
-          prev.map((link) => {
-            if (link.label === "Facebook" && data.facebookPageUrl) {
-              return { ...link, href: data.facebookPageUrl };
-            }
-            if (link.label === "Instagram" && data.instagramProfileUrl) {
-              return { ...link, href: data.instagramProfileUrl };
-            }
-            return link;
-          }),
-        );
+        setSocialLinks(() => {
+          const links = BASE_SOCIAL_LINKS.map((link) =>
+            link.label === "Instagram" && data.instagramProfileUrl
+              ? { ...link, href: data.instagramProfileUrl }
+              : link,
+          );
+          if (data.facebookPageUrl) {
+            return [{ ...FACEBOOK_LINK, href: data.facebookPageUrl }, ...links];
+          }
+          return links;
+        });
       })
       .catch(() => undefined);
   }, []);
