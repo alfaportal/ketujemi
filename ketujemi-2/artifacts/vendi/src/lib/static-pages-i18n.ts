@@ -115,6 +115,13 @@ const KS: StaticPagesCopy = {
       "KetuJemi — Bli & Shit është platforma e shpalljeve falas në 11 tregje: Kosovë, Shqipëri, Maqedoni, Mal i Zi dhe diaspora shqiptare.",
     sections: [
       {
+        title: "Operatori i platformës",
+        paragraphs: [
+          "KetuJemi.com është një platformë e zhvilluar nga ekipi i REVOLUTION INVEST Sh.p.k. për të ndihmuar tregun lokal dhe diasporën shqiptare — shpejt, thjesht dhe në mënyrë të sigurt.",
+          "Operatori ligjor: REVOLUTION INVEST Sh.p.k., Ferizaj, Kosovë (NRB 811314567).",
+        ],
+      },
+      {
         title: "Misioni ynë",
         paragraphs: [
           "Lidhim blerësit dhe shitësit shpejt, thjesht dhe në mënyrë të sigurt — pa komisione të fshehura për postimin bazë.",
@@ -197,8 +204,16 @@ const KS: StaticPagesCopy = {
         title: "Subjekti ligjor dhe platforma",
         paragraphs: [
           "Platforma KetuJemi.com (Bli & Shit) operohet dhe ofrohet nga REVOLUTION INVEST Sh.p.k., me seli në Ferizaj, Republika e Kosovës.",
-          "Numri i regjistrimit të biznesit (NRB): 811314567. Pagesat për shërbime të platformës (portofol, paketa VIP/TOP, reklama dhe të ngjashme) kryhen në emër të këtij subjekti.",
-          "KetuJemi.com është emri tregtar i platformës; marrëdhënia ligjore me përdoruesin lidhet me REVOLUTION INVEST Sh.p.k. si operator.",
+          "Pagesat për shërbime të platformës (portofol, paketa VIP/TOP, reklama dhe të ngjashme) kryhen në emër të këtij subjekti. KetuJemi.com është emri tregtar; marrëdhënia ligjore me përdoruesin lidhet me REVOLUTION INVEST Sh.p.k.",
+        ],
+        bulletsIntro: "Të dhënat zyrtare të operatorit:",
+        bullets: [
+          "Emri i plotë i kompanisë: REVOLUTION INVEST Sh.p.k.",
+          "NRB (numri i regjistrimit të biznesit): 811314567",
+          "Selia: Ferizaj, Republika e Kosovës",
+          "Email: revolutioninvest05@gmail.com",
+          "Telefon: +383 48 707 880",
+          "Faqja: www.ketujemi.com",
         ],
       },
       {
@@ -260,11 +275,10 @@ const KS: StaticPagesCopy = {
         title: "Informacion kontakti",
         paragraphs: ["Për pyetje ligjore, shërbime platforme, raportime ose mbështetje:"],
         bullets: [
-          "Operator ligjor: REVOLUTION INVEST Sh.p.k., Ferizaj, Kosovë — NRB 811314567",
-          "Platforma: www.ketujemi.com",
-          "Email zyrtar: info@ketujemi.com",
-          "Mbështetje teknike: support@ketujemi.com",
-          "Formular kontakti: www.ketujemi.com/kontakt",
+          "REVOLUTION INVEST Sh.p.k., Ferizaj — NRB 811314567",
+          "Email kompanie: revolutioninvest05@gmail.com · Tel: +383 48 707 880",
+          "Platforma: info@ketujemi.com · support@ketujemi.com",
+          "Formular: www.ketujemi.com/kontakt",
           "Orari i punës: E hënë – E premte, 09:00 – 17:00",
         ],
       },
@@ -623,6 +637,13 @@ const MK: StaticPagesCopy = {
     tagline: "KetuJemi.com е една од најголемите платформи за бесплатни огласи на 11 меѓународни пазари.",
     sections: [
       {
+        title: "Оператор на платформата",
+        paragraphs: [
+          "KetuJemi.com е платформа развиена од тимот на REVOLUTION INVEST Sh.p.k. за да им помогне на локалниот пазар и дијаспората — брзо, едноставно и безбедно.",
+          "Правен оператор: REVOLUTION INVEST Sh.p.k., Ferizaj, Косово (NRB 811314567).",
+        ],
+      },
+      {
         title: "Нашата мисија",
         paragraphs: [
           "Брзо, чисто и безбедно поврзување на купувачи и продавачи — без скриени провизии за основно објавување.",
@@ -704,8 +725,16 @@ const MK: StaticPagesCopy = {
         title: "Правен субјект и платформа",
         paragraphs: [
           "Платформата KetuJemi.com (Bli & Shit) ја управува и ја нуди REVOLUTION INVEST Sh.p.k., со седиште во Ferizaj, Република Косово.",
-          "Број на регистрација на бизнисот (NRB): 811314567. Плаќањата за услуги на платформата (паричник, VIP/TOP пакети, реклами и слично) се вршат во име на овој субјект.",
-          "KetuJemi.com е трговско име на платформата; правниот однос со корисникот е со REVOLUTION INVEST Sh.p.k. како оператор.",
+          "Плаќањата за услуги на платформата (паричник, VIP/TOP, реклами и слично) се вршат во име на овој субјект. KetuJemi.com е трговско име; правниот однос е со REVOLUTION INVEST Sh.p.k.",
+        ],
+        bulletsIntro: "Службени податоци за операторот:",
+        bullets: [
+          "Полно име: REVOLUTION INVEST Sh.p.k.",
+          "NRB (број на регистрација на бизнисот): 811314567",
+          "Седиште: Ferizaj, Република Косово",
+          "Email: revolutioninvest05@gmail.com",
+          "Телефон: +383 48 707 880",
+          "Веб-страница: www.ketujemi.com",
         ],
       },
       {
@@ -767,11 +796,10 @@ const MK: StaticPagesCopy = {
         title: "Контакт информации",
         paragraphs: ["За правни прашања, услуги на платформата, пријави или поддршка:"],
         bullets: [
-          "Правен оператор: REVOLUTION INVEST Sh.p.k., Ferizaj, Косово — NRB 811314567",
-          "Платформа: www.ketujemi.com",
-          "Службен email: info@ketujemi.com",
-          "Техничка поддршка: support@ketujemi.com",
-          "Контакт формулар: www.ketujemi.com/kontakt",
+          "REVOLUTION INVEST Sh.p.k., Ferizaj — NRB 811314567",
+          "Email на компанијата: revolutioninvest05@gmail.com · Тел: +383 48 707 880",
+          "Платформа: info@ketujemi.com · support@ketujemi.com",
+          "Формулар: www.ketujemi.com/kontakt",
           "Работно време: Понеделник – Петок, 09:00 – 17:00",
         ],
       },
@@ -1128,6 +1156,13 @@ const MNE: StaticPagesCopy = {
     tagline: "KetuJemi.com je jedna od najvećih platformi za besplatne oglase na 11 međunarodnih tržišta.",
     sections: [
       {
+        title: "Operater platforme",
+        paragraphs: [
+          "KetuJemi.com je platforma koju je razvio tim REVOLUTION INVEST Sh.p.k. da pomogne lokalnom tržištu i dijaspori — brzo, jednostavno i sigurno.",
+          "Pravni operater: REVOLUTION INVEST Sh.p.k., Ferizaj, Kosovo (NRB 811314567).",
+        ],
+      },
+      {
         title: "Naša misija",
         paragraphs: [
           "Brzo, čisto i sigurno povezivanje kupaca i prodavaca — bez skrivenih provizija za osnovno objavljivanje.",
@@ -1209,8 +1244,16 @@ const MNE: StaticPagesCopy = {
         title: "Pravni subjekt i platforma",
         paragraphs: [
           "Platformu KetuJemi.com (Bli & Shit) upravlja i nudi REVOLUTION INVEST Sh.p.k., sa sjedištem u Ferizaju, Republika Kosovo.",
-          "Broj registracije biznisa (NRB): 811314567. Plaćanja za usluge platforme (novčanik, VIP/TOP paketi, reklame i slično) vrše se u ime ovog subjekta.",
-          "KetuJemi.com je trgovački naziv platforme; pravni odnos sa korisnikom je sa REVOLUTION INVEST Sh.p.k. kao operaterom.",
+          "Plaćanja za usluge platforme (novčanik, VIP/TOP, reklame i slično) vrše se u ime ovog subjekta. KetuJemi.com je trgovački naziv; pravni odnos je sa REVOLUTION INVEST Sh.p.k.",
+        ],
+        bulletsIntro: "Službeni podaci operatera:",
+        bullets: [
+          "Puno ime: REVOLUTION INVEST Sh.p.k.",
+          "NRB (broj registracije biznisa): 811314567",
+          "Sjedište: Ferizaj, Republika Kosovo",
+          "Email: revolutioninvest05@gmail.com",
+          "Telefon: +383 48 707 880",
+          "Web: www.ketujemi.com",
         ],
       },
       {
@@ -1272,11 +1315,10 @@ const MNE: StaticPagesCopy = {
         title: "Kontakt informacije",
         paragraphs: ["Za pravna pitanja, usluge platforme, prijave ili podršku:"],
         bullets: [
-          "Pravni operater: REVOLUTION INVEST Sh.p.k., Ferizaj, Kosovo — NRB 811314567",
-          "Platforma: www.ketujemi.com",
-          "Službeni email: info@ketujemi.com",
-          "Tehnička podrška: support@ketujemi.com",
-          "Kontakt formular: www.ketujemi.com/kontakt",
+          "REVOLUTION INVEST Sh.p.k., Ferizaj — NRB 811314567",
+          "Email kompanije: revolutioninvest05@gmail.com · Tel: +383 48 707 880",
+          "Platforma: info@ketujemi.com · support@ketujemi.com",
+          "Formular: www.ketujemi.com/kontakt",
           "Radno vrijeme: Ponedjeljak – Petak, 09:00 – 17:00",
         ],
       },

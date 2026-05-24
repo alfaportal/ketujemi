@@ -292,12 +292,15 @@ export function SiteFooter() {
                 />
               ))}
             </div>
-            <p className="text-[11px] sm:text-xs text-gray-500">
-              © 2026 KetuJemi.com
+            <p className="text-[11px] sm:text-xs text-gray-500 text-center sm:text-right max-w-md sm:max-w-none leading-relaxed">
+              <span>© 2026 KetuJemi.com.</span>{" "}
+              <span className="text-gray-600">
+                {t.footer_operatedBy ?? "Operohet nga REVOLUTION INVEST SH.P.K."}
+              </span>
               {typeof __APP_BUILD_ID__ !== "undefined" && __APP_BUILD_ID__ ? (
-                <span className="text-gray-400" title="Versioni i deploy-it">
-                  {" "}
-                  · {__APP_BUILD_ID__}
+                <span className="block sm:inline text-gray-400" title="Versioni i deploy-it">
+                  <span className="hidden sm:inline"> · </span>
+                  {__APP_BUILD_ID__}
                 </span>
               ) : null}
             </p>
