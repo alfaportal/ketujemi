@@ -189,8 +189,8 @@ const KS: StaticPagesCopy = {
     ],
   },
   terms: {
-    title: "Kushtet e Përdorimit",
-    tagline: "Duke përdorur KetuJemi.com, pranoni kushtet e mëposhtme.",
+    title: "Termat dhe Kushtet",
+    tagline: "Duke përdorur KetuJemi.com, pranoni termat dhe kushtet e mëposhtëm.",
     sections: [
       {
         title: "Roli i platformës",
@@ -200,9 +200,30 @@ const KS: StaticPagesCopy = {
         ],
       },
       {
+        title: "Përgjegjësi e kufizuar për mallrat dhe shërbimet",
+        paragraphs: [
+          "KetuJemi.com nuk blen, nuk shet dhe nuk posedon produktet e listuara në njoftime. Çdo transaksion (çmim, pagesa, dorëzim, garanci) mbetet marrëveshje e drejtpërdrejtë mes blerësit dhe shitësit.",
+          "Nuk garantojmë cilësinë, gjendjen, ligjshmërinë ose disponueshmërinë e asnjë malli apo shërbimi të reklamuar nga përdoruesit e tjerë.",
+          "Nuk mbajmë përgjegjësi për dëme të drejtpërdrejta apo të tërthorta që lindin nga përdorimi i platformës, nga mospërputhjet mes palëve, nga pagesa jashtë platformës, ose nga veprimet e palëve të treta.",
+          "Përgjegjësia jonë maksimale, kur ligji e lejon, kufizohet në shumën e paguar për shërbime të platformës (p.sh. paketa, VIP, TOP) në 12 muajt e fundit — dhe jo për vlerën e mallrave të shitura mes përdoruesve.",
+        ],
+      },
+      {
+        title: "Politika e rimbursimit dhe portofoli",
+        paragraphs: [
+          "Paratë e ngarkuara në portofolin tuaj në KetuJemi.com përdoren për tarifa platforme (p.sh. publikim shtesë njoftimesh) dhe nuk kthehen në para të gatshme pasi janë kredituar në llogari.",
+          "Bilanci i portofolit nuk transferohet te një llogari tjetër dhe nuk kompensohet për transaksione mes blerësve dhe shitësve.",
+          "Pagesat për paketa VIP/TOP, reklama ose shërbime të tjera të platformës janë, për rregull, të pakthyeshme, përveç kur ligji zbatues e kërkon ndryshe ose kur ne e konfirmojmë me shkrim një gabim teknik të verifikuar nga ana jonë.",
+        ],
+        bullets: [
+          "Kërkesat për rimbursim të portofolit refuzohen, përveç rasteve të detyrueshme me ligj.",
+          "Për mosmarrëveshje rreth një blerjeje mes përdoruesish, kontaktoni palën tjetër; ne mund të ndërmjetësojmë vetëm në masën e moderimit të përmbajtjes.",
+        ],
+      },
+      {
         title: "Llogaria dhe postimi",
         bullets: [
-          "Verifikimi me telefon (SMS) kërkohet para postimit të parë",
+          "Duhet të keni llogari të verifikuar (email dhe/ose telefon, sipas rregullave aktuale) për të postuar",
           "Jeni përgjegjës për ruajtjen e të dhënave të llogarisë",
           "Respektoni limitet e postimeve dhe rregullat e kategorive",
         ],
@@ -215,9 +236,19 @@ const KS: StaticPagesCopy = {
         ],
       },
       {
+        title: "Informacion kontakti",
+        paragraphs: ["Për pyetje ligjore, shërbime platforme, raportime ose mbështetje:"],
+        bullets: [
+          "Email zyrtar: info@ketujemi.com",
+          "Mbështetje teknike: support@ketujemi.com",
+          "Formular kontakti: www.ketujemi.com/kontakt",
+          "Orari i punës: E hënë – E premte, 09:00 – 17:00",
+        ],
+      },
+      {
         title: "Ndryshimet",
         paragraphs: [
-          "Kushtet mund të përditësohen; versioni aktual publikohet gjithmonë në këtë faqe.",
+          "Termat dhe kushtet mund të përditësohen; versioni aktual publikohet gjithmonë në këtë faqe. Përdorimi i vazhdueshëm pas ndryshimeve konsiderohet pranim.",
         ],
       },
     ],
@@ -642,7 +673,7 @@ const MK: StaticPagesCopy = {
     ],
   },
   terms: {
-    title: "Услови за користење",
+    title: "Услови и одредби",
     tagline: "Со користење на KetuJemi.com ги прифаќате следните услови.",
     sections: [
       {
@@ -653,9 +684,30 @@ const MK: StaticPagesCopy = {
         ],
       },
       {
+        title: "Ограничена одговорност за стоки и услуги",
+        paragraphs: [
+          "KetuJemi.com не купува, не продава и не поседува производите во огласите. Секоја трансакција (цена, плаќање, испорака, гаранција) е договор директно меѓу купувачот и продавачот.",
+          "Не гарантираме квалитет, состојба, законитост или достапност на производи или услуги објавени од други корисници.",
+          "Не сме одговорни за директна или индиректна штета од користење на платформата, несогласувања меѓу страни, плаќања надвор од платформата или дејства на трети лица.",
+          "Нашата максимална одговорност, каде законот дозволува, е ограничена на износот платен за услуги на платформата (пакети, VIP, TOP) во последните 12 месеци — не за вредноста на стоки продадени меѓу корисници.",
+        ],
+      },
+      {
+        title: "Политика за рефундирање и паричник",
+        paragraphs: [
+          "Средствата полнети во вашиот паричник на KetuJemi.com се за трошоци на платформата (на пр. дополнителни огласи) и не се враќаат во готовина откако се зачитани.",
+          "Салдото не се пренесува на друга сметка и не компензира трансакции меѓу купувачи и продавачи.",
+          "Плаќања за VIP/TOP, реклами или други услуги на платформата се, по правило, неповратни, освен кога применливиот закон бара поинаку или кога ние писмено потврдиме верификувана техничка грешка од наша страна.",
+        ],
+        bullets: [
+          "Барања за рефундирање на паричникот се одбиваат, освен кога законот го бара.",
+          "За спорови околу купување меѓу корисници, контактирајте ја другата страна; ние посредуваме само преку модерација на содржина.",
+        ],
+      },
+      {
         title: "Сметка и објавување",
         bullets: [
-          "SMS верификација на телефон пред првата објава",
+          "Потребна е верификувана сметка (email и/или телефон, според актуелните правила) за објавување",
           "Вие сте одговорни за безбедноста на сметката",
           "Почитувајте лимити и правила на категориите",
         ],
@@ -668,8 +720,20 @@ const MK: StaticPagesCopy = {
         ],
       },
       {
+        title: "Контакт информации",
+        paragraphs: ["За правни прашања, услуги на платформата, пријави или поддршка:"],
+        bullets: [
+          "Службен email: info@ketujemi.com",
+          "Техничка поддршка: support@ketujemi.com",
+          "Контакт формулар: www.ketujemi.com/kontakt",
+          "Работно време: Понеделник – Петок, 09:00 – 17:00",
+        ],
+      },
+      {
         title: "Промени",
-        paragraphs: ["Условите можат да се ажурираат; актуелната верзија е секогаш на оваа страница."],
+        paragraphs: [
+          "Условите можат да се ажурираат; актуелната верзија е на оваа страница. Продолженото користење по промени се смета за прифаќање.",
+        ],
       },
     ],
   },
@@ -1091,7 +1155,7 @@ const MNE: StaticPagesCopy = {
     ],
   },
   terms: {
-    title: "Uslovi korišćenja",
+    title: "Uslovi i odredbe",
     tagline: "Korišćenjem KetuJemi.com prihvatate sljedeće uslove.",
     sections: [
       {
@@ -1102,9 +1166,30 @@ const MNE: StaticPagesCopy = {
         ],
       },
       {
+        title: "Ograničena odgovornost za robu i usluge",
+        paragraphs: [
+          "KetuJemi.com ne kupuje, ne prodaje i ne posjeduje proizvode u oglasima. Svaka transakcija (cijena, plaćanje, isporuka, garancija) je dogovor direktno između kupca i prodavca.",
+          "Ne garantujemo kvalitet, stanje, zakonitost ili dostupnost robe ili usluga koje objavljuju drugi korisnici.",
+          "Nismo odgovorni za direktnu ili indirektnu štetu od korišćenja platforme, neslaganja između strana, plaćanja van platforme ili radnji trećih lica.",
+          "Naša maksimalna odgovornost, gdje zakon dozvoljava, ograničena je na iznos plaćen za usluge platforme (paketi, VIP, TOP) u posljednjih 12 mjeseci — ne za vrijednost robe prodate među korisnicima.",
+        ],
+      },
+      {
+        title: "Politika povrata i novčanik",
+        paragraphs: [
+          "Sredstva uplaćena u vaš novčanik na KetuJemi.com koriste se za troškove platforme (npr. dodatni oglasi) i ne vraćaju se u gotovini nakon što su zadužena na račun.",
+          "Stanje novčanika ne prenosi se na drugi račun i ne kompenzuje transakcije između kupaca i prodavaca.",
+          "Plaćanja za VIP/TOP, reklame ili druge usluge platforme su, po pravilu, nepovratna, osim kada primjenjivi zakon zahtijeva drugačije ili kada mi pisano potvrdimo verifikovanu tehničku grešku sa naše strane.",
+        ],
+        bullets: [
+          "Zahtjevi za povrat sredstava iz novčanika se odbijaju, osim kada to zakon zahtijeva.",
+          "Za sporove oko kupovine među korisnicima kontaktirajte drugu stranu; mi posredujemo samo kroz moderaciju sadržaja.",
+        ],
+      },
+      {
         title: "Nalog i objavljivanje",
         bullets: [
-          "SMS verifikacija telefona prije prve objave",
+          "Potreban je verifikovan nalog (email i/ili telefon, prema aktuelnim pravilima) za objavljivanje",
           "Vi ste odgovorni za sigurnost naloga",
           "Poštujte limite i pravila kategorija",
         ],
@@ -1117,8 +1202,20 @@ const MNE: StaticPagesCopy = {
         ],
       },
       {
+        title: "Kontakt informacije",
+        paragraphs: ["Za pravna pitanja, usluge platforme, prijave ili podršku:"],
+        bullets: [
+          "Službeni email: info@ketujemi.com",
+          "Tehnička podrška: support@ketujemi.com",
+          "Kontakt formular: www.ketujemi.com/kontakt",
+          "Radno vrijeme: Ponedjeljak – Petak, 09:00 – 17:00",
+        ],
+      },
+      {
         title: "Izmjene",
-        paragraphs: ["Uslovi se mogu ažurirati; aktuelna verzija je uvijek na ovoj stranici."],
+        paragraphs: [
+          "Uslovi se mogu ažurirati; aktuelna verzija je na ovoj stranici. Nastavak korišćenja nakon izmjena smatra se prihvatanjem.",
+        ],
       },
     ],
   },
