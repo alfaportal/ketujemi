@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AuthToolbar } from "@/components/auth-toolbar";
 import { BusinessAccountCard } from "@/components/business-account-card";
 import { CardPaymentsPanel } from "@/components/card-payments-panel";
+import { WalletPanel } from "@/components/wallet-panel";
 import { PartnerLogoAnalyticsCard } from "@/components/partner-logo-analytics-card";
 import { PartnerProfilePanel } from "@/components/partner-profile-panel";
 
@@ -53,6 +54,11 @@ export default function ProfilePage() {
             toast({
               title: "VIP Biznes u aktivizua!",
               description: "Mund të postoni pa kufirin e zakonshëm të biznesit.",
+            });
+          } else if (purpose === "wallet") {
+            toast({
+              title: "Portofoli u mbush!",
+              description: "Balanca juaj është përditësuar. Mund të postoni shpallje.",
             });
           } else {
             toast({ title: "Pagesa u konfirmua." });
@@ -163,6 +169,8 @@ export default function ProfilePage() {
           <PartnerProfilePanel user={user} />
 
           <PartnerLogoAnalyticsCard user={user} />
+
+          <WalletPanel />
 
           <CardPaymentsPanel />
 

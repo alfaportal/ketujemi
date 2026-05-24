@@ -17,7 +17,10 @@ export type PaymentPurpose =
   | "partner_vip"
   | "listing_package_s"
   | "listing_package_m"
-  | "listing_package_l";
+  | "listing_package_l"
+  | "wallet_topup_5"
+  | "wallet_topup_10"
+  | "wallet_topup_20";
 
 export function stripeSecret(): string | null {
   const key = process.env.STRIPE_SECRET_KEY?.trim();
@@ -45,6 +48,9 @@ function amountCents(purpose: PaymentPurpose): number {
   if (purpose === "listing_package_s") return 100;
   if (purpose === "listing_package_m") return 500;
   if (purpose === "listing_package_l") return 800;
+  if (purpose === "wallet_topup_5") return 500;
+  if (purpose === "wallet_topup_10") return 1000;
+  if (purpose === "wallet_topup_20") return 2000;
   return BUSINESS_EXTRA_POST_PRICE_EUR * 100;
 }
 
@@ -196,6 +202,15 @@ export async function markPaymentPaidByToken(token: string): Promise<void> {
   ) {
     const { activatePartnerFromPayment } = await import("./partner-activate");
     await activatePartnerFromPayment(row.partner_id);
+  }
+
+  if (
+    row.purpose === "wallet_topup_5" ||
+    row.purpose === "wallet_topup_10" ||
+    row.purpose === "wallet_topup_20"
+  ) {
+    const { fulfillWalletTopupFromPayment } = await import("./wallet-stripe");
+    await fulfillWalletTopupFromPayment(row.user_id, row.purpose, token);
   }
 }
 

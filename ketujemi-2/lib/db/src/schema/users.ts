@@ -46,6 +46,8 @@ export const usersTable = pgTable("users", {
   strike_count: integer("strike_count").notNull().default(0),
   banned_at: timestamp("banned_at"),
   ban_reason: text("ban_reason"),
+  /** Prepaid balance for paid listings (€0.30 per post). */
+  wallet_balance_cents: integer("wallet_balance_cents").notNull().default(0),
   created_at: timestamp("created_at").notNull().defaultNow(),
 });
 

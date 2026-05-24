@@ -26,6 +26,14 @@ export type AuthUser = {
   partner_activation_code?: string | null;
   vip_expires_at?: string | null;
   email_verified?: boolean;
+  wallet?: {
+    balance_cents: number;
+    balance_eur: string;
+    listing_price_cents: number;
+    listing_price_eur: string;
+    listings_remaining: number;
+    after_one_listing_remaining?: number;
+  };
 };
 
 type AuthContextValue = {

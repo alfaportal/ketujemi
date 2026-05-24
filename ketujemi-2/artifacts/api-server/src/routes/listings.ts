@@ -34,6 +34,12 @@ import { logListingModerationRejection } from "../lib/listing-moderation-rejecti
 import { parseUiLang } from "../lib/claude-client";
 import { assertUserActiveListingCap } from "../lib/user-listing-limits";
 import { consumeExtraPostPayment } from "../lib/payments";
+import {
+  assertWalletCoversListing,
+  debitWalletForListing,
+  listingWillChargeWallet,
+  walletSummary,
+} from "../lib/wallet";
 import { handleSellerComplaint } from "../lib/violation-escalation";
 import { deleteListingCascade } from "../lib/delete-listing-cascade";
 import type { User } from "@workspace/db";
@@ -424,7 +430,36 @@ router.post("/listings", async (req, res) => {
     throw err;
   }
 
-  if (isBusinessAccount(viewer) && !isVipBusinessActive(viewer)) {
+  const willChargeWallet = await listingWillChargeWallet(viewer, parsed.data.category_id, {
+    hasPaidExtraPost,
+  });
+
+  if (willChargeWallet) {
+    try {
+      await assertWalletCoversListing(viewer, parsed.data.category_id, { hasPaidExtraPost });
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === "WALLET_INSUFFICIENT") {
+        const e = err as Error & {
+          balance_cents: number;
+          required_cents: number;
+          listings_remaining: number;
+          publicMessage?: string;
+        };
+        res.status(402).json({
+          error: "WALLET_INSUFFICIENT",
+          message:
+            e.publicMessage ??
+            "Balanca juaj nuk mjafton. Mbushni portofolin nga profili juaj.",
+          balance_cents: e.balance_cents,
+          required_cents: e.required_cents,
+          listings_remaining: e.listings_remaining,
+          listing_price_eur: "0.30",
+        });
+        return;
+      }
+      throw err;
+    }
+  } else if (isBusinessAccount(viewer) && !isVipBusinessActive(viewer)) {
     try {
       await assertBusinessCategoryListingQuota(viewer, parsed.data.category_id, {
         hasPaidExtraPost,
@@ -438,10 +473,10 @@ router.post("/listings", async (req, res) => {
         };
         res.status(402).json({
           error: "BUSINESS_QUOTA_EXCEEDED",
-          message: `Keni arritur ${e.limit} njoftime falas për këtë kategori. Çdo njoftim shtesë kushton €${e.extraPostPriceEur}.`,
+          message: `Keni arritur ${e.limit} njoftime falas për këtë kategori. Çdo njoftim shtesë kushton €0.30 nga portofoli.`,
           used: e.used,
           limit: e.limit,
-          extraPostPriceEur: e.extraPostPriceEur,
+          extraPostPriceEur: 0.3,
         });
         return;
       }
@@ -455,7 +490,7 @@ router.post("/listings", async (req, res) => {
         const e = err as Error & { used: number; limit: number };
         res.status(403).json({
           error: "FREE_QUOTA_EXCEEDED",
-          message: "Ke arritur limitin falas. Zgjero me një paketë shtesë.",
+          message: "Ke arritur limitin falas. Mbush portofolin ose zgjero me paketë.",
           used: e.used,
           limit: e.limit,
           show_packages: (e as Error & { show_packages?: boolean }).show_packages ?? true,
@@ -561,6 +596,12 @@ router.post("/listings", async (req, res) => {
 
   recordListingPostSuccessForUser(viewer);
 
+  let walletAfterPost: ReturnType<typeof walletSummary> | null = null;
+  if (willChargeWallet) {
+    const debited = await debitWalletForListing(viewer.id, row.id);
+    walletAfterPost = walletSummary(debited.balance_cents);
+  }
+
   const cat = await db
     .select({ name: categoriesTable.name })
     .from(categoriesTable)
@@ -570,7 +611,10 @@ router.post("/listings", async (req, res) => {
   const [created] = await annotateListingsWithVipFlag([
     applyViewerContact(formatListing(row, cat[0]?.name ?? null), viewer),
   ]);
-  res.status(201).json(created);
+  res.status(201).json({
+    ...created,
+    wallet: walletAfterPost,
+  });
 });
 
 // ─── GET /listings/featured ───────────────────────────────────────────────────

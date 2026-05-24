@@ -513,9 +513,21 @@ export default function NewListing() {
           }
           if (errData.error === "BUSINESS_QUOTA_EXCEEDED") {
             toast({
-              title: "Keni arritur limitin. Paguani €1 për njoftim shtesë.",
+              title: "Keni arritur limitin falas.",
+              description: "Mbushni portofolin nga profili (€0.30 për shpallje).",
               variant: "destructive",
             });
+            return;
+          }
+          if (errData.error === "WALLET_INSUFFICIENT") {
+            toast({
+              title: "Balanca nuk mjafton",
+              description:
+                (body as { message?: string }).message ??
+                "Mbushni portofolin €5 / €10 / €20 nga profili juaj.",
+              variant: "destructive",
+            });
+            setLocation("/profile");
             return;
           }
           toast({ title: errData.message ?? t.postError, variant: "destructive" });
@@ -523,8 +535,12 @@ export default function NewListing() {
         }
         queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetRecentListingsQueryKey() });
-        const msg = (body as { message?: string }).message;
-        toast({ title: msg ?? t.successPost });
+        const wallet = (body as { wallet?: { balance_eur: string; listings_remaining: number } })
+          .wallet;
+        const msg = wallet
+          ? `Shpallja u postua. Balanca: €${wallet.balance_eur} — ${wallet.listings_remaining} shpallje të mbetura.`
+          : ((body as { message?: string }).message ?? t.successPost);
+        toast({ title: msg });
         setLocation(`/listings/${(body as { id: number }).id}`);
       })
       .catch(() => toast({ title: t.postError, variant: "destructive" }));

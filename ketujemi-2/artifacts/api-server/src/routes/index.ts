@@ -13,6 +13,7 @@ import configRouter from "./config";
 import uploadsRouter from "./uploads";
 import partnersRouter from "./partners";
 import listingPackagesRouter from "./listing-packages";
+import walletRouter from "./wallet";
 
 const router: IRouter = Router();
 
@@ -20,6 +21,7 @@ router.use(configRouter);
 router.use(uploadsRouter);
 router.use(partnersRouter);
 router.use(listingPackagesRouter);
+router.use(walletRouter);
 router.use(authRouter);
 router.use(paymentsRouter);
 router.use(aiRouter);

@@ -1,6 +1,7 @@
 import type { Response } from "express";
 import type { User } from "@workspace/db";
 import { sellerFirstName } from "./contact-mask";
+import { walletSummary } from "./wallet";
 
 const COOKIE = "kj_session";
 const MAX_AGE_MS = 1000 * 60 * 60 * 24 * 14; // 14 days
@@ -54,5 +55,6 @@ export function publicUser(u: User, opts?: { self?: boolean }) {
     vip_expires_at: u.vip_expires_at ? u.vip_expires_at.toISOString() : null,
     email_verified: u.email_verified_at != null,
     strike_count: u.strike_count ?? 0,
+    wallet: walletSummary(u.wallet_balance_cents ?? 0),
   };
 }
