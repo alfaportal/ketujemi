@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter";
+import { useEffect, useState } from "react";
 import { useSecretAdminTap } from "@/lib/secret-admin-tap";
 import {
   FaCcMastercard,
@@ -23,9 +24,9 @@ import { cn } from "@/lib/utils";
 const SOCIAL_ICON_BTN =
   "flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 hover:border-blue-200 transition-colors";
 
-const SOCIAL_LINKS = [
+const DEFAULT_SOCIAL_LINKS = [
   {
-    href: "https://www.facebook.com/ketujemi",
+    href: "https://www.facebook.com/KetuJemi.com",
     label: "Facebook",
     Icon: FaFacebook,
     external: true,
@@ -208,6 +209,27 @@ function FooterMarketsStrip({
 export function SiteFooter() {
   const { market, setMarket, t, uiLang } = useMarket();
   const paths = staticPagePaths(uiLang);
+  const [socialLinks, setSocialLinks] = useState(DEFAULT_SOCIAL_LINKS);
+
+  useEffect(() => {
+    void fetch("/api/config/public", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { facebookPageUrl?: string; instagramProfileUrl?: string } | null) => {
+        if (!data) return;
+        setSocialLinks((prev) =>
+          prev.map((link) => {
+            if (link.label === "Facebook" && data.facebookPageUrl) {
+              return { ...link, href: data.facebookPageUrl };
+            }
+            if (link.label === "Instagram" && data.instagramProfileUrl) {
+              return { ...link, href: data.instagramProfileUrl };
+            }
+            return link;
+          }),
+        );
+      })
+      .catch(() => undefined);
+  }, []);
 
   const helpColumn = {
     title: t.footer_colHelp ?? "NDIHMË",
@@ -265,7 +287,7 @@ export function SiteFooter() {
             className="flex flex-wrap items-center justify-center gap-2 sm:absolute sm:left-1/2 sm:-translate-x-1/2"
             aria-label="Rrjetet sociale"
           >
-            {SOCIAL_LINKS.map(({ href, label, Icon, external, iconClass }) => (
+            {socialLinks.map(({ href, label, Icon, external, iconClass }) => (
               <a
                 key={label}
                 href={href}

@@ -47,6 +47,23 @@ export function isInstagramOAuthEnabled(): boolean {
   return Boolean(instagramAppId() && instagramAppSecret());
 }
 
+/** Public Facebook Page URL (footer / contact) — not OAuth. */
+export function facebookPageUrl(): string {
+  return (
+    cleanMetaEnv("FACEBOOK_PAGE_URL") ??
+    cleanMetaEnv("VITE_FACEBOOK_PAGE_URL") ??
+    "https://www.facebook.com/KetuJemi.com"
+  );
+}
+
+export function instagramProfileUrl(): string {
+  return (
+    cleanMetaEnv("INSTAGRAM_PROFILE_URL") ??
+    cleanMetaEnv("VITE_INSTAGRAM_PROFILE_URL") ??
+    "https://www.instagram.com/jemi.ketu"
+  );
+}
+
 export function oauthCallbackUrl(
   origin: string,
   provider: MetaOAuthProvider,
