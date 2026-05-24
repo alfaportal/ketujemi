@@ -44,6 +44,11 @@ runPnpm(["run", "db:push"], appRoot, {
 runPnpm(["--filter", "@workspace/db", "sql:run", "wallet-migration.sql"], appRoot, {
   label: "wallet-migration.sql",
 });
+runPnpm(
+  ["--filter", "@workspace/db", "sql:run", "phone-verify-challenges-migration.sql"],
+  appRoot,
+  { label: "phone-verify-challenges-migration.sql" },
+);
 runPnpm(["run", "db:seed:parent-images"], appRoot, {
   required: false,
   label: "db:seed:parent-images",

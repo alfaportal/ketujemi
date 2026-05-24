@@ -38,7 +38,19 @@ async function main() {
   console.log(`Running SQL: ${path.basename(sqlPath)}`);
   await pool.query(sql);
   const base = path.basename(sqlPath);
-  if (base.includes("wallet")) {
+  if (base.includes("phone-verify")) {
+    const { rows } = await pool.query<{ column_name: string }>(`
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'phone_verify_challenges'
+      ORDER BY ordinal_position
+    `);
+    console.log(
+      "OK — phone_verify_challenges columns:",
+      rows.map((r) => r.column_name).join(", ") || "(table missing)",
+    );
+  } else if (base.includes("wallet")) {
     const { rows } = await pool.query<{ kind: string; name: string }>(`
       SELECT 'column' AS kind, column_name AS name
       FROM information_schema.columns
