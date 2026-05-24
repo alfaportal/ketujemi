@@ -25,14 +25,14 @@ const SOCIAL_ICON_BTN =
 
 const SOCIAL_LINKS = [
   {
-    href: "https://facebook.com/ketujemi",
+    href: "https://www.facebook.com/ketujemi",
     label: "Facebook",
     Icon: FaFacebook,
     external: true,
     iconClass: "hover:text-[#1877F2]",
   },
   {
-    href: "https://instagram.com/ketujemi",
+    href: "https://www.instagram.com/jemi.ketu",
     label: "Instagram",
     Icon: FaInstagram,
     external: true,

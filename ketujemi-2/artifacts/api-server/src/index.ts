@@ -1,5 +1,5 @@
 import app from "./app";
-import { ensureFiscalSchema, ensureWalletSchema, pool } from "@workspace/db";
+import { ensureFiscalSchema, ensureOAuthSchema, ensureWalletSchema, pool } from "@workspace/db";
 import { logger } from "./lib/logger";
 import { logPaymentStackReadiness } from "./lib/payment-policy";
 import { twilioConfigSummary } from "./lib/twilio-auth";
@@ -27,6 +27,8 @@ async function startServer(): Promise<void> {
     logger.info("Wallet schema verified (wallet_balance_cents)");
     await ensureFiscalSchema(pool);
     logger.info("Fiscal schema verified (fiscal_receipts)");
+    await ensureOAuthSchema(pool);
+    logger.info("OAuth schema verified (facebook_user_id, instagram_user_id)");
     logPaymentStackReadiness(logger);
     logger.info(twilioConfigSummary(), "twilio config (masked)");
   } catch (err) {

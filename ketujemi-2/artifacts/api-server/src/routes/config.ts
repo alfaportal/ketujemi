@@ -2,6 +2,7 @@ import { Router } from "express";
 import { isRecaptchaRequired } from "../lib/recaptcha-verify";
 import { isEmailVerificationRequired } from "../lib/email-auth";
 import { isSmsAuthEnabled } from "../lib/sms-auth";
+import { isFacebookOAuthEnabled, isInstagramOAuthEnabled } from "../lib/meta-oauth-config";
 import { isB2UploadConfigured } from "../lib/b2-upload-presign";
 import { paymentsConfigured, stripePublishableKey } from "../lib/payments";
 
@@ -48,6 +49,8 @@ router.get("/config/public", (_req, res) => {
     cloudinaryUploadPreset,
     smsAuthEnabled: isSmsAuthEnabled(),
     emailVerificationRequired: isEmailVerificationRequired(),
+    facebookOAuthEnabled: isFacebookOAuthEnabled(),
+    instagramOAuthEnabled: isInstagramOAuthEnabled(),
   });
 });
 

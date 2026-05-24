@@ -7,6 +7,7 @@ import adminRouter from "./admin";
 import contactRouter from "./contact";
 
 import authRouter from "./auth";
+import oauthRouter from "./oauth";
 import paymentsRouter from "./payments";
 import aiRouter from "./ai";
 import configRouter from "./config";
@@ -23,6 +24,7 @@ router.use(partnersRouter);
 router.use(listingPackagesRouter);
 router.use(walletRouter);
 router.use(authRouter);
+router.use(oauthRouter);
 router.use(paymentsRouter);
 router.use(aiRouter);
 router.use(contactRouter);

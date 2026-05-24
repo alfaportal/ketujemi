@@ -15,6 +15,7 @@ import {
   useRecaptchaSiteKey,
   type RecaptchaV2Handle,
 } from "@/components/recaptcha-v2";
+import { SocialOAuthButtons } from "@/components/social-oauth-buttons";
 
 type Flow = "register" | "login";
 type Channel = "email" | "sms";
@@ -45,6 +46,8 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [smsAuthEnabled, setSmsAuthEnabled] = useState(false);
   const [emailVerificationRequired, setEmailVerificationRequired] = useState(true);
+  const [facebookOAuthEnabled, setFacebookOAuthEnabled] = useState(false);
+  const [instagramOAuthEnabled, setInstagramOAuthEnabled] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const recaptchaRef = useRef<RecaptchaV2Handle>(null);
   const { captchaRequired, siteKey: recaptchaSiteKey } = useRecaptchaSiteKey();
@@ -53,10 +56,17 @@ export default function LoginPage() {
     let cancelled = false;
     void fetch("/api/config/public", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : {}))
-      .then((data: { smsAuthEnabled?: boolean; emailVerificationRequired?: boolean }) => {
+      .then((data: {
+        smsAuthEnabled?: boolean;
+        emailVerificationRequired?: boolean;
+        facebookOAuthEnabled?: boolean;
+        instagramOAuthEnabled?: boolean;
+      }) => {
         if (cancelled) return;
         setSmsAuthEnabled(Boolean(data.smsAuthEnabled));
         setEmailVerificationRequired(data.emailVerificationRequired !== false);
+        setFacebookOAuthEnabled(Boolean(data.facebookOAuthEnabled));
+        setInstagramOAuthEnabled(Boolean(data.instagramOAuthEnabled));
       })
       .catch(() => {
         if (!cancelled) {
@@ -92,6 +102,12 @@ export default function LoginPage() {
     }
     if (params.get("error") === "verify") {
       toast({ title: t.toast_verifyFail, variant: "destructive" });
+    }
+    const oauthErr = params.get("error");
+    if (oauthErr === "facebook_denied" || oauthErr === "instagram_denied") {
+      toast({ title: "Hyrja me rrjet social u anulua.", variant: "destructive" });
+    } else if (oauthErr?.startsWith("facebook_") || oauthErr?.startsWith("instagram_") || oauthErr === "oauth_state" || oauthErr === "oauth_code") {
+      toast({ title: "Hyrja me Facebook/Instagram dështoi. Provo përsëri.", variant: "destructive" });
     }
     if (params.get("verified") === "1") {
       void refresh().then(() => setLocation(returnTo));
@@ -567,6 +583,12 @@ export default function LoginPage() {
             </TabsContent>
             ) : null}
           </Tabs>
+
+          <SocialOAuthButtons
+            returnTo={returnTo}
+            facebookEnabled={facebookOAuthEnabled}
+            instagramEnabled={instagramOAuthEnabled}
+          />
         </div>
       </div>
     </div>

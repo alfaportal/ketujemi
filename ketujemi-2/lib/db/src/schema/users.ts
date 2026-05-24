@@ -35,6 +35,12 @@ export const usersTable = pgTable("users", {
   /** Single outbound link (website / Instagram / Facebook) after activation. */
   partner_link_url: text("partner_link_url"),
   partner_link_type: text("partner_link_type"),
+  /** Meta Facebook Login user id (app-scoped). */
+  facebook_user_id: text("facebook_user_id").unique(),
+  /** Instagram API with Instagram Login user id. */
+  instagram_user_id: text("instagram_user_id").unique(),
+  /** e.g. jemi.ketu — KetuJemi.com brand account */
+  instagram_username: text("instagram_username"),
   /** JSON string array — up to 5 banner image URLs for VIP carousel. */
   partner_banner_urls: text("partner_banner_urls"),
   /** Sent to business email when admin activates partner account. */
