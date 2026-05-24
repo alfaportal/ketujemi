@@ -19,6 +19,7 @@
     "start": "node ./scripts/start-production.mjs",
     "start:production": "node ./scripts/start-production.mjs",
     "railway:env:vonage": "node ./scripts/railway-set-vonage-env.mjs",
+    "railway:env:database-url": "node ./scripts/railway-set-database-url.mjs",
     "railway:migrate:wallet": "node ./scripts/railway-wallet-migration.mjs",
     "build": "node ./scripts/build-production.mjs",
     "typecheck:libs": "tsc --build",
