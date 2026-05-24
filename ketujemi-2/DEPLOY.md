@@ -39,7 +39,11 @@ Health check: **`GET /api/healthz`** (duhet `hasFrontend: true`).
 | `SESSION_SECRET` | Min. 16 karaktere |
 | `PUBLIC_APP_ORIGIN` | `https://ketujemi.com` (email, linke njoftimesh) |
 
-Rekomandohen: `ANTHROPIC_API_KEY`, `VONAGE_*`, `RECAPTCHA_*`, `VITE_RECAPTCHA_SITE_KEY`, `EMAIL_*`, `VITE_CLOUDINARY_*`, `STRIPE_*` — shiko `ketujemi-2/.env.example`.
+Rekomandohen: `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `RECAPTCHA_*`, `VITE_RECAPTCHA_SITE_KEY`, `EMAIL_*`, `VITE_CLOUDINARY_*`, `STRIPE_*` — shiko `ketujemi-2/.env.example`.
+
+**SMS (opsionale):** Lëre `SMS_AUTH_ENABLED` të pa vendosur ose `false` për regjistrim vetëm me email. Kur Vonage/Twilio është gati: `SMS_AUTH_ENABLED=true` + `VONAGE_API_KEY` + `VONAGE_API_SECRET`.
+
+**Email regjistrim:** Lëre `EMAIL_VERIFICATION_REQUIRED` të pa vendosur ose `false` — llogaria krijohet menjëherë (pa kod në email). Kur Resend është gati: `EMAIL_VERIFICATION_REQUIRED=true` + `RESEND_API_KEY`.
 
 **VITE_*** duhen vendosur **para build-it** (Railway i injoron në fazën e build).
 

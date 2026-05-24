@@ -17,6 +17,8 @@ import {
 } from "../lib/user-session";
 import { normalizePhone } from "../lib/phone-prefixes";
 import { assertSmsStartAllowed, clientIp } from "../lib/sms-rate-limit";
+import { isEmailVerificationRequired } from "../lib/email-auth";
+import { isSmsAuthEnabled, SMS_AUTH_DISABLED_MESSAGE } from "../lib/sms-auth";
 import { isRecaptchaRequired, verifyRecaptchaToken } from "../lib/recaptcha-verify";
 import { assertAccountActive, isUserBanned } from "../lib/user-ban";
 import { getBusinessQuotaStatus } from "../lib/business-quota";
@@ -77,11 +79,35 @@ router.post("/auth/register/email", async (req, res) => {
       return;
     }
 
+    const hash = await bcrypt.hash(password, 10);
+
+    async function createUserNow() {
+      const [row] = await db
+        .insert(usersTable)
+        .values({
+          email,
+          password_hash: hash,
+          email_verified_at: new Date(),
+        })
+        .returning();
+      setUserSessionCookie(res, row.id);
+      return row;
+    }
+
+    if (!isEmailVerificationRequired()) {
+      const row = await createUserNow();
+      res.status(201).json({
+        ok: true,
+        needsVerification: false,
+        user: publicUser(row, { self: true }),
+      });
+      return;
+    }
+
     await db
       .delete(emailVerifyChallengesTable)
       .where(lt(emailVerifyChallengesTable.expires_at, new Date()));
 
-    const hash = await bcrypt.hash(password, 10);
     const code = sixDigitCode();
     const token = randomUUID();
     const expiresAt = new Date(Date.now() + CHALLENGE_TTL_MS);
@@ -95,9 +121,25 @@ router.post("/auth/register/email", async (req, res) => {
     });
 
     const verifyUrl = `${appOrigin(req)}/api/auth/verify/email/link?token=${encodeURIComponent(token)}`;
-    await sendEmailVerification({ to: email, code, verifyUrl });
 
-    res.status(201).json({ ok: true, needsVerification: true });
+    try {
+      await sendEmailVerification({ to: email, code, verifyUrl });
+      res.status(201).json({ ok: true, needsVerification: true });
+    } catch (sendErr) {
+      req.log?.warn(
+        { err: sendErr },
+        "verification email failed — completing registration without email verify",
+      );
+      await db
+        .delete(emailVerifyChallengesTable)
+        .where(eq(emailVerifyChallengesTable.email, email));
+      const row = await createUserNow();
+      res.status(201).json({
+        ok: true,
+        needsVerification: false,
+        user: publicUser(row, { self: true }),
+      });
+    }
   } catch (err) {
     req.log?.error({ err }, "register email");
     res.status(500).json({ error: "Registration failed" });
@@ -489,6 +531,14 @@ router.get("/auth/account/business-quota", async (req, res) => {
 
 // ─── POST /auth/sms/start ───────────────────────────────────────────────────
 router.post("/auth/sms/start", async (req, res) => {
+  if (!isSmsAuthEnabled()) {
+    res.status(503).json({
+      error: "SMS_AUTH_DISABLED",
+      message: SMS_AUTH_DISABLED_MESSAGE,
+    });
+    return;
+  }
+
   try {
     const phone = normalizePhone(req.body?.phone);
     const password = typeof req.body?.password === "string" ? req.body.password : "";
@@ -573,6 +623,14 @@ router.post("/auth/sms/start", async (req, res) => {
 
 // ─── POST /auth/sms/verify ──────────────────────────────────────────────────
 router.post("/auth/sms/verify", async (req, res) => {
+  if (!isSmsAuthEnabled()) {
+    res.status(503).json({
+      error: "SMS_AUTH_DISABLED",
+      message: SMS_AUTH_DISABLED_MESSAGE,
+    });
+    return;
+  }
+
   try {
     const phone = normalizePhone(req.body?.phone);
     const code = typeof req.body?.code === "string" ? req.body.code : "";

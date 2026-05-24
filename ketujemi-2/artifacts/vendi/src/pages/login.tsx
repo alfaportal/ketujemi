@@ -43,9 +43,31 @@ export default function LoginPage() {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const [smsAuthEnabled, setSmsAuthEnabled] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const recaptchaRef = useRef<RecaptchaV2Handle>(null);
   const { captchaRequired, siteKey: recaptchaSiteKey } = useRecaptchaSiteKey();
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch("/api/config/public", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((data: { smsAuthEnabled?: boolean }) => {
+        if (!cancelled) setSmsAuthEnabled(Boolean(data.smsAuthEnabled));
+      })
+      .catch(() => {
+        if (!cancelled) setSmsAuthEnabled(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!smsAuthEnabled && channel === "sms") {
+      setChannel("email");
+    }
+  }, [smsAuthEnabled, channel]);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -115,8 +137,14 @@ export default function LoginPage() {
           });
           return;
         }
-        setStep("verify");
-        toast({ title: t.toast_emailSent });
+        if ((data as { needsVerification?: boolean }).needsVerification) {
+          setStep("verify");
+          toast({ title: t.toast_emailSent });
+        } else {
+          await refresh();
+          toast({ title: t.toast_accountReady });
+          setLocation(returnTo);
+        }
       } else {
         if (!isValidPhoneDigits(phone)) {
           toast({ title: t.toast_reqFail, variant: "destructive" });
@@ -284,7 +312,13 @@ export default function LoginPage() {
               {isRegister ? t.login_heading_register : t.login_heading}
             </h1>
             <p className="text-sm text-gray-500 mt-1">
-              {isRegister ? t.login_sub_register : t.login_sub_login}
+              {isRegister
+                ? smsAuthEnabled
+                  ? t.login_sub_register
+                  : t.login_sub_email_only
+                : smsAuthEnabled
+                  ? t.login_sub_login
+                  : t.login_sub_email_only}
             </p>
           </div>
 
@@ -310,18 +344,22 @@ export default function LoginPage() {
           </div>
 
           <Tabs
-            value={channel}
-            onValueChange={(v) => switchChannel(v as Channel)}
+            value={smsAuthEnabled ? channel : "email"}
+            onValueChange={(v) => {
+              if (smsAuthEnabled) switchChannel(v as Channel);
+            }}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-2 min-h-12 h-12 p-1">
-              <TabsTrigger value="email" className="gap-1.5 min-h-10">
-                <Mail size={15} /> {t.login_tab_email}
-              </TabsTrigger>
-              <TabsTrigger value="sms" className="gap-1.5 min-h-10">
-                <Smartphone size={15} /> {t.login_tab_sms}
-              </TabsTrigger>
-            </TabsList>
+            {smsAuthEnabled ? (
+              <TabsList className="grid w-full grid-cols-2 min-h-12 h-12 p-1">
+                <TabsTrigger value="email" className="gap-1.5 min-h-10">
+                  <Mail size={15} /> {t.login_tab_email}
+                </TabsTrigger>
+                <TabsTrigger value="sms" className="gap-1.5 min-h-10">
+                  <Smartphone size={15} /> {t.login_tab_sms}
+                </TabsTrigger>
+              </TabsList>
+            ) : null}
 
             <TabsContent value="email" className="space-y-4 pt-4">
               {isRegister ? (
@@ -421,6 +459,7 @@ export default function LoginPage() {
               )}
             </TabsContent>
 
+            {smsAuthEnabled ? (
             <TabsContent value="sms" className="space-y-4 pt-4">
               {isVerify ? (
                 <form className="space-y-4" onSubmit={onVerify}>
@@ -515,6 +554,7 @@ export default function LoginPage() {
                 </form>
               )}
             </TabsContent>
+            ) : null}
           </Tabs>
         </div>
       </div>

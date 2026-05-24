@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { isRecaptchaRequired } from "../lib/recaptcha-verify";
+import { isEmailVerificationRequired } from "../lib/email-auth";
+import { isSmsAuthEnabled } from "../lib/sms-auth";
 import { isB2UploadConfigured } from "../lib/b2-upload-presign";
 import { paymentsConfigured, stripePublishableKey } from "../lib/payments";
 
@@ -44,6 +46,8 @@ router.get("/config/public", (_req, res) => {
     stripePublishableKey: stripePublishableKey(),
     cloudinaryCloudName,
     cloudinaryUploadPreset,
+    smsAuthEnabled: isSmsAuthEnabled(),
+    emailVerificationRequired: isEmailVerificationRequired(),
   });
 });
 
