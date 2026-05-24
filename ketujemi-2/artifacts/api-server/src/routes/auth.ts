@@ -75,7 +75,10 @@ router.post("/auth/register/email", async (req, res) => {
 
     const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
     if (existing) {
-      res.status(409).json({ error: "Email already registered" });
+      res.status(409).json({
+        error: "EMAIL_ALREADY_REGISTERED",
+        message: "Ky email është i regjistruar. Kliko «Kyçu» dhe vendos fjalëkalimin — nuk duhet kod përsëri.",
+      });
       return;
     }
 
@@ -296,13 +299,19 @@ router.post("/auth/login/email", async (req, res) => {
 
     const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
     if (!user?.password_hash) {
-      res.status(401).json({ error: "Invalid credentials" });
+      res.status(401).json({
+        error: "INVALID_CREDENTIALS",
+        message: "Email ose fjalëkalim i gabuar.",
+      });
       return;
     }
 
     const ok = await bcrypt.compare(password, user.password_hash);
     if (!ok) {
-      res.status(401).json({ error: "Invalid credentials" });
+      res.status(401).json({
+        error: "INVALID_CREDENTIALS",
+        message: "Email ose fjalëkalim i gabuar.",
+      });
       return;
     }
 

@@ -1,24 +1,35 @@
-import type { Response } from "express";
+import type { CookieOptions, Response } from "express";
 import type { User } from "@workspace/db";
 import { sellerFirstName } from "./contact-mask";
 import { walletSummary } from "./wallet";
 
 const COOKIE = "kj_session";
-const MAX_AGE_MS = 1000 * 60 * 60 * 24 * 14; // 14 days
+const MAX_AGE_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 
-export function setUserSessionCookie(res: Response, userId: number): void {
-  res.cookie(COOKIE, String(userId), {
+function sessionCookieBase(): CookieOptions {
+  const opts: CookieOptions = {
     signed: true,
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
+  };
+  const domain =
+    process.env.COOKIE_DOMAIN?.trim() ??
+    (process.env.NODE_ENV === "production" ? ".ketujemi.com" : undefined);
+  if (domain) opts.domain = domain;
+  return opts;
+}
+
+export function setUserSessionCookie(res: Response, userId: number): void {
+  res.cookie(COOKIE, String(userId), {
+    ...sessionCookieBase(),
     maxAge: MAX_AGE_MS,
   });
 }
 
 export function clearUserSessionCookie(res: Response): void {
-  res.clearCookie(COOKIE, { path: "/", signed: true });
+  res.clearCookie(COOKIE, sessionCookieBase());
 }
 
 export function publicUser(u: User, opts?: { self?: boolean }) {

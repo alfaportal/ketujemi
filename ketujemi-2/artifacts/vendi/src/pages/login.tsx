@@ -35,7 +35,7 @@ export default function LoginPage() {
       ? safeAuthReturnUrl(new URLSearchParams(window.location.search).get("return"))
       : "/";
 
-  const [flow, setFlow] = useState<Flow>("register");
+  const [flow, setFlow] = useState<Flow>("login");
   const [channel, setChannel] = useState<Channel>("email");
   const [step, setStep] = useState<Step>("credentials");
 
@@ -96,6 +96,10 @@ export default function LoginPage() {
     if (ch === "email" || ch === "sms") {
       setChannel(ch);
     }
+    const flowParam = params.get("flow");
+    if (flowParam === "login" || flowParam === "register") {
+      setFlow(flowParam);
+    }
     const ret = params.get("return") ?? "";
     if (ret.includes("step=partner") || ret.includes("/partner")) {
       setFlow("register");
@@ -153,11 +157,17 @@ export default function LoginPage() {
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
+          const err = data as { message?: string; error?: string };
+          if (res.status === 409 || err.error === "EMAIL_ALREADY_REGISTERED") {
+            setFlow("login");
+            toast({
+              title: t.toast_emailExistsLogin,
+              description: t.toast_emailExistsLoginHint,
+            });
+            return;
+          }
           toast({
-            title:
-              (data as { message?: string }).message ??
-              (data as { error?: string }).error ??
-              t.toast_reqFail,
+            title: err.message ?? err.error ?? t.toast_reqFail,
             variant: "destructive",
           });
           return;
@@ -262,7 +272,10 @@ export default function LoginPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         toast({
-          title: (data as { error?: string }).error ?? t.toast_reqFail,
+          title:
+            (data as { message?: string }).message ??
+            (data as { error?: string }).error ??
+            t.toast_reqFail,
           variant: "destructive",
         });
         return;
