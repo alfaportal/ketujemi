@@ -54,6 +54,9 @@ export async function fulfillPaidCheckoutSession(session: Stripe.Checkout.Sessio
     Number.isFinite(userId)
   ) {
     const { fulfillWalletTopupFromPayment } = await import("./wallet-stripe");
-    await fulfillWalletTopupFromPayment(userId, purpose, token);
+    await fulfillWalletTopupFromPayment(userId, purpose, token, {
+      marketCode: session.metadata?.market_code,
+      billingCountry: session.customer_details?.address?.country,
+    });
   }
 }

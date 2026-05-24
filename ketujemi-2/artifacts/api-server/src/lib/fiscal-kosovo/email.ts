@@ -1,5 +1,6 @@
 import { sendTransactionalEmail } from "../send-transactional-email";
 import { FISCAL_LEGAL } from "./config";
+import { companyStampDataUri, companyStampPublicUrl } from "./stamp";
 import type { FiscalReceiptType } from "./types";
 
 export async function sendFiscalReceiptEmail(opts: {
@@ -18,6 +19,21 @@ export async function sendFiscalReceiptEmail(opts: {
   const pdfBlock = opts.pdfUrl
     ? `<p><a href="${escapeHtml(opts.pdfUrl)}">Shkarko PDF</a></p>`
     : "";
+
+  const stampSrc =
+    (await companyStampDataUri("email")) ?? companyStampPublicUrl("email");
+  const stampBlock = `
+      <div style="margin-top:28px;text-align:right">
+        <img
+          src="${stampSrc}"
+          alt="Vula ${escapeHtml(FISCAL_LEGAL.name)}"
+          width="200"
+          style="max-width:200px;height:auto;display:inline-block;opacity:0.95"
+        />
+        <p style="margin:8px 0 0;font-size:11px;color:#666;text-align:right">
+          ${escapeHtml(FISCAL_LEGAL.name)} · NRB ${escapeHtml(FISCAL_LEGAL.nrb)}
+        </p>
+      </div>`;
 
   await sendTransactionalEmail({
     to: opts.to,
@@ -43,6 +59,7 @@ export async function sendFiscalReceiptEmail(opts: {
       </ul>
       ${qrBlock}
       ${pdfBlock}
+      ${stampBlock}
       <p style="color:#666;font-size:12px">Ruajeni këtë email për referencë.</p>
     `,
   });

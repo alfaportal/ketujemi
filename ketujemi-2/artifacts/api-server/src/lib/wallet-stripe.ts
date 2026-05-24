@@ -9,30 +9,40 @@ import {
 } from "./wallet";
 import { createPaymentRecord, devPaymentBypassEnabled, stripeSecret } from "./payments";
 
+export type WalletTopupFiscalHints = {
+  marketCode?: string | null;
+  billingCountry?: string | null;
+};
+
 async function completeWalletTopup(
   userId: number,
   purpose: string,
   paymentToken: string,
+  fiscalHints: WalletTopupFiscalHints = {},
 ): Promise<void> {
   const pkg = purpose.replace("wallet_topup_", "") as WalletTopupId;
   if (!(pkg in WALLET_TOPUP_CATALOG)) return;
   await creditWalletTopup(userId, WALLET_TOPUP_CATALOG[pkg].price_cents, paymentToken);
 
   const { issueFiscalReceiptForWalletTopup } = await import("./fiscal-kosovo");
-  void issueFiscalReceiptForWalletTopup(userId, purpose, paymentToken).catch(() => undefined);
+  void issueFiscalReceiptForWalletTopup(userId, purpose, paymentToken, {
+    marketCode: fiscalHints.marketCode,
+    billingCountry: fiscalHints.billingCountry,
+  }).catch(() => undefined);
 }
 
 export async function createWalletTopupStripeCheckout(
   user: User,
   pkg: WalletTopupId,
   origin: string,
+  marketCode?: string | null,
 ): Promise<{ url: string; token: string; sessionId: string | null }> {
   const def = WALLET_TOPUP_CATALOG[pkg];
   const purpose = stripePurposeForWalletTopup(pkg);
 
   if (devPaymentBypassEnabled()) {
     const { token } = await createPaymentRecord(user.id, purpose);
-    await completeWalletTopup(user.id, purpose, token);
+    await completeWalletTopup(user.id, purpose, token, { marketCode });
     return {
       url: `${origin}/profile?payment=success&purpose=wallet&session_id=dev`,
       token,
@@ -73,6 +83,7 @@ export async function createWalletTopupStripeCheckout(
       purpose,
       payment_token: token,
       wallet_topup: pkg,
+      market_code: marketCode?.trim().toLowerCase() || "",
     },
   });
 
@@ -92,6 +103,7 @@ export async function fulfillWalletTopupFromPayment(
   userId: number,
   purpose: string,
   paymentToken: string,
+  fiscalHints: WalletTopupFiscalHints = {},
 ): Promise<void> {
-  await completeWalletTopup(userId, purpose, paymentToken);
+  await completeWalletTopup(userId, purpose, paymentToken, fiscalHints);
 }

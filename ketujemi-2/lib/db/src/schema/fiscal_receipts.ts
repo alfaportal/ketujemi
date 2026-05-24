@@ -13,7 +13,7 @@ export const fiscalReceiptsTable = pgTable("fiscal_receipts", {
   amount_cents: integer("amount_cents").notNull(),
   /** fiscal_coupon | tax_invoice */
   receipt_type: text("receipt_type").notNull().default("fiscal_coupon"),
-  /** pending | issued | failed | skipped */
+  /** pending | issued | failed | skipped | skipped_abroad */
   status: text("status").notNull().default("pending"),
   fiscal_number: text("fiscal_number"),
   qr_payload: text("qr_payload"),

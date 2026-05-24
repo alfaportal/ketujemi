@@ -9,8 +9,20 @@ import {
   fiscalVatPercent,
 } from "./config";
 import { sendFiscalReceiptEmail } from "./email";
+import {
+  isAbroadBillingCountry,
+  isDiasporaMarketCode,
+  shouldIssueKosovoFiscalReceipt,
+} from "./market";
 import { issueFiscalReceiptViaProvider } from "./provider";
 import type { FiscalReceiptType } from "./types";
+
+export type WalletFiscalContext = {
+  /** Market code from site selector (ks, de, …). */
+  marketCode?: string | null;
+  /** Stripe billing country ISO (e.g. XK, DE). */
+  billingCountry?: string | null;
+};
 
 function walletTopupDescription(pkg: WalletTopupId): string {
   const def = WALLET_TOPUP_CATALOG[pkg];
@@ -33,6 +45,7 @@ export async function issueFiscalReceiptForWalletTopup(
   userId: number,
   purpose: string,
   paymentToken: string,
+  ctx: WalletFiscalContext = {},
 ): Promise<void> {
   const pkg = purpose.replace("wallet_topup_", "") as WalletTopupId;
   if (!(pkg in WALLET_TOPUP_CATALOG)) return;
@@ -60,14 +73,23 @@ export async function issueFiscalReceiptForWalletTopup(
   const receiptType = receiptTypeForUser(user);
   const customerEmail = user.email?.trim() || null;
 
+  const abroadByMarket = isDiasporaMarketCode(ctx.marketCode);
+  const abroadByBilling = isAbroadBillingCountry(ctx.billingCountry);
+  const needsKosovoFiscal =
+    shouldIssueKosovoFiscalReceipt(ctx.marketCode) && !abroadByBilling;
+
   if (!existing) {
+    let status = "skipped";
+    if (fiscalKosovoEnabled() && needsKosovoFiscal) status = "pending";
+    else if (abroadByMarket || abroadByBilling) status = "skipped_abroad";
+
     await db.insert(fiscalReceiptsTable).values({
       user_id: userId,
       payment_token: paymentToken,
       purpose,
       amount_cents: amountCents,
       receipt_type: receiptType,
-      status: fiscalKosovoEnabled() ? "pending" : "skipped",
+      status,
       customer_email: customerEmail,
       provider: fiscalProviderId(),
     });
@@ -75,6 +97,18 @@ export async function issueFiscalReceiptForWalletTopup(
 
   if (!fiscalKosovoEnabled()) {
     logger.info({ paymentToken }, "fiscal skipped (FISCAL_KOSOVO_ENABLED=false)");
+    return;
+  }
+
+  if (!needsKosovoFiscal) {
+    logger.info(
+      {
+        paymentToken,
+        marketCode: ctx.marketCode,
+        billingCountry: ctx.billingCountry,
+      },
+      "fiscal skipped (payment from abroad / diaspora — no ATK Kosovo receipt)",
+    );
     return;
   }
 
