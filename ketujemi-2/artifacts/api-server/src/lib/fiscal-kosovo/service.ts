@@ -4,10 +4,11 @@ import type { User } from "@workspace/db";
 import { WALLET_TOPUP_CATALOG, type WalletTopupId } from "../wallet";
 import { logger } from "../logger";
 import {
-  fiscalKosovoEnabled,
+  canIssueKosovoFiscalReceipts,
   fiscalProviderId,
   fiscalVatPercent,
 } from "./config";
+import type { PaymentChannel } from "../payment-policy";
 import { sendFiscalReceiptEmail } from "./email";
 import { isKosovoBillingCountry } from "./market";
 import { issueFiscalReceiptViaProvider } from "./provider";
@@ -16,6 +17,7 @@ import type { FiscalReceiptType } from "./types";
 export type WalletFiscalContext = {
   /** Stripe billing or card country (ISO 3166-1 alpha-2), e.g. XK, DE. */
   billingCountry?: string | null;
+  paymentChannel?: PaymentChannel;
 };
 
 function walletTopupDescription(pkg: WalletTopupId): string {
@@ -31,8 +33,8 @@ function receiptTypeForUser(user: User): FiscalReceiptType {
 }
 
 /**
- * Issue fiscal document after wallet top-up is credited.
- * Only when Stripe confirms Kosovo (XK) — foreign cards skip fiscal (status=skipped).
+ * Issue fiscal document after wallet top-up is credited via Kosovo bank only.
+ * Stripe top-ups never reach here (see payment-policy.fiscalAppliesToWalletTopup).
  */
 export async function issueFiscalReceiptForWalletTopup(
   userId: number,
@@ -66,11 +68,15 @@ export async function issueFiscalReceiptForWalletTopup(
   const receiptType = receiptTypeForUser(user);
   const customerEmail = user.email?.trim() || null;
 
-  const needsKosovoFiscal = isKosovoBillingCountry(ctx.billingCountry);
+  const channel = ctx.paymentChannel ?? "kosovo_bank";
+  const needsKosovoFiscal =
+    channel === "kosovo_bank" &&
+    canIssueKosovoFiscalReceipts() &&
+    isKosovoBillingCountry(ctx.billingCountry ?? "XK");
 
   if (!existing) {
     let status = "skipped";
-    if (fiscalKosovoEnabled() && needsKosovoFiscal) status = "pending";
+    if (needsKosovoFiscal) status = "pending";
 
     await db.insert(fiscalReceiptsTable).values({
       user_id: userId,
@@ -84,18 +90,18 @@ export async function issueFiscalReceiptForWalletTopup(
     });
   }
 
-  if (!fiscalKosovoEnabled()) {
-    logger.info({ paymentToken }, "fiscal skipped (FISCAL_KOSOVO_ENABLED=false)");
+  if (!canIssueKosovoFiscalReceipts()) {
+    logger.info(
+      { paymentToken },
+      "fiscal skipped (enable KOSOVO_BANK_* + FISCAL_KOSOVO_* after Enternet & bank account)",
+    );
     return;
   }
 
   if (!needsKosovoFiscal) {
     logger.info(
-      {
-        paymentToken,
-        billingCountry: ctx.billingCountry ?? null,
-      },
-      "fiscal skipped (Stripe: card/billing outside Kosovo)",
+      { paymentToken, billingCountry: ctx.billingCountry ?? null, channel },
+      "fiscal skipped (not a Kosovo bank wallet payment)",
     );
     return;
   }

@@ -73,6 +73,9 @@ export async function fulfillPaidCheckoutSession(session: Stripe.Checkout.Sessio
   ) {
     const billingCountry = await resolveCheckoutBillingCountry(session);
     const { fulfillWalletTopupFromPayment } = await import("./wallet-stripe");
-    await fulfillWalletTopupFromPayment(userId, purpose, token, { billingCountry });
+    await fulfillWalletTopupFromPayment(userId, purpose, token, {
+      billingCountry,
+      paymentChannel: "stripe",
+    });
   }
 }

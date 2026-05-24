@@ -8,9 +8,12 @@ import {
   creditWalletTopup,
 } from "./wallet";
 import { createPaymentRecord, devPaymentBypassEnabled, stripeSecret } from "./payments";
+import type { PaymentChannel } from "./payment-policy";
+import { fiscalAppliesToWalletTopup } from "./payment-policy";
 
 export type WalletTopupFiscalHints = {
   billingCountry?: string | null;
+  paymentChannel?: PaymentChannel;
 };
 
 async function completeWalletTopup(
@@ -23,9 +26,13 @@ async function completeWalletTopup(
   if (!(pkg in WALLET_TOPUP_CATALOG)) return;
   await creditWalletTopup(userId, WALLET_TOPUP_CATALOG[pkg].price_cents, paymentToken);
 
+  const channel = fiscalHints.paymentChannel ?? "stripe";
+  if (!fiscalAppliesToWalletTopup(channel)) return;
+
   const { issueFiscalReceiptForWalletTopup } = await import("./fiscal-kosovo");
   void issueFiscalReceiptForWalletTopup(userId, purpose, paymentToken, {
-    billingCountry: fiscalHints.billingCountry,
+    billingCountry: fiscalHints.billingCountry ?? "XK",
+    paymentChannel: channel,
   }).catch(() => undefined);
 }
 
@@ -39,7 +46,7 @@ export async function createWalletTopupStripeCheckout(
 
   if (devPaymentBypassEnabled()) {
     const { token } = await createPaymentRecord(user.id, purpose);
-    await completeWalletTopup(user.id, purpose, token);
+    await completeWalletTopup(user.id, purpose, token, { paymentChannel: "stripe" });
     return {
       url: `${origin}/profile?payment=success&purpose=wallet&session_id=dev`,
       token,

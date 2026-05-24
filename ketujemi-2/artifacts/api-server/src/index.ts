@@ -1,6 +1,7 @@
 import app from "./app";
 import { ensureFiscalSchema, ensureWalletSchema, pool } from "@workspace/db";
 import { logger } from "./lib/logger";
+import { logPaymentStackReadiness } from "./lib/payment-policy";
 import { startExpiredListingsScheduler } from "./lib/expire-listings-job";
 import { startExpiryReminderScheduler } from "./lib/listing-expiry-reminders";
 import { startPartnerUnpaidReminderScheduler } from "./lib/partner-unpaid-reminders";
@@ -25,6 +26,7 @@ async function startServer(): Promise<void> {
     logger.info("Wallet schema verified (wallet_balance_cents)");
     await ensureFiscalSchema(pool);
     logger.info("Fiscal schema verified (fiscal_receipts)");
+    logPaymentStackReadiness(logger);
   } catch (err) {
     logger.error({ err }, "Database schema migration failed");
     process.exit(1);

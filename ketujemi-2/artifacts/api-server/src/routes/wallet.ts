@@ -7,7 +7,11 @@ import {
   type WalletTopupId,
 } from "../lib/wallet";
 import { createWalletTopupStripeCheckout } from "../lib/wallet-stripe";
+import { createWalletTopupKosovoBankPayment } from "../lib/wallet-kosovo-bank";
 import { paymentsConfigured } from "../lib/payments";
+import { canIssueKosovoFiscalReceipts } from "../lib/fiscal-kosovo/config";
+import { kosovoBankPaymentsReady } from "../lib/kosovo-bank-payments";
+import { resolveWalletTopupChannel } from "../lib/payment-policy";
 
 const router = Router();
 
@@ -28,9 +32,14 @@ router.get("/wallet", async (req, res) => {
   }
 
   const balance = await getWalletBalanceCents(user.id);
+  const walletChannel = resolveWalletTopupChannel(user);
+
   res.json({
     ...walletSummary(balance),
     stripe: paymentsConfigured(),
+    kosovoBank: kosovoBankPaymentsReady(),
+    fiscalInvoices: canIssueKosovoFiscalReceipts(),
+    walletPaymentChannel: walletChannel,
     topups: Object.entries(WALLET_TOPUP_CATALOG).map(([id, p]) => ({
       id,
       price_eur: p.price_eur,
@@ -40,7 +49,7 @@ router.get("/wallet", async (req, res) => {
   });
 });
 
-/** POST /wallet/topup-checkout — Stripe Checkout for €5 / €10 / €20 */
+/** POST /wallet/topup-checkout — Stripe (now) or Kosovo bank (when enabled) */
 router.post("/wallet/topup-checkout", async (req, res) => {
   const user = await getSessionUser(req);
   if (!user) {
@@ -57,14 +66,30 @@ router.post("/wallet/topup-checkout", async (req, res) => {
     return;
   }
 
+  const channel = resolveWalletTopupChannel(user);
+  const origin = appOrigin(req);
+
   try {
-    const checkout = await createWalletTopupStripeCheckout(user, pkg, appOrigin(req));
-    res.json(checkout);
+    if (channel === "kosovo_bank") {
+      const checkout = await createWalletTopupKosovoBankPayment(user, pkg, origin);
+      res.json(checkout);
+      return;
+    }
+
+    const checkout = await createWalletTopupStripeCheckout(user, pkg, origin);
+    res.json({ ...checkout, provider: "stripe" as const });
   } catch (err) {
     if (err instanceof Error && err.message === "PAYMENTS_NOT_CONFIGURED") {
       res.status(503).json({
         error: "PAYMENTS_NOT_CONFIGURED",
         message: "Pagesa me kartë nuk është konfiguruar ende.",
+      });
+      return;
+    }
+    if (err instanceof Error && err.message === "KOSOVO_BANK_NOT_CONFIGURED") {
+      res.status(503).json({
+        error: "KOSOVO_BANK_NOT_CONFIGURED",
+        message: "Pagesa përmes bankës së Kosovës nuk është aktivizuar ende.",
       });
       return;
     }

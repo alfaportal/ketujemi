@@ -1,5 +1,7 @@
 /** Kosovo fiscal integration — env & legal entity (REVOLUTION INVEST). */
 
+import { kosovoBankPaymentsReady } from "../kosovo-bank-payments/config";
+
 export type FiscalProviderId = "placeholder" | "enternet";
 
 export function fiscalKosovoEnabled(): boolean {
@@ -16,6 +18,14 @@ export function fiscalApiConfigured(): boolean {
   const url = process.env.FISCAL_KOSOVO_API_URL?.trim();
   const key = process.env.FISCAL_KOSOVO_API_KEY?.trim();
   return Boolean(url && key);
+}
+
+/**
+ * Kosovo fiscal documents only when Enternet/API is live AND payments run via Kosovo bank.
+ * Stripe top-ups never issue ATK receipts (even with XK card).
+ */
+export function canIssueKosovoFiscalReceipts(): boolean {
+  return fiscalKosovoEnabled() && fiscalApiConfigured() && kosovoBankPaymentsReady();
 }
 
 export const FISCAL_LEGAL = {
