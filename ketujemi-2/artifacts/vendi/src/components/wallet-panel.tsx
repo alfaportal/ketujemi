@@ -134,7 +134,7 @@ export function WalletPanel({ className = "" }: { className?: string }) {
                     <>
                       <span className="font-bold">{t.label}</span>
                       <span className="text-xs text-gray-500 font-normal">
-                        Stripe Checkout
+                        Pagesa online
                       </span>
                     </>
                   )}

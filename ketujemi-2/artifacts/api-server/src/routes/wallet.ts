@@ -9,8 +9,6 @@ import {
 import { createWalletTopupStripeCheckout } from "../lib/wallet-stripe";
 import { createWalletTopupKosovoBankPayment } from "../lib/wallet-kosovo-bank";
 import { paymentsConfigured } from "../lib/payments";
-import { canIssueKosovoFiscalReceipts } from "../lib/fiscal-kosovo/config";
-import { kosovoBankPaymentsReady } from "../lib/kosovo-bank-payments";
 import { resolveWalletTopupChannel } from "../lib/payment-policy";
 
 const router = Router();
@@ -32,14 +30,10 @@ router.get("/wallet", async (req, res) => {
   }
 
   const balance = await getWalletBalanceCents(user.id);
-  const walletChannel = resolveWalletTopupChannel(user);
 
   res.json({
     ...walletSummary(balance),
     stripe: paymentsConfigured(),
-    kosovoBank: kosovoBankPaymentsReady(),
-    fiscalInvoices: canIssueKosovoFiscalReceipts(),
-    walletPaymentChannel: walletChannel,
     topups: Object.entries(WALLET_TOPUP_CATALOG).map(([id, p]) => ({
       id,
       price_eur: p.price_eur,
