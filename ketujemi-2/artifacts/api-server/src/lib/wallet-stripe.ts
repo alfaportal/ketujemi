@@ -9,6 +9,19 @@ import {
 } from "./wallet";
 import { createPaymentRecord, devPaymentBypassEnabled, stripeSecret } from "./payments";
 
+async function completeWalletTopup(
+  userId: number,
+  purpose: string,
+  paymentToken: string,
+): Promise<void> {
+  const pkg = purpose.replace("wallet_topup_", "") as WalletTopupId;
+  if (!(pkg in WALLET_TOPUP_CATALOG)) return;
+  await creditWalletTopup(userId, WALLET_TOPUP_CATALOG[pkg].price_cents, paymentToken);
+
+  const { issueFiscalReceiptForWalletTopup } = await import("./fiscal-kosovo");
+  void issueFiscalReceiptForWalletTopup(userId, purpose, paymentToken).catch(() => undefined);
+}
+
 export async function createWalletTopupStripeCheckout(
   user: User,
   pkg: WalletTopupId,
@@ -19,7 +32,7 @@ export async function createWalletTopupStripeCheckout(
 
   if (devPaymentBypassEnabled()) {
     const { token } = await createPaymentRecord(user.id, purpose);
-    await creditWalletTopup(user.id, def.price_cents, token);
+    await completeWalletTopup(user.id, purpose, token);
     return {
       url: `${origin}/profile?payment=success&purpose=wallet&session_id=dev`,
       token,
@@ -80,7 +93,5 @@ export async function fulfillWalletTopupFromPayment(
   purpose: string,
   paymentToken: string,
 ): Promise<void> {
-  const pkg = purpose.replace("wallet_topup_", "") as WalletTopupId;
-  if (!(pkg in WALLET_TOPUP_CATALOG)) return;
-  await creditWalletTopup(userId, WALLET_TOPUP_CATALOG[pkg].price_cents, paymentToken);
+  await completeWalletTopup(userId, purpose, paymentToken);
 }

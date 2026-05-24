@@ -32,6 +32,7 @@ export default defineConfig({
     "./src/schema/partners.ts",
     "./src/schema/listing_package_purchases.ts",
     "./src/schema/wallet_transactions.ts",
+    "./src/schema/fiscal_receipts.ts",
   ],
   dialect: "postgresql",
   dbCredentials: {

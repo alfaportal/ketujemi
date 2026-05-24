@@ -13,6 +13,7 @@
   "listing-deletion-log-migration.sql",
   "listing-moderation-rejections-migration.sql",
   "wallet-migration.sql",
+  "fiscal-receipts-migration.sql",
   "phone-verify-challenges-migration.sql",
   "email-verify-challenges-migration.sql"
 ]
