@@ -3,7 +3,6 @@ import { Loader2, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
-import { useMarket } from "@/lib/market-context";
 
 type WalletTopup = {
   id: string;
@@ -22,7 +21,6 @@ type WalletData = {
 
 export function WalletPanel({ className = "" }: { className?: string }) {
   const { user, refresh } = useAuth();
-  const { market } = useMarket();
   const { toast } = useToast();
   const [data, setData] = useState<WalletData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,7 +54,7 @@ export function WalletPanel({ className = "" }: { className?: string }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ package: pkg, market_code: market.code }),
+        body: JSON.stringify({ package: pkg }),
       });
       const body = (await res.json().catch(() => ({}))) as {
         url?: string;

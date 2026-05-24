@@ -1,5 +1,23 @@
 import type Stripe from "stripe";
-import { markPaymentPaidByToken } from "./payments";
+import { billingCountryFromCheckoutSession } from "./fiscal-kosovo/market";
+import { markPaymentPaidByToken, stripeSecret } from "./payments";
+
+async function resolveCheckoutBillingCountry(
+  session: Stripe.Checkout.Session,
+): Promise<string | null> {
+  const direct = billingCountryFromCheckoutSession(session);
+  if (direct) return direct;
+
+  const secret = stripeSecret();
+  if (!secret || !session.id) return null;
+
+  const Stripe = (await import("stripe")).default;
+  const stripe = new Stripe(secret);
+  const full = await stripe.checkout.sessions.retrieve(session.id, {
+    expand: ["payment_intent", "payment_intent.payment_method"],
+  });
+  return billingCountryFromCheckoutSession(full);
+}
 
 /** Apply business logic after Stripe Checkout is paid (webhook or return URL). */
 export async function fulfillPaidCheckoutSession(session: Stripe.Checkout.Session): Promise<void> {
@@ -53,10 +71,8 @@ export async function fulfillPaidCheckoutSession(session: Stripe.Checkout.Sessio
       purpose === "wallet_topup_20") &&
     Number.isFinite(userId)
   ) {
+    const billingCountry = await resolveCheckoutBillingCountry(session);
     const { fulfillWalletTopupFromPayment } = await import("./wallet-stripe");
-    await fulfillWalletTopupFromPayment(userId, purpose, token, {
-      marketCode: session.metadata?.market_code,
-      billingCountry: session.customer_details?.address?.country,
-    });
+    await fulfillWalletTopupFromPayment(userId, purpose, token, { billingCountry });
   }
 }

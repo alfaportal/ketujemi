@@ -85,7 +85,9 @@ router.post("/payments/confirm-session", async (req, res) => {
   try {
     const Stripe = (await import("stripe")).default;
     const stripe = new Stripe(secret);
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["payment_intent", "payment_intent.payment_method"],
+    });
 
     const ownerId = Number(session.metadata?.user_id);
     if (Number.isFinite(ownerId) && ownerId !== user.id) {

@@ -57,16 +57,8 @@ router.post("/wallet/topup-checkout", async (req, res) => {
     return;
   }
 
-  const marketCode =
-    typeof req.body?.market_code === "string" ? req.body.market_code.trim().toLowerCase() : "";
-
   try {
-    const checkout = await createWalletTopupStripeCheckout(
-      user,
-      pkg,
-      appOrigin(req),
-      marketCode || null,
-    );
+    const checkout = await createWalletTopupStripeCheckout(user, pkg, appOrigin(req));
     res.json(checkout);
   } catch (err) {
     if (err instanceof Error && err.message === "PAYMENTS_NOT_CONFIGURED") {

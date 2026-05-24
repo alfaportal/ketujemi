@@ -10,7 +10,6 @@ import {
 import { createPaymentRecord, devPaymentBypassEnabled, stripeSecret } from "./payments";
 
 export type WalletTopupFiscalHints = {
-  marketCode?: string | null;
   billingCountry?: string | null;
 };
 
@@ -26,7 +25,6 @@ async function completeWalletTopup(
 
   const { issueFiscalReceiptForWalletTopup } = await import("./fiscal-kosovo");
   void issueFiscalReceiptForWalletTopup(userId, purpose, paymentToken, {
-    marketCode: fiscalHints.marketCode,
     billingCountry: fiscalHints.billingCountry,
   }).catch(() => undefined);
 }
@@ -35,14 +33,13 @@ export async function createWalletTopupStripeCheckout(
   user: User,
   pkg: WalletTopupId,
   origin: string,
-  marketCode?: string | null,
 ): Promise<{ url: string; token: string; sessionId: string | null }> {
   const def = WALLET_TOPUP_CATALOG[pkg];
   const purpose = stripePurposeForWalletTopup(pkg);
 
   if (devPaymentBypassEnabled()) {
     const { token } = await createPaymentRecord(user.id, purpose);
-    await completeWalletTopup(user.id, purpose, token, { marketCode });
+    await completeWalletTopup(user.id, purpose, token);
     return {
       url: `${origin}/profile?payment=success&purpose=wallet&session_id=dev`,
       token,
@@ -61,6 +58,7 @@ export async function createWalletTopupStripeCheckout(
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
+    billing_address_collection: "required",
     customer_email: user.email?.trim() || undefined,
     line_items: [
       {
@@ -83,7 +81,6 @@ export async function createWalletTopupStripeCheckout(
       purpose,
       payment_token: token,
       wallet_topup: pkg,
-      market_code: marketCode?.trim().toLowerCase() || "",
     },
   });
 

@@ -9,18 +9,12 @@ import {
   fiscalVatPercent,
 } from "./config";
 import { sendFiscalReceiptEmail } from "./email";
-import {
-  isAbroadBillingCountry,
-  isDiasporaMarketCode,
-  shouldIssueKosovoFiscalReceipt,
-} from "./market";
+import { isKosovoBillingCountry } from "./market";
 import { issueFiscalReceiptViaProvider } from "./provider";
 import type { FiscalReceiptType } from "./types";
 
 export type WalletFiscalContext = {
-  /** Market code from site selector (ks, de, …). */
-  marketCode?: string | null;
-  /** Stripe billing country ISO (e.g. XK, DE). */
+  /** Stripe billing or card country (ISO 3166-1 alpha-2), e.g. XK, DE. */
   billingCountry?: string | null;
 };
 
@@ -30,7 +24,6 @@ function walletTopupDescription(pkg: WalletTopupId): string {
 }
 
 function receiptTypeForUser(user: User): FiscalReceiptType {
-  // TODO: use dedicated business NUI field when added to users/partners
   if (user.account_type === "business" && user.business_name?.trim()) {
     return "tax_invoice";
   }
@@ -39,7 +32,7 @@ function receiptTypeForUser(user: User): FiscalReceiptType {
 
 /**
  * Issue fiscal document after wallet top-up is credited.
- * Non-blocking for wallet: errors are logged and stored as status=failed.
+ * Only when Stripe confirms Kosovo (XK) — foreign cards skip fiscal (status=skipped).
  */
 export async function issueFiscalReceiptForWalletTopup(
   userId: number,
@@ -73,15 +66,11 @@ export async function issueFiscalReceiptForWalletTopup(
   const receiptType = receiptTypeForUser(user);
   const customerEmail = user.email?.trim() || null;
 
-  const abroadByMarket = isDiasporaMarketCode(ctx.marketCode);
-  const abroadByBilling = isAbroadBillingCountry(ctx.billingCountry);
-  const needsKosovoFiscal =
-    shouldIssueKosovoFiscalReceipt(ctx.marketCode) && !abroadByBilling;
+  const needsKosovoFiscal = isKosovoBillingCountry(ctx.billingCountry);
 
   if (!existing) {
     let status = "skipped";
     if (fiscalKosovoEnabled() && needsKosovoFiscal) status = "pending";
-    else if (abroadByMarket || abroadByBilling) status = "skipped_abroad";
 
     await db.insert(fiscalReceiptsTable).values({
       user_id: userId,
@@ -104,10 +93,9 @@ export async function issueFiscalReceiptForWalletTopup(
     logger.info(
       {
         paymentToken,
-        marketCode: ctx.marketCode,
-        billingCountry: ctx.billingCountry,
+        billingCountry: ctx.billingCountry ?? null,
       },
-      "fiscal skipped (payment from abroad / diaspora — no ATK Kosovo receipt)",
+      "fiscal skipped (Stripe: card/billing outside Kosovo)",
     );
     return;
   }
