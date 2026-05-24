@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config as loadEnv } from "dotenv";
@@ -6,15 +6,29 @@ import pg from "pg";
 
 const dbDir = path.dirname(fileURLToPath(import.meta.url));
 const ketujemi2Root = path.resolve(dbDir, "..", "..");
-const envCandidates = [
-  path.join(ketujemi2Root, ".env"),
-  path.resolve(ketujemi2Root, "..", ".env"),
-  path.resolve(process.cwd(), ".env"),
-  path.resolve(process.cwd(), "../../.env"),
-];
-for (const envPath of envCandidates) {
-  loadEnv({ path: envPath });
-  if (process.env.DATABASE_URL?.trim()) break;
+
+/** Railway / CI inject DATABASE_URL — never overwrite with a local .env file. */
+function resolveDatabaseUrl(): string {
+  const injected = process.env.DATABASE_URL?.trim();
+  if (injected) {
+    return injected;
+  }
+
+  const envCandidates = [
+    path.join(ketujemi2Root, ".env"),
+    path.resolve(ketujemi2Root, "..", ".env"),
+    path.resolve(process.cwd(), ".env"),
+    path.resolve(process.cwd(), "../../.env"),
+  ];
+
+  for (const envPath of envCandidates) {
+    if (!existsSync(envPath)) continue;
+    loadEnv({ path: envPath });
+    const loaded = process.env.DATABASE_URL?.trim();
+    if (loaded) return loaded;
+  }
+
+  return "";
 }
 
 const fileArg = process.argv[2] ?? "partner-activation-code-migration.sql";
@@ -22,9 +36,14 @@ const sqlPath = path.isAbsolute(fileArg)
   ? fileArg
   : path.join(dbDir, "..", "sql", fileArg);
 
-const url = process.env.DATABASE_URL?.trim();
+const url = resolveDatabaseUrl();
 if (!url) {
-  console.error("DATABASE_URL is not set in ketujemi-2/.env");
+  console.error("DATABASE_URL is not set (env or ketujemi-2/.env)");
+  process.exit(1);
+}
+
+if (!url.startsWith("postgres://") && !url.startsWith("postgresql://")) {
+  console.error("DATABASE_URL must be a postgres:// or postgresql:// connection string");
   process.exit(1);
 }
 
@@ -35,7 +54,14 @@ const pool = new pg.Pool({
 });
 
 async function main() {
-  console.log(`Running SQL: ${path.basename(sqlPath)}`);
+  let host = "?";
+  try {
+    const normalized = url.replace(/^postgresql:/, "https:").replace(/^postgres:/, "https:");
+    host = new URL(normalized).hostname;
+  } catch {
+    /* ignore */
+  }
+  console.log(`Running SQL: ${path.basename(sqlPath)} (host ${host})`);
   await pool.query(sql);
   const base = path.basename(sqlPath);
   if (base.includes("phone-verify")) {

@@ -1,26 +1,37 @@
 import { spawnSync } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { resolveAppRoot, resolveMonorepoRoot } from "./resolve-app-root.mjs";
 
+const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = resolveAppRoot();
 const monorepoRoot = resolveMonorepoRoot(appRoot);
-const shell = true;
 
-/** Railway often sets NODE_ENV=production; drizzle-kit must be installed (now a dependency). */
+/** Snapshot before any child process — Railway injects this; do not read .env in SQL runner. */
+const databaseUrl = process.env.DATABASE_URL?.trim();
+if (!databaseUrl) {
+  console.error(
+    "[railway-predeploy] DATABASE_URL is not set. Add it in Railway → Variables before preDeploy.",
+  );
+  process.exit(1);
+}
+
 const installEnv = {
   ...process.env,
+  DATABASE_URL: databaseUrl,
   NODE_ENV: "development",
   NPM_CONFIG_PRODUCTION: "false",
   CI: "true",
 };
 
-function runPnpm(args, cwd, { required = true, label } = {}) {
+function runPnpm(args, cwd, { required = true, label, useShell = true } = {}) {
   if (label) console.log(`[railway-predeploy] ${label} …`);
 
   const result = spawnSync("pnpm", args, {
     cwd,
     env: installEnv,
     stdio: "inherit",
-    shell,
+    shell: useShell,
   });
 
   if (result.status !== 0) {
@@ -34,15 +45,36 @@ function runPnpm(args, cwd, { required = true, label } = {}) {
   }
 }
 
-console.log("[railway-predeploy] monorepo root:", monorepoRoot);
-console.log("[railway-predeploy] app root:", appRoot);
+/** SQL migrations via node + pg only (no dotenv, no shell — avoids & in URL breaking). */
+function runSqlMigration(sqlFile, label) {
+  console.log(`[railway-predeploy] ${label} …`);
+  const runner = path.join(scriptsDir, "run-db-sql.mjs");
+  const result = spawnSync(process.execPath, [runner, sqlFile], {
+    cwd: monorepoRoot,
+    env: installEnv,
+    stdio: "inherit",
+    shell: false,
+  });
+  if (result.status !== 0) {
+    console.error(`[railway-predeploy] SQL migration failed: ${sqlFile}`);
+    process.exit(result.status ?? 1);
+  }
+}
 
-if (!installEnv.DATABASE_URL?.trim()) {
-  console.error(
-    "[railway-predeploy] DATABASE_URL is not set. Add it in Railway → Variables before preDeploy.",
-  );
+let dbHost = "(unknown)";
+try {
+  const normalized = databaseUrl
+    .replace(/^postgresql:/, "https:")
+    .replace(/^postgres:/, "https:");
+  dbHost = new URL(normalized).hostname;
+} catch {
+  console.error("[railway-predeploy] DATABASE_URL is not a valid postgres URL.");
   process.exit(1);
 }
+
+console.log("[railway-predeploy] monorepo root:", monorepoRoot);
+console.log("[railway-predeploy] app root:", appRoot);
+console.log("[railway-predeploy] DATABASE_URL host:", dbHost);
 
 console.log("[railway-predeploy] Installing dependencies (including devDeps for drizzle-kit) …");
 runPnpm(["install", "--no-frozen-lockfile"], monorepoRoot, {
@@ -55,18 +87,11 @@ runPnpm(["--filter", "@workspace/db", "exec", "drizzle-kit", "--version"], appRo
 
 runPnpm(["run", "db:push"], appRoot, {
   required: false,
-  label: "drizzle-kit push (db:push) — optional; wallet SQL + API startup cover schema",
+  label: "drizzle-kit push (db:push) — optional",
 });
 
-runPnpm(["--filter", "@workspace/db", "sql:run", "wallet-migration.sql"], appRoot, {
-  label: "wallet-migration.sql",
-});
-
-runPnpm(
-  ["--filter", "@workspace/db", "sql:run", "phone-verify-challenges-migration.sql"],
-  appRoot,
-  { label: "phone-verify-challenges-migration.sql" },
-);
+runSqlMigration("wallet-migration.sql", "wallet-migration.sql");
+runSqlMigration("phone-verify-challenges-migration.sql", "phone-verify-challenges-migration.sql");
 
 runPnpm(["run", "db:seed:parent-images"], appRoot, {
   required: false,
