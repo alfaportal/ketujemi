@@ -41,6 +41,7 @@ GJUHËT (obligativ)
 • Emrat e UI si në faqe: «Posto Falas», «Njoftimet», «Hyr», «Muzikë & Hobby», «Profili».
 
 STILI (obligativ)
+• Lexo mesazhin E FUNDIT të përdoruesit dhe përgjigju vetëm atij — mos përsërit përgjigjen e mëparshme nëse pyetja ndryshon.
 • Profesional, i detajuar, saktë — përdor hapa të numëruara për regjistrim/postim/rregulla.
 • Jep përgjigje SPECIFIKE: emër kategorie + nën-kategori + veprim (kliko X → pastaj Y).
 • MOS thuaj «shiko faqen kryesore», «kontrollo homepage», «zgjidh kategorinë që përshtatet» pa emër kategorie.
@@ -145,14 +146,16 @@ export async function runSupportChat(
     return invalidSupportQuestionReply(replyLang);
   }
 
-  const priorityAnswer = tryPrioritySupportAnswer(messages, langHint);
-  if (priorityAnswer) {
-    return priorityAnswer;
+  if (isSupportContactQuestion(lastUser)) {
+    const contactReply = tryPrioritySupportAnswer(
+      [{ role: "user", content: lastUser }],
+      langHint,
+    );
+    if (contactReply) return contactReply;
   }
 
-  const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, langHint);
-
   if (!isClaudeConfigured()) {
+    const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, langHint);
     if (offlineOrBrowse) return offlineOrBrowse;
     if (supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser)) {
       return escalateToEmailReply(replyLang);
@@ -166,7 +169,7 @@ export async function runSupportChat(
   const response = await client.messages.create({
     model: getClaudeModel(),
     max_tokens: 768,
-    system: `${buildSupportSystem(replyLang)}\n\nGjuha e mesazhit të fundit të përdoruesit (përgjigju në këtë gjuhë): ${langLabel(replyLang)}.`,
+    system: `${buildSupportSystem(replyLang)}\n\nGjuha e mesazhit të fundit të përdoruesit (përgjigju në këtë gjuhë): ${langLabel(replyLang)}.\nMesazhi i fundit (përgjigju vetëm kësaj pyetjeje): «${lastUser.slice(0, 500)}»`,
     messages: trimmed.map((m) => ({
       role: m.role,
       content: m.content.slice(0, 2000),
@@ -183,6 +186,7 @@ export async function runSupportChat(
     return clampSupportReply(text, lastUser, replyLang, messages, langHint);
   }
 
+  const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, langHint);
   if (offlineOrBrowse) return offlineOrBrowse;
   if (supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser)) {
     return escalateToEmailReply(replyLang);

@@ -40,6 +40,13 @@ function getUserSearchContext(messages: ChatMessage[]): string {
   return parts.join(" ");
 }
 
+/** Short follow-ups like «po goma» — may need prior user messages for context. */
+function isShortFollowUp(raw: string): boolean {
+  const normalized = normalizeText(raw).trim();
+  if (normalized.length > 40) return false;
+  return /^(po|edhe|dhe|a)\s+\S/i.test(normalized);
+}
+
 function phoneReply(lang: UiLang): string {
   const phone = getSupportPhoneDisplay();
   const copy: Record<UiLang, string> = {
@@ -70,15 +77,6 @@ const COMPOSITE_INTENTS: { test: (t: string) => boolean; reply: Record<UiLang, s
 ];
 
 const DETAILED_FAQ: FaqEntry[] = [
-  {
-    keywords:
-      /telefon|numër|numer|numri|phone|kontakt|thirr|call|whatsapp|viber|si\s+ju\s+(kontaktoj|telefonoj)|broj\s+telefona|телефон|контакт/i,
-    reply: {
-      sq: phoneReply("sq"),
-      mk: phoneReply("mk"),
-      me: phoneReply("me"),
-    },
-  },
   {
     keywords:
       /regjistr|regjistro|krijoj\s+llogari|hap\s+llogari|sign\s*up|create\s+account|otvori\s+nalog|регистр/i,
@@ -211,7 +209,7 @@ function tryDetailedFaqAnswer(text: string, lang: UiLang): string | null {
   return null;
 }
 
-/** High-confidence answers — used before Claude (fixes wrong generic replies). */
+/** Rule-based answers — offline mode, or instant contact replies. Match the latest question first. */
 export function tryPrioritySupportAnswer(
   messages: ChatMessage[],
   langHint: UiLang = "sq",
@@ -220,20 +218,29 @@ export function tryPrioritySupportAnswer(
   if (!lastUser) return null;
 
   const text = expandUserQuery(lastUser);
-  const context = getUserSearchContext(messages);
   const lang = inferSupportLang(lastUser, langHint);
 
-  if (isSupportContactQuestion(text)) {
+  if (isSupportContactQuestion(text) || isSupportContactQuestion(lastUser)) {
     return phoneReply(lang);
   }
 
-  return (
+  const fromCurrent =
     tryCompositeAnswer(text, lang) ??
     tryProductCategoryAnswer(text, lang) ??
-    tryProductCategoryAnswer(context, lang) ??
-    tryDetailedFaqAnswer(text, lang) ??
-    tryDetailedFaqAnswer(context, lang)
-  );
+    tryDetailedFaqAnswer(text, lang);
+
+  if (fromCurrent) return fromCurrent;
+
+  if (isShortFollowUp(lastUser)) {
+    const context = getUserSearchContext(messages);
+    if (context && context !== text) {
+      return (
+        tryProductCategoryAnswer(context, lang) ?? tryDetailedFaqAnswer(context, lang)
+      );
+    }
+  }
+
+  return null;
 }
 
 /** Rule-based answers when Claude is off or as last resort. */
