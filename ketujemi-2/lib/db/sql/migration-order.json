@@ -1,0 +1,18 @@
+[
+  "business-rules-migration.sql",
+  "business-payments-migration.sql",
+  "listings-top-repost-migration.sql",
+  "listings-expiry-reminders-migration.sql",
+  "users-partner-logo-migration.sql",
+  "partner-logo-stats-migration.sql",
+  "business-partner-system-migration.sql",
+  "partner-activation-code-migration.sql",
+  "partners-table-migration.sql",
+  "partners-payment-automation-migration.sql",
+  "listing-package-purchases-migration.sql",
+  "listing-deletion-log-migration.sql",
+  "listing-moderation-rejections-migration.sql",
+  "wallet-migration.sql",
+  "phone-verify-challenges-migration.sql",
+  "email-verify-challenges-migration.sql"
+]

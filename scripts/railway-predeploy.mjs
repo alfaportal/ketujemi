@@ -45,22 +45,6 @@ function runPnpm(args, cwd, { required = true, label, useShell = true } = {}) {
   }
 }
 
-/** SQL migrations via node + pg only (no dotenv, no shell — avoids & in URL breaking). */
-function runSqlMigration(sqlFile, label) {
-  console.log(`[railway-predeploy] ${label} …`);
-  const runner = path.join(scriptsDir, "run-db-sql.mjs");
-  const result = spawnSync(process.execPath, [runner, sqlFile], {
-    cwd: monorepoRoot,
-    env: installEnv,
-    stdio: "inherit",
-    shell: false,
-  });
-  if (result.status !== 0) {
-    console.error(`[railway-predeploy] SQL migration failed: ${sqlFile}`);
-    process.exit(result.status ?? 1);
-  }
-}
-
 let dbHost = "(unknown)";
 try {
   const normalized = databaseUrl
@@ -90,8 +74,18 @@ runPnpm(["run", "db:push"], appRoot, {
   label: "drizzle-kit push (db:push) — optional",
 });
 
-runSqlMigration("wallet-migration.sql", "wallet-migration.sql");
-runSqlMigration("phone-verify-challenges-migration.sql", "phone-verify-challenges-migration.sql");
+console.log("[railway-predeploy] Applying all lib/db/sql migrations …");
+const allSqlRunner = path.join(scriptsDir, "run-all-db-sql.mjs");
+const allMigrations = spawnSync(process.execPath, [allSqlRunner], {
+  cwd: monorepoRoot,
+  env: installEnv,
+  stdio: "inherit",
+  shell: false,
+});
+if (allMigrations.status !== 0) {
+  console.error("[railway-predeploy] One or more SQL migrations failed.");
+  process.exit(allMigrations.status ?? 1);
+}
 
 runPnpm(["run", "db:seed:parent-images"], appRoot, {
   required: false,
