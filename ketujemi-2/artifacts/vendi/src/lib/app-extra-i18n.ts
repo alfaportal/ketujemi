@@ -73,6 +73,8 @@ const KS_EXTRA: Record<string, string> = {
   login_sub_login: "Shkruaj email ose telefonin dhe fjalëkalimin.",
   login_sub_register: "Vetëm email ose telefon + fjalëkalim. Brenda pak sekondash.",
   login_sub_email_only: "Regjistrohu ose kyçu me email dhe fjalëkalim.",
+  login_sub_register_email_verify:
+    "Regjistrohu me email. Do të marrësh një kod konfirmimi në email.",
   login_tab_email: "Email",
   login_tab_sms: "Telefon",
   login_mode_login: "Kyçu",
@@ -3281,6 +3283,8 @@ const MNE_EXTRA: Record<string, string> = {
   login_sub_login: "Unesi email ili telefon i lozinku.",
   login_sub_register: "Samo email ili telefon + lozinka. Za manje od 30 sekundi.",
   login_sub_email_only: "Registrujte se ili prijavite se emailom i lozinkom.",
+  login_sub_register_email_verify:
+    "Registrujte se emailom. Dobićete kod za potvrdu na email.",
   login_tab_email: "Email",
   login_tab_sms: "Telefon",
   login_mode_login: "Prijavi se",

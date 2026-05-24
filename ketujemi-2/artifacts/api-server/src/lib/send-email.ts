@@ -8,7 +8,7 @@ type VerifyMailPayload = {
 
 export async function sendEmailVerification(payload: VerifyMailPayload): Promise<void> {
   const { to, code, verifyUrl } = payload;
-  const apiKey = process.env["RESEND_API_KEY"];
+  const apiKey = process.env["RESEND_API_KEY"]?.trim();
   const from = process.env["EMAIL_FROM"] ?? "KetuJemi <onboarding@ketujemi.com>";
 
   const subject = "Konfirmoni llogarinë — KetuJemi";
@@ -58,7 +58,7 @@ export async function sendPartnerActivationEmail(
   payload: PartnerActivationMailPayload,
 ): Promise<void> {
   const { to, businessName, activationCode, packageLabel, profileUrl } = payload;
-  const apiKey = process.env["RESEND_API_KEY"];
+  const apiKey = process.env["RESEND_API_KEY"]?.trim();
   const from = process.env["EMAIL_FROM"] ?? "KetuJemi <onboarding@ketujemi.com>";
 
   const subject = `Llogaria juaj ${packageLabel} u aktivizua — KetuJemi`;

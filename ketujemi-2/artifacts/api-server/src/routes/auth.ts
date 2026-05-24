@@ -17,7 +17,7 @@ import {
 } from "../lib/user-session";
 import { normalizePhone } from "../lib/phone-prefixes";
 import { assertSmsStartAllowed, clientIp } from "../lib/sms-rate-limit";
-import { isEmailVerificationRequired } from "../lib/email-auth";
+import { hasResendConfigured, isEmailVerificationRequired } from "../lib/email-auth";
 import { isSmsAuthEnabled, SMS_AUTH_DISABLED_MESSAGE } from "../lib/sms-auth";
 import { isRecaptchaRequired, verifyRecaptchaToken } from "../lib/recaptcha-verify";
 import { assertAccountActive, isUserBanned } from "../lib/user-ban";
@@ -104,6 +104,14 @@ router.post("/auth/register/email", async (req, res) => {
       return;
     }
 
+    if (!hasResendConfigured()) {
+      res.status(503).json({
+        error: "EMAIL_NOT_CONFIGURED",
+        message: "Verifikimi me email nuk është i konfiguruar (RESEND_API_KEY).",
+      });
+      return;
+    }
+
     await db
       .delete(emailVerifyChallengesTable)
       .where(lt(emailVerifyChallengesTable.expires_at, new Date()));
@@ -121,27 +129,18 @@ router.post("/auth/register/email", async (req, res) => {
     });
 
     const verifyUrl = `${appOrigin(req)}/api/auth/verify/email/link?token=${encodeURIComponent(token)}`;
-
-    try {
-      await sendEmailVerification({ to: email, code, verifyUrl });
-      res.status(201).json({ ok: true, needsVerification: true });
-    } catch (sendErr) {
-      req.log?.warn(
-        { err: sendErr },
-        "verification email failed — completing registration without email verify",
-      );
-      await db
-        .delete(emailVerifyChallengesTable)
-        .where(eq(emailVerifyChallengesTable.email, email));
-      const row = await createUserNow();
-      res.status(201).json({
-        ok: true,
-        needsVerification: false,
-        user: publicUser(row, { self: true }),
-      });
-    }
+    await sendEmailVerification({ to: email, code, verifyUrl });
+    res.status(201).json({ ok: true, needsVerification: true });
   } catch (err) {
     req.log?.error({ err }, "register email");
+    const msg = err instanceof Error ? err.message : "";
+    if (msg.includes("Email send failed")) {
+      res.status(502).json({
+        error: "EMAIL_SEND_FAILED",
+        message: "Nuk u dërgua emaili i verifikimit. Provo përsëri ose kontrollo adresën.",
+      });
+      return;
+    }
     res.status(500).json({ error: "Registration failed" });
   }
 });

@@ -44,6 +44,7 @@ export default function LoginPage() {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [smsAuthEnabled, setSmsAuthEnabled] = useState(false);
+  const [emailVerificationRequired, setEmailVerificationRequired] = useState(true);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const recaptchaRef = useRef<RecaptchaV2Handle>(null);
   const { captchaRequired, siteKey: recaptchaSiteKey } = useRecaptchaSiteKey();
@@ -52,11 +53,16 @@ export default function LoginPage() {
     let cancelled = false;
     void fetch("/api/config/public", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : {}))
-      .then((data: { smsAuthEnabled?: boolean }) => {
-        if (!cancelled) setSmsAuthEnabled(Boolean(data.smsAuthEnabled));
+      .then((data: { smsAuthEnabled?: boolean; emailVerificationRequired?: boolean }) => {
+        if (cancelled) return;
+        setSmsAuthEnabled(Boolean(data.smsAuthEnabled));
+        setEmailVerificationRequired(data.emailVerificationRequired !== false);
       })
       .catch(() => {
-        if (!cancelled) setSmsAuthEnabled(false);
+        if (!cancelled) {
+          setSmsAuthEnabled(false);
+          setEmailVerificationRequired(true);
+        }
       });
     return () => {
       cancelled = true;
@@ -132,7 +138,10 @@ export default function LoginPage() {
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           toast({
-            title: (data as { error?: string }).error ?? t.toast_reqFail,
+            title:
+              (data as { message?: string }).message ??
+              (data as { error?: string }).error ??
+              t.toast_reqFail,
             variant: "destructive",
           });
           return;
@@ -315,7 +324,9 @@ export default function LoginPage() {
               {isRegister
                 ? smsAuthEnabled
                   ? t.login_sub_register
-                  : t.login_sub_email_only
+                  : emailVerificationRequired
+                    ? t.login_sub_register_email_verify
+                    : t.login_sub_email_only
                 : smsAuthEnabled
                   ? t.login_sub_login
                   : t.login_sub_email_only}
