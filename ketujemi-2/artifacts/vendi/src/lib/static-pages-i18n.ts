@@ -230,6 +230,18 @@ const KS: StaticPagesCopy = {
         ],
       },
       {
+        title: "Fiskalizimi dhe dokumentet tatimore",
+        paragraphs: [
+          "Pagesat që i bëni platformës (mbushje portofoli, paketa VIP/TOP, reklama dhe shërbime të ngjashme) janë furnizim i shërbimit nga REVOLUTION INVEST Sh.p.k., në përputhje me ligjet e Republikës së Kosovës dhe kërkesat e Administratës Tatimore (ATK) për tregti online.",
+          "Për blerës persona fizike (përdorues privat) lëshohet kupon fiskal; për blerës biznes (kur disponohet NUI) lëshohet faturë tatimore. Dokumenti dërgohet automatikisht me email në adresën e llogarisë suaj pas pagesës së konfirmuar.",
+          "Kjo detyrë vlen për çdo pagesë që platformës ia bëni ju — jo vetëm për biznese. Personat e thjeshtë nuk lëshojnë kupon për veten; ata e marrin nga operatori i platformës.",
+        ],
+        bullets: [
+          "Shitjet e mallrave mes përdoruesve (blerës ↔ shitës në njoftime) nuk janë shitje e REVOLUTION INVEST; marrëveshja dhe detyrimet fiskale eventuale i takojnë palëve.",
+          "Nëse shetisni si afarist jashtë platformës, jeni përgjegjës për fiskalizimin e shitjeve tuaja sipas ligjit.",
+        ],
+      },
+      {
         title: "Llogaria dhe postimi",
         bullets: [
           "Duhet të keni llogari të verifikuar (email dhe/ose telefon, sipas rregullave aktuale) për të postuar",
@@ -725,6 +737,18 @@ const MK: StaticPagesCopy = {
         ],
       },
       {
+        title: "Фискализација и даночни документи",
+        paragraphs: [
+          "Плаќањата кон платформата (полнење паричник, VIP/TOP пакети, реклами и слични услуги) се услуга од REVOLUTION INVEST Sh.p.k., во согласност со законите на Република Косово и барањата на ATK за онлајн трговија.",
+          "За физички лица (приватни корисници) се издава фискален купон; за бизнис купувачи (кога е достапен NUI) — даночна фактура. Документот се испраќа автоматски на email по потврдена уплата.",
+          "Ова важи за секоја уплата кон платформата — не само за фирми. Физичките лица не издаваат купон; го примаат од операторот.",
+        ],
+        bullets: [
+          "Продажбата на стоки меѓу корисници (огласи) не е продажба на REVOLUTION INVEST; договорот и евентуалните фискални обврски се на страните.",
+          "Ако продавате како трговец, сте одговорни за фискализација на вашите продажби според законот.",
+        ],
+      },
+      {
         title: "Сметка и објавување",
         bullets: [
           "Потребна е верификувана сметка (email и/или телефон, според актуелните правила) за објавување",
@@ -1215,6 +1239,18 @@ const MNE: StaticPagesCopy = {
         bullets: [
           "Zahtjevi za povrat sredstava iz novčanika se odbijaju, osim kada to zakon zahtijeva.",
           "Za sporove oko kupovine među korisnicima kontaktirajte drugu stranu; mi posredujemo samo kroz moderaciju sadržaja.",
+        ],
+      },
+      {
+        title: "Fiskalizacija i poreski dokumenti",
+        paragraphs: [
+          "Uplate platformi (punjenje novčanika, VIP/TOP paketi, reklame i slične usluge) predstavljaju uslugu REVOLUTION INVEST Sh.p.k., u skladu sa zakonima Republike Kosovo i zahtjevima ATK-a za online trgovinu.",
+          "Za fizička lica (privatni korisnici) izdaje se fiskalni kupon; za poslovne kupce (kada je dostupan NUI) — poreska faktura. Dokument se automatski šalje na email nakon potvrđene uplate.",
+          "Ovo važi za svaku uplatu platformi — ne samo za firme. Obični korisnici ne izdaju kupon; primaju ga od operatera platforme.",
+        ],
+        bullets: [
+          "Prodaja robe između korisnika (oglasi) nije prodaja REVOLUTION INVEST; ugovor i eventualne fiskalne obaveze su na stranama.",
+          "Ako prodajete kao trgovac, odgovorni ste za fiskalizaciju vlastitih prodaja prema zakonu.",
         ],
       },
       {
