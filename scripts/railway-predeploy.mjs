@@ -3,26 +3,68 @@ import { resolveAppRoot, resolveMonorepoRoot } from "./resolve-app-root.mjs";
 
 const appRoot = resolveAppRoot();
 const monorepoRoot = resolveMonorepoRoot(appRoot);
-const shell = process.platform === "win32";
+const shell = true;
 
-function run(args, cwd) {
-  const result = spawnSync("pnpm", args, { cwd, env: process.env, stdio: "inherit", shell });
-  if (result.status !== 0) process.exit(result.status ?? 1);
+/** Railway often sets NODE_ENV=production; drizzle-kit must be installed (now a dependency). */
+const installEnv = {
+  ...process.env,
+  NODE_ENV: "development",
+  NPM_CONFIG_PRODUCTION: "false",
+  CI: "true",
+};
+
+function runPnpm(args, cwd, { required = true, label } = {}) {
+  if (label) console.log(`[railway-predeploy] ${label} …`);
+
+  const result = spawnSync("pnpm", args, {
+    cwd,
+    env: installEnv,
+    stdio: "inherit",
+    shell,
+  });
+
+  if (result.status !== 0) {
+    if (required) {
+      console.error(`[railway-predeploy] Command failed: pnpm ${args.join(" ")}`);
+      process.exit(result.status ?? 1);
+    }
+    console.warn(
+      `[railway-predeploy] Optional step failed (exit ${result.status}): pnpm ${args.join(" ")}`,
+    );
+  }
 }
 
 console.log("[railway-predeploy] monorepo root:", monorepoRoot);
 console.log("[railway-predeploy] app root:", appRoot);
 
-console.log("[railway-predeploy] Installing dependencies …");
-run(["install", "--no-frozen-lockfile"], monorepoRoot);
+if (!installEnv.DATABASE_URL?.trim()) {
+  console.error(
+    "[railway-predeploy] DATABASE_URL is not set. Add it in Railway → Variables before preDeploy.",
+  );
+  process.exit(1);
+}
 
-console.log("[railway-predeploy] drizzle-kit push …");
-run(["run", "db:push"], appRoot);
+console.log("[railway-predeploy] Installing dependencies (including devDeps for drizzle-kit) …");
+runPnpm(["install", "--no-frozen-lockfile"], monorepoRoot, {
+  label: "pnpm install",
+});
 
-console.log("[railway-predeploy] Applying wallet-migration.sql …");
-run(["--filter", "@workspace/db", "sql:run", "wallet-migration.sql"], appRoot);
+runPnpm(["--filter", "@workspace/db", "exec", "drizzle-kit", "--version"], appRoot, {
+  label: "verify drizzle-kit is on PATH",
+});
 
-console.log("[railway-predeploy] Seeding parent category images …");
-run(["run", "db:seed:parent-images"], appRoot);
+runPnpm(["run", "db:push"], appRoot, {
+  required: false,
+  label: "drizzle-kit push (db:push) — optional; wallet SQL + API startup cover schema",
+});
+
+runPnpm(["--filter", "@workspace/db", "sql:run", "wallet-migration.sql"], appRoot, {
+  label: "wallet-migration.sql",
+});
+
+runPnpm(["run", "db:seed:parent-images"], appRoot, {
+  required: false,
+  label: "db:seed:parent-images",
+});
 
 console.log("[railway-predeploy] done");
