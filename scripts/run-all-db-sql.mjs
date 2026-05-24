@@ -16,6 +16,7 @@ const require = createRequire(path.join(appRoot, "lib", "db", "package.json"));
 const pg = require("pg");
 
 const databaseUrl = process.env.DATABASE_URL?.trim();
+const soft = process.argv.includes("--soft");
 if (!databaseUrl) {
   console.error("[run-all-db-sql] DATABASE_URL is not set in the environment.");
   process.exit(1);
@@ -98,6 +99,10 @@ await pool.end();
 
 if (failed > 0) {
   console.error(`\n[run-all-db-sql] ${failed} migration(s) failed.`);
+  if (soft) {
+    console.warn("[run-all-db-sql] --soft: continuing despite errors.");
+    process.exit(0);
+  }
   process.exit(1);
 }
 
