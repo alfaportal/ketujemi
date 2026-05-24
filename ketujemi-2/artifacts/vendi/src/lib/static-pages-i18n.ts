@@ -190,12 +190,21 @@ const KS: StaticPagesCopy = {
   },
   terms: {
     title: "Termat dhe Kushtet",
-    tagline: "Duke përdorur KetuJemi.com, pranoni termat dhe kushtet e mëposhtëm.",
+    tagline:
+      "Duke përdorur KetuJemi.com, pranoni termat dhe kushtet e mëposhtëm të operatorit ligjor të platformës.",
     sections: [
+      {
+        title: "Subjekti ligjor dhe platforma",
+        paragraphs: [
+          "Platforma KetuJemi.com (Bli & Shit) operohet dhe ofrohet nga REVOLUTION INVEST Sh.p.k., me seli në Ferizaj, Republika e Kosovës.",
+          "Numri i regjistrimit të biznesit (NRB): 811314567. Pagesat për shërbime të platformës (portofol, paketa VIP/TOP, reklama dhe të ngjashme) kryhen në emër të këtij subjekti.",
+          "KetuJemi.com është emri tregtar i platformës; marrëdhënia ligjore me përdoruesin lidhet me REVOLUTION INVEST Sh.p.k. si operator.",
+        ],
+      },
       {
         title: "Roli i platformës",
         paragraphs: [
-          "KetuJemi.com është vetëm hapësirë ndërlidhëse mes blerësve dhe shitësve. Ne nuk jemi palë në kontratën e shitjes.",
+          "KetuJemi.com është vetëm hapësirë ndërlidhëse mes blerësve dhe shitësve. REVOLUTION INVEST Sh.p.k. nuk është palë në kontratën e shitjes së mallrave mes përdoruesve.",
           "Përdoruesi mban përgjegjësi të plotë ligjore për vërtetësinë dhe ligjshmërinë e çdo njoftimi që poston.",
         ],
       },
@@ -239,6 +248,8 @@ const KS: StaticPagesCopy = {
         title: "Informacion kontakti",
         paragraphs: ["Për pyetje ligjore, shërbime platforme, raportime ose mbështetje:"],
         bullets: [
+          "Operator ligjor: REVOLUTION INVEST Sh.p.k., Ferizaj, Kosovë — NRB 811314567",
+          "Platforma: www.ketujemi.com",
           "Email zyrtar: info@ketujemi.com",
           "Mbështetje teknike: support@ketujemi.com",
           "Formular kontakti: www.ketujemi.com/kontakt",
@@ -674,12 +685,21 @@ const MK: StaticPagesCopy = {
   },
   terms: {
     title: "Услови и одредби",
-    tagline: "Со користење на KetuJemi.com ги прифаќате следните услови.",
+    tagline:
+      "Со користење на KetuJemi.com ги прифаќате следните услови на правниот оператор на платформата.",
     sections: [
+      {
+        title: "Правен субјект и платформа",
+        paragraphs: [
+          "Платформата KetuJemi.com (Bli & Shit) ја управува и ја нуди REVOLUTION INVEST Sh.p.k., со седиште во Ferizaj, Република Косово.",
+          "Број на регистрација на бизнисот (NRB): 811314567. Плаќањата за услуги на платформата (паричник, VIP/TOP пакети, реклами и слично) се вршат во име на овој субјект.",
+          "KetuJemi.com е трговско име на платформата; правниот однос со корисникот е со REVOLUTION INVEST Sh.p.k. како оператор.",
+        ],
+      },
       {
         title: "Улога на платформата",
         paragraphs: [
-          "KetuJemi.com е само посреднички простор. Ние не сме страна во договорот за продажба.",
+          "KetuJemi.com е само посреднички простор. REVOLUTION INVEST Sh.p.k. не е страна во договорот за продажба на стоки меѓу корисниците.",
           "Корисникот носи целосна правна одговорност за секој објавен оглас.",
         ],
       },
@@ -723,6 +743,8 @@ const MK: StaticPagesCopy = {
         title: "Контакт информации",
         paragraphs: ["За правни прашања, услуги на платформата, пријави или поддршка:"],
         bullets: [
+          "Правен оператор: REVOLUTION INVEST Sh.p.k., Ferizaj, Косово — NRB 811314567",
+          "Платформа: www.ketujemi.com",
           "Службен email: info@ketujemi.com",
           "Техничка поддршка: support@ketujemi.com",
           "Контакт формулар: www.ketujemi.com/kontakt",
@@ -1156,12 +1178,21 @@ const MNE: StaticPagesCopy = {
   },
   terms: {
     title: "Uslovi i odredbe",
-    tagline: "Korišćenjem KetuJemi.com prihvatate sljedeće uslove.",
+    tagline:
+      "Korišćenjem KetuJemi.com prihvatate sljedeće uslove pravnog operatera platforme.",
     sections: [
+      {
+        title: "Pravni subjekt i platforma",
+        paragraphs: [
+          "Platformu KetuJemi.com (Bli & Shit) upravlja i nudi REVOLUTION INVEST Sh.p.k., sa sjedištem u Ferizaju, Republika Kosovo.",
+          "Broj registracije biznisa (NRB): 811314567. Plaćanja za usluge platforme (novčanik, VIP/TOP paketi, reklame i slično) vrše se u ime ovog subjekta.",
+          "KetuJemi.com je trgovački naziv platforme; pravni odnos sa korisnikom je sa REVOLUTION INVEST Sh.p.k. kao operaterom.",
+        ],
+      },
       {
         title: "Uloga platforme",
         paragraphs: [
-          "KetuJemi.com je samo posrednički prostor. Mi nismo strana u ugovoru o prodaji.",
+          "KetuJemi.com je samo posrednički prostor. REVOLUTION INVEST Sh.p.k. nije strana u ugovoru o prodaji robe između korisnika.",
           "Korisnik snosi punu pravnu odgovornost za svaki objavljeni oglas.",
         ],
       },
@@ -1205,6 +1236,8 @@ const MNE: StaticPagesCopy = {
         title: "Kontakt informacije",
         paragraphs: ["Za pravna pitanja, usluge platforme, prijave ili podršku:"],
         bullets: [
+          "Pravni operater: REVOLUTION INVEST Sh.p.k., Ferizaj, Kosovo — NRB 811314567",
+          "Platforma: www.ketujemi.com",
           "Službeni email: info@ketujemi.com",
           "Tehnička podrška: support@ketujemi.com",
           "Kontakt formular: www.ketujemi.com/kontakt",
