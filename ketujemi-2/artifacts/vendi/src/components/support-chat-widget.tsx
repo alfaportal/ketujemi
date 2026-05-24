@@ -7,10 +7,10 @@ import { cn } from "@/lib/utils";
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const WELCOME: Record<string, string> = {
-  ks: "Përshëndetje! Jam asistenti i KetuJemi.com — mund t'ju udhëzoj për kategori, postim, blerje dhe rregullat. Shkruani pyetjen tuaj.",
-  al: "Përshëndetje! Jam asistenti i KetuJemi.com — mund t'ju udhëzoj për kategori, postim, blerje dhe rregullat. Shkruani pyetjen tuaj.",
-  mk: "Здраво! Јас сум асистент на KetuJemi.com — ќе ви упатам конкретно (категории, објави, купување). Поставете прашање.",
-  me: "Zdravo! Ja sam asistent KetuJemi.com — uputiću vas tačno (kategorije, oglasi, kupovina). Postavite pitanje.",
+  ks: "Përshëndetje! Pyetni shkurt — do t'ju udhëzoj ku të shkoni në KetuJemi.",
+  al: "Përshëndetje! Pyetni shkurt — do t'ju udhëzoj ku të shkoni në KetuJemi.",
+  mk: "Здраво! Поставете кратко прашање — ќе ви кажам каде на KetuJemi.",
+  me: "Zdravo! Kratko pitanje — reći ću vam gdje na KetuJemi.",
 };
 
 const FALLBACK_BUSY: Record<string, string> = {

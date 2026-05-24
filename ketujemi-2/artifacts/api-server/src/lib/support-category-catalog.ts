@@ -54,9 +54,9 @@ export const KETUJEMI_CATEGORY_ROUTES: CategoryRoute[] = [
   {
     id: "banesa-shtepi",
     keywords:
-      /banes|apartament|shtëpi|shtepi|pron|vikendic|truall|toka|dhoma\s+me\s+qira|me\s+qira\b|real\s*estate/i,
+      /banes|apartament|shtëpi|shtepi|pron|vikendic|truall|toka|dhoma\s+me\s+qira|me\s+qira\b|real\s*estate|2\s+dhom|dy\s+dhom/i,
     reply: {
-      sq: "**Banesa & Shtëpi**: faqja kryesore → **Banesa & Shtëpi** → Apartamente & Banesa, Shtëpi, Dhoma me Qira, Toka & Truall, Vikendica → zgjidhni qytetin → njoftimet.",
+      sq: "Banesa & Shtëpi → Apartamente & Banesa. Për 2 dhoma: «Njoftimet» + kërko «2 dhoma» ose lexoni titullin e njoftimit.",
       mk: "**Домови и станови**: почетна → **Домови и станови** → апартман, куќа, земјиште…",
       me: "**Domovi i stanovi**: početna → **Domovi i stanovi** → stan, kuća, plac…",
     },

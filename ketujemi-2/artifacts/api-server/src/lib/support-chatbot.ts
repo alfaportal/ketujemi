@@ -40,25 +40,24 @@ GJUHËT (obligativ)
 • Përgjigju GJITHMONË në të njëjtën gjuhë si mesazhi i fundit të përdoruesit.
 • Emrat e UI si në faqe: «Posto Falas», «Njoftimet», «Hyr», «Muzikë & Hobby», «Profili».
 
-STILI (obligativ)
-• Lexo mesazhin E FUNDIT të përdoruesit dhe përgjigju vetëm atij — mos përsërit përgjigjen e mëparshme nëse pyetja ndryshon.
-• Profesional, i detajuar, saktë — përdor hapa të numëruara për regjistrim/postim/rregulla.
-• Jep përgjigje SPECIFIKE: emër kategorie + nën-kategori + veprim (kliko X → pastaj Y).
-• MOS thuaj «shiko faqen kryesore», «kontrollo homepage», «zgjidh kategorinë që përshtatet» pa emër kategorie.
-• «Regjistrohu» → dalloni llogari (Hyr→Regjistrohu, email/SMS) nga postim (Posto Falas + kategori).
-• «Muzikë» → **Muzikë & Hobby** (kategori #17), JO Sport & Outdoor; listoni nën-kategoritë kur pyetja është e hollë.
-• Përdor vetëm fakte nga enciklopedia më poshtë; mos shpik API keys, kode interne, ose politika që nuk ekzistojnë.
+STILI (obligativ — bisedë chat, JO artikull)
+• Përgjigje **të shkurtra**: max **3–4 fjali** ose max **3 hapa** (një rresht secili).
+• Mos përdor titull markdown (#, ##), emoji të shumta, ose listë të gjatë kategorish.
+• Mos listo të gjitha nën-kategoritë — vetëm ajo që pyet përdoruesi.
+• Lexo mesazhin E FUNDIT dhe përgjigju vetëm atij.
+• Jep rrugën e shpejtë: kategoria + 1 veprim (p.sh. «Banesa & Shtëpi → Apartamente → kërko 2 dhoma»).
+• Mos thuaj «shiko faqen kryesore» pa emër kategorie.
+• «Regjistrohu» ≠ «Posto Falas» — shpjego shkurt kur nevojitet.
+• Përdor vetëm fakte nga enciklopedia; mos shpik politika/API.
 
-SI TË PËRGJIGJESH (prioritet)
-1) Produkt / ku ta gjej → kategoria e saktë nga 18 kategoritë + nën-kategori + si të hapet njoftimi.
-2) Regjistrim → hapat e plotë (email ose SMS; diaspora me email).
-3) Postim → hapat e plotë (Posto Falas, foto, 30 ditë, 10/kategori, 10 total).
-4) Tregje → 4 Ballkan + 7 diaspora (11 tregje).
-5) Pagesa → Stripe/kartë për partner, TOP, paketa; JO për blerjen e produktit te shitësi.
-6) Biznes / partner → llogari biznesi vs /partner Standard €30 / VIP €50.
-7) Siguria → këshilla takimi, mos para avans, Raporto, support@ketujemi.com.
-8) Kontakt platforme → ${SUPPORT_EMAIL}, ${SUPPORT_PHONE} (vetëm pyetje mbështetje/raportim).
-9) Nuk e di → «${fallback}»
+SI TË PËRGJIGJESH (prioritet — gjithmonë shkurt)
+1) Produkt / ku ta gjej → kategoria + 1 nën-kategori + «Njoftimet» + fjalë kyçe.
+2) Regjistrim → Hyr → Regjistrohu (email ose SMS), max 2 hapa.
+3) Postim → Posto Falas → kategori → publiko, max 2 hapa.
+4) Tregje → emri i tregut (11 total), 1 fjali.
+5) Pagesa / partner / siguri → 2–3 fjali, pa listë të gjatë.
+6) Kontakt platforme → ${SUPPORT_EMAIL}, ${SUPPORT_PHONE}.
+7) Nuk e di → «${fallback}»
 
 NDALON
 • Përgjigje të vagë pa kategori dhe pa hapa.
@@ -92,6 +91,26 @@ function stripContactLines(text: string): string {
     .trim();
 }
 
+function compactSupportReply(text: string): string {
+  let t = text
+    .replace(/^#{1,6}\s*.+$/gm, "")
+    .replace(/\*\*/g, "")
+    .replace(/^\s*[-•]\s+/gm, "")
+    .replace(/\n{2,}/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  const sentences = t.split(/(?<=[.!?…])\s+/).filter(Boolean);
+  if (sentences.length > 4) {
+    t = sentences.slice(0, 3).join(" ");
+  }
+  if (t.length > 380) {
+    const cut = t.slice(0, 377);
+    t = `${cut.replace(/\s+\S*$/, "").trim()}…`;
+  }
+  return t;
+}
+
 function clampSupportReply(
   text: string,
   lastUser: string,
@@ -102,7 +121,7 @@ function clampSupportReply(
   const allowContact =
     supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser);
 
-  if (allowContact) return text;
+  if (allowContact) return compactSupportReply(text);
 
   const lower = text.toLowerCase();
   const hasContact =
@@ -114,7 +133,7 @@ function clampSupportReply(
   if (hasContact) {
     if (hasSubstantiveSupportContent(text)) {
       const stripped = stripContactLines(text);
-      if (stripped.length >= 40) return stripped;
+      if (stripped.length >= 40) return compactSupportReply(stripped);
     } else {
       return invalidSupportQuestionReply(replyLang);
     }
@@ -125,10 +144,10 @@ function clampSupportReply(
       [{ role: "user", content: lastUser }],
       langHint,
     );
-    if (priority) return priority;
+    if (priority) return compactSupportReply(priority);
   }
 
-  return text;
+  return compactSupportReply(text);
 }
 
 function resolveReplyLang(messages: ChatMessage[], hint: UiLang): UiLang {
@@ -151,12 +170,12 @@ export async function runSupportChat(
       [{ role: "user", content: lastUser }],
       langHint,
     );
-    if (contactReply) return contactReply;
+    if (contactReply) return compactSupportReply(contactReply);
   }
 
   if (!isClaudeConfigured()) {
     const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, langHint);
-    if (offlineOrBrowse) return offlineOrBrowse;
+    if (offlineOrBrowse) return compactSupportReply(offlineOrBrowse);
     if (supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser)) {
       return escalateToEmailReply(replyLang);
     }
@@ -168,8 +187,8 @@ export async function runSupportChat(
 
   const response = await client.messages.create({
     model: getClaudeModel(),
-    max_tokens: 768,
-    system: `${buildSupportSystem(replyLang)}\n\nGjuha e mesazhit të fundit të përdoruesit (përgjigju në këtë gjuhë): ${langLabel(replyLang)}.\nMesazhi i fundit (përgjigju vetëm kësaj pyetjeje): «${lastUser.slice(0, 500)}»`,
+    max_tokens: 256,
+    system: `${buildSupportSystem(replyLang)}\n\nGjuha: ${langLabel(replyLang)}. Përgjigju SHKURT (max 3 fjali). Pyetja: «${lastUser.slice(0, 500)}»`,
     messages: trimmed.map((m) => ({
       role: m.role,
       content: m.content.slice(0, 2000),
@@ -187,7 +206,7 @@ export async function runSupportChat(
   }
 
   const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, langHint);
-  if (offlineOrBrowse) return offlineOrBrowse;
+  if (offlineOrBrowse) return compactSupportReply(offlineOrBrowse);
   if (supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser)) {
     return escalateToEmailReply(replyLang);
   }
@@ -206,10 +225,10 @@ export function supportChatFallbackReply(
   }
 
   const priorityAnswer = tryPrioritySupportAnswer(messages, langHint);
-  if (priorityAnswer) return priorityAnswer;
+  if (priorityAnswer) return compactSupportReply(priorityAnswer);
 
   const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, langHint);
-  if (offlineOrBrowse) return offlineOrBrowse;
+  if (offlineOrBrowse) return compactSupportReply(offlineOrBrowse);
   if (supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser)) {
     return escalateToEmailReply(replyLang);
   }
