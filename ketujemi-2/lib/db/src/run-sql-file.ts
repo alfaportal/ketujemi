@@ -37,15 +37,34 @@ const pool = new pg.Pool({
 async function main() {
   console.log(`Running SQL: ${path.basename(sqlPath)}`);
   await pool.query(sql);
-  const { rows } = await pool.query<{ column_name: string }>(`
-    SELECT column_name
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND table_name = 'users'
-      AND column_name IN ('partner_activation_code', 'partner_activation_sent_at')
-    ORDER BY column_name
-  `);
-  console.log("OK — columns present:", rows.map((r) => r.column_name).join(", ") || "(none)");
+  const base = path.basename(sqlPath);
+  if (base.includes("wallet")) {
+    const { rows } = await pool.query<{ kind: string; name: string }>(`
+      SELECT 'column' AS kind, column_name AS name
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'users'
+        AND column_name = 'wallet_balance_cents'
+      UNION ALL
+      SELECT 'table', table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name = 'wallet_transactions'
+    `);
+    console.log(
+      "OK — wallet schema:",
+      rows.map((r) => `${r.kind}:${r.name}`).join(", ") || "(missing)",
+    );
+  } else {
+    const { rows } = await pool.query<{ column_name: string }>(`
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'users'
+        AND column_name IN ('partner_activation_code', 'partner_activation_sent_at')
+      ORDER BY column_name
+    `);
+    console.log("OK — columns present:", rows.map((r) => r.column_name).join(", ") || "(none)");
+  }
 }
 
 main()
