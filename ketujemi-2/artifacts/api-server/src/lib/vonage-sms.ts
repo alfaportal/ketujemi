@@ -1,10 +1,18 @@
 import { logger } from "./logger";
+import { twilioSendSms } from "./twilio-sms";
 
-function getCreds(): { apiKey: string; apiSecret: string } | null {
+export function hasVonageSmsCreds(): boolean {
   const apiKey = process.env.VONAGE_API_KEY?.trim();
   const apiSecret = process.env.VONAGE_API_SECRET?.trim();
-  if (!apiKey || !apiSecret) return null;
-  return { apiKey, apiSecret };
+  return Boolean(apiKey && apiSecret);
+}
+
+function getCreds(): { apiKey: string; apiSecret: string } | null {
+  if (!hasVonageSmsCreds()) return null;
+  return {
+    apiKey: process.env.VONAGE_API_KEY!.trim(),
+    apiSecret: process.env.VONAGE_API_SECRET!.trim(),
+  };
 }
 
 /** E.164 digits only (no +), e.g. 38344901234 */
@@ -15,16 +23,9 @@ export function normalizeSmsPhoneDigits(raw: string | null | undefined): string 
   return digits;
 }
 
-/**
- * Transactional SMS via Vonage SMS API (same credentials as Verify).
- * Returns true if at least one message was accepted by Vonage.
- */
-export async function vonageSendSms(phoneDigits: string, text: string): Promise<boolean> {
+async function sendViaVonage(phoneDigits: string, text: string): Promise<boolean> {
   const creds = getCreds();
-  if (!creds) {
-    logger.warn({ phoneDigits: phoneDigits.slice(-4) }, "vonage sms skipped (no VONAGE creds)");
-    return false;
-  }
+  if (!creds) return false;
 
   const from = process.env.VONAGE_SMS_FROM?.trim() || "KetuJemi";
   const body = new URLSearchParams({
@@ -53,6 +54,22 @@ export async function vonageSendSms(phoneDigits: string, text: string): Promise<
   const errText = msg?.["error-text"] ?? "unknown";
   logger.error({ phoneDigits: phoneDigits.slice(-4), errText }, "vonage sms failed");
   return false;
+}
+
+/**
+ * Transactional SMS: Vonage first, Twilio fallback.
+ * Returns true if either provider accepts the message.
+ */
+export async function vonageSendSms(phoneDigits: string, text: string): Promise<boolean> {
+  if (hasVonageSmsCreds()) {
+    const vonageOk = await sendViaVonage(phoneDigits, text);
+    if (vonageOk) return true;
+    logger.info({ phoneDigits: phoneDigits.slice(-4) }, "vonage sms failed — trying twilio");
+  } else {
+    logger.debug({ phoneDigits: phoneDigits.slice(-4) }, "vonage sms skipped (no creds)");
+  }
+
+  return twilioSendSms(phoneDigits, text);
 }
 
 export function buildListingPackageActivationSms(activationCode: string): string {

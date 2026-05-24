@@ -655,7 +655,7 @@ router.post("/auth/sms/verify", async (req, res) => {
       return;
     }
 
-    await vonageVerifyCheck(challenge.request_id, code);
+    await vonageVerifyCheck(challenge.request_id, code, phone);
 
     try {
       await assertAccountActive(null, phone);

@@ -1,15 +1,24 @@
-/** Vonage Verify (Nexmo) — https://developer.vonage.com/en/verify/overview */
+/** Vonage Verify (Nexmo) with Twilio Verify fallback — https://developer.vonage.com/en/verify/overview */
+
+import { logger } from "./logger";
+import { hasVonageSmsCreds } from "./vonage-sms";
+import {
+  hasTwilioVerifyCreds,
+  isTwilioVerifyRequestId,
+  twilioVerifyCheck,
+  twilioVerifyRequest,
+} from "./twilio-verify";
 
 function getCreds(): { apiKey: string; apiSecret: string } {
-  const apiKey = process.env.VONAGE_API_KEY;
-  const apiSecret = process.env.VONAGE_API_SECRET;
+  const apiKey = process.env.VONAGE_API_KEY?.trim();
+  const apiSecret = process.env.VONAGE_API_SECRET?.trim();
   if (!apiKey || !apiSecret) {
     throw new Error("VONAGE_API_KEY and VONAGE_API_SECRET must be set");
   }
   return { apiKey, apiSecret };
 }
 
-export async function vonageVerifyRequest(phoneDigits: string): Promise<string> {
+async function vonageVerifyRequestOnly(phoneDigits: string): Promise<string> {
   const { apiKey, apiSecret } = getCreds();
   const body = new URLSearchParams({
     api_key: apiKey,
@@ -37,10 +46,7 @@ export async function vonageVerifyRequest(phoneDigits: string): Promise<string> 
   return data.request_id;
 }
 
-export async function vonageVerifyCheck(
-  requestId: string,
-  code: string,
-): Promise<void> {
+async function vonageVerifyCheckOnly(requestId: string, code: string): Promise<void> {
   const { apiKey, apiSecret } = getCreds();
   const body = new URLSearchParams({
     api_key: apiKey,
@@ -60,4 +66,47 @@ export async function vonageVerifyCheck(
   if (String(data.status) !== "0") {
     throw new Error(data.error_text ?? `Invalid or expired code (status ${data.status})`);
   }
+}
+
+/** Start phone OTP — Vonage first, Twilio Verify fallback. */
+export async function vonageVerifyRequest(phoneDigits: string): Promise<string> {
+  if (hasVonageSmsCreds()) {
+    try {
+      return await vonageVerifyRequestOnly(phoneDigits);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "VONAGE_VERIFY_FAILED";
+      logger.warn(
+        { phoneDigits: phoneDigits.slice(-4), err: message },
+        "vonage verify failed — trying twilio",
+      );
+      if (!hasTwilioVerifyCreds()) throw err;
+    }
+  }
+
+  if (hasTwilioVerifyCreds()) {
+    return twilioVerifyRequest(phoneDigits);
+  }
+
+  throw new Error(
+    hasVonageSmsCreds()
+      ? "SMS verification unavailable (Vonage failed; configure TWILIO_VERIFY_SERVICE_SID for Twilio fallback)"
+      : "SMS verification not configured (VONAGE or TWILIO_VERIFY_SERVICE_SID)",
+  );
+}
+
+/** Confirm OTP — routes by request_id prefix (Twilio vs Vonage). */
+export async function vonageVerifyCheck(
+  requestId: string,
+  code: string,
+  phoneDigits?: string,
+): Promise<void> {
+  if (isTwilioVerifyRequestId(requestId)) {
+    if (!phoneDigits?.trim()) {
+      throw new Error("Phone number required for Twilio verification");
+    }
+    await twilioVerifyCheck(requestId, code, phoneDigits);
+    return;
+  }
+
+  await vonageVerifyCheckOnly(requestId, code);
 }

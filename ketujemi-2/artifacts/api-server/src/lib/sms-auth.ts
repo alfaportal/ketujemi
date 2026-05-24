@@ -1,19 +1,26 @@
-/** Vonage Verify for phone sign-up/login. Disabled by default until SMS_AUTH_ENABLED=true. */
+/** Phone sign-up/login via SMS OTP (Vonage Verify, Twilio Verify fallback). */
+
+import { hasVonageSmsCreds } from "./vonage-sms";
+import { hasTwilioSmsCreds } from "./twilio-sms";
+import { hasTwilioVerifyCreds } from "./twilio-verify";
 
 export function hasSmsProviderCreds(): boolean {
-  const apiKey = process.env.VONAGE_API_KEY?.trim();
-  const apiSecret = process.env.VONAGE_API_SECRET?.trim();
-  return Boolean(apiKey && apiSecret);
+  return hasVonageSmsCreds() || hasTwilioSmsCreds();
+}
+
+/** At least one OTP provider: Vonage Verify or Twilio Verify service. */
+export function hasSmsVerifyProviderCreds(): boolean {
+  return hasVonageSmsCreds() || hasTwilioVerifyCreds();
 }
 
 /**
  * Phone auth (SMS OTP). Default: off.
- * Set SMS_AUTH_ENABLED=true when Vonage (or a future Twilio adapter) is configured.
+ * Set SMS_AUTH_ENABLED=true when Vonage and/or Twilio Verify is configured.
  */
 export function isSmsAuthEnabled(): boolean {
   const raw = process.env.SMS_AUTH_ENABLED?.trim().toLowerCase();
   if (raw === "false" || raw === "0" || raw === "no") return false;
-  if (raw === "true" || raw === "1" || raw === "yes") return hasSmsProviderCreds();
+  if (raw === "true" || raw === "1" || raw === "yes") return hasSmsVerifyProviderCreds();
   return false;
 }
 
