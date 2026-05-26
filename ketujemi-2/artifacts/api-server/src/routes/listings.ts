@@ -75,7 +75,7 @@ function withSellerContactForViewer<
 
   return {
     ...listing,
-    seller_name: sellerFirstName(listing.seller_name),
+    seller_name: viewer ? listing.seller_name : sellerFirstName(listing.seller_name),
     seller_phone: viewer ? listing.seller_phone : "",
     description,
   };
@@ -87,10 +87,10 @@ function applyViewerContact<
   return withSellerContactForViewer(listing, viewer);
 }
 
-// ─── Helper: 30 ditë nga tani ─────────────────────────────────────────────────
-function expiresAt30Days(): Date {
+// ─── Helper: 3 muaj nga tani ─────────────────────────────────────────────────
+function expiresAt3Months(): Date {
   const d = new Date();
-  d.setDate(d.getDate() + 30);
+  d.setDate(d.getDate() + 90);
   return d;
 }
 
@@ -563,7 +563,7 @@ router.post("/listings", async (req, res) => {
       price: String(parsed.data.price),
       category_id: parsed.data.category_id,
       location: parsed.data.location,
-      seller_name: sellerFirstName(parsed.data.seller_name),
+      seller_name: parsed.data.seller_name,
       seller_phone: parsed.data.seller_phone,
       condition: parsed.data.condition,
       image_url: parsed.data.image_url ?? null,
@@ -573,7 +573,7 @@ router.post("/listings", async (req, res) => {
       status: "active",
       moderation_status: "approved",
       moderation_reason: moderation.reason || null,
-      expires_at: expiresAt30Days(),
+      expires_at: expiresAt3Months(),
       vehicle_year: parsed.data.vehicle_year ?? null,
       vehicle_mileage_km: parsed.data.vehicle_mileage_km ?? null,
       vehicle_fuel: parsed.data.vehicle_fuel ?? null,

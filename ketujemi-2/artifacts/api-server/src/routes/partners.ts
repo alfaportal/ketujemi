@@ -170,6 +170,7 @@ router.post("/partners/:id/checkout", async (req, res) => {
 function formatListingPublic(
   l: typeof listingsTable.$inferSelect,
   categoryName: string | null,
+  viewerRegistered: boolean,
 ) {
   const now = new Date();
   const expires = l.expires_at ? new Date(l.expires_at) : null;
@@ -180,13 +181,13 @@ function formatListingPublic(
   return {
     id: l.id,
     title: l.title,
-    description: maskEmailInListingDescription(l.description),
+    description: viewerRegistered ? l.description : maskEmailInListingDescription(l.description),
     price: Number(l.price),
     category_id: l.category_id,
     category_name: categoryName,
     location: l.location,
-    seller_name: sellerFirstName(l.seller_name),
-    seller_phone: "",
+    seller_name: viewerRegistered ? l.seller_name : sellerFirstName(l.seller_name),
+    seller_phone: viewerRegistered ? l.seller_phone : "",
     condition: l.condition,
     image_url: l.image_url,
     created_at: l.created_at.toISOString(),
@@ -229,6 +230,7 @@ router.get("/businesses/:id", async (req, res) => {
 });
 
 router.get("/businesses/:id/listings", async (req, res) => {
+  const viewer = await getSessionUser(req);
   const id = Number(req.params.id);
   if (!Number.isFinite(id) || id < 1) {
     res.status(400).json({ error: "Invalid id" });
@@ -253,7 +255,7 @@ router.get("/businesses/:id/listings", async (req, res) => {
   const catMap = new Map(catRows.map((c) => [c.id, c.name]));
 
   const listings = await annotateListingsWithVipFlag(
-    rows.map((l) => formatListingPublic(l, catMap.get(l.category_id) ?? null)),
+    rows.map((l) => formatListingPublic(l, catMap.get(l.category_id) ?? null, !!viewer)),
   );
   res.json({ listings, total: listings.length });
 });

@@ -4,14 +4,14 @@ import { eq } from "drizzle-orm";
 import { userOwnsListing } from "./listing-ownership";
 import { removeUserDuplicateListingsForPost } from "./listing-duplicate-guard";
 
-function expiresAt30Days(): Date {
+function expiresAt3Months(): Date {
   const d = new Date();
-  d.setDate(d.getDate() + 30);
+  d.setDate(d.getDate() + 90);
   return d;
 }
 
 /**
- * Republish an expired listing: fresh 30-day window, listed_at = now (end of feed among same-day normals).
+ * Republish an expired listing: fresh 3-month window, listed_at = now.
  */
 export async function repostListing(
   user: User,
@@ -49,7 +49,7 @@ export async function repostListing(
       status: "active",
       moderation_status: "approved",
       moderation_reason: null,
-      expires_at: expiresAt30Days(),
+      expires_at: expiresAt3Months(),
       listed_at: now,
       created_at: now,
     })

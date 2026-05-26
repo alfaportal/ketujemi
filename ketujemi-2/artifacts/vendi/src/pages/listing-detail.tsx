@@ -286,7 +286,7 @@ export default function ListingDetail() {
   const sellerDigits = user ? (listing.seller_phone ?? "").replace(/\D/g, "") : "";
   const smsHref = user ? smsUriFromDigits(sellerDigits) : "sms:";
   const listingReturnPath = `/listings/${listing.id}`;
-  const sellerDisplayName = sellerFirstName(listing.seller_name);
+  const sellerDisplayName = user ? listing.seller_name : sellerFirstName(listing.seller_name);
   const showSellerPhone = !!user && sellerDigits.length >= 8;
 
   const conditionMap: Record<string, { label: string; cls: string }> = {

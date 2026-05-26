@@ -91,8 +91,8 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 4) Plotësoni: titull i qartë, përshkrim, çmim në **€** (ose «Me marrëveshje» për privatë).
 5) Ngarkoni foto (**deri në 10**); rekomandohen min. 3 foto reale të produktit.
 6) Vendndodhja/qyteti, emri, telefon kontakti.
-7) Publikoni — **moderim AI** → njoftim aktiv **30 ditë**.
-8) Menaxhim: **Profili** → njoftimet e mia → ndrysho / fshi / **«Rifillo njoftimin»** pas skadimit (+30 ditë).
+7) Publikoni — **moderim AI** → njoftim aktiv deri **3 muaj**.
+8) Menaxhim: **Profili** → njoftimet e mia → ndrysho / fshi / **«Rifillo njoftimin»** pas skadimit (+3 muaj).
 9) **TOP €1** (opsional): promovim në krye të listës +7/+5/+3/+1 ditë.
 10) Mos postoni duplikat të njëjtë titull+përshkrim aktiv.
 
@@ -144,7 +144,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 • Formular **Kontakt** në footer për mesazhe.
 
 === FAQ — PYETJET MË TË SHPESHTA ===
-**Si të postoj?** → «Posto Falas», kategori, të dhëna, foto, publiko (30 ditë).
+**Si të postoj?** → «Posto Falas», kategori, të dhëna, foto, publiko (deri 3 muaj).
 **Sa kushton postimi?** → Falas për privatë (10/kategori + 10 total aktive); TOP €1 opsional; biznes €1 pas 10 në kategori; partner €30/€50.
 **Sa foto?** → Deri në 10 për njoftim.
 **Si ta fshij/ndryshoj?** → Profili → njoftimet e mia.
@@ -154,7 +154,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 **Muzikë ku?** → Kategoria **Muzikë & Hobby** (Instrumente, Libra, Studio…), jo Sport & Outdoor.
 **Regjistrim për muzikë?** → Llogari: Hyr→Regjistrohu; shitje: Posto Falas→Muzikë & Hobby; blerje: Muzikë & Hobby→shfletoni.
 **Partner dyqani?** → /partner, Standard €30, VIP €50, pagesë Stripe.
-**Skadimi?** → 30 ditë; rifillo nga njoftimi juaj.
+**Skadimi?** → deri 3 muaj; rifillo nga njoftimi juaj.
 **Verifikimi?** → Email + SMS (Ballkan) para postimit të plotë.
 
 === RREGULLA & MODERIM ===

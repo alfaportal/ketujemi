@@ -16,7 +16,7 @@ const COPY: Record<UiLang, Record<ReminderKind, ReminderCopy>> = {
       subject: "Njoftimi juaj skadon së shpejti — KetuJemi",
       greeting: "Përshëndetje,",
       body: (title, days, url) =>
-        `Njoftimi juaj "${title}" skadon për ${days}.\n\nPas skadimit ai hiqet automatikisht. Mund ta rifilloni me një klik nga faqja e njoftimit:\n${url}\n\nButoni: "Rifillo njoftimin" — njoftimi bëhet përsëri aktiv për 30 ditë.`,
+        `Njoftimi juaj "${title}" skadon për ${days}.\n\nPas skadimit ai hiqet automatikisht. Mund ta rifilloni me një klik nga faqja e njoftimit:\n${url}\n\nButoni: "Rifillo njoftimin" — njoftimi bëhet përsëri aktiv deri 3 muaj.`,
       cta: "Shiko njoftimin",
       footer: "KetuJemi.com — tregu juaj lokal",
     },
@@ -34,7 +34,7 @@ const COPY: Record<UiLang, Record<ReminderKind, ReminderCopy>> = {
       subject: "Вашиот оглас наскоро истекува — KetuJemi",
       greeting: "Здраво,",
       body: (title, days, url) =>
-        `Вашиот оглас „${title}" истекува за ${days}.\n\nПо истекувањето се брише автоматски. Можете да го обновите со еден клик:\n${url}\n\nКопче: „Обнови го огласот" — огласот повторно е активен 30 дена.`,
+        `Вашиот оглас „${title}" истекува за ${days}.\n\nПо истекувањето се брише автоматски. Можете да го обновите со еден клик:\n${url}\n\nКопче: „Обнови го огласот" — огласот повторно е активен до 3 месеци.`,
       cta: "Види го огласот",
       footer: "KetuJemi.com — вашиот локален пазар",
     },
@@ -52,7 +52,7 @@ const COPY: Record<UiLang, Record<ReminderKind, ReminderCopy>> = {
       subject: "Vaš oglas uskoro ističe — KetuJemi",
       greeting: "Zdravo,",
       body: (title, days, url) =>
-        `Vaš oglas „${title}" ističe za ${days}.\n\nNakon isteka automatski se uklanja. Možete ga ponovo objaviti jednim klikom:\n${url}\n\nDugme: „Obnovi oglas" — oglas je ponovo aktivan 30 dana.`,
+        `Vaš oglas „${title}" ističe za ${days}.\n\nNakon isteka automatski se uklanja. Možete ga ponovo objaviti jednim klikom:\n${url}\n\nDugme: „Obnovi oglas" — oglas je ponovo aktivan do 3 mjeseca.`,
       cta: "Pogledaj oglas",
       footer: "KetuJemi.com — vaša lokalna tržnica",
     },

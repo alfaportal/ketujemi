@@ -45,9 +45,9 @@ import { loadBannedPhoneSet, saveBannedPhoneSet } from "../lib/user-ban";
 
 const router = Router();
 
-function expiresAt30Days(): Date {
+function expiresAt3Months(): Date {
   const d = new Date();
-  d.setDate(d.getDate() + 30);
+  d.setDate(d.getDate() + 90);
   return d;
 }
 
@@ -255,7 +255,7 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
         condition: parsed.data.condition,
         image_url: parsed.data.image_url ?? null,
         is_featured: parsed.data.is_featured ?? false,
-        expires_at: expiresAt30Days(),
+        expires_at: expiresAt3Months(),
         vehicle_year: parsed.data.vehicle_year ?? null,
         vehicle_mileage_km: parsed.data.vehicle_mileage_km ?? null,
         vehicle_fuel: parsed.data.vehicle_fuel ?? null,
