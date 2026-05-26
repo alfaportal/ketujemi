@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db, fiscalReceiptsTable, usersTable } from "@workspace/db";
 import type { User } from "@workspace/db";
-import { WALLET_TOPUP_CATALOG, type WalletTopupId } from "../wallet";
+import { WALLET_TOPUP_CATALOG, type WalletTopupId, parseWalletTopupId } from "../wallet";
 import { logger } from "../logger";
 import {
   canIssueKosovoFiscalReceipts,
@@ -42,8 +42,8 @@ export async function issueFiscalReceiptForWalletTopup(
   paymentToken: string,
   ctx: WalletFiscalContext = {},
 ): Promise<void> {
-  const pkg = purpose.replace("wallet_topup_", "") as WalletTopupId;
-  if (!(pkg in WALLET_TOPUP_CATALOG)) return;
+  const pkg = parseWalletTopupId(purpose.replace("wallet_topup_", ""));
+  if (!pkg) return;
 
   const amountCents = WALLET_TOPUP_CATALOG[pkg].price_cents;
 

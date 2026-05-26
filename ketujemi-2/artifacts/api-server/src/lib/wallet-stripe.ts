@@ -6,6 +6,7 @@ import {
   type WalletTopupId,
   stripePurposeForWalletTopup,
   creditWalletTopup,
+  parseWalletTopupId,
 } from "./wallet";
 import { createPaymentRecord, devPaymentBypassEnabled, stripeSecret } from "./payments";
 import type { PaymentChannel } from "./payment-policy";
@@ -22,8 +23,8 @@ async function completeWalletTopup(
   paymentToken: string,
   fiscalHints: WalletTopupFiscalHints = {},
 ): Promise<void> {
-  const pkg = purpose.replace("wallet_topup_", "") as WalletTopupId;
-  if (!(pkg in WALLET_TOPUP_CATALOG)) return;
+  const pkg = parseWalletTopupId(purpose.replace("wallet_topup_", ""));
+  if (!pkg) return;
   await creditWalletTopup(userId, WALLET_TOPUP_CATALOG[pkg].price_cents, paymentToken);
 
   const channel = fiscalHints.paymentChannel ?? "stripe";

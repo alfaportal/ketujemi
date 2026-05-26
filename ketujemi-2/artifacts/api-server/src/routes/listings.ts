@@ -728,7 +728,7 @@ router.get("/listings/free-quota", async (req, res) => {
     account_type: viewer.account_type ?? "private",
     global_active: globalCap.active_count,
     global_limit: globalCap.effective_limit,
-    show_packages: !isBusinessAccount(viewer) && (used >= limit || globalCap.remaining <= 0),
+    show_packages: used >= limit || globalCap.remaining <= 0,
     business: isBusiness
       ? {
           extra_post_price_eur: 1,

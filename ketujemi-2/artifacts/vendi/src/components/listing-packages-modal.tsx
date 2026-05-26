@@ -7,14 +7,15 @@ export type ListingPackageOffer = {
   id: "s" | "m" | "l";
   name: string;
   price_eur: number;
-  extra_slots: number;
-  days: number;
+  listings_approx: number;
+  listing_price_eur?: number;
+  credit_until_spent?: boolean;
 };
 
 const FALLBACK_PACKAGES: ListingPackageOffer[] = [
-  { id: "s", name: "Paketa S", price_eur: 1, extra_slots: 5, days: 30 },
-  { id: "m", name: "Paketa M", price_eur: 5, extra_slots: 25, days: 30 },
-  { id: "l", name: "Paketa L", price_eur: 8, extra_slots: 50, days: 30 },
+  { id: "s", name: "Paketa S", price_eur: 5, listings_approx: 16, listing_price_eur: 0.3 },
+  { id: "m", name: "Paketa M", price_eur: 10, listings_approx: 33, listing_price_eur: 0.3 },
+  { id: "l", name: "Paketa L", price_eur: 20, listings_approx: 66, listing_price_eur: 0.3 },
 ];
 
 type Props = {
@@ -83,14 +84,15 @@ export function ListingPackagesModal({ open, onClose, message }: Props) {
       });
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
-        effective_limit?: number;
+        balance_eur?: string;
+        listings_remaining?: number;
       };
       if (!res.ok) {
         setError(data.error ?? "Kodi nuk u pranua.");
         return;
       }
       setRedeemOk(
-        `Paketa u verifikua. Limiti aktual: ${data.effective_limit ?? "—"} njoftime.`,
+        `Paketa u verifikua. Balanca: €${data.balance_eur ?? "—"} (~${data.listings_remaining ?? "—"} shpallje).`,
       );
       setRedeemCode("");
     } catch {
@@ -106,7 +108,7 @@ export function ListingPackagesModal({ open, onClose, message }: Props) {
         <div className="sticky top-0 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
           <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
             <Package className="h-5 w-5" style={{ color: BRAND_BLUE }} />
-            Paketa shtesë
+            Mbushje portofoli
           </h2>
           <button type="button" onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100" aria-label="Mbyll">
             <X className="h-5 w-5" />
@@ -115,7 +117,8 @@ export function ListingPackagesModal({ open, onClose, message }: Props) {
 
         <div className="p-4 space-y-4">
           <p className="text-sm text-gray-700 leading-relaxed">
-            {message ?? "Ke arritur limitin falas. Zgjero me një paketë shtesë."}
+            {message ??
+              "Bli kredi për shpallje (€0.30 secila). Kredi nuk skadon — përdoret deri sa ta harxhoni."}
           </p>
 
           <div className="space-y-2">
@@ -136,8 +139,9 @@ export function ListingPackagesModal({ open, onClose, message }: Props) {
                   <div>
                     <p className="font-black text-gray-900">{p.name}</p>
                     <p className="text-sm text-gray-600 mt-0.5">
-                      +{p.extra_slots} shpallje · {p.days} ditë
+                      ~{p.listings_approx} shpallje @ €{p.listing_price_eur ?? 0.3}
                     </p>
+                    <p className="text-xs text-gray-500 mt-0.5">Pa afat kohor — deri sa harxhohet krediti</p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-xl font-black" style={{ color: BRAND_BLUE }}>
@@ -201,7 +205,7 @@ export function ListingPackageSuccessBanner({
   return (
     <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
       <p className="font-bold">Paketa u aktivizua!</p>
-      <p className="mt-1">Mund të postoni menjëherë. Kodi juaj:</p>
+      <p className="mt-1">Krediti u shtua në portofol. Mund të postoni menjëherë. Kodi juaj:</p>
       <p className="mt-2 font-mono text-base font-black tracking-wider">{code}</p>
       <p className="mt-1 text-xs text-green-800">
         Kodi u dërgua me SMS në telefonin tuaj dhe me email nëse keni adresë të verifikuar.

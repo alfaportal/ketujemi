@@ -18,6 +18,9 @@ export type PaymentPurpose =
   | "listing_package_s"
   | "listing_package_m"
   | "listing_package_l"
+  | "wallet_topup_s"
+  | "wallet_topup_m"
+  | "wallet_topup_l"
   | "wallet_topup_5"
   | "wallet_topup_10"
   | "wallet_topup_20";
@@ -45,12 +48,12 @@ function amountCents(purpose: PaymentPurpose): number {
   if (purpose === "top_listing") return TOP_LISTING_PRICE_EUR * 100;
   if (purpose === "partner_vip") return PARTNER_PACKAGE_PRICE_CENTS.vip;
   if (purpose === "partner_standard") return PARTNER_PACKAGE_PRICE_CENTS.partner;
-  if (purpose === "listing_package_s") return 100;
-  if (purpose === "listing_package_m") return 500;
-  if (purpose === "listing_package_l") return 800;
-  if (purpose === "wallet_topup_5") return 500;
-  if (purpose === "wallet_topup_10") return 1000;
-  if (purpose === "wallet_topup_20") return 2000;
+  if (purpose === "listing_package_s") return 500;
+  if (purpose === "listing_package_m") return 1000;
+  if (purpose === "listing_package_l") return 2000;
+  if (purpose === "wallet_topup_s" || purpose === "wallet_topup_5") return 500;
+  if (purpose === "wallet_topup_m" || purpose === "wallet_topup_10") return 1000;
+  if (purpose === "wallet_topup_l" || purpose === "wallet_topup_20") return 2000;
   return BUSINESS_EXTRA_POST_PRICE_EUR * 100;
 }
 
@@ -204,11 +207,8 @@ export async function markPaymentPaidByToken(token: string): Promise<void> {
     await activatePartnerFromPayment(row.partner_id);
   }
 
-  if (
-    row.purpose === "wallet_topup_5" ||
-    row.purpose === "wallet_topup_10" ||
-    row.purpose === "wallet_topup_20"
-  ) {
+  const { parseWalletTopupPurpose } = await import("./wallet");
+  if (parseWalletTopupPurpose(row.purpose)) {
     const { fulfillWalletTopupFromPayment } = await import("./wallet-stripe");
     await fulfillWalletTopupFromPayment(row.user_id, row.purpose, token);
   }

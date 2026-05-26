@@ -8,21 +8,14 @@ function escapeHtml(input: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function formatDateSq(d: Date): string {
-  return d.toLocaleDateString("sq-AL", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-}
-
 export async function sendListingPackageConfirmationEmail(opts: {
   to: string;
   displayName: string;
   packageName: string;
-  extraSlots: number;
-  effectiveLimit: number;
-  expiresAt: Date;
+  creditEur: string;
+  listingsApprox: number;
+  balanceEur: string;
+  listingsRemaining: number;
   activationCode: string;
 }): Promise<void> {
   const apiKey = process.env["RESEND_API_KEY"]?.trim();
@@ -31,22 +24,22 @@ export async function sendListingPackageConfirmationEmail(opts: {
     to,
     displayName,
     packageName,
-    extraSlots,
-    effectiveLimit,
-    expiresAt,
+    creditEur,
+    listingsApprox,
+    balanceEur,
+    listingsRemaining,
     activationCode,
   } = opts;
 
   const subject = `${packageName} u aktivizua — KetuJemi`;
-  const expiryStr = formatDateSq(expiresAt);
   const text = [
     `Përshëndetje ${displayName},`,
     "",
     `Faleminderit për blerjen e ${packageName}!`,
     "",
-    `+${extraSlots} shpallje shtesë (30 ditë)`,
-    `Tani mund të keni deri në ${effectiveLimit} njoftime aktive.`,
-    `Skadon më: ${expiryStr}`,
+    `€${creditEur} u shtuan në portofolin tuaj (~${listingsApprox} shpallje @ €0.30).`,
+    `Kredi nuk skadon — përdoret deri sa ta harxhoni.`,
+    `Balanca aktuale: €${balanceEur} (~${listingsRemaining} shpallje).`,
     "",
     `Kodi juaj i aktivizimit: ${activationCode}`,
     "(SMS-i kryesor u dërgua në telefonin tuaj. Kodi mund të përdoret edhe në pajisje tjetër — e njëjta llogari.)",
@@ -60,9 +53,9 @@ export async function sendListingPackageConfirmationEmail(opts: {
     <p>Përshëndetje <strong>${escapeHtml(displayName)}</strong>,</p>
     <p><strong>${escapeHtml(packageName)}</strong> u aktivizua me sukses.</p>
     <ul>
-      <li><strong>+${extraSlots}</strong> shpallje shtesë (30 ditë)</li>
-      <li>Limiti aktual: <strong>${effectiveLimit}</strong> njoftime aktive</li>
-      <li>Skadon: <strong>${escapeHtml(expiryStr)}</strong></li>
+      <li><strong>€${escapeHtml(creditEur)}</strong> në portofol (~${listingsApprox} shpallje @ €0.30)</li>
+      <li>Kredi deri sa ta harxhoni — pa afat kohor</li>
+      <li>Balanca: <strong>€${escapeHtml(balanceEur)}</strong> (~${listingsRemaining} shpallje)</li>
     </ul>
     <p style="font-size:18px;font-weight:bold;letter-spacing:2px;margin:16px 0">${escapeHtml(activationCode)}</p>
     <p style="color:#666;font-size:13px">Kodi u dërgua edhe me SMS. Për pajisje tjetër — e njëjta llogari.</p>

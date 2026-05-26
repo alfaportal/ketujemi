@@ -52,7 +52,7 @@ export async function createListingPackageStripeCheckout(
         price_data: {
           currency: "eur",
           product_data: {
-            name: `${def.name} — +${def.extra_slots} shpallje (30 ditë)`,
+            name: `${def.name} — €${def.price_eur} portofol (~${def.listings_approx} shpallje @ €0.30)`,
           },
           unit_amount: def.price_cents,
         },

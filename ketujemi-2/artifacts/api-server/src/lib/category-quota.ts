@@ -107,7 +107,7 @@ export async function assertFreeListingQuota(
     err.limit = limit;
     err.base_limit = base_limit;
     err.extra_slots = extra_slots;
-    err.show_packages = !isBusinessAccount(user);
+    err.show_packages = true;
     throw err;
   }
 }

@@ -10,9 +10,10 @@ import {
 export type ListingPackageNotifyPayload = {
   user: User;
   packageName: string;
-  extraSlots: number;
-  effectiveLimit: number;
-  expiresAt: Date;
+  creditEur: string;
+  listingsApprox: number;
+  balanceEur: string;
+  listingsRemaining: number;
   activationCode: string;
 };
 
@@ -20,7 +21,15 @@ export type ListingPackageNotifyPayload = {
 export async function notifyListingPackageActivated(
   payload: ListingPackageNotifyPayload,
 ): Promise<{ sms_sent: boolean; email_sent: boolean }> {
-  const { user, packageName, extraSlots, effectiveLimit, expiresAt, activationCode } = payload;
+  const {
+    user,
+    packageName,
+    creditEur,
+    listingsApprox,
+    balanceEur,
+    listingsRemaining,
+    activationCode,
+  } = payload;
   const displayName = user.display_name?.trim() || "Përdorues";
 
   let sms_sent = false;
@@ -46,9 +55,10 @@ export async function notifyListingPackageActivated(
         to: email,
         displayName,
         packageName,
-        extraSlots,
-        effectiveLimit,
-        expiresAt,
+        creditEur,
+        listingsApprox,
+        balanceEur,
+        listingsRemaining,
         activationCode,
       });
       email_sent = true;

@@ -113,12 +113,13 @@ export function WalletPanel({ className = "" }: { className?: string }) {
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm font-semibold text-gray-800">Mbush portofolin</p>
+            <p className="text-sm font-semibold text-gray-800">Mbush portofolin (S / M / L)</p>
+            <p className="text-xs text-gray-500">Kredi pa afat — deri sa ta harxhoni (@ €0.30/shpallje)</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {(data?.topups ?? [
-                { id: "5", price_eur: 5, listings: 16, label: "€5 — 16 shpallje" },
-                { id: "10", price_eur: 10, listings: 33, label: "€10 — 33 shpallje" },
-                { id: "20", price_eur: 20, listings: 66, label: "€20 — 66 shpallje" },
+                { id: "s", price_eur: 5, listings: 16, label: "Paketa S — €5 (~16)" },
+                { id: "m", price_eur: 10, listings: 33, label: "Paketa M — €10 (~33)" },
+                { id: "l", price_eur: 20, listings: 66, label: "Paketa L — €20 (~66)" },
               ]).map((t) => (
                 <Button
                   key={t.id}

@@ -3,20 +3,44 @@ import { db, usersTable, walletTransactionsTable } from "@workspace/db";
 import type { User } from "@workspace/db";
 import { isBusinessAccount, isVipBusinessActive } from "./business-rules";
 import { countUserActiveListingsInCategoryRoot } from "./category-quota";
+import { LISTING_PACKAGE_CATALOG, type ListingPackageId } from "./listing-packages";
 
 /** Cost per paid listing (€0.30). */
 export const LISTING_PRICE_CENTS = 30;
 
-export type WalletTopupId = "5" | "10" | "20";
+export type WalletTopupId = ListingPackageId;
 
 export const WALLET_TOPUP_CATALOG: Record<
   WalletTopupId,
   { price_eur: number; price_cents: number; listings: number; label: string }
 > = {
-  "5": { price_eur: 5, price_cents: 500, listings: 16, label: "€5 — 16 shpallje" },
-  "10": { price_eur: 10, price_cents: 1000, listings: 33, label: "€10 — 33 shpallje" },
-  "20": { price_eur: 20, price_cents: 2000, listings: 66, label: "€20 — 66 shpallje" },
+  s: {
+    price_eur: LISTING_PACKAGE_CATALOG.s.price_eur,
+    price_cents: LISTING_PACKAGE_CATALOG.s.price_cents,
+    listings: LISTING_PACKAGE_CATALOG.s.listings_approx,
+    label: `Paketa S — €${LISTING_PACKAGE_CATALOG.s.price_eur} (~${LISTING_PACKAGE_CATALOG.s.listings_approx} shpallje)`,
+  },
+  m: {
+    price_eur: LISTING_PACKAGE_CATALOG.m.price_eur,
+    price_cents: LISTING_PACKAGE_CATALOG.m.price_cents,
+    listings: LISTING_PACKAGE_CATALOG.m.listings_approx,
+    label: `Paketa M — €${LISTING_PACKAGE_CATALOG.m.price_eur} (~${LISTING_PACKAGE_CATALOG.m.listings_approx} shpallje)`,
+  },
+  l: {
+    price_eur: LISTING_PACKAGE_CATALOG.l.price_eur,
+    price_cents: LISTING_PACKAGE_CATALOG.l.price_cents,
+    listings: LISTING_PACKAGE_CATALOG.l.listings_approx,
+    label: `Paketa L — €${LISTING_PACKAGE_CATALOG.l.price_eur} (~${LISTING_PACKAGE_CATALOG.l.listings_approx} shpallje)`,
+  },
 };
+
+export function parseWalletTopupId(raw: string): WalletTopupId | null {
+  const k = raw.trim().toLowerCase();
+  if (k === "s" || k === "5") return "s";
+  if (k === "m" || k === "10") return "m";
+  if (k === "l" || k === "20") return "l";
+  return null;
+}
 
 export function stripePurposeForWalletTopup(pkg: WalletTopupId): `wallet_topup_${WalletTopupId}` {
   return `wallet_topup_${pkg}`;
@@ -25,10 +49,8 @@ export function stripePurposeForWalletTopup(pkg: WalletTopupId): `wallet_topup_$
 export function parseWalletTopupPurpose(
   purpose: string | undefined,
 ): WalletTopupId | null {
-  if (purpose === "wallet_topup_5") return "5";
-  if (purpose === "wallet_topup_10") return "10";
-  if (purpose === "wallet_topup_20") return "20";
-  return null;
+  if (!purpose?.startsWith("wallet_topup_")) return null;
+  return parseWalletTopupId(purpose.replace("wallet_topup_", ""));
 }
 
 export function listingsRemainingFromBalance(balanceCents: number): number {
@@ -92,7 +114,7 @@ export async function assertWalletCoversListing(
     err.required_cents = LISTING_PRICE_CENTS;
     err.listings_remaining = listingsRemainingFromBalance(balance);
     err.publicMessage =
-      "Balanca juaj nuk mjafton. Mbushni portofolin (€5 / €10 / €20) për të postuar.";
+      "Balanca juaj nuk mjafton. Bli Paketën S, M ose L (€5 / €10 / €20) për të postuar.";
     throw err;
   }
 }
@@ -131,7 +153,7 @@ export async function creditWalletTopup(
       amount_cents: amountCents,
       balance_after_cents: next,
       payment_token: paymentToken,
-      note: "Stripe top-up",
+      note: "Portofol — kredi",
     });
   });
 }

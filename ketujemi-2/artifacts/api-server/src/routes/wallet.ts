@@ -4,7 +4,7 @@ import {
   WALLET_TOPUP_CATALOG,
   walletSummary,
   getWalletBalanceCents,
-  type WalletTopupId,
+  parseWalletTopupId,
 } from "../lib/wallet";
 import { createWalletTopupStripeCheckout } from "../lib/wallet-stripe";
 import { createWalletTopupKosovoBankPayment } from "../lib/wallet-kosovo-bank";
@@ -51,11 +51,11 @@ router.post("/wallet/topup-checkout", async (req, res) => {
     return;
   }
 
-  const pkg = String(req.body?.package ?? "").trim() as WalletTopupId;
-  if (!(pkg in WALLET_TOPUP_CATALOG)) {
+  const pkg = parseWalletTopupId(String(req.body?.package ?? ""));
+  if (!pkg) {
     res.status(400).json({
       error: "INVALID_PACKAGE",
-      message: "Zgjidhni €5, €10 ose €20.",
+      message: "Zgjidhni Paketën S (€5), M (€10) ose L (€20).",
     });
     return;
   }

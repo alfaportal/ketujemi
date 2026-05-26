@@ -1,37 +1,40 @@
 import { randomInt, randomUUID } from "node:crypto";
 import { db, listingPackagePurchasesTable, usersTable } from "@workspace/db";
-import type { ListingPackageTier, User } from "@workspace/db";
-import { and, eq, gt, gte, sql } from "drizzle-orm";
-import { DEFAULT_FREE_LISTING_LIMIT } from "./category-quota";
+import type { User } from "@workspace/db";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { MAX_ACTIVE_LISTINGS_PER_USER } from "./user-listing-limits";
-import { isBusinessAccount } from "./business-rules";
 import { notifyListingPackageActivated } from "./send-listing-package-notifications";
-import { logger } from "./logger";
+const LISTING_PRICE_CENTS = 30;
 
+function listingsRemainingFromBalance(balanceCents: number): number {
+  return Math.floor(balanceCents / LISTING_PRICE_CENTS);
+}
+
+/** S/M/L = kredi portofoli (€0.30/shpallje). Nuk skadon — deri sa harxhohet. */
 export const LISTING_PACKAGE_CATALOG = {
   s: {
     id: "s" as const,
     name: "Paketa S",
-    price_eur: 1,
-    price_cents: 100,
-    extra_slots: 5,
-    days: 30,
+    price_eur: 5,
+    price_cents: 500,
+    wallet_credit_cents: 500,
+    listings_approx: 16,
   },
   m: {
     id: "m" as const,
     name: "Paketa M",
-    price_eur: 5,
-    price_cents: 500,
-    extra_slots: 25,
-    days: 30,
+    price_eur: 10,
+    price_cents: 1000,
+    wallet_credit_cents: 1000,
+    listings_approx: 33,
   },
   l: {
     id: "l" as const,
     name: "Paketa L",
-    price_eur: 8,
-    price_cents: 800,
-    extra_slots: 50,
-    days: 30,
+    price_eur: 20,
+    price_cents: 2000,
+    wallet_credit_cents: 2000,
+    listings_approx: 66,
   },
 } as const;
 
@@ -43,9 +46,9 @@ export function stripePurposeForPackage(pkg: ListingPackageId): string {
 
 export function parseListingPackageId(raw: string): ListingPackageId | null {
   const k = raw.trim().toLowerCase();
-  if (k === "s" || k === "listing_package_s") return "s";
-  if (k === "m" || k === "listing_package_m") return "m";
-  if (k === "l" || k === "listing_package_l") return "l";
+  if (k === "s" || k === "listing_package_s" || k === "5") return "s";
+  if (k === "m" || k === "listing_package_m" || k === "10") return "m";
+  if (k === "l" || k === "listing_package_l" || k === "20") return "l";
   return null;
 }
 
@@ -63,22 +66,9 @@ export function packageLabel(pkg: ListingPackageId): string {
   return LISTING_PACKAGE_CATALOG[pkg].name;
 }
 
-/** Sum of extra slots from active paid packages for a user. */
-export async function getUserExtraListingSlots(userId: number): Promise<number> {
-  const now = new Date();
-  const [row] = await db
-    .select({
-      total: sql<number>`COALESCE(SUM(${listingPackagePurchasesTable.extra_slots}), 0)::int`,
-    })
-    .from(listingPackagePurchasesTable)
-    .where(
-      and(
-        eq(listingPackagePurchasesTable.user_id, userId),
-        eq(listingPackagePurchasesTable.status, "paid"),
-        gt(listingPackagePurchasesTable.expires_at, now),
-      ),
-    );
-  return Number(row?.total ?? 0);
+/** Paketat shtojnë kredi portofoli, jo vende aktive shtesë. */
+export async function getUserExtraListingSlots(_userId: number): Promise<number> {
+  return 0;
 }
 
 export async function getUserListingCapacity(user: User): Promise<{
@@ -89,21 +79,19 @@ export async function getUserListingCapacity(user: User): Promise<{
   remaining: number;
 }> {
   const { countUserActiveListings } = await import("./user-listing-limits");
-  const extra = isBusinessAccount(user) ? 0 : await getUserExtraListingSlots(user.id);
   const base = MAX_ACTIVE_LISTINGS_PER_USER;
-  const effective = base + extra;
   const active_count = await countUserActiveListings(user);
   return {
     base_limit: base,
-    extra_slots: extra,
-    effective_limit: effective,
+    extra_slots: 0,
+    effective_limit: base,
     active_count,
-    remaining: Math.max(0, effective - active_count),
+    remaining: Math.max(0, base - active_count),
   };
 }
 
-export function effectiveCategoryLimit(baseLimit: number, extraSlots: number): number {
-  return baseLimit + extraSlots;
+export function effectiveCategoryLimit(baseLimit: number, _extraSlots: number): number {
+  return baseLimit;
 }
 
 export async function findPackagePurchaseByToken(token: string) {
@@ -139,16 +127,26 @@ export async function activateListingPackageFromPayment(
     return { activationCode: purchase.activation_code };
   }
 
+  const pkg = purchase.package as ListingPackageId;
+  const def = LISTING_PACKAGE_CATALOG[pkg];
+  if (!def) return null;
+
   const now = new Date();
-  const expires = new Date();
-  expires.setDate(expires.getDate() + LISTING_PACKAGE_CATALOG[purchase.package as ListingPackageId].days);
+  const { creditWalletTopup, getWalletBalanceCents } = await import("./wallet");
+  await creditWalletTopup(
+    purchase.user_id,
+    def.wallet_credit_cents,
+    `listing_pkg:${purchase.payment_token}`,
+  );
 
   await db
     .update(listingPackagePurchasesTable)
     .set({
       status: "paid",
       purchased_at: now,
-      expires_at: expires,
+      expires_at: null,
+      extra_slots: def.listings_approx,
+      amount_cents: def.price_cents,
     })
     .where(eq(listingPackagePurchasesTable.id, purchaseId));
 
@@ -158,17 +156,15 @@ export async function activateListingPackageFromPayment(
     .where(eq(usersTable.id, purchase.user_id))
     .limit(1);
 
-  const pkg = purchase.package as ListingPackageId;
-  const capacity = user ? await getUserListingCapacity(user) : null;
-
   if (user) {
+    const balance = await getWalletBalanceCents(user.id);
     await notifyListingPackageActivated({
       user,
       packageName: packageLabel(pkg),
-      extraSlots: purchase.extra_slots,
-      effectiveLimit:
-        capacity?.effective_limit ?? DEFAULT_FREE_LISTING_LIMIT + purchase.extra_slots,
-      expiresAt: expires,
+      creditEur: (def.wallet_credit_cents / 100).toFixed(2),
+      listingsApprox: def.listings_approx,
+      balanceEur: (balance / 100).toFixed(2),
+      listingsRemaining: listingsRemainingFromBalance(balance),
       activationCode: purchase.activation_code,
     });
   }
@@ -176,12 +172,17 @@ export async function activateListingPackageFromPayment(
   return { activationCode: purchase.activation_code };
 }
 
-/** Redeem code on another device (same or first-time user binding). */
 export async function redeemListingPackageCode(
   userId: number,
   code: string,
 ): Promise<
-  | { ok: true; package: string; extra_slots: number; expires_at: string; effective_limit: number }
+  | {
+      ok: true;
+      package: string;
+      listings_approx: number;
+      balance_eur: string;
+      listings_remaining: number;
+    }
   | { ok: false; message: string }
 > {
   const purchase = await findPackagePurchaseByCode(code);
@@ -191,25 +192,18 @@ export async function redeemListingPackageCode(
   if (purchase.status !== "paid") {
     return { ok: false, message: "Paketa nuk është paguar ende." };
   }
-  if (purchase.expires_at && purchase.expires_at < new Date()) {
-    return { ok: false, message: "Paketa ka skaduar." };
-  }
   if (purchase.user_id !== userId) {
     return { ok: false, message: "Ky kod i përket një llogarie tjetër." };
   }
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-  if (!user) {
-    return { ok: false, message: "Llogaria nuk u gjet." };
-  }
-
-  const capacity = await getUserListingCapacity(user);
+  const { getWalletBalanceCents } = await import("./wallet");
+  const balance = await getWalletBalanceCents(userId);
   return {
     ok: true,
     package: purchase.package,
-    extra_slots: purchase.extra_slots,
-    expires_at: purchase.expires_at!.toISOString(),
-    effective_limit: capacity.effective_limit,
+    listings_approx: purchase.extra_slots,
+    balance_eur: (balance / 100).toFixed(2),
+    listings_remaining: listingsRemainingFromBalance(balance),
   };
 }
 
@@ -226,7 +220,7 @@ export async function createPendingPackagePurchase(
     .values({
       user_id: userId,
       package: pkg,
-      extra_slots: def.extra_slots,
+      extra_slots: def.listings_approx,
       amount_cents: def.price_cents,
       activation_code: activationCode,
       payment_token: token,

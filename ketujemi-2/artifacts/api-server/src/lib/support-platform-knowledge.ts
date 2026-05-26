@@ -100,7 +100,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 • **10 njoftime falas për çdo kategori kryesore** (kufiri llogaritet për rrënjën e kategorisë + të gjitha nën-kategoritë).
 • Kur një njoftim skadon ose fshihet, vendi në atë kategori lirohet.
 • **Max 10 njoftime aktive njëkohësisht** për përdorues (total në platformë).
-• Pas limitit në kategori: mund të blini **Paketa shtesë** S (€1, +5 vende), M (€5, +25), L (€8, +50) për 30 ditë — pagesë me Stripe.
+• Pas limitit: blini **Paketa S/M/L** (€5 / €10 / €20) — kredi portofoli (~16 / 33 / 66 shpallje @ €0.30), **pa skadim** deri sa harxhohet — Stripe.
 • Postimi bazë për privatë është **falas** (jo abonim mujor për postim normal).
 
 === LLOGARI BIZNESI ===

@@ -39,7 +39,7 @@ export async function assertUserActiveListingCap(user: User): Promise<void> {
     err.used = used;
     err.limit = limit;
     err.base_limit = MAX_ACTIVE_LISTINGS_PER_USER;
-    err.show_packages = !isBusinessAccount(user);
+    err.show_packages = true;
     err.publicMessage =
       limit > MAX_ACTIVE_LISTINGS_PER_USER
         ? `Keni arritur ${limit} njoftime aktive (me paketë shtesë). Fshini një njoftim ose blini paketë të re.`

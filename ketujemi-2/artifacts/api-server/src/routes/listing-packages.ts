@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { getSessionUser } from "../lib/session-user";
-import { isBusinessAccount } from "../lib/business-rules";
 import {
   LISTING_PACKAGE_CATALOG,
   parseListingPackageId,
@@ -25,8 +24,9 @@ router.get("/listing-packages/catalog", (_req, res) => {
       id: p.id,
       name: p.name,
       price_eur: p.price_eur,
-      extra_slots: p.extra_slots,
-      days: p.days,
+      listings_approx: p.listings_approx,
+      listing_price_eur: 0.3,
+      credit_until_spent: true,
     })),
     free_limit: 10,
   });
@@ -41,16 +41,15 @@ router.get("/listing-packages/status", async (req, res) => {
   const capacity = await getUserListingCapacity(user);
   res.json({
     ...capacity,
-    packages_available: !isBusinessAccount(user),
-    catalog: isBusinessAccount(user)
-      ? []
-      : Object.values(LISTING_PACKAGE_CATALOG).map((p) => ({
-          id: p.id,
-          name: p.name,
-          price_eur: p.price_eur,
-          extra_slots: p.extra_slots,
-          days: p.days,
-        })),
+    packages_available: true,
+    catalog: Object.values(LISTING_PACKAGE_CATALOG).map((p) => ({
+      id: p.id,
+      name: p.name,
+      price_eur: p.price_eur,
+      listings_approx: p.listings_approx,
+      listing_price_eur: 0.3,
+      credit_until_spent: true,
+    })),
   });
 });
 
@@ -60,14 +59,6 @@ router.post("/listing-packages/checkout", async (req, res) => {
     res.status(401).json({ error: "Authentication required", message: "Hyni në llogari për të blerë paketë." });
     return;
   }
-  if (isBusinessAccount(user)) {
-    res.status(400).json({
-      error: "BUSINESS_ACCOUNT",
-      message: "Llogaritë biznesi kanë kuota të veçanta.",
-    });
-    return;
-  }
-
   const pkg = parseListingPackageId(String(req.body?.package ?? ""));
   if (!pkg) {
     res.status(400).json({ error: "Invalid package" });
