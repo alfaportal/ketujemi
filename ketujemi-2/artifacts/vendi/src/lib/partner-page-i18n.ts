@@ -79,7 +79,7 @@ const SQ: PartnerPageCopy = {
   periodPerMonth: "/muaj",
   standardFeatures: [
     "Dyqan i personalizuar në KetuJemi.com",
-    "Deri 100 njoftime aktive",
+    "Deri 50 njoftime aktive",
     "Logo e biznesit me link në faqen kryesore",
     'Badge "Partner i Verifikuar"',
   ],
@@ -87,7 +87,7 @@ const SQ: PartnerPageCopy = {
   vipPrice: "€50",
   vipFeatures: [
     "Gjithçka e Standard +",
-    "Deri 200 njoftime aktive",
+    "Deri 100 njoftime aktive",
     "Pozicion prioritar në kërkim (del i pari)",
     "Badge VIP i dukshëm",
     "Statistika të avancuara",
@@ -208,7 +208,7 @@ const MK: PartnerPageCopy = {
   periodPerMonth: "/месец",
   standardFeatures: [
     "Персонализирана продавница на KetuJemi.com",
-    "До 100 активни огласи",
+    "До 50 активни огласи",
     "Лого со линк на почетната страница",
     'Значка „Верификуван партнер"',
   ],
@@ -216,7 +216,7 @@ const MK: PartnerPageCopy = {
   vipPrice: "€50",
   vipFeatures: [
     "Сè од Standard +",
-    "До 200 активни огласи",
+    "До 100 активни огласи",
     "Приоритетна позиција во пребарување",
     "Видлива VIP значка",
     "Напредна статистика",
@@ -321,7 +321,7 @@ const MNE: PartnerPageCopy = {
   periodPerMonth: "/mjesec",
   standardFeatures: [
     "Personalizovana prodavnica na KetuJemi.com",
-    "Do 100 aktivnih oglasa",
+    "Do 50 aktivnih oglasa",
     "Logo sa linkom na početnoj stranici",
     'Bedž „Verifikovani partner"',
   ],
@@ -329,7 +329,7 @@ const MNE: PartnerPageCopy = {
   vipPrice: "€50",
   vipFeatures: [
     "Sve iz Standard +",
-    "Do 200 aktivnih oglasa",
+    "Do 100 aktivnih oglasa",
     "Prioritetna pozicija u pretrazi",
     "Vidljiv VIP bedž",
     "Napredna statistika",
