@@ -15,9 +15,10 @@ import {
   type RecaptchaV2Handle,
 } from "@/components/recaptcha-v2";
 
-/** Regjistrohu = email + fjalëkalim + kod. Kyçu = telefon + SMS. */
+/** Regjistrohu = email (hyrje menjëherë nëse ke llogari; kod vetëm për të reja). Kyçu = telefon. */
 type Flow = "register" | "login";
 type Step = "credentials" | "verify";
+type EmailMode = "signin" | "verify" | "forgot" | "reset";
 
 const MIN_PASSWORD = 6;
 
@@ -71,6 +72,10 @@ export default function LoginPage() {
 
   const [flow, setFlow] = useState<Flow>("login");
   const [step, setStep] = useState<Step>("credentials");
+  const [emailMode, setEmailMode] = useState<EmailMode>("signin");
+  const [passwordFailCount, setPasswordFailCount] = useState(0);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
@@ -142,6 +147,18 @@ export default function LoginPage() {
     setEmail("");
     setPassword("");
     setPhone("");
+    setEmailMode("signin");
+    setPasswordFailCount(0);
+    setNewPassword("");
+    setConfirmPassword("");
+  }
+
+  function backToEmailSignin() {
+    setEmailMode("signin");
+    setStep("credentials");
+    setCode("");
+    setNewPassword("");
+    setConfirmPassword("");
   }
 
   function requireCaptcha(): boolean {
@@ -157,13 +174,13 @@ export default function LoginPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      await sendEmailCode();
+      await submitEmailSignin();
     } finally {
       setBusy(false);
     }
   }
 
-  async function sendEmailCode(): Promise<boolean> {
+  async function submitEmailSignin(): Promise<boolean> {
     if (!validateEmailPassword(email, password, toast)) return false;
     const res = await fetch("/api/auth/register/email", {
       method: "POST",
@@ -174,21 +191,104 @@ export default function LoginPage() {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       const err = data as { message?: string; error?: string };
+      if (err.error === "INVALID_CREDENTIALS") {
+        const next = passwordFailCount + 1;
+        setPasswordFailCount(next);
+      }
       toast({
         title: err.message ?? err.error ?? t.toast_reqFail,
         variant: "destructive",
       });
       return false;
     }
-    if ((data as { needsVerification?: boolean }).needsVerification) {
+    setPasswordFailCount(0);
+    const payload = data as {
+      needsVerification?: boolean;
+      existingAccount?: boolean;
+    };
+    if (payload.needsVerification && !payload.existingAccount) {
+      setEmailMode("verify");
       setStep("verify");
       toast({ title: t.toast_emailSent });
       return true;
     }
     await refresh();
-    toast({ title: t.toast_accountReady });
+    toast({ title: payload.existingAccount ? t.login_welcomeBack : t.toast_accountReady });
     setLocation(returnTo);
     return true;
+  }
+
+  async function onForgotPassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (!isValidEmailForSubmit(email)) {
+      toast({
+        title: "Vendosni një adresë email të vlefshme.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/auth/password/forgot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({
+          title: (data as { message?: string }).message ?? t.toast_reqFail,
+          variant: "destructive",
+        });
+        return;
+      }
+      setEmailMode("reset");
+      toast({ title: (data as { message?: string }).message ?? t.toast_emailSent });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onResetPassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (newPassword.length < MIN_PASSWORD) {
+      toast({
+        title: `Fjalëkalimi i ri duhet të ketë të paktën ${MIN_PASSWORD} karaktere.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: t.profile_password_mismatch, variant: "destructive" });
+      return;
+    }
+    if (code.trim().length < 4) {
+      toast({ title: t.toast_verifyFail, variant: "destructive" });
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/auth/password/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, code, new_password: newPassword }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({
+          title: (data as { message?: string }).message ?? t.toast_verifyFail,
+          variant: "destructive",
+        });
+        return;
+      }
+      await refresh();
+      toast({ title: t.login_passwordResetDone });
+      setLocation(returnTo);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function onVerifyEmail(e: React.FormEvent) {
@@ -219,7 +319,7 @@ export default function LoginPage() {
           setCode("");
         }
         if (err.error === "CODE_EXPIRED") {
-          resetVerify();
+          backToEmailSignin();
         }
         toast({
           title: err.message ?? err.error ?? t.toast_verifyFail,
@@ -237,7 +337,7 @@ export default function LoginPage() {
   async function onResendEmailCode() {
     setBusy(true);
     try {
-      await sendEmailCode();
+      await submitEmailSignin();
     } finally {
       setBusy(false);
     }
@@ -363,13 +463,13 @@ export default function LoginPage() {
           ) : null}
 
           {isRegister ? (
-            isVerify ? (
+            emailMode === "verify" ? (
               <form className="space-y-4" onSubmit={onVerifyEmail} noValidate>
                 <p className="text-sm text-gray-600">{t.login_emailVerifyHint}</p>
                 <button
                   type="button"
                   className="text-sm text-blue-600 font-medium hover:underline min-h-11"
-                  onClick={resetVerify}
+                  onClick={backToEmailSignin}
                 >
                   {t.login_changeEmail}
                 </button>
@@ -398,6 +498,80 @@ export default function LoginPage() {
                   {t.login_resendEmailCode}
                 </Button>
               </form>
+            ) : emailMode === "forgot" ? (
+              <form className="space-y-4" onSubmit={onForgotPassword} noValidate>
+                <p className="text-sm text-gray-600">{t.login_forgotHint}</p>
+                <button
+                  type="button"
+                  className="text-sm text-blue-600 font-medium hover:underline min-h-11"
+                  onClick={backToEmailSignin}
+                >
+                  {t.login_backToSignin}
+                </button>
+                <div className="space-y-2">
+                  <Label htmlFor="forgot-email">{t.login_emailLbl}</Label>
+                  <Input
+                    id="forgot-email"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(emailFromInput(e.target.value))}
+                    placeholder={t.login_emailPh}
+                    className="min-h-12 h-12"
+                  />
+                </div>
+                <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
+                  {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_forgotBtn}
+                </Button>
+              </form>
+            ) : emailMode === "reset" ? (
+              <form className="space-y-4" onSubmit={onResetPassword} noValidate>
+                <p className="text-sm text-gray-600">{t.login_resetHint}</p>
+                <button
+                  type="button"
+                  className="text-sm text-blue-600 font-medium hover:underline min-h-11"
+                  onClick={() => setEmailMode("forgot")}
+                >
+                  {t.login_resendEmailCode}
+                </button>
+                <div className="space-y-2">
+                  <Label htmlFor="reset-code">{t.login_codeLbl}</Label>
+                  <Input
+                    id="reset-code"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="123456"
+                    className="min-h-12 h-12 text-[16px]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reset-pass">{t.profile_newPassword}</Label>
+                  <Input
+                    id="reset-pass"
+                    type="password"
+                    autoComplete="new-password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="min-h-12 h-12"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reset-pass2">{t.profile_confirmPassword}</Label>
+                  <Input
+                    id="reset-pass2"
+                    type="password"
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="min-h-12 h-12"
+                  />
+                </div>
+                <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
+                  {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_resetBtn}
+                </Button>
+              </form>
             ) : (
               <form className="space-y-4" onSubmit={onRegisterEmail} noValidate>
                 <div className="space-y-2">
@@ -419,16 +593,25 @@ export default function LoginPage() {
                     id="reg-password"
                     name="password"
                     type="password"
-                    autoComplete="new-password"
+                    autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder={t.login_passPhReg}
+                    placeholder={t.login_passPh}
                     className="min-h-12 h-12"
                   />
                 </div>
                 <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
-                  {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_continueBtn}
+                  {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_submit_login}
                 </Button>
+                {passwordFailCount >= 2 ? (
+                  <button
+                    type="button"
+                    className="w-full text-center text-sm text-blue-600 font-semibold hover:underline min-h-11"
+                    onClick={() => setEmailMode("forgot")}
+                  >
+                    {t.login_forgotPassword}
+                  </button>
+                ) : null}
                 {smsAuthEnabled ? (
                   <p className="text-center text-sm text-gray-500">
                     {t.login_havePhoneAccount}{" "}

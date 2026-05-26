@@ -6,6 +6,47 @@ type VerifyMailPayload = {
   verifyUrl: string;
 };
 
+export async function sendPasswordResetEmail(payload: VerifyMailPayload): Promise<void> {
+  const { to, code } = payload;
+  const apiKey = process.env["RESEND_API_KEY"]?.trim();
+  const from = process.env["EMAIL_FROM"] ?? "KetuJemi <onboarding@ketujemi.com>";
+  const subject = "Rivendos fjalëkalimin — KetuJemi";
+  const text = [
+    "Keni kërkuar të ndryshoni fjalëkalimin.",
+    "",
+    `Kodi: ${code}`,
+    "",
+    "Vendoseni këtë kod në faqen e hyrjes së KetuJemi.",
+    "",
+    "Nëse nuk e keni kërkuar ju, injoroni këtë email.",
+  ].join("\n");
+
+  if (!apiKey) {
+    logger.info({ to, code }, "password reset email (no RESEND_API_KEY — code logged)");
+    return;
+  }
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject,
+      text,
+      html: `<p>Kodi për fjalëkalim të ri:</p><p><strong>${code}</strong></p>`,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Email send failed: ${res.status} ${body}`);
+  }
+}
+
 export async function sendEmailVerification(payload: VerifyMailPayload): Promise<void> {
   const { to, code, verifyUrl } = payload;
   const apiKey = process.env["RESEND_API_KEY"]?.trim();

@@ -10,7 +10,7 @@ import {
   type User,
 } from "@workspace/db";
 import { vonageVerifyRequest, vonageVerifyCheck } from "../lib/vonage-verify";
-import { sendEmailVerification } from "../lib/send-email";
+import { sendEmailVerification, sendPasswordResetEmail } from "../lib/send-email";
 import {
   setUserSessionCookie,
   clearUserSessionCookie,
@@ -80,6 +80,40 @@ async function sendEmailCodeChallenge(
   await sendEmailVerification({ to: email, code, verifyUrl });
 }
 
+async function loginExistingEmailUser(
+  res: Parameters<typeof setUserSessionCookie>[0],
+  existing: User,
+  password: string,
+): Promise<{ ok: true; user: User } | { ok: false; status: number; body: Record<string, string> }> {
+  if (isUserBanned(existing)) {
+    return { ok: false, status: 403, body: { error: "Account suspended" } };
+  }
+  if (existing.password_hash) {
+    const match = await bcrypt.compare(password, existing.password_hash);
+    if (!match) {
+      return {
+        ok: false,
+        status: 401,
+        body: { error: "INVALID_CREDENTIALS", message: "Fjalëkalim i gabuar." },
+      };
+    }
+    setUserSessionCookie(res, existing.id);
+    return { ok: true, user: existing };
+  }
+  const hash = await bcrypt.hash(password, 10);
+  const [updated] = await db
+    .update(usersTable)
+    .set({
+      password_hash: hash,
+      email_verified_at: existing.email_verified_at ?? new Date(),
+    })
+    .where(eq(usersTable.id, existing.id))
+    .returning();
+  const loggedIn = updated ?? existing;
+  setUserSessionCookie(res, loggedIn.id);
+  return { ok: true, user: loggedIn };
+}
+
 async function completeEmailChallengeLogin(
   res: Parameters<typeof setUserSessionCookie>[0],
   challenge: { id: number; email: string; password_hash: string },
@@ -131,44 +165,17 @@ router.post("/auth/register/email", async (req, res) => {
 
     const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
     if (existing) {
-      if (isUserBanned(existing)) {
-        res.status(403).json({ error: "Account suspended" });
+      const loginResult = await loginExistingEmailUser(res, existing, password);
+      if (!loginResult.ok) {
+        res.status(loginResult.status).json(loginResult.body);
         return;
       }
-      let passwordOk = false;
-      let hashForChallenge = existing.password_hash;
-      if (existing.password_hash) {
-        passwordOk = await bcrypt.compare(password, existing.password_hash);
-      } else if (password.length >= MIN_PASSWORD) {
-        passwordOk = true;
-        hashForChallenge = await bcrypt.hash(password, 10);
-      }
-      if (!passwordOk || !hashForChallenge) {
-        res.status(409).json({
-          error: "EMAIL_ALREADY_REGISTERED",
-          message: "Ky email ekziston. Shkruaj fjalëkalimin e saktë — të dërgojmë kod në email.",
-        });
-        return;
-      }
-      if (!isEmailVerificationRequired()) {
-        setUserSessionCookie(res, existing.id);
-        res.json({
-          ok: true,
-          needsVerification: false,
-          existingAccount: true,
-          user: publicUser(existing, { self: true }),
-        });
-        return;
-      }
-      if (!hasResendConfigured()) {
-        res.status(503).json({
-          error: "EMAIL_NOT_CONFIGURED",
-          message: "Verifikimi me email nuk është i konfiguruar (RESEND_API_KEY).",
-        });
-        return;
-      }
-      await sendEmailCodeChallenge(req, email, hashForChallenge);
-      res.status(200).json({ ok: true, needsVerification: true, existingAccount: true });
+      res.json({
+        ok: true,
+        needsVerification: false,
+        existingAccount: true,
+        user: publicUser(loginResult.user, { self: true }),
+      });
       return;
     }
 
@@ -404,7 +411,7 @@ router.get("/auth/verify/email/link", async (req, res) => {
   }
 });
 
-// ─── POST /auth/login/email/start — password OK → email code → verify ───────
+// ─── POST /auth/login/email/start — instant login (no code) for existing email ─
 router.post("/auth/login/email/start", async (req, res) => {
   try {
     const email = normalizeEmail(req.body?.email);
@@ -413,80 +420,22 @@ router.post("/auth/login/email/start", async (req, res) => {
       res.status(400).json({ error: "Email and password required" });
       return;
     }
-
     const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
     if (!user) {
       res.status(404).json({
         error: "NOT_REGISTERED",
-        message: "Ky email nuk është regjistruar. Kliko «Regjistrohu».",
+        message: "Ky email nuk është regjistruar.",
       });
       return;
     }
-
-    if (isUserBanned(user)) {
-      res.status(403).json({ error: "Account suspended" });
+    const loginResult = await loginExistingEmailUser(res, user, password);
+    if (!loginResult.ok) {
+      res.status(loginResult.status).json(loginResult.body);
       return;
     }
-
-    let hashForChallenge: string;
-    if (user.password_hash) {
-      const ok = await bcrypt.compare(password, user.password_hash);
-      if (!ok) {
-        res.status(401).json({
-          error: "INVALID_CREDENTIALS",
-          message: "Email ose fjalëkalim i gabuar.",
-        });
-        return;
-      }
-      hashForChallenge = user.password_hash;
-    } else {
-      hashForChallenge = await bcrypt.hash(password, 10);
-    }
-
-    if (!isEmailVerificationRequired()) {
-      if (!user.password_hash) {
-        const [updated] = await db
-          .update(usersTable)
-          .set({
-            password_hash: hashForChallenge,
-            email_verified_at: user.email_verified_at ?? new Date(),
-          })
-          .where(eq(usersTable.id, user.id))
-          .returning();
-        const loggedIn = updated ?? user;
-        setUserSessionCookie(res, loggedIn.id);
-        res.json({ ok: true, needsVerification: false, user: publicUser(loggedIn, { self: true }) });
-        return;
-      }
-      setUserSessionCookie(res, user.id);
-      res.json({ ok: true, needsVerification: false, user: publicUser(user, { self: true }) });
-      return;
-    }
-
-    if (!hasResendConfigured()) {
-      res.status(503).json({
-        error: "EMAIL_NOT_CONFIGURED",
-        message: "Verifikimi me email nuk është i konfiguruar (RESEND_API_KEY).",
-      });
-      return;
-    }
-
-    await db
-      .delete(emailVerifyChallengesTable)
-      .where(lt(emailVerifyChallengesTable.expires_at, new Date()));
-
-    await sendEmailCodeChallenge(req, email, hashForChallenge);
-    res.json({ ok: true, needsVerification: true });
+    res.json({ ok: true, needsVerification: false, user: publicUser(loginResult.user, { self: true }) });
   } catch (err) {
     req.log?.error({ err }, "login email start");
-    const msg = err instanceof Error ? err.message : "";
-    if (msg.includes("Email send failed")) {
-      res.status(502).json({
-        error: "EMAIL_SEND_FAILED",
-        message: "Nuk u dërgua emaili me kod. Provo përsëri.",
-      });
-      return;
-    }
     res.status(500).json({ error: "Login failed" });
   }
 });
@@ -556,6 +505,141 @@ router.post("/auth/login/email", async (req, res) => {
   } catch (err) {
     req.log?.error({ err }, "login email");
     res.status(500).json({ error: "Login failed" });
+  }
+});
+
+// ─── POST /auth/password/forgot — send reset code (no password needed) ────────
+router.post("/auth/password/forgot", async (req, res) => {
+  try {
+    const email = normalizeEmail(req.body?.email);
+    if (!email) {
+      res.status(400).json({ error: "Email required" });
+      return;
+    }
+
+    const genericOk = {
+      ok: true,
+      message: "Nëse ky email është i regjistruar, do të marrësh një kod.",
+    };
+
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
+    if (!user) {
+      res.json(genericOk);
+      return;
+    }
+
+    if (!hasResendConfigured()) {
+      res.status(503).json({
+        error: "EMAIL_NOT_CONFIGURED",
+        message: "Emaili nuk është i konfiguruar (RESEND_API_KEY).",
+      });
+      return;
+    }
+
+    await db.delete(emailVerifyChallengesTable).where(eq(emailVerifyChallengesTable.email, email));
+
+    const code = sixDigitCode();
+    const token = randomUUID();
+    const expiresAt = new Date(Date.now() + CHALLENGE_TTL_MS);
+    const placeholderHash = await bcrypt.hash(randomUUID(), 10);
+
+    await db.insert(emailVerifyChallengesTable).values({
+      email,
+      password_hash: placeholderHash,
+      code,
+      token,
+      expires_at: expiresAt,
+    });
+
+    await sendPasswordResetEmail({ to: email, code, verifyUrl: "" });
+    res.json(genericOk);
+  } catch (err) {
+    req.log?.error({ err }, "password forgot");
+    const msg = err instanceof Error ? err.message : "";
+    if (msg.includes("Email send failed")) {
+      res.status(502).json({ error: "EMAIL_SEND_FAILED", message: "Nuk u dërgua emaili." });
+      return;
+    }
+    res.status(500).json({ error: "Forgot password failed" });
+  }
+});
+
+// ─── POST /auth/password/reset — code + new password ────────────────────────
+router.post("/auth/password/reset", async (req, res) => {
+  try {
+    const email = normalizeEmail(req.body?.email);
+    const code = typeof req.body?.code === "string" ? req.body.code.trim() : "";
+    const newPassword = typeof req.body?.new_password === "string" ? req.body.new_password : "";
+    if (!email || code.length < 4 || newPassword.length < MIN_PASSWORD) {
+      res.status(400).json({
+        error: "INVALID_INPUT",
+        message: `Email, kodi dhe fjalëkalimi i ri (min ${MIN_PASSWORD} karaktere) kërkohen.`,
+      });
+      return;
+    }
+
+    const [challenge] = await db
+      .select()
+      .from(emailVerifyChallengesTable)
+      .where(
+        and(
+          eq(emailVerifyChallengesTable.email, email),
+          eq(emailVerifyChallengesTable.code, code),
+          gt(emailVerifyChallengesTable.expires_at, new Date()),
+        ),
+      )
+      .orderBy(desc(emailVerifyChallengesTable.created_at))
+      .limit(1);
+
+    if (!challenge) {
+      const [active] = await db
+        .select({ id: emailVerifyChallengesTable.id })
+        .from(emailVerifyChallengesTable)
+        .where(
+          and(
+            eq(emailVerifyChallengesTable.email, email),
+            gt(emailVerifyChallengesTable.expires_at, new Date()),
+          ),
+        )
+        .limit(1);
+      res.status(400).json({
+        error: active ? "INVALID_CODE" : "CODE_EXPIRED",
+        message: active
+          ? "Kodi është i gabuar. Provo përsëri."
+          : "Kodi ka skaduar. Kërko kod të ri.",
+      });
+      return;
+    }
+
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
+    if (!user) {
+      res.status(404).json({ error: "NOT_REGISTERED" });
+      return;
+    }
+    if (isUserBanned(user)) {
+      res.status(403).json({ error: "Account suspended" });
+      return;
+    }
+
+    const hash = await bcrypt.hash(newPassword, 10);
+    const [updated] = await db
+      .update(usersTable)
+      .set({
+        password_hash: hash,
+        email_verified_at: user.email_verified_at ?? new Date(),
+      })
+      .where(eq(usersTable.id, user.id))
+      .returning();
+
+    await db
+      .delete(emailVerifyChallengesTable)
+      .where(eq(emailVerifyChallengesTable.id, challenge.id));
+
+    setUserSessionCookie(res, updated!.id);
+    res.json({ ok: true, user: publicUser(updated!, { self: true }) });
+  } catch (err) {
+    req.log?.error({ err }, "password reset");
+    res.status(500).json({ error: "Password reset failed" });
   }
 });
 
