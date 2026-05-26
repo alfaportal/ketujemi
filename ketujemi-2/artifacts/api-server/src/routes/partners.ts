@@ -29,6 +29,7 @@ import {
 import { ensurePartnerUserAccount } from "../lib/partner-activate";
 import { createPartnerStripeCheckout } from "../lib/partner-stripe";
 import { paymentsConfigured, devPaymentBypassEnabled } from "../lib/payments";
+import { requestPurgeExpiredListings } from "../lib/expire-listings-job";
 
 function appOrigin(req: { get: (name: string) => string | undefined }): string {
   const fromEnv = process.env.PUBLIC_APP_ORIGIN?.trim();
@@ -230,6 +231,7 @@ router.get("/businesses/:id", async (req, res) => {
 });
 
 router.get("/businesses/:id/listings", async (req, res) => {
+  requestPurgeExpiredListings();
   const viewer = await getSessionUser(req);
   const id = Number(req.params.id);
   if (!Number.isFinite(id) || id < 1) {

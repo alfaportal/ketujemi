@@ -44,6 +44,10 @@ import { handleSellerComplaint } from "../lib/violation-escalation";
 import { deleteListingCascade } from "../lib/delete-listing-cascade";
 import type { User } from "@workspace/db";
 import { annotateListingsWithVipFlag } from "../lib/vip-seller-lookup";
+import {
+  purgeExpiredListingById,
+  requestPurgeExpiredListings,
+} from "../lib/expire-listings-job";
 
 const reportRate = new Map<string, number[]>();
 
@@ -143,6 +147,7 @@ function activeCondition() {
 
 // ─── GET /listings ────────────────────────────────────────────────────────────
 router.get("/listings", async (req, res) => {
+  requestPurgeExpiredListings();
   const parsed = GetListingsQueryParams.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid query params" });
@@ -619,6 +624,7 @@ router.post("/listings", async (req, res) => {
 
 // ─── GET /listings/featured ───────────────────────────────────────────────────
 router.get("/listings/featured", async (req, res) => {
+  requestPurgeExpiredListings();
   const viewer = await getSessionUser(req);
   const rows = await db
     .select()
@@ -640,6 +646,7 @@ router.get("/listings/featured", async (req, res) => {
 
 // ─── GET /listings/recent ─────────────────────────────────────────────────────
 router.get("/listings/recent", async (req, res) => {
+  requestPurgeExpiredListings();
   const viewer = await getSessionUser(req);
   const rows = await db
     .select()
@@ -963,6 +970,7 @@ router.get("/listings/:id", async (req, res) => {
   const isOwner = !!(viewer && userOwnsListing(viewer, row));
 
   if (isExpired && !isOwner) {
+    await purgeExpiredListingById(parsed.data.id);
     res.status(404).json({ error: "Njoftimi ka skaduar" });
     return;
   }
