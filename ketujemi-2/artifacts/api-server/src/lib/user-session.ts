@@ -65,6 +65,7 @@ export function publicUser(u: User, opts?: { self?: boolean }) {
     partner_activation_code: u.partner_activation_code ?? null,
     vip_expires_at: u.vip_expires_at ? u.vip_expires_at.toISOString() : null,
     email_verified: u.email_verified_at != null,
+    has_password: Boolean(u.password_hash),
     strike_count: u.strike_count ?? 0,
     wallet: walletSummary(u.wallet_balance_cents ?? 0),
   };

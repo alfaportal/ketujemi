@@ -146,7 +146,7 @@ router.post("/auth/register/email", async (req, res) => {
       if (!passwordOk || !hashForChallenge) {
         res.status(409).json({
           error: "EMAIL_ALREADY_REGISTERED",
-          message: "Ky email ekziston. Shkruaj fjalëkalimin e saktë te «Kyçu».",
+          message: "Ky email ekziston. Shkruaj fjalëkalimin e saktë — të dërgojmë kod në email.",
         });
         return;
       }
@@ -263,7 +263,32 @@ router.post("/auth/verify/email", async (req, res) => {
     }
 
     if (!challenge) {
-      res.status(400).json({ error: "Invalid or expired verification" });
+      if (email && code.length >= 4) {
+        const [active] = await db
+          .select({ id: emailVerifyChallengesTable.id })
+          .from(emailVerifyChallengesTable)
+          .where(
+            and(
+              eq(emailVerifyChallengesTable.email, email),
+              gt(emailVerifyChallengesTable.expires_at, new Date()),
+            ),
+          )
+          .orderBy(desc(emailVerifyChallengesTable.created_at))
+          .limit(1);
+        if (active) {
+          res.status(400).json({
+            error: "INVALID_CODE",
+            message:
+              "Kodi është i gabuar. Shiko emailin dhe provo përsëri, ose dërgo kod të ri më poshtë.",
+          });
+          return;
+        }
+      }
+      res.status(400).json({
+        error: "CODE_EXPIRED",
+        message:
+          "Kodi ka skaduar ose nuk ekziston. Kthehu mbrapa, shkruaj email + fjalëkalim dhe merr kod të ri.",
+      });
       return;
     }
 
@@ -531,6 +556,73 @@ router.post("/auth/login/email", async (req, res) => {
   } catch (err) {
     req.log?.error({ err }, "login email");
     res.status(500).json({ error: "Login failed" });
+  }
+});
+
+// ─── POST /auth/password/change ─────────────────────────────────────────────
+router.post("/auth/password/change", async (req, res) => {
+  try {
+    const id = await sessionUserId(req);
+    if (id == null) {
+      res.status(401).json({ error: "Not logged in" });
+      return;
+    }
+
+    const currentPassword =
+      typeof req.body?.current_password === "string" ? req.body.current_password : "";
+    const newPassword = typeof req.body?.new_password === "string" ? req.body.new_password : "";
+    if (newPassword.length < MIN_PASSWORD) {
+      res.status(400).json({
+        error: "WEAK_PASSWORD",
+        message: `Fjalëkalimi i ri duhet të ketë të paktën ${MIN_PASSWORD} karaktere.`,
+      });
+      return;
+    }
+
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+    if (!user?.email) {
+      res.status(400).json({
+        error: "NO_EMAIL_ACCOUNT",
+        message: "Ndryshimi i fjalëkalimit vlen vetëm për llogaritë me email.",
+      });
+      return;
+    }
+
+    if (user.password_hash) {
+      if (!currentPassword) {
+        res.status(400).json({
+          error: "CURRENT_PASSWORD_REQUIRED",
+          message: "Shkruaj fjalëkalimin aktual.",
+        });
+        return;
+      }
+      const ok = await bcrypt.compare(currentPassword, user.password_hash);
+      if (!ok) {
+        res.status(401).json({
+          error: "WRONG_PASSWORD",
+          message: "Fjalëkalimi aktual është i gabuar.",
+        });
+        return;
+      }
+    }
+
+    const hash = await bcrypt.hash(newPassword, 10);
+    const [updated] = await db
+      .update(usersTable)
+      .set({ password_hash: hash })
+      .where(eq(usersTable.id, user.id))
+      .returning();
+
+    if (!updated) {
+      res.status(500).json({ error: "Update failed" });
+      return;
+    }
+
+    setUserSessionCookie(res, updated.id);
+    res.json({ ok: true, user: publicUser(updated, { self: true }) });
+  } catch (err) {
+    req.log?.error({ err }, "password change");
+    res.status(500).json({ error: "Password change failed" });
   }
 });
 

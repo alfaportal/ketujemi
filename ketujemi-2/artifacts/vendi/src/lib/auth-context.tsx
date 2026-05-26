@@ -26,6 +26,7 @@ export type AuthUser = {
   partner_activation_code?: string | null;
   vip_expires_at?: string | null;
   email_verified?: boolean;
+  has_password?: boolean;
   wallet?: {
     balance_cents: number;
     balance_eur: string;
@@ -114,6 +115,13 @@ export function safeAuthReturnUrl(raw: string | null | undefined): string {
   return d;
 }
 
-export function loginUrlWithReturn(returnTo: string): string {
-  return `/login?return=${encodeURIComponent(safeAuthReturnUrl(returnTo))}`;
+export function loginUrlWithReturn(
+  returnTo: string,
+  flow: "register" | "login" = "login",
+): string {
+  const params = new URLSearchParams({
+    return: safeAuthReturnUrl(returnTo),
+    flow,
+  });
+  return `/login?${params.toString()}`;
 }

@@ -28,6 +28,10 @@ export default function ProfilePage() {
   const [city, setCity] = useState("");
   const [aboutMe, setAboutMe] = useState("");
   const [busy, setBusy] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordBusy, setPasswordBusy] = useState(false);
 
   useEffect(() => {
     if (loading || !user || typeof window === "undefined") return;
@@ -102,6 +106,49 @@ export default function ProfilePage() {
     setAboutMe(user.about_me ?? "");
   }, [user, loading, setLocation]);
 
+  async function onChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user?.email) return;
+    if (newPassword.length < 6) {
+      toast({
+        title: "Fjalëkalimi i ri duhet të ketë të paktën 6 karaktere.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: t.profile_password_mismatch, variant: "destructive" });
+      return;
+    }
+    setPasswordBusy(true);
+    try {
+      const res = await fetch("/api/auth/password/change", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          current_password: user.has_password ? currentPassword : undefined,
+          new_password: newPassword,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({
+          title: (data as { message?: string }).message ?? (data as { error?: string }).error ?? t.toast_reqFail,
+          variant: "destructive",
+        });
+        return;
+      }
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      await refresh();
+      toast({ title: t.profile_password_saved });
+    } finally {
+      setPasswordBusy(false);
+    }
+  }
+
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
@@ -173,6 +220,66 @@ export default function ProfilePage() {
           <WalletPanel />
 
           <CardPaymentsPanel />
+
+          {user.email ? (
+            <form
+              className="space-y-4 pt-4 border-t border-gray-100"
+              onSubmit={onChangePassword}
+            >
+              <div>
+                <h2 className="text-base font-bold text-gray-900">{t.profile_password_heading}</h2>
+                <p className="text-xs text-gray-500 mt-1">{user.email}</p>
+              </div>
+              {user.has_password ? (
+                <div className="space-y-2">
+                  <Label htmlFor="profile-current-pass">{t.profile_currentPassword}</Label>
+                  <Input
+                    id="profile-current-pass"
+                    type="password"
+                    autoComplete="current-password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="min-h-12 h-12"
+                  />
+                </div>
+              ) : null}
+              <div className="space-y-2">
+                <Label htmlFor="profile-new-pass">{t.profile_newPassword}</Label>
+                <Input
+                  id="profile-new-pass"
+                  type="password"
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Min. 6 karaktere"
+                  className="min-h-12 h-12"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="profile-confirm-pass">{t.profile_confirmPassword}</Label>
+                <Input
+                  id="profile-confirm-pass"
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="min-h-12 h-12"
+                />
+              </div>
+              <Button
+                type="submit"
+                variant="outline"
+                className="w-full min-h-12 h-12 text-base"
+                disabled={passwordBusy}
+              >
+                {passwordBusy ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  t.profile_password_save
+                )}
+              </Button>
+            </form>
+          ) : null}
 
           <form className="space-y-4" onSubmit={onSave}>
             <div className="space-y-2">

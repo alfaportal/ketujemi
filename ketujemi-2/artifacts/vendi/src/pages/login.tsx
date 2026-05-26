@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Loader2, Mail, Smartphone } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,15 +14,13 @@ import {
   useRecaptchaSiteKey,
   type RecaptchaV2Handle,
 } from "@/components/recaptcha-v2";
-import { SocialOAuthButtons } from "@/components/social-oauth-buttons";
 
+/** Regjistrohu = email + fjalëkalim + kod. Kyçu = telefon + SMS. */
 type Flow = "register" | "login";
-type Channel = "email" | "sms";
 type Step = "credentials" | "verify";
 
 const MIN_PASSWORD = 6;
 
-/** Browser password managers sometimes inject admin-panel junk into the email field. */
 function isJunkAutofillEmail(value: string): boolean {
   const v = value.trim().toLowerCase();
   return !v.includes("@") && (v === "admin_panel" || v === "admin" || v === "username");
@@ -73,18 +70,13 @@ export default function LoginPage() {
       : "/";
 
   const [flow, setFlow] = useState<Flow>("login");
-  const [channel, setChannel] = useState<Channel>("email");
   const [step, setStep] = useState<Step>("credentials");
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [smsAuthEnabled, setSmsAuthEnabled] = useState(false);
-  const [emailVerificationRequired, setEmailVerificationRequired] = useState(true);
-  const [facebookOAuthEnabled, setFacebookOAuthEnabled] = useState(false);
-  const [instagramOAuthEnabled, setInstagramOAuthEnabled] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const recaptchaRef = useRef<RecaptchaV2Handle>(null);
   const { captchaRequired, siteKey: recaptchaSiteKey } = useRecaptchaSiteKey();
@@ -93,34 +85,17 @@ export default function LoginPage() {
     let cancelled = false;
     void fetch("/api/config/public", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : {}))
-      .then((data: {
-        smsAuthEnabled?: boolean;
-        emailVerificationRequired?: boolean;
-        facebookOAuthEnabled?: boolean;
-        instagramOAuthEnabled?: boolean;
-      }) => {
+      .then((data: { smsAuthEnabled?: boolean }) => {
         if (cancelled) return;
         setSmsAuthEnabled(Boolean(data.smsAuthEnabled));
-        setEmailVerificationRequired(data.emailVerificationRequired !== false);
-        setFacebookOAuthEnabled(Boolean(data.facebookOAuthEnabled));
-        setInstagramOAuthEnabled(Boolean(data.instagramOAuthEnabled));
       })
       .catch(() => {
-        if (!cancelled) {
-          setSmsAuthEnabled(false);
-          setEmailVerificationRequired(true);
-        }
+        if (!cancelled) setSmsAuthEnabled(false);
       });
     return () => {
       cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    if (!smsAuthEnabled && channel === "sms") {
-      setChannel("email");
-    }
-  }, [smsAuthEnabled, channel]);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -129,13 +104,12 @@ export default function LoginPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const ch = params.get("channel");
-    if (ch === "email" || ch === "sms") {
-      setChannel(ch);
-    }
     const flowParam = params.get("flow");
-    if (flowParam === "login" || flowParam === "register") {
-      setFlow(flowParam);
+    const ch = params.get("channel");
+    if (flowParam === "register" || ch === "email") {
+      setFlow("register");
+    } else if (flowParam === "login" || ch === "sms") {
+      setFlow("login");
     }
     const ret = params.get("return") ?? "";
     if (ret.includes("step=partner") || ret.includes("/partner")) {
@@ -144,22 +118,30 @@ export default function LoginPage() {
     if (params.get("error") === "verify") {
       toast({ title: t.toast_verifyFail, variant: "destructive" });
     }
-    const oauthErr = params.get("error");
-    if (oauthErr === "facebook_denied" || oauthErr === "instagram_denied") {
-      toast({ title: "Hyrja me rrjet social u anulua.", variant: "destructive" });
-    } else if (oauthErr?.startsWith("facebook_") || oauthErr?.startsWith("instagram_") || oauthErr === "oauth_state" || oauthErr === "oauth_code") {
-      toast({ title: "Hyrja me Facebook/Instagram dështoi. Provo përsëri.", variant: "destructive" });
-    }
     if (params.get("verified") === "1") {
       void refresh().then(() => setLocation(returnTo));
     }
   }, []);
+
+  useEffect(() => {
+    if (!smsAuthEnabled && flow === "login") {
+      setFlow("register");
+    }
+  }, [smsAuthEnabled, flow]);
 
   function resetVerify() {
     setStep("credentials");
     setCode("");
     setRecaptchaToken(null);
     recaptchaRef.current?.reset();
+  }
+
+  function switchFlow(next: Flow) {
+    setFlow(next);
+    resetVerify();
+    setEmail("");
+    setPassword("");
+    setPhone("");
   }
 
   function requireCaptcha(): boolean {
@@ -171,98 +153,51 @@ export default function LoginPage() {
     return false;
   }
 
-  function switchFlow(next: Flow) {
-    setFlow(next);
-    resetVerify();
-    setEmail("");
-    setPassword("");
-  }
-
-  function switchChannel(next: Channel) {
-    setChannel(next);
-    resetVerify();
-  }
-
-  async function onRegisterCredentials(e: React.FormEvent) {
+  async function onRegisterEmail(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     try {
-      if (channel === "email") {
-        if (!validateEmailPassword(email, password, toast)) return;
-        const res = await fetch("/api/auth/register/email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ email, password }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          const err = data as { message?: string; error?: string };
-          toast({
-            title: err.message ?? err.error ?? t.toast_reqFail,
-            variant: "destructive",
-          });
-          return;
-        }
-        if ((data as { needsVerification?: boolean }).needsVerification) {
-          setStep("verify");
-          toast({ title: t.toast_emailSent });
-        } else {
-          await refresh();
-          toast({ title: t.toast_accountReady });
-          setLocation(returnTo);
-        }
-      } else {
-        if (!isValidPhoneDigits(phone)) {
-          toast({ title: t.toast_reqFail, variant: "destructive" });
-          return;
-        }
-        if (password.length < MIN_PASSWORD) {
-          toast({
-            title: `Fjalëkalimi duhet të ketë të paktën ${MIN_PASSWORD} karaktere.`,
-            variant: "destructive",
-          });
-          return;
-        }
-        if (!requireCaptcha()) return;
-        const res = await fetch("/api/auth/sms/start", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            phone,
-            password,
-            intent: "register",
-            recaptcha_token: recaptchaToken ?? undefined,
-          }),
-        });
-        const data = await res.json().catch(() => ({}));
-        recaptchaRef.current?.reset();
-        if (!res.ok) {
-          toast({
-            title:
-              (data as { message?: string }).message ??
-              (data as { error?: string }).error ??
-              t.toast_smsFail,
-            variant: "destructive",
-          });
-          return;
-        }
-        setStep("verify");
-        toast({ title: t.toast_codeSent });
-      }
+      await sendEmailCode();
     } finally {
       setBusy(false);
     }
   }
 
-  async function onVerify(e: React.FormEvent) {
+  async function sendEmailCode(): Promise<boolean> {
+    if (!validateEmailPassword(email, password, toast)) return false;
+    const res = await fetch("/api/auth/register/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = data as { message?: string; error?: string };
+      toast({
+        title: err.message ?? err.error ?? t.toast_reqFail,
+        variant: "destructive",
+      });
+      return false;
+    }
+    if ((data as { needsVerification?: boolean }).needsVerification) {
+      setStep("verify");
+      toast({ title: t.toast_emailSent });
+      return true;
+    }
+    await refresh();
+    toast({ title: t.toast_accountReady });
+    setLocation(returnTo);
+    return true;
+  }
+
+  async function onVerifyEmail(e: React.FormEvent) {
     e.preventDefault();
     if (code.trim().length < 4) {
       toast({ title: t.toast_verifyFail, variant: "destructive" });
       return;
     }
-    if (channel === "email" && !isValidEmailForSubmit(email)) {
+    if (!isValidEmailForSubmit(email)) {
       toast({
         title: "Vendosni një adresë email të vlefshme.",
         variant: "destructive",
@@ -271,74 +206,27 @@ export default function LoginPage() {
     }
     setBusy(true);
     try {
-      if (channel === "email") {
-        const res = await fetch("/api/auth/verify/email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ email, code }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          toast({
-            title: (data as { error?: string }).error ?? t.toast_verifyFail,
-            variant: "destructive",
-          });
-          return;
-        }
-      } else {
-        const res = await fetch("/api/auth/sms/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ phone, code }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          toast({
-            title: (data as { error?: string }).error ?? t.toast_verifyFail,
-            variant: "destructive",
-          });
-          return;
-        }
-      }
-      await refresh();
-      setLocation(returnTo);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function onLoginEmail(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    try {
-      if (!validateEmailPassword(email, password, toast)) return;
-      const endpoint = emailVerificationRequired
-        ? "/api/auth/login/email/start"
-        : "/api/auth/login/email";
-      const res = await fetch(endpoint, {
+      const res = await fetch("/api/auth/verify/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, code }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        const err = data as { error?: string; message?: string };
+        if (err.error === "INVALID_CODE") {
+          setCode("");
+        }
+        if (err.error === "CODE_EXPIRED") {
+          resetVerify();
+        }
         toast({
-          title:
-            (data as { message?: string }).message ??
-            (data as { error?: string }).error ??
-            t.toast_reqFail,
+          title: err.message ?? err.error ?? t.toast_verifyFail,
           variant: "destructive",
         });
         return;
       }
-      if (emailVerificationRequired && (data as { needsVerification?: boolean }).needsVerification) {
-        setStep("verify");
-        toast({ title: t.toast_emailSent });
-        return;
-      }
       await refresh();
       setLocation(returnTo);
     } finally {
@@ -346,7 +234,16 @@ export default function LoginPage() {
     }
   }
 
-  async function onLoginSmsStart(e: React.FormEvent) {
+  async function onResendEmailCode() {
+    setBusy(true);
+    try {
+      await sendEmailCode();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onLoginPhoneStart(e: React.FormEvent) {
     e.preventDefault();
     if (!isValidPhoneDigits(phone)) {
       toast({ title: t.toast_reqFail, variant: "destructive" });
@@ -383,6 +280,35 @@ export default function LoginPage() {
     }
   }
 
+  async function onVerifyPhone(e: React.FormEvent) {
+    e.preventDefault();
+    if (code.trim().length < 4) {
+      toast({ title: t.toast_verifyFail, variant: "destructive" });
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/auth/sms/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ phone, code }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({
+          title: (data as { error?: string }).error ?? t.toast_verifyFail,
+          variant: "destructive",
+        });
+        return;
+      }
+      await refresh();
+      setLocation(returnTo);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (authLoading || user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -409,262 +335,182 @@ export default function LoginPage() {
               {isRegister ? t.login_heading_register : t.login_heading}
             </h1>
             <p className="text-sm text-gray-500 mt-1">
-              {isRegister
-                ? smsAuthEnabled
-                  ? t.login_sub_register
-                  : emailVerificationRequired
-                    ? t.login_sub_register_email_verify
-                    : t.login_sub_email_only
-                : emailVerificationRequired
-                  ? t.login_sub_login_email_verify
-                  : smsAuthEnabled
-                    ? t.login_sub_login
-                    : t.login_sub_email_only}
+              {isRegister ? t.login_sub_register_email_only : t.login_sub_login_phone_only}
             </p>
           </div>
 
-          <div className="flex rounded-lg bg-gray-100 p-1">
-            <button
-              type="button"
-              onClick={() => switchFlow("register")}
-              className={`flex-1 rounded-md py-3 min-h-12 text-sm font-semibold transition-colors ${
-                isRegister ? "bg-white shadow text-blue-700" : "text-gray-500"
-              }`}
-            >
-              {t.login_mode_register}
-            </button>
-            <button
-              type="button"
-              onClick={() => switchFlow("login")}
-              className={`flex-1 rounded-md py-3 min-h-12 text-sm font-semibold transition-colors ${
-                !isRegister ? "bg-white shadow text-blue-700" : "text-gray-500"
-              }`}
-            >
-              {t.login_mode_login}
-            </button>
-          </div>
+          {smsAuthEnabled ? (
+            <div className="flex rounded-lg bg-gray-100 p-1">
+              <button
+                type="button"
+                onClick={() => switchFlow("register")}
+                className={`flex-1 rounded-md py-3 min-h-12 text-sm font-semibold transition-colors ${
+                  isRegister ? "bg-white shadow text-blue-700" : "text-gray-500"
+                }`}
+              >
+                {t.login_mode_register}
+              </button>
+              <button
+                type="button"
+                onClick={() => switchFlow("login")}
+                className={`flex-1 rounded-md py-3 min-h-12 text-sm font-semibold transition-colors ${
+                  !isRegister ? "bg-white shadow text-blue-700" : "text-gray-500"
+                }`}
+              >
+                {t.login_mode_login}
+              </button>
+            </div>
+          ) : null}
 
-          <Tabs
-            value={smsAuthEnabled ? channel : "email"}
-            onValueChange={(v) => {
-              if (smsAuthEnabled) switchChannel(v as Channel);
-            }}
-            className="w-full"
-          >
-            {smsAuthEnabled ? (
-              <TabsList className="grid w-full grid-cols-2 min-h-12 h-12 p-1">
-                <TabsTrigger value="email" className="gap-1.5 min-h-10">
-                  <Mail size={15} /> {t.login_tab_email}
-                </TabsTrigger>
-                <TabsTrigger value="sms" className="gap-1.5 min-h-10">
-                  <Smartphone size={15} /> {t.login_tab_sms}
-                </TabsTrigger>
-              </TabsList>
-            ) : null}
-
-            <TabsContent value="email" className="space-y-4 pt-4">
-              {isVerify ? (
-                <form className="space-y-4" onSubmit={onVerify} noValidate>
-                  <p className="text-sm text-gray-600">{t.login_emailVerifyHint}</p>
+          {isRegister ? (
+            isVerify ? (
+              <form className="space-y-4" onSubmit={onVerifyEmail} noValidate>
+                <p className="text-sm text-gray-600">{t.login_emailVerifyHint}</p>
+                <button
+                  type="button"
+                  className="text-sm text-blue-600 font-medium hover:underline min-h-11"
+                  onClick={resetVerify}
+                >
+                  {t.login_changeEmail}
+                </button>
+                <div className="space-y-2">
+                  <Label htmlFor="email-code">{t.login_codeLbl}</Label>
+                  <Input
+                    id="email-code"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="123456"
+                    className="min-h-12 h-12 text-[16px]"
+                  />
+                </div>
+                <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
+                  {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.reg_confirmBtn}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full min-h-12 h-12 text-base"
+                  disabled={busy}
+                  onClick={() => void onResendEmailCode()}
+                >
+                  {t.login_resendEmailCode}
+                </Button>
+              </form>
+            ) : (
+              <form className="space-y-4" onSubmit={onRegisterEmail} noValidate>
+                <div className="space-y-2">
+                  <Label htmlFor="reg-email">{t.login_emailLbl}</Label>
+                  <Input
+                    id="reg-email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(emailFromInput(e.target.value))}
+                    placeholder={t.login_emailPh}
+                    className="min-h-12 h-12"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reg-password">{t.login_passLbl}</Label>
+                  <Input
+                    id="reg-password"
+                    name="password"
+                    type="password"
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={t.login_passPhReg}
+                    className="min-h-12 h-12"
+                  />
+                </div>
+                <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
+                  {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_continueBtn}
+                </Button>
+                {smsAuthEnabled ? (
+                  <p className="text-center text-sm text-gray-500">
+                    {t.login_havePhoneAccount}{" "}
+                    <button
+                      type="button"
+                      className="text-blue-600 font-semibold hover:underline"
+                      onClick={() => switchFlow("login")}
+                    >
+                      {t.login_switchToPhone}
+                    </button>
+                  </p>
+                ) : null}
+              </form>
+            )
+          ) : smsAuthEnabled ? (
+            isVerify ? (
+              <form className="space-y-4" onSubmit={onVerifyPhone} noValidate>
+                <p className="text-sm text-gray-600">{t.login_phoneVerifyHint}</p>
+                <button
+                  type="button"
+                  className="text-sm text-blue-600 font-medium hover:underline min-h-11"
+                  onClick={resetVerify}
+                >
+                  {t.login_changePhone}
+                </button>
+                <div className="space-y-2">
+                  <Label htmlFor="sms-code">{t.login_smsLbl}</Label>
+                  <Input
+                    id="sms-code"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="123456"
+                    className="min-h-12 h-12 text-[16px]"
+                  />
+                </div>
+                <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
+                  {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.reg_confirmBtn}
+                </Button>
+              </form>
+            ) : (
+              <form className="space-y-4" onSubmit={onLoginPhoneStart} noValidate>
+                <div className="space-y-2">
+                  <Label htmlFor="login-phone">{t.login_phoneLbl}</Label>
+                  <PhoneInput
+                    id="login-phone"
+                    value={phone}
+                    onChange={setPhone}
+                    defaultDial={phoneDefaultDial}
+                    nationalPlaceholder="XX XXX XXX"
+                  />
+                </div>
+                <RecaptchaV2
+                  ref={recaptchaRef}
+                  siteKey={recaptchaSiteKey}
+                  onTokenChange={setRecaptchaToken}
+                />
+                <Button
+                  type="submit"
+                  className="w-full min-h-12 h-12 text-base"
+                  disabled={busy || (captchaRequired && !recaptchaToken)}
+                >
+                  {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_sendSmsBtn}
+                </Button>
+                <p className="text-center text-sm text-gray-500">
+                  {t.login_needEmailAccount}{" "}
                   <button
                     type="button"
-                    className="text-sm text-blue-600 font-medium hover:underline min-h-11"
-                    onClick={resetVerify}
+                    className="text-blue-600 font-semibold hover:underline"
+                    onClick={() => switchFlow("register")}
                   >
-                    {t.login_changeEmail}
+                    {t.login_switchToEmail}
                   </button>
-                  <div className="space-y-2">
-                    <Label htmlFor="email-code">{t.login_codeLbl}</Label>
-                    <Input
-                      id="email-code"
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      value={code}
-                      onChange={(e) => setCode(e.target.value)}
-                      placeholder="123456"
-                      className="min-h-12 h-12 text-[16px]"
-                    />
-                  </div>
-                  <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
-                    {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.reg_confirmBtn}
-                  </Button>
-                </form>
-              ) : isRegister ? (
-                <form className="space-y-4" onSubmit={onRegisterCredentials} noValidate>
-                  <div className="space-y-2">
-                    <Label htmlFor="reg-email">{t.login_emailLbl}</Label>
-                    <Input
-                      id="reg-email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      value={email}
-                      onChange={(e) => setEmail(emailFromInput(e.target.value))}
-                      placeholder={t.login_emailPh}
-                      className="min-h-12 h-12"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="reg-password">{t.login_passLbl}</Label>
-                    <Input
-                      id="reg-password"
-                      name="password"
-                      type="password"
-                      autoComplete="new-password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder={t.login_passPhReg}
-                      className="min-h-12 h-12"
-                    />
-                  </div>
-                  <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
-                    {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_continueBtn}
-                  </Button>
-                </form>
-              ) : (
-                <form className="space-y-4" onSubmit={onLoginEmail} noValidate>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">{t.login_emailLbl}</Label>
-                    <Input
-                      id="login-email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      value={email}
-                      onChange={(e) => setEmail(emailFromInput(e.target.value))}
-                      placeholder={t.login_emailPh}
-                      className="min-h-12 h-12"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">{t.login_passLbl}</Label>
-                    <Input
-                      id="login-password"
-                      name="password"
-                      type="password"
-                      autoComplete="current-password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder={t.login_passPh}
-                      className="min-h-12 h-12"
-                    />
-                  </div>
-                  <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
-                    {busy ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : emailVerificationRequired ? (
-                      t.login_continueBtn
-                    ) : (
-                      t.login_submit_login
-                    )}
-                  </Button>
-                </form>
-              )}
-            </TabsContent>
-
-            {smsAuthEnabled ? (
-            <TabsContent value="sms" className="space-y-4 pt-4">
-              {isVerify ? (
-                <form className="space-y-4" onSubmit={onVerify} noValidate>
-                  <button
-                    type="button"
-                    className="text-sm text-blue-600 font-medium hover:underline min-h-11"
-                    onClick={resetVerify}
-                  >
-                    {t.login_changePhone}
-                  </button>
-                  <div className="space-y-2">
-                    <Label htmlFor="sms-code">{t.login_smsLbl}</Label>
-                    <Input
-                      id="sms-code"
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      value={code}
-                      onChange={(e) => setCode(e.target.value)}
-                      placeholder="123456"
-                      className="min-h-12 h-12 text-[16px]"
-                    />
-                  </div>
-                  <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
-                    {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.reg_confirmBtn}
-                  </Button>
-                </form>
-              ) : isRegister ? (
-                <form className="space-y-4" onSubmit={onRegisterCredentials} noValidate>
-                  <div className="space-y-2">
-                    <Label htmlFor="reg-phone">{t.login_phoneLbl}</Label>
-                    <PhoneInput
-                      id="reg-phone"
-                      value={phone}
-                      onChange={setPhone}
-                      defaultDial={phoneDefaultDial}
-                      nationalPlaceholder="XX XXX XXX"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="reg-phone-pass">{t.login_passLbl}</Label>
-                    <Input
-                      id="reg-phone-pass"
-                      type="password"
-                      autoComplete="new-password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder={t.login_passPhReg}
-                      className="min-h-12 h-12"
-                    />
-                  </div>
-                  <RecaptchaV2
-                    ref={recaptchaRef}
-                    siteKey={recaptchaSiteKey}
-                    onTokenChange={setRecaptchaToken}
-                  />
-                  <Button
-                    type="submit"
-                    className="w-full min-h-12 h-12 text-base"
-                    disabled={busy || (captchaRequired && !recaptchaToken)}
-                  >
-                    {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_continueBtn}
-                  </Button>
-                </form>
-              ) : (
-                <form className="space-y-4" onSubmit={onLoginSmsStart} noValidate>
-                  <p className="text-sm text-gray-600">{t.login_phoneIntro}</p>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-phone">{t.login_phoneLbl}</Label>
-                    <PhoneInput
-                      id="login-phone"
-                      value={phone}
-                      onChange={setPhone}
-                      defaultDial={phoneDefaultDial}
-                      nationalPlaceholder="XX XXX XXX"
-                    />
-                  </div>
-                  <RecaptchaV2
-                    ref={recaptchaRef}
-                    siteKey={recaptchaSiteKey}
-                    onTokenChange={setRecaptchaToken}
-                  />
-                  <Button
-                    type="submit"
-                    className="w-full min-h-12 h-12 text-base"
-                    disabled={busy || (captchaRequired && !recaptchaToken)}
-                  >
-                    {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_sendSmsBtn}
-                  </Button>
-                </form>
-              )}
-            </TabsContent>
-            ) : null}
-          </Tabs>
-
-          <SocialOAuthButtons
-            returnTo={returnTo}
-            facebookEnabled={facebookOAuthEnabled}
-            instagramEnabled={instagramOAuthEnabled}
-          />
+                </p>
+              </form>
+            )
+          ) : (
+            <p className="text-sm text-gray-600">{t.login_smsDisabledHint}</p>
+          )}
         </div>
       </div>
     </div>
   );
 }
-

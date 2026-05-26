@@ -102,7 +102,7 @@ export default function PartnerPage() {
     const resumeId = params.get("resume");
     if (resumeId) {
       if (!authLoading && !user) {
-        setLocation(loginUrlWithReturn(`${partnerFormReturnPath()}&resume=${resumeId}`));
+        setLocation(loginUrlWithReturn(`${partnerFormReturnPath()}&resume=${resumeId}`, "register"));
         return;
       }
       setPhase("register");
@@ -134,7 +134,7 @@ export default function PartnerPage() {
         pkgParam === "vip" || pkgParam === "standard"
           ? `${partnerFormReturnPath()}&package=${pkgParam}`
           : partnerFormReturnPath();
-      setLocation(loginUrlWithReturn(returnPath));
+      setLocation(loginUrlWithReturn(returnPath, "register"));
       return;
     }
     setPhase("register");
@@ -165,7 +165,7 @@ export default function PartnerPage() {
       window.history.replaceState({}, "", partnerFormReturnPath());
       return;
     }
-    setLocation(loginUrlWithReturn(partnerFormReturnPath()));
+    setLocation(loginUrlWithReturn(partnerFormReturnPath(), "register"));
   }
 
   async function onLogoFile(file: File) {
