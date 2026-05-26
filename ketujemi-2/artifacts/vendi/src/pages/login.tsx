@@ -33,6 +33,33 @@ function emailFromInput(value: string): string {
   return isJunkAutofillEmail(value) ? "" : value;
 }
 
+function isValidEmailForSubmit(value: string): boolean {
+  const e = value.trim().toLowerCase();
+  return e.length >= 5 && e.length <= 254 && e.includes("@");
+}
+
+function validateEmailPassword(
+  email: string,
+  password: string,
+  toast: (opts: { title: string; variant?: "destructive" }) => void,
+): boolean {
+  if (!isValidEmailForSubmit(email)) {
+    toast({
+      title: "Vendosni një adresë email të vlefshme.",
+      variant: "destructive",
+    });
+    return false;
+  }
+  if (password.length < MIN_PASSWORD) {
+    toast({
+      title: `Fjalëkalimi duhet të ketë të paktën ${MIN_PASSWORD} karaktere.`,
+      variant: "destructive",
+    });
+    return false;
+  }
+  return true;
+}
+
 export default function LoginPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -59,7 +86,6 @@ export default function LoginPage() {
   const [facebookOAuthEnabled, setFacebookOAuthEnabled] = useState(false);
   const [instagramOAuthEnabled, setInstagramOAuthEnabled] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
-  const [blockAutofill, setBlockAutofill] = useState(true);
   const recaptchaRef = useRef<RecaptchaV2Handle>(null);
   const { captchaRequired, siteKey: recaptchaSiteKey } = useRecaptchaSiteKey();
 
@@ -145,22 +171,11 @@ export default function LoginPage() {
     return false;
   }
 
-  useEffect(() => {
-    setEmail("");
-    setPassword("");
-    setBlockAutofill(true);
-  }, [flow, step]);
-
-  function unlockFields() {
-    setBlockAutofill(false);
-  }
-
   function switchFlow(next: Flow) {
     setFlow(next);
     resetVerify();
     setEmail("");
     setPassword("");
-    setBlockAutofill(true);
   }
 
   function switchChannel(next: Channel) {
@@ -173,6 +188,7 @@ export default function LoginPage() {
     setBusy(true);
     try {
       if (channel === "email") {
+        if (!validateEmailPassword(email, password, toast)) return;
         const res = await fetch("/api/auth/register/email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -209,6 +225,13 @@ export default function LoginPage() {
           toast({ title: t.toast_reqFail, variant: "destructive" });
           return;
         }
+        if (password.length < MIN_PASSWORD) {
+          toast({
+            title: `Fjalëkalimi duhet të ketë të paktën ${MIN_PASSWORD} karaktere.`,
+            variant: "destructive",
+          });
+          return;
+        }
         if (!requireCaptcha()) return;
         const res = await fetch("/api/auth/sms/start", {
           method: "POST",
@@ -243,6 +266,17 @@ export default function LoginPage() {
 
   async function onVerify(e: React.FormEvent) {
     e.preventDefault();
+    if (code.trim().length < 4) {
+      toast({ title: t.toast_verifyFail, variant: "destructive" });
+      return;
+    }
+    if (channel === "email" && !isValidEmailForSubmit(email)) {
+      toast({
+        title: "Vendosni një adresë email të vlefshme.",
+        variant: "destructive",
+      });
+      return;
+    }
     setBusy(true);
     try {
       if (channel === "email") {
@@ -287,6 +321,7 @@ export default function LoginPage() {
     e.preventDefault();
     setBusy(true);
     try {
+      if (!validateEmailPassword(email, password, toast)) return;
       const res = await fetch("/api/auth/login/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -428,7 +463,7 @@ export default function LoginPage() {
             <TabsContent value="email" className="space-y-4 pt-4">
               {isRegister ? (
                 isVerify ? (
-                  <form className="space-y-4" onSubmit={onVerify}>
+                  <form className="space-y-4" onSubmit={onVerify} noValidate>
                     <p className="text-sm text-gray-600">{t.login_emailVerifyHint}</p>
                     <button
                       type="button"
@@ -445,7 +480,6 @@ export default function LoginPage() {
                         autoComplete="one-time-code"
                         value={code}
                         onChange={(e) => setCode(e.target.value)}
-                        required
                         placeholder="123456"
                         className="min-h-12 h-12 text-[16px]"
                       />
@@ -455,19 +489,16 @@ export default function LoginPage() {
                     </Button>
                   </form>
                 ) : (
-                  <form className="space-y-4" onSubmit={onRegisterCredentials} autoComplete="off">
+                  <form className="space-y-4" onSubmit={onRegisterCredentials} noValidate>
                     <div className="space-y-2">
                       <Label htmlFor="reg-email">{t.login_emailLbl}</Label>
                       <Input
                         id="reg-email"
-                        name="ketujemi-register-email"
+                        name="email"
                         type="email"
-                        autoComplete="off"
-                        readOnly={blockAutofill}
-                        onFocus={unlockFields}
+                        autoComplete="email"
                         value={email}
                         onChange={(e) => setEmail(emailFromInput(e.target.value))}
-                        required
                         placeholder={t.login_emailPh}
                         className="min-h-12 h-12"
                       />
@@ -476,15 +507,11 @@ export default function LoginPage() {
                       <Label htmlFor="reg-password">{t.login_passLbl}</Label>
                       <Input
                         id="reg-password"
-                        name="ketujemi-register-password"
+                        name="password"
                         type="password"
                         autoComplete="new-password"
-                        readOnly={blockAutofill}
-                        onFocus={unlockFields}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        required
-                        minLength={MIN_PASSWORD}
                         placeholder={t.login_passPhReg}
                         className="min-h-12 h-12"
                       />
@@ -495,19 +522,16 @@ export default function LoginPage() {
                   </form>
                 )
               ) : (
-                <form className="space-y-4" onSubmit={onLoginEmail} autoComplete="off">
+                <form className="space-y-4" onSubmit={onLoginEmail} noValidate>
                   <div className="space-y-2">
                     <Label htmlFor="login-email">{t.login_emailLbl}</Label>
                     <Input
                       id="login-email"
-                      name="ketujemi-login-email"
+                      name="email"
                       type="email"
-                      autoComplete="off"
-                      readOnly={blockAutofill}
-                      onFocus={unlockFields}
+                      autoComplete="email"
                       value={email}
                       onChange={(e) => setEmail(emailFromInput(e.target.value))}
-                      required
                       placeholder={t.login_emailPh}
                       className="min-h-12 h-12"
                     />
@@ -516,14 +540,11 @@ export default function LoginPage() {
                     <Label htmlFor="login-password">{t.login_passLbl}</Label>
                     <Input
                       id="login-password"
-                      name="ketujemi-login-password"
+                      name="password"
                       type="password"
-                      autoComplete="off"
-                      readOnly={blockAutofill}
-                      onFocus={unlockFields}
+                      autoComplete="current-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      required
                       placeholder={t.login_passPh}
                       className="min-h-12 h-12"
                     />
@@ -538,7 +559,7 @@ export default function LoginPage() {
             {smsAuthEnabled ? (
             <TabsContent value="sms" className="space-y-4 pt-4">
               {isVerify ? (
-                <form className="space-y-4" onSubmit={onVerify}>
+                <form className="space-y-4" onSubmit={onVerify} noValidate>
                   <button
                     type="button"
                     className="text-sm text-blue-600 font-medium hover:underline min-h-11"
@@ -554,7 +575,6 @@ export default function LoginPage() {
                       autoComplete="one-time-code"
                       value={code}
                       onChange={(e) => setCode(e.target.value)}
-                      required
                       placeholder="123456"
                       className="min-h-12 h-12 text-[16px]"
                     />
@@ -564,7 +584,7 @@ export default function LoginPage() {
                   </Button>
                 </form>
               ) : isRegister ? (
-                <form className="space-y-4" onSubmit={onRegisterCredentials}>
+                <form className="space-y-4" onSubmit={onRegisterCredentials} noValidate>
                   <div className="space-y-2">
                     <Label htmlFor="reg-phone">{t.login_phoneLbl}</Label>
                     <PhoneInput
@@ -583,8 +603,6 @@ export default function LoginPage() {
                       autoComplete="new-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={MIN_PASSWORD}
                       placeholder={t.login_passPhReg}
                       className="min-h-12 h-12"
                     />
@@ -603,7 +621,7 @@ export default function LoginPage() {
                   </Button>
                 </form>
               ) : (
-                <form className="space-y-4" onSubmit={onLoginSmsStart}>
+                <form className="space-y-4" onSubmit={onLoginSmsStart} noValidate>
                   <p className="text-sm text-gray-600">{t.login_phoneIntro}</p>
                   <div className="space-y-2">
                     <Label htmlFor="login-phone">{t.login_phoneLbl}</Label>
