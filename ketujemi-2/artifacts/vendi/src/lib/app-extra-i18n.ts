@@ -71,6 +71,8 @@ const KS_EXTRA: Record<string, string> = {
   login_heading: "Kyçu",
   login_heading_register: "Regjistrohu",
   login_sub_login: "Shkruaj email ose telefonin dhe fjalëkalimin.",
+  login_sub_login_email_verify:
+    "Shkruaj email dhe fjalëkalimin — të vjen një kod në email, pastaj hyr.",
   login_sub_register: "Vetëm email ose telefon + fjalëkalim. Brenda pak sekondash.",
   login_sub_email_only: "Regjistrohu ose kyçu me email dhe fjalëkalim.",
   login_sub_register_email_verify:
@@ -1706,7 +1708,11 @@ const MK_EXTRA: Record<string, string> = {
   login_heading: "Најави се",
   login_heading_register: "Регистрирај се",
   login_sub_login: "Внеси е-пошта или телефон и лозинка.",
+  login_sub_login_email_verify:
+    "Внеси е-пошта и лозинка — ќе добиеш код на е-пошта, потоа најави се.",
   login_sub_register: "Само е-пошта или телефон + лозинка. За под 30 секунди.",
+  login_sub_register_email_verify:
+    "Регистрирај се со е-пошта. Ќе добиеш код за потврда на е-пошта.",
   login_sub_email_only: "Регистрирајте се или најавете се со е-пошта и лозинка.",
   login_tab_email: "Е-пошта",
   login_tab_sms: "Телефон",
@@ -3285,6 +3291,8 @@ const MNE_EXTRA: Record<string, string> = {
   login_heading: "Prijavi se",
   login_heading_register: "Registracija",
   login_sub_login: "Unesi email ili telefon i lozinku.",
+  login_sub_login_email_verify:
+    "Unesi email i lozinku — stiže kod na email, zatim se prijaviš.",
   login_sub_register: "Samo email ili telefon + lozinka. Za manje od 30 sekundi.",
   login_sub_email_only: "Registrujte se ili prijavite se emailom i lozinkom.",
   login_sub_register_email_verify:

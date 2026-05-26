@@ -7,6 +7,7 @@ import {
   usersTable,
   phoneVerifyChallengesTable,
   emailVerifyChallengesTable,
+  type User,
 } from "@workspace/db";
 import { vonageVerifyRequest, vonageVerifyCheck } from "../lib/vonage-verify";
 import { sendEmailVerification } from "../lib/send-email";
@@ -54,6 +55,61 @@ function sixDigitCode(): string {
   return String(randomInt(100_000, 1_000_000));
 }
 
+async function sendEmailCodeChallenge(
+  req: { get: (name: string) => string | undefined },
+  email: string,
+  passwordHash: string,
+): Promise<void> {
+  await db
+    .delete(emailVerifyChallengesTable)
+    .where(eq(emailVerifyChallengesTable.email, email));
+
+  const code = sixDigitCode();
+  const token = randomUUID();
+  const expiresAt = new Date(Date.now() + CHALLENGE_TTL_MS);
+
+  await db.insert(emailVerifyChallengesTable).values({
+    email,
+    password_hash: passwordHash,
+    code,
+    token,
+    expires_at: expiresAt,
+  });
+
+  const verifyUrl = `${appOrigin(req)}/api/auth/verify/email/link?token=${encodeURIComponent(token)}`;
+  await sendEmailVerification({ to: email, code, verifyUrl });
+}
+
+async function completeEmailChallengeLogin(
+  res: Parameters<typeof setUserSessionCookie>[0],
+  challenge: { id: number; email: string; password_hash: string },
+  existing: User,
+) {
+  let user = existing;
+  if (!existing.password_hash) {
+    const [updated] = await db
+      .update(usersTable)
+      .set({
+        password_hash: challenge.password_hash,
+        email_verified_at: existing.email_verified_at ?? new Date(),
+      })
+      .where(eq(usersTable.id, existing.id))
+      .returning();
+    user = updated ?? existing;
+  }
+
+  if (isUserBanned(user)) {
+    return { banned: true as const };
+  }
+
+  await db
+    .delete(emailVerifyChallengesTable)
+    .where(eq(emailVerifyChallengesTable.id, challenge.id));
+
+  setUserSessionCookie(res, user.id);
+  return { banned: false as const, user };
+}
+
 async function sessionUserId(req: {
   signedCookies?: Record<string, string | undefined>;
 }): Promise<number | null> {
@@ -75,10 +131,44 @@ router.post("/auth/register/email", async (req, res) => {
 
     const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
     if (existing) {
-      res.status(409).json({
-        error: "EMAIL_ALREADY_REGISTERED",
-        message: "Ky email është i regjistruar. Kliko «Kyçu» dhe vendos fjalëkalimin — nuk duhet kod përsëri.",
-      });
+      if (isUserBanned(existing)) {
+        res.status(403).json({ error: "Account suspended" });
+        return;
+      }
+      let passwordOk = false;
+      let hashForChallenge = existing.password_hash;
+      if (existing.password_hash) {
+        passwordOk = await bcrypt.compare(password, existing.password_hash);
+      } else if (password.length >= MIN_PASSWORD) {
+        passwordOk = true;
+        hashForChallenge = await bcrypt.hash(password, 10);
+      }
+      if (!passwordOk || !hashForChallenge) {
+        res.status(409).json({
+          error: "EMAIL_ALREADY_REGISTERED",
+          message: "Ky email ekziston. Shkruaj fjalëkalimin e saktë te «Kyçu».",
+        });
+        return;
+      }
+      if (!isEmailVerificationRequired()) {
+        setUserSessionCookie(res, existing.id);
+        res.json({
+          ok: true,
+          needsVerification: false,
+          existingAccount: true,
+          user: publicUser(existing, { self: true }),
+        });
+        return;
+      }
+      if (!hasResendConfigured()) {
+        res.status(503).json({
+          error: "EMAIL_NOT_CONFIGURED",
+          message: "Verifikimi me email nuk është i konfiguruar (RESEND_API_KEY).",
+        });
+        return;
+      }
+      await sendEmailCodeChallenge(req, email, hashForChallenge);
+      res.status(200).json({ ok: true, needsVerification: true, existingAccount: true });
       return;
     }
 
@@ -119,20 +209,7 @@ router.post("/auth/register/email", async (req, res) => {
       .delete(emailVerifyChallengesTable)
       .where(lt(emailVerifyChallengesTable.expires_at, new Date()));
 
-    const code = sixDigitCode();
-    const token = randomUUID();
-    const expiresAt = new Date(Date.now() + CHALLENGE_TTL_MS);
-
-    await db.insert(emailVerifyChallengesTable).values({
-      email,
-      password_hash: hash,
-      code,
-      token,
-      expires_at: expiresAt,
-    });
-
-    const verifyUrl = `${appOrigin(req)}/api/auth/verify/email/link?token=${encodeURIComponent(token)}`;
-    await sendEmailVerification({ to: email, code, verifyUrl });
+    await sendEmailCodeChallenge(req, email, hash);
     res.status(201).json({ ok: true, needsVerification: true });
   } catch (err) {
     req.log?.error({ err }, "register email");
@@ -195,8 +272,14 @@ router.post("/auth/verify/email", async (req, res) => {
       .from(usersTable)
       .where(eq(usersTable.email, challenge.email))
       .limit(1);
+
     if (existing) {
-      res.status(409).json({ error: "Email already registered" });
+      const result = await completeEmailChallengeLogin(res, challenge, existing);
+      if (result.banned) {
+        res.status(403).json({ error: "Account suspended" });
+        return;
+      }
+      res.json({ user: publicUser(result.user, { self: true }) });
       return;
     }
 
@@ -273,6 +356,15 @@ router.get("/auth/verify/email/link", async (req, res) => {
         })
         .returning();
       user = created;
+    } else {
+      const result = await completeEmailChallengeLogin(res, challenge, existing);
+      if (result.banned) {
+        res.redirect(302, `${appOrigin(req)}/login?error=suspended`);
+        return;
+      }
+      user = result.user;
+      res.redirect(302, `${appOrigin(req)}${returnTo}`);
+      return;
     }
 
     await db
@@ -287,7 +379,94 @@ router.get("/auth/verify/email/link", async (req, res) => {
   }
 });
 
-// ─── POST /auth/login/email ─────────────────────────────────────────────────
+// ─── POST /auth/login/email/start — password OK → email code → verify ───────
+router.post("/auth/login/email/start", async (req, res) => {
+  try {
+    const email = normalizeEmail(req.body?.email);
+    const password = typeof req.body?.password === "string" ? req.body.password : "";
+    if (!email || password.length < MIN_PASSWORD) {
+      res.status(400).json({ error: "Email and password required" });
+      return;
+    }
+
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
+    if (!user) {
+      res.status(404).json({
+        error: "NOT_REGISTERED",
+        message: "Ky email nuk është regjistruar. Kliko «Regjistrohu».",
+      });
+      return;
+    }
+
+    if (isUserBanned(user)) {
+      res.status(403).json({ error: "Account suspended" });
+      return;
+    }
+
+    let hashForChallenge: string;
+    if (user.password_hash) {
+      const ok = await bcrypt.compare(password, user.password_hash);
+      if (!ok) {
+        res.status(401).json({
+          error: "INVALID_CREDENTIALS",
+          message: "Email ose fjalëkalim i gabuar.",
+        });
+        return;
+      }
+      hashForChallenge = user.password_hash;
+    } else {
+      hashForChallenge = await bcrypt.hash(password, 10);
+    }
+
+    if (!isEmailVerificationRequired()) {
+      if (!user.password_hash) {
+        const [updated] = await db
+          .update(usersTable)
+          .set({
+            password_hash: hashForChallenge,
+            email_verified_at: user.email_verified_at ?? new Date(),
+          })
+          .where(eq(usersTable.id, user.id))
+          .returning();
+        const loggedIn = updated ?? user;
+        setUserSessionCookie(res, loggedIn.id);
+        res.json({ ok: true, needsVerification: false, user: publicUser(loggedIn, { self: true }) });
+        return;
+      }
+      setUserSessionCookie(res, user.id);
+      res.json({ ok: true, needsVerification: false, user: publicUser(user, { self: true }) });
+      return;
+    }
+
+    if (!hasResendConfigured()) {
+      res.status(503).json({
+        error: "EMAIL_NOT_CONFIGURED",
+        message: "Verifikimi me email nuk është i konfiguruar (RESEND_API_KEY).",
+      });
+      return;
+    }
+
+    await db
+      .delete(emailVerifyChallengesTable)
+      .where(lt(emailVerifyChallengesTable.expires_at, new Date()));
+
+    await sendEmailCodeChallenge(req, email, hashForChallenge);
+    res.json({ ok: true, needsVerification: true });
+  } catch (err) {
+    req.log?.error({ err }, "login email start");
+    const msg = err instanceof Error ? err.message : "";
+    if (msg.includes("Email send failed")) {
+      res.status(502).json({
+        error: "EMAIL_SEND_FAILED",
+        message: "Nuk u dërgua emaili me kod. Provo përsëri.",
+      });
+      return;
+    }
+    res.status(500).json({ error: "Login failed" });
+  }
+});
+
+// ─── POST /auth/login/email — instant login when email codes are off ────────
 router.post("/auth/login/email", async (req, res) => {
   try {
     const email = normalizeEmail(req.body?.email);
@@ -298,11 +477,38 @@ router.post("/auth/login/email", async (req, res) => {
     }
 
     const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
-    if (!user?.password_hash) {
+    if (!user) {
       res.status(401).json({
         error: "INVALID_CREDENTIALS",
         message: "Email ose fjalëkalim i gabuar.",
       });
+      return;
+    }
+
+    if (!user.password_hash) {
+      if (password.length < MIN_PASSWORD) {
+        res.status(401).json({
+          error: "INVALID_CREDENTIALS",
+          message: "Email ose fjalëkalim i gabuar.",
+        });
+        return;
+      }
+      const hash = await bcrypt.hash(password, 10);
+      const [updated] = await db
+        .update(usersTable)
+        .set({
+          password_hash: hash,
+          email_verified_at: user.email_verified_at ?? new Date(),
+        })
+        .where(eq(usersTable.id, user.id))
+        .returning();
+      const loggedIn = updated ?? user;
+      if (isUserBanned(loggedIn)) {
+        res.status(403).json({ error: "Account suspended" });
+        return;
+      }
+      setUserSessionCookie(res, loggedIn.id);
+      res.json({ user: publicUser(loggedIn, { self: true }) });
       return;
     }
 

@@ -198,14 +198,6 @@ export default function LoginPage() {
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           const err = data as { message?: string; error?: string };
-          if (res.status === 409 || err.error === "EMAIL_ALREADY_REGISTERED") {
-            setFlow("login");
-            toast({
-              title: t.toast_emailExistsLogin,
-              description: t.toast_emailExistsLoginHint,
-            });
-            return;
-          }
           toast({
             title: err.message ?? err.error ?? t.toast_reqFail,
             variant: "destructive",
@@ -322,7 +314,10 @@ export default function LoginPage() {
     setBusy(true);
     try {
       if (!validateEmailPassword(email, password, toast)) return;
-      const res = await fetch("/api/auth/login/email", {
+      const endpoint = emailVerificationRequired
+        ? "/api/auth/login/email/start"
+        : "/api/auth/login/email";
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -337,6 +332,11 @@ export default function LoginPage() {
             t.toast_reqFail,
           variant: "destructive",
         });
+        return;
+      }
+      if (emailVerificationRequired && (data as { needsVerification?: boolean }).needsVerification) {
+        setStep("verify");
+        toast({ title: t.toast_emailSent });
         return;
       }
       await refresh();
@@ -415,9 +415,11 @@ export default function LoginPage() {
                   : emailVerificationRequired
                     ? t.login_sub_register_email_verify
                     : t.login_sub_email_only
-                : smsAuthEnabled
-                  ? t.login_sub_login
-                  : t.login_sub_email_only}
+                : emailVerificationRequired
+                  ? t.login_sub_login_email_verify
+                  : smsAuthEnabled
+                    ? t.login_sub_login
+                    : t.login_sub_email_only}
             </p>
           </div>
 
@@ -461,66 +463,64 @@ export default function LoginPage() {
             ) : null}
 
             <TabsContent value="email" className="space-y-4 pt-4">
-              {isRegister ? (
-                isVerify ? (
-                  <form className="space-y-4" onSubmit={onVerify} noValidate>
-                    <p className="text-sm text-gray-600">{t.login_emailVerifyHint}</p>
-                    <button
-                      type="button"
-                      className="text-sm text-blue-600 font-medium hover:underline min-h-11"
-                      onClick={resetVerify}
-                    >
-                      {t.login_changeEmail}
-                    </button>
-                    <div className="space-y-2">
-                      <Label htmlFor="email-code">{t.login_codeLbl}</Label>
-                      <Input
-                        id="email-code"
-                        inputMode="numeric"
-                        autoComplete="one-time-code"
-                        value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                        placeholder="123456"
-                        className="min-h-12 h-12 text-[16px]"
-                      />
-                    </div>
-                    <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
-                      {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.reg_confirmBtn}
-                    </Button>
-                  </form>
-                ) : (
-                  <form className="space-y-4" onSubmit={onRegisterCredentials} noValidate>
-                    <div className="space-y-2">
-                      <Label htmlFor="reg-email">{t.login_emailLbl}</Label>
-                      <Input
-                        id="reg-email"
-                        name="email"
-                        type="email"
-                        autoComplete="email"
-                        value={email}
-                        onChange={(e) => setEmail(emailFromInput(e.target.value))}
-                        placeholder={t.login_emailPh}
-                        className="min-h-12 h-12"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="reg-password">{t.login_passLbl}</Label>
-                      <Input
-                        id="reg-password"
-                        name="password"
-                        type="password"
-                        autoComplete="new-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder={t.login_passPhReg}
-                        className="min-h-12 h-12"
-                      />
-                    </div>
-                    <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
-                      {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_continueBtn}
-                    </Button>
-                  </form>
-                )
+              {isVerify ? (
+                <form className="space-y-4" onSubmit={onVerify} noValidate>
+                  <p className="text-sm text-gray-600">{t.login_emailVerifyHint}</p>
+                  <button
+                    type="button"
+                    className="text-sm text-blue-600 font-medium hover:underline min-h-11"
+                    onClick={resetVerify}
+                  >
+                    {t.login_changeEmail}
+                  </button>
+                  <div className="space-y-2">
+                    <Label htmlFor="email-code">{t.login_codeLbl}</Label>
+                    <Input
+                      id="email-code"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)}
+                      placeholder="123456"
+                      className="min-h-12 h-12 text-[16px]"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
+                    {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.reg_confirmBtn}
+                  </Button>
+                </form>
+              ) : isRegister ? (
+                <form className="space-y-4" onSubmit={onRegisterCredentials} noValidate>
+                  <div className="space-y-2">
+                    <Label htmlFor="reg-email">{t.login_emailLbl}</Label>
+                    <Input
+                      id="reg-email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => setEmail(emailFromInput(e.target.value))}
+                      placeholder={t.login_emailPh}
+                      className="min-h-12 h-12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reg-password">{t.login_passLbl}</Label>
+                    <Input
+                      id="reg-password"
+                      name="password"
+                      type="password"
+                      autoComplete="new-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder={t.login_passPhReg}
+                      className="min-h-12 h-12"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
+                    {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_continueBtn}
+                  </Button>
+                </form>
               ) : (
                 <form className="space-y-4" onSubmit={onLoginEmail} noValidate>
                   <div className="space-y-2">
@@ -550,7 +550,13 @@ export default function LoginPage() {
                     />
                   </div>
                   <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
-                    {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_submit_login}
+                    {busy ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : emailVerificationRequired ? (
+                      t.login_continueBtn
+                    ) : (
+                      t.login_submit_login
+                    )}
                   </Button>
                 </form>
               )}
