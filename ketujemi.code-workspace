@@ -1,0 +1,17 @@
+{
+  "folders": [
+    {
+      "path": ".",
+      "name": "ketujemi — kryesor (GitHub + Railway)"
+    },
+    {
+      "path": "ketujemi-2",
+      "name": "ketujemi-2 — app (vendi + api-server)"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/node_modules": true
+    }
+  }
+}

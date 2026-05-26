@@ -16,7 +16,14 @@
   },
   "scripts": {
     "preinstall": "node ketujemi-2/scripts/check-pnpm.mjs",
+    "dev": "pnpm -C ketujemi-2 run dev",
+    "dev:api": "pnpm -C ketujemi-2 run dev:api",
+    "dev:web": "pnpm -C ketujemi-2 run dev:web",
+    "db:push": "pnpm -C ketujemi-2 run db:push",
+    "db:seed": "pnpm -C ketujemi-2 run db:seed",
+    "typecheck": "pnpm -C ketujemi-2 run typecheck",
     "build": "node scripts/with-node-options.mjs pnpm --filter @workspace/vendi run build && node scripts/with-node-options.mjs pnpm --filter @workspace/api-server run build:vercel",
-    "build:production": "pnpm -C ketujemi-2 run build:production"
+    "build:production": "pnpm -C ketujemi-2 run build:production",
+    "start:production": "pnpm -C ketujemi-2 run start:production"
   }
 }

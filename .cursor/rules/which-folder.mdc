@@ -1,0 +1,30 @@
+---
+description: Një projekt KetuJemi — root, paths, git, komanda (mos Desktop / mos 100 workspace)
+alwaysApply: true
+---
+
+# KetuJemi — një projekt i vetëm
+
+## Hap në Cursor
+
+- **Vetëm:** `C:\Users\1\Documents\GitHub\ketujemi` (repo root) ose `ketujemi.code-workspace`.
+- **Mos hap** vetëm `ketujemi-2` si root të veçantë (konfuzion).
+- **Mos hap** `Desktop\firmat\ketujemi` (kopje e vjetër, nuk deploy-ohet).
+
+## Ku shkruhet kodi
+
+| Lloji | Path |
+|-------|------|
+| Frontend | `ketujemi-2/artifacts/vendi/` |
+| API | `ketujemi-2/artifacts/api-server/` |
+| DB schema | `ketujemi-2/lib/db/` |
+
+## Git dhe deploy
+
+- **Një remote:** `https://github.com/alfaportal/ketujemi.git`, branch `master`.
+- Komanda shell: **cwd = repo root** (`ketujemi/`), jo Desktop.
+- `pnpm dev`, `pnpm build:production` nga root — delegojnë te `ketujemi-2`.
+
+## Agjenti
+
+Mos krijo repo të ri, mos push në projekt tjetër. Të gjitha ndryshimet → `ketujemi-2/...` brenda këtij repo-je, pastaj commit/push nga root.
