@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "wouter";
 import { Sparkles, Star } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
+import { partnerSignupHref } from "@/lib/static-page-paths";
 import { cn } from "@/lib/utils";
 import { PartnerSlot, type PartnerSlotData } from "@/components/partner-slot";
 
@@ -49,19 +51,26 @@ const VIP_SLOT_FRAME = cn(
 function EmptyPartnerSlot({
   label,
   tier,
+  signupAriaLabel,
 }: {
   label: string;
   tier: PartnerTier;
+  signupAriaLabel: string;
 }) {
   const isVip = tier === "vip";
   return (
-    <div
+    <Link
+      href={partnerSignupHref(tier)}
       className={cn(
         isVip ? VIP_SLOT_FRAME : STANDARD_SLOT_FRAME,
         "relative flex flex-col items-center justify-center gap-0.5 px-2 border-dashed",
         isVip ? "border-amber-400/80" : "border-[#1A56A0]/70",
+        "cursor-pointer hover:scale-[1.02] active:scale-[0.99]",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+        isVip ? "focus-visible:ring-amber-500" : "focus-visible:ring-[#1A56A0]",
       )}
-      aria-hidden
+      aria-label={signupAriaLabel}
+      data-testid={`trusted-partner-empty-${tier}`}
     >
       {isVip ? (
         <Star className="h-3.5 w-3.5 text-amber-600 fill-amber-400" aria-hidden />
@@ -76,7 +85,7 @@ function EmptyPartnerSlot({
       >
         {label}
       </span>
-    </div>
+    </Link>
   );
 }
 
@@ -87,6 +96,7 @@ function PartnerRow({
   limit,
   gridClass,
   emptyLabel,
+  emptySignupAria,
   rowLabel,
 }: {
   tier: PartnerTier;
@@ -95,6 +105,7 @@ function PartnerRow({
   limit: number;
   gridClass: string;
   emptyLabel: string;
+  emptySignupAria: string;
   rowLabel: string;
 }) {
   const emptySlots = Math.max(0, limit - partners.length);
@@ -127,7 +138,12 @@ function PartnerRow({
         ))}
         {loaded && emptySlots > 0
           ? Array.from({ length: emptySlots }, (_, i) => (
-              <EmptyPartnerSlot key={`empty-${tier}-${i}`} label={emptyLabel} tier={tier} />
+              <EmptyPartnerSlot
+                key={`empty-${tier}-${i}`}
+                label={emptyLabel}
+                tier={tier}
+                signupAriaLabel={emptySignupAria}
+              />
             ))
           : null}
         {!loaded
@@ -255,6 +271,7 @@ export function VipPartnersSection({
             limit={config.rowLimit}
             gridClass={config.gridClass}
             emptyLabel={vipEmpty}
+            emptySignupAria={t.home_partnerEmptySignupVip}
             rowLabel={t.home_partnerVipRowLabel}
           />
           <PartnerRow
@@ -264,6 +281,7 @@ export function VipPartnersSection({
             limit={config.rowLimit}
             gridClass={config.gridClass}
             emptyLabel={standardEmpty}
+            emptySignupAria={t.home_partnerEmptySignupStandard}
             rowLabel={t.home_partnerStandardRowLabel}
           />
         </div>

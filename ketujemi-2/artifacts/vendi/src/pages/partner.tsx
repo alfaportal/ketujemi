@@ -117,10 +117,24 @@ export default function PartnerPage() {
   }, [authLoading, user, setLocation, c.errPaymentOpen, c.errServer]);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pkgParam = params.get("package");
+    if (pkgParam === "vip" || pkgParam === "standard") {
+      setPkg(pkgParam);
+    }
+  }, []);
+
+  useEffect(() => {
     if (!wantsPartnerFormFromUrl()) return;
     if (authLoading) return;
     if (!user) {
-      setLocation(loginUrlWithReturn(partnerFormReturnPath()));
+      const params = new URLSearchParams(window.location.search);
+      const pkgParam = params.get("package");
+      const returnPath =
+        pkgParam === "vip" || pkgParam === "standard"
+          ? `${partnerFormReturnPath()}&package=${pkgParam}`
+          : partnerFormReturnPath();
+      setLocation(loginUrlWithReturn(returnPath));
       return;
     }
     setPhase("register");

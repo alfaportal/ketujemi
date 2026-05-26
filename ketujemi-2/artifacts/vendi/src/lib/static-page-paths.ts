@@ -2,6 +2,15 @@ import type { UiLang } from "@/lib/ui-languages";
 
 export const PARTNER_SIGNUP_PATH = "/partner";
 
+/** Trusted-partner empty slots → partner registration form (optional package preselect). */
+export function partnerSignupHref(tier?: "vip" | "standard"): string {
+  const params = new URLSearchParams({ step: "partner" });
+  if (tier === "vip" || tier === "standard") {
+    params.set("package", tier);
+  }
+  return `${PARTNER_SIGNUP_PATH}?${params.toString()}#regjistrohu`;
+}
+
 /** Footer BIZNESE column — same path for all UI languages */
 export const FOOTER_BUSINESS_OPEN_SHOP_PATH = "/partner";
 export const FOOTER_BUSINESS_VIP_PATH = "/vip";
