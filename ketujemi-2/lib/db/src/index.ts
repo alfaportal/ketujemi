@@ -17,5 +17,6 @@ export const db = drizzle(pool, { schema });
 export { ensureWalletSchema } from "./ensure-wallet-schema.js";
 export { ensureFiscalSchema } from "./ensure-fiscal-schema.js";
 export { ensureOAuthSchema } from "./ensure-oauth-schema.js";
+export { ensureListingUserSchema } from "./ensure-listing-user-schema.js";
 
 export * from "./schema";

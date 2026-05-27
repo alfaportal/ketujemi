@@ -15,3 +15,5 @@ export * from "./listing_package_purchases";
 export * from "./wallet_transactions";
 export * from "./fiscal_receipts";
 export * from "./moderation_log";
+export * from "./listing_self_duplicate_alerts";
+export * from "./listing_scan_duplicate_alerts";

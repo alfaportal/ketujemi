@@ -1,8 +1,10 @@
-import { db, listingsTable, moderationLogTable } from "@workspace/db";
+import { db, listingsTable, moderationLogTable, type User } from "@workspace/db";
 import { and, desc, eq, gte } from "drizzle-orm";
+import { listingBelongsToUser } from "./listing-ownership";
+import { listingTextSimilarity, SELF_DUPLICATE_SCAN_THRESHOLD } from "./listing-text-similarity";
 
 const DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
-const TEXT_SIMILARITY_THRESHOLD = 0.8;
+const TEXT_SIMILARITY_THRESHOLD = SELF_DUPLICATE_SCAN_THRESHOLD;
 const PHASH_DISTANCE_THRESHOLD = 6;
 const BLOCKED_WORDS = [
   "mashtrim",
@@ -19,6 +21,8 @@ const BLOCKED_WORDS = [
 ];
 
 type ModerationInput = {
+  userId: number;
+  user: User;
   title: string;
   description: string;
   sellerPhone: string;
@@ -32,6 +36,7 @@ type ModerationResult =
       ok: false;
       code:
         | "DUPLICATE_LISTING"
+        | "DUPLICATE_LISTING_SELF"
         | "BLACKLIST_WORD"
         | "PHONE_IN_DESCRIPTION"
         | "EXTERNAL_LINK_IN_DESCRIPTION";
@@ -49,23 +54,6 @@ function normalizeText(input: string): string {
 
 function digitsOnly(input: string): string {
   return input.replace(/\D/g, "");
-}
-
-function tokenizeForSimilarity(input: string): string[] {
-  return normalizeText(input)
-    .replace(/[^\p{L}\p{N}\s]/gu, " ")
-    .split(" ")
-    .map((s) => s.trim())
-    .filter((s) => s.length >= 2);
-}
-
-function textSimilarity(a: string, b: string): number {
-  const as = new Set(tokenizeForSimilarity(a));
-  const bs = new Set(tokenizeForSimilarity(b));
-  if (as.size === 0 || bs.size === 0) return 0;
-  let intersection = 0;
-  for (const token of as) if (bs.has(token)) intersection++;
-  return (2 * intersection) / (as.size + bs.size);
 }
 
 function imageUrlsFromCsv(raw?: string | null): string[] {
@@ -166,6 +154,7 @@ export async function runTwoLayerModeration(input: ModerationInput): Promise<Mod
       title: listingsTable.title,
       description: listingsTable.description,
       seller_phone: listingsTable.seller_phone,
+      user_id: listingsTable.user_id,
       category_id: listingsTable.category_id,
       image_url: listingsTable.image_url,
       created_at: listingsTable.created_at,
@@ -185,6 +174,8 @@ export async function runTwoLayerModeration(input: ModerationInput): Promise<Mod
       id: listingsTable.id,
       title: listingsTable.title,
       description: listingsTable.description,
+      seller_phone: listingsTable.seller_phone,
+      user_id: listingsTable.user_id,
       image_url: listingsTable.image_url,
       created_at: listingsTable.created_at,
     })
@@ -192,12 +183,26 @@ export async function runTwoLayerModeration(input: ModerationInput): Promise<Mod
     .orderBy(desc(listingsTable.created_at))
     .limit(1200);
 
-  const incomingFullText = `${title} ${description}`;
   const incomingImageHashes = imageUrlsFromCsv(input.imageUrl).map((u) => pseudoPHash(u));
   const incomingPhoneDigits = digitsOnly(input.sellerPhone);
 
   for (const row of duplicateCandidates) {
-    const similarity = textSimilarity(incomingFullText, `${row.title} ${row.description}`);
+    if (
+      listingBelongsToUser(input.userId, input.user, {
+        user_id: row.user_id,
+        seller_phone: row.seller_phone,
+        description: row.description,
+      })
+    ) {
+      continue;
+    }
+
+    const similarity = listingTextSimilarity(
+      title,
+      description,
+      row.title,
+      row.description,
+    );
     if (similarity >= TEXT_SIMILARITY_THRESHOLD) {
       const reason = `DUPLICATE_TEXT_SIMILARITY:${similarity.toFixed(2)}`;
       await logModerationDecision(reason, "blocked", row.id);
@@ -235,6 +240,15 @@ export async function runTwoLayerModeration(input: ModerationInput): Promise<Mod
   }
 
   for (const row of recentByPhoneAndCategory) {
+    if (
+      listingBelongsToUser(input.userId, input.user, {
+        user_id: row.user_id,
+        seller_phone: row.seller_phone,
+        description: row.description,
+      })
+    ) {
+      continue;
+    }
     const rowPhone = digitsOnly(row.seller_phone ?? "");
     if (
       incomingPhoneDigits.length >= 8 &&

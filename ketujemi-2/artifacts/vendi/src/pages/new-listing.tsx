@@ -553,7 +553,7 @@ export default function NewListing() {
         const body = await res.json().catch(() => ({}));
         if (!res.ok) {
           const errData = body as { error?: string; message?: string };
-          if (errData.error === "DUPLICATE_LISTING") {
+          if (errData.error === "DUPLICATE_LISTING" || errData.error === "DUPLICATE_LISTING_SELF") {
             toast({
               title: errData.message ?? "Keni një njoftim të ngjashëm aktiv.",
               variant: "destructive",

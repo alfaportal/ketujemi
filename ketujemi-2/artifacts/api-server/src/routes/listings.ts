@@ -49,6 +49,7 @@ import {
   requestPurgeExpiredListings,
 } from "../lib/expire-listings-job";
 import { runTwoLayerModeration } from "../lib/listing-two-layer-moderation";
+import { blockSelfDuplicateListingIfNeeded } from "../lib/listing-self-duplicate";
 
 const reportRate = new Map<string, number[]>();
 
@@ -409,7 +410,22 @@ router.post("/listings", async (req, res) => {
     throw err;
   }
 
+  const selfDuplicate = await blockSelfDuplicateListingIfNeeded(
+    viewer,
+    parsed.data.title,
+    parsed.data.description,
+  );
+  if (selfDuplicate) {
+    res.status(409).json({
+      error: "DUPLICATE_LISTING_SELF",
+      message: selfDuplicate.message,
+    });
+    return;
+  }
+
   const twoLayer = await runTwoLayerModeration({
+    userId: viewer.id,
+    user: viewer,
     title: parsed.data.title,
     description: parsed.data.description,
     sellerPhone: parsed.data.seller_phone,
@@ -574,6 +590,7 @@ router.post("/listings", async (req, res) => {
   const [row] = await db
     .insert(listingsTable)
     .values({
+      user_id: viewer.id,
       title: parsed.data.title,
       description: parsed.data.description,
       price: String(parsed.data.price),

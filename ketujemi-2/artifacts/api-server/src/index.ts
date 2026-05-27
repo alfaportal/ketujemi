@@ -1,11 +1,18 @@
 import app from "./app";
-import { ensureFiscalSchema, ensureOAuthSchema, ensureWalletSchema, pool } from "@workspace/db";
+import {
+  ensureFiscalSchema,
+  ensureListingUserSchema,
+  ensureOAuthSchema,
+  ensureWalletSchema,
+  pool,
+} from "@workspace/db";
 import { logger } from "./lib/logger";
 import { logPaymentStackReadiness } from "./lib/payment-policy";
 import { twilioConfigSummary } from "./lib/twilio-auth";
 import { startExpiredListingsScheduler } from "./lib/expire-listings-job";
 import { startExpiryReminderScheduler } from "./lib/listing-expiry-reminders";
 import { startPartnerUnpaidReminderScheduler } from "./lib/partner-unpaid-reminders";
+import { startSelfDuplicateScanScheduler } from "./lib/listing-duplicate-scan-job";
 
 const rawPort = process.env["API_PORT"] ?? process.env["PORT"];
 
@@ -29,6 +36,8 @@ async function startServer(): Promise<void> {
     logger.info("Fiscal schema verified (fiscal_receipts)");
     await ensureOAuthSchema(pool);
     logger.info("OAuth schema verified (facebook_user_id, instagram_user_id)");
+    await ensureListingUserSchema(pool);
+    logger.info("Listing user_id + self-duplicate alerts schema verified");
     logPaymentStackReadiness(logger);
     logger.info(twilioConfigSummary(), "twilio config (masked)");
   } catch (err) {
@@ -52,6 +61,7 @@ async function startServer(): Promise<void> {
     startExpiredListingsScheduler();
     startExpiryReminderScheduler();
     startPartnerUnpaidReminderScheduler();
+    startSelfDuplicateScanScheduler();
   });
 }
 

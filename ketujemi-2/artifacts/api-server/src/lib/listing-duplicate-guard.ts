@@ -1,8 +1,8 @@
 import { db, listingsTable } from "@workspace/db";
 import type { User } from "@workspace/db";
-import { gt, gte } from "drizzle-orm";
+import { and, eq, gt, gte, isNull, or } from "drizzle-orm";
+import { listingBelongsToUser } from "./listing-ownership";
 import { deleteListingCascade } from "./delete-listing-cascade";
-import { userOwnsListing } from "./listing-ownership";
 
 const DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -18,11 +18,15 @@ export function canonListingPair(title: string, description: string): { title: s
   return { title: norm(title), description: norm(description) };
 }
 
-function pairsEqual(
+export function pairsEqual(
   a: { title: string; description: string },
   b: { title: string; description: string },
 ): boolean {
   return a.title === b.title && a.description === b.description;
+}
+
+function ownedByUserCondition(userId: number) {
+  return or(eq(listingsTable.user_id, userId), isNull(listingsTable.user_id));
 }
 
 /**
@@ -43,14 +47,15 @@ export async function findSpamDuplicateListing24h(
       title: listingsTable.title,
       description: listingsTable.description,
       seller_phone: listingsTable.seller_phone,
+      user_id: listingsTable.user_id,
       created_at: listingsTable.created_at,
     })
     .from(listingsTable)
-    .where(gte(listingsTable.created_at, since));
+    .where(and(gte(listingsTable.created_at, since), ownedByUserCondition(user.id)));
 
   for (const row of rows) {
     if (excludeListingId != null && row.id === excludeListingId) continue;
-    if (!userOwnsListing(user, row)) continue;
+    if (!listingBelongsToUser(user.id, user, row)) continue;
     const existing = canonListingPair(row.title, row.description);
     if (pairsEqual(incoming, existing)) return row.id;
   }
@@ -76,14 +81,15 @@ export async function findDuplicateActiveListingFullMatch(
       title: listingsTable.title,
       description: listingsTable.description,
       seller_phone: listingsTable.seller_phone,
+      user_id: listingsTable.user_id,
       expires_at: listingsTable.expires_at,
     })
     .from(listingsTable)
-    .where(gt(listingsTable.expires_at, now));
+    .where(and(gt(listingsTable.expires_at, now), ownedByUserCondition(user.id)));
 
   for (const row of rows) {
     if (excludeListingId != null && row.id === excludeListingId) continue;
-    if (!userOwnsListing(user, row)) continue;
+    if (!listingBelongsToUser(user.id, user, row)) continue;
     const existing = canonListingPair(row.title, row.description);
     if (pairsEqual(incoming, existing)) return row.id;
   }
@@ -105,13 +111,15 @@ export async function findUserDuplicateListingIds(
       title: listingsTable.title,
       description: listingsTable.description,
       seller_phone: listingsTable.seller_phone,
+      user_id: listingsTable.user_id,
     })
-    .from(listingsTable);
+    .from(listingsTable)
+    .where(ownedByUserCondition(user.id));
 
   const ids: number[] = [];
   for (const row of rows) {
     if (excludeListingId != null && row.id === excludeListingId) continue;
-    if (!userOwnsListing(user, row)) continue;
+    if (!listingBelongsToUser(user.id, user, row)) continue;
     const existing = canonListingPair(row.title, row.description);
     if (pairsEqual(incoming, existing)) ids.push(row.id);
   }

@@ -4,6 +4,8 @@ import { z } from "zod/v4";
 
 export const listingsTable = pgTable("listings", {
   id: serial("id").primaryKey(),
+  /** Poster account — used for duplicate detection (not phone/text alone). */
+  user_id: integer("user_id"),
   title: text("title").notNull(),
   description: text("description").notNull(),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),

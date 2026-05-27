@@ -62,3 +62,13 @@ export function userOwnsListing(
   if (ue && specEmail && ue === specEmail) return true;
   return false;
 }
+
+/** Prefer stored user_id; fall back to phone/email for legacy listings. */
+export function listingBelongsToUser(
+  userId: number,
+  user: Pick<User, "email" | "phone_e164_digits" | "contact_phone">,
+  listing: { user_id: number | null; seller_phone: string; description: string },
+): boolean {
+  if (listing.user_id != null) return listing.user_id === userId;
+  return userOwnsListing(user, listing);
+}
