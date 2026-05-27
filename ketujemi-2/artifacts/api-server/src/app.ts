@@ -10,6 +10,33 @@ const app: Express = express();
 
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
+
+  /** HTTPS required for mic / Web Speech API; Railway terminates TLS at the edge. */
+  app.use((req, res, next) => {
+    const host = (req.get("host") ?? "").toLowerCase();
+    const proto = req.get("x-forwarded-proto") ?? req.protocol;
+
+    if (host === "ketujemi.com") {
+      res.redirect(301, `https://www.ketujemi.com${req.originalUrl}`);
+      return;
+    }
+
+    if (proto === "http" && host.endsWith("ketujemi.com")) {
+      res.redirect(301, `https://${host}${req.originalUrl}`);
+      return;
+    }
+
+    next();
+  });
+
+  app.use((_req, res, next) => {
+    res.setHeader(
+      "Strict-Transport-Security",
+      "max-age=31536000; includeSubDomains; preload",
+    );
+    res.setHeader("Permissions-Policy", "microphone=(self)");
+    next();
+  });
 }
 
 const sessionSecret = process.env.SESSION_SECRET;
