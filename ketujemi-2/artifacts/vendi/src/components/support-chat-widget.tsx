@@ -1,10 +1,20 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Mic } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
 import { useSecretAdminTap } from "@/lib/secret-admin-tap";
 import { cn } from "@/lib/utils";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
+type SpeechRecognitionCtor = new () => {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  start: () => void;
+  stop: () => void;
+  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+};
 
 const WELCOME: Record<string, string> = {
   ks: "Përshëndetje! Pyetni shkurt — do t'ju udhëzoj ku të shkoni në KetuJemi.",
@@ -27,6 +37,9 @@ export function SupportChatWidget() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [speechSupported, setSpeechSupported] = useState(false);
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef<InstanceType<SpeechRecognitionCtor> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const lang = market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq";
@@ -41,6 +54,72 @@ export function SupportChatWidget() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, open]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const MaybeSpeechRecognition = (
+      window as unknown as {
+        SpeechRecognition?: SpeechRecognitionCtor;
+        webkitSpeechRecognition?: SpeechRecognitionCtor;
+      }
+    ).SpeechRecognition
+      ?? (
+        window as unknown as {
+          SpeechRecognition?: SpeechRecognitionCtor;
+          webkitSpeechRecognition?: SpeechRecognitionCtor;
+        }
+      ).webkitSpeechRecognition;
+    setSpeechSupported(Boolean(MaybeSpeechRecognition));
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.stop();
+      recognitionRef.current = null;
+    };
+  }, []);
+
+  function toggleVoiceInput() {
+    if (!speechSupported) return;
+    if (listening) {
+      recognitionRef.current?.stop();
+      return;
+    }
+
+    const MaybeSpeechRecognition = (
+      window as unknown as {
+        SpeechRecognition?: SpeechRecognitionCtor;
+        webkitSpeechRecognition?: SpeechRecognitionCtor;
+      }
+    ).SpeechRecognition
+      ?? (
+        window as unknown as {
+          SpeechRecognition?: SpeechRecognitionCtor;
+          webkitSpeechRecognition?: SpeechRecognitionCtor;
+        }
+      ).webkitSpeechRecognition;
+    if (!MaybeSpeechRecognition) return;
+
+    const recognition = new MaybeSpeechRecognition();
+    recognition.lang = "sq-AL";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.onresult = (event) => {
+      const transcript = event.results[0]?.[0]?.transcript?.trim() ?? "";
+      if (!transcript) return;
+      setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
+    };
+    recognition.onerror = () => {
+      setListening(false);
+    };
+    recognition.onend = () => {
+      setListening(false);
+      recognitionRef.current = null;
+    };
+    recognitionRef.current = recognition;
+    setListening(true);
+    recognition.start();
+  }
 
   async function send() {
     const text = input.trim();
@@ -140,6 +219,20 @@ export function SupportChatWidget() {
               className="flex-1 min-h-11 rounded-xl border border-gray-200 px-3 text-base sm:text-sm"
               disabled={busy}
             />
+            {speechSupported ? (
+              <button
+                type="button"
+                onClick={toggleVoiceInput}
+                disabled={busy}
+                className={cn(
+                  "shrink-0 min-h-11 min-w-11 rounded-xl text-white flex items-center justify-center disabled:opacity-50",
+                  listening ? "bg-red-600" : "bg-[#1A56A0]",
+                )}
+                aria-label="Voice input"
+              >
+                <Mic className="h-4 w-4" />
+              </button>
+            ) : null}
             <button
               type="submit"
               disabled={busy || !input.trim()}
