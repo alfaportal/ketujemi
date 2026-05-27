@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Sparkles, Loader2, Check } from "lucide-react";
+import { Sparkles, Loader2, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMarket } from "@/lib/market-context";
 
@@ -19,6 +19,13 @@ type Props = {
   currentCategoryId: number;
   onApply: (s: CategorySuggestion) => void;
 };
+
+function encouragementMessage(title: string, suggestion: CategorySuggestion): string {
+  const label = title.trim();
+  const short = label.length > 48 ? `${label.slice(0, 45)}…` : label;
+  const product = short ? `«${short}»` : "Artikulli juaj";
+  return `${product} i përket kategorisë «${suggestion.category_name}» — duke zgjedhur kategorinë e duhur do të arrish 3x më shumë blerës!`;
+}
 
 export function ListingCategorySuggest({
   title,
@@ -56,12 +63,10 @@ export function ListingCategorySuggest({
         })
         .catch(() => setSuggestion(null))
         .finally(() => setLoading(false));
-    }, 700);
+    }, 350);
 
     return () => clearTimeout(timer);
   }, [ready, title, description, lang]);
-
-  if (!ready && !loading) return null;
 
   const suggestionKey = suggestion
     ? `${suggestion.parent_category_id}-${suggestion.category_id}`
@@ -75,48 +80,48 @@ export function ListingCategorySuggest({
 
   if (alreadyMatches || (suggestionKey && dismissedId === suggestionKey)) return null;
 
-  if (!suggestion && !loading) return null;
+  if (!ready && !loading) return null;
 
   return (
-    <div className="rounded-xl border border-amber-200 bg-amber-50/90 px-4 py-3 text-sm space-y-2">
-      <div className="flex items-center gap-2 font-semibold text-amber-950">
+    <div
+      className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-violet-50/80 px-4 py-3.5 text-sm shadow-sm space-y-2.5"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="flex items-center gap-2 font-semibold text-emerald-900">
         {loading ? (
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+          <Loader2 className="h-4 w-4 animate-spin shrink-0" aria-hidden />
         ) : (
-          <Sparkles className="h-4 w-4" aria-hidden />
+          <Sparkles className="h-4 w-4 shrink-0 text-violet-600" aria-hidden />
         )}
-        Sugjerim kategorie
+        Këshillë AI për kategori
       </div>
       {loading && !suggestion ? (
-        <p className="text-amber-800 text-xs">Duke analizuar titullin…</p>
+        <p className="text-emerald-800 text-xs">Duke analizuar titullin tuaj…</p>
       ) : suggestion ? (
         <>
-          <p className="text-amber-950">
-            <span className="font-medium">{suggestion.parent_name}</span>
-            {" → "}
-            <span className="font-medium">{suggestion.category_name}</span>
-            {suggestion.confidence === "high" ? (
-              <span className="text-amber-700 text-xs ml-1">(i sigurt)</span>
-            ) : null}
+          <p className="text-gray-800 leading-relaxed">{encouragementMessage(title, suggestion)}</p>
+          <p className="text-xs text-gray-500">
+            {suggestion.parent_name} → {suggestion.category_name}
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 pt-0.5">
             <Button
               type="button"
               size="sm"
-              className="min-h-10 bg-amber-700 hover:bg-amber-800"
+              className="min-h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
               onClick={() => onApply(suggestion)}
             >
-              <Check className="h-4 w-4 mr-1" aria-hidden />
-              Zbato kategorinë
+              <TrendingUp className="h-4 w-4 mr-1.5" aria-hidden />
+              Zgjidh këtë kategori
             </Button>
             <Button
               type="button"
               size="sm"
               variant="ghost"
-              className="min-h-10 text-amber-900"
+              className="min-h-11 text-gray-600"
               onClick={() => setDismissedId(suggestionKey)}
             >
-              Jo, faleminderit
+              Faleminderit, e di
             </Button>
           </div>
         </>

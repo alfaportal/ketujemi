@@ -729,7 +729,40 @@ export default function NewListing() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 
-            {/* ── 1. Category ── */}
+            {/* ── 1. Title (first — AI tip appears right below) ── */}
+            <Section title={t.titleField} icon={Info}>
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t.listingTitle} <span className="text-red-500">*</span></FormLabel>
+                    <FormControl>
+                      <Input
+                        data-testid="input-title"
+                        placeholder="p.sh. BMW X5 2020, JBL 500, iPhone 14 Pro Max..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </Section>
+
+            <ListingCategorySuggest
+              title={watchTitle}
+              description={watchDescription}
+              currentParentId={Number(parentCatId) || 0}
+              currentCategoryId={Number(bodyCatId) || 0}
+              onApply={(s) => {
+                form.setValue("parent_category_id", s.parent_category_id);
+                form.setValue("category_id", s.category_id);
+                form.setValue("brand_category_id", 0);
+              }}
+            />
+
+            {/* ── 2. Category ── */}
             <Section title={t.mainCategory} icon={ChevronRight}>
               <FormField
                 control={form.control}
@@ -809,38 +842,6 @@ export default function NewListing() {
                   )}
                 />
               )}
-            </Section>
-
-            {/* ── 2. Title ── */}
-            <Section title={t.titleField} icon={Info}>
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t.listingTitle} <span className="text-red-500">*</span></FormLabel>
-                    <FormControl>
-                      <Input
-                        data-testid="input-title"
-                        placeholder="p.sh. BMW X5 2020, iPhone 14 Pro Max..."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <ListingCategorySuggest
-                title={watchTitle}
-                description={watchDescription}
-                currentParentId={Number(parentCatId) || 0}
-                currentCategoryId={Number(bodyCatId) || 0}
-                onApply={(s) => {
-                  form.setValue("parent_category_id", s.parent_category_id);
-                  form.setValue("category_id", s.category_id);
-                  form.setValue("brand_category_id", 0);
-                }}
-              />
             </Section>
 
             {/* ── 3. Extra fields ── */}
