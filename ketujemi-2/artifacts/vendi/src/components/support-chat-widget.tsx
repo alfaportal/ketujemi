@@ -4,20 +4,15 @@ import { useMarket } from "@/lib/market-context";
 import { useSecretAdminTap } from "@/lib/secret-admin-tap";
 import { cn } from "@/lib/utils";
 import {
+  isDesktopVoiceInputAvailable,
+  isMobileUserAgent,
   isSecurePageContext,
   isWebSpeechAvailable,
   startWebSpeechRecognition,
   type WebSpeechController,
 } from "@/lib/speech-recognition";
-import {
-  blobToDataUrl,
-  isVoiceRecordingAvailable,
-  startVoiceRecording,
-  type VoiceRecordController,
-} from "@/lib/voice-recorder";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
-type VoiceBackend = "whisper" | "webspeech";
 
 const WELCOME: Record<string, string> = {
   ks: "Përshëndetje! Pyetni shkurt — do t'ju udhëzoj ku të shkoni në KetuJemi.",
@@ -47,25 +42,18 @@ const VOICE_HTTPS_HINT: Record<string, string> = {
   me: "Za glas (🎤) otvorite https://www.ketujemi.com",
 };
 
+const VOICE_MOBILE_DESKTOP: Record<string, string> = {
+  ks: "Për funksionin e zërit përdor Chrome në desktop.",
+  al: "Për funksionin e zërit përdor Chrome në desktop.",
+  mk: "За глас користете Chrome на десктоп.",
+  me: "Za glas koristite Chrome na desktopu.",
+};
+
 const VOICE_UNSUPPORTED: Record<string, string> = {
-  ks: "Ky shfletues nuk mbështet zërin. Përdorni Chrome, Safari ose Edge.",
-  al: "Ky shfletues nuk mbështet zërin. Përdorni Chrome, Safari ose Edge.",
-  mk: "Овој прелистувач не поддржува глас. Користете Chrome, Safari или Edge.",
-  me: "Ovaj pregledač ne podržava glas. Koristite Chrome, Safari ili Edge.",
-};
-
-const VOICE_MOBILE_NEEDS_SERVER: Record<string, string> = {
-  ks: "Zëri në telefon kërkon OPENAI_API_KEY në server. Deri atëherë shkruani me tastierë.",
-  al: "Zëri në telefon kërkon OPENAI_API_KEY në server. Deri atëherë shkruani me tastierë.",
-  mk: "Гласот на телефон бара OPENAI_API_KEY на серверот. До тогаш пишете.",
-  me: "Glas na telefonu traži OPENAI_API_KEY na serveru. Do tada pišite.",
-};
-
-const VOICE_TRANSCRIBE_FAIL: Record<string, string> = {
-  ks: "Nuk kuptova zërin. Provoni përsëri ose shkruani me tastierë.",
-  al: "Nuk kuptova zërin. Provoni përsëri ose shkruani me tastierë.",
-  mk: "Не разбрав глас. Обидете се повторно или напишете.",
-  me: "Nisam razumio glas. Pokušajte ponovo ili pišite.",
+  ks: "Ky shfletues nuk mbështet zërin. Përdorni Chrome ose Edge në desktop.",
+  al: "Ky shfletues nuk mbështet zërin. Përdorni Chrome ose Edge në desktop.",
+  mk: "Овој прелистувач не поддржува глас. Користете Chrome или Edge на десктоп.",
+  me: "Ovaj pregledač ne podržava glas. Koristite Chrome ili Edge na desktopu.",
 };
 
 export function SupportChatWidget() {
@@ -77,23 +65,19 @@ export function SupportChatWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [voiceAvailable, setVoiceAvailable] = useState(false);
   const [voiceNeedsHttps, setVoiceNeedsHttps] = useState(false);
-  const [voiceBackend, setVoiceBackend] = useState<VoiceBackend>("webspeech");
+  const [showMobileVoiceHint, setShowMobileVoiceHint] = useState(false);
   const [listening, setListening] = useState(false);
-  const [transcribing, setTranscribing] = useState(false);
 
-  const recordControllerRef = useRef<VoiceRecordController | null>(null);
   const webSpeechRef = useRef<WebSpeechController | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const messagesRef = useRef(messages);
   const busyRef = useRef(busy);
   const welcomeRef = useRef("");
   const inputRef = useRef(input);
-  const voiceBackendRef = useRef(voiceBackend);
 
   const lang = market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq";
   const welcome = WELCOME[market.code] ?? WELCOME.ks;
   welcomeRef.current = welcome;
-  voiceBackendRef.current = voiceBackend;
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -118,55 +102,24 @@ export function SupportChatWidget() {
   }, [messages, open]);
 
   useEffect(() => {
-    const canRecord = isVoiceRecordingAvailable();
-    const canWebSpeech = isWebSpeechAvailable();
-    const secure = isSecurePageContext();
-
-    setVoiceNeedsHttps(!secure && (canRecord || canWebSpeech));
-
-    void fetch("/api/ai/status")
-      .then((r) => r.json().catch(() => ({})))
-      .then((data: { whisper_configured?: boolean }) => {
-        const whisper = Boolean(data.whisper_configured);
-        let backend: VoiceBackend | null = null;
-        if (whisper && canRecord) backend = "whisper";
-        else if (canWebSpeech) backend = "webspeech";
-        else if (canRecord) backend = "whisper";
-
-        if (backend) {
-          setVoiceBackend(backend);
-          voiceBackendRef.current = backend;
-        }
-        setVoiceAvailable(Boolean(backend));
-      })
-      .catch(() => {
-        const backend: VoiceBackend | null = canWebSpeech
-          ? "webspeech"
-          : canRecord
-            ? "whisper"
-            : null;
-        if (backend) {
-          setVoiceBackend(backend);
-          voiceBackendRef.current = backend;
-        }
-        setVoiceAvailable(Boolean(backend));
-      });
+    const mobile = isMobileUserAgent();
+    const canDesktop = isDesktopVoiceInputAvailable();
+    setVoiceAvailable(mobile || canDesktop);
+    setShowMobileVoiceHint(mobile);
+    setVoiceNeedsHttps(
+      !isSecurePageContext() && (isWebSpeechAvailable() || mobile),
+    );
   }, []);
 
   const stopListening = useCallback(() => {
-    recordControllerRef.current?.stop();
-    recordControllerRef.current = null;
     webSpeechRef.current?.stop();
     webSpeechRef.current = null;
   }, []);
 
   const abortListening = useCallback(() => {
-    recordControllerRef.current?.abort();
-    recordControllerRef.current = null;
     webSpeechRef.current?.abort();
     webSpeechRef.current = null;
     setListening(false);
-    setTranscribing(false);
   }, []);
 
   useEffect(() => {
@@ -177,7 +130,7 @@ export function SupportChatWidget() {
 
   const sendMessage = useCallback(
     async (textOverride?: string) => {
-      const text = (textOverride ?? "").trim();
+      const text = (textOverride ?? inputRef.current).trim();
       if (!text || busyRef.current) return;
 
       const next: ChatMessage[] = [
@@ -283,124 +236,37 @@ export function SupportChatWidget() {
     webSpeechRef.current = controller;
   }, [market.code, sendMessage]);
 
-  const transcribeAndSend = useCallback(
-    async (blob: Blob, mimeType: string) => {
-      setTranscribing(true);
-      try {
-        const audioBase64 = await blobToDataUrl(blob);
-        const res = await fetch("/api/ai/support-transcribe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ audioBase64, mimeType, lang }),
-        });
-        const data = (await res.json().catch(() => ({}))) as {
-          text?: string;
-          fallback?: string;
-        };
-
-        if (data.fallback === "webspeech") {
-          setVoiceBackend("webspeech");
-          voiceBackendRef.current = "webspeech";
-          if (isWebSpeechAvailable()) {
-            startWebSpeech();
-            return;
-          }
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: "assistant",
-              content:
-                VOICE_MOBILE_NEEDS_SERVER[market.code] ?? VOICE_MOBILE_NEEDS_SERVER.ks,
-            },
-          ]);
-          return;
-        }
-
-        const text = data.text?.trim();
-        if (!res.ok || !text) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: "assistant",
-              content: VOICE_TRANSCRIBE_FAIL[market.code] ?? VOICE_TRANSCRIBE_FAIL.ks,
-            },
-          ]);
-          return;
-        }
-        setInput(text);
-        await sendMessage(text);
-      } catch {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: VOICE_TRANSCRIBE_FAIL[market.code] ?? VOICE_TRANSCRIBE_FAIL.ks,
-          },
-        ]);
-      } finally {
-        setTranscribing(false);
-      }
-    },
-    [lang, market.code, sendMessage, startWebSpeech],
-  );
-
-  const startWhisperRecording = useCallback(async () => {
-    if (!isVoiceRecordingAvailable() || busyRef.current || transcribing) return;
-
-    const controller = await startVoiceRecording({
-      onStart: () => setListening(true),
-      onError: (code) => {
-        setListening(false);
-        if (code === "not-allowed") {
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: "assistant",
-              content: !isSecurePageContext()
-                ? (VOICE_HTTPS_HINT[market.code] ?? VOICE_HTTPS_HINT.ks)
-                : (VOICE_ERROR[market.code] ?? VOICE_ERROR.ks),
-            },
-          ]);
-          return;
-        }
-        if (isWebSpeechAvailable()) {
-          setVoiceBackend("webspeech");
-          voiceBackendRef.current = "webspeech";
-          startWebSpeech();
-          return;
-        }
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: VOICE_UNSUPPORTED[market.code] ?? VOICE_UNSUPPORTED.ks,
-          },
-        ]);
-      },
-      onStop: (blob, mimeType) => {
-        setListening(false);
-        recordControllerRef.current = null;
-        void transcribeAndSend(blob, mimeType);
-      },
-    });
-
-    recordControllerRef.current = controller;
-  }, [market.code, transcribing, transcribeAndSend, startWebSpeech]);
-
   function toggleVoiceInput() {
-    if (!voiceAvailable || busy || transcribing) return;
+    if (!voiceAvailable || busy) return;
+
+    if (isMobileUserAgent()) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: VOICE_MOBILE_DESKTOP[market.code] ?? VOICE_MOBILE_DESKTOP.ks,
+        },
+      ]);
+      return;
+    }
+
+    if (!isDesktopVoiceInputAvailable()) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: VOICE_UNSUPPORTED[market.code] ?? VOICE_UNSUPPORTED.ks,
+        },
+      ]);
+      return;
+    }
+
     if (listening) {
       stopListening();
       return;
     }
-    if (voiceBackendRef.current === "whisper") {
-      void startWhisperRecording();
-    } else {
-      startWebSpeech();
-    }
+    startWebSpeech();
   }
-
-  const voiceBusy = listening || transcribing;
 
   return (
     <>
@@ -416,7 +282,6 @@ export function SupportChatWidget() {
               className="p-1 rounded-lg hover:bg-white/15 min-h-9 min-w-9 flex items-center justify-center"
               onClick={() => {
                 if (listening) stopListening();
-                else if (transcribing) abortListening();
                 setOpen(false);
               }}
               aria-label="Mbyll"
@@ -443,6 +308,11 @@ export function SupportChatWidget() {
                 {VOICE_HTTPS_HINT[market.code] ?? VOICE_HTTPS_HINT.ks}
               </p>
             ) : null}
+            {showMobileVoiceHint ? (
+              <p className="text-xs text-gray-600 bg-gray-100 border border-gray-200 rounded-lg px-2 py-1.5">
+                {VOICE_MOBILE_DESKTOP[market.code] ?? VOICE_MOBILE_DESKTOP.ks}
+              </p>
+            ) : null}
             {busy ? (
               <div className="flex items-center gap-2 text-gray-500 text-xs px-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -452,15 +322,7 @@ export function SupportChatWidget() {
             {listening ? (
               <div className="flex items-center gap-2 text-red-600 text-xs px-2 font-medium">
                 <span className="inline-block h-2 w-2 rounded-full bg-red-600 animate-pulse" />
-                {voiceBackend === "whisper"
-                  ? "Po dëgjoj… flisni, pastaj ndaloni (🎤)"
-                  : "Po dëgjoj… flisni tani"}
-              </div>
-            ) : null}
-            {transcribing ? (
-              <div className="flex items-center gap-2 text-gray-600 text-xs px-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Po përpunohet zëri…
+                Po dëgjoj… flisni tani
               </div>
             ) : null}
             <div ref={bottomRef} />
@@ -475,22 +337,16 @@ export function SupportChatWidget() {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={
-                listening
-                  ? "Po regjistrohet zëri…"
-                  : transcribing
-                    ? "Po përpunohet…"
-                    : "Shkruani pyetjen…"
-              }
+              placeholder={listening ? "Po dëgjohet zëri…" : "Shkruani pyetjen…"}
               className="flex-1 min-h-11 rounded-xl border border-gray-200 px-3 text-base sm:text-sm"
-              disabled={busy || voiceBusy}
-              readOnly={voiceBusy}
+              disabled={busy || listening}
+              readOnly={listening}
             />
             {voiceAvailable ? (
               <button
                 type="button"
                 onClick={toggleVoiceInput}
-                disabled={busy || transcribing}
+                disabled={busy}
                 data-testid="button-support-voice"
                 className={cn(
                   "shrink-0 min-h-11 min-w-11 rounded-xl text-white flex items-center justify-center disabled:opacity-50 transition-colors",
@@ -506,7 +362,7 @@ export function SupportChatWidget() {
             ) : null}
             <button
               type="submit"
-              disabled={busy || voiceBusy || !input.trim()}
+              disabled={busy || listening || !input.trim()}
               className="shrink-0 min-h-11 min-w-11 rounded-xl bg-[#1A56A0] text-white flex items-center justify-center disabled:opacity-50"
             >
               <Send className="h-4 w-4" />

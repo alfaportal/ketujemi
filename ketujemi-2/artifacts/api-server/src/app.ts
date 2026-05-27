@@ -5,14 +5,13 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { attachStaticFrontend } from "./lib/serve-static";
-import { handleSupportTranscribe } from "./routes/ai-support-transcribe";
 
 const app: Express = express();
 
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 
-  /** HTTPS required for microphone (MediaRecorder); Railway terminates TLS at the edge. */
+  /** HTTPS required for microphone (Web Speech API); Railway terminates TLS at the edge. */
   app.use((req, res, next) => {
     if (req.path === "/api/healthz" || req.path.startsWith("/api/health")) {
       next();
@@ -80,13 +79,6 @@ app.use(
     const r = req as express.Request & { rawBody?: Buffer };
     r.rawBody = Buffer.isBuffer(r.body) ? r.body : Buffer.from("");
     next();
-  },
-);
-app.post(
-  "/api/ai/support-transcribe",
-  express.json({ limit: "2mb" }),
-  (req, res) => {
-    void handleSupportTranscribe(req, res);
   },
 );
 app.use(express.json());

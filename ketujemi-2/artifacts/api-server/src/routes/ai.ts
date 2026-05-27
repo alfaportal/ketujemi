@@ -4,7 +4,6 @@ import { getPostingSuggestions } from "../lib/listing-posting-assistant";
 import { getSimilarListingsForListing } from "../lib/listing-ai-recommendations";
 import { runSupportChat, supportChatFallbackReply, type ChatMessage } from "../lib/support-chatbot";
 import { isClaudeConfigured, parseUiLang } from "../lib/claude-client";
-import { isWhisperConfigured } from "../lib/whisper-transcribe";
 
 const router = Router();
 
@@ -84,11 +83,9 @@ router.post("/ai/support-chat", async (req, res) => {
 
 // ─── GET /ai/status ─────────────────────────────────────────────────────────────
 router.get("/ai/status", (_req, res) => {
-  const whisper = isWhisperConfigured();
   res.json({
     claude_configured: isClaudeConfigured(),
-    whisper_configured: whisper,
-    voice_backend: whisper ? "whisper" : "webspeech",
+    voice_backend: "webspeech",
   });
 });
 

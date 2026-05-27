@@ -1,4 +1,4 @@
-/** Web Speech API — desktop Chrome/Edge fallback when Whisper is unavailable. */
+/** Web Speech API — desktop Chrome/Edge only (no server STT). */
 
 export type SpeechRecognitionInstance = {
   lang: string;
@@ -39,6 +39,13 @@ export function isSecurePageContext(): boolean {
   );
 }
 
+export function isMobileUserAgent(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Android|webOS|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini/i.test(
+    navigator.userAgent,
+  );
+}
+
 export function getSpeechRecognitionCtor(): SpeechRecognitionCtor | null {
   if (typeof window === "undefined") return null;
   const w = window as Window & {
@@ -50,6 +57,11 @@ export function getSpeechRecognitionCtor(): SpeechRecognitionCtor | null {
 
 export function isWebSpeechAvailable(): boolean {
   return Boolean(getSpeechRecognitionCtor()) && isSecurePageContext();
+}
+
+/** Mic works on desktop with Web Speech; mobile shows guidance only. */
+export function isDesktopVoiceInputAvailable(): boolean {
+  return isWebSpeechAvailable() && !isMobileUserAgent();
 }
 
 export function speechLangForMarket(marketCode: string): string {
