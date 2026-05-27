@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useGetListing, useUpdateListing, useGetCategories, getGetListingQueryKey, getGetListingsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,15 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { useMarket, LOCATIONS } from "@/lib/market-context";
+import {
+  useMarket,
+  LOCATIONS,
+  MARKETS,
+  homeMarketCodeFromMarket,
+  isHomeMarketCode,
+  type HomeMarketCode,
+} from "@/lib/market-context";
+import { Label } from "@/components/ui/label";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { userOwnsListing } from "@/lib/listing-ownership";
 import { AuthToolbar } from "@/components/auth-toolbar";
@@ -40,6 +48,10 @@ export default function EditListing() {
   const { toast } = useToast();
   const { t, market } = useMarket();
   const { user, loading: authLoading } = useAuth();
+  const [listingCountry, setListingCountry] = useState<HomeMarketCode>(() =>
+    homeMarketCodeFromMarket(market.code),
+  );
+  const homeMarkets = MARKETS.filter((m) => isHomeMarketCode(m.code));
 
   const { data: listing, isLoading } = useGetListing(id, {
     query: {
@@ -111,7 +123,32 @@ export default function EditListing() {
     });
   };
 
-  const cityList = LOCATIONS[market.code] ?? LOCATIONS.ks;
+  const cityList = LOCATIONS[listingCountry] ?? [];
+
+  useEffect(() => {
+    if (isHomeMarketCode(market.code)) {
+      setListingCountry(market.code);
+    }
+  }, [market.code]);
+
+  useEffect(() => {
+    const loc = listing?.location;
+    if (!loc) return;
+    for (const code of ["ks", "al", "mk", "mne"] as const) {
+      if ((LOCATIONS[code] ?? []).includes(loc)) {
+        setListingCountry(code);
+        return;
+      }
+    }
+  }, [listing?.location]);
+
+  useEffect(() => {
+    const loc = form.getValues("location");
+    const cities = LOCATIONS[listingCountry] ?? [];
+    if (loc && !cities.includes(loc)) {
+      form.setValue("location", "");
+    }
+  }, [listingCountry, form]);
 
   const canEdit = !!(user && listing && userOwnsListing(user, listing));
 
@@ -230,6 +267,29 @@ export default function EditListing() {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label>Shteti</Label>
+              <div className="grid grid-cols-4 gap-2">
+                {homeMarkets.map((m) => (
+                  <button
+                    key={m.code}
+                    type="button"
+                    onClick={() => setListingCountry(m.code as HomeMarketCode)}
+                    className={`min-h-12 rounded-xl border-2 text-sm font-semibold flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-colors ${
+                      listingCountry === m.code
+                        ? "border-blue-500 bg-blue-50 text-blue-800"
+                        : "border-gray-200 hover:border-gray-300 text-gray-700"
+                    }`}
+                  >
+                    <span className="text-lg leading-none" aria-hidden>
+                      {m.flag}
+                    </span>
+                    <span className="text-[10px] leading-tight px-1 text-center">{m.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <FormField
               control={form.control}
               name="location"
@@ -242,7 +302,7 @@ export default function EditListing() {
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="max-h-[min(70vh,360px)]">
                       {cityList.map((loc) => (
                         <SelectItem key={loc} value={loc}>{loc}</SelectItem>
                       ))}

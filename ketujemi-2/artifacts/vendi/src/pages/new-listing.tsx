@@ -20,7 +20,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { useMarket, LOCATIONS, FORM_OPTIONS } from "@/lib/market-context";
+import {
+  useMarket,
+  LOCATIONS,
+  FORM_OPTIONS,
+  MARKETS,
+  homeMarketCodeFromMarket,
+  isHomeMarketCode,
+  type HomeMarketCode,
+} from "@/lib/market-context";
+import { ListingCategorySuggest } from "@/components/listing-category-suggest";
 import { AP_PART_CONDITION_DESC } from "@/lib/auto-pjese-search-helpers";
 import { useListingImageUpload } from "@/lib/listing-image-upload";
 import {
@@ -174,6 +183,10 @@ export default function NewListing() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { market, t } = useMarket();
+  const [listingCountry, setListingCountry] = useState<HomeMarketCode>(() =>
+    homeMarketCodeFromMarket(market.code),
+  );
+  const homeMarkets = MARKETS.filter((m) => isHomeMarketCode(m.code));
   const { data: allCategories } = useGetCategories();
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -284,6 +297,20 @@ export default function NewListing() {
   useEffect(() => {
     form.setValue("brand_category_id", 0);
   }, [bodyCatId, form]);
+
+  useEffect(() => {
+    if (isHomeMarketCode(market.code)) {
+      setListingCountry(market.code);
+    }
+  }, [market.code]);
+
+  useEffect(() => {
+    const loc = form.getValues("location");
+    const cities = LOCATIONS[listingCountry] ?? [];
+    if (loc && !cities.includes(loc)) {
+      form.setValue("location", "");
+    }
+  }, [listingCountry, form]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -609,7 +636,7 @@ export default function NewListing() {
       .catch(() => toast({ title: t.postError, variant: "destructive" }));
   };
 
-  const cityList = LOCATIONS[market.code] ?? LOCATIONS.ks;
+  const cityList = LOCATIONS[listingCountry] ?? [];
   const hideContactFields = user != null && !userNeedsSellerProfile(user);
 
   if (authLoading || !user) {
@@ -716,7 +743,7 @@ export default function NewListing() {
                           <SelectValue placeholder={t.chooseCategory} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="max-h-[min(70vh,360px)]">
                         {parentCats.map((cat: any) => (
                           <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
                         ))}
@@ -747,7 +774,7 @@ export default function NewListing() {
                             <SelectValue placeholder={t.chooseType} />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="max-h-[min(70vh,360px)]">
                           {subCats.map((cat: any) => (
                             <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
                           ))}
@@ -772,7 +799,7 @@ export default function NewListing() {
                             <SelectValue placeholder={t.chooseMark} />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="max-h-[min(70vh,360px)]">
                           {brandCats.map((cat: any) => (
                             <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
                           ))}
@@ -802,6 +829,17 @@ export default function NewListing() {
                     <FormMessage />
                   </FormItem>
                 )}
+              />
+              <ListingCategorySuggest
+                title={watchTitle}
+                description={watchDescription}
+                currentParentId={Number(parentCatId) || 0}
+                currentCategoryId={Number(bodyCatId) || 0}
+                onApply={(s) => {
+                  form.setValue("parent_category_id", s.parent_category_id);
+                  form.setValue("category_id", s.category_id);
+                  form.setValue("brand_category_id", 0);
+                }}
               />
             </Section>
 
@@ -1245,6 +1283,29 @@ export default function NewListing() {
 
             {/* ── 7. Location ── */}
             <Section title={t.locationSection}>
+              <div className="space-y-2">
+                <Label>Shteti</Label>
+                <div className="grid grid-cols-4 gap-2">
+                  {homeMarkets.map((m) => (
+                    <button
+                      key={m.code}
+                      type="button"
+                      data-testid={`button-listing-country-${m.code}`}
+                      onClick={() => setListingCountry(m.code as HomeMarketCode)}
+                      className={`min-h-12 rounded-xl border-2 text-sm font-semibold flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-colors ${
+                        listingCountry === m.code
+                          ? "border-blue-500 bg-blue-50 text-blue-800"
+                          : "border-gray-200 hover:border-gray-300 text-gray-700"
+                      }`}
+                    >
+                      <span className="text-lg leading-none" aria-hidden>
+                        {m.flag}
+                      </span>
+                      <span className="text-[10px] leading-tight px-1 text-center">{m.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <FormField
                 control={form.control}
                 name="location"
@@ -1257,7 +1318,7 @@ export default function NewListing() {
                           <SelectValue placeholder={t.chooseCity} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="max-h-[min(70vh,360px)]">
                         {cityList.map((city) => (
                           <SelectItem key={city} value={city}>{city}</SelectItem>
                         ))}

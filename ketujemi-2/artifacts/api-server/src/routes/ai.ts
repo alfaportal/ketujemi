@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { getSessionUser } from "../lib/session-user";
 import { getPostingSuggestions } from "../lib/listing-posting-assistant";
+import { suggestListingCategory } from "../lib/listing-category-suggest";
 import { getSimilarListingsForListing } from "../lib/listing-ai-recommendations";
 import { runSupportChat, supportChatFallbackReply, type ChatMessage } from "../lib/support-chatbot";
 import { isClaudeConfigured, parseUiLang } from "../lib/claude-client";
@@ -40,6 +41,26 @@ router.post("/ai/posting-suggestions", async (req, res) => {
   );
 
   res.json({ suggestions, ai_enabled: isClaudeConfigured() });
+});
+
+// ─── POST /ai/suggest-listing-category ─────────────────────────────────────────
+router.post("/ai/suggest-listing-category", async (req, res) => {
+  const viewer = await getSessionUser(req);
+  if (!viewer) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+
+  const body = req.body as { title?: string; description?: string; lang?: string };
+  const suggestion = await suggestListingCategory(
+    {
+      title: typeof body.title === "string" ? body.title : "",
+      description: typeof body.description === "string" ? body.description : "",
+    },
+    parseUiLang(body.lang),
+  );
+
+  res.json({ suggestion, ai_enabled: isClaudeConfigured() });
 });
 
 // ─── GET /ai/listings/:id/similar ─────────────────────────────────────────────

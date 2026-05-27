@@ -55,6 +55,11 @@ Use the user's reply language:
 - Albanian (sq): use this wording or equivalent: "Për të shmangur postimet e dyfishta dhe që njoftimi juaj të aprovohet më shpejt, ju lutem shtoni një detaj specifik (p.sh. numrin serial, ngjyrën ose një përshkrim të veçantë) që e dallon këtë artikull nga të tjerët."
 - Macedonian (mk) / Montenegrin (me): translate that same meaning naturally (serial, color, distinctive description).
 
+CATEGORY ACCURACY (when you mention categories at all):
+- Do NOT tell users to list speakers/headphones/JBL/Bose under "Televizorë & Projektorë" — those belong under "Audio & Pajisje Zëri".
+- TVs/projectors → "Televizorë & Projektorë"; consoles → "Konzola & Gaming".
+- If the chosen category already fits the product, do not suggest changing it.
+
 TECHNICAL OUTPUT:
 Reply ONLY with JSON: {"suggestions":["...","..."]}
 - Maximum 3 short suggestions (one sentence each).

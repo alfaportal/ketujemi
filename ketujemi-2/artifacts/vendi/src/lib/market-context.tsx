@@ -724,6 +724,24 @@ export const ALL_LOCATIONS: string[] = [
   ...LOCATIONS.mne,
 ];
 
+/** Balkan home markets that have a dedicated city list for listings. */
+export const HOME_MARKET_CODES = ["ks", "al", "mk", "mne"] as const;
+export type HomeMarketCode = (typeof HOME_MARKET_CODES)[number];
+
+export function isHomeMarketCode(code: string): code is HomeMarketCode {
+  return (HOME_MARKET_CODES as readonly string[]).includes(code);
+}
+
+/** Map header market to listing country (diaspora → Kosovë by default). */
+export function homeMarketCodeFromMarket(code: string): HomeMarketCode {
+  return isHomeMarketCode(code) ? code : "ks";
+}
+
+export function locationsForHomeMarket(code: string): string[] {
+  if (!isHomeMarketCode(code)) return [];
+  return LOCATIONS[code];
+}
+
 // ─── Context ──────────────────────────────────────────────────────────────────
 interface MarketContextType {
   market: Market;
