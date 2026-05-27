@@ -5,6 +5,7 @@ import { FileText, Users, Tag, AlertTriangle, TrendingUp, Clock } from "lucide-r
 import { formatDistanceToNow } from "date-fns";
 import { useMarket } from "@/lib/market-context";
 import { dateFnsLocale } from "@/lib/app-extra-i18n";
+import { primaryListingImageUrl } from "@/lib/listing-images";
 
 const COLORS = ["#3B82F6","#60A5FA","#93C5FD","#1D4ED8","#2563EB","#1E40AF","#BFDBFE","#DBEAFE","#EFF6FF","#172554"];
 
@@ -107,11 +108,13 @@ export default function Dashboard() {
           </div>
           {data.recent_listings.length > 0 ? (
             <div className="space-y-3">
-              {data.recent_listings.map((l) => (
+              {data.recent_listings.map((l) => {
+                const thumb = primaryListingImageUrl(l.image_url);
+                return (
                 <div key={l.id} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
-                  {l.image_url ? (
+                  {thumb ? (
                     <img
-                      src={l.image_url.split(",")[0]}
+                      src={thumb}
                       alt=""
                       className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
                     />
@@ -128,7 +131,8 @@ export default function Dashboard() {
                     {formatDistanceToNow(new Date(l.created_at), { addSuffix: true, locale: dateFnsLocale(market.code) })}
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           ) : (
             <div className="flex items-center justify-center h-40 text-gray-300 text-sm">{t.adm_recent_empty}</div>

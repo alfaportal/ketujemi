@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useGetListing, useDeleteListing, getGetListingsQueryKey, getGetRecentListingsQueryKey, getGetFeaturedListingsQueryKey, getGetListingQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowLeft, MapPin, Phone, User, Eye, Star, Tag, Package, Clock, Pencil, Trash2, Crown,
+  ArrowLeft, MapPin, Phone, User, Eye, Star, Tag, Camera, Package, Clock, Pencil, Trash2, Crown,
   Fuel, Gauge, Calendar, Cog, Palette, Maximize2, Mail, Car, ChevronLeft, ChevronRight, MessageCircle, MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -439,8 +439,8 @@ export default function ListingDetail() {
                   )}
                 </div>
               ) : (
-                <div className="aspect-video flex items-center justify-center text-gray-500 text-sm flex-col gap-2">
-                  <Package size={32} className="opacity-30" />
+                <div className="aspect-video flex items-center justify-center bg-gray-200 text-gray-500 text-sm flex-col gap-2">
+                  <Camera size={40} className="text-gray-400 stroke-[1.5]" aria-hidden />
                   <span>{t.noPhoto}</span>
                 </div>
               )}

@@ -6,6 +6,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { useMarket } from "@/lib/market-context";
 import { dateFnsLocale, fillPlaceholders } from "@/lib/app-extra-i18n";
+import { primaryListingImageUrl } from "@/lib/listing-images";
 
 function Badge({ children, color = "gray" }: { children: React.ReactNode; color?: string }) {
   const map: Record<string, string> = {
@@ -166,13 +167,15 @@ export default function AdminListings() {
                   </td>
                 </tr>
               ) : (
-                listings.map((l) => (
+                listings.map((l) => {
+                  const thumb = primaryListingImageUrl(l.image_url);
+                  return (
                   <tr key={l.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        {l.image_url ? (
+                        {thumb ? (
                           <img
-                            src={l.image_url.split(",")[0]}
+                            src={thumb}
                             alt=""
                             className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
                           />
@@ -233,7 +236,8 @@ export default function AdminListings() {
                       </div>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>

@@ -43,6 +43,7 @@ import {
 import { generateAdminAiDailyReport } from "../lib/admin-ai-daily-report";
 import { loadBannedPhoneSet, saveBannedPhoneSet } from "../lib/user-ban";
 import { primaryListingImageUrl, sanitizeListingImageUrlField } from "../lib/listing-images";
+import { purgeInvalidListingImages } from "../lib/purge-invalid-listing-images.js";
 
 const router = Router();
 
@@ -196,6 +197,26 @@ router.get("/admin/listings/image-audit", requireAdmin, async (_req, res) => {
     });
   } catch (err) {
     req.log.error({ err }, "Admin listing image audit error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── POST /admin/listings/purge-invalid-images ─────────────────────────────────
+router.post("/admin/listings/purge-invalid-images", requireAdmin, async (req, res) => {
+  try {
+    const activeOnly = req.body?.active_only !== false;
+    const result = await purgeInvalidListingImages({ activeOnly });
+    res.json({
+      ok: true,
+      active_only: activeOnly,
+      ...result,
+      message:
+        result.cleared > 0
+          ? `U hoqën foto të pavlefshme/stock nga ${result.cleared} shpallje.`
+          : "Nuk u gjetën foto stock në image_url.",
+    });
+  } catch (err) {
+    req.log.error({ err }, "Admin purge listing images error");
     res.status(500).json({ error: "Internal server error" });
   }
 });

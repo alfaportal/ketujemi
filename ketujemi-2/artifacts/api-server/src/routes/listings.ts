@@ -377,6 +377,8 @@ router.post("/listings", async (req, res) => {
     return;
   }
 
+  const safeImageUrl = sanitizeListingImageUrlField(parsed.data.image_url) ?? undefined;
+
   try {
     await assertAccountActive(viewer, parsed.data.seller_phone);
   } catch {
@@ -438,7 +440,7 @@ router.post("/listings", async (req, res) => {
     description: parsed.data.description,
     sellerPhone: parsed.data.seller_phone,
     categoryId: parsed.data.category_id,
-    imageUrl: parsed.data.image_url ?? null,
+    imageUrl: safeImageUrl ?? null,
   });
   if (!twoLayer.ok) {
     res.status(409).json({
@@ -454,7 +456,7 @@ router.post("/listings", async (req, res) => {
       title: parsed.data.title,
       description: parsed.data.description,
       price: parsed.data.price,
-      image_url: parsed.data.image_url,
+      image_url: safeImageUrl,
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -556,7 +558,7 @@ router.post("/listings", async (req, res) => {
       price: parsed.data.price,
       price_agreement: priceAgreement,
       category_name: catRow?.name ?? null,
-      image_url: parsed.data.image_url,
+      image_url: safeImageUrl,
       condition: parsed.data.condition,
     },
     parseUiLang(bodyExtra.lang),
@@ -607,7 +609,7 @@ router.post("/listings", async (req, res) => {
       seller_name: parsed.data.seller_name,
       seller_phone: parsed.data.seller_phone,
       condition: parsed.data.condition,
-      image_url: sanitizeListingImageUrlField(parsed.data.image_url) ?? null,
+      image_url: safeImageUrl ?? null,
       is_featured: parsed.data.is_featured ?? false,
       listed_at: now,
       created_at: now,
@@ -1106,7 +1108,10 @@ router.patch("/listings/:id", async (req, res) => {
         price: nextPrice,
         price_agreement: !!patchExtra.price_agreement,
         category_name: catRow?.name ?? null,
-        image_url: body.image_url ?? existing[0].image_url,
+        image_url:
+          body.image_url != null
+            ? sanitizeListingImageUrlField(body.image_url)
+            : sanitizeListingImageUrlField(existing[0].image_url),
         condition: body.condition ?? existing[0].condition,
       },
       parseUiLang(patchExtra.lang),

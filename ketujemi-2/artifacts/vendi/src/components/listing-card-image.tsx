@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Package } from "lucide-react";
+import { Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { primaryListingImageUrl } from "@/lib/listing-images";
 
@@ -23,7 +23,7 @@ export function ListingCardImage({ imageUrl, primaryImageUrl, alt, className }: 
         )}
         aria-hidden
       >
-        <Package className="h-10 w-10 text-gray-400 stroke-[1.5]" />
+        <Camera className="h-10 w-10 text-gray-400 stroke-[1.5]" aria-hidden />
       </div>
     );
   }

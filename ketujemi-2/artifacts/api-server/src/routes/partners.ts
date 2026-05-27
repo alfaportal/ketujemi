@@ -27,6 +27,10 @@ import {
   sendPartnerRegistrationConfirmation,
 } from "../lib/send-partner-registration-email";
 import { ensurePartnerUserAccount } from "../lib/partner-activate";
+import {
+  primaryListingImageUrl,
+  sanitizeListingImageUrlField,
+} from "../lib/listing-images.js";
 import { createPartnerStripeCheckout } from "../lib/partner-stripe";
 import { paymentsConfigured, devPaymentBypassEnabled } from "../lib/payments";
 import { requestPurgeExpiredListings } from "../lib/expire-listings-job";
@@ -179,6 +183,8 @@ function formatListingPublic(
     ? Math.max(0, Math.ceil((expires.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
     : null;
 
+  const image_url = sanitizeListingImageUrlField(l.image_url);
+
   return {
     id: l.id,
     title: l.title,
@@ -190,7 +196,8 @@ function formatListingPublic(
     seller_name: viewerRegistered ? l.seller_name : sellerFirstName(l.seller_name),
     seller_phone: viewerRegistered ? l.seller_phone : "",
     condition: l.condition,
-    image_url: l.image_url,
+    image_url,
+    primary_image_url: primaryListingImageUrl(image_url),
     created_at: l.created_at.toISOString(),
     expires_at: l.expires_at ? l.expires_at.toISOString() : null,
     days_left: daysLeft,
