@@ -1,20 +1,11 @@
 /** Cross-platform voice capture via MediaRecorder (iOS Safari, Android, desktop). */
 
+import { isSecurePageContext } from "@/lib/speech-recognition";
+
 const MAX_RECORD_MS = 45_000;
 const SILENCE_THRESHOLD = 0.014;
 const SILENCE_STOP_MS = 1_800;
 const LEVEL_CHECK_MS = 200;
-
-export function isSecurePageContext(): boolean {
-  if (typeof window === "undefined") return false;
-  if (window.isSecureContext) return true;
-  const { protocol, hostname } = window.location;
-  return (
-    protocol === "https:" ||
-    hostname === "localhost" ||
-    hostname === "127.0.0.1"
-  );
-}
 
 export function isVoiceRecordingAvailable(): boolean {
   if (!isSecurePageContext()) return false;

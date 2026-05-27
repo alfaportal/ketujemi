@@ -34,9 +34,10 @@ function decodeAudioPayload(body: TranscribeBody): { buffer: Buffer; mimeType: s
 
 export async function handleSupportTranscribe(req: Request, res: Response): Promise<void> {
   if (!isWhisperConfigured()) {
-    res.status(503).json({
-      error: "voice_transcription_unavailable",
-      message: "Transkriptimi me zë nuk është aktiv. Shtoni OPENAI_API_KEY në server.",
+    res.status(200).json({
+      fallback: "webspeech",
+      text: "",
+      message: "Whisper not configured — client should use Web Speech API.",
     });
     return;
   }

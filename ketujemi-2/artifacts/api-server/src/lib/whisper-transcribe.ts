@@ -44,7 +44,9 @@ export async function transcribeSupportAudio(
   const filename = `support-voice.${ext}`;
 
   const form = new FormData();
-  const blob = new Blob([buffer], { type: mimeType || "application/octet-stream" });
+  const blob = new Blob([new Uint8Array(buffer)], {
+    type: mimeType || "application/octet-stream",
+  });
   form.append("file", blob, filename);
   form.append("model", "whisper-1");
   form.append("response_format", "json");

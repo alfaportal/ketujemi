@@ -14,6 +14,11 @@ if (process.env.NODE_ENV === "production") {
 
   /** HTTPS required for microphone (MediaRecorder); Railway terminates TLS at the edge. */
   app.use((req, res, next) => {
+    if (req.path === "/api/healthz" || req.path.startsWith("/api/health")) {
+      next();
+      return;
+    }
+
     const host = (req.get("host") ?? "").toLowerCase();
     const proto = req.get("x-forwarded-proto") ?? req.protocol;
 
