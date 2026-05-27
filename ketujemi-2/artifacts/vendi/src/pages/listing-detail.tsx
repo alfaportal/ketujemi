@@ -32,6 +32,7 @@ import { ReportListingDialog } from "@/components/report-listing-dialog";
 import { SimilarListingsSection } from "@/components/similar-listings-section";
 import { CardPaymentsPanel } from "@/components/card-payments-panel";
 import { recordListingView } from "@/lib/record-listing-view";
+import { parseListingImageUrls } from "@/lib/listing-images";
 
 // ─── Spec parser ─────────────────────────────────────────────────────────────
 interface ParsedDesc { specs: Record<string, string>; body: string }
@@ -280,7 +281,7 @@ export default function ListingDetail() {
   }
 
   const { specs, body } = parsed;
-  const allImages = (listing.image_url ?? "").split(",").map((s: string) => s.trim()).filter(Boolean);
+  const allImages = parseListingImageUrls(listing.image_url);
   const isVipSeller = !!(listing as { is_vip_seller?: boolean }).is_vip_seller;
 
   const sellerDigits = user ? (listing.seller_phone ?? "").replace(/\D/g, "") : "";

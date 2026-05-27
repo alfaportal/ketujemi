@@ -5,6 +5,7 @@ import { useMarket, convertPrice } from "@/lib/market-context";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { translateCategory } from "@/lib/category-translations";
 import { categoryPath } from "@/lib/category-navigation";
+import { ListingCardImage } from "@/components/listing-card-image";
 
 // ─── Formatted timestamp ──────────────────────────────────────────────────────
 function formatDate(isoString: string): string {
@@ -32,39 +33,6 @@ function getDaysLeft(expiresAt: string | null | undefined, marketCode: string): 
   return { text: labels[marketCode] ?? `${days}d`, urgent };
 }
 
-// ─── Category photo fallbacks ─────────────────────────────────────────────────
-const CAT_PHOTOS: Record<string, string> = {
-  "Vetura":    "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&q=80",
-  "Motorr":    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80",
-  "Kamion":    "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=400&q=80",
-  "Auto":      "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&q=80",
-  "Banesa":    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&q=80",
-  "Lokale":    "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80",
-  "Telefona":  "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80",
-  "Kompjuter": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&q=80",
-  "TV":        "https://images.unsplash.com/photo-1593344484962-796055d4a3a4?w=400&q=80",
-  "Mobilje":   "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80",
-  "Rroba":     "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&q=80",
-  "Fëmijë":   "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400&q=80",
-  "Sport":     "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80",
-  "Punë":      "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&q=80",
-  "Bujqësi":  "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=400&q=80",
-  "Arsim":     "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=80",
-  "Muzikë":   "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&q=80",
-  "Kafshë":   "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=400&q=80",
-};
-
-const FALLBACKS = [
-  "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80",
-  "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=400&q=80",
-  "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=400&q=80",
-];
-
-function getPhoto(categoryName: string, id: number): string {
-  const key = Object.keys(CAT_PHOTOS).find((k) => categoryName?.startsWith(k));
-  return key ? CAT_PHOTOS[key] : FALLBACKS[id % FALLBACKS.length];
-}
-
 // ─── Props ────────────────────────────────────────────────────────────────────
 interface ListingCardProps {
   listing: {
@@ -73,6 +41,7 @@ interface ListingCardProps {
     price?: number | null;
     location?: string | null;
     image_url?: string | null;
+    primary_image_url?: string | null;
     is_featured?: boolean;
     is_top?: boolean;
     is_vip_seller?: boolean;
@@ -88,7 +57,6 @@ interface ListingCardProps {
 export default function ListingCard({ listing }: ListingCardProps) {
   const { market, rates, t, uiLang } = useMarket();
   const [, navigate] = useLocation();
-  const photo = listing.image_url || getPhoto(listing.category_name ?? "", listing.id);
   const isToday = new Date(listing.created_at).toDateString() === new Date().toDateString();
   const daysLeft = getDaysLeft(listing.expires_at, market.code);
   const catName = translateCategory(listing.category_name ?? "", translationKeyForUiLang(uiLang));
@@ -105,13 +73,13 @@ export default function ListingCard({ listing }: ListingCardProps) {
           : "border-gray-100 hover:border-blue-200",
       )}
     >
-      {/* Photo */}
-      <div className="relative overflow-hidden aspect-[4/3]">
-        <img
-          src={photo}
+      {/* Photo — only user-uploaded URL or neutral placeholder (no stock/category fallbacks) */}
+      <div className="relative overflow-hidden aspect-[4/3] bg-gray-200">
+        <ListingCardImage
+          imageUrl={listing.image_url}
+          primaryImageUrl={listing.primary_image_url}
           alt={listing.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          onError={(e) => { (e.target as HTMLImageElement).src = FALLBACKS[0]; }}
+          className="group-hover:scale-105 transition-transform duration-300"
         />
         {listing.is_top ? (
           <div className="absolute top-2 left-2 bg-[#1A56A0] text-white text-sm font-bold px-2.5 py-1 rounded-lg shadow-sm">

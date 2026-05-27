@@ -42,6 +42,7 @@ import {
 } from "../lib/admin-moderation";
 import { generateAdminAiDailyReport } from "../lib/admin-ai-daily-report";
 import { loadBannedPhoneSet, saveBannedPhoneSet } from "../lib/user-ban";
+import { primaryListingImageUrl, sanitizeListingImageUrlField } from "../lib/listing-images";
 
 const router = Router();
 
@@ -135,6 +136,66 @@ router.get("/admin/dashboard", requireAdmin, async (req, res) => {
     });
   } catch (err) {
     req.log.error({ err }, "Admin dashboard error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── GET /admin/listings/image-audit ───────────────────────────────────────────
+router.get("/admin/listings/image-audit", requireAdmin, async (_req, res) => {
+  try {
+    const rows = await db
+      .select({
+        id: listingsTable.id,
+        title: listingsTable.title,
+        image_url: listingsTable.image_url,
+        status: listingsTable.status,
+      })
+      .from(listingsTable);
+
+    let missing = 0;
+    let invalidOnly = 0;
+    let ok = 0;
+    const samples: { id: number; title: string; issue: string }[] = [];
+
+    for (const row of rows) {
+      const raw = row.image_url?.trim() ?? "";
+      const primary = primaryListingImageUrl(row.image_url);
+      if (!raw) {
+        missing += 1;
+        if (samples.length < 30) {
+          samples.push({ id: row.id, title: row.title, issue: "no_image_url" });
+        }
+      } else if (!primary) {
+        invalidOnly += 1;
+        if (samples.length < 30) {
+          samples.push({
+            id: row.id,
+            title: row.title,
+            issue: "invalid_or_stock_url",
+          });
+        }
+      } else {
+        ok += 1;
+        const cleaned = sanitizeListingImageUrlField(row.image_url);
+        if (cleaned !== row.image_url && samples.length < 30) {
+          samples.push({
+            id: row.id,
+            title: row.title,
+            issue: "needs_csv_cleanup",
+          });
+        }
+      }
+    }
+
+    res.json({
+      total: rows.length,
+      with_valid_photo: ok,
+      missing_photo: missing,
+      invalid_or_stock_only: invalidOnly,
+      samples,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Admin listing image audit error");
     res.status(500).json({ error: "Internal server error" });
   }
 });

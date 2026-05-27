@@ -1,15 +1,37 @@
 import { db, listingsTable, categoriesTable } from "@workspace/db";
 import { and, desc, eq, gt, ne } from "drizzle-orm";
 import { claudeJsonCompletion, isClaudeConfigured } from "./claude-client";
+import { primaryListingImageUrl, sanitizeListingImageUrlField } from "./listing-images";
 
 export type SimilarListingCard = {
   id: number;
   title: string;
   price: number;
   image_url: string | null;
+  primary_image_url: string | null;
   location: string;
   views: number;
 };
+
+function formatSimilarCard(r: {
+  id: number;
+  title: string;
+  price: string | number;
+  image_url: string | null;
+  location: string;
+  views: number | null;
+}): SimilarListingCard {
+  const image_url = sanitizeListingImageUrlField(r.image_url);
+  return {
+    id: r.id,
+    title: r.title,
+    price: Number(r.price),
+    image_url,
+    primary_image_url: primaryListingImageUrl(image_url),
+    location: r.location,
+    views: r.views ?? 0,
+  };
+}
 
 async function fetchCategoryCandidates(
   categoryId: number,
@@ -37,14 +59,7 @@ async function fetchCategoryCandidates(
     .orderBy(desc(listingsTable.created_at))
     .limit(limit);
 
-  return rows.map((r) => ({
-    id: r.id,
-    title: r.title,
-    price: Number(r.price),
-    image_url: r.image_url,
-    location: r.location,
-    views: r.views ?? 0,
-  }));
+  return rows.map((r) => formatSimilarCard(r));
 }
 
 function pickByPriceProximity(
@@ -69,14 +84,7 @@ export async function getSimilarListingsForListing(listingId: number): Promise<S
   const candidates = await fetchCategoryCandidates(current.category_id, listingId);
   if (candidates.length === 0) return [];
 
-  const currentCard: SimilarListingCard = {
-    id: current.id,
-    title: current.title,
-    price: Number(current.price),
-    image_url: current.image_url,
-    location: current.location,
-    views: current.views ?? 0,
-  };
+  const currentCard = formatSimilarCard(current);
 
   if (!isClaudeConfigured() || candidates.length <= 3) {
     return pickByPriceProximity(currentCard, candidates);

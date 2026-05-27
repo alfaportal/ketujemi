@@ -50,6 +50,10 @@ import {
 } from "../lib/expire-listings-job";
 import { runTwoLayerModeration } from "../lib/listing-two-layer-moderation";
 import { blockSelfDuplicateListingIfNeeded } from "../lib/listing-self-duplicate";
+import {
+  primaryListingImageUrl,
+  sanitizeListingImageUrlField,
+} from "../lib/listing-images";
 
 const reportRate = new Map<string, number[]>();
 
@@ -108,8 +112,12 @@ function formatListing(l: typeof listingsTable.$inferSelect, categoryName: strin
     ? Math.max(0, Math.ceil((expires.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
     : null;
 
+  const image_url = sanitizeListingImageUrlField(l.image_url);
+
   return {
     ...l,
+    image_url,
+    primary_image_url: primaryListingImageUrl(image_url),
     price: Number(l.price),
     category_name: categoryName,
     created_at: l.created_at.toISOString(),
@@ -599,7 +607,7 @@ router.post("/listings", async (req, res) => {
       seller_name: parsed.data.seller_name,
       seller_phone: parsed.data.seller_phone,
       condition: parsed.data.condition,
-      image_url: parsed.data.image_url ?? null,
+      image_url: sanitizeListingImageUrlField(parsed.data.image_url) ?? null,
       is_featured: parsed.data.is_featured ?? false,
       listed_at: now,
       created_at: now,
@@ -1074,7 +1082,9 @@ router.patch("/listings/:id", async (req, res) => {
   if (body.price != null) updates.price = String(body.price);
   if (body.location != null) updates.location = body.location;
   if (body.condition != null) updates.condition = body.condition;
-  if (body.image_url != null) updates.image_url = body.image_url;
+  if (body.image_url != null) {
+    updates.image_url = sanitizeListingImageUrlField(body.image_url);
+  }
   if (body.is_featured != null) updates.is_featured = body.is_featured;
 
   const nextPrice =

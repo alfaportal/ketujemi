@@ -30,6 +30,7 @@ import {
   type HomeMarketCode,
 } from "@/lib/market-context";
 import { ListingCategorySuggest } from "@/components/listing-category-suggest";
+import { joinListingImageUrls } from "@/lib/listing-images";
 import { AP_PART_CONDITION_DESC } from "@/lib/auto-pjese-search-helpers";
 import { useListingImageUpload } from "@/lib/listing-image-upload";
 import {
@@ -160,7 +161,7 @@ function ImagePreview({ urls, onRemove, mainLabel }: { urls: string[]; onRemove:
       {urls.map((url, i) => (
         <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200 flex-shrink-0">
           <img src={url} alt="" className="w-full h-full object-cover"
-            onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=60"; }} />
+            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
           <button type="button" onClick={() => onRemove(i)}
             className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors">
             <X size={10} className="text-white" />
@@ -529,7 +530,7 @@ export default function NewListing() {
       seller_name: contact.seller_name,
       seller_phone: contact.seller_phone,
       condition: data.condition,
-      image_url: imageUrls.join(",") || undefined,
+      image_url: joinListingImageUrls(imageUrls) ?? undefined,
       is_featured: false,
       ...((isVetura(parentName) || isAutoPjese(parentName))
         ? {

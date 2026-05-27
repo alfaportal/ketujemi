@@ -3,12 +3,14 @@ import { Link } from "wouter";
 import { Eye } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMarket } from "@/lib/market-context";
+import { ListingCardImage } from "@/components/listing-card-image";
 
 type Similar = {
   id: number;
   title: string;
   price: number;
   image_url: string | null;
+  primary_image_url?: string | null;
   location: string;
   views?: number;
 };
@@ -55,18 +57,18 @@ export function SimilarListingsSection({ listingId }: Props) {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {items.map((item) => {
-            const img = item.image_url?.split(",")[0]?.trim();
-            return (
+          {items.map((item) => (
               <Link
                 key={item.id}
                 href={`/listings/${item.id}`}
                 className="block rounded-xl border border-gray-100 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="aspect-[4/3] bg-gray-100">
-                  {img ? (
-                    <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
-                  ) : null}
+                <div className="aspect-[4/3] bg-gray-200">
+                  <ListingCardImage
+                    imageUrl={item.image_url}
+                    primaryImageUrl={item.primary_image_url}
+                    alt={item.title}
+                  />
                 </div>
                 <div className="p-3">
                   <p className="font-semibold text-sm text-gray-900 line-clamp-2">{item.title}</p>
@@ -82,8 +84,7 @@ export function SimilarListingsSection({ listingId }: Props) {
                   </div>
                 </div>
               </Link>
-            );
-          })}
+          ))}
         </div>
       )}
     </section>
