@@ -33,7 +33,13 @@ async function startServer(): Promise<void> {
     logger.info(twilioConfigSummary(), "twilio config (masked)");
   } catch (err) {
     logger.error({ err }, "Database schema migration failed");
-    process.exit(1);
+    if (process.env.NODE_ENV === "production") {
+      logger.warn(
+        "Continuing startup so Railway health check and static files can respond. Fix DATABASE_URL if API calls fail.",
+      );
+    } else {
+      process.exit(1);
+    }
   }
 
   app.listen(port, (err) => {
