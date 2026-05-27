@@ -48,6 +48,7 @@ import {
   purgeExpiredListingById,
   requestPurgeExpiredListings,
 } from "../lib/expire-listings-job";
+import { runTwoLayerModeration } from "../lib/listing-two-layer-moderation";
 
 const reportRate = new Map<string, number[]>();
 
@@ -408,11 +409,21 @@ router.post("/listings", async (req, res) => {
     throw err;
   }
 
-  await removeUserDuplicateListingsForPost(
-    viewer,
-    parsed.data.title,
-    parsed.data.description,
-  );
+  const twoLayer = await runTwoLayerModeration({
+    title: parsed.data.title,
+    description: parsed.data.description,
+    sellerPhone: parsed.data.seller_phone,
+    categoryId: parsed.data.category_id,
+    imageUrl: parsed.data.image_url ?? null,
+  });
+  if (!twoLayer.ok) {
+    res.status(409).json({
+      error: twoLayer.code,
+      reason: twoLayer.reason,
+      message: twoLayer.message,
+    });
+    return;
+  }
 
   try {
     await assertBusinessListingCreate(viewer, {

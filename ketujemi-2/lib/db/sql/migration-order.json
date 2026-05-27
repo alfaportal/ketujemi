@@ -12,6 +12,7 @@
   "listing-package-purchases-migration.sql",
   "listing-deletion-log-migration.sql",
   "listing-moderation-rejections-migration.sql",
+  "moderation-log-migration.sql",
   "wallet-migration.sql",
   "fiscal-receipts-migration.sql",
   "phone-verify-challenges-migration.sql",

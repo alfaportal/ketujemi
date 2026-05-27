@@ -80,6 +80,36 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
+const CLIENT_BLOCKED_WORDS = [
+  "mashtrim",
+  "droge",
+  "drogë",
+  "kokain",
+  "heroin",
+  "armë",
+  "arme",
+  "falsifikim",
+  "spam",
+  "seks",
+  "fyerje",
+];
+
+function hasPhoneInDescriptionClient(description: string): boolean {
+  return /(?:\+?\d[\d\s\-()]{6,}\d)/.test(description);
+}
+
+function hasExternalLinkClient(description: string): boolean {
+  return /(https?:\/\/|www\.)\S+/i.test(description);
+}
+
+function findBlockedWordClient(text: string): string | null {
+  const normalized = text.toLowerCase().normalize("NFC");
+  for (const word of CLIENT_BLOCKED_WORDS) {
+    if (normalized.includes(word.toLowerCase().normalize("NFC"))) return word;
+  }
+  return null;
+}
+
 // ─── Category groups ──────────────────────────────────────────────────────────
 const isVetura    = (name: string) => name === "Vetura";
 const isAutoPjese = (name: string) => name === "Auto Pjesë";
@@ -434,6 +464,28 @@ export default function NewListing() {
     }
     const extraText = buildExtraText(data);
     const finalDescription = extraText + data.description;
+    const blockedWord = findBlockedWordClient(`${data.title} ${finalDescription}`);
+    if (blockedWord) {
+      toast({
+        title: `Përmbajtja përmban fjalë të ndaluara: "${blockedWord}".`,
+        variant: "destructive",
+      });
+      return;
+    }
+    if (hasPhoneInDescriptionClient(finalDescription)) {
+      toast({
+        title: "Numri i telefonit nuk lejohet në përshkrim. Vendoseni vetëm në fushën e telefonit.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (hasExternalLinkClient(finalDescription)) {
+      toast({
+        title: "Linqet e jashtme nuk lejohen në përshkrim.",
+        variant: "destructive",
+      });
+      return;
+    }
     const contact =
       user && !userNeedsSellerProfile(user)
         ? sellerContactFromUser(user)
@@ -477,6 +529,17 @@ export default function NewListing() {
           if (errData.error === "DUPLICATE_LISTING") {
             toast({
               title: errData.message ?? "Keni një njoftim të ngjashëm aktiv.",
+              variant: "destructive",
+            });
+            return;
+          }
+          if (
+            errData.error === "BLACKLIST_WORD" ||
+            errData.error === "PHONE_IN_DESCRIPTION" ||
+            errData.error === "EXTERNAL_LINK_IN_DESCRIPTION"
+          ) {
+            toast({
+              title: errData.message ?? "Përmbajtja nuk kaloi kontrollin automatik.",
               variant: "destructive",
             });
             return;
