@@ -4,13 +4,12 @@ import { useMarket } from "@/lib/market-context";
 import { useSecretAdminTap } from "@/lib/secret-admin-tap";
 import { cn } from "@/lib/utils";
 import {
-  getSpeechRecognitionCtor,
+  blobToDataUrl,
   isSecurePageContext,
-  isVoiceInputAvailable,
-  speechLangForMarket,
-  transcriptFromEvent,
-  type SpeechRecognitionInstance,
-} from "@/lib/speech-recognition";
+  isVoiceRecordingAvailable,
+  startVoiceRecording,
+  type VoiceRecordController,
+} from "@/lib/voice-recorder";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -42,6 +41,20 @@ const VOICE_HTTPS_HINT: Record<string, string> = {
   me: "Za glas (🎤) otvorite https://www.ketujemi.com",
 };
 
+const VOICE_UNSUPPORTED: Record<string, string> = {
+  ks: "Ky shfletues nuk mbështet regjistrimin e zërit. Përdorni Chrome, Safari ose Edge.",
+  al: "Ky shfletues nuk mbështet regjistrimin e zërit. Përdorni Chrome, Safari ose Edge.",
+  mk: "Овој прелистувач не поддржува глас. Користете Chrome, Safari или Edge.",
+  me: "Ovaj pregledač ne podržava glas. Koristite Chrome, Safari ili Edge.",
+};
+
+const VOICE_TRANSCRIBE_FAIL: Record<string, string> = {
+  ks: "Nuk kuptova zërin. Provoni përsëri ose shkruani me tastierë.",
+  al: "Nuk kuptova zërin. Provoni përsëri ose shkruani me tastierë.",
+  mk: "Не разбрав глас. Обидете се повторно или напишете.",
+  me: "Nisam razumio glas. Pokušajte ponovo ili pišite.",
+};
+
 export function SupportChatWidget() {
   const { market } = useMarket();
   const { registerTap } = useSecretAdminTap();
@@ -52,15 +65,13 @@ export function SupportChatWidget() {
   const [voiceAvailable, setVoiceAvailable] = useState(false);
   const [voiceNeedsHttps, setVoiceNeedsHttps] = useState(false);
   const [listening, setListening] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
 
-  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const recordControllerRef = useRef<VoiceRecordController | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const messagesRef = useRef(messages);
   const busyRef = useRef(busy);
   const welcomeRef = useRef("");
-  const voiceFinalRef = useRef("");
-  const voiceAutoSendRef = useRef(false);
-  const inputRef = useRef(input);
 
   const lang = market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq";
   const welcome = WELCOME[market.code] ?? WELCOME.ks;
@@ -75,10 +86,6 @@ export function SupportChatWidget() {
   }, [busy]);
 
   useEffect(() => {
-    inputRef.current = input;
-  }, [input]);
-
-  useEffect(() => {
     if (open && messages.length === 0) {
       setMessages([{ role: "assistant", content: welcome }]);
     }
@@ -89,38 +96,32 @@ export function SupportChatWidget() {
   }, [messages, open]);
 
   useEffect(() => {
-    const hasApi = Boolean(getSpeechRecognitionCtor());
-    setVoiceAvailable(isVoiceInputAvailable());
-    setVoiceNeedsHttps(hasApi && !isSecurePageContext());
+    const canRecord = isVoiceRecordingAvailable();
+    setVoiceAvailable(canRecord);
+    setVoiceNeedsHttps(!canRecord && !isSecurePageContext());
   }, []);
 
-  const stopRecognition = useCallback(() => {
-    try {
-      recognitionRef.current?.stop();
-    } catch {
-      try {
-        recognitionRef.current?.abort();
-      } catch {
-        /* ignore */
-      }
-    }
+  const stopRecording = useCallback(() => {
+    recordControllerRef.current?.stop();
+    recordControllerRef.current = null;
+  }, []);
+
+  const abortRecording = useCallback(() => {
+    recordControllerRef.current?.abort();
+    recordControllerRef.current = null;
+    setListening(false);
+    setTranscribing(false);
   }, []);
 
   useEffect(() => {
     return () => {
-      voiceAutoSendRef.current = false;
-      try {
-        recognitionRef.current?.abort();
-      } catch {
-        /* ignore */
-      }
-      recognitionRef.current = null;
+      abortRecording();
     };
-  }, []);
+  }, [abortRecording]);
 
   const sendMessage = useCallback(
     async (textOverride?: string) => {
-      const text = (textOverride ?? inputRef.current).trim();
+      const text = (textOverride ?? "").trim();
       if (!text || busyRef.current) return;
 
       const next: ChatMessage[] = [
@@ -129,7 +130,6 @@ export function SupportChatWidget() {
       ];
       setMessages(next);
       setInput("");
-      inputRef.current = "";
       setBusy(true);
       busyRef.current = true;
 
@@ -173,104 +173,99 @@ export function SupportChatWidget() {
     [lang, market.code],
   );
 
-  const finishVoiceAndMaybeSend = useCallback(() => {
-    setListening(false);
-    recognitionRef.current = null;
-
-    const text =
-      voiceFinalRef.current.trim() || inputRef.current.trim();
-    voiceFinalRef.current = "";
-
-    if (!voiceAutoSendRef.current || !text || busyRef.current) {
-      voiceAutoSendRef.current = false;
-      return;
-    }
-    voiceAutoSendRef.current = false;
-    setInput(text);
-    void sendMessage(text);
-  }, [sendMessage]);
-
-  const startVoiceInput = useCallback(() => {
-    if (!isVoiceInputAvailable() || busyRef.current) return;
-
-    const Ctor = getSpeechRecognitionCtor();
-    if (!Ctor) return;
-
-    try {
-      recognitionRef.current?.abort();
-    } catch {
-      /* ignore */
-    }
-
-    voiceFinalRef.current = "";
-    voiceAutoSendRef.current = true;
-
-    const recognition = new Ctor();
-    recognition.lang = speechLangForMarket(market.code);
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      setListening(true);
-    };
-
-    recognition.onresult = (event) => {
-      const { interim, final } = transcriptFromEvent(event);
-      if (final) voiceFinalRef.current = final;
-      const display = (final || interim).trim();
-      if (display) {
-        setInput(display);
-        inputRef.current = display;
-      }
-    };
-
-    recognition.onerror = (event) => {
-      voiceAutoSendRef.current = false;
-      setListening(false);
-      recognitionRef.current = null;
-      const code = event.error ?? "";
-      if (
-        code === "not-allowed" ||
-        code === "service-not-allowed" ||
-        code === "network"
-      ) {
-        const needsHttps = !isSecurePageContext();
+  const transcribeAndSend = useCallback(
+    async (blob: Blob, mimeType: string) => {
+      setTranscribing(true);
+      try {
+        const audioBase64 = await blobToDataUrl(blob);
+        const res = await fetch("/api/ai/support-transcribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ audioBase64, mimeType, lang }),
+        });
+        const data = (await res.json().catch(() => ({}))) as {
+          text?: string;
+          message?: string;
+        };
+        const text = data.text?.trim();
+        if (!res.ok || !text) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content:
+                res.status === 503
+                  ? (data.message ??
+                    "Transkriptimi me zë nuk është aktiv në server.")
+                  : (VOICE_TRANSCRIBE_FAIL[market.code] ?? VOICE_TRANSCRIBE_FAIL.ks),
+            },
+          ]);
+          return;
+        }
+        setInput(text);
+        await sendMessage(text);
+      } catch {
         setMessages((prev) => [
           ...prev,
           {
             role: "assistant",
-            content: needsHttps
-              ? (VOICE_HTTPS_HINT[market.code] ?? VOICE_HTTPS_HINT.ks)
-              : (VOICE_ERROR[market.code] ?? VOICE_ERROR.ks),
+            content: VOICE_TRANSCRIBE_FAIL[market.code] ?? VOICE_TRANSCRIBE_FAIL.ks,
           },
         ]);
+      } finally {
+        setTranscribing(false);
       }
-    };
+    },
+    [lang, market.code, sendMessage],
+  );
 
-    recognition.onend = () => {
-      finishVoiceAndMaybeSend();
-    };
+  const startRecording = useCallback(async () => {
+    if (!isVoiceRecordingAvailable() || busyRef.current || transcribing) return;
 
-    recognitionRef.current = recognition;
+    const controller = await startVoiceRecording({
+      onStart: () => setListening(true),
+      onError: (code) => {
+        setListening(false);
+        if (code === "not-allowed") {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content: !isSecurePageContext()
+                ? (VOICE_HTTPS_HINT[market.code] ?? VOICE_HTTPS_HINT.ks)
+                : (VOICE_ERROR[market.code] ?? VOICE_ERROR.ks),
+            },
+          ]);
+          return;
+        }
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: VOICE_UNSUPPORTED[market.code] ?? VOICE_UNSUPPORTED.ks,
+          },
+        ]);
+      },
+      onStop: (blob, mimeType) => {
+        setListening(false);
+        recordControllerRef.current = null;
+        void transcribeAndSend(blob, mimeType);
+      },
+    });
 
-    try {
-      recognition.start();
-    } catch {
-      voiceAutoSendRef.current = false;
-      setListening(false);
-      recognitionRef.current = null;
-    }
-  }, [market.code, finishVoiceAndMaybeSend]);
+    recordControllerRef.current = controller;
+  }, [market.code, transcribing, transcribeAndSend]);
 
   function toggleVoiceInput() {
-    if (!voiceAvailable || busy) return;
+    if (!voiceAvailable || busy || transcribing) return;
     if (listening) {
-      stopRecognition();
+      stopRecording();
       return;
     }
-    startVoiceInput();
+    void startRecording();
   }
+
+  const voiceBusy = listening || transcribing;
 
   return (
     <>
@@ -285,7 +280,8 @@ export function SupportChatWidget() {
               type="button"
               className="p-1 rounded-lg hover:bg-white/15 min-h-9 min-w-9 flex items-center justify-center"
               onClick={() => {
-                if (listening) stopRecognition();
+                if (listening) stopRecording();
+                else if (transcribing) abortRecording();
                 setOpen(false);
               }}
               aria-label="Mbyll"
@@ -321,7 +317,13 @@ export function SupportChatWidget() {
             {listening ? (
               <div className="flex items-center gap-2 text-red-600 text-xs px-2 font-medium">
                 <span className="inline-block h-2 w-2 rounded-full bg-red-600 animate-pulse" />
-                Po dëgjoj… flisni tani
+                Po dëgjoj… flisni, pastaj ndaloni (🎤)
+              </div>
+            ) : null}
+            {transcribing ? (
+              <div className="flex items-center gap-2 text-gray-600 text-xs px-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Po përpunohet zëri…
               </div>
             ) : null}
             <div ref={bottomRef} />
@@ -330,24 +332,28 @@ export function SupportChatWidget() {
             className="p-2 border-t border-gray-100 flex gap-2 bg-white"
             onSubmit={(e) => {
               e.preventDefault();
-              void sendMessage();
+              void sendMessage(input);
             }}
           >
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={
-                listening ? "Po dëgjohet zëri…" : "Shkruani pyetjen…"
+                listening
+                  ? "Po regjistrohet zëri…"
+                  : transcribing
+                    ? "Po përpunohet…"
+                    : "Shkruani pyetjen…"
               }
               className="flex-1 min-h-11 rounded-xl border border-gray-200 px-3 text-base sm:text-sm"
-              disabled={busy || listening}
-              readOnly={listening}
+              disabled={busy || voiceBusy}
+              readOnly={voiceBusy}
             />
             {voiceAvailable ? (
               <button
                 type="button"
                 onClick={toggleVoiceInput}
-                disabled={busy}
+                disabled={busy || transcribing}
                 data-testid="button-support-voice"
                 className={cn(
                   "shrink-0 min-h-11 min-w-11 rounded-xl text-white flex items-center justify-center disabled:opacity-50 transition-colors",
@@ -355,7 +361,7 @@ export function SupportChatWidget() {
                     ? "bg-red-600 animate-pulse ring-2 ring-red-400 ring-offset-1"
                     : "bg-[#1A56A0] hover:bg-[#164a8c]",
                 )}
-                aria-label={listening ? "Ndalo dëgjimin" : "Fol me zë"}
+                aria-label={listening ? "Ndalo dhe dërgo" : "Fol me zë"}
                 aria-pressed={listening}
               >
                 <Mic className={cn("h-4 w-4", listening && "scale-110")} />
@@ -363,7 +369,7 @@ export function SupportChatWidget() {
             ) : null}
             <button
               type="submit"
-              disabled={busy || listening || !input.trim()}
+              disabled={busy || voiceBusy || !input.trim()}
               className="shrink-0 min-h-11 min-w-11 rounded-xl bg-[#1A56A0] text-white flex items-center justify-center disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
