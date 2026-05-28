@@ -1,5 +1,7 @@
 """
-Generate square PWA / home-screen icons from logo-app.png (or logo.png).
+Generate square PWA / home-screen icons from public/logo-app.png (or logo.png).
+
+Source logo (Cloudinary): ketujemi-logo_jerh6s — re-download to logo-app.png if updated.
 
 Icons use a solid brand-blue background (no transparency) so iOS/Android
 do not render a white square on the home screen.
