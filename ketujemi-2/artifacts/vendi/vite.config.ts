@@ -43,14 +43,22 @@ export default defineConfig(async ({ command }) => {
     VitePWA({
       injectRegister: null,
       registerType: "autoUpdate",
-      includeAssets: ["logo.png", "logo-header.png", "icons/pwa-192x192.png", "icons/pwa-512x512.png"],
+      includeAssets: [
+        "logo.png",
+        "logo-app.png",
+        "logo-header.png",
+        "icons/apple-touch-icon.png",
+        "icons/pwa-192x192.png",
+        "icons/pwa-512x512.png",
+        "icons/pwa-512x512-maskable.png",
+      ],
       manifest: {
         name: "KetuJemi — Bli & Shit",
         short_name: "KetuJemi",
         description:
           "KetuJemi — Bli & Shit. Kosovë, Shqipëri, Maqedoni, Mal i Zi dhe diaspora shqiptare.",
-        theme_color: "#3b82f6",
-        background_color: "#ffffff",
+        theme_color: "#1557B0",
+        background_color: "#1557B0",
         display: "standalone",
         orientation: "portrait-primary",
         scope: pwaScope,
@@ -72,7 +80,7 @@ export default defineConfig(async ({ command }) => {
             purpose: "any",
           },
           {
-            src: `${pwaScope}icons/pwa-512x512.png`.replace(/\/+/g, "/"),
+            src: `${pwaScope}icons/pwa-512x512-maskable.png`.replace(/\/+/g, "/"),
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
