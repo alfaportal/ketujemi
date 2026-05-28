@@ -9,7 +9,7 @@ import {
 } from "@workspace/db";
 import { logger } from "./lib/logger";
 import { logPaymentStackReadiness } from "./lib/payment-policy";
-import { twilioConfigSummary } from "./lib/twilio-auth";
+import { vonageConfigSummary } from "./lib/vonage-auth";
 import { startExpiredListingsScheduler } from "./lib/expire-listings-job";
 import { startExpiryReminderScheduler } from "./lib/listing-expiry-reminders";
 import { startPartnerUnpaidReminderScheduler } from "./lib/partner-unpaid-reminders";
@@ -44,7 +44,7 @@ async function startServer(): Promise<void> {
     logger.info("Homepage partners schema verified (homepage_partners)");
     await purgeInvalidListingImagesOnStartup();
     logPaymentStackReadiness(logger);
-    logger.info(twilioConfigSummary(), "twilio config (masked)");
+    logger.info(vonageConfigSummary(), "vonage sms config (masked)");
   } catch (err) {
     logger.error({ err }, "Database schema migration failed");
     if (process.env.NODE_ENV === "production") {

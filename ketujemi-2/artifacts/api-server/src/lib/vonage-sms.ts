@@ -1,5 +1,4 @@
 import { logger } from "./logger";
-import { twilioSendSms } from "./twilio-sms";
 
 export function hasVonageSmsCreds(): boolean {
   const apiKey = process.env.VONAGE_API_KEY?.trim();
@@ -56,20 +55,13 @@ async function sendViaVonage(phoneDigits: string, text: string): Promise<boolean
   return false;
 }
 
-/**
- * Transactional SMS: Vonage first, Twilio fallback.
- * Returns true if either provider accepts the message.
- */
+/** Transactional SMS via Vonage (API Key + API Secret). */
 export async function vonageSendSms(phoneDigits: string, text: string): Promise<boolean> {
-  if (hasVonageSmsCreds()) {
-    const vonageOk = await sendViaVonage(phoneDigits, text);
-    if (vonageOk) return true;
-    logger.info({ phoneDigits: phoneDigits.slice(-4) }, "vonage sms failed — trying twilio");
-  } else {
-    logger.debug({ phoneDigits: phoneDigits.slice(-4) }, "vonage sms skipped (no creds)");
+  if (!hasVonageSmsCreds()) {
+    logger.warn("vonage sms skipped — set VONAGE_API_KEY and VONAGE_API_SECRET");
+    return false;
   }
-
-  return twilioSendSms(phoneDigits, text);
+  return sendViaVonage(phoneDigits, text);
 }
 
 export function buildListingPackageActivationSms(activationCode: string): string {

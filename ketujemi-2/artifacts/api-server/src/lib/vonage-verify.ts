@@ -1,12 +1,15 @@
-/** Vonage Verify (Nexmo) with Twilio Verify fallback — https://developer.vonage.com/en/verify/overview */
+/**
+ * Phone OTP via Vonage Verify (Nexmo).
+ * https://developer.vonage.com/en/verify/overview
+ *
+ * Legacy challenges with request_id `twilio:…` still complete via Twilio until they expire.
+ */
 
 import { logger } from "./logger";
 import { hasVonageSmsCreds } from "./vonage-sms";
 import {
-  hasTwilioVerifyCreds,
   isTwilioVerifyRequestId,
   twilioVerifyCheck,
-  twilioVerifyRequest,
 } from "./twilio-verify";
 
 function getCreds(): { apiKey: string; apiSecret: string } {
@@ -18,13 +21,17 @@ function getCreds(): { apiKey: string; apiSecret: string } {
   return { apiKey, apiSecret };
 }
 
+function verifyBrand(): string {
+  return process.env.VONAGE_VERIFY_BRAND?.trim() || "KetuJemi";
+}
+
 async function vonageVerifyRequestOnly(phoneDigits: string): Promise<string> {
   const { apiKey, apiSecret } = getCreds();
   const body = new URLSearchParams({
     api_key: apiKey,
     api_secret: apiSecret,
     number: phoneDigits,
-    brand: "KetuJemi",
+    brand: verifyBrand(),
   });
 
   const res = await fetch("https://api.nexmo.com/verify/json", {
@@ -40,9 +47,12 @@ async function vonageVerifyRequestOnly(phoneDigits: string): Promise<string> {
   };
 
   if (String(data.status) !== "0" || !data.request_id) {
-    throw new Error(data.error_text ?? `Vonage verify start failed (status ${data.status})`);
+    const detail = data.error_text ?? `status ${data.status ?? "?"}`;
+    logger.error({ phoneDigits: phoneDigits.slice(-4), detail }, "vonage verify start failed");
+    throw new Error(detail);
   }
 
+  logger.info({ phoneDigits: phoneDigits.slice(-4) }, "vonage verify started");
   return data.request_id;
 }
 
@@ -68,42 +78,17 @@ async function vonageVerifyCheckOnly(requestId: string, code: string): Promise<v
   }
 }
 
-function preferTwilioForVerify(): boolean {
-  const raw = process.env.SMS_PREFER_TWILIO?.trim().toLowerCase();
-  return raw === "true" || raw === "1" || raw === "yes";
-}
-
-/** Start phone OTP — Vonage first (unless SMS_PREFER_TWILIO), Twilio Verify fallback. */
+/** Start phone OTP — Vonage Verify only. */
 export async function vonageVerifyRequest(phoneDigits: string): Promise<string> {
-  if (hasTwilioVerifyCreds() && preferTwilioForVerify()) {
-    return twilioVerifyRequest(phoneDigits);
+  if (!hasVonageSmsCreds()) {
+    throw new Error(
+      "SMS verification not configured. Set VONAGE_API_KEY and VONAGE_API_SECRET in Railway Variables.",
+    );
   }
-
-  if (hasVonageSmsCreds()) {
-    try {
-      return await vonageVerifyRequestOnly(phoneDigits);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "VONAGE_VERIFY_FAILED";
-      logger.warn(
-        { phoneDigits: phoneDigits.slice(-4), err: message },
-        "vonage verify failed — trying twilio",
-      );
-      if (!hasTwilioVerifyCreds()) throw err;
-    }
-  }
-
-  if (hasTwilioVerifyCreds()) {
-    return twilioVerifyRequest(phoneDigits);
-  }
-
-  throw new Error(
-    hasVonageSmsCreds()
-      ? "SMS verification unavailable (Vonage failed; configure TWILIO_VERIFY_SERVICE_SID for Twilio fallback)"
-      : "SMS verification not configured (VONAGE or TWILIO_VERIFY_SERVICE_SID)",
-  );
+  return vonageVerifyRequestOnly(phoneDigits);
 }
 
-/** Confirm OTP — routes by request_id prefix (Twilio vs Vonage). */
+/** Confirm OTP — Vonage; legacy `twilio:` request_id only for in-flight challenges. */
 export async function vonageVerifyCheck(
   requestId: string,
   code: string,
@@ -111,8 +96,9 @@ export async function vonageVerifyCheck(
 ): Promise<void> {
   if (isTwilioVerifyRequestId(requestId)) {
     if (!phoneDigits?.trim()) {
-      throw new Error("Phone number required for Twilio verification");
+      throw new Error("Phone number required for legacy Twilio verification");
     }
+    logger.warn({ requestId: requestId.slice(0, 12) }, "completing legacy twilio verify challenge");
     await twilioVerifyCheck(requestId, code, phoneDigits);
     return;
   }

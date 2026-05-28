@@ -128,4 +128,12 @@ console.log("[railway:env:vonage] Setting VONAGE_API_KEY and VONAGE_API_SECRETâ€
 railway([`VONAGE_API_KEY=${apiKey}`, "--skip-deploys"]);
 railway(["VONAGE_API_SECRET", "--stdin", "--skip-deploys"], { stdin: apiSecret });
 
-console.log("[railway:env:vonage] Done. Redeploy if SMS still fails on the old build.");
+console.log(
+  [
+    "[railway:env:vonage] Done.",
+    "In Railway Variables also set: SMS_AUTH_ENABLED=true",
+    "Optional: VONAGE_SMS_FROM=KetuJemi, VONAGE_VERIFY_BRAND=KetuJemi",
+    "Remove TWILIO_* variables if you no longer use Twilio.",
+    "Redeploy the API service after changing variables.",
+  ].join("\n"),
+);

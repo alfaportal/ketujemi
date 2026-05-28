@@ -1011,7 +1011,7 @@ router.post("/auth/sms/start", async (req, res) => {
     res.status(502).json({
       error: authHint ? "SMS_PROVIDER_AUTH_FAILED" : "SMS_START_FAILED",
       message: authHint
-        ? "Konfigurimi SMS (Twilio/Vonage) nuk u pranua. Kontrollo Account SID (AC…), Auth Token, dhe Verify Service SID (VA…) në Railway."
+        ? "Konfigurimi Vonage SMS nuk u pranua. Kontrollo VONAGE_API_KEY dhe VONAGE_API_SECRET në Railway Variables."
         : msg,
     });
   }
