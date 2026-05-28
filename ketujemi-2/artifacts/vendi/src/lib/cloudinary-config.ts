@@ -43,9 +43,12 @@ export function useCloudinaryConfig(): CloudinaryConfig {
   return { cloudName, uploadPreset, ready };
 }
 
+export type CloudinaryUploadTarget = "listing" | "partner";
+
 export async function uploadImageToCloudinary(
   file: File,
   config: Pick<CloudinaryConfig, "cloudName" | "uploadPreset">,
+  target: CloudinaryUploadTarget = "listing",
 ): Promise<string> {
   const { cloudName, uploadPreset } = config;
   if (!cloudName || !uploadPreset) {
@@ -55,6 +58,15 @@ export async function uploadImageToCloudinary(
   const fd = new FormData();
   fd.append("file", file);
   fd.append("upload_preset", uploadPreset);
+
+  if (target === "partner") {
+    fd.append("folder", "partners");
+    fd.append("tags", "partner,permanent");
+    fd.append("context", "permanent=true|asset_type=partner");
+  } else {
+    fd.append("folder", "listings");
+    fd.append("tags", "listing,deletable");
+  }
 
   const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
     method: "POST",

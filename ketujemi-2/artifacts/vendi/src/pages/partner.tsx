@@ -176,7 +176,7 @@ export default function PartnerPage() {
     setUploading(true);
     setError(null);
     try {
-      const url = await uploadImageToCloudinary(file, cloudinary);
+      const url = await uploadImageToCloudinary(file, cloudinary, "partner");
       setLogoUrl(url);
     } catch {
       setError(c.errUploadFailed);

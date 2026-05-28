@@ -3,7 +3,7 @@ import { eq, lt } from "drizzle-orm";
 import { logger } from "./logger";
 import { deleteListingCascade } from "./delete-listing-cascade";
 
-/** Delete listings past expires_at (3-month max lifetime). */
+/** Delete listings past expires_at (90-day max lifetime) and their listing storage assets. */
 export async function purgeExpiredListings(): Promise<number> {
   const expiring = await db
     .select({ id: listingsTable.id })

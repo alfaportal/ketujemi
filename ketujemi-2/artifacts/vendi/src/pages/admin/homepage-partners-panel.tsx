@@ -8,6 +8,7 @@ import {
 } from "@/lib/admin-api";
 import { Loader2, Pencil, Plus, Star, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { uploadImageToCloudinary, useCloudinaryConfig } from "@/lib/cloudinary-config";
 
 export function AdminHomepagePartnersPanel() {
   const [partners, setPartners] = useState<AdminHomepagePartner[]>([]);
@@ -26,6 +27,31 @@ export function AdminHomepagePartnersPanel() {
   const [editLogo, setEditLogo] = useState("");
   const [editLink, setEditLink] = useState("");
   const [editTier, setEditTier] = useState<"vip" | "standard">("standard");
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [editLogoUploading, setEditLogoUploading] = useState(false);
+  const cloudinary = useCloudinaryConfig();
+
+  async function uploadPartnerLogo(file: File, target: "add" | "edit") {
+    if (!cloudinary.ready) {
+      setToast({
+        type: "err",
+        text: "Cloudinary nuk është konfiguruar — vendosni URL-në manualisht ose shtoni VITE_CLOUDINARY_*.",
+      });
+      return;
+    }
+    const setBusy = target === "add" ? setLogoUploading : setEditLogoUploading;
+    setBusy(true);
+    try {
+      const url = await uploadImageToCloudinary(file, cloudinary, "partner");
+      if (target === "add") setLogoUrl(url);
+      else setEditLogo(url);
+      setToast({ type: "ok", text: "Logo u ngarkua në Cloudinary (partners/)." });
+    } catch {
+      setToast({ type: "err", text: "Ngarkimi i logos dështoi." });
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -165,6 +191,23 @@ export function AdminHomepagePartnersPanel() {
           placeholder="URL e logos (https://…)"
           className="w-full min-h-11 rounded-xl border border-gray-200 px-3 text-base"
         />
+        <label className="flex flex-col gap-1 text-xs text-gray-600">
+          <span>Ngarko logo (Cloudinary folder partners/ — nuk fshihet kurrë)</span>
+          <input
+            type="file"
+            accept="image/*"
+            disabled={logoUploading}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (file) void uploadPartnerLogo(file, "add");
+            }}
+            className="text-sm"
+          />
+        </label>
+        {logoUrl ? (
+          <img src={logoUrl} alt="" className="h-16 w-auto max-w-full rounded-lg border object-contain bg-white" />
+        ) : null}
         <input
           type="url"
           required
@@ -268,6 +311,23 @@ export function AdminHomepagePartnersPanel() {
               placeholder="URL e logos"
               className="w-full min-h-11 rounded-xl border border-gray-200 px-3 text-base"
             />
+            <label className="flex flex-col gap-1 text-xs text-gray-600">
+              <span>Ngarko logo (partners/)</span>
+              <input
+                type="file"
+                accept="image/*"
+                disabled={editLogoUploading}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (file) void uploadPartnerLogo(file, "edit");
+                }}
+                className="text-sm"
+              />
+            </label>
+            {editLogo ? (
+              <img src={editLogo} alt="" className="h-16 w-auto max-w-full rounded-lg border object-contain bg-white" />
+            ) : null}
             <input
               type="url"
               required

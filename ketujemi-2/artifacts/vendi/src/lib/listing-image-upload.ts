@@ -92,7 +92,7 @@ export function useListingImageUpload(): ListingImageUploadConfig & {
       if (provider === "cloudinary") {
         const cn = cloudinaryCloudName || BUILD_CLOUD_NAME;
         const preset = cloudinaryUploadPreset || BUILD_UPLOAD_PRESET;
-        return uploadImageToCloudinary(file, { cloudName: cn, uploadPreset: preset });
+        return uploadImageToCloudinary(file, { cloudName: cn, uploadPreset: preset }, "listing");
       }
 
       throw new Error("upload_not_configured");

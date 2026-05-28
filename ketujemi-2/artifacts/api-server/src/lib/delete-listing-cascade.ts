@@ -8,6 +8,7 @@ import {
 } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { logListingDeletion, type ListingDeletionSource } from "./listing-deletion-log";
+import { deleteListingStorageAssets } from "./delete-listing-storage";
 
 /** Remove dependent rows so listing delete is not blocked by FK constraints. */
 export async function deleteListingCascade(
@@ -20,6 +21,7 @@ export async function deleteListingCascade(
       title: listingsTable.title,
       category_id: listingsTable.category_id,
       price: listingsTable.price,
+      image_url: listingsTable.image_url,
     })
     .from(listingsTable)
     .where(eq(listingsTable.id, listingId))
@@ -56,6 +58,7 @@ export async function deleteListingCascade(
       price: existing.price,
       source,
     });
+    await deleteListingStorageAssets(existing.image_url, existing.id);
   }
 
   return deleted.length > 0;
