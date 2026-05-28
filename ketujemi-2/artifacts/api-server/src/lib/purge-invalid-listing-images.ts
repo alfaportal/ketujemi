@@ -50,64 +50,16 @@ export async function purgeInvalidListingImages(opts?: {
   return { scanned: rows.length, cleared, sampleIds };
 }
 
-function envInt(name: string, fallback: number): number {
-  const n = Number(process.env[name]);
-  return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback;
-}
-
-/** Hourly watchdog + daily full DB sweep (all statuses). */
-const PURGE_ACTIVE_INTERVAL_MS = envInt("LISTING_IMAGE_GUARD_INTERVAL_MS", 60 * 60 * 1000);
-const PURGE_FULL_EVERY_N_TICKS = envInt("LISTING_IMAGE_GUARD_FULL_EVERY_HOURS", 24);
-
-let purgeInFlight = false;
-let purgeTick = 0;
-
-async function runListingImageGuardPass(fullDbSweep: boolean): Promise<void> {
-  const result = await purgeInvalidListingImages({ activeOnly: !fullDbSweep });
-  if (result.cleared > 0) {
-    logger.warn(
-      {
-        cleared: result.cleared,
-        scanned: result.scanned,
-        sampleIds: result.sampleIds,
-        full_db_sweep: fullDbSweep,
-      },
-      "Listing image guard removed invalid/stock image_url values",
-    );
-  }
-}
-
 export async function purgeInvalidListingImagesOnStartup(): Promise<void> {
   try {
-    await runListingImageGuardPass(false);
+    const result = await purgeInvalidListingImages({ activeOnly: false });
+    if (result.cleared > 0) {
+      logger.warn(
+        { cleared: result.cleared, scanned: result.scanned, sampleIds: result.sampleIds },
+        "Startup purge removed invalid/stock listing image_url values",
+      );
+    }
   } catch (err) {
     logger.error({ err }, "Listing image_url purge failed on startup");
   }
-}
-
-/** Runs continuously while API is up — blocks stock/external listing photos from persisting. */
-export function startListingImageGuardScheduler(): void {
-  const run = () => {
-    if (purgeInFlight) return;
-    purgeInFlight = true;
-    purgeTick += 1;
-    const fullDbSweep = purgeTick % PURGE_FULL_EVERY_N_TICKS === 0;
-    void runListingImageGuardPass(fullDbSweep)
-      .catch((err) => {
-        logger.error({ err, fullDbSweep }, "Listing image guard scheduled pass failed");
-      })
-      .finally(() => {
-        purgeInFlight = false;
-      });
-  };
-
-  run();
-  setInterval(run, PURGE_ACTIVE_INTERVAL_MS);
-  logger.info(
-    {
-      activeIntervalMs: PURGE_ACTIVE_INTERVAL_MS,
-      fullSweepEveryHours: PURGE_FULL_EVERY_N_TICKS,
-    },
-    "Listing image guard scheduler started (24/7)",
-  );
 }

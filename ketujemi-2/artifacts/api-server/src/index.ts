@@ -12,11 +12,8 @@ import { twilioConfigSummary } from "./lib/twilio-auth";
 import { startExpiredListingsScheduler } from "./lib/expire-listings-job";
 import { startExpiryReminderScheduler } from "./lib/listing-expiry-reminders";
 import { startPartnerUnpaidReminderScheduler } from "./lib/partner-unpaid-reminders";
-import { startSelfDuplicateScanScheduler } from "./lib/listing-duplicate-scan-job";
-import {
-  purgeInvalidListingImagesOnStartup,
-  startListingImageGuardScheduler,
-} from "./lib/purge-invalid-listing-images.js";
+import { purgeInvalidListingImagesOnStartup } from "./lib/purge-invalid-listing-images.js";
+import { startSystemMonitor } from "./lib/system-monitor.js";
 
 const rawPort = process.env["API_PORT"] ?? process.env["PORT"];
 
@@ -66,8 +63,7 @@ async function startServer(): Promise<void> {
     startExpiredListingsScheduler();
     startExpiryReminderScheduler();
     startPartnerUnpaidReminderScheduler();
-    startSelfDuplicateScanScheduler();
-    startListingImageGuardScheduler();
+    startSystemMonitor();
   });
 }
 
