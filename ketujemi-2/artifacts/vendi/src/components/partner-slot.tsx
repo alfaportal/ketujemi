@@ -36,35 +36,14 @@ function recordPartnerClick(partnerId: number) {
   }).catch(() => {});
 }
 
-/** Logo brenda kutisë — VIP mbush 100% të zonës së bardhë (contain/cover). */
-function PartnerLogoImage({
-  src,
-  alt,
-  isVip,
-  variant,
-}: {
-  src: string;
-  alt: string;
-  isVip: boolean;
-  variant: "grid" | "banner";
-}) {
-  const isVipGrid = isVip && variant === "grid";
-
+/** Logo mbush 100% të zonës së bardhë — VIP dhe Partner. */
+function PartnerLogoImage({ src, alt }: { src: string; alt: string }) {
   return (
-    <div
-      className={cn(
-        "relative min-h-0 w-full flex-1 overflow-hidden bg-white",
-        !isVipGrid && variant === "grid" && "px-1.5 py-1.5 sm:px-2 sm:py-2",
-        !isVipGrid && variant === "banner" && "p-1.5",
-      )}
-    >
+    <div className="relative min-h-0 w-full flex-1 overflow-hidden bg-white">
       <img
         src={src}
         alt={alt}
-        className={cn(
-          "absolute inset-0 h-full w-full object-center",
-          isVipGrid ? "object-cover" : "object-contain",
-        )}
+        className="absolute inset-0 h-full w-full object-cover object-center"
         loading="lazy"
         decoding="async"
       />
@@ -181,12 +160,7 @@ export function PartnerSlot({ partner, frameClass, variant = "grid" }: PartnerSl
     <div className="grid h-full w-full min-h-0 grid-rows-[minmax(0,1fr)_auto]">
       <PartnerBadge tier={partner.tier} />
       {img ? (
-        <PartnerLogoImage
-          src={img}
-          alt={partner.business_name}
-          isVip={isVip}
-          variant={variant}
-        />
+        <PartnerLogoImage src={img} alt={partner.business_name} />
       ) : (
         <div
           className={cn(

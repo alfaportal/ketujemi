@@ -35,7 +35,7 @@ const VARIANT_CONFIG: Record<
 };
 
 const STANDARD_SLOT_FRAME = cn(
-  "h-14 sm:h-16 w-full rounded-xl overflow-hidden transition-all duration-200 flex flex-col",
+  "h-20 sm:h-24 w-full rounded-xl overflow-hidden transition-all duration-200 flex flex-col",
   "border-2 border-[#1A56A0]/70 bg-gradient-to-br from-white via-blue-50/40 to-blue-50/20",
   "shadow-[0_2px_10px_rgba(26,86,160,0.12)]",
   "hover:border-[#1A56A0] hover:shadow-[0_4px_16px_rgba(26,86,160,0.22)]",

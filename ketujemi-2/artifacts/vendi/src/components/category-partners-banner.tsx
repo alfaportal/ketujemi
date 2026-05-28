@@ -9,7 +9,7 @@ const VIP_FRAME = cn(
 );
 
 const STANDARD_FRAME = cn(
-  "h-14 w-[7.5rem] sm:h-16 sm:w-32 flex-shrink-0 rounded-xl overflow-hidden",
+  "h-20 w-[7.5rem] sm:h-24 sm:w-32 flex-shrink-0 rounded-xl overflow-hidden flex flex-col",
   "border-2 border-[#1A56A0]/60 bg-gradient-to-br from-white via-blue-50/40 to-blue-50/20",
   "shadow-[0_2px_8px_rgba(26,86,160,0.1)] hover:border-[#1A56A0]",
 );
