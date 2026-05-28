@@ -10,6 +10,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { AppLayout } from "@/components/app-layout";
 import { RefetchOnVisible } from "@/components/refetch-on-visible";
 import { RouteLoading } from "@/components/route-loading";
+import { GoogleAnalytics } from "@/components/google-analytics";
 
 const Home = lazy(() => import("@/pages/home"));
 const Listings = lazy(() => import("@/pages/listings"));
@@ -117,6 +118,7 @@ function App() {
           <AppProviders>
             <MarketProvider>
               <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                <GoogleAnalytics />
                 <Router />
               </WouterRouter>
             </MarketProvider>

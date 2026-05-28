@@ -6,6 +6,8 @@ interface ImportMetaEnv {
   readonly VITE_CLOUDINARY_CLOUD_NAME?: string;
   readonly VITE_CLOUDINARY_UPLOAD_PRESET?: string;
   readonly VITE_STRIPE_PUBLISHABLE_KEY?: string;
+  /** GA4 measurement ID (p.sh. G-XXXXXXXXXX) — vetëm prod. */
+  readonly VITE_GA_MEASUREMENT_ID?: string;
 }
 
 interface ImportMeta {

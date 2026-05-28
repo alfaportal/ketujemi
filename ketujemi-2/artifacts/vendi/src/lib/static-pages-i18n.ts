@@ -325,7 +325,7 @@ const KS: StaticPagesCopy = {
         bullets: [
           "Të nevojshme: kyçja në llogari dhe siguria e sesionit",
           "Funksionale: preferenca (p.sh. tregu / gjuhë)",
-          "Analitike: trafik i përgjithshëm për përmirësim të faqes",
+          "Analitike: **Google Analytics 4** — faqe të vizituara, numër vizitorësh, vend i përafërt (shtet/qytet); IP e anonimizuar",
         ],
       },
       {
@@ -842,7 +842,7 @@ const MK: StaticPagesCopy = {
         bullets: [
           "Неопходни: најава и безбедност на сесија",
           "Функционални: преференци (пазар / јазик)",
-          "Аналитички: општ сообраќај за подобрување на страницата",
+          "Аналитички: **Google Analytics 4** — посетени страници, посетители, приближна локација; анонимизирана IP",
         ],
       },
       {
@@ -1357,7 +1357,7 @@ const MNE: StaticPagesCopy = {
         bullets: [
           "Neophodni: prijava i sigurnost sesije",
           "Funkcionalni: preference (tržište / jezik)",
-          "Analitički: opšti saobraćaj za poboljšanje stranice",
+          "Analitički: **Google Analytics 4** — posjećene stranice, posjetioci, približna lokacija; anonimizirana IP",
         ],
       },
       {

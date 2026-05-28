@@ -39,7 +39,7 @@ Health check: **`GET /api/healthz`** (duhet `hasFrontend: true`).
 | `SESSION_SECRET` | Min. 16 karaktere |
 | `PUBLIC_APP_ORIGIN` | `https://ketujemi.com` (email, linke njoftimesh) |
 
-Rekomandohen: `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `RECAPTCHA_*`, `VITE_RECAPTCHA_SITE_KEY`, `EMAIL_*`, `VITE_CLOUDINARY_*`, `STRIPE_*` — shiko `ketujemi-2/.env.example`.
+Rekomandohen: `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `RECAPTCHA_*`, `VITE_RECAPTCHA_SITE_KEY`, `EMAIL_*`, `VITE_CLOUDINARY_*`, `STRIPE_*`, `VITE_GA_MEASUREMENT_ID` (GA4) — shiko `ketujemi-2/.env.example`.
 
 **SMS (opsionale):** Lëre `SMS_AUTH_ENABLED` të pa vendosur ose `false` për regjistrim vetëm me email. Kur Vonage/Twilio është gati: `SMS_AUTH_ENABLED=true` + `VONAGE_API_KEY` + `VONAGE_API_SECRET`.
 

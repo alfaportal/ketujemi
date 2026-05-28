@@ -1,7 +1,7 @@
 # KetuJemi production on Railway (ketujemi.com). Link GitHub repo alfaportal/ketujemi, branch master.
 # Required: DATABASE_URL (Neon — use ?sslmode=require only; avoid &channel_binding in Railway Variables),
 # SESSION_SECRET (16+ chars), PUBLIC_APP_ORIGIN=https://ketujemi.com
-# VITE_* vars must be set before build (Cloudinary, reCAPTCHA, Stripe publishable).
+# VITE_* vars must be set before build (Cloudinary, reCAPTCHA, Stripe publishable, GA4 VITE_GA_MEASUREMENT_ID).
 
 [build]
 builder = "NIXPACKS"
