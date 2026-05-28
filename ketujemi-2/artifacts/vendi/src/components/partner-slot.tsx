@@ -36,7 +36,7 @@ function recordPartnerClick(partnerId: number) {
   }).catch(() => {});
 }
 
-/** Logo i plotë brenda kutisë — contain, jo cover. VIP: më shumë hapësirë për imazh. */
+/** Logo brenda kutisë — VIP mbush 100% të zonës së bardhë (contain/cover). */
 function PartnerLogoImage({
   src,
   alt,
@@ -53,22 +53,17 @@ function PartnerLogoImage({
   return (
     <div
       className={cn(
-        "relative flex w-full flex-1 items-center justify-center bg-white min-h-0",
-        isVipGrid
-          ? "min-h-[4.25rem] sm:min-h-[5.25rem] md:min-h-[6rem] p-1 sm:p-1.5"
-          : variant === "grid"
-            ? "px-1.5 py-1.5 sm:px-2 sm:py-2"
-            : "p-1.5",
+        "relative min-h-0 w-full flex-1 overflow-hidden bg-white",
+        !isVipGrid && variant === "grid" && "px-1.5 py-1.5 sm:px-2 sm:py-2",
+        !isVipGrid && variant === "banner" && "p-1.5",
       )}
     >
       <img
         src={src}
         alt={alt}
         className={cn(
-          "object-contain object-center",
-          isVipGrid
-            ? "h-full w-full max-h-[5.5rem] sm:max-h-[6.5rem] md:max-h-[7.5rem]"
-            : "block max-h-full max-w-full",
+          "absolute inset-0 h-full w-full object-center",
+          isVipGrid ? "object-cover" : "object-contain",
         )}
         loading="lazy"
         decoding="async"
@@ -123,12 +118,12 @@ function VipBannerCarousel({
           {slides.map((src, i) => (
             <div
               key={`${partner.id}-${i}`}
-              className="flex h-full min-w-0 shrink-0 grow-0 basis-full items-center justify-center bg-white p-1 sm:p-1.5"
+              className="relative h-full min-w-0 shrink-0 grow-0 basis-full overflow-hidden bg-white"
             >
               <img
                 src={src}
                 alt={`${partner.business_name} ${i + 1}`}
-                className="h-full w-full object-contain object-center"
+                className="absolute inset-0 h-full w-full object-cover object-center"
                 loading="lazy"
                 decoding="async"
               />
@@ -183,7 +178,7 @@ export function PartnerSlot({ partner, frameClass, variant = "grid" }: PartnerSl
   const external = !!partner.click_url;
 
   const content = (
-    <div className="grid h-full w-full min-h-0 grid-rows-[1fr_auto]">
+    <div className="grid h-full w-full min-h-0 grid-rows-[minmax(0,1fr)_auto]">
       <PartnerBadge tier={partner.tier} />
       {img ? (
         <PartnerLogoImage
