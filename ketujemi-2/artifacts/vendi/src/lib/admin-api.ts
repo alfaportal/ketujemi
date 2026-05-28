@@ -314,14 +314,23 @@ export function getAdminCategories() {
   return request<AdminCategory[]>("/categories");
 }
 
-export function createAdminCategory(data: { name: string; slug?: string; icon?: string; parent_id?: number }) {
+export function createAdminCategory(data: {
+  name: string;
+  slug?: string;
+  icon?: string;
+  parent_id?: number;
+  image_url?: string | null;
+}) {
   return request<AdminCategory>("/categories", {
     method: "POST",
     body: JSON.stringify(data),
   });
 }
 
-export function updateAdminCategory(id: number, data: { name?: string; slug?: string; icon?: string }) {
+export function updateAdminCategory(
+  id: number,
+  data: { name?: string; slug?: string; icon?: string; image_url?: string | null },
+) {
   return request<AdminCategory>(`/categories/${id}`, {
     method: "PATCH",
     body: JSON.stringify(data),
@@ -438,6 +447,7 @@ export interface AdminCategory {
   slug?: string | null;
   icon: string;
   parent_id?: number | null;
+  image_url?: string | null;
   listing_count?: number;
 }
 

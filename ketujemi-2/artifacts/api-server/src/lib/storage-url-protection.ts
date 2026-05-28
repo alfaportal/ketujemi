@@ -1,23 +1,27 @@
 import { db } from "@workspace/db";
 import {
+  categoriesTable,
   homepagePartnersTable,
   listingsTable,
   usersTable,
 } from "@workspace/db";
 import { and, eq, ne, sql } from "drizzle-orm";
-import { isPermanentCloudinaryUrl } from "../../../../lib/cloudinary-asset.js";
-import { parseB2ObjectKeyFromPublicUrl, isPermanentB2ObjectKey } from "../../../../lib/b2-asset.js";
+import { isProtectedCloudinaryUrl } from "../../../../lib/cloudinary-asset.js";
+import { isProtectedB2ObjectKey, parseB2ObjectKeyFromPublicUrl } from "../../../../lib/b2-asset.js";
 import { parseListingImageUrls } from "./listing-images";
 
-/** True when URL is used by homepage partners or business partner profiles (never delete). */
-export async function isPartnerProtectedStorageUrl(url: string): Promise<boolean> {
+/**
+ * True when URL must never be removed by listing cleanup:
+ * protected Cloudinary/B2 folders, partner profiles, or category/site assets in DB.
+ */
+export async function isProtectedStorageUrl(url: string): Promise<boolean> {
   const trimmed = url.trim();
   if (!trimmed) return false;
 
-  if (isPermanentCloudinaryUrl(trimmed)) return true;
+  if (isProtectedCloudinaryUrl(trimmed)) return true;
 
   const b2Key = parseB2ObjectKeyFromPublicUrl(trimmed);
-  if (b2Key && isPermanentB2ObjectKey(b2Key)) return true;
+  if (b2Key && isProtectedB2ObjectKey(b2Key)) return true;
 
   const [hp] = await db
     .select({ id: homepagePartnersTable.id })
@@ -46,8 +50,18 @@ export async function isPartnerProtectedStorageUrl(url: string): Promise<boolean
     .limit(1);
   if (bannerRows.length > 0) return true;
 
+  const [categoryRow] = await db
+    .select({ id: categoriesTable.id })
+    .from(categoriesTable)
+    .where(eq(categoriesTable.image_url, trimmed))
+    .limit(1);
+  if (categoryRow) return true;
+
   return false;
 }
+
+/** @deprecated Use {@link isProtectedStorageUrl} */
+export const isPartnerProtectedStorageUrl = isProtectedStorageUrl;
 
 /** True when the same URL is still used on another listing. */
 export async function isListingImageUrlUsedElsewhere(
@@ -74,7 +88,7 @@ export async function shouldDeleteListingStorageUrl(
   url: string,
   listingId: number,
 ): Promise<boolean> {
-  if (await isPartnerProtectedStorageUrl(url)) return false;
+  if (await isProtectedStorageUrl(url)) return false;
   if (await isListingImageUrlUsedElsewhere(url, listingId)) return false;
   return true;
 }

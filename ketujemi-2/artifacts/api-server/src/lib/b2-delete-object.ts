@@ -26,14 +26,14 @@ function getS3Client(): S3Client {
   return _s3;
 }
 
-/** Delete listing object from B2. Skips `partners/` keys. */
+/** Delete listing object from B2. Skips protected prefixes (`partners/`, `site-assets/`). */
 export async function deleteB2ObjectByPublicUrl(url: string): Promise<boolean> {
   if (!isB2UploadConfigured()) return false;
 
   const objectKey = parseB2ObjectKeyFromPublicUrl(url);
   if (!objectKey || !isDeletableListingB2ObjectKey(objectKey)) {
     if (objectKey) {
-      logger.debug({ objectKey }, "skip B2 delete (not a listing key or partner asset)");
+      logger.debug({ objectKey }, "skip B2 delete (protected or not a listing key)");
     }
     return false;
   }

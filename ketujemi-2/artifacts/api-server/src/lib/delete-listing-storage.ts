@@ -4,7 +4,10 @@ import { deleteB2ObjectByPublicUrl } from "./b2-delete-object";
 import { shouldDeleteListingStorageUrl } from "./storage-url-protection";
 import { logger } from "./logger";
 
-/** Remove listing photos from Cloudinary / B2 when a listing is deleted or expires (90d). */
+/**
+ * Remove listing photos from Cloudinary / B2 when a listing is deleted or expires (90d).
+ * Never touches `partners/` or `site-assets/` (protected folders).
+ */
 export async function deleteListingStorageAssets(
   imageUrlField: string | null | undefined,
   listingId: number,

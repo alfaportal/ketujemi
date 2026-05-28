@@ -1,4 +1,9 @@
 import { useEffect, useState } from "react";
+import {
+  CLOUDINARY_LISTINGS_FOLDER,
+  CLOUDINARY_PARTNERS_FOLDER,
+  CLOUDINARY_SITE_ASSETS_FOLDER,
+} from "../../../../lib/cloudinary-asset.ts";
 
 const BUILD_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME?.trim() ?? "";
 const BUILD_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET?.trim() ?? "";
@@ -43,7 +48,12 @@ export function useCloudinaryConfig(): CloudinaryConfig {
   return { cloudName, uploadPreset, ready };
 }
 
-export type CloudinaryUploadTarget = "listing" | "partner";
+/**
+ * listing — shpallje (fshihen automatikisht)
+ * partner — logo/banner partnerësh (ruhen gjithmonë → partners/)
+ * site-asset — banera, kategori, UI (ruhen gjithmonë → site-assets/)
+ */
+export type CloudinaryUploadTarget = "listing" | "partner" | "site-asset";
 
 export async function uploadImageToCloudinary(
   file: File,
@@ -60,11 +70,15 @@ export async function uploadImageToCloudinary(
   fd.append("upload_preset", uploadPreset);
 
   if (target === "partner") {
-    fd.append("folder", "partners");
+    fd.append("folder", CLOUDINARY_PARTNERS_FOLDER);
     fd.append("tags", "partner,permanent");
     fd.append("context", "permanent=true|asset_type=partner");
+  } else if (target === "site-asset") {
+    fd.append("folder", CLOUDINARY_SITE_ASSETS_FOLDER);
+    fd.append("tags", "site,permanent");
+    fd.append("context", "permanent=true|asset_type=site");
   } else {
-    fd.append("folder", "listings");
+    fd.append("folder", CLOUDINARY_LISTINGS_FOLDER);
     fd.append("tags", "listing,deletable");
   }
 

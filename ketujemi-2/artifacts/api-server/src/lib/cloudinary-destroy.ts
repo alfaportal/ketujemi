@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import {
-  isPermanentCloudinaryPublicId,
+  isProtectedCloudinaryPublicId,
   parseCloudinaryPublicIdFromUrl,
 } from "../../../../lib/cloudinary-asset.js";
 import { logger } from "./logger";
@@ -18,14 +18,14 @@ function cloudName(): string {
   return trimEnv("CLOUDINARY_CLOUD_NAME") || trimEnv("VITE_CLOUDINARY_CLOUD_NAME");
 }
 
-/** Delete one image from Cloudinary. Skips `partners/` assets. */
+/** Delete one image from Cloudinary. Skips protected folders (`partners/`, `site-assets/`). */
 export async function destroyCloudinaryUrl(url: string): Promise<boolean> {
   if (!isCloudinaryDestroyConfigured()) return false;
 
   const publicId = parseCloudinaryPublicIdFromUrl(url);
   if (!publicId) return false;
-  if (isPermanentCloudinaryPublicId(publicId)) {
-    logger.debug({ publicId }, "skip Cloudinary destroy (permanent partner asset)");
+  if (isProtectedCloudinaryPublicId(publicId)) {
+    logger.debug({ publicId }, "skip Cloudinary destroy (protected folder)");
     return false;
   }
 

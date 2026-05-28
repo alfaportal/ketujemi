@@ -1,5 +1,10 @@
-/** B2 prefix for partner assets — never auto-deleted. */
+/** Partner assets on B2 — never auto-deleted. */
 export const B2_PARTNERS_PREFIX = "partners";
+
+/** Static site assets on B2 — never auto-deleted. */
+export const B2_SITE_ASSETS_PREFIX = "site-assets";
+
+export const B2_PROTECTED_PREFIXES = [B2_PARTNERS_PREFIX, B2_SITE_ASSETS_PREFIX] as const;
 
 export function b2ListingsKeyPrefix(): string {
   const raw = (typeof process !== "undefined" ? process.env.B2_KEY_PREFIX?.trim() : "") || "listings";
@@ -32,14 +37,23 @@ export function parseB2ObjectKeyFromPublicUrl(url: string, publicBase?: string):
   }
 }
 
-export function isPermanentB2ObjectKey(key: string): boolean {
+function isUnderB2Prefix(key: string, prefix: string): boolean {
   const k = key.replace(/^\/+/, "");
-  return k === B2_PARTNERS_PREFIX || k.startsWith(`${B2_PARTNERS_PREFIX}/`);
+  return k === prefix || k.startsWith(`${prefix}/`);
 }
+
+/** `partners/` and `site-assets/` — protected from listing cleanup. */
+export function isProtectedB2ObjectKey(key: string): boolean {
+  const k = key.replace(/^\/+/, "");
+  return B2_PROTECTED_PREFIXES.some((prefix) => isUnderB2Prefix(k, prefix));
+}
+
+/** @deprecated Use {@link isProtectedB2ObjectKey} */
+export const isPermanentB2ObjectKey = isProtectedB2ObjectKey;
 
 export function isDeletableListingB2ObjectKey(key: string): boolean {
   const k = key.replace(/^\/+/, "");
-  if (isPermanentB2ObjectKey(k)) return false;
+  if (isProtectedB2ObjectKey(k)) return false;
   const listingsPrefix = `${b2ListingsKeyPrefix()}/`;
   return k.startsWith(listingsPrefix);
 }

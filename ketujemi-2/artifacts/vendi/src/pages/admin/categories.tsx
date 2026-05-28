@@ -3,13 +3,21 @@ import {
   getAdminCategories, createAdminCategory, updateAdminCategory, deleteAdminCategory,
   type AdminCategory,
 } from "@/lib/admin-api";
-import { Plus, Pencil, Trash2, X, ChevronRight, Tag, RefreshCw } from "lucide-react";
+import { Plus, Pencil, Trash2, X, ChevronRight, Tag, RefreshCw, Loader2 } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
 import { fillPlaceholders } from "@/lib/app-extra-i18n";
+import { uploadImageToCloudinary, useCloudinaryConfig } from "@/lib/cloudinary-config";
 
-interface EditState { id: number | null; name: string; slug: string; icon: string; parent_id: string }
+interface EditState {
+  id: number | null;
+  name: string;
+  slug: string;
+  icon: string;
+  parent_id: string;
+  image_url: string;
+}
 
-const BLANK: EditState = { id: null, name: "", slug: "", icon: "Tag", parent_id: "" };
+const BLANK: EditState = { id: null, name: "", slug: "", icon: "Tag", parent_id: "", image_url: "" };
 
 const ICON_OPTIONS = [
   "Car","Home","Smartphone","Laptop","Sofa","Shirt","Baby","Dumbbell","Briefcase","Tractor",
@@ -22,6 +30,8 @@ export default function AdminCategories() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<EditState | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const cloudinary = useCloudinaryConfig();
 
   const reload = () => {
     setLoading(true);
@@ -38,19 +48,44 @@ export default function AdminCategories() {
   };
 
   const openEdit = (cat: AdminCategory) => {
-    setEditing({ id: cat.id, name: cat.name, slug: cat.slug ?? "", icon: cat.icon, parent_id: cat.parent_id ? String(cat.parent_id) : "" });
+    setEditing({
+      id: cat.id,
+      name: cat.name,
+      slug: cat.slug ?? "",
+      icon: cat.icon,
+      parent_id: cat.parent_id ? String(cat.parent_id) : "",
+      image_url: cat.image_url ?? "",
+    });
   };
+
+  async function uploadCategoryImage(file: File) {
+    if (!editing || !cloudinary.ready) return;
+    setImageUploading(true);
+    try {
+      const url = await uploadImageToCloudinary(file, cloudinary, "site-asset");
+      setEditing({ ...editing, image_url: url });
+    } finally {
+      setImageUploading(false);
+    }
+  }
 
   const save = async () => {
     if (!editing) return;
+    const imageUrl = editing.image_url.trim() || null;
     if (editing.id) {
-      await updateAdminCategory(editing.id, { name: editing.name, slug: editing.slug || undefined, icon: editing.icon });
+      await updateAdminCategory(editing.id, {
+        name: editing.name,
+        slug: editing.slug || undefined,
+        icon: editing.icon,
+        image_url: imageUrl,
+      });
     } else {
       await createAdminCategory({
         name: editing.name,
         slug: editing.slug || undefined,
         icon: editing.icon || "Tag",
         parent_id: editing.parent_id ? parseInt(editing.parent_id, 10) : undefined,
+        image_url: imageUrl,
       });
     }
     setEditing(null);
@@ -200,6 +235,40 @@ export default function AdminCategories() {
                     <option key={ic} value={ic}>{ic}</option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label htmlFor="adm-cat-image" className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+                  Foto kategorie (Cloudinary site-assets/)
+                </label>
+                <input
+                  id="adm-cat-image"
+                  type="url"
+                  value={editing.image_url}
+                  onChange={(e) => setEditing({ ...editing, image_url: e.target.value })}
+                  placeholder="https://… ose ngarko më poshtë"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
+                />
+                <label className="mt-2 flex items-center gap-2 text-xs text-gray-600">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={imageUploading || !cloudinary.ready}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = "";
+                      if (file) void uploadCategoryImage(file);
+                    }}
+                  />
+                  {imageUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  Ngarko në site-assets/ (nuk fshihet kurrë)
+                </label>
+                {editing.image_url ? (
+                  <img
+                    src={editing.image_url}
+                    alt=""
+                    className="mt-2 h-20 w-auto max-w-full rounded-lg border object-cover"
+                  />
+                ) : null}
               </div>
               {!editing.id && (
                 <div>
