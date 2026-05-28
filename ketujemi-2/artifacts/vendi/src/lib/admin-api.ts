@@ -252,6 +252,21 @@ export function createAdminHomepagePartner(data: {
   });
 }
 
+export function updateAdminHomepagePartner(
+  id: number,
+  data: {
+    business_name?: string;
+    logo_url?: string;
+    link_url?: string;
+    tier?: "vip" | "standard";
+  },
+) {
+  return request<{ partner: AdminHomepagePartner }>(`/homepage-partners/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
 export function deleteAdminHomepagePartner(id: number) {
   return request<{ ok: boolean; id: number }>(`/homepage-partners/${id}`, {
     method: "DELETE",
