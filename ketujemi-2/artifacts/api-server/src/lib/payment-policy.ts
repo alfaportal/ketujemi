@@ -1,6 +1,9 @@
 import type { User } from "@workspace/db";
 import { canIssueKosovoFiscalReceipts } from "./fiscal-kosovo/config";
-import { kosovoBankPaymentsReady } from "./kosovo-bank-payments";
+import {
+  kosovoBankManualTransferReady,
+  kosovoBankProviderLive,
+} from "./kosovo-bank-payments";
 import { paymentsConfigured } from "./payments";
 import type { Logger } from "pino";
 
@@ -13,14 +16,38 @@ export function isLikelyKosovoUser(user: User): boolean {
   return Boolean(digits && digits.startsWith("383"));
 }
 
+/** Kosovo users may pay with Stripe when keys are set (default ON). */
+export function kosovoStripeEnabled(): boolean {
+  return process.env.KOSOVO_STRIPE_ENABLED?.trim().toLowerCase() !== "false";
+}
+
 /**
- * While bank is off → everyone uses Stripe.
- * When bank is on → Kosovo users → bank redirect; others keep Stripe.
+ * Kosovo (+383): Stripe when configured (cards from KS + diaspora).
+ * Local bank only when explicitly chosen via KOSOVO_WALLET_USE_BANK=true
+ * and manual transfer or live bank API is ready.
  */
 export function resolveWalletTopupChannel(user: User): PaymentChannel {
-  if (kosovoBankPaymentsReady() && isLikelyKosovoUser(user)) {
+  if (!isLikelyKosovoUser(user)) {
+    return "stripe";
+  }
+
+  const useBank =
+    process.env.KOSOVO_WALLET_USE_BANK?.trim().toLowerCase() === "true";
+  if (
+    useBank &&
+    (kosovoBankProviderLive() || kosovoBankManualTransferReady())
+  ) {
     return "kosovo_bank";
   }
+
+  if (kosovoStripeEnabled() && paymentsConfigured()) {
+    return "stripe";
+  }
+
+  if (kosovoBankManualTransferReady() || kosovoBankProviderLive()) {
+    return "kosovo_bank";
+  }
+
   return "stripe";
 }
 
@@ -33,9 +60,11 @@ export function logPaymentStackReadiness(logger: Logger): void {
   logger.info(
     {
       stripeCheckout: paymentsConfigured(),
-      kosovoBank: kosovoBankPaymentsReady(),
+      kosovoStripe: kosovoStripeEnabled() && paymentsConfigured(),
+      kosovoBankManual: kosovoBankManualTransferReady(),
+      kosovoBankApi: kosovoBankProviderLive(),
       fiscalInvoices: canIssueKosovoFiscalReceipts(),
-      note: "Stripe active now; enable KOSOVO_BANK_* then FISCAL_* after Enternet + bank account",
+      note: "Kosovo uses Stripe by default; set KOSOVO_WALLET_USE_BANK=true for local bank",
     },
     "payment stack readiness",
   );

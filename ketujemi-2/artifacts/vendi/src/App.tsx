@@ -35,6 +35,7 @@ const PressPage = lazy(() => import("@/pages/press"));
 const VipPackagesPage = lazy(() => import("@/pages/vip-packages"));
 const AdvertisePage = lazy(() => import("@/pages/advertise"));
 const PartnerRegisterPage = lazy(() => import("@/pages/partner"));
+const WalletBankPaymentPage = lazy(() => import("@/pages/wallet-bank-payment"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 const queryClient = new QueryClient({
@@ -61,6 +62,7 @@ function Router() {
             <Route path="/admin-secret-panel" component={AdminPanel} />
             <Route path="/login" component={LoginPage} />
             <Route path="/profile" component={ProfilePage} />
+            <Route path="/wallet/bank-payment" component={WalletBankPaymentPage} />
             <Route path="/biznes/:id" component={BusinessProfilePage} />
             <Route path="/rreth-nesh" component={AboutPage} />
             <Route path="/za-nas" component={AboutPage} />

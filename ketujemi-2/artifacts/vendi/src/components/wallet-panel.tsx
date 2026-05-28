@@ -17,6 +17,9 @@ type WalletData = {
   listing_price_eur: string;
   topups: WalletTopup[];
   stripe: boolean;
+  paymentsAvailable?: boolean;
+  kosovoStripe?: boolean;
+  kosovoBank?: boolean;
 };
 
 export function WalletPanel({ className = "" }: { className?: string }) {
@@ -78,6 +81,8 @@ export function WalletPanel({ className = "" }: { className?: string }) {
 
   const balance = user?.wallet?.balance_eur ?? data?.balance_eur ?? "0.00";
   const remaining = user?.wallet?.listings_remaining ?? data?.listings_remaining ?? 0;
+  const canPay =
+    data?.paymentsAvailable ?? data?.stripe ?? false;
 
   return (
     <div
@@ -126,7 +131,7 @@ export function WalletPanel({ className = "" }: { className?: string }) {
                   type="button"
                   variant="outline"
                   className="min-h-12 h-auto py-2 flex flex-col gap-0.5 border-emerald-200 hover:bg-emerald-50"
-                  disabled={busyPkg != null || data?.stripe === false}
+                  disabled={busyPkg != null || !canPay}
                   onClick={() => void startTopup(t.id)}
                 >
                   {busyPkg === t.id ? (
@@ -142,9 +147,13 @@ export function WalletPanel({ className = "" }: { className?: string }) {
                 </Button>
               ))}
             </div>
-            {data?.stripe === false ? (
+            {!canPay ? (
               <p className="text-xs text-amber-700">
-                Pagesa me kartë nuk është konfiguruar ende në server.
+                Pagesa online nuk është konfiguruar ende në server (Stripe ose bankë KS).
+              </p>
+            ) : data?.kosovoStripe ? (
+              <p className="text-xs text-gray-500">
+                Paguani me kartë (Visa/Mastercard) përmes Stripe — e disponueshme nga Kosova dhe diaspora.
               </p>
             ) : null}
           </div>
