@@ -9,6 +9,7 @@ import {
 } from "./business-partner";
 import { getCategoryTreeIds } from "./category-tree";
 import { userOwnsListing } from "./listing-ownership";
+import { fetchActiveHomepagePartners } from "./homepage-partners";
 
 export type TrustedPartnerDto = {
   id: number;
@@ -199,6 +200,22 @@ export async function getTrustedPartnersShuffled(
   tier: PartnerTier = "vip",
 ): Promise<TrustedPartnerDto[]> {
   const cap = Math.max(1, Math.min(24, Math.floor(limit)));
+  const scoped =
+    categoryId != null && Number.isFinite(categoryId) && categoryId > 0;
+
+  if (!scoped) {
+    const curated = await fetchActiveHomepagePartners(tier, cap);
+    if (curated.length >= cap) {
+      return curated.slice(0, cap);
+    }
+    const remaining = cap - curated.length;
+    const pool = await fetchTrustedPartnersPool(tier);
+    const business = shuffle(pool)
+      .slice(0, remaining)
+      .map((u) => toTrustedPartnerDto(u, tier));
+    return [...curated, ...business];
+  }
+
   const pool = await fetchTrustedPartnersPool(tier, categoryId);
   const partners = shuffle(pool).slice(0, cap);
   return partners.map((u) => toTrustedPartnerDto(u, tier));

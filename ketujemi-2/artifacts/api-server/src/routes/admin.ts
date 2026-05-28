@@ -599,6 +599,87 @@ router.patch("/admin/partner-applications/:id/package", requireAdmin, async (req
   }
 });
 
+// ─── Homepage trusted partners (curated logos) ───────────────────────────────
+router.get("/admin/homepage-partners", requireAdmin, async (_req, res) => {
+  try {
+    const { listHomepagePartnersAdmin } = await import("../lib/homepage-partners");
+    const partners = await listHomepagePartnersAdmin();
+    res.json({ partners });
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/admin/homepage-partners", requireAdmin, async (req, res) => {
+  try {
+    const { createHomepagePartner } = await import("../lib/homepage-partners");
+    const row = await createHomepagePartner({
+      business_name: String(req.body?.business_name ?? ""),
+      logo_url: String(req.body?.logo_url ?? ""),
+      link_url: String(req.body?.link_url ?? ""),
+      tier: String(req.body?.tier ?? "standard"),
+      sort_order: Number(req.body?.sort_order ?? 0),
+    });
+    res.status(201).json({ partner: row });
+  } catch (err) {
+    if (err instanceof Error) {
+      if (err.message === "MISSING_FIELDS") {
+        res.status(400).json({ error: "MISSING_FIELDS", message: "Plotësoni emrin, logon dhe linkun." });
+        return;
+      }
+      if (err.message === "INVALID_TIER") {
+        res.status(400).json({ error: "INVALID_TIER" });
+        return;
+      }
+    }
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.delete("/admin/homepage-partners/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { deleteHomepagePartner } = await import("../lib/homepage-partners");
+    const ok = await deleteHomepagePartner(id);
+    if (!ok) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+    res.json({ ok: true, id });
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.patch("/admin/homepage-partners/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { updateHomepagePartner } = await import("../lib/homepage-partners");
+    const body = req.body ?? {};
+    const partner = await updateHomepagePartner(id, {
+      ...(body.business_name !== undefined
+        ? { business_name: String(body.business_name) }
+        : {}),
+      ...(body.logo_url !== undefined ? { logo_url: String(body.logo_url) } : {}),
+      ...(body.link_url !== undefined ? { link_url: String(body.link_url) } : {}),
+      ...(body.tier !== undefined ? { tier: String(body.tier) } : {}),
+      ...(body.sort_order !== undefined ? { sort_order: Number(body.sort_order) } : {}),
+      ...(body.is_active !== undefined ? { is_active: Boolean(body.is_active) } : {}),
+    });
+    if (!partner) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+    res.json({ partner });
+  } catch (err) {
+    if (err instanceof Error && err.message === "INVALID_TIER") {
+      res.status(400).json({ error: "INVALID_TIER" });
+      return;
+    }
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // ─── GET /admin/listing-package-purchases — Pagesat (listing packages) ────────
 router.get("/admin/listing-package-purchases", requireAdmin, async (req, res) => {
   try {

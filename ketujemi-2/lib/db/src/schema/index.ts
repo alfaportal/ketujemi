@@ -11,6 +11,7 @@ export * from "./business";
 export * from "./business_payments";
 export * from "./partner_logo_stats";
 export * from "./partners";
+export * from "./homepage_partners";
 export * from "./listing_package_purchases";
 export * from "./wallet_transactions";
 export * from "./fiscal_receipts";

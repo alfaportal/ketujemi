@@ -224,6 +224,40 @@ export function changeAdminPartnerPackage(id: number, pkg: "standard" | "vip") {
   );
 }
 
+export interface AdminHomepagePartner {
+  id: number;
+  business_name: string;
+  logo_url: string;
+  link_url: string;
+  tier: "vip" | "standard" | string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export function getAdminHomepagePartners() {
+  return request<{ partners: AdminHomepagePartner[] }>("/homepage-partners");
+}
+
+export function createAdminHomepagePartner(data: {
+  business_name: string;
+  logo_url: string;
+  link_url: string;
+  tier: "vip" | "standard";
+  sort_order?: number;
+}) {
+  return request<{ partner: AdminHomepagePartner }>("/homepage-partners", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteAdminHomepagePartner(id: number) {
+  return request<{ ok: boolean; id: number }>(`/homepage-partners/${id}`, {
+    method: "DELETE",
+  });
+}
+
 export function activateAdminBusiness(id: number) {
   return request<{
     id: number;

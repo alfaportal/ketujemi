@@ -1,6 +1,7 @@
 import app from "./app";
 import {
   ensureFiscalSchema,
+  ensureHomepagePartnersSchema,
   ensureListingUserSchema,
   ensureOAuthSchema,
   ensureWalletSchema,
@@ -39,6 +40,8 @@ async function startServer(): Promise<void> {
     logger.info("OAuth schema verified (facebook_user_id, instagram_user_id)");
     await ensureListingUserSchema(pool);
     logger.info("Listing user_id + self-duplicate alerts schema verified");
+    await ensureHomepagePartnersSchema(pool);
+    logger.info("Homepage partners schema verified (homepage_partners)");
     await purgeInvalidListingImagesOnStartup();
     logPaymentStackReadiness(logger);
     logger.info(twilioConfigSummary(), "twilio config (masked)");

@@ -26,6 +26,7 @@ import { formatDistanceToNow, format } from "date-fns";
 import { useMarket } from "@/lib/market-context";
 import { dateFnsLocale } from "@/lib/app-extra-i18n";
 import { cn } from "@/lib/utils";
+import { AdminHomepagePartnersPanel } from "./homepage-partners-panel";
 
 type Filter = "all" | "pending" | "active" | "suspended" | "rejected";
 
@@ -150,6 +151,8 @@ export default function AdminPartners() {
           <RefreshCw className={cn("h-5 w-5", loading && "animate-spin")} />
         </button>
       </div>
+
+      <AdminHomepagePartnersPanel />
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {(
