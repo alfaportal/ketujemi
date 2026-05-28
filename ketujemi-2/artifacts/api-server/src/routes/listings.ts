@@ -16,7 +16,7 @@ import { sellerFirstName, maskEmailInListingDescription } from "../lib/contact-m
 import { assertAccountActive } from "../lib/user-ban";
 import {
   assertFreeListingQuota,
-  countUserActiveListingsInCategoryRoot,
+  getCategoryPostingQuota,
 } from "../lib/category-quota";
 import { isBusinessAccount, isVipBusinessActive } from "../lib/business-rules";
 import { assertBusinessCategoryListingQuota } from "../lib/business-quota";
@@ -53,6 +53,7 @@ import {
   primaryListingImageUrl,
   sanitizeListingImageUrlField,
 } from "../lib/listing-images";
+import { expiresAtAfterListingLifetime } from "../lib/listing-lifetime.js";
 
 const reportRate = new Map<string, number[]>();
 
@@ -94,13 +95,6 @@ function applyViewerContact<
   T extends { seller_phone: string; seller_name: string; description: string },
 >(listing: T, viewer: User | null): T {
   return withSellerContactForViewer(listing, viewer);
-}
-
-// ─── Helper: 3 muaj nga tani ─────────────────────────────────────────────────
-function expiresAt3Months(): Date {
-  const d = new Date();
-  d.setDate(d.getDate() + 90);
-  return d;
 }
 
 // ─── Helper: format listing with all fields ───────────────────────────────────
@@ -515,7 +509,8 @@ router.post("/listings", async (req, res) => {
         res.status(403).json({
           error: "FREE_QUOTA_EXCEEDED",
           message:
-            "Ke arritur 10 njoftime aktive falas për këtë kategori kryesore. Mbush portofolin ose bli Paketën S/M/L.",
+            (err as Error & { publicMessage?: string }).publicMessage ??
+            "Ke arritur limitin falas për këtë kategori kryesore. Mbush portofolin ose bli Paketën S/M/L.",
           used: e.used,
           limit: e.limit,
           show_packages: (e as Error & { show_packages?: boolean }).show_packages ?? true,
@@ -599,7 +594,7 @@ router.post("/listings", async (req, res) => {
       status: "active",
       moderation_status: "approved",
       moderation_reason: moderation.reason || null,
-      expires_at: expiresAt3Months(),
+      expires_at: expiresAtAfterListingLifetime(),
       vehicle_year: parsed.data.vehicle_year ?? null,
       vehicle_mileage_km: parsed.data.vehicle_mileage_km ?? null,
       vehicle_fuel: parsed.data.vehicle_fuel ?? null,
@@ -738,27 +733,32 @@ router.get("/listings/free-quota", async (req, res) => {
     return;
   }
 
-  const { rootId, used, limit, base_limit, extra_slots } =
-    await countUserActiveListingsInCategoryRoot(viewer, categoryId);
+  const q = await getCategoryPostingQuota(viewer, categoryId);
 
   const isBusiness = isBusinessAccount(viewer) && !isVipBusinessActive(viewer);
 
   res.json({
-    root_category_id: rootId,
-    used,
-    limit,
-    base_limit,
-    extra_slots,
-    remaining: Math.max(0, limit - used),
-    allowed: used < limit,
+    root_category_id: q.rootId,
+    used: q.active_used,
+    limit: q.active_limit,
+    base_limit: q.base_limit,
+    extra_slots: q.extra_slots,
+    remaining: Math.min(q.active_remaining, q.monthly_remaining),
+    active_used: q.active_used,
+    active_limit: q.active_limit,
+    active_remaining: q.active_remaining,
+    monthly_posts_used: q.monthly_posts_used,
+    monthly_posts_limit: q.monthly_posts_limit,
+    monthly_remaining: q.monthly_remaining,
+    listing_lifetime_days: q.listing_lifetime_days,
+    allowed: q.allowed,
     account_type: viewer.account_type ?? "private",
-    /** Limit applies to parent category tree (e.g. Vetura), not each subcategory. */
     quota_scope: "parent_category",
-    show_packages: used >= limit,
+    show_packages: !q.allowed,
     business: isBusiness
       ? {
           extra_post_price_eur: 1,
-          needs_payment: used >= limit,
+          needs_payment: !q.allowed,
         }
       : null,
   });

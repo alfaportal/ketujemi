@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { db, usersTable, walletTransactionsTable } from "@workspace/db";
 import type { User } from "@workspace/db";
 import { isBusinessAccount, isVipBusinessActive } from "./business-rules";
-import { countUserActiveListingsInCategoryRoot } from "./category-quota";
+import { getCategoryPostingQuota } from "./category-quota";
 import { LISTING_PACKAGE_CATALOG, type ListingPackageId } from "./listing-packages";
 
 /** Cost per paid listing (€0.30). */
@@ -90,8 +90,8 @@ export async function listingWillChargeWallet(
   if (opts?.hasPaidExtraPost) return false;
   if (isBusinessAccount(user) && isVipBusinessActive(user)) return false;
 
-  const { used, limit } = await countUserActiveListingsInCategoryRoot(user, categoryId);
-  return used >= limit;
+  const q = await getCategoryPostingQuota(user, categoryId);
+  return !q.allowed;
 }
 
 export async function assertWalletCoversListing(

@@ -238,6 +238,13 @@ export default function NewListing() {
     remaining: number;
     limit: number;
     allowed: boolean;
+    active_used?: number;
+    active_limit?: number;
+    active_remaining?: number;
+    monthly_posts_used?: number;
+    monthly_posts_limit?: number;
+    monthly_remaining?: number;
+    listing_lifetime_days?: number;
     business?: { needs_payment?: boolean; extra_post_price_eur?: number } | null;
   } | null>(null);
   const [paymentToken, setPaymentToken] = useState<string | null>(() => {
@@ -341,6 +348,13 @@ export default function NewListing() {
           remaining: j.remaining ?? 0,
           limit: j.limit ?? 0,
           allowed: j.allowed ?? true,
+          active_used: j.active_used,
+          active_limit: j.active_limit,
+          active_remaining: j.active_remaining,
+          monthly_posts_used: j.monthly_posts_used,
+          monthly_posts_limit: j.monthly_posts_limit,
+          monthly_remaining: j.monthly_remaining,
+          listing_lifetime_days: j.listing_lifetime_days,
           business: j.business ?? null,
         });
       })
@@ -664,6 +678,13 @@ export default function NewListing() {
                 remaining: j.remaining ?? 0,
                 limit: j.limit ?? 0,
                 allowed: j.allowed ?? true,
+                active_used: j.active_used,
+                active_limit: j.active_limit,
+                active_remaining: j.active_remaining,
+                monthly_posts_used: j.monthly_posts_used,
+                monthly_posts_limit: j.monthly_posts_limit,
+                monthly_remaining: j.monthly_remaining,
+                listing_lifetime_days: j.listing_lifetime_days,
                 business: j.business ?? null,
               });
             })
@@ -712,10 +733,15 @@ export default function NewListing() {
               {paymentToken
                 ? "Pagesa u konfirmua — mund të postoni këtë njoftim."
                 : freeQuota.allowed
-                  ? t.postQuotaRemaining.replace("{n}", String(freeQuota.remaining))
+                  ? `Aktive falas: ${freeQuota.active_remaining ?? freeQuota.remaining}/${freeQuota.active_limit ?? freeQuota.limit} · Postime këtë muaj: ${freeQuota.monthly_remaining ?? freeQuota.remaining}/${freeQuota.monthly_posts_limit ?? freeQuota.limit}`
                   : freeQuota.business?.needs_payment
                     ? `Keni arritur ${freeQuota.limit} njoftime falas në këtë kategori. Çdo shtesë kushton €1.`
                     : t.postQuotaExceeded}
+            </p>
+            <p className="text-xs font-normal opacity-90">
+              Njoftimi qëndron online{" "}
+              <strong>{freeQuota.listing_lifetime_days ?? 90} ditë (~3 muaj)</strong>, pastaj hiqet automatikisht.
+              Kjo nuk është e njëjta me limitin 10 për kategori kryesore.
             </p>
             {!freeQuota.allowed && !paymentToken && freeQuota.business?.needs_payment ? (
               <PayWithCardButton

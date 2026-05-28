@@ -1,7 +1,8 @@
 import { db } from "@workspace/db";
 import { categoriesTable, listingsTable } from "@workspace/db";
 import type { Category, User } from "@workspace/db";
-import { and, gt, inArray } from "drizzle-orm";
+import { and, gte, gt, inArray } from "drizzle-orm";
+import { LISTING_ACTIVE_LIFETIME_DAYS } from "./listing-lifetime.js";
 import { userOwnsListing } from "./listing-ownership";
 import { isBusinessAccount } from "./business-rules";
 import { getUserExtraListingSlots, effectiveCategoryLimit } from "./listing-packages";
@@ -11,6 +12,80 @@ export const DEFAULT_FREE_LISTING_LIMIT = 10;
 
 export function countParentCategories(categories: Category[]): number {
   return categories.filter((c) => c.parent_id == null).length;
+}
+
+function startOfCurrentUtcMonth(): Date {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0));
+}
+
+export type CategoryPostingQuota = {
+  rootId: number;
+  active_used: number;
+  active_limit: number;
+  monthly_posts_used: number;
+  monthly_posts_limit: number;
+  base_limit: number;
+  extra_slots: number;
+  listing_lifetime_days: number;
+  /** Free post without wallet (both active + monthly headroom). */
+  allowed: boolean;
+  active_remaining: number;
+  monthly_remaining: number;
+};
+
+export async function getCategoryPostingQuota(
+  user: User,
+  categoryId: number,
+): Promise<CategoryPostingQuota> {
+  const active = await countUserActiveListingsInCategoryRoot(user, categoryId);
+  const monthly = await countUserPostsInCategoryRootThisMonth(user, categoryId);
+  const active_remaining = Math.max(0, active.limit - active.used);
+  const monthly_remaining = Math.max(0, monthly.limit - monthly.used);
+  return {
+    rootId: active.rootId,
+    active_used: active.used,
+    active_limit: active.limit,
+    monthly_posts_used: monthly.used,
+    monthly_posts_limit: monthly.limit,
+    base_limit: active.base_limit,
+    extra_slots: active.extra_slots,
+    listing_lifetime_days: LISTING_ACTIVE_LIFETIME_DAYS,
+    allowed: active_remaining > 0 && monthly_remaining > 0,
+    active_remaining,
+    monthly_remaining,
+  };
+}
+
+/** Posts created this calendar month (UTC) in parent category tree — includes reposts. */
+export async function countUserPostsInCategoryRootThisMonth(
+  user: User,
+  categoryId: number,
+): Promise<{ rootId: number; used: number; limit: number }> {
+  const { list, byId } = await loadAllCategories();
+  const rootId = resolveRootCategoryId(categoryId, byId);
+  const root = byId.get(rootId);
+  const limit = effectiveCategoryLimit(freeLimitForRoot(root), 0);
+  const treeIds = [...collectDescendantCategoryIds(rootId, list)];
+  const since = startOfCurrentUtcMonth();
+
+  if (treeIds.length === 0) {
+    return { rootId, used: 0, limit };
+  }
+
+  const rows = await db
+    .select({
+      seller_phone: listingsTable.seller_phone,
+      description: listingsTable.description,
+      created_at: listingsTable.created_at,
+    })
+    .from(listingsTable)
+    .where(
+      and(inArray(listingsTable.category_id, treeIds), gte(listingsTable.created_at, since)),
+    );
+
+  const used = rows.filter((l) => userOwnsListing(user, l)).length;
+  return { rootId, used, limit };
 }
 
 export function resolveRootCategoryId(
@@ -96,23 +171,39 @@ export async function assertFreeListingQuota(
   user: User,
   categoryId: number,
 ): Promise<void> {
-  const { used, limit, base_limit, extra_slots } = await countUserActiveListingsInCategoryRoot(
-    user,
-    categoryId,
-  );
-  if (used >= limit) {
-    const err = new Error("FREE_QUOTA_EXCEEDED") as Error & {
-      used: number;
-      limit: number;
-      base_limit: number;
-      extra_slots: number;
-      show_packages: boolean;
-    };
-    err.used = used;
-    err.limit = limit;
-    err.base_limit = base_limit;
-    err.extra_slots = extra_slots;
-    err.show_packages = true;
-    throw err;
+  const q = await getCategoryPostingQuota(user, categoryId);
+  if (q.allowed) return;
+
+  const err = new Error("FREE_QUOTA_EXCEEDED") as Error & {
+    used: number;
+    limit: number;
+    base_limit: number;
+    extra_slots: number;
+    show_packages: boolean;
+    quota_reason: "active" | "monthly" | "both";
+    monthly_posts_used: number;
+    monthly_posts_limit: number;
+    publicMessage: string;
+  };
+  err.used = q.active_used;
+  err.limit = q.active_limit;
+  err.base_limit = q.base_limit;
+  err.extra_slots = q.extra_slots;
+  err.monthly_posts_used = q.monthly_posts_used;
+  err.monthly_posts_limit = q.monthly_posts_limit;
+  err.show_packages = true;
+
+  const activeFull = q.active_remaining <= 0;
+  const monthlyFull = q.monthly_remaining <= 0;
+  err.quota_reason = activeFull && monthlyFull ? "both" : activeFull ? "active" : "monthly";
+
+  if (err.quota_reason === "monthly") {
+    err.publicMessage = `Ke arritur ${q.monthly_posts_limit} postime falas këtë muaj për këtë kategori kryesore. Njoftimet aktive (max ${q.active_limit}) dhe skadimi pas 3 muajsh janë rregulla të ndara.`;
+  } else if (err.quota_reason === "active") {
+    err.publicMessage = `Ke ${q.active_used} njoftime aktive (max ${q.active_limit}) në këtë kategori kryesore. Fshini një ose prisni skadimin (3 muaj), pastaj postoni përsëri.`;
+  } else {
+    err.publicMessage =
+      "Ke arritur limitin falas (aktive dhe/ose postime mujore) për këtë kategori kryesore. Përdorni portofolin ose Paketën S/M/L.";
   }
+  throw err;
 }

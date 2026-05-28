@@ -164,20 +164,28 @@ const KS: StaticPagesCopy = {
         ],
       },
       {
-        title: "Limitet e Njoftimeve",
+        title: "Limitet e postimeve (10 për kategori kryesore)",
         paragraphs: [
-          "Çdo përdorues ka **10 njoftime aktive falas** për **çdo kategori kryesore** (18 kategori: Vetura, Telefona, Banesa & Shtëpi, etj.). Markat, modelet dhe nën-kategoritë **numërohen brenda** kategorisë kryesore — jo veç e veç.",
-          "Kur një njoftim fshihet ose skadon, vendi në atë kategori lirohet dhe mund të postoni përsëri falas, deri në 10 aktive në të njëjtën kategori kryesore.",
+          "Çdo përdorues ka **10 njoftime aktive falas** dhe **10 postime falas në muaj** për **çdo kategori kryesore** (18 kategori: Vetura, Telefona, Banesa & Shtëpi, etj.). BMW, Sedan, Skuter etj. **numërohen brenda** kategorisë kryesore — jo veç e veç.",
+          "Kur fshini një njoftim ose kur skadon pas 3 muajsh, lironi vendin **aktiv**; numri i postimeve në muaj riniset çdo muaj kalendarik.",
         ],
         bulletsIntro:
-          "Kur arrini 10 njoftime aktive në një kategori kryesore, mund të blini kredi në portofol (Paketa S / M / L) — pagesë me Stripe:",
+          "Kur arrini limitin aktiv ose mujor në një kategori kryesore, mund të blini kredi në portofol (Paketa S / M / L) — pagesë me Stripe:",
         bullets: [
           "Paketa S — €5 (~16 postime të paguara, €0.30 për shpallje nga portofoli)",
           "Paketa M — €10 (~33 postime)",
           "Paketa L — €20 (~66 postime)",
         ],
         paragraphsAfter: [
-          "Krediti në portofol nuk skadon derisa të harxhohet. Emrat S, M, L janë madhësi pakete (Small / Medium / Large), jo kategori produktesh. Çdo njoftim lejon deri 10 fotografi të vërteta (Cloudinary).",
+          "Krediti në portofol nuk skadon derisa të harxhohet. Emrat S, M, L janë madhësi pakete (Small / Medium / Large). Çdo njoftim lejon deri 10 fotografi të vërteta (Cloudinary).",
+        ],
+      },
+      {
+        title: "Kohëzgjatja e njoftimit (3 muaj) — ndryshe nga limiti 10",
+        paragraphs: [
+          "Çdo njoftim i ri **aktivizohet** dhe qëndron online **deri 3 muaj (90 ditë)** nga data e postimit. Pas kësaj **hiqet automatikisht** nëse nuk e fshini vetë më parë.",
+          "Kjo **nuk është** e njëjta gjë me limitin «10 për kategori»: limiti 10 kontrollon sa njoftime mund të keni **njëkohësisht** ose sa **postime falas në muaj**; skadimi 3-mujor kontrollon sa **kohë** qëndron online çdo njoftim i veçantë.",
+          "Në faqen e njoftimit shfaqen **data e postimit** dhe **data e skadimit**.",
         ],
       },
       {
@@ -674,20 +682,27 @@ const MK: StaticPagesCopy = {
         ],
       },
       {
-        title: "Лимити на огласи",
+        title: "Лимити на објави (10 по главна категорија)",
         paragraphs: [
-          "Секој корисник има **10 активни бесплатни огласи** за **секоја главна категорија** (18 категории). Подкатегориите се бројат во главната категорија — не посебно.",
-          "Кога огласот истече или се избрише, местото во таа категорија се ослободува.",
+          "Секој корисник има **10 активни бесплатни** и **10 бесплатни објави месечно** за **секоја главна категорија** (18). Подкатегориите се бројат во главната — не посебно.",
+          "Бришењето или истекувањето по 3 месеци го ослободува активниот слот; месечниот број се ресетира секој месец.",
         ],
         bulletsIntro:
-          "Кога имате 10 активни во една главна категорија, можете да купите кредит (Пакет S / M / L) — Stripe:",
+          "Кога го надминете активниот или месечниот лимит, купете кредит (Пакет S / M / L) — Stripe:",
         bullets: [
           "Пакет S — €5 (~16 платени објави, €0.30 по објава од портфелот)",
           "Пакет M — €10 (~33 објави)",
           "Пакет L — €20 (~66 објави)",
         ],
         paragraphsAfter: [
-          "Кредитот не истекува додека не се потроши. Имињата S, M, L се големина на пакет (Small / Medium / Large). До 10 вистински фотографии по оглас.",
+          "Кредитот не истекува додека не се потроши. До 10 вистински фотографии по оглас.",
+        ],
+      },
+      {
+        title: "Траење на огласот (3 месеци) — различно од лимитот 10",
+        paragraphs: [
+          "Секој оглас е активен **до 3 месеци (90 дена)** од објавувањето, потоа се **отстранува автоматски** ако не го избришете порано.",
+          "Ова **не е** истото како лимитот 10: лимитот 10 е колку имате **истовремено** или **месечно**; 3-месечниот рок е колку **долго** стои секој оглас.",
         ],
       },
       {
@@ -1182,20 +1197,27 @@ const MNE: StaticPagesCopy = {
         ],
       },
       {
-        title: "Limiti oglasa",
+        title: "Limiti objava (10 po glavnoj kategoriji)",
         paragraphs: [
-          "Svaki korisnik ima **10 aktivnih besplatnih oglasa** po **glavnoj kategoriji** (18 kategorija). Potkategorije se broje unutar glavne — ne zasebno.",
-          "Kada oglas istekne ili se obriše, mjesto u toj kategoriji se oslobađa.",
+          "Svaki korisnik ima **10 aktivnih besplatnih** i **10 besplatnih objava mjesečno** po **glavnoj kategoriji** (18). Potkategorije se broje unutar glavne — ne zasebno.",
+          "Brisanje ili istek nakon 3 mjeseca oslobađa aktivno mjesto; mjesečni broj se resetuje svakog mjeseca.",
         ],
         bulletsIntro:
-          "Kada imate 10 aktivnih u jednoj glavnoj kategoriji, možete kupiti kredit (Paket S / M / L) — Stripe:",
+          "Kada premašite aktivni ili mjesečni limit, kupite kredit (Paket S / M / L) — Stripe:",
         bullets: [
           "Paket S — €5 (~16 plaćenih objava, €0.30 po objavi iz novčanika)",
           "Paket M — €10 (~33 objave)",
           "Paket L — €20 (~66 objava)",
         ],
         paragraphsAfter: [
-          "Kredit ne ističe dok se ne potroši. Nazivi S, M, L označavaju veličinu paketa (Small / Medium / Large). Do 10 stvarnih fotografija po oglasu.",
+          "Kredit ne ističe dok se ne potroši. Do 10 stvarnih fotografija po oglasu.",
+        ],
+      },
+      {
+        title: "Trajanje oglasa (3 mjeseca) — različito od limita 10",
+        paragraphs: [
+          "Svaki oglas je aktivan **do 3 mjeseca (90 dana)** od objave, zatim se **automatski uklanja** ako ga sami ne obrišete.",
+          "Ovo **nije** isto što i limit 10: limit 10 je koliko imate **istovremeno** ili **mjesečno**; rok od 3 mjeseca je koliko **dugo** svaki oglas stoji online.",
         ],
       },
       {

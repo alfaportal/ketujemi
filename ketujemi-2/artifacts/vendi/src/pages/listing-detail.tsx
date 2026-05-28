@@ -283,6 +283,21 @@ export default function ListingDetail() {
   const { specs, body } = parsed;
   const allImages = parseListingImageUrls(listing.image_url);
   const isVipSeller = !!(listing as { is_vip_seller?: boolean }).is_vip_seller;
+  const postedAt = listing.listed_at ?? listing.created_at;
+  const postedLabel = new Date(postedAt).toLocaleString("sq-AL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const expiresLabel = listing.expires_at
+    ? new Date(listing.expires_at).toLocaleDateString("sq-AL", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+    : null;
 
   const sellerDigits = user ? (listing.seller_phone ?? "").replace(/\D/g, "") : "";
   const smsHref = user ? smsUriFromDigits(sellerDigits) : "sms:";
@@ -497,9 +512,19 @@ export default function ListingDetail() {
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-sm bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full font-medium">
                   <Clock size={11} />
-                  {formatDistanceToNow(new Date(listing.created_at), { addSuffix: true, locale: dateFnsLocale(market.code) })}
+                  Postuar: {postedLabel}
                 </span>
+                {expiresLabel ? (
+                  <span className="inline-flex items-center gap-1.5 text-sm bg-amber-50 text-amber-800 border border-amber-100 px-3 py-1.5 rounded-full font-medium">
+                    <Clock size={11} />
+                    Skadon: {expiresLabel}
+                  </span>
+                ) : null}
               </div>
+              <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+                Çdo njoftim qëndron online deri <strong>3 muaj</strong> nga data e postimit, pastaj hiqet automatikisht
+                (nëse nuk e fshini vetë). Kjo është e ndarë nga limiti «10 për kategori kryesore» / postime mujore.
+              </p>
             </div>
 
             {/* Structured specs */}
