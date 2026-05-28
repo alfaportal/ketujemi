@@ -36,7 +36,7 @@ function recordPartnerClick(partnerId: number) {
   }).catch(() => {});
 }
 
-/** Logo i plotë brenda kutisë — contain, jo cover. */
+/** Logo i plotë brenda kutisë — contain, jo cover. VIP: më shumë hapësirë për imazh. */
 function PartnerLogoImage({
   src,
   alt,
@@ -48,21 +48,28 @@ function PartnerLogoImage({
   isVip: boolean;
   variant: "grid" | "banner";
 }) {
+  const isVipGrid = isVip && variant === "grid";
+
   return (
     <div
       className={cn(
-        "relative flex min-h-0 w-full flex-1 items-center justify-center bg-white",
-        variant === "grid"
-          ? isVip
-            ? "px-2 py-2 sm:px-2.5 sm:py-2.5"
-            : "px-1.5 py-1.5 sm:px-2 sm:py-2"
-          : "p-1.5",
+        "relative flex w-full flex-1 items-center justify-center bg-white min-h-0",
+        isVipGrid
+          ? "min-h-[4.25rem] sm:min-h-[5.25rem] md:min-h-[6rem] p-1 sm:p-1.5"
+          : variant === "grid"
+            ? "px-1.5 py-1.5 sm:px-2 sm:py-2"
+            : "p-1.5",
       )}
     >
       <img
         src={src}
         alt={alt}
-        className="block max-h-full max-w-full object-contain object-center"
+        className={cn(
+          "object-contain object-center",
+          isVipGrid
+            ? "h-full w-full max-h-[5.5rem] sm:max-h-[6.5rem] md:max-h-[7.5rem]"
+            : "block max-h-full max-w-full",
+        )}
         loading="lazy"
         decoding="async"
       />
@@ -116,12 +123,12 @@ function VipBannerCarousel({
           {slides.map((src, i) => (
             <div
               key={`${partner.id}-${i}`}
-              className="flex h-full min-w-0 shrink-0 grow-0 basis-full items-center justify-center bg-white p-2"
+              className="flex h-full min-w-0 shrink-0 grow-0 basis-full items-center justify-center bg-white p-1 sm:p-1.5"
             >
               <img
                 src={src}
                 alt={`${partner.business_name} ${i + 1}`}
-                className="block max-h-full max-w-full object-contain object-center"
+                className="h-full w-full object-contain object-center"
                 loading="lazy"
                 decoding="async"
               />
@@ -205,10 +212,10 @@ export function PartnerSlot({ partner, frameClass, variant = "grid" }: PartnerSl
       {variant === "grid" ? (
         <p
           className={cn(
-            "relative z-[1] shrink-0 w-full px-1.5 py-1 text-center font-semibold leading-tight line-clamp-2",
+            "relative z-[1] shrink-0 w-full text-center font-semibold leading-tight",
             isVip
-              ? "text-[9px] sm:text-[10px] text-amber-900 bg-amber-50 border-t border-amber-200/80"
-              : "text-[9px] sm:text-[10px] text-[#1A56A0] bg-blue-50/95 border-t border-blue-200/70",
+              ? "px-1 py-0.5 text-[8px] sm:text-[9px] line-clamp-1 text-amber-900 bg-amber-50 border-t border-amber-200/80"
+              : "px-1.5 py-1 text-[9px] sm:text-[10px] line-clamp-2 text-[#1A56A0] bg-blue-50/95 border-t border-blue-200/70",
           )}
         >
           {partner.business_name}

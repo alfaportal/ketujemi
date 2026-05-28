@@ -3,8 +3,8 @@ import { cn } from "@/lib/utils";
 import { PartnerSlot, type PartnerSlotData } from "@/components/partner-slot";
 
 const VIP_FRAME = cn(
-  "h-14 w-[7.5rem] sm:h-16 sm:w-32 flex-shrink-0 rounded-xl overflow-hidden",
-  "border-2 border-amber-400/90 bg-gradient-to-br from-amber-50 via-yellow-50/90 to-amber-100/50",
+  "h-24 w-[7.5rem] sm:h-28 sm:w-32 md:h-32 flex-shrink-0 rounded-xl overflow-hidden flex flex-col",
+  "border-[3px] border-amber-400 bg-gradient-to-br from-amber-50 via-yellow-50/90 to-amber-100/50",
   "shadow-[0_2px_10px_rgba(217,119,6,0.18)] hover:border-amber-500",
 );
 

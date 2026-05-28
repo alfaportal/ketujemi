@@ -42,7 +42,7 @@ const STANDARD_SLOT_FRAME = cn(
 );
 
 const VIP_SLOT_FRAME = cn(
-  "h-[4.75rem] sm:h-[5.25rem] w-full rounded-xl overflow-hidden transition-all duration-200 flex flex-col",
+  "h-24 sm:h-28 md:h-32 w-full rounded-xl overflow-hidden transition-all duration-200 flex flex-col",
   "border-[3px] border-amber-400 bg-gradient-to-br from-amber-50 via-yellow-50/90 to-amber-100/50",
   "shadow-[0_3px_14px_rgba(217,119,6,0.28)]",
   "hover:border-amber-500 hover:shadow-[0_5px_20px_rgba(217,119,6,0.38)]",
