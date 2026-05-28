@@ -25,7 +25,7 @@ export function companyStampPublicUrl(
   variant: keyof typeof STAMP_FILES = "email",
   origin?: string,
 ): string {
-  const base = (origin || process.env.PUBLIC_APP_ORIGIN || "https://www.ketujemi.com").replace(
+  const base = (origin || process.env.PUBLIC_APP_ORIGIN || "https://ketujemi.com").replace(
     /\/$/,
     "",
   );

@@ -5,34 +5,15 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { attachStaticFrontend } from "./lib/serve-static";
+import { canonicalHostRedirect } from "./lib/canonical-host";
 
 const app: Express = express();
 
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 
-  /** HTTPS required for microphone (Web Speech API); Railway terminates TLS at the edge. */
-  app.use((req, res, next) => {
-    if (req.path === "/api/healthz" || req.path.startsWith("/api/health")) {
-      next();
-      return;
-    }
-
-    const host = (req.get("host") ?? "").toLowerCase();
-    const proto = req.get("x-forwarded-proto") ?? req.protocol;
-
-    if (host === "ketujemi.com") {
-      res.redirect(301, `https://www.ketujemi.com${req.originalUrl}`);
-      return;
-    }
-
-    if (proto === "http" && host.endsWith("ketujemi.com")) {
-      res.redirect(301, `https://${host}${req.originalUrl}`);
-      return;
-    }
-
-    next();
-  });
+  /** www → ketujemi.com (301), http → https — canonical host for SEO. */
+  app.use(canonicalHostRedirect);
 
   app.use((_req, res, next) => {
     res.setHeader(

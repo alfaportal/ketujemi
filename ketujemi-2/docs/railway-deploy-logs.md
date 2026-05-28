@@ -53,5 +53,5 @@ Nëse sheh `SESSION_SECRET_ok: false` ose `DATABASE_URL_set: false` → shto var
 
 ## Verifikim
 
-- https://www.ketujemi.com/api/healthz → `{"status":"ok",...}`
-- https://www.ketujemi.com/ → faqja kryesore
+- https://ketujemi.com/api/healthz → `{"status":"ok",...}`
+- https://www.ketujemi.com/ → 301 → https://ketujemi.com/

@@ -22,6 +22,13 @@ Në registrar-in e domain-it (ku e ke blerë ketujemi.com):
 
 Pas propagimit DNS (5 min – 48 orë), faqja hapet nga Railway.
 
+### www → ketujemi.com (canonical, pa www)
+
+- Në Railway lidh **të dyja**: `ketujemi.com` dhe `www.ketujemi.com`
+- Aplikacioni bën **301** nga `https://www.ketujemi.com/...` → `https://ketujemi.com/...`
+- Vendos `PUBLIC_APP_ORIGIN=https://ketujemi.com` (pa www) për email, Stripe, OAuth
+- **Google Search Console:** shto të dyja pronat nëse duhet, por prefero indeksimin e `https://ketujemi.com`; `www` do të ridrejtohet automatikisht
+
 ## Çfarë bën build-i
 
 1. `pnpm install` (monorepo root)

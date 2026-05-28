@@ -1,5 +1,7 @@
 /** Meta (Facebook / Instagram) OAuth — env & redirect helpers. */
 
+import { resolveAppOrigin } from "./canonical-host.js";
+
 export type MetaOAuthProvider = "facebook" | "instagram";
 
 const GRAPH_VERSION = "v21.0";
@@ -81,9 +83,5 @@ export function oauthCallbackUrl(
 export function appOriginFromRequest(req: {
   get: (name: string) => string | undefined;
 }): string {
-  const fromEnv = cleanMetaEnv("PUBLIC_APP_ORIGIN");
-  if (fromEnv) return fromEnv.replace(/\/$/, "");
-  const host = req.get("x-forwarded-host") ?? req.get("host");
-  const proto = req.get("x-forwarded-proto") ?? "https";
-  return host ? `${proto}://${host}` : "http://localhost:5173";
+  return resolveAppOrigin(req);
 }

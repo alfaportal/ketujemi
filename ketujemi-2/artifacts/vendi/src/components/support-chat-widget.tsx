@@ -36,10 +36,10 @@ const VOICE_ERROR: Record<string, string> = {
 };
 
 const VOICE_HTTPS_HINT: Record<string, string> = {
-  ks: "Për zërin (🎤) hapni faqen me HTTPS: https://www.ketujemi.com",
-  al: "Për zërin (🎤) hapni faqen me HTTPS: https://www.ketujemi.com",
-  mk: "За глас (🎤) отворете https://www.ketujemi.com",
-  me: "Za glas (🎤) otvorite https://www.ketujemi.com",
+  ks: "Për zërin (🎤) hapni faqen me HTTPS: https://ketujemi.com",
+  al: "Për zërin (🎤) hapni faqen me HTTPS: https://ketujemi.com",
+  mk: "За глас (🎤) отворете https://ketujemi.com",
+  me: "Za glas (🎤) otvorite https://ketujemi.com",
 };
 
 const VOICE_MOBILE_DESKTOP: Record<string, string> = {

@@ -31,7 +31,7 @@ export async function issueFiscalReceiptViaProvider(
   const stubId = `STUB-${input.paymentToken.slice(0, 8).toUpperCase()}`;
   return {
     fiscalNumber: stubId,
-    qrPayload: `https://www.ketujemi.com/fiscal/verify?token=${encodeURIComponent(input.paymentToken)}`,
+    qrPayload: `https://ketujemi.com/fiscal/verify?token=${encodeURIComponent(input.paymentToken)}`,
     pdfUrl: null,
     providerRef: `placeholder:${provider}`,
   };
