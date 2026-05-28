@@ -46,6 +46,7 @@ export default defineConfig(async ({ command }) => {
       includeAssets: [
         "logo.png",
         "logo-app.png",
+        "logo-icon.svg",
         "logo-header.png",
         "icons/apple-touch-icon.png",
         "icons/pwa-192x192.png",
