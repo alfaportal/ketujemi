@@ -2,7 +2,12 @@ import { randomInt, randomUUID } from "node:crypto";
 import { db, listingPackagePurchasesTable, usersTable } from "@workspace/db";
 import type { User } from "@workspace/db";
 import { and, eq, gte, sql } from "drizzle-orm";
-import { MAX_ACTIVE_LISTINGS_PER_USER } from "./user-listing-limits";
+import { countUserActiveListings } from "./user-listing-limits";
+import {
+  DEFAULT_FREE_LISTING_LIMIT,
+  countParentCategories,
+  loadAllCategories,
+} from "./category-quota";
 import { notifyListingPackageActivated } from "./send-listing-package-notifications";
 const LISTING_PRICE_CENTS = 30;
 
@@ -72,21 +77,16 @@ export async function getUserExtraListingSlots(_userId: number): Promise<number>
 }
 
 export async function getUserListingCapacity(user: User): Promise<{
-  base_limit: number;
-  extra_slots: number;
-  effective_limit: number;
-  active_count: number;
-  remaining: number;
+  free_per_parent_category: number;
+  parent_category_count: number;
+  active_count_total: number;
 }> {
-  const { countUserActiveListings } = await import("./user-listing-limits");
-  const base = MAX_ACTIVE_LISTINGS_PER_USER;
-  const active_count = await countUserActiveListings(user);
+  const { list } = await loadAllCategories();
+  const active_count_total = await countUserActiveListings(user);
   return {
-    base_limit: base,
-    extra_slots: 0,
-    effective_limit: base,
-    active_count,
-    remaining: Math.max(0, base - active_count),
+    free_per_parent_category: DEFAULT_FREE_LISTING_LIMIT,
+    parent_category_count: countParentCategories(list),
+    active_count_total,
   };
 }
 

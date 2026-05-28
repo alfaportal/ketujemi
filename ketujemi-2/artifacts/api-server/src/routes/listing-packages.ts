@@ -28,7 +28,8 @@ router.get("/listing-packages/catalog", (_req, res) => {
       listing_price_eur: 0.3,
       credit_until_spent: true,
     })),
-    free_limit: 10,
+    free_per_parent_category: 10,
+    quota_scope: "parent_category",
   });
 });
 

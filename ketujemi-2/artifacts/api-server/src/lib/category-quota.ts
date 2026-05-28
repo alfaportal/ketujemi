@@ -6,7 +6,12 @@ import { userOwnsListing } from "./listing-ownership";
 import { isBusinessAccount } from "./business-rules";
 import { getUserExtraListingSlots, effectiveCategoryLimit } from "./listing-packages";
 
+/** Free active listings per parent (root) category — subcategories share this pool. */
 export const DEFAULT_FREE_LISTING_LIMIT = 10;
+
+export function countParentCategories(categories: Category[]): number {
+  return categories.filter((c) => c.parent_id == null).length;
+}
 
 export function resolveRootCategoryId(
   categoryId: number,

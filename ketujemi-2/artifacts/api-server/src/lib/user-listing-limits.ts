@@ -5,7 +5,10 @@ import { userOwnsListing } from "./listing-ownership";
 import { isBusinessAccount } from "./business-rules";
 import { getUserExtraListingSlots } from "./listing-packages";
 
-/** Max active (non-expired) listings per user at once (before package extras). */
+/**
+ * @deprecated Global cap removed — free quota is per parent category (see category-quota).
+ * Kept only for optional abuse ceilings elsewhere; not used for private posting.
+ */
 export const MAX_ACTIVE_LISTINGS_PER_USER = 10;
 
 export async function countUserActiveListings(user: User): Promise<number> {

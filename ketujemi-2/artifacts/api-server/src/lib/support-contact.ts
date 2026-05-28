@@ -3,7 +3,11 @@
 export const SUPPORT_EMAIL = "support@ketujemi.com";
 export const SUPPORT_EMAIL_ALT = "info@ketujemi.com";
 
-/** E.164 or spaced display; set SUPPORT_PHONE in Vercel env (e.g. +383 44 123 456). */
+/**
+ * Support phone shown in help chat («Ndihmë»).
+ * Default is baked into code — no Railway variable required.
+ * Optional override only: SUPPORT_PHONE=+38343555294
+ */
 export function getSupportPhoneDisplay(): string {
   const raw = process.env.SUPPORT_PHONE?.trim();
   if (!raw) return "+383 43 555 294";

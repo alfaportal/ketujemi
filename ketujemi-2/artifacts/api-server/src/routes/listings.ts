@@ -32,7 +32,6 @@ import { listingFeedOrderBy, isTopActive } from "../lib/listing-top";
 import { moderateListingContent } from "../lib/listing-ai-moderation";
 import { logListingModerationRejection } from "../lib/listing-moderation-rejection-log";
 import { parseUiLang } from "../lib/claude-client";
-import { assertUserActiveListingCap } from "../lib/user-listing-limits";
 import { consumeExtraPostPayment } from "../lib/payments";
 import {
   assertWalletCoversListing,
@@ -403,23 +402,6 @@ router.post("/listings", async (req, res) => {
     }
   }
 
-  try {
-    await assertUserActiveListingCap(viewer);
-  } catch (err: unknown) {
-    if (err instanceof Error && err.message === "LISTING_MONTHLY_CAP") {
-      const e = err as Error & { publicMessage?: string; used: number; limit: number };
-      res.status(403).json({
-        error: "LISTING_MONTHLY_CAP",
-        message: e.publicMessage,
-        used: e.used,
-        limit: e.limit,
-        show_packages: (e as Error & { show_packages?: boolean }).show_packages ?? false,
-      });
-      return;
-    }
-    throw err;
-  }
-
   const selfDuplicate = await blockSelfDuplicateListingIfNeeded(
     viewer,
     parsed.data.title,
@@ -532,7 +514,8 @@ router.post("/listings", async (req, res) => {
         const e = err as Error & { used: number; limit: number };
         res.status(403).json({
           error: "FREE_QUOTA_EXCEEDED",
-          message: "Ke arritur limitin falas. Mbush portofolin ose zgjero me paketë.",
+          message:
+            "Ke arritur 10 njoftime aktive falas për këtë kategori kryesore. Mbush portofolin ose bli Paketën S/M/L.",
           used: e.used,
           limit: e.limit,
           show_packages: (e as Error & { show_packages?: boolean }).show_packages ?? true,
@@ -759,8 +742,6 @@ router.get("/listings/free-quota", async (req, res) => {
     await countUserActiveListingsInCategoryRoot(viewer, categoryId);
 
   const isBusiness = isBusinessAccount(viewer) && !isVipBusinessActive(viewer);
-  const { getUserListingCapacity } = await import("../lib/listing-packages");
-  const globalCap = await getUserListingCapacity(viewer);
 
   res.json({
     root_category_id: rootId,
@@ -771,9 +752,9 @@ router.get("/listings/free-quota", async (req, res) => {
     remaining: Math.max(0, limit - used),
     allowed: used < limit,
     account_type: viewer.account_type ?? "private",
-    global_active: globalCap.active_count,
-    global_limit: globalCap.effective_limit,
-    show_packages: used >= limit || globalCap.remaining <= 0,
+    /** Limit applies to parent category tree (e.g. Vetura), not each subcategory. */
+    quota_scope: "parent_category",
+    show_packages: used >= limit,
     business: isBusiness
       ? {
           extra_post_price_eur: 1,

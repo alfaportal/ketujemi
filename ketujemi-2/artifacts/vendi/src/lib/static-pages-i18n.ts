@@ -166,17 +166,18 @@ const KS: StaticPagesCopy = {
       {
         title: "Limitet e Njoftimeve",
         paragraphs: [
-          "Çdo përdorues fillon me 10 njoftime aktive falas. Kur një njoftim fshihet ose skadon, vendi lirohet automatikisht dhe mund të postohet njoftim i ri pa kosto shtesë.",
+          "Çdo përdorues ka **10 njoftime aktive falas** për **çdo kategori kryesore** (18 kategori: Vetura, Telefona, Banesa & Shtëpi, etj.). Markat, modelet dhe nën-kategoritë **numërohen brenda** kategorisë kryesore — jo veç e veç.",
+          "Kur një njoftim fshihet ose skadon, vendi në atë kategori lirohet dhe mund të postoni përsëri falas, deri në 10 aktive në të njëjtën kategori kryesore.",
         ],
         bulletsIntro:
-          "Për përdoruesit që kanë nevojë për më shumë njoftime aktive njëkohësisht, ofrojmë paketa shtesë:",
+          "Kur arrini 10 njoftime aktive në një kategori kryesore, mund të blini kredi në portofol (Paketa S / M / L) — pagesë me Stripe:",
         bullets: [
-          "5 njoftime shtesë — €1",
-          "25 njoftime shtesë — €5",
-          "50 njoftime shtesë — €8",
+          "Paketa S — €5 (~16 postime të paguara, €0.30 për shpallje nga portofoli)",
+          "Paketa M — €10 (~33 postime)",
+          "Paketa L — €20 (~66 postime)",
         ],
         paragraphsAfter: [
-          "Njoftime shtesë të blera mbeten aktive derisa të fshihen nga përdoruesi. Çdo njoftim lejon ngarkimin e deri 10 fotografive.",
+          "Krediti në portofol nuk skadon derisa të harxhohet. Emrat S, M, L janë madhësi pakete (Small / Medium / Large), jo kategori produktesh. Çdo njoftim lejon deri 10 fotografi të vërteta (Cloudinary).",
         ],
       },
       {
@@ -675,17 +676,18 @@ const MK: StaticPagesCopy = {
       {
         title: "Лимити на огласи",
         paragraphs: [
-          "Секој корисник започнува со 10 активни бесплатни огласи. Кога оглас се избрише или истече, местото се ослободува автоматски и може да се објави нов без дополнителен трошок.",
+          "Секој корисник има **10 активни бесплатни огласи** за **секоја главна категорија** (18 категории). Подкатегориите се бројат во главната категорија — не посебно.",
+          "Кога огласот истече или се избрише, местото во таа категорија се ослободува.",
         ],
         bulletsIntro:
-          "За корисници кои имаат потреба од повеќе активни огласи истовремено, нудиме дополнителни пакети:",
+          "Кога имате 10 активни во една главна категорија, можете да купите кредит (Пакет S / M / L) — Stripe:",
         bullets: [
-          "5 дополнителни огласи — €1",
-          "25 дополнителни огласи — €5",
-          "50 дополнителни огласи — €8",
+          "Пакет S — €5 (~16 платени објави, €0.30 по објава од портфелот)",
+          "Пакет M — €10 (~33 објави)",
+          "Пакет L — €20 (~66 објави)",
         ],
         paragraphsAfter: [
-          "Купените дополнителни огласи остануваат активни додека корисникот не ги избрише. Секој оглас дозволува до 10 фотографии.",
+          "Кредитот не истекува додека не се потроши. Имињата S, M, L се големина на пакет (Small / Medium / Large). До 10 вистински фотографии по оглас.",
         ],
       },
       {
@@ -1182,17 +1184,18 @@ const MNE: StaticPagesCopy = {
       {
         title: "Limiti oglasa",
         paragraphs: [
-          "Svaki korisnik počinje sa 10 aktivnih besplatnih oglasa. Kada se oglas obriše ili istekne, mjesto se automatski oslobađa i može se objaviti novi bez dodatnog troška.",
+          "Svaki korisnik ima **10 aktivnih besplatnih oglasa** po **glavnoj kategoriji** (18 kategorija). Potkategorije se broje unutar glavne — ne zasebno.",
+          "Kada oglas istekne ili se obriše, mjesto u toj kategoriji se oslobađa.",
         ],
         bulletsIntro:
-          "Za korisnike kojima treba više aktivnih oglasa istovremeno, nudimo dodatne pakete:",
+          "Kada imate 10 aktivnih u jednoj glavnoj kategoriji, možete kupiti kredit (Paket S / M / L) — Stripe:",
         bullets: [
-          "5 dodatnih oglasa — €1",
-          "25 dodatnih oglasa — €5",
-          "50 dodatnih oglasa — €8",
+          "Paket S — €5 (~16 plaćenih objava, €0.30 po objavi iz novčanika)",
+          "Paket M — €10 (~33 objave)",
+          "Paket L — €20 (~66 objava)",
         ],
         paragraphsAfter: [
-          "Kupljeni dodatni oglasi ostaju aktivni dok ih korisnik ne obriše. Svaki oglas dozvoljava do 10 fotografija.",
+          "Kredit ne ističe dok se ne potroši. Nazivi S, M, L označavaju veličinu paketa (Small / Medium / Large). Do 10 stvarnih fotografija po oglasu.",
         ],
       },
       {
