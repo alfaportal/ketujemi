@@ -7,7 +7,7 @@ import { userOwnsListing } from "./listing-ownership";
 import { isBusinessAccount } from "./business-rules";
 import { getUserExtraListingSlots, effectiveCategoryLimit } from "./listing-packages";
 
-/** Free active listings per parent (root) category — subcategories share this pool. */
+/** Free posts per calendar month (UTC) per parent category — subcategories share this pool. */
 export const DEFAULT_FREE_LISTING_LIMIT = 10;
 
 export function countParentCategories(categories: Category[]): number {
@@ -28,7 +28,7 @@ export type CategoryPostingQuota = {
   base_limit: number;
   extra_slots: number;
   listing_lifetime_days: number;
-  /** Free post without wallet (both active + monthly headroom). */
+  /** Free post this month without wallet (10/muaj për kategori kryesore). */
   allowed: boolean;
   active_remaining: number;
   monthly_remaining: number;
@@ -43,15 +43,15 @@ export async function getCategoryPostingQuota(
   const active_remaining = Math.max(0, active.limit - active.used);
   const monthly_remaining = Math.max(0, monthly.limit - monthly.used);
   return {
-    rootId: active.rootId,
+    rootId: monthly.rootId,
     active_used: active.used,
     active_limit: active.limit,
     monthly_posts_used: monthly.used,
     monthly_posts_limit: monthly.limit,
-    base_limit: active.base_limit,
+    base_limit: monthly.limit,
     extra_slots: active.extra_slots,
     listing_lifetime_days: LISTING_ACTIVE_LIFETIME_DAYS,
-    allowed: active_remaining > 0 && monthly_remaining > 0,
+    allowed: monthly_remaining > 0,
     active_remaining,
     monthly_remaining,
   };
@@ -180,30 +180,17 @@ export async function assertFreeListingQuota(
     base_limit: number;
     extra_slots: number;
     show_packages: boolean;
-    quota_reason: "active" | "monthly" | "both";
     monthly_posts_used: number;
     monthly_posts_limit: number;
     publicMessage: string;
   };
-  err.used = q.active_used;
-  err.limit = q.active_limit;
+  err.used = q.monthly_posts_used;
+  err.limit = q.monthly_posts_limit;
   err.base_limit = q.base_limit;
   err.extra_slots = q.extra_slots;
   err.monthly_posts_used = q.monthly_posts_used;
   err.monthly_posts_limit = q.monthly_posts_limit;
   err.show_packages = true;
-
-  const activeFull = q.active_remaining <= 0;
-  const monthlyFull = q.monthly_remaining <= 0;
-  err.quota_reason = activeFull && monthlyFull ? "both" : activeFull ? "active" : "monthly";
-
-  if (err.quota_reason === "monthly") {
-    err.publicMessage = `Ke arritur ${q.monthly_posts_limit} postime falas këtë muaj për këtë kategori kryesore. Njoftimet aktive (max ${q.active_limit}) dhe skadimi pas 3 muajsh janë rregulla të ndara.`;
-  } else if (err.quota_reason === "active") {
-    err.publicMessage = `Ke ${q.active_used} njoftime aktive (max ${q.active_limit}) në këtë kategori kryesore. Fshini një ose prisni skadimin (3 muaj), pastaj postoni përsëri.`;
-  } else {
-    err.publicMessage =
-      "Ke arritur limitin falas (aktive dhe/ose postime mujore) për këtë kategori kryesore. Përdorni portofolin ose Paketën S/M/L.";
-  }
+  err.publicMessage = `Ke arritur ${q.monthly_posts_limit} postime falas këtë muaj për këtë kategori kryesore. Muaji riniset në fillim të muajit të ri. Pas skadimit (3 muaj) njoftimi hiqet, por limiti mujor është veçmas.`;
   throw err;
 }

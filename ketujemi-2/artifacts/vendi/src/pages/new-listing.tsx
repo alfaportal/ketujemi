@@ -733,15 +733,15 @@ export default function NewListing() {
               {paymentToken
                 ? "Pagesa u konfirmua — mund të postoni këtë njoftim."
                 : freeQuota.allowed
-                  ? `Aktive falas: ${freeQuota.active_remaining ?? freeQuota.remaining}/${freeQuota.active_limit ?? freeQuota.limit} · Postime këtë muaj: ${freeQuota.monthly_remaining ?? freeQuota.remaining}/${freeQuota.monthly_posts_limit ?? freeQuota.limit}`
+                  ? `Postime falas këtë muaj në këtë kategori: ${freeQuota.monthly_remaining ?? freeQuota.remaining} / ${freeQuota.monthly_posts_limit ?? freeQuota.limit} (riniset çdo muaj)`
                   : freeQuota.business?.needs_payment
                     ? `Keni arritur ${freeQuota.limit} njoftime falas në këtë kategori. Çdo shtesë kushton €1.`
                     : t.postQuotaExceeded}
             </p>
             <p className="text-xs font-normal opacity-90">
-              Njoftimi qëndron online{" "}
+              Çdo postim qëndron online{" "}
               <strong>{freeQuota.listing_lifetime_days ?? 90} ditë (~3 muaj)</strong>, pastaj hiqet automatikisht.
-              Kjo nuk është e njëjta me limitin 10 për kategori kryesore.
+              Limiti <strong>10/muaj</strong> është për sa herë postoni — jo i njëjtë me skadimin 3-mujor.
             </p>
             {!freeQuota.allowed && !paymentToken && freeQuota.business?.needs_payment ? (
               <PayWithCardButton

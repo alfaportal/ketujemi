@@ -739,11 +739,11 @@ router.get("/listings/free-quota", async (req, res) => {
 
   res.json({
     root_category_id: q.rootId,
-    used: q.active_used,
-    limit: q.active_limit,
+    used: q.monthly_posts_used,
+    limit: q.monthly_posts_limit,
     base_limit: q.base_limit,
     extra_slots: q.extra_slots,
-    remaining: Math.min(q.active_remaining, q.monthly_remaining),
+    remaining: q.monthly_remaining,
     active_used: q.active_used,
     active_limit: q.active_limit,
     active_remaining: q.active_remaining,

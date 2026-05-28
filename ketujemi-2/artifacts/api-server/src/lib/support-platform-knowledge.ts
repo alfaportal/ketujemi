@@ -97,9 +97,8 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 10) Mos postoni duplikat të njëjtë titull+përshkrim aktiv.
 
 === NJOFTIME FALAS (përdorues privat) ===
-• **10 njoftime falas për çdo kategori kryesore** (kufiri llogaritet për rrënjën e kategorisë + të gjitha nën-kategoritë).
-• Kur një njoftim skadon ose fshihet, vendi në atë kategori lirohet.
-• **Max 10 njoftime aktive njëkohësisht** për përdorues (total në platformë).
+• **10 postime falas në muaj** për çdo **kategori kryesore** (rrënja + të gjitha nën-kategoritë; numërohen postimet e këtij muaji kalendarik).
+• Muaji riniset në fillim të muajit të ri — skadimi 3-mujor i njoftimit është rregull i veçantë (jo limit «10 aktive»).
 • Pas limitit: blini **Paketa S/M/L** (€5 / €10 / €20) — kredi portofoli (~16 / 33 / 66 shpallje @ €0.30), **pa skadim** deri sa harxhohet — Stripe.
 • Postimi bazë për privatë është **falas** (jo abonim mujor për postim normal).
 

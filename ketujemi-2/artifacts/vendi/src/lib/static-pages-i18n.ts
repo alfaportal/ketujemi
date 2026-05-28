@@ -164,13 +164,13 @@ const KS: StaticPagesCopy = {
         ],
       },
       {
-        title: "Limitet e postimeve (10 për kategori kryesore)",
+        title: "Limitet e postimeve (10 në muaj për kategori kryesore)",
         paragraphs: [
-          "Çdo përdorues ka **10 njoftime aktive falas** dhe **10 postime falas në muaj** për **çdo kategori kryesore** (18 kategori: Vetura, Telefona, Banesa & Shtëpi, etj.). BMW, Sedan, Skuter etj. **numërohen brenda** kategorisë kryesore — jo veç e veç.",
-          "Kur fshini një njoftim ose kur skadon pas 3 muajsh, lironi vendin **aktiv**; numri i postimeve në muaj riniset çdo muaj kalendarik.",
+          "Çdo përdorues ka të drejtë **10 postime falas në muaj** për **çdo kategori kryesore** (18 kategori: Vetura, Telefona, Banesa & Shtëpi, etj.). BMW, Sedan, Skuter etj. **numërohen brenda** kategorisë kryesore — jo veç e veç.",
+          "Numri **riniset çdo muaj kalendarik** (p.sh. 1–31 maj, pastaj 1–30 qershor). Nuk ka limit të veçantë «10 aktive njëkohësisht» — vetëm 10 postime në muaj për kategori.",
         ],
         bulletsIntro:
-          "Kur arrini limitin aktiv ose mujor në një kategori kryesore, mund të blini kredi në portofol (Paketa S / M / L) — pagesë me Stripe:",
+          "Kur arrini 10 postime në muaj për një kategori kryesore, mund të blini kredi në portofol (Paketa S / M / L) — pagesë me Stripe:",
         bullets: [
           "Paketa S — €5 (~16 postime të paguara, €0.30 për shpallje nga portofoli)",
           "Paketa M — €10 (~33 postime)",
@@ -184,7 +184,7 @@ const KS: StaticPagesCopy = {
         title: "Kohëzgjatja e njoftimit (3 muaj) — ndryshe nga limiti 10",
         paragraphs: [
           "Çdo njoftim i ri **aktivizohet** dhe qëndron online **deri 3 muaj (90 ditë)** nga data e postimit. Pas kësaj **hiqet automatikisht** nëse nuk e fshini vetë më parë.",
-          "Kjo **nuk është** e njëjta gjë me limitin «10 për kategori»: limiti 10 kontrollon sa njoftime mund të keni **njëkohësisht** ose sa **postime falas në muaj**; skadimi 3-mujor kontrollon sa **kohë** qëndron online çdo njoftim i veçantë.",
+          "Kjo **nuk është** e njëjta me limitin «10 në muaj»: limiti mujor është sa herë mund të **postoni**; skadimi 3-mujor është sa **kohë** qëndron online çdo njoftim (pastaj hiqet automatikisht).",
           "Në faqen e njoftimit shfaqen **data e postimit** dhe **data e skadimit**.",
         ],
       },
@@ -682,13 +682,13 @@ const MK: StaticPagesCopy = {
         ],
       },
       {
-        title: "Лимити на објави (10 по главна категорија)",
+        title: "Лимити на објави (10 месечно по главна категорија)",
         paragraphs: [
-          "Секој корисник има **10 активни бесплатни** и **10 бесплатни објави месечно** за **секоја главна категорија** (18). Подкатегориите се бројат во главната — не посебно.",
-          "Бришењето или истекувањето по 3 месеци го ослободува активниот слот; месечниот број се ресетира секој месец.",
+          "Секој корисник има **10 бесплатни објави месечно** за **секоја главна категорија** (18). Подкатегориите се бројат во главната — не посебно.",
+          "Бројот се ресетира секој календарски месец. Нема посебен лимит «10 активни истовремено».",
         ],
         bulletsIntro:
-          "Кога го надминете активниот или месечниот лимит, купете кредит (Пакет S / M / L) — Stripe:",
+          "Кога го надминете месечниот лимит, купете кредит (Пакет S / M / L) — Stripe:",
         bullets: [
           "Пакет S — €5 (~16 платени објави, €0.30 по објава од портфелот)",
           "Пакет M — €10 (~33 објави)",
@@ -702,7 +702,7 @@ const MK: StaticPagesCopy = {
         title: "Траење на огласот (3 месеци) — различно од лимитот 10",
         paragraphs: [
           "Секој оглас е активен **до 3 месеци (90 дена)** од објавувањето, потоа се **отстранува автоматски** ако не го избришете порано.",
-          "Ова **не е** истото како лимитот 10: лимитот 10 е колку имате **истовремено** или **месечно**; 3-месечниот рок е колку **долго** стои секој оглас.",
+          "Ова **не е** истото како лимитот 10/месец: месечниот лимит е колку пати **објавувате**; 3-месечниот рок е колку **долго** стои секој оглас.",
         ],
       },
       {
@@ -1197,13 +1197,13 @@ const MNE: StaticPagesCopy = {
         ],
       },
       {
-        title: "Limiti objava (10 po glavnoj kategoriji)",
+        title: "Limiti objava (10 mjesečno po glavnoj kategoriji)",
         paragraphs: [
-          "Svaki korisnik ima **10 aktivnih besplatnih** i **10 besplatnih objava mjesečno** po **glavnoj kategoriji** (18). Potkategorije se broje unutar glavne — ne zasebno.",
-          "Brisanje ili istek nakon 3 mjeseca oslobađa aktivno mjesto; mjesečni broj se resetuje svakog mjeseca.",
+          "Svaki korisnik ima **10 besplatnih objava mjesečno** po **glavnoj kategoriji** (18). Potkategorije se broje unutar glavne — ne zasebno.",
+          "Broj se resetuje svakog kalendarskog mjeseca. Nema posebnog limita «10 aktivnih odjednom».",
         ],
         bulletsIntro:
-          "Kada premašite aktivni ili mjesečni limit, kupite kredit (Paket S / M / L) — Stripe:",
+          "Kada premašite mjesečni limit, kupite kredit (Paket S / M / L) — Stripe:",
         bullets: [
           "Paket S — €5 (~16 plaćenih objava, €0.30 po objavi iz novčanika)",
           "Paket M — €10 (~33 objave)",
@@ -1217,7 +1217,7 @@ const MNE: StaticPagesCopy = {
         title: "Trajanje oglasa (3 mjeseca) — različito od limita 10",
         paragraphs: [
           "Svaki oglas je aktivan **do 3 mjeseca (90 dana)** od objave, zatim se **automatski uklanja** ako ga sami ne obrišete.",
-          "Ovo **nije** isto što i limit 10: limit 10 je koliko imate **istovremeno** ili **mjesečno**; rok od 3 mjeseca je koliko **dugo** svaki oglas stoji online.",
+          "Ovo **nije** isto što i limit 10/mjesečno: mjesečni limit je koliko puta **objavite**; rok od 3 mjeseca je koliko **dugo** oglas stoji online.",
         ],
       },
       {
