@@ -16,35 +16,27 @@ export function isLikelyKosovoUser(user: User): boolean {
   return Boolean(digits && digits.startsWith("383"));
 }
 
-/** Kosovo users may pay with Stripe when keys are set (default ON). */
+/** Kosovo uses Stripe whenever checkout keys exist (same as other countries). */
 export function kosovoStripeEnabled(): boolean {
-  return process.env.KOSOVO_STRIPE_ENABLED?.trim().toLowerCase() !== "false";
+  return paymentsConfigured();
 }
 
 /**
- * Kosovo (+383): Stripe when configured (cards from KS + diaspora).
- * Local bank only when explicitly chosen via KOSOVO_WALLET_USE_BANK=true
- * and manual transfer or live bank API is ready.
+ * Wallet top-up channel.
+ * Kosovo (+383) is NOT blocked: Stripe when STRIPE_* keys exist.
+ * Local bank only if Stripe is off AND KOSOVO_WALLET_USE_BANK=true.
  */
 export function resolveWalletTopupChannel(user: User): PaymentChannel {
-  if (!isLikelyKosovoUser(user)) {
+  if (paymentsConfigured()) {
     return "stripe";
   }
 
   const useBank =
-    process.env.KOSOVO_WALLET_USE_BANK?.trim().toLowerCase() === "true";
-  if (
-    useBank &&
-    (kosovoBankProviderLive() || kosovoBankManualTransferReady())
-  ) {
-    return "kosovo_bank";
-  }
+    isLikelyKosovoUser(user) &&
+    process.env.KOSOVO_WALLET_USE_BANK?.trim().toLowerCase() === "true" &&
+    (kosovoBankProviderLive() || kosovoBankManualTransferReady());
 
-  if (kosovoStripeEnabled() && paymentsConfigured()) {
-    return "stripe";
-  }
-
-  if (kosovoBankManualTransferReady() || kosovoBankProviderLive()) {
+  if (useBank) {
     return "kosovo_bank";
   }
 

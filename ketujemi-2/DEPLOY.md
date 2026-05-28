@@ -41,6 +41,8 @@ Health check: **`GET /api/healthz`** (duhet `hasFrontend: true`).
 
 Rekomandohen: `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `RECAPTCHA_*`, `VITE_RECAPTCHA_SITE_KEY`, `EMAIL_*`, `VITE_CLOUDINARY_*`, `STRIPE_*`, `VITE_GA_MEASUREMENT_ID` (GA4) — shiko `ketujemi-2/.env.example`.
 
+**Pagesa nga Kosova (+383):** Me `STRIPE_SECRET_KEY` + `STRIPE_PUBLISHABLE_KEY` (ose `VITE_STRIPE_PUBLISHABLE_KEY`) përdoruesit në KS paguajnë me kartë si diaspora. Mos vendos `KOSOVO_STRIPE_ENABLED=false`. Mos vendos `KOSOVO_WALLET_USE_BANK=true` derisa banka lokale të jetë gati — përndryshe detyrohet transfer bankar në vend të Stripe.
+
 **SMS (opsionale):** Lëre `SMS_AUTH_ENABLED` të pa vendosur ose `false` për regjistrim vetëm me email. Kur Vonage/Twilio është gati: `SMS_AUTH_ENABLED=true` + `VONAGE_API_KEY` + `VONAGE_API_SECRET`.
 
 **Email regjistrim:** Verifikimi me kod në email është **aktiv** by default. Vendos `RESEND_API_KEY` + `EMAIL_FROM` (domain i verifikuar në Resend). Për regjistrim instant pa kod: `EMAIL_VERIFICATION_REQUIRED=false`.
