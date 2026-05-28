@@ -6,7 +6,7 @@ export const SUPPORT_EMAIL_ALT = "info@ketujemi.com";
 /** E.164 or spaced display; set SUPPORT_PHONE in Vercel env (e.g. +383 44 123 456). */
 export function getSupportPhoneDisplay(): string {
   const raw = process.env.SUPPORT_PHONE?.trim();
-  if (!raw) return "+383 44 900 100";
+  if (!raw) return "+383 43 555 294";
   if (raw.startsWith("+")) return raw;
   const digits = raw.replace(/\D/g, "");
   if (digits.startsWith("383") && digits.length >= 11) {
