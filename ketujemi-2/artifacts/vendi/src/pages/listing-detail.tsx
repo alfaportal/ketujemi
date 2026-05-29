@@ -31,7 +31,7 @@ import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { ReportListingDialog } from "@/components/report-listing-dialog";
 import { SimilarListingsSection } from "@/components/similar-listings-section";
 import { CardPaymentsPanel } from "@/components/card-payments-panel";
-import { recordListingView } from "@/lib/record-listing-view";
+import { notifyTopListingsRefresh } from "@/lib/top-listings-events";
 import { parseListingImageUrls } from "@/lib/listing-images";
 
 // ─── Spec parser ─────────────────────────────────────────────────────────────
@@ -151,9 +151,10 @@ export default function ListingDetail() {
         .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId))
         .then(() => {
           void queryClient.invalidateQueries({ queryKey: getGetListingQueryKey(id) });
+          notifyTopListingsRefresh();
           toast({
             title: "TOP u aktivizua!",
-            description: "Njoftimi juaj shfaqet në krye të listës.",
+            description: "Njoftimi juaj shfaqet në karuselin TOP në kryefaqe.",
           });
         })
         .catch(() => {
@@ -166,6 +167,7 @@ export default function ListingDetail() {
       return;
     }
     finish();
+    notifyTopListingsRefresh();
     toast({ title: "Faleminderit! TOP do të shfaqet së shpejti." });
   }, [user, id, queryClient, toast]);
 

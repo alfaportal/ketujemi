@@ -638,6 +638,38 @@ router.post("/listings", async (req, res) => {
   });
 });
 
+// ─── GET /listings/top — paid TOP boost strip (homepage carousel) ─────────────
+router.get("/listings/top", async (req, res) => {
+  requestPurgeExpiredListings();
+  const viewer = await getSessionUser(req);
+  const limitRaw = parseInt(String(req.query.limit ?? "24"), 10);
+  const limit = Math.max(1, Math.min(48, Number.isFinite(limitRaw) ? limitRaw : 24));
+  const now = new Date();
+
+  const rows = await db
+    .select()
+    .from(listingsTable)
+    .where(
+      and(
+        eq(listingsTable.is_top, true),
+        gt(listingsTable.top_until, now),
+        activeCondition(),
+      ),
+    )
+    .orderBy(desc(listingsTable.top_until), desc(listingsTable.listed_at))
+    .limit(limit);
+
+  const cats = await db.select().from(categoriesTable);
+  const catMap = new Map(cats.map((c) => [c.id, c.name]));
+  res.json(
+    await annotateListingsWithVipFlag(
+      rows.map((l) =>
+        applyViewerContact(formatListing(l, catMap.get(l.category_id) ?? null), viewer),
+      ),
+    ),
+  );
+});
+
 // ─── GET /listings/featured ───────────────────────────────────────────────────
 router.get("/listings/featured", async (req, res) => {
   requestPurgeExpiredListings();

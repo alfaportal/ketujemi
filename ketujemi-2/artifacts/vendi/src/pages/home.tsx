@@ -20,6 +20,7 @@ import {
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VipPartnersSection } from "@/components/vip-partners-section";
+import { TopListingsSection } from "@/components/top-listings-section";
 import { cn } from "@/lib/utils";
 import {
   cnPrimaryBlue,
@@ -151,6 +152,8 @@ export default function HomePage() {
       </section>
 
       <VipPartnersSection variant="home" />
+
+      <TopListingsSection />
 
       {/* -- Filter bar -- */}
       <section className="bg-white border-b border-gray-100 shadow-sm">
