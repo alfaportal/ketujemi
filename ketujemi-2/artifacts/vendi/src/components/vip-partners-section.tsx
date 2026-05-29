@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { Sparkles, Star } from "lucide-react";
+import useEmblaCarousel from "embla-carousel-react";
 import { useMarket } from "@/lib/market-context";
 import { partnerSignupHref } from "@/lib/static-page-paths";
 import { cn } from "@/lib/utils";
@@ -14,22 +15,35 @@ type PartnerTier = "vip" | "standard";
 
 type VipPartnersSectionProps = {
   className?: string;
-  /** home = 6 VIP + 6 standard per row; hub = 4 + 4 */
+  /** home = VIP carousel after hero; hub = VIP + standard grid on category pages */
   variant?: VipPartnersSectionVariant;
-  /** When set (category hub), API returns partners with listings in this category tree. */
   categoryId?: number;
 };
 
+const HOME_VIP_FETCH_LIMIT = 24;
+
 const VARIANT_CONFIG: Record<
   VipPartnersSectionVariant,
-  { rowLimit: number; gridClass: string }
+  {
+    vipLimit: number;
+    standardLimit: number;
+    showStandardRow: boolean;
+    layout: "carousel" | "grid";
+    gridClass: string;
+  }
 > = {
   home: {
-    rowLimit: 6,
-    gridClass: "grid grid-cols-2 md:grid-cols-6 gap-4 sm:gap-6",
+    vipLimit: HOME_VIP_FETCH_LIMIT,
+    standardLimit: 0,
+    showStandardRow: false,
+    layout: "carousel",
+    gridClass: "",
   },
   hub: {
-    rowLimit: 4,
+    vipLimit: 4,
+    standardLimit: 4,
+    showStandardRow: true,
+    layout: "grid",
     gridClass: "grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4",
   },
 };
@@ -86,6 +100,64 @@ function EmptyPartnerSlot({
         {label}
       </span>
     </Link>
+  );
+}
+
+function VipPartnersCarousel({
+  partners,
+  loaded,
+  rowLabel,
+}: {
+  partners: TrustedPartner[];
+  loaded: boolean;
+  rowLabel: string;
+}) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: true,
+    align: "start",
+    duration: 28,
+    dragFree: true,
+  });
+
+  useEffect(() => {
+    if (!emblaApi || partners.length < 2) return;
+    const timer = setInterval(() => emblaApi.scrollNext(), 4500);
+    return () => clearInterval(timer);
+  }, [emblaApi, partners.length]);
+
+  const slideBasis =
+    "min-w-0 shrink-0 grow-0 basis-[46%] sm:basis-[31%] md:basis-[23%] lg:basis-[18%] xl:basis-[15%]";
+
+  return (
+    <div className="space-y-3 sm:space-y-4">
+      <p className="text-center text-xs sm:text-sm font-black uppercase tracking-wider text-amber-700">
+        <span className="inline-flex items-center gap-1.5">
+          <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" aria-hidden />
+          {rowLabel}
+        </span>
+      </p>
+
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex touch-pan-y gap-3 sm:gap-4">
+          {!loaded
+            ? Array.from({ length: 4 }, (_, i) => (
+                <div
+                  key={`vip-sk-${i}`}
+                  className={cn(
+                    slideBasis,
+                    VIP_SLOT_FRAME,
+                    "animate-pulse border-amber-200/60 bg-amber-50/50",
+                  )}
+                />
+              ))
+            : partners.map((p) => (
+                <div key={p.id} className={slideBasis}>
+                  <PartnerSlot partner={{ ...p, tier: "vip" }} frameClass={VIP_SLOT_FRAME} />
+                </div>
+              ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -168,6 +240,7 @@ async function fetchTierPartners(
   limit: number,
   categoryId?: number,
 ): Promise<TrustedPartner[]> {
+  if (limit <= 0) return [];
   const params = new URLSearchParams({ limit: String(limit), tier });
   if (categoryId != null && categoryId > 0) {
     params.set("category_id", String(categoryId));
@@ -201,14 +274,18 @@ export function VipPartnersSection({
     impressionsSent.current = false;
     setLoaded(false);
 
-    void Promise.all([
-      fetchTierPartners("vip", config.rowLimit, categoryId),
-      fetchTierPartners("standard", config.rowLimit, categoryId),
-    ])
-      .then(([vip, standard]) => {
+    const fetches: Promise<TrustedPartner[]>[] = [
+      fetchTierPartners("vip", config.vipLimit, categoryId),
+    ];
+    if (config.showStandardRow) {
+      fetches.push(fetchTierPartners("standard", config.standardLimit, categoryId));
+    }
+
+    void Promise.all(fetches)
+      .then((results) => {
         if (!cancelled) {
-          setVipPartners(vip);
-          setStandardPartners(standard);
+          setVipPartners(results[0] ?? []);
+          setStandardPartners(config.showStandardRow ? (results[1] ?? []) : []);
           setLoaded(true);
         }
       })
@@ -223,9 +300,11 @@ export function VipPartnersSection({
     return () => {
       cancelled = true;
     };
-  }, [config.rowLimit, categoryId]);
+  }, [config.vipLimit, config.showStandardRow, config.standardLimit, categoryId]);
 
-  const allPartners = [...vipPartners, ...standardPartners];
+  const allPartners = config.showStandardRow
+    ? [...vipPartners, ...standardPartners]
+    : vipPartners;
 
   useEffect(() => {
     if (!loaded || allPartners.length === 0 || impressionsSent.current) return;
@@ -243,48 +322,70 @@ export function VipPartnersSection({
   const standardEmpty =
     variant === "home" ? t.home_partnerStandardPlaceholder : t.hub_partnerStandardPlaceholder;
 
+  const isHome = variant === "home";
+
+  if (isHome && loaded && vipPartners.length === 0) {
+    return null;
+  }
+
   return (
     <section
       className={cn(
-        variant === "home"
-          ? "bg-gray-50 border-t border-gray-200/80"
+        isHome
+          ? "bg-white border-b border-gray-100"
           : "bg-gradient-to-b from-blue-50/25 to-gray-50 rounded-2xl border border-[#1A56A0]/20 shadow-sm",
         className,
       )}
       aria-labelledby="vip-partners-heading"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      <div
+        className={cn(
+          "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+          isHome ? "py-6 sm:py-8" : "py-8 sm:py-10",
+        )}
+      >
         <h2
           id="vip-partners-heading"
           className={cn(
             "text-center text-lg font-black text-gray-900",
-            variant === "home" ? "mb-8" : "mb-6 sm:mb-8",
+            isHome ? "mb-5 sm:mb-6" : "mb-6 sm:mb-8",
           )}
         >
           {t.home_partnerHeading}
         </h2>
-        <div className="space-y-8 sm:space-y-10">
-          <PartnerRow
-            tier="vip"
+
+        {config.layout === "carousel" ? (
+          <VipPartnersCarousel
             partners={vipPartners}
             loaded={loaded}
-            limit={config.rowLimit}
-            gridClass={config.gridClass}
-            emptyLabel={vipEmpty}
-            emptySignupAria={t.home_partnerEmptySignupVip}
             rowLabel={t.home_partnerVipRowLabel}
           />
-          <PartnerRow
-            tier="standard"
-            partners={standardPartners}
-            loaded={loaded}
-            limit={config.rowLimit}
-            gridClass={config.gridClass}
-            emptyLabel={standardEmpty}
-            emptySignupAria={t.home_partnerEmptySignupStandard}
-            rowLabel={t.home_partnerStandardRowLabel}
-          />
-        </div>
+        ) : (
+          <div className="space-y-8 sm:space-y-10">
+            <PartnerRow
+              tier="vip"
+              partners={vipPartners}
+              loaded={loaded}
+              limit={config.vipLimit}
+              gridClass={config.gridClass}
+              emptyLabel={vipEmpty}
+              emptySignupAria={t.home_partnerEmptySignupVip}
+              rowLabel={t.home_partnerVipRowLabel}
+            />
+            {config.showStandardRow ? (
+              <PartnerRow
+                tier="standard"
+                partners={standardPartners}
+                loaded={loaded}
+                limit={config.standardLimit}
+                gridClass={config.gridClass}
+                emptyLabel={standardEmpty}
+                emptySignupAria={t.home_partnerEmptySignupStandard}
+                rowLabel={t.home_partnerStandardRowLabel}
+              />
+            ) : null}
+          </div>
+        )}
       </div>
     </section>
   );

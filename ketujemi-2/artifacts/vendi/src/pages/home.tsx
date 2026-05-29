@@ -150,6 +150,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <VipPartnersSection variant="home" />
+
       {/* -- Filter bar -- */}
       <section className="bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
@@ -338,8 +340,6 @@ export default function HomePage() {
             : null}
         </div>
       </section>
-
-      <VipPartnersSection variant="home" />
 
       {/* -- Market Banner -- */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
