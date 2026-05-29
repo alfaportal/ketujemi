@@ -33,8 +33,8 @@ Dokument referencë për zhvillim dhe moderim. Implementimi në kod:
 
 | Tier | Kuota |
 |------|--------|
-| Biznes Standard | 10 njoftime falas për **çdo kategori**; pas tyre **€1** për çdo njoftim shtesë (`payment_token` nga Stripe checkout) |
-| VIP Biznes ☆ | E pakufizuar — €20 / muaj (`business_tier=vip`, `vip_expires_at`) |
+| Biznes Standard | 10 njoftime falas për **çdo kategori**; pas tyre **€0.30/shpallje nga portofoli** |
+| VIP Biznes ☆ | E pakufizuar — **€50 / muaj** (`business_tier=vip`, `vip_expires_at`) |
 
 API: `GET /auth/account/business-quota`, `GET /listings/free-quota?category_id=…`
 

@@ -2,7 +2,10 @@ import { eq } from "drizzle-orm";
 import { db, usersTable, walletTransactionsTable } from "@workspace/db";
 import type { User } from "@workspace/db";
 import { isBusinessAccount, isVipBusinessActive } from "./business-rules";
-import { getCategoryPostingQuota } from "./category-quota";
+import {
+  countUserActiveListingsInCategoryRoot,
+  getCategoryPostingQuota,
+} from "./category-quota";
 import { LISTING_PACKAGE_CATALOG, type ListingPackageId } from "./listing-packages";
 
 /** Cost per paid listing (€0.30). */
@@ -85,21 +88,25 @@ export async function getWalletBalanceCents(userId: number): Promise<number> {
 export async function listingWillChargeWallet(
   user: User,
   categoryId: number,
-  opts?: { hasPaidExtraPost?: boolean },
 ): Promise<boolean> {
-  if (opts?.hasPaidExtraPost) return false;
   if (isBusinessAccount(user) && isVipBusinessActive(user)) return false;
 
   const q = await getCategoryPostingQuota(user, categoryId);
-  return !q.allowed;
+  if (!q.allowed) return true;
+
+  if (isBusinessAccount(user)) {
+    const { used, limit } = await countUserActiveListingsInCategoryRoot(user, categoryId);
+    if (used >= limit) return true;
+  }
+
+  return false;
 }
 
 export async function assertWalletCoversListing(
   user: User,
   categoryId: number,
-  opts?: { hasPaidExtraPost?: boolean },
 ): Promise<void> {
-  const willCharge = await listingWillChargeWallet(user, categoryId, opts);
+  const willCharge = await listingWillChargeWallet(user, categoryId);
   if (!willCharge) return;
 
   const balance = await getWalletBalanceCents(user.id);

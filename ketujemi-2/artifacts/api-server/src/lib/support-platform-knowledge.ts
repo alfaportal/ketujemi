@@ -99,13 +99,13 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 === NJOFTIME FALAS (përdorues privat) ===
 • **10 postime falas në muaj** për çdo **kategori kryesore** (rrënja + të gjitha nën-kategoritë; numërohen postimet e këtij muaji kalendarik).
 • Muaji riniset në fillim të muajit të ri — skadimi 3-mujor i njoftimit është rregull i veçantë (jo limit «10 aktive»).
-• Pas limitit: blini **Paketa S/M/L** (€5 / €10 / €20) — kredi portofoli (~16 / 33 / 66 shpallje @ €0.30), **pa skadim** deri sa harxhohet — Stripe.
+• Pas limitit: **mbushni portofolin** (€5 / €10 / €20 → ~16 / 33 / 66 shpallje @ **€0.30**), **pa skadim** deri sa harxhohet — Stripe.
 • Postimi bazë për privatë është **falas** (jo abonim mujor për postim normal).
 
 === LLOGARI BIZNESI ===
 • Llogari **biznesi** (account_type business): emër biznesi, verifikim nga admin.
-• **Standard biznes:** 10 njoftime falas **për kategori** (si privatët), pastaj **€1 për çdo postim shtesë** në të njëjtën kategori.
-• **VIP biznes €20/muaj:** postime të pakufizuara në kategori; badge VIP; rregulla më strikte (çmim real i detyrueshëm, jo «na kontaktoni», jo reklama të përgjithshme, foto reale jo stock).
+• **Standard biznes:** 10 njoftime falas **për kategori** (si privatët), pastaj **€0.30/shpallje nga portofoli**.
+• **VIP biznes €50/muaj:** postime të pakufizuara në kategori; badge VIP; rregulla më strikte (çmim real i detyrueshëm, jo «na kontaktoni», jo reklama të përgjithshme, foto reale jo stock).
 • Bizneset duhet çmim > 0 € dhe përshkrim produkti specifik.
 • Ankesa: pas 3 paralajmërimeve, pas 5 — pezullim 30 ditë.
 
@@ -117,7 +117,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 
 === PAGESAT (Stripe) ===
 • Platforma përdor **Stripe Checkout** për pagesa me **kartë bankare** (Visa, Mastercard, etj.).
-• Stripe përdoret për: **Partner** (/partner), **TOP njoftimi** (€2 / €5 / €8), **Paketa njoftime** S/M/L, **VIP biznes** dhe rinovime.
+• Stripe përdoret për: **Partner** (/partner — Standard €30 / VIP €50 **për muaj**), **TOP njoftimi** (€2 / €5 / €8), **portofol** (€5 / €10 / €20), **VIP biznes €50/muaj**.
 • KetuJemi **NUK** mbledh pagesa për blerjen e produktit te shitësi — blerësi dhe shitësi bien dakord direkt.
 • Pas pagesës Stripe për partner/paketë, aktivizimi automatik në llogari.
 
@@ -144,7 +144,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 
 === FAQ — PYETJET MË TË SHPESHTA ===
 **Si të postoj?** → «Posto Falas», kategori, të dhëna, foto, publiko (deri 3 muaj).
-**Sa kushton postimi?** → Falas për privatë (10/kategori + 10 total aktive); TOP opsional €2/€5/€8; biznes €1 pas 10 në kategori; partner €30/€50.
+**Sa kushton postimi?** → Falas (10/muaj për kategori); pas limitit **portofol €0.30/shpallje**; TOP opsional €2/€5/€8; VIP biznes €50/muaj; partner dyqani Standard €30 / VIP €50 për muaj.
 **Sa foto?** → Deri në 10 për njoftim.
 **Si ta fshij/ndryshoj?** → Profili → njoftimet e mia.
 **Si kontaktoj shitësin?** → Telefono / WhatsApp në faqen e njoftimit.

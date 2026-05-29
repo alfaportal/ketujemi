@@ -402,8 +402,8 @@ const KS: StaticPagesCopy = {
         title: "Limitet e postimeve",
         bullets: [
           "Biznes Standard: 10 njoftime falas për çdo kategori + verifikim",
-          "Pas 10 njoftimeve në të njëjtën kategori: €1 për çdo njoftim shtesë",
-          "VIP Biznes ☆: njoftime të pakufizuara për €20/muaj",
+          "Pas 10 njoftimeve në të njëjtën kategori: €0.30/shpallje nga portofoli",
+          "VIP Biznes ☆: njoftime të pakufizuara për €50/muaj",
           "Kuota kontrollohet automatikisht në llogarinë tuaj",
         ],
       },
@@ -917,8 +917,8 @@ const MK: StaticPagesCopy = {
         title: "Лимити на објавување",
         bullets: [
           "Стандарден бизнис: 10 бесплатни огласи по категорија + верификација",
-          "По 10 огласи во истата категорија: €1 за секој дополнителен оглас",
-          "VIP Бизнис ☆: неограничени огласи за €20/месечно",
+          "По 10 огласи во истата категорија: €0.30/оглас од портфел",
+          "VIP Бизнис ☆: неограничени огласи за €50/месечно",
           "Квотата се проверува автоматски на вашата сметка",
         ],
       },
@@ -1432,8 +1432,8 @@ const MNE: StaticPagesCopy = {
         title: "Limiti objavljivanja",
         bullets: [
           "Standardni biznis: 10 besplatnih oglasa po kategoriji + verifikacija",
-          "Nakon 10 oglasa u istoj kategoriji: €1 po svakom dodatnom oglasu",
-          "VIP Biznis ☆: neograničeni oglasi za €20/mjesec",
+          "Nakon 10 oglasa u istoj kategoriji: €0.30/oglas iz novčanika",
+          "VIP Biznis ☆: neograničeni oglasi za €50/mjesec",
           "Kvota se provjerava automatski na vašem nalogu",
         ],
       },

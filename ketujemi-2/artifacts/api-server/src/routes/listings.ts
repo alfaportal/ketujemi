@@ -19,7 +19,6 @@ import {
   getCategoryPostingQuota,
 } from "../lib/category-quota";
 import { isBusinessAccount, isVipBusinessActive } from "../lib/business-rules";
-import { assertBusinessCategoryListingQuota } from "../lib/business-quota";
 import { assertBusinessListingCreate } from "../lib/business-listing-guard";
 import { removeUserDuplicateListingsForPost } from "../lib/listing-duplicate-guard";
 import {
@@ -32,7 +31,6 @@ import { listingFeedOrderBy, isTopActive } from "../lib/listing-top";
 import { moderateListingContent } from "../lib/listing-ai-moderation";
 import { logListingModerationRejection } from "../lib/listing-moderation-rejection-log";
 import { parseUiLang } from "../lib/claude-client";
-import { consumeExtraPostPayment } from "../lib/payments";
 import {
   assertWalletCoversListing,
   debitWalletForListing,
@@ -379,23 +377,6 @@ router.post("/listings", async (req, res) => {
     return;
   }
 
-  const paymentToken =
-    req.body && typeof req.body === "object" && typeof (req.body as { payment_token?: string }).payment_token === "string"
-      ? (req.body as { payment_token: string }).payment_token.trim()
-      : "";
-
-  let hasPaidExtraPost = false;
-  if (paymentToken) {
-    hasPaidExtraPost = await consumeExtraPostPayment(viewer.id, paymentToken);
-    if (!hasPaidExtraPost) {
-      res.status(402).json({
-        error: "INVALID_PAYMENT_TOKEN",
-        message: "Pagesa nuk u verifikua. Paguani €1 për njoftim shtesë.",
-      });
-      return;
-    }
-  }
-
   const selfDuplicate = await blockSelfDuplicateListingIfNeeded(
     viewer,
     parsed.data.title,
@@ -448,13 +429,11 @@ router.post("/listings", async (req, res) => {
     throw err;
   }
 
-  const willChargeWallet = await listingWillChargeWallet(viewer, parsed.data.category_id, {
-    hasPaidExtraPost,
-  });
+  const willChargeWallet = await listingWillChargeWallet(viewer, parsed.data.category_id);
 
   if (willChargeWallet) {
     try {
-      await assertWalletCoversListing(viewer, parsed.data.category_id, { hasPaidExtraPost });
+      await assertWalletCoversListing(viewer, parsed.data.category_id);
     } catch (err: unknown) {
       if (err instanceof Error && err.message === "WALLET_INSUFFICIENT") {
         const e = err as Error & {
@@ -477,29 +456,6 @@ router.post("/listings", async (req, res) => {
       }
       throw err;
     }
-  } else if (isBusinessAccount(viewer) && !isVipBusinessActive(viewer)) {
-    try {
-      await assertBusinessCategoryListingQuota(viewer, parsed.data.category_id, {
-        hasPaidExtraPost,
-      });
-    } catch (err: unknown) {
-      if (err instanceof Error && err.message === "BUSINESS_QUOTA_EXCEEDED") {
-        const e = err as Error & {
-          used: number;
-          limit: number;
-          extraPostPriceEur: number;
-        };
-        res.status(402).json({
-          error: "BUSINESS_QUOTA_EXCEEDED",
-          message: `Keni arritur ${e.limit} njoftime falas për këtë kategori. Çdo njoftim shtesë kushton €0.30 nga portofoli.`,
-          used: e.used,
-          limit: e.limit,
-          extraPostPriceEur: 0.3,
-        });
-        return;
-      }
-      throw err;
-    }
   } else if (!isBusinessAccount(viewer)) {
     try {
       await assertFreeListingQuota(viewer, parsed.data.category_id);
@@ -510,7 +466,7 @@ router.post("/listings", async (req, res) => {
           error: "FREE_QUOTA_EXCEEDED",
           message:
             (err as Error & { publicMessage?: string }).publicMessage ??
-            "Ke arritur limitin falas për këtë kategori kryesore. Mbush portofolin ose bli Paketën S/M/L.",
+            "Ke arritur limitin falas për këtë kategori kryesore. Mbush portofolin (€0.30/shpallje) ose prit fillimin e muajit të ri.",
           used: e.used,
           limit: e.limit,
           show_packages: (e as Error & { show_packages?: boolean }).show_packages ?? true,
@@ -786,8 +742,8 @@ router.get("/listings/free-quota", async (req, res) => {
     show_packages: !q.allowed,
     business: isBusiness
       ? {
-          extra_post_price_eur: 1,
-          needs_payment: !q.allowed,
+          listing_price_eur: 0.3,
+          needs_wallet_topup: !q.allowed,
         }
       : null,
   });

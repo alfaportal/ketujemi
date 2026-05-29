@@ -19,7 +19,6 @@ function appOrigin(req: Request): string {
 }
 
 const CARD_CHECKOUT_PURPOSES = new Set<PaymentPurpose>([
-  "extra_post",
   "vip_month",
   "top_listing_s",
   "top_listing_m",

@@ -131,9 +131,9 @@ const DETAILED_FAQ: FaqEntry[] = [
   {
     keywords: /biznes|business|10\s+njoft|paket|listing\s+package|s\s*€|m\s*€|l\s*€/i,
     reply: {
-      sq: "Biznes: **10** njoftime falas për kategori, pastaj €1/postim. **VIP** €20/muaj — postime të pakufizuara. Paketa shtesë për përdorues: S/M/L (shih modalin kur arrini limitin). Partner dyqani: **/partner**.",
-      mk: "Бизнис 10 бесплатно, €1, VIP €20. Partner: **/partner**.",
-      me: "Biznis 10 besplatno, €1, VIP €20. Partner: **/partner**.",
+      sq: "Biznes: **10** falas/kategori, pastaj **€0.30/shpallje** nga portofoli. **VIP biznes €50/muaj** — postime të pakufizuara. Partner dyqani (/partner): **Standard €30/muaj**, **VIP €50/muaj** (pagesë fillestare me Stripe).",
+      mk: "Бизнис 10 бесплатно, €0.30 од портфел, VIP €50. Partner: Standard €30 / VIP €50 месечно.",
+      me: "Biznis 10 besplatno, €0.30 iz novčanika, VIP €50. Partner: Standard €30 / VIP €50 mjesečno.",
     },
   },
   {
@@ -164,7 +164,7 @@ const DETAILED_FAQ: FaqEntry[] = [
   {
     keywords: /stripe|kart|card|pages|pay|checkout|bler pages/i,
     reply: {
-      sq: "Pagesat online në KetuJemi bëhen me **Stripe** (kartë bankare): partner **/partner** (Standard €30 / VIP €50), **TOP** njoftimi (€2/€5/€8), paketa shtesë njoftimesh S/M/L. Blerja e produktit te shitësi **nuk** paguhet përmes KetuJemi — kontakt direkt me shitësin.",
+      sq: "Pagesat online në KetuJemi bëhen me **Stripe** (kartë bankare): partner **/partner** (Standard **€30/muaj** / VIP **€50/muaj**), **TOP** njoftimi (€2/€5/€8), **portofol** (€5/€10/€20), **VIP biznes €50/muaj**. Blerja e produktit te shitësi **nuk** paguhet përmes KetuJemi — kontakt direkt me shitësin.",
       mk: "Stripe за partner, TOP, пакети. Купување од продавач — директно, не преку платформата.",
       me: "Stripe za partner, TOP, pakete. Kupovina od prodavača — direktno.",
     },

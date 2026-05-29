@@ -43,10 +43,8 @@ import { AuthToolbar } from "@/components/auth-toolbar";
 import { SellerProfileGate } from "@/components/seller-profile-gate";
 import { PostingAssistantPanel } from "@/components/posting-assistant-panel";
 import { CardPaymentsPanel } from "@/components/card-payments-panel";
-import { PayWithCardButton } from "@/components/pay-with-card-button";
 import {
   ListingPackagesModal,
-  ListingPackageSuccessBanner,
 } from "@/components/listing-packages-modal";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
@@ -245,50 +243,10 @@ export default function NewListing() {
     monthly_posts_limit?: number;
     monthly_remaining?: number;
     listing_lifetime_days?: number;
-    business?: { needs_payment?: boolean; extra_post_price_eur?: number } | null;
+    business?: { needs_wallet_topup?: boolean; listing_price_eur?: number } | null;
   } | null>(null);
-  const [paymentToken, setPaymentToken] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    return new URLSearchParams(window.location.search).get("payment_token");
-  });
   const [showPackagesModal, setShowPackagesModal] = useState(false);
   const [packagesModalMessage, setPackagesModalMessage] = useState<string | undefined>();
-  const [packageSuccessCode, setPackageSuccessCode] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("package_payment") === "success") {
-      return params.get("code");
-    }
-    return null;
-  });
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session_id")?.trim();
-    if (params.get("package_payment") === "success" && sessionId?.startsWith("cs_")) {
-      void import("@/lib/stripe-checkout")
-        .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId))
-        .catch(() => undefined);
-    }
-    if (packageSuccessCode) {
-      const url = new URL(window.location.href);
-      url.searchParams.delete("package_payment");
-      url.searchParams.delete("code");
-      url.searchParams.delete("session_id");
-      window.history.replaceState({}, "", url.pathname + url.search);
-    }
-  }, [packageSuccessCode]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session_id")?.trim();
-    if (!paymentToken || !sessionId?.startsWith("cs_")) return;
-    void import("@/lib/stripe-checkout")
-      .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId))
-      .catch(() => undefined);
-  }, [paymentToken]);
   const effectiveCategoryId =
     Number(brandCatId) || Number(bodyCatId) || Number(parentCatId);
 
@@ -385,10 +343,8 @@ export default function NewListing() {
           return;
         }
         if (data?.error === "BUSINESS_QUOTA_EXCEEDED") {
-          toast({
-            title: "Keni arritur limitin. Paguani €1 për njoftim shtesë.",
-            variant: "destructive",
-          });
+          setPackagesModalMessage("Keni arritur limitin falas. Mbushni portofolin (€0.30 për shpallje).");
+          setShowPackagesModal(true);
           return;
         }
         toast({ title: t.postError, variant: "destructive" });
@@ -477,17 +433,9 @@ export default function NewListing() {
   };
 
   const onSubmit = (data: FormData) => {
-    const needsPay = freeQuota?.business?.needs_payment && !paymentToken;
-    if (freeQuota && !freeQuota.allowed && !paymentToken) {
-      if (needsPay) {
-        toast({
-          title: "Paguani €1 për të vazhduar postimin.",
-          variant: "destructive",
-        });
-      } else {
-        setPackagesModalMessage("Ke arritur limitin falas. Zgjero me një paketë shtesë.");
-        setShowPackagesModal(true);
-      }
+    if (freeQuota && !freeQuota.allowed) {
+      setPackagesModalMessage("Ke arritur limitin falas. Mbush portofolin (€0.30 për shpallje).");
+      setShowPackagesModal(true);
       return;
     }
     if (imageUrls.length === 0) {
@@ -556,7 +504,6 @@ export default function NewListing() {
           }
         : {}),
     };
-    if (paymentToken) payload.payment_token = paymentToken;
 
     void fetch("/api/listings", {
       method: "POST",
@@ -616,23 +563,11 @@ export default function NewListing() {
             setShowPackagesModal(true);
             return;
           }
-          if (errData.error === "BUSINESS_QUOTA_EXCEEDED") {
-            toast({
-              title: "Keni arritur limitin falas.",
-              description: "Mbushni portofolin nga profili (€0.30 për shpallje).",
-              variant: "destructive",
-            });
-            return;
-          }
-          if (errData.error === "WALLET_INSUFFICIENT") {
-            toast({
-              title: "Balanca nuk mjafton",
-              description:
-                (body as { message?: string }).message ??
-                "Mbushni portofolin €5 / €10 / €20 nga profili juaj.",
-              variant: "destructive",
-            });
-            setLocation("/profile");
+          if (errData.error === "BUSINESS_QUOTA_EXCEEDED" || errData.error === "WALLET_INSUFFICIENT") {
+            setPackagesModalMessage(
+              errData.message ?? "Mbushni portofolin (€0.30 për shpallje).",
+            );
+            setShowPackagesModal(true);
             return;
           }
           toast({ title: errData.message ?? t.postError, variant: "destructive" });
@@ -714,42 +649,36 @@ export default function NewListing() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
-        {packageSuccessCode ? (
-          <ListingPackageSuccessBanner
-            code={packageSuccessCode}
-            onDismiss={() => setPackageSuccessCode(null)}
-          />
-        ) : null}
         {user?.account_type === "business" ? <CardPaymentsPanel /> : null}
         {freeQuota != null && effectiveCategoryId > 0 ? (
           <div
             className={`rounded-xl border px-4 py-3 text-sm font-medium space-y-2 ${
-              freeQuota.allowed || paymentToken
+              freeQuota.allowed
                 ? "border-blue-100 bg-blue-50 text-blue-800"
                 : "border-amber-200 bg-amber-50 text-amber-900"
             }`}
           >
             <p>
-              {paymentToken
-                ? "Pagesa u konfirmua — mund të postoni këtë njoftim."
-                : freeQuota.allowed
-                  ? `Postime falas këtë muaj në këtë kategori: ${freeQuota.monthly_remaining ?? freeQuota.remaining} / ${freeQuota.monthly_posts_limit ?? freeQuota.limit} (riniset çdo muaj)`
-                  : freeQuota.business?.needs_payment
-                    ? `Keni arritur ${freeQuota.limit} njoftime falas në këtë kategori. Çdo shtesë kushton €1.`
-                    : t.postQuotaExceeded}
+              {freeQuota.allowed
+                ? `Postime falas këtë muaj në këtë kategori: ${freeQuota.monthly_remaining ?? freeQuota.remaining} / ${freeQuota.monthly_posts_limit ?? freeQuota.limit} (riniset çdo muaj)`
+                : `Keni arritur limitin falas. Çdo shpallje shtesë kushton €${freeQuota.business?.listing_price_eur ?? 0.3} nga portofoli.`}
             </p>
             <p className="text-xs font-normal opacity-90">
               Çdo postim qëndron online{" "}
               <strong>{freeQuota.listing_lifetime_days ?? 90} ditë (~3 muaj)</strong>, pastaj hiqet automatikisht.
               Limiti <strong>10/muaj</strong> është për sa herë postoni — jo i njëjtë me skadimin 3-mujor.
             </p>
-            {!freeQuota.allowed && !paymentToken && freeQuota.business?.needs_payment ? (
-              <PayWithCardButton
-                purpose="extra_post"
-                className="w-full min-h-11 bg-blue-600 hover:bg-blue-700"
+            {!freeQuota.allowed ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setPackagesModalMessage("Mbush portofolin për të vazhduar postimin.");
+                  setShowPackagesModal(true);
+                }}
+                className="w-full min-h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm"
               >
-                Paguaj €1 me kartë dhe vazhdo
-              </PayWithCardButton>
+                Mbush portofolin (€5 / €10 / €20)
+              </button>
             ) : null}
           </div>
         ) : null}

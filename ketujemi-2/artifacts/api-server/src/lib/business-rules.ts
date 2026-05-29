@@ -5,8 +5,9 @@
 
 /** Same per-root-category cap as private users (see category-quota). */
 export const BUSINESS_STANDARD_FREE_LISTINGS_PER_CATEGORY = 10;
-export const BUSINESS_EXTRA_POST_PRICE_EUR = 1;
-export const BUSINESS_VIP_MONTHLY_PRICE_EUR = 20;
+/** Legacy — extra post checkout removed; over-quota posts use wallet (€0.30). */
+export const BUSINESS_EXTRA_POST_PRICE_EUR = 0.3;
+export const BUSINESS_VIP_MONTHLY_PRICE_EUR = 50;
 
 export const COMPLAINT_WARN_THRESHOLD = 3;
 export const COMPLAINT_SUSPEND_THRESHOLD = 5;
