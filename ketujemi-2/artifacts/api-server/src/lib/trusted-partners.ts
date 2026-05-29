@@ -9,6 +9,11 @@ import {
 } from "./business-partner";
 import { getCategoryTreeIds } from "./category-tree";
 import { userOwnsListing } from "./listing-ownership";
+import {
+  loadBusinessPartnerCategoryMap,
+  userHasAdminPartnerCategories,
+  userMatchesAdminPartnerCategory,
+} from "./business-partner-categories";
 import { fetchActiveHomepagePartners } from "./homepage-partners";
 
 export type TrustedPartnerDto = {
@@ -84,6 +89,22 @@ export async function fetchTrustedVipPartnersForCategory(
   const vipUsers = await fetchTrustedVipPartners();
   if (vipUsers.length === 0) return [];
 
+  const categoryMap = await loadBusinessPartnerCategoryMap();
+  const adminPlaced: User[] = [];
+  const autoCandidates: User[] = [];
+
+  for (const user of vipUsers) {
+    if (userHasAdminPartnerCategories(user.id, categoryMap)) {
+      if (await userMatchesAdminPartnerCategory(user.id, categoryId, categoryMap)) {
+        adminPlaced.push(user);
+      }
+    } else {
+      autoCandidates.push(user);
+    }
+  }
+
+  if (autoCandidates.length === 0) return adminPlaced;
+
   const now = new Date();
   const listings = await db
     .select({
@@ -99,14 +120,22 @@ export async function fetchTrustedVipPartnersForCategory(
       ),
     );
 
-  if (listings.length === 0) return [];
-
-  const matched: User[] = [];
-  for (const user of vipUsers) {
-    const hasListing = listings.some((l) => userOwnsListing(user, l));
-    if (hasListing) matched.push(user);
+  const listingMatched: User[] = [];
+  if (listings.length > 0) {
+    for (const user of autoCandidates) {
+      const hasListing = listings.some((l) => userOwnsListing(user, l));
+      if (hasListing) listingMatched.push(user);
+    }
   }
-  return matched;
+
+  const seen = new Set<number>();
+  const merged: User[] = [];
+  for (const u of [...adminPlaced, ...listingMatched]) {
+    if (seen.has(u.id)) continue;
+    seen.add(u.id);
+    merged.push(u);
+  }
+  return merged;
 }
 
 /** Active standard (non-VIP) business accounts for the partner strip. */
@@ -138,6 +167,22 @@ export async function fetchTrustedStandardPartnersForCategory(
   const standardUsers = await fetchTrustedStandardPartners();
   if (standardUsers.length === 0) return [];
 
+  const categoryMap = await loadBusinessPartnerCategoryMap();
+  const adminPlaced: User[] = [];
+  const autoCandidates: User[] = [];
+
+  for (const user of standardUsers) {
+    if (userHasAdminPartnerCategories(user.id, categoryMap)) {
+      if (await userMatchesAdminPartnerCategory(user.id, categoryId, categoryMap)) {
+        adminPlaced.push(user);
+      }
+    } else {
+      autoCandidates.push(user);
+    }
+  }
+
+  if (autoCandidates.length === 0) return adminPlaced;
+
   const now = new Date();
   const listings = await db
     .select({
@@ -153,14 +198,22 @@ export async function fetchTrustedStandardPartnersForCategory(
       ),
     );
 
-  if (listings.length === 0) return [];
-
-  const matched: User[] = [];
-  for (const user of standardUsers) {
-    const hasListing = listings.some((l) => userOwnsListing(user, l));
-    if (hasListing) matched.push(user);
+  const listingMatched: User[] = [];
+  if (listings.length > 0) {
+    for (const user of autoCandidates) {
+      const hasListing = listings.some((l) => userOwnsListing(user, l));
+      if (hasListing) listingMatched.push(user);
+    }
   }
-  return matched;
+
+  const seen = new Set<number>();
+  const merged: User[] = [];
+  for (const u of [...adminPlaced, ...listingMatched]) {
+    if (seen.has(u.id)) continue;
+    seen.add(u.id);
+    merged.push(u);
+  }
+  return merged;
 }
 
 export function toTrustedPartnerDto(user: User, tier: PartnerTier): TrustedPartnerDto {

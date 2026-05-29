@@ -156,6 +156,7 @@ export interface AdminPartnerApplication {
   suspended_at: string | null;
   accepted_terms: boolean;
   client_ip: string | null;
+  category_ids?: number[];
 }
 
 export interface AdminPartnerApplicationsResponse {
@@ -221,6 +222,13 @@ export function changeAdminPartnerPackage(id: number, pkg: "standard" | "vip") {
   return request<{ ok: boolean; id: number; package: string; package_label: string }>(
     `/partner-applications/${id}/package`,
     { method: "PATCH", body: JSON.stringify({ package: pkg }) },
+  );
+}
+
+export function updateAdminPartnerCategories(id: number, category_ids: number[]) {
+  return request<{ ok: boolean; id: number; category_ids: number[] }>(
+    `/partner-applications/${id}/categories`,
+    { method: "PATCH", body: JSON.stringify({ category_ids }) },
   );
 }
 

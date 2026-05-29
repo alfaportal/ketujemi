@@ -7,11 +7,13 @@ export function PartnerCategoryChecklist({
   selectedIds,
   onChange,
   disabled,
+  variant = "curated",
 }: {
   categories: AdminCategory[];
   selectedIds: number[];
   onChange: (ids: number[]) => void;
   disabled?: boolean;
+  variant?: "curated" | "business";
 }) {
   const roots = sortRootCategories(categories.filter((c) => isRootCategory(c)));
 
@@ -25,11 +27,11 @@ export function PartnerCategoryChecklist({
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-bold text-gray-700">
-        Kategoritë ku shfaqet (faqe hub)
-      </p>
+      <p className="text-xs font-bold text-gray-700">Ku shfaqet partneri</p>
       <p className="text-[11px] text-gray-500 leading-snug">
-        Asnjë e zgjedhur = vetëm kryefaqja. Mund të zgjidhni disa njëkohësisht.
+        {variant === "business"
+          ? "Pa zgjedhje = shfaqet automatikisht sipas shpalljeve aktive. Zgjidhni kategori për ta vendosur manualisht."
+          : "Pa zgjedhje = vetëm kryefaqja. Zgjidhni kategori për faqet hub (Vetura, Telefona, etj.)."}
       </p>
       {roots.length === 0 ? (
         <p className="text-xs text-gray-400">Nuk u ngarkuan kategoritë.</p>
@@ -66,8 +68,11 @@ export function PartnerCategoryChecklist({
 export function formatPartnerCategoryLabels(
   categoryIds: number[],
   categories: AdminCategory[],
+  variant: "curated" | "business" = "curated",
 ): string {
-  if (categoryIds.length === 0) return "Vetëm kryefaqe";
+  if (categoryIds.length === 0) {
+    return variant === "business" ? "Automatik (shpallje)" : "Vetëm kryefaqe";
+  }
   const byId = new Map(categories.map((c) => [c.id, c.name]));
   const names = categoryIds
     .map((id) => byId.get(id))

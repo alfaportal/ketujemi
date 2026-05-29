@@ -27,9 +27,21 @@ CREATE INDEX IF NOT EXISTS homepage_partner_categories_category_idx
   ON homepage_partner_categories (category_id);
 `;
 
+const BUSINESS_PARTNER_CATEGORIES_SQL = `
+CREATE TABLE IF NOT EXISTS business_partner_categories (
+  user_id integer NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  category_id integer NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+  PRIMARY KEY (user_id, category_id)
+);
+
+CREATE INDEX IF NOT EXISTS business_partner_categories_category_idx
+  ON business_partner_categories (category_id);
+`;
+
 export async function ensureHomepagePartnersSchema(pool: pg.Pool): Promise<void> {
   await pool.query(HOMEPAGE_PARTNERS_SQL);
   await pool.query(HOMEPAGE_PARTNER_CATEGORIES_SQL);
+  await pool.query(BUSINESS_PARTNER_CATEGORIES_SQL);
 
   const { rows } = await pool.query<{ ok: boolean }>(`
     SELECT EXISTS (

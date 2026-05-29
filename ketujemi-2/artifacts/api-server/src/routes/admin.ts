@@ -599,6 +599,26 @@ router.patch("/admin/partner-applications/:id/package", requireAdmin, async (req
   }
 });
 
+router.patch("/admin/partner-applications/:id/categories", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { updatePartnerApplicationCategories } = await import("../lib/admin-partner-applications");
+    const categoryIds = Array.isArray(req.body?.category_ids) ? req.body.category_ids : [];
+    const result = await updatePartnerApplicationCategories(id, categoryIds);
+    if (!result) {
+      res.status(400).json({
+        error: "NO_USER",
+        message: "Partneri nuk ka llogari biznesi — kategoritë vendosen pas aktivizimit.",
+      });
+      return;
+    }
+    res.json({ ok: true, id, category_ids: result.category_ids });
+  } catch (err) {
+    req.log.error({ err }, "Admin partner categories");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // ─── Homepage trusted partners (curated logos) ───────────────────────────────
 router.get("/admin/homepage-partners", requireAdmin, async (_req, res) => {
   try {

@@ -1,6 +1,7 @@
 import { db, partnersTable } from "@workspace/db";
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { packageLabelFromTier } from "./partner-registration";
+import { loadBusinessPartnerCategoryMap, setBusinessPartnerCategories, getBusinessPartnerCategoryIds } from "./business-partner-categories";
 
 export type AdminPartnerRow = {
   id: number;
@@ -24,6 +25,7 @@ export type AdminPartnerRow = {
   suspended_at: string | null;
   accepted_terms: boolean;
   client_ip: string | null;
+  category_ids: number[];
 };
 
 export function paymentLabel(status: string, pkg: string): string {
@@ -34,7 +36,10 @@ export function paymentLabel(status: string, pkg: string): string {
 }
 
 export async function listAdminPartnerApplications(): Promise<AdminPartnerRow[]> {
-  const rows = await db.select().from(partnersTable).orderBy(desc(partnersTable.created_at));
+  const [rows, categoryMap] = await Promise.all([
+    db.select().from(partnersTable).orderBy(desc(partnersTable.created_at)),
+    loadBusinessPartnerCategoryMap(),
+  ]);
   return rows.map((p) => ({
     id: p.id,
     user_id: p.user_id,
@@ -57,7 +62,25 @@ export async function listAdminPartnerApplications(): Promise<AdminPartnerRow[]>
     suspended_at: p.suspended_at?.toISOString() ?? null,
     accepted_terms: p.accepted_terms,
     client_ip: p.client_ip,
+    category_ids: p.user_id ? (categoryMap.get(p.user_id) ?? []) : [],
   }));
+}
+
+export async function updatePartnerApplicationCategories(
+  partnerApplicationId: number,
+  categoryIds: number[],
+): Promise<{ category_ids: number[] } | null> {
+  const [partner] = await db
+    .select({ user_id: partnersTable.user_id })
+    .from(partnersTable)
+    .where(eq(partnersTable.id, partnerApplicationId))
+    .limit(1);
+
+  if (!partner?.user_id) return null;
+
+  await setBusinessPartnerCategories(partner.user_id, categoryIds);
+  const saved = await getBusinessPartnerCategoryIds(partner.user_id);
+  return { category_ids: saved };
 }
 
 export function countByStatus(rows: AdminPartnerRow[]) {

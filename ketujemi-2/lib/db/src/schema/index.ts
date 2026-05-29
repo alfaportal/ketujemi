@@ -13,6 +13,7 @@ export * from "./partner_logo_stats";
 export * from "./partners";
 export * from "./homepage_partners";
 export * from "./homepage_partner_categories";
+export * from "./business_partner_categories";
 export * from "./listing_package_purchases";
 export * from "./wallet_transactions";
 export * from "./fiscal_receipts";

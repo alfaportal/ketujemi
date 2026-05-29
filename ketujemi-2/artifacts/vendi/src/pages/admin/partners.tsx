@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   changeAdminPartnerPackage,
+  getAdminCategories,
   getAdminPartnerApplications,
   reactivateAdminPartner,
   rejectAdminPartner,
   suspendAdminPartner,
+  updateAdminPartnerCategories,
+  type AdminCategory,
   type AdminPartnerApplication,
   type AdminPartnerApplicationsResponse,
 } from "@/lib/admin-api";
@@ -14,6 +17,7 @@ import {
   Building2,
   Eye,
   FileText,
+  LayoutGrid,
   Loader2,
   Pencil,
   RefreshCw,
@@ -27,6 +31,10 @@ import { useMarket } from "@/lib/market-context";
 import { dateFnsLocale } from "@/lib/app-extra-i18n";
 import { cn } from "@/lib/utils";
 import { AdminHomepagePartnersPanel } from "./homepage-partners-panel";
+import {
+  formatPartnerCategoryLabels,
+} from "./partner-category-checklist";
+import { PartnerCategoriesModal } from "./partner-categories-modal";
 
 type Filter = "all" | "pending" | "active" | "suspended" | "rejected";
 
@@ -64,6 +72,10 @@ export default function AdminPartners() {
   const [rejectRow, setRejectRow] = useState<AdminPartnerApplication | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [packageRow, setPackageRow] = useState<AdminPartnerApplication | null>(null);
+  const [categories, setCategories] = useState<AdminCategory[]>([]);
+  const [categoryRow, setCategoryRow] = useState<AdminPartnerApplication | null>(null);
+  const [categoryEditIds, setCategoryEditIds] = useState<number[]>([]);
+  const [categorySaving, setCategorySaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -79,6 +91,12 @@ export default function AdminPartners() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    getAdminCategories()
+      .then(setCategories)
+      .catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     if (!toast) return;
@@ -118,6 +136,29 @@ export default function AdminPartners() {
       });
     } finally {
       setBusyId(null);
+    }
+  }
+
+  function openPartnerCategories(p: AdminPartnerApplication) {
+    setCategoryRow(p);
+    setCategoryEditIds(p.category_ids ?? []);
+  }
+
+  async function savePartnerCategories() {
+    if (!categoryRow) return;
+    setCategorySaving(true);
+    try {
+      await updateAdminPartnerCategories(categoryRow.id, categoryEditIds);
+      setToast({ type: "ok", text: "Kategoritë u ruajtën." });
+      setCategoryRow(null);
+      await load();
+    } catch (e) {
+      setToast({
+        type: "err",
+        text: e instanceof Error ? e.message : "Ruajtja e kategorive dështoi.",
+      });
+    } finally {
+      setCategorySaving(false);
     }
   }
 
@@ -293,6 +334,12 @@ export default function AdminPartners() {
                     <p className="text-xs truncate">
                       <span className="font-medium text-gray-700">Link:</span> {p.link_url}
                     </p>
+                    {p.status === "active" && p.user_id ? (
+                      <p className="text-xs text-gray-600">
+                        <span className="font-medium text-gray-700">Ku shfaqet:</span>{" "}
+                        {formatPartnerCategoryLabels(p.category_ids ?? [], categories, "business")}
+                      </p>
+                    ) : null}
                     {p.last_payment_at ? (
                       <p className="text-xs text-gray-500">
                         Pagesa e fundit: {format(new Date(p.last_payment_at), "dd.MM.yyyy HH:mm")}
@@ -324,6 +371,17 @@ export default function AdminPartners() {
                       <Pencil className="h-4 w-4" />
                       Ndrysho Paketën
                     </button>
+                    {p.status === "active" && p.user_id ? (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => openPartnerCategories(p)}
+                        className="min-h-11 flex items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-900 text-sm font-bold touch-manipulation"
+                      >
+                        <LayoutGrid className="h-4 w-4" />
+                        Ku shfaqet
+                      </button>
+                    ) : null}
                     {p.status !== "rejected" && p.status !== "suspended" ? (
                       <button
                         type="button"
@@ -512,6 +570,20 @@ export default function AdminPartners() {
             </button>
           </div>
         </div>
+      ) : null}
+
+      {categoryRow ? (
+        <PartnerCategoriesModal
+          title="Ku shfaqet partneri"
+          subtitle={categoryRow.business_name}
+          categories={categories}
+          selectedIds={categoryEditIds}
+          saving={categorySaving}
+          variant="business"
+          onClose={() => setCategoryRow(null)}
+          onChange={setCategoryEditIds}
+          onSave={() => void savePartnerCategories()}
+        />
       ) : null}
     </div>
   );

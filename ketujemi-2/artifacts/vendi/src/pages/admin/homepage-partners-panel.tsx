@@ -12,7 +12,8 @@ import {
   formatPartnerCategoryLabels,
   PartnerCategoryChecklist,
 } from "./partner-category-checklist";
-import { Loader2, Pencil, Plus, Star, Trash2, X } from "lucide-react";
+import { PartnerCategoriesModal } from "./partner-categories-modal";
+import { Loader2, Pencil, Plus, Star, Trash2, LayoutGrid, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { uploadImageToCloudinary, useCloudinaryConfig } from "@/lib/cloudinary-config";
 
@@ -36,6 +37,8 @@ export function AdminHomepagePartnersPanel() {
   const [editLink, setEditLink] = useState("");
   const [editTier, setEditTier] = useState<"vip" | "standard">("standard");
   const [editCategoryIds, setEditCategoryIds] = useState<number[]>([]);
+  const [categoryRow, setCategoryRow] = useState<AdminHomepagePartner | null>(null);
+  const [categoryEditIds, setCategoryEditIds] = useState<number[]>([]);
   const [logoUploading, setLogoUploading] = useState(false);
   const [editLogoUploading, setEditLogoUploading] = useState(false);
   const cloudinary = useCloudinaryConfig();
@@ -148,6 +151,29 @@ export function AdminHomepagePartnersPanel() {
       setToast({
         type: "err",
         text: err instanceof Error ? err.message : "Përditësimi dështoi.",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function openCategories(p: AdminHomepagePartner) {
+    setCategoryRow(p);
+    setCategoryEditIds(p.category_ids ?? []);
+  }
+
+  async function handleCategoriesSave() {
+    if (!categoryRow) return;
+    setSaving(true);
+    try {
+      await updateAdminHomepagePartner(categoryRow.id, { category_ids: categoryEditIds });
+      setToast({ type: "ok", text: "Kategoritë u ruajtën." });
+      setCategoryRow(null);
+      await load();
+    } catch (err) {
+      setToast({
+        type: "err",
+        text: err instanceof Error ? err.message : "Ruajtja e kategorive dështoi.",
       });
     } finally {
       setSaving(false);
@@ -292,6 +318,7 @@ export function AdminHomepagePartnersPanel() {
             categories={categories}
             busyId={busyId}
             onEdit={openEdit}
+            onCategories={openCategories}
             onDelete={handleDelete}
             vip
           />
@@ -301,6 +328,7 @@ export function AdminHomepagePartnersPanel() {
             categories={categories}
             busyId={busyId}
             onEdit={openEdit}
+            onCategories={openCategories}
             onDelete={handleDelete}
           />
         </div>
@@ -408,6 +436,20 @@ export function AdminHomepagePartnersPanel() {
           </form>
         </div>
       ) : null}
+
+      {categoryRow ? (
+        <PartnerCategoriesModal
+          title="Ku shfaqet partneri"
+          subtitle={categoryRow.business_name}
+          categories={categories}
+          selectedIds={categoryEditIds}
+          saving={saving}
+          variant="curated"
+          onClose={() => setCategoryRow(null)}
+          onChange={setCategoryEditIds}
+          onSave={() => void handleCategoriesSave()}
+        />
+      ) : null}
     </section>
   );
 }
@@ -418,6 +460,7 @@ function PartnerList({
   categories,
   busyId,
   onEdit,
+  onCategories,
   onDelete,
   vip = false,
 }: {
@@ -426,6 +469,7 @@ function PartnerList({
   categories: AdminCategory[];
   busyId: number | null;
   onEdit: (p: AdminHomepagePartner) => void;
+  onCategories: (p: AdminHomepagePartner) => void;
   onDelete: (id: number) => void;
   vip?: boolean;
 }) {
@@ -469,6 +513,16 @@ function PartnerList({
                 </p>
               </div>
               <div className="flex shrink-0 gap-1.5">
+                <button
+                  type="button"
+                  disabled={busyId === p.id}
+                  onClick={() => onCategories(p)}
+                  className="min-h-10 px-2.5 flex items-center justify-center gap-1 rounded-lg border border-emerald-200 text-emerald-800 hover:bg-emerald-50 text-[11px] font-bold"
+                  title="Ku shfaqet"
+                >
+                  <LayoutGrid className="h-4 w-4 shrink-0" />
+                  <span className="hidden sm:inline">Ku shfaqet</span>
+                </button>
                 <button
                   type="button"
                   disabled={busyId === p.id}
