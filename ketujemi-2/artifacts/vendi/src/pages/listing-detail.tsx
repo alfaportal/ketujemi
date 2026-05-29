@@ -33,6 +33,7 @@ import { SimilarListingsSection } from "@/components/similar-listings-section";
 import { CardPaymentsPanel } from "@/components/card-payments-panel";
 import { notifyTopListingsRefresh } from "@/lib/top-listings-events";
 import { parseListingImageUrls } from "@/lib/listing-images";
+import { recordListingView } from "@/lib/record-listing-view";
 
 // ─── Spec parser ─────────────────────────────────────────────────────────────
 interface ParsedDesc { specs: Record<string, string>; body: string }

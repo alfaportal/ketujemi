@@ -15,6 +15,7 @@ import {
   cnPrimaryBlue,
   filterToggleButtonBaseClass,
 } from "@/lib/primary-button-classes";
+import { effectiveListingSearchQuery } from "@/lib/listing-search-query";
 
 // --- Skeleton Card ---
 function SkeletonCard() {
@@ -38,8 +39,10 @@ export default function Listings() {
   const goToPostListing = useGoToPostListing();
   const { market, t } = useMarket();
   const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const initialSearchRaw = searchParams.get("search") ?? "";
+  const initialSearch = effectiveListingSearchQuery(initialSearchRaw);
 
-  const [search, setSearch] = useState(searchParams.get("search") ?? "");
+  const [search, setSearch] = useState(initialSearchRaw);
   const [categoryId, setCategoryId] = useState(searchParams.get("category_id") ?? "");
   const [loc, setLoc] = useState(searchParams.get("location") ?? "");
   const [minPrice, setMinPrice] = useState(searchParams.get("min_price") ?? "");
@@ -47,7 +50,7 @@ export default function Listings() {
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
 
-  const [appliedSearch, setAppliedSearch] = useState(search);
+  const [appliedSearch, setAppliedSearch] = useState(initialSearch);
   const [appliedCategory, setAppliedCategory] = useState(categoryId);
   const [appliedLoc, setAppliedLoc] = useState(loc);
   const [appliedMinPrice, setAppliedMinPrice] = useState(minPrice);
@@ -67,7 +70,8 @@ export default function Listings() {
 
   const applyFilters = (e?: React.FormEvent) => {
     e?.preventDefault();
-    setAppliedSearch(search); setAppliedCategory(categoryId);
+    setAppliedSearch(effectiveListingSearchQuery(search));
+    setAppliedCategory(categoryId);
     setAppliedLoc(loc); setAppliedMinPrice(minPrice); setAppliedMaxPrice(maxPrice);
     setPage(1);
   };

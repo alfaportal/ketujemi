@@ -25,6 +25,7 @@ import {
   cnPrimaryBlue,
   filterToggleButtonBaseClass,
 } from "@/lib/primary-button-classes";
+import { effectiveListingSearchQuery } from "@/lib/listing-search-query";
 
 
 function CategoryThumb({
@@ -115,7 +116,8 @@ export default function HomePage() {
 
   const applyFilters = () => {
     const params = new URLSearchParams();
-    if (filterSearch) params.set("search", filterSearch);
+    const q = effectiveListingSearchQuery(filterSearch);
+    if (q) params.set("search", q);
     if (filterCategory && filterCategory !== "all") params.set("category_id", filterCategory);
     if (filterLoc && filterLoc !== "all") params.set("location", filterLoc);
     if (filterMinPrice) params.set("min_price", filterMinPrice);

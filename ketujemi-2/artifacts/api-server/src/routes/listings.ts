@@ -31,6 +31,7 @@ import { listingFeedOrderBy, isTopActive } from "../lib/listing-top";
 import { moderateListingContent } from "../lib/listing-ai-moderation";
 import { logListingModerationRejection } from "../lib/listing-moderation-rejection-log";
 import { parseUiLang } from "../lib/claude-client";
+import { effectiveListingSearchQuery } from "../../../../lib/listing-search-query.js";
 import {
   assertWalletCoversListing,
   debitWalletForListing,
@@ -220,8 +221,11 @@ router.get("/listings", async (req, res) => {
   }
   if (min_price != null) conditions.push(gte(listingsTable.price, String(min_price)));
   if (max_price != null) conditions.push(lte(listingsTable.price, String(max_price)));
-  if (search && String(search).trim()) {
-    const term = `%${String(search).trim()}%`;
+  const searchTerm = effectiveListingSearchQuery(
+    typeof search === "string" ? search : search != null ? String(search) : "",
+  );
+  if (searchTerm) {
+    const term = `%${searchTerm}%`;
     conditions.push(or(ilike(listingsTable.title, term), ilike(listingsTable.description, term))!);
   }
 
