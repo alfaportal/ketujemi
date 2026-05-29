@@ -2,9 +2,9 @@
 
 export const FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "femije-grp-karroca-transport":
-    "https://images.unsplash.com/photo-1591088398332-8a7791972843?w=400",
-  "femije-grp-krevat-dhome":
     "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400",
+  "femije-grp-krevat-dhome":
+    "https://images.unsplash.com/photo-1586105251261-72a756497a11?w=400",
   "femije-grp-ushqyerja-ushqimi":
     "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400",
   "femije-grp-higjiene-kujdes":
@@ -16,13 +16,13 @@ export const FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = 
   "femije-grp-lodra-edukative":
     "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400",
   "femije-grp-libra-shkollore":
-    "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400",
+    "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400",
   "femije-grp-aktivitet-sport":
     "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400",
   "femije-grp-karrige-ulese":
     "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400",
   "femije-grp-canta-nene":
-    "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400",
+    "https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?w=400",
   "femije-grp-veshje-shtatzanise":
     "https://images.unsplash.com/photo-1493894473891-10fc1e5dbd22?w=400",
   "femije-grp-siguria":
@@ -30,13 +30,13 @@ export const FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = 
   "femije-grp-pishine-plazh":
     "https://images.unsplash.com/photo-1473496169904-658ba7574b0d?w=400",
   "femije-type-karroca":
-    "https://images.unsplash.com/photo-1591088398332-8a7791972843?w=400",
+    "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400",
   "femije-type-lodra":
     "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=400",
   "femije-type-foshnje":
-    "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400",
+    "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400",
   "femije-type-rroba":
     "https://images.unsplash.com/photo-1522771930-78848d9293e8?w=400",
   "femije-type-ushqim-higjiene":
-    "https://images.unsplash.com/photo-1584515933487-779824d29309?w=400",
+    "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400",
 };

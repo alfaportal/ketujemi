@@ -4,7 +4,8 @@ import { cn } from "@/lib/utils";
 export const categoryPhotoCardWidthClass =
   "w-[10.75rem] sm:w-44 md:w-48 lg:w-[13rem] aspect-[4/3]";
 
-export const categoryPhotoCardGridClass = "w-full aspect-square min-h-[108px]";
+/** Matches Vetura hub body-type chips: fixed 108px height, not full-width squares. */
+export const categoryPhotoCardGridClass = "w-full min-h-[108px] h-[108px]";
 
 type CategoryPhotoPickerCardProps = {
   selected?: boolean;
@@ -29,10 +30,10 @@ export function CategoryPhotoPickerCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "relative overflow-hidden rounded-2xl border text-left transition-all touch-manipulation",
+        "relative overflow-hidden border text-left transition-all touch-manipulation",
         layout === "grid"
-          ? categoryPhotoCardGridClass
-          : cn("shrink-0 snap-start", categoryPhotoCardWidthClass),
+          ? cn("rounded-xl", categoryPhotoCardGridClass)
+          : cn("shrink-0 snap-start rounded-2xl", categoryPhotoCardWidthClass),
         selected
           ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
           : "border-gray-100 hover:border-blue-200 hover:shadow-md",
@@ -44,7 +45,14 @@ export function CategoryPhotoPickerCard({
         className="absolute inset-0 h-full w-full object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-      <span className="absolute bottom-2 left-2 right-2 text-white text-sm font-bold leading-snug line-clamp-2 drop-shadow">
+      <span
+        className={cn(
+          "absolute text-white font-bold leading-tight drop-shadow line-clamp-2",
+          layout === "grid"
+            ? "bottom-0 left-0 right-0 px-2.5 pb-3 pt-8 text-center text-sm"
+            : "bottom-2 left-2 right-2 text-sm leading-snug",
+        )}
+      >
         {label}
       </span>
     </button>

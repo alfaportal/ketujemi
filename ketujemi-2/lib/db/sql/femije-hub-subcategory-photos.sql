@@ -1,20 +1,20 @@
 -- Unsplash image_url for 19 Fëmijë hub subcategories (14 femije-grp-* + 5 femije-type-*).
-UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1591088398332-8a7791972843?w=400' WHERE slug = 'femije-grp-karroca-transport';
-UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400' WHERE slug = 'femije-grp-krevat-dhome';
+UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400' WHERE slug = 'femije-grp-karroca-transport';
+UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=400' WHERE slug = 'femije-grp-krevat-dhome';
 UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400' WHERE slug = 'femije-grp-ushqyerja-ushqimi';
 UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1584515933487-779824d29309?w=400' WHERE slug = 'femije-grp-higjiene-kujdes';
 UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1522771930-78848d9293e8?w=400' WHERE slug = 'femije-grp-rroba-kepuce';
 UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=400' WHERE slug = 'femije-grp-lodra-lojera';
 UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400' WHERE slug = 'femije-grp-lodra-edukative';
-UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400' WHERE slug = 'femije-grp-libra-shkollore';
+UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400' WHERE slug = 'femije-grp-libra-shkollore';
 UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400' WHERE slug = 'femije-grp-aktivitet-sport';
 UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400' WHERE slug = 'femije-grp-karrige-ulese';
-UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400' WHERE slug = 'femije-grp-canta-nene';
+UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?w=400' WHERE slug = 'femije-grp-canta-nene';
 UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1493894473891-10fc1e5dbd22?w=400' WHERE slug = 'femije-grp-veshje-shtatzanise';
 UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400' WHERE slug = 'femije-grp-siguria';
 UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1473496169904-658ba7574b0d?w=400' WHERE slug = 'femije-grp-pishine-plazh';
-UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1591088398332-8a7791972843?w=400' WHERE slug = 'femije-type-karroca';
+UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400' WHERE slug = 'femije-type-karroca';
 UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=400' WHERE slug = 'femije-type-lodra';
-UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400' WHERE slug = 'femije-type-foshnje';
+UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400' WHERE slug = 'femije-type-foshnje';
 UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1522771930-78848d9293e8?w=400' WHERE slug = 'femije-type-rroba';
-UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1584515933487-779824d29309?w=400' WHERE slug = 'femije-type-ushqim-higjiene';
+UPDATE categories SET image_url = 'https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400' WHERE slug = 'femije-type-ushqim-higjiene';
