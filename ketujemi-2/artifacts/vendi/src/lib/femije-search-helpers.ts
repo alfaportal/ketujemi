@@ -1,3 +1,5 @@
+import { FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG } from "./femije-hub-subcategory-photos";
+
 /** Fëmijë hub slug (matches seeded category). */
 export const FEMIJE_HUB_SLUG = "femije";
 
@@ -391,7 +393,15 @@ export function getFemijeGroupLeafIds(
   return [];
 }
 
-export function femijeSubcategoryPhoto(slug: string | null | undefined): string {
+export function femijeSubcategoryPhoto(
+  slug: string | null | undefined,
+  imageUrl?: string | null,
+): string {
+  const fromDb = typeof imageUrl === "string" ? imageUrl.trim() : "";
+  if (fromDb) return fromDb;
+  if (slug && FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG[slug]) {
+    return FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG[slug];
+  }
   if (!slug) return FEMIJE_HERO_PHOTO;
   for (const key of FJ_TYPE_KEYS) {
     if (FJ_TYPE_DB_SLUG[key] === slug) return FJ_TYPE_PHOTOS[key];

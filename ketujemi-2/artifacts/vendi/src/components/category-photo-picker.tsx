@@ -4,12 +4,16 @@ import { cn } from "@/lib/utils";
 export const categoryPhotoCardWidthClass =
   "w-[10.75rem] sm:w-44 md:w-48 lg:w-[13rem] aspect-[4/3]";
 
+export const categoryPhotoCardGridClass = "w-full aspect-square min-h-[108px]";
+
 type CategoryPhotoPickerCardProps = {
   selected?: boolean;
   onClick: () => void;
   imageSrc: string;
   label: string;
   imageAlt?: string;
+  /** `grid` = 2×4 responsive grid (Fëmijë hub); default = horizontal scroll row. */
+  layout?: "row" | "grid";
 };
 
 export function CategoryPhotoPickerCard({
@@ -18,14 +22,17 @@ export function CategoryPhotoPickerCard({
   imageSrc,
   label,
   imageAlt = "",
+  layout = "row",
 }: CategoryPhotoPickerCardProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "relative shrink-0 snap-start overflow-hidden rounded-2xl border text-left transition-all touch-manipulation",
-        categoryPhotoCardWidthClass,
+        "relative overflow-hidden rounded-2xl border text-left transition-all touch-manipulation",
+        layout === "grid"
+          ? categoryPhotoCardGridClass
+          : cn("shrink-0 snap-start", categoryPhotoCardWidthClass),
         selected
           ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
           : "border-gray-100 hover:border-blue-200 hover:shadow-md",
@@ -57,4 +64,9 @@ export function CategoryPhotoPickerRow({ children }: { children: ReactNode }) {
       {children}
     </div>
   );
+}
+
+/** Fëmijë hub — same photo cards as {@link CategoryPhotoPickerRow} but 2×4 grid like Vetura body types. */
+export function CategoryPhotoPickerGrid({ children }: { children: ReactNode }) {
+  return <div className="grid grid-cols-2 md:grid-cols-4 gap-3">{children}</div>;
 }

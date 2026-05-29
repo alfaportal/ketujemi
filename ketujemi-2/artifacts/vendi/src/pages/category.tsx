@@ -21,7 +21,11 @@ import {
 import { useMarket } from "@/lib/market-context";
 import { getCategoryLucideIcon } from "@/lib/category-lucide-icon";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
-import { CategoryPhotoPickerRow, CategoryPhotoPickerCard } from "@/components/category-photo-picker";
+import {
+  CategoryPhotoPickerRow,
+  CategoryPhotoPickerGrid,
+  CategoryPhotoPickerCard,
+} from "@/components/category-photo-picker";
 import { Skeleton } from "@/components/ui/skeleton";
 import { translateCategory, type MarketCode } from "@/lib/category-translations";
 import {
@@ -1519,20 +1523,21 @@ export default function CategoryPage() {
             <h2 className="text-lg font-black text-gray-900 mb-4">
               {(t as { fj_sec_types?: string }).fj_sec_types ?? t.bodyType}
             </h2>
-            <CategoryPhotoPickerRow>
+            <CategoryPhotoPickerGrid>
               {[...children]
                 .sort((a: { name: string }, b: { name: string }) =>
                   a.name.localeCompare(b.name, "sq"),
                 )
-                .map((sub: { id: number; name: string; slug: string | null }) => (
+                .map((sub: { id: number; name: string; slug: string | null; image_url?: string | null }) => (
                   <CategoryPhotoPickerCard
                     key={sub.id}
+                    layout="grid"
                     onClick={() => navigateToCategory(setLocation, sub.id, categoryId)}
-                    imageSrc={femijeSubcategoryPhoto(sub.slug)}
+                    imageSrc={femijeSubcategoryPhoto(sub.slug, sub.image_url)}
                     label={translateCategory(sub.name, locale)}
                   />
                 ))}
-            </CategoryPhotoPickerRow>
+            </CategoryPhotoPickerGrid>
           </div>
         ) : null}
 
@@ -1669,20 +1674,21 @@ export default function CategoryPage() {
               {children.length}{" "}
               {(t as { subcategoriesAvail: string }).subcategoriesAvail}
             </p>
-            <CategoryPhotoPickerRow>
+            <CategoryPhotoPickerGrid>
               {[...children]
                 .sort((a: { name: string }, b: { name: string }) =>
                   a.name.localeCompare(b.name, "sq"),
                 )
-                .map((sub: { id: number; name: string; slug: string | null }) => (
+                .map((sub: { id: number; name: string; slug: string | null; image_url?: string | null }) => (
                   <CategoryPhotoPickerCard
                     key={sub.id}
+                    layout="grid"
                     onClick={() => navigateToCategory(setLocation, sub.id, categoryId)}
-                    imageSrc={femijeSubcategoryPhoto(sub.slug)}
+                    imageSrc={femijeSubcategoryPhoto(sub.slug, sub.image_url)}
                     label={translateCategory(sub.name, locale)}
                   />
                 ))}
-            </CategoryPhotoPickerRow>
+            </CategoryPhotoPickerGrid>
           </div>
         ) : null}
 

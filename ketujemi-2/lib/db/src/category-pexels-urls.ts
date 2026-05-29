@@ -153,12 +153,17 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "rroba-type-veshje-femije": pexelsPhoto(1927257),
   "rroba-type-veshje-meshkuj": pexelsPhoto(267320),
 
-  // —— Fëmijë ——————————————————————————————————————————————————————————————————
-  "femije-type-karroca": pexelsPhoto(1007773),
-  "femije-type-lodra": pexelsPhoto(294173),
-  "femije-type-foshnje": pexelsPhoto(30014151),
-  "femije-type-rroba": pexelsPhoto(30420279),
-  "femije-type-ushqim-higjiene": pexelsPhoto(3859003),
+  // —— Fëmijë (legacy type rows; groups use femije-hub-subcategory-photos.ts) ——
+  "femije-type-karroca":
+    "https://images.unsplash.com/photo-1591088398332-8a7791972843?w=400",
+  "femije-type-lodra":
+    "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=400",
+  "femije-type-foshnje":
+    "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400",
+  "femije-type-rroba":
+    "https://images.unsplash.com/photo-1522771930-78848d9293e8?w=400",
+  "femije-type-ushqim-higjiene":
+    "https://images.unsplash.com/photo-1584515933487-779824d29309?w=400",
 
   // —— Sport ——————————————————————————————————————————————————————————————————
   "sport-type-bicikleta": pexelsPhoto(2882234),
