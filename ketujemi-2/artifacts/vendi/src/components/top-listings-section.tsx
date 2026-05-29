@@ -166,7 +166,7 @@ function TopListingsCarousel({
   );
 }
 
-export function TopListingsSection({ className }: { className?: string }) {
+export function TopListingsHomeRow({ className }: { className?: string }) {
   const { t, market, rates } = useMarket();
   const [listings, setListings] = useState<TopListingCarouselItem[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -253,30 +253,44 @@ export function TopListingsSection({ className }: { className?: string }) {
     };
   }, [load, schedulePollUntilVisible]);
 
+  const emptyLabel = t.home_topListingsEmptyLabel ?? "Bëje TOP";
+  const emptyHint = t.home_topListingsEmptyHint ?? "€2 · €5 · €8";
+
+  return (
+    <div
+      className={cn("space-y-3 sm:space-y-4", className)}
+      data-testid="top-listings-home-row"
+      aria-labelledby="top-listings-heading"
+    >
+      <p
+        id="top-listings-heading"
+        className="text-center text-xs sm:text-sm font-black uppercase tracking-wider text-[#1A56A0]"
+      >
+        <span className="inline-flex items-center gap-1.5">
+          <Sparkles className="h-3.5 w-3.5 text-[#1A56A0]" aria-hidden />
+          {t.home_topListingsRowLabel ?? "TOP Njoftime"}
+        </span>
+      </p>
+      <TopListingsCarousel
+        listings={listings}
+        loaded={loaded}
+        priceFor={priceFor}
+        emptyLabel={emptyLabel}
+        emptyHint={emptyHint}
+      />
+    </div>
+  );
+}
+
+/** Standalone section wrapper (category pages etc.). Homepage uses TopListingsHomeRow inside VIP block. */
+export function TopListingsSection({ className }: { className?: string }) {
   return (
     <section
       className={cn("bg-white border-b border-gray-100", className)}
-      aria-labelledby="top-listings-heading"
+      data-testid="top-listings-section"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6 sm:pb-8 pt-0">
-        <div className="space-y-3 sm:space-y-4">
-          <p
-            id="top-listings-heading"
-            className="text-center text-xs sm:text-sm font-black uppercase tracking-wider text-[#1A56A0]"
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-[#1A56A0]" aria-hidden />
-              {t.home_topListingsRowLabel}
-            </span>
-          </p>
-          <TopListingsCarousel
-            listings={listings}
-            loaded={loaded}
-            priceFor={priceFor}
-            emptyLabel={t.home_topListingsEmptyLabel}
-            emptyHint={t.home_topListingsEmptyHint}
-          />
-        </div>
+        <TopListingsHomeRow />
       </div>
     </section>
   );

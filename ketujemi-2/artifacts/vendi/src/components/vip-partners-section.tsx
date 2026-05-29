@@ -6,6 +6,7 @@ import { useMarket } from "@/lib/market-context";
 import { partnerSignupHref } from "@/lib/static-page-paths";
 import { cn } from "@/lib/utils";
 import { PartnerSlot, type PartnerSlotData } from "@/components/partner-slot";
+import { TopListingsHomeRow } from "@/components/top-listings-section";
 
 export type VipPartnersSectionVariant = "home" | "hub";
 
@@ -327,10 +328,6 @@ export function VipPartnersSection({
 
   const isHome = variant === "home";
 
-  if (isHome && loaded && vipPartners.length === 0) {
-    return null;
-  }
-
   return (
     <section
       className={cn(
@@ -362,11 +359,14 @@ export function VipPartnersSection({
         </h2>
 
         {config.layout === "carousel" ? (
-          <VipPartnersCarousel
-            partners={vipPartners}
-            loaded={loaded}
-            rowLabel={t.home_partnerVipRowLabel}
-          />
+          <>
+            <VipPartnersCarousel
+              partners={vipPartners}
+              loaded={loaded}
+              rowLabel={t.home_partnerVipRowLabel}
+            />
+            <TopListingsHomeRow className="mt-5 sm:mt-6 pt-4 sm:pt-5 border-t border-gray-100" />
+          </>
         ) : (
           <div className="space-y-8 sm:space-y-10">
             <PartnerRow
