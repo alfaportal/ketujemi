@@ -1,12 +1,6 @@
-"""
-Generate PWA / apple-touch icons with bold white KetuJemi.com wordmark.
-
-Renders vector layout (font-weight 900, #ffffff) for readability on small phone icons.
-Optional: place logo-app.png to tune colors from Cloudinary export.
-"""
+"""Generate mobile-friendly PWA icons (readable on home screen)."""
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 try:
@@ -16,11 +10,19 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parents[1] / "artifacts" / "vendi" / "public"
 OUT = ROOT / "icons"
+OUT.mkdir(parents=True, exist_ok=True)
 
-# Brand (matches logo-icon.svg)
-BRAND_BLUE = (21, 87, 176)
-BRAND_RING = (74, 144, 232)
-TEXT_WHITE = (255, 255, 255)
+# Brand blue — matches site UI (#1A56A0)
+BRAND = (26, 86, 160, 255)
+WHITE = (255, 255, 255, 255)
+
+FONT_CANDIDATES = [
+    Path("C:/Windows/Fonts/segoeuib.ttf"),
+    Path("C:/Windows/Fonts/arialbd.ttf"),
+    Path("C:/Windows/Fonts/calibrib.ttf"),
+    Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
+    Path("/System/Library/Fonts/Supplemental/Arial Bold.ttf"),
+]
 
 ICON_SIZES: dict[str, int] = {
     "icon-72.png": 72,
@@ -41,92 +43,67 @@ ICON_SIZES: dict[str, int] = {
 }
 
 
-def _find_black_font() -> str:
-    candidates = [
-        Path(r"C:\Windows\Fonts\ariblk.ttf"),
-        Path(r"C:\Windows\Fonts\ArialBlack.ttf"),
-        Path(r"C:\Windows\Fonts\arialbd.ttf"),
-        Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
-        Path("/System/Library/Fonts/Supplemental/Arial Black.ttf"),
-    ]
-    for path in candidates:
+def load_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    for path in FONT_CANDIDATES:
         if path.exists():
-            return str(path)
-    raise SystemExit(
-        "No bold font found (need Arial Black or similar). Install a .ttf and set PWA_ICON_FONT.",
-    )
+            return ImageFont.truetype(str(path), size)
+    return ImageFont.load_default()
 
 
-def _font(size: int) -> ImageFont.FreeTypeFont:
-    env = Path(os.environ["PWA_ICON_FONT"]) if "PWA_ICON_FONT" in os.environ else None
-    path = str(env) if env and env.exists() else _find_black_font()
-    return ImageFont.truetype(path, size)
-
-
-def _text_size(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont) -> tuple[int, int]:
+def text_size(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont) -> tuple[int, int]:
     box = draw.textbbox((0, 0), text, font=font)
     return box[2] - box[0], box[3] - box[1]
 
 
-def render_app_icon(size: int) -> Image.Image:
-    """Square icon: blue disc + ring + heavy white KetuJemi / .com."""
-    img = Image.new("RGB", (size, size), BRAND_BLUE)
+def fit_two_line_font(
+    draw: ImageDraw.ImageDraw,
+    line1: str,
+    line2: str,
+    max_w: int,
+    max_h: int,
+) -> ImageFont.ImageFont:
+    for size in range(max_h // 2, 8, -2):
+        font = load_font(size)
+        w1, h1 = text_size(draw, line1, font)
+        w2, h2 = text_size(draw, line2, font)
+        gap = max(4, size // 10)
+        total_h = h1 + gap + h2
+        total_w = max(w1, w2)
+        if total_w <= max_w and total_h <= max_h:
+            return font
+    return load_font(max(12, max_h // 4))
+
+
+def draw_wordmark(size: int, *, maskable: bool = False) -> Image.Image:
+    """Two-line Ketu / Jemi — legible when scaled to ~48px on phones."""
+    img = Image.new("RGBA", (size, size), BRAND)
     draw = ImageDraw.Draw(img)
 
-    pad = size * 0.06
-    ring_w = max(2, int(size * 0.022))
-    draw.ellipse(
-        [pad, pad, size - pad, size - pad],
-        fill=BRAND_BLUE,
-        outline=BRAND_RING,
-        width=ring_w,
-    )
+    inset = int(size * (0.14 if maskable else 0.10))
+    area = size - inset * 2
 
-    main_px = max(11, int(size * 0.145))
-    com_px = max(9, int(size * 0.092))
-    stroke = max(1, int(size / 42))
-
-    font_main = _font(main_px)
-    font_com = _font(com_px)
-
-    line1 = "KetuJemi"
-    line2 = ".com"
-    w1, h1 = _text_size(draw, line1, font_main)
-    w2, h2 = _text_size(draw, line2, font_com)
-    gap = max(2, int(size * 0.012))
+    font = fit_two_line_font(draw, "Ketu", "Jemi", area, int(area * 0.72))
+    w1, h1 = text_size(draw, "Ketu", font)
+    w2, h2 = text_size(draw, "Jemi", font)
+    gap = max(4, font.size // 10)
     block_h = h1 + gap + h2
-    y0 = (size - block_h) / 2
+    y0 = (size - block_h) // 2
 
-    x1 = (size - w1) / 2
-    x2 = (size - w2) / 2
-
-    for text, x, y, font in (
-        (line1, x1, y0, font_main),
-        (line2, x2, y0 + h1 + gap, font_com),
-    ):
-        draw.text(
-            (x, y),
-            text,
-            font=font,
-            fill=TEXT_WHITE,
-            stroke_width=stroke,
-            stroke_fill=TEXT_WHITE,
-        )
-
+    draw.text(((size - w1) // 2, y0), "Ketu", font=font, fill=WHITE)
+    draw.text(((size - w2) // 2, y0 + h1 + gap), "Jemi", font=font, fill=WHITE)
     return img
 
 
 def main() -> None:
-    OUT.mkdir(parents=True, exist_ok=True)
-
     for filename, px in ICON_SIZES.items():
-        icon = render_app_icon(px)
+        maskable = "maskable" in filename
+        icon = draw_wordmark(px, maskable=maskable)
         dest = OUT / filename
         icon.save(dest, "PNG", optimize=True)
         print(f"wrote {dest} ({px}x{px})")
 
-    logo_square = render_app_icon(512)
-    logo_square.save(ROOT / "logo.png", "PNG", optimize=True)
+    logo = draw_wordmark(512, maskable=False)
+    logo.save(ROOT / "logo.png", "PNG", optimize=True)
     print(f"wrote {ROOT / 'logo.png'}")
 
 

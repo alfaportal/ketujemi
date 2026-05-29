@@ -58,8 +58,8 @@ export default defineConfig(async ({ command }) => {
         short_name: "KetuJemi",
         description:
           "KetuJemi — Bli & Shit. Kosovë, Shqipëri, Maqedoni, Mal i Zi dhe diaspora shqiptare.",
-        theme_color: "#1557B0",
-        background_color: "#1557B0",
+        theme_color: "#1A56A0",
+        background_color: "#1A56A0",
         display: "standalone",
         orientation: "portrait-primary",
         scope: pwaScope,
