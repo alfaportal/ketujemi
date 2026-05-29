@@ -1,4 +1,4 @@
-import { logger } from "./logger";
+import { deliverEmail, isTransactionalEmailConfigured } from "./send-transactional-email";
 
 type VerifyMailPayload = {
   to: string;
@@ -6,10 +6,16 @@ type VerifyMailPayload = {
   verifyUrl: string;
 };
 
+function ensureEmailConfigured(): void {
+  if (!isTransactionalEmailConfigured()) {
+    throw new Error("Email send failed: RESEND_API_KEY or SMTP not configured");
+  }
+}
+
 export async function sendPasswordResetEmail(payload: VerifyMailPayload): Promise<void> {
   const { to, code } = payload;
-  const apiKey = process.env["RESEND_API_KEY"]?.trim();
-  const from = process.env["EMAIL_FROM"] ?? "KetuJemi <onboarding@ketujemi.com>";
+  ensureEmailConfigured();
+
   const subject = "Rivendos fjalëkalimin — KetuJemi";
   const text = [
     "Keni kërkuar të ndryshoni fjalëkalimin.",
@@ -21,36 +27,17 @@ export async function sendPasswordResetEmail(payload: VerifyMailPayload): Promis
     "Nëse nuk e keni kërkuar ju, injoroni këtë email.",
   ].join("\n");
 
-  if (!apiKey) {
-    logger.info({ to, code }, "password reset email (no RESEND_API_KEY — code logged)");
-    return;
-  }
-
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from,
-      to: [to],
-      subject,
-      text,
-      html: `<p>Kodi për fjalëkalim të ri:</p><p><strong>${code}</strong></p>`,
-    }),
+  await deliverEmail({
+    to,
+    subject,
+    text,
+    html: `<p>Kodi për fjalëkalim të ri:</p><p><strong>${code}</strong></p>`,
   });
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`Email send failed: ${res.status} ${body}`);
-  }
 }
 
 export async function sendEmailVerification(payload: VerifyMailPayload): Promise<void> {
   const { to, code, verifyUrl } = payload;
-  const apiKey = process.env["RESEND_API_KEY"]?.trim();
-  const from = process.env["EMAIL_FROM"] ?? "KetuJemi <onboarding@ketujemi.com>";
+  ensureEmailConfigured();
 
   const subject = "Konfirmoni llogarinë — KetuJemi";
   const text = [
@@ -61,30 +48,12 @@ export async function sendEmailVerification(payload: VerifyMailPayload): Promise
     verifyUrl,
   ].join("\n");
 
-  if (!apiKey) {
-    logger.info({ to, code, verifyUrl }, "email verification (no RESEND_API_KEY — link logged)");
-    return;
-  }
-
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from,
-      to: [to],
-      subject,
-      text,
-      html: `<p>Për të aktivizuar llogarinë:</p><p><strong>${code}</strong></p><p><a href="${verifyUrl}">${verifyUrl}</a></p>`,
-    }),
+  await deliverEmail({
+    to,
+    subject,
+    text,
+    html: `<p>Për të aktivizuar llogarinë:</p><p><strong>${code}</strong></p><p><a href="${verifyUrl}">${verifyUrl}</a></p>`,
   });
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`Email send failed: ${res.status} ${body}`);
-  }
 }
 
 type PartnerActivationMailPayload = {
@@ -99,8 +68,7 @@ export async function sendPartnerActivationEmail(
   payload: PartnerActivationMailPayload,
 ): Promise<void> {
   const { to, businessName, activationCode, packageLabel, profileUrl } = payload;
-  const apiKey = process.env["RESEND_API_KEY"]?.trim();
-  const from = process.env["EMAIL_FROM"] ?? "KetuJemi <onboarding@ketujemi.com>";
+  ensureEmailConfigured();
 
   const subject = `Llogaria juaj ${packageLabel} u aktivizua — KetuJemi`;
   const text = [
@@ -126,22 +94,5 @@ export async function sendPartnerActivationEmail(
     <p style="color:#666;font-size:13px">Ruajeni këtë kod për referencë.</p>
   `;
 
-  if (!apiKey) {
-    logger.info({ to, activationCode, profileUrl }, "partner activation email (no RESEND_API_KEY)");
-    return;
-  }
-
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ from, to: [to], subject, text, html }),
-  });
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`Partner activation email failed: ${res.status} ${body}`);
-  }
+  await deliverEmail({ to, subject, text, html });
 }

@@ -1,3 +1,4 @@
+import { deliverEmail, isTransactionalEmailConfigured } from "./send-transactional-email";
 import { logger } from "./logger";
 
 function escapeHtml(input: string): string {
@@ -18,8 +19,6 @@ export async function sendListingPackageConfirmationEmail(opts: {
   listingsRemaining: number;
   activationCode: string;
 }): Promise<void> {
-  const apiKey = process.env["RESEND_API_KEY"]?.trim();
-  const from = process.env["EMAIL_FROM"]?.trim() ?? "KetuJemi <onboarding@ketujemi.com>";
   const {
     to,
     displayName,
@@ -30,6 +29,11 @@ export async function sendListingPackageConfirmationEmail(opts: {
     listingsRemaining,
     activationCode,
   } = opts;
+
+  if (!isTransactionalEmailConfigured()) {
+    logger.warn({ to, activationCode }, "listing package email skipped — email not configured");
+    return;
+  }
 
   const subject = `${packageName} u aktivizua — KetuJemi`;
   const text = [
@@ -62,22 +66,5 @@ export async function sendListingPackageConfirmationEmail(opts: {
     <p>Mund të postoni menjëherë.</p>
   `;
 
-  if (!apiKey) {
-    logger.info({ to, activationCode }, "listing package email (no RESEND_API_KEY)");
-    return;
-  }
-
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ from, to: [to], subject, text, html }),
-  });
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`Listing package email failed: ${res.status} ${body}`);
-  }
+  await deliverEmail({ to, subject, text, html });
 }

@@ -46,6 +46,21 @@ router.post("/contact", async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     req.log?.error({ err }, "contact form");
+    const msg = err instanceof Error ? err.message : "";
+    if (msg.includes("not configured")) {
+      res.status(503).json({
+        error: "EMAIL_NOT_CONFIGURED",
+        message: "Formulari i kontaktit nuk mund të dërgojë email — konfiguroni serverin.",
+      });
+      return;
+    }
+    if (msg.includes("Resend email failed")) {
+      res.status(502).json({
+        error: "EMAIL_SEND_FAILED",
+        message: "Emaili nuk u dërgua. Kontrolloni EMAIL_FROM (domain i verifikuar në Resend).",
+      });
+      return;
+    }
     res.status(500).json({ error: "Failed to send message" });
   }
 });

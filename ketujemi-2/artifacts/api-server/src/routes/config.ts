@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { isRecaptchaRequired } from "../lib/recaptcha-verify";
-import { isEmailVerificationRequired } from "../lib/email-auth";
+import { hasEmailDeliveryConfigured, isEmailVerificationRequired } from "../lib/email-auth";
 import { isSmsAuthEnabled } from "../lib/sms-auth";
 import { isFacebookOAuthEnabled, isInstagramOAuthEnabled, facebookPageUrl, instagramProfileUrl } from "../lib/meta-oauth-config";
 import { isB2UploadConfigured } from "../lib/b2-upload-presign";
@@ -49,6 +49,7 @@ router.get("/config/public", (_req, res) => {
     cloudinaryUploadPreset,
     smsAuthEnabled: isSmsAuthEnabled(),
     emailVerificationRequired: isEmailVerificationRequired(),
+    emailConfigured: hasEmailDeliveryConfigured(),
     facebookOAuthEnabled: isFacebookOAuthEnabled(),
     instagramOAuthEnabled: isInstagramOAuthEnabled(),
     facebookPageUrl: facebookPageUrl(),

@@ -1,10 +1,17 @@
 /**
- * Email sign-up verification via Resend. On by default.
+ * Email sign-up verification. On by default.
  * Set EMAIL_VERIFICATION_REQUIRED=false for instant sign-up without a code.
  */
 
+import { isTransactionalEmailConfigured } from "./send-transactional-email";
+
+/** @deprecated Use hasEmailDeliveryConfigured */
 export function hasResendConfigured(): boolean {
-  return Boolean(process.env.RESEND_API_KEY?.trim());
+  return hasEmailDeliveryConfigured();
+}
+
+export function hasEmailDeliveryConfigured(): boolean {
+  return isTransactionalEmailConfigured();
 }
 
 export function isEmailVerificationRequired(): boolean {

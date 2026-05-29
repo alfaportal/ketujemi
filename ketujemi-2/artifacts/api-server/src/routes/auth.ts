@@ -18,7 +18,7 @@ import {
 } from "../lib/user-session";
 import { normalizePhone } from "../lib/phone-prefixes";
 import { assertSmsStartAllowed, clientIp } from "../lib/sms-rate-limit";
-import { hasResendConfigured, isEmailVerificationRequired } from "../lib/email-auth";
+import { hasEmailDeliveryConfigured, isEmailVerificationRequired } from "../lib/email-auth";
 import { isSmsAuthEnabled, SMS_AUTH_DISABLED_MESSAGE } from "../lib/sms-auth";
 import { isRecaptchaRequired, verifyRecaptchaToken } from "../lib/recaptcha-verify";
 import { assertAccountActive, isUserBanned } from "../lib/user-ban";
@@ -204,10 +204,11 @@ router.post("/auth/register/email", async (req, res) => {
       return;
     }
 
-    if (!hasResendConfigured()) {
+    if (!hasEmailDeliveryConfigured()) {
       res.status(503).json({
         error: "EMAIL_NOT_CONFIGURED",
-        message: "Verifikimi me email nuk është i konfiguruar (RESEND_API_KEY).",
+        message:
+          "Verifikimi me email nuk është i konfiguruar. Vendosni RESEND_API_KEY + EMAIL_FROM në server.",
       });
       return;
     }
@@ -528,10 +529,11 @@ router.post("/auth/password/forgot", async (req, res) => {
       return;
     }
 
-    if (!hasResendConfigured()) {
+    if (!hasEmailDeliveryConfigured()) {
       res.status(503).json({
         error: "EMAIL_NOT_CONFIGURED",
-        message: "Emaili nuk është i konfiguruar (RESEND_API_KEY).",
+        message:
+          "Emaili nuk është i konfiguruar. Vendosni RESEND_API_KEY + EMAIL_FROM në server.",
       });
       return;
     }

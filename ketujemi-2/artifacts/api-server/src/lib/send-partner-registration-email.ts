@@ -1,5 +1,5 @@
-import { logger } from "./logger";
 import { CONTACT_INBOX } from "./send-contact-email";
+import { deliverEmail } from "./send-transactional-email";
 
 export type PartnerRegistrationEmailPayload = {
   businessName: string;
@@ -18,43 +18,6 @@ function escapeHtml(input: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
-}
-
-async function sendResendEmail(opts: {
-  to: string[];
-  subject: string;
-  text: string;
-  html: string;
-  replyTo?: string;
-}): Promise<void> {
-  const apiKey = process.env["RESEND_API_KEY"]?.trim();
-  const from = process.env["EMAIL_FROM"]?.trim() ?? "KetuJemi <onboarding@ketujemi.com>";
-
-  if (!apiKey) {
-    logger.info({ to: opts.to, subject: opts.subject }, "partner registration email (no RESEND_API_KEY)");
-    return;
-  }
-
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from,
-      to: opts.to,
-      subject: opts.subject,
-      text: opts.text,
-      html: opts.html,
-      ...(opts.replyTo ? { reply_to: opts.replyTo } : {}),
-    }),
-  });
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`Resend email failed: ${res.status} ${body}`);
-  }
 }
 
 /** Confirmation to the business after /partner registration. */
@@ -83,7 +46,7 @@ export async function sendPartnerRegistrationConfirmation(
     <p>Pas pagesës do të merrni email me kod aktivizimi dhe akses në panel.</p>
   `;
 
-  await sendResendEmail({ to: [email], subject, text, html });
+  await deliverEmail({ to: email, subject, text, html });
 }
 
 /** Internal notification to info@ketujemi.com. */
@@ -130,8 +93,8 @@ export async function sendPartnerRegistrationAdminNotify(
     <p><strong>IP:</strong> ${escapeHtml(clientIp ?? "—")}</p>
   `;
 
-  await sendResendEmail({
-    to: [CONTACT_INBOX],
+  await deliverEmail({
+    to: CONTACT_INBOX,
     subject,
     text,
     html,
@@ -165,7 +128,7 @@ export async function sendPartnerUnpaidReminderEmail(opts: {
     <p>Paketa <strong>${escapeHtml(packageLabel)}</strong> nuk është paguar ende (${daysUnpaid} ditë).</p>
     <p><a href="${escapeHtml(payUrl)}">Përfundoni pagesën me kartë</a></p>
   `;
-  await sendResendEmail({ to: [to], subject, text, html });
+  await deliverEmail({ to, subject, text, html });
 }
 
 export async function sendPartnerSuspensionWarningEmail(opts: {
@@ -189,5 +152,5 @@ export async function sendPartnerSuspensionWarningEmail(opts: {
     <p>Llogaria Partner (<strong>${escapeHtml(packageLabel)}</strong>) u <strong>pezullua</strong> pas 30 ditësh pa pagesë.</p>
     <p><a href="${escapeHtml(payUrl)}">Përfundoni pagesën për riaktivizim</a></p>
   `;
-  await sendResendEmail({ to: [to], subject, text, html });
+  await deliverEmail({ to, subject, text, html });
 }

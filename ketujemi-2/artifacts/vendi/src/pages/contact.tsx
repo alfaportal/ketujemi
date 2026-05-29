@@ -47,15 +47,25 @@ export default function ContactPage() {
         }),
       });
 
-      if (!res.ok) throw new Error("send failed");
+      const data = (await res.json().catch(() => ({}))) as {
+        message?: string;
+        error?: string;
+      };
+      if (!res.ok) {
+        throw new Error(data.message ?? data.error ?? "send failed");
+      }
 
       toast({ title: c.toastSuccess });
       setName("");
       setEmail("");
       setSubject("");
       setMessage("");
-    } catch {
-      toast({ title: c.toastError, variant: "destructive" });
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : "";
+      toast({
+        title: detail && detail !== "send failed" ? detail : c.toastError,
+        variant: "destructive",
+      });
     } finally {
       setBusy(false);
     }
