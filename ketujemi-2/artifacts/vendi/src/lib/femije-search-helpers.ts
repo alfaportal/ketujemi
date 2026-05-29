@@ -1,4 +1,9 @@
 import { FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG } from "./femije-hub-subcategory-photos";
+import { FEMIJE_LEAF_PARENT_GROUP_SLUG } from "./femije-subcategory-guides";
+
+function isUsableCategoryImageUrl(url: string): boolean {
+  return /^https?:\/\//i.test(url);
+}
 
 /** Fëmijë hub slug (matches seeded category). */
 export const FEMIJE_HUB_SLUG = "femije";
@@ -397,10 +402,17 @@ export function femijeSubcategoryPhoto(
   slug: string | null | undefined,
   imageUrl?: string | null,
 ): string {
-  const fromDb = typeof imageUrl === "string" ? imageUrl.trim() : "";
+  const fromDbRaw = typeof imageUrl === "string" ? imageUrl.trim() : "";
+  const fromDb = fromDbRaw && isUsableCategoryImageUrl(fromDbRaw) ? fromDbRaw : "";
   if (fromDb) return fromDb;
   if (slug && FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG[slug]) {
     return FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG[slug];
+  }
+  if (slug?.startsWith("femije-leaf-")) {
+    const groupSlug = FEMIJE_LEAF_PARENT_GROUP_SLUG[slug];
+    if (groupSlug && FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG[groupSlug]) {
+      return FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG[groupSlug];
+    }
   }
   if (!slug) return FEMIJE_HERO_PHOTO;
   for (const key of FJ_TYPE_KEYS) {
