@@ -13,6 +13,26 @@ import {
   type TopListingCarouselItem,
 } from "@/lib/top-listings-events";
 
+const TOP_CAROUSEL_SLOW_MS = 3000;
+const TOP_CAROUSEL_FAST_THRESHOLD = 25;
+
+/** Few TOP listings: relaxed pace; 25+ speeds up so large sets keep moving. */
+function topCarouselTiming(count: number): { intervalMs: number; scrollDuration: number } {
+  if (count < TOP_CAROUSEL_FAST_THRESHOLD) {
+    return { intervalMs: TOP_CAROUSEL_SLOW_MS, scrollDuration: 18 };
+  }
+  if (count < 50) {
+    return { intervalMs: 1200, scrollDuration: 15 };
+  }
+  if (count < 100) {
+    return { intervalMs: 900, scrollDuration: 12 };
+  }
+  if (count < 250) {
+    return { intervalMs: 700, scrollDuration: 10 };
+  }
+  return { intervalMs: 500, scrollDuration: 8 };
+}
+
 const TOP_SLOT_FRAME = cn(
   "h-28 sm:h-32 md:h-36 w-full rounded-xl overflow-hidden transition-all duration-200 flex flex-col",
   "border-[3px] border-[#1A56A0] bg-gradient-to-br from-blue-50 via-white to-blue-50/80",
@@ -59,10 +79,12 @@ function TopListingsCarousel({
   loaded: boolean;
   priceFor: (eur: number) => string;
 }) {
+  const { intervalMs, scrollDuration } = topCarouselTiming(listings.length);
+
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: listings.length > 1,
     align: "start",
-    duration: 28,
+    duration: scrollDuration,
     dragFree: true,
   });
 
@@ -73,9 +95,9 @@ function TopListingsCarousel({
 
   useEffect(() => {
     if (!emblaApi || listings.length < 2) return;
-    const timer = setInterval(() => emblaApi.scrollNext(), 4500);
+    const timer = setInterval(() => emblaApi.scrollNext(), intervalMs);
     return () => clearInterval(timer);
-  }, [emblaApi, listings.length]);
+  }, [emblaApi, listings.length, intervalMs]);
 
   const slideBasis =
     "min-w-0 shrink-0 grow-0 basis-[46%] sm:basis-[31%] md:basis-[23%] lg:basis-[18%] xl:basis-[15%]";
@@ -196,10 +218,10 @@ export function TopListingsSection({ className }: { className?: string }) {
 
   return (
     <section
-      className={cn("bg-gray-50/80 border-b border-gray-100", className)}
+      className={cn("bg-gray-50/80 border-b border-gray-100 py-6 sm:py-8", className)}
       aria-labelledby="top-listings-heading"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2
           id="top-listings-heading"
           className="text-center text-lg font-black text-gray-900 mb-5 sm:mb-6"

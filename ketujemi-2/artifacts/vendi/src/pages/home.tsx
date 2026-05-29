@@ -151,9 +151,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <VipPartnersSection variant="home" />
+      <VipPartnersSection variant="home" className="border-b-0" />
 
-      <TopListingsSection />
+      <TopListingsSection className="border-t border-gray-100 !pt-4 sm:!pt-5 bg-white/90" />
 
       {/* -- Filter bar -- */}
       <section className="bg-white border-b border-gray-100 shadow-sm">

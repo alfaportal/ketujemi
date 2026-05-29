@@ -638,17 +638,13 @@ router.post("/listings", async (req, res) => {
   });
 });
 
-// ─── GET /listings/top — paid TOP boost strip (homepage carousel) ─────────────
+// ─── GET /listings/top — all active paid TOP listings (homepage carousel) ─────
 router.get("/listings/top", async (req, res) => {
   requestPurgeExpiredListings();
   const viewer = await getSessionUser(req);
-  const fetchAll =
-    String(req.query.all ?? "").trim() === "1" ||
-    String(req.query.all ?? "").toLowerCase() === "true";
-  const limitRaw = parseInt(String(req.query.limit ?? ""), 10);
   const now = new Date();
 
-  const baseQuery = db
+  const rows = await db
     .select()
     .from(listingsTable)
     .where(
@@ -659,11 +655,6 @@ router.get("/listings/top", async (req, res) => {
       ),
     )
     .orderBy(desc(listingsTable.top_until), desc(listingsTable.listed_at));
-
-  const rows =
-    !fetchAll && Number.isFinite(limitRaw) && limitRaw > 0
-      ? await baseQuery.limit(Math.max(1, Math.min(500, limitRaw)))
-      : await baseQuery;
 
   const cats = await db.select().from(categoriesTable);
   const catMap = new Map(cats.map((c) => [c.id, c.name]));

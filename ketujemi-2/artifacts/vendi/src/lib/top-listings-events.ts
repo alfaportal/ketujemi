@@ -96,16 +96,9 @@ export type TopListingCarouselItem = {
   category_name?: string | null;
 };
 
-/** Fetch every active paid TOP listing (no cap unless `limit` is passed). */
-export async function fetchTopListings(limit?: number): Promise<TopListingCarouselItem[]> {
-  const params = new URLSearchParams();
-  if (limit != null && limit > 0) {
-    params.set("limit", String(limit));
-  } else {
-    params.set("all", "1");
-  }
-  const qs = params.toString();
-  const r = await fetch(`/api/listings/top${qs ? `?${qs}` : ""}`, {
+/** Fetch every active paid TOP listing — no row limit. */
+export async function fetchTopListings(): Promise<TopListingCarouselItem[]> {
+  const r = await fetch("/api/listings/top", {
     credentials: "include",
     cache: "no-store",
   });
