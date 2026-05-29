@@ -123,9 +123,9 @@ const DETAILED_FAQ: FaqEntry[] = [
   {
     keywords: /top\b|në\s+krye|krye\s+list|featured/i,
     reply: {
-      sq: "**TOP €1**: renditje +7 / +5 / +3 / +1 ditë (sipas blerjeve); shfaqet mbi njoftimet normale në listë.",
-      mk: "TOP €1: +7/+5/+3/+1 дена.",
-      me: "TOP €1: +7/+5/+3/+1 dan.",
+      sq: "**TOP €1**: njoftimi shfaqet mbi të tjerët në listë për **7 ditë** (çdo blerim sht +7 ditë).",
+      mk: "TOP €1: **7 дена** на врв на листата (секоја купување +7).",
+      me: "TOP €1: **7 dana** na vrhu liste (svaka kupovina +7).",
     },
   },
   {

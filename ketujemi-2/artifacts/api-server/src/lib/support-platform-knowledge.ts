@@ -93,7 +93,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 6) Vendndodhja/qyteti, emri, telefon kontakti.
 7) Publikoni — **moderim AI** → njoftim aktiv deri **3 muaj**.
 8) Menaxhim: **Profili** → njoftimet e mia → ndrysho / fshi / **«Rifillo njoftimin»** pas skadimit (+3 muaj).
-9) **TOP €1** (opsional): promovim në krye të listës +7/+5/+3/+1 ditë.
+9) **TOP €1** (opsional): promovim në krye të listës — **7 ditë** për blerje (shtohet mbi kohën ekzistuese).
 10) Mos postoni duplikat të njëjtë titull+përshkrim aktiv.
 
 === NJOFTIME FALAS (përdorues privat) ===

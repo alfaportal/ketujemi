@@ -4,17 +4,12 @@ import { sql } from "drizzle-orm";
 
 export const TOP_LISTING_PRICE_EUR = 1;
 
+/** Days added to top_until per €1 TOP purchase. */
+export const TOP_LISTING_DAYS = 7;
+
 /** Phase 2: TOP payments + public TOP checkout (off until traffic). */
 export function isPhase2Enabled(): boolean {
   return process.env.FEATURE_PHASE_2 === "true";
-}
-
-/** Days added to top_until per purchase (after incrementing top_count). */
-export function topExtensionDays(topCount: number): number {
-  if (topCount <= 1) return 7;
-  if (topCount === 2) return 5;
-  if (topCount === 3) return 3;
-  return 1;
 }
 
 export function isTopActive(row: {
@@ -40,20 +35,18 @@ export async function applyTopBoostToListing(listingId: number): Promise<void> {
 
   if (!row) return;
 
-  const nextCount = (row.top_count ?? 0) + 1;
-  const days = topExtensionDays(nextCount);
   const base =
     row.top_until && new Date(row.top_until) > new Date()
       ? new Date(row.top_until)
       : new Date();
   const until = new Date(base);
-  until.setDate(until.getDate() + days);
+  until.setDate(until.getDate() + TOP_LISTING_DAYS);
 
   await db
     .update(listingsTable)
     .set({
       is_top: true,
-      top_count: nextCount,
+      top_count: (row.top_count ?? 0) + 1,
       top_until: until,
     })
     .where(eq(listingsTable.id, listingId));
