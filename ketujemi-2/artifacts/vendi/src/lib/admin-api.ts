@@ -233,6 +233,7 @@ export interface AdminHomepagePartner {
   sort_order: number;
   is_active: boolean;
   created_at: string;
+  category_ids?: number[];
 }
 
 export function getAdminHomepagePartners() {
@@ -245,6 +246,7 @@ export function createAdminHomepagePartner(data: {
   link_url: string;
   tier: "vip" | "standard";
   sort_order?: number;
+  category_ids?: number[];
 }) {
   return request<{ partner: AdminHomepagePartner }>("/homepage-partners", {
     method: "POST",
@@ -259,6 +261,7 @@ export function updateAdminHomepagePartner(
     logo_url?: string;
     link_url?: string;
     tier?: "vip" | "standard";
+    category_ids?: number[];
   },
 ) {
   return request<{ partner: AdminHomepagePartner }>(`/homepage-partners/${id}`, {

@@ -216,7 +216,14 @@ export async function getTrustedPartnersShuffled(
     return [...curated, ...business];
   }
 
+  const curated = await fetchActiveHomepagePartners(tier, cap, categoryId);
+  if (curated.length >= cap) {
+    return curated.slice(0, cap);
+  }
+  const remaining = cap - curated.length;
   const pool = await fetchTrustedPartnersPool(tier, categoryId);
-  const partners = shuffle(pool).slice(0, cap);
-  return partners.map((u) => toTrustedPartnerDto(u, tier));
+  const business = shuffle(pool)
+    .slice(0, remaining)
+    .map((u) => toTrustedPartnerDto(u, tier));
+  return [...curated, ...business];
 }

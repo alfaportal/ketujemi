@@ -619,6 +619,7 @@ router.post("/admin/homepage-partners", requireAdmin, async (req, res) => {
       link_url: String(req.body?.link_url ?? ""),
       tier: String(req.body?.tier ?? "standard"),
       sort_order: Number(req.body?.sort_order ?? 0),
+      category_ids: Array.isArray(req.body?.category_ids) ? req.body.category_ids : [],
     });
     res.status(201).json({ partner: row });
   } catch (err) {
@@ -665,6 +666,11 @@ router.patch("/admin/homepage-partners/:id", requireAdmin, async (req, res) => {
       ...(body.tier !== undefined ? { tier: String(body.tier) } : {}),
       ...(body.sort_order !== undefined ? { sort_order: Number(body.sort_order) } : {}),
       ...(body.is_active !== undefined ? { is_active: Boolean(body.is_active) } : {}),
+      ...(body.category_ids !== undefined
+        ? {
+            category_ids: Array.isArray(body.category_ids) ? body.category_ids : [],
+          }
+        : {}),
     });
     if (!partner) {
       res.status(404).json({ error: "Not found" });

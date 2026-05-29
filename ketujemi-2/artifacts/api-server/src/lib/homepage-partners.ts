@@ -1,6 +1,11 @@
-import { db, homepagePartnersTable } from "@workspace/db";
+import {
+  db,
+  homepagePartnerCategoriesTable,
+  homepagePartnersTable,
+} from "@workspace/db";
 import type { HomepagePartner } from "@workspace/db";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
+import { getCategoryTreeIds } from "./category-tree";
 import type { PartnerTier, TrustedPartnerDto } from "./trusted-partners";
 
 export type HomepagePartnerInput = {
@@ -9,6 +14,11 @@ export type HomepagePartnerInput = {
   link_url: string;
   tier: PartnerTier;
   sort_order?: number;
+  category_ids?: number[];
+};
+
+export type HomepagePartnerAdmin = HomepagePartner & {
+  category_ids: number[];
 };
 
 function normalizeUrl(url: string): string {
@@ -22,6 +32,16 @@ function normalizeTier(tier: string): PartnerTier | null {
   const t = tier.trim().toLowerCase();
   if (t === "vip" || t === "standard") return t;
   return null;
+}
+
+function normalizeCategoryIds(ids: unknown): number[] {
+  if (!Array.isArray(ids)) return [];
+  const out = new Set<number>();
+  for (const raw of ids) {
+    const n = typeof raw === "number" ? raw : parseInt(String(raw), 10);
+    if (Number.isFinite(n) && n > 0) out.add(n);
+  }
+  return [...out];
 }
 
 /** Negative id avoids collision with user ids in analytics. */
@@ -44,23 +64,100 @@ export function toHomepagePartnerDto(row: HomepagePartner): TrustedPartnerDto {
   };
 }
 
-export async function listHomepagePartnersAdmin(): Promise<HomepagePartner[]> {
-  return db
-    .select()
-    .from(homepagePartnersTable)
-    .orderBy(asc(homepagePartnersTable.tier), asc(homepagePartnersTable.sort_order), asc(homepagePartnersTable.id));
+async function loadPartnerCategoryMap(): Promise<Map<number, number[]>> {
+  const rows = await db
+    .select({
+      partner_id: homepagePartnerCategoriesTable.partner_id,
+      category_id: homepagePartnerCategoriesTable.category_id,
+    })
+    .from(homepagePartnerCategoriesTable);
+
+  const map = new Map<number, number[]>();
+  for (const row of rows) {
+    const list = map.get(row.partner_id) ?? [];
+    list.push(row.category_id);
+    map.set(row.partner_id, list);
+  }
+  return map;
+}
+
+export async function setPartnerCategories(
+  partnerId: number,
+  categoryIds: number[],
+): Promise<void> {
+  const ids = normalizeCategoryIds(categoryIds);
+  await db
+    .delete(homepagePartnerCategoriesTable)
+    .where(eq(homepagePartnerCategoriesTable.partner_id, partnerId));
+
+  if (ids.length === 0) return;
+
+  await db.insert(homepagePartnerCategoriesTable).values(
+    ids.map((category_id) => ({ partner_id: partnerId, category_id })),
+  );
+}
+
+export async function listHomepagePartnersAdmin(): Promise<HomepagePartnerAdmin[]> {
+  const [rows, categoryMap] = await Promise.all([
+    db
+      .select()
+      .from(homepagePartnersTable)
+      .orderBy(
+        asc(homepagePartnersTable.tier),
+        asc(homepagePartnersTable.sort_order),
+        asc(homepagePartnersTable.id),
+      ),
+    loadPartnerCategoryMap(),
+  ]);
+
+  return rows.map((row) => ({
+    ...row,
+    category_ids: categoryMap.get(row.id) ?? [],
+  }));
 }
 
 export async function fetchActiveHomepagePartners(
   tier: PartnerTier,
   limit: number,
+  categoryId?: number,
 ): Promise<TrustedPartnerDto[]> {
   const cap = Math.max(1, Math.min(24, Math.floor(limit)));
+  const scoped =
+    categoryId != null && Number.isFinite(categoryId) && categoryId > 0;
+
+  if (!scoped) {
+    const rows = await db
+      .select()
+      .from(homepagePartnersTable)
+      .where(
+        and(eq(homepagePartnersTable.tier, tier), eq(homepagePartnersTable.is_active, true)),
+      )
+      .orderBy(asc(homepagePartnersTable.sort_order), asc(homepagePartnersTable.id))
+      .limit(cap);
+
+    return rows.map(toHomepagePartnerDto);
+  }
+
+  const treeIds = await getCategoryTreeIds(categoryId!);
+  if (treeIds.length === 0) return [];
+
+  const links = await db
+    .select({ partner_id: homepagePartnerCategoriesTable.partner_id })
+    .from(homepagePartnerCategoriesTable)
+    .where(inArray(homepagePartnerCategoriesTable.category_id, treeIds));
+
+  const partnerIds = [...new Set(links.map((l) => l.partner_id))];
+  if (partnerIds.length === 0) return [];
+
   const rows = await db
     .select()
     .from(homepagePartnersTable)
     .where(
-      and(eq(homepagePartnersTable.tier, tier), eq(homepagePartnersTable.is_active, true)),
+      and(
+        eq(homepagePartnersTable.tier, tier),
+        eq(homepagePartnersTable.is_active, true),
+        inArray(homepagePartnersTable.id, partnerIds),
+      ),
     )
     .orderBy(asc(homepagePartnersTable.sort_order), asc(homepagePartnersTable.id))
     .limit(cap);
@@ -70,7 +167,7 @@ export async function fetchActiveHomepagePartners(
 
 export async function createHomepagePartner(
   input: HomepagePartnerInput,
-): Promise<HomepagePartner> {
+): Promise<HomepagePartnerAdmin> {
   const tier = normalizeTier(input.tier);
   if (!tier) throw new Error("INVALID_TIER");
 
@@ -94,7 +191,13 @@ export async function createHomepagePartner(
     .returning();
 
   if (!row) throw new Error("INSERT_FAILED");
-  return row;
+
+  const category_ids = normalizeCategoryIds(input.category_ids);
+  if (category_ids.length > 0) {
+    await setPartnerCategories(row.id, category_ids);
+  }
+
+  return { ...row, category_ids };
 }
 
 export async function deleteHomepagePartner(id: number): Promise<boolean> {
@@ -108,7 +211,7 @@ export async function deleteHomepagePartner(id: number): Promise<boolean> {
 export async function updateHomepagePartner(
   id: number,
   input: Partial<HomepagePartnerInput> & { is_active?: boolean },
-): Promise<HomepagePartner | null> {
+): Promise<HomepagePartnerAdmin | null> {
   const updates: Partial<typeof homepagePartnersTable.$inferInsert> = {};
   if (input.business_name !== undefined) {
     const name = input.business_name.trim();
@@ -137,20 +240,37 @@ export async function updateHomepagePartner(
     updates.is_active = input.is_active;
   }
 
-  if (Object.keys(updates).length === 0) {
+  let row: HomepagePartner | undefined;
+
+  if (Object.keys(updates).length > 0) {
+    const [updated] = await db
+      .update(homepagePartnersTable)
+      .set(updates)
+      .where(eq(homepagePartnersTable.id, id))
+      .returning();
+    row = updated;
+  } else {
     const [existing] = await db
       .select()
       .from(homepagePartnersTable)
       .where(eq(homepagePartnersTable.id, id))
       .limit(1);
-    return existing ?? null;
+    row = existing;
   }
 
-  const [row] = await db
-    .update(homepagePartnersTable)
-    .set(updates)
-    .where(eq(homepagePartnersTable.id, id))
-    .returning();
+  if (!row) return null;
 
-  return row ?? null;
+  if (input.category_ids !== undefined) {
+    await setPartnerCategories(id, normalizeCategoryIds(input.category_ids));
+  }
+
+  const categoryRows = await db
+    .select({ category_id: homepagePartnerCategoriesTable.category_id })
+    .from(homepagePartnerCategoriesTable)
+    .where(eq(homepagePartnerCategoriesTable.partner_id, id));
+
+  return {
+    ...row,
+    category_ids: categoryRows.map((r) => r.category_id),
+  };
 }

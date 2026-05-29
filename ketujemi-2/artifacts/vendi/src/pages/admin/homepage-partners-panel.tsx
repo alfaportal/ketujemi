@@ -2,10 +2,16 @@ import { useCallback, useEffect, useState } from "react";
 import {
   createAdminHomepagePartner,
   deleteAdminHomepagePartner,
+  getAdminCategories,
   getAdminHomepagePartners,
   updateAdminHomepagePartner,
+  type AdminCategory,
   type AdminHomepagePartner,
 } from "@/lib/admin-api";
+import {
+  formatPartnerCategoryLabels,
+  PartnerCategoryChecklist,
+} from "./partner-category-checklist";
 import { Loader2, Pencil, Plus, Star, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { uploadImageToCloudinary, useCloudinaryConfig } from "@/lib/cloudinary-config";
@@ -21,12 +27,15 @@ export function AdminHomepagePartnersPanel() {
   const [logoUrl, setLogoUrl] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
   const [tier, setTier] = useState<"vip" | "standard">("standard");
+  const [categoryIds, setCategoryIds] = useState<number[]>([]);
+  const [categories, setCategories] = useState<AdminCategory[]>([]);
 
   const [editRow, setEditRow] = useState<AdminHomepagePartner | null>(null);
   const [editName, setEditName] = useState("");
   const [editLogo, setEditLogo] = useState("");
   const [editLink, setEditLink] = useState("");
   const [editTier, setEditTier] = useState<"vip" | "standard">("standard");
+  const [editCategoryIds, setEditCategoryIds] = useState<number[]>([]);
   const [logoUploading, setLogoUploading] = useState(false);
   const [editLogoUploading, setEditLogoUploading] = useState(false);
   const cloudinary = useCloudinaryConfig();
@@ -70,6 +79,14 @@ export function AdminHomepagePartnersPanel() {
   }, [load]);
 
   useEffect(() => {
+    getAdminCategories()
+      .then(setCategories)
+      .catch(() => {
+        /* categories optional for list display */
+      });
+  }, []);
+
+  useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(null), 5000);
     return () => clearTimeout(t);
@@ -81,6 +98,7 @@ export function AdminHomepagePartnersPanel() {
     setEditLogo(p.logo_url);
     setEditLink(p.link_url);
     setEditTier(p.tier === "vip" ? "vip" : "standard");
+    setEditCategoryIds(p.category_ids ?? []);
   }
 
   async function handleAdd(e: React.FormEvent) {
@@ -92,11 +110,13 @@ export function AdminHomepagePartnersPanel() {
         logo_url: logoUrl.trim(),
         link_url: linkUrl.trim(),
         tier,
+        category_ids: categoryIds,
       });
       setBusinessName("");
       setLogoUrl("");
       setLinkUrl("");
       setTier("standard");
+      setCategoryIds([]);
       setToast({ type: "ok", text: "Partneri u shtua në homepage." });
       await load();
     } catch (err) {
@@ -119,6 +139,7 @@ export function AdminHomepagePartnersPanel() {
         logo_url: editLogo.trim(),
         link_url: editLink.trim(),
         tier: editTier,
+        category_ids: editCategoryIds,
       });
       setToast({ type: "ok", text: "Partneri u përditësua." });
       setEditRow(null);
@@ -155,8 +176,8 @@ export function AdminHomepagePartnersPanel() {
       <div>
         <h3 className="text-base font-black text-gray-900">Partnerë në homepage</h3>
         <p className="text-xs text-gray-600 mt-1">
-          Logo, emër dhe link për seksionin «Partnerët tanë të besuar». VIP = logo më e madhe,
-          border i artë; Partner = border blu.
+          Logo, emër, link dhe kategoritë ku shfaqet partneri (kryefaqe + faqe hub).
+          VIP = logo më e madhe, border i artë; Partner = border blu.
         </p>
       </div>
 
@@ -243,6 +264,12 @@ export function AdminHomepagePartnersPanel() {
             VIP Partner
           </button>
         </div>
+        <PartnerCategoryChecklist
+          categories={categories}
+          selectedIds={categoryIds}
+          onChange={setCategoryIds}
+          disabled={saving}
+        />
         <button
           type="submit"
           disabled={saving}
@@ -262,6 +289,7 @@ export function AdminHomepagePartnersPanel() {
           <PartnerList
             title="VIP Partner"
             items={vipList}
+            categories={categories}
             busyId={busyId}
             onEdit={openEdit}
             onDelete={handleDelete}
@@ -270,6 +298,7 @@ export function AdminHomepagePartnersPanel() {
           <PartnerList
             title="Partner"
             items={standardList}
+            categories={categories}
             busyId={busyId}
             onEdit={openEdit}
             onDelete={handleDelete}
@@ -363,6 +392,12 @@ export function AdminHomepagePartnersPanel() {
                 VIP
               </button>
             </div>
+            <PartnerCategoryChecklist
+              categories={categories}
+              selectedIds={editCategoryIds}
+              onChange={setEditCategoryIds}
+              disabled={saving}
+            />
             <button
               type="submit"
               disabled={saving}
@@ -380,6 +415,7 @@ export function AdminHomepagePartnersPanel() {
 function PartnerList({
   title,
   items,
+  categories,
   busyId,
   onEdit,
   onDelete,
@@ -387,6 +423,7 @@ function PartnerList({
 }: {
   title: string;
   items: AdminHomepagePartner[];
+  categories: AdminCategory[];
   busyId: number | null;
   onEdit: (p: AdminHomepagePartner) => void;
   onDelete: (id: number) => void;
@@ -403,7 +440,9 @@ function PartnerList({
         {title} ({items.length})
       </p>
       {items.length === 0 ? (
-        <p className="text-xs text-gray-500 py-2">Asnjë — plotësohen automatikisht nga bizneset aktive.</p>
+        <p className="text-xs text-gray-500 py-2">
+          Asnjë i kuruar — në faqe kategori plotësohen nga bizneset aktive me shpallje.
+        </p>
       ) : (
         <ul className="space-y-2">
           {items.map((p) => (
@@ -425,6 +464,9 @@ function PartnerList({
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-sm text-gray-900 truncate">{p.business_name}</p>
                 <p className="text-xs text-gray-500 truncate">{p.link_url}</p>
+                <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-2">
+                  {formatPartnerCategoryLabels(p.category_ids ?? [], categories)}
+                </p>
               </div>
               <div className="flex shrink-0 gap-1.5">
                 <button

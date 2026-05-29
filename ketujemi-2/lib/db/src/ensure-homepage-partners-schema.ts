@@ -16,8 +16,20 @@ CREATE INDEX IF NOT EXISTS homepage_partners_tier_active_idx
   ON homepage_partners (tier, is_active, sort_order);
 `;
 
+const HOMEPAGE_PARTNER_CATEGORIES_SQL = `
+CREATE TABLE IF NOT EXISTS homepage_partner_categories (
+  partner_id integer NOT NULL REFERENCES homepage_partners(id) ON DELETE CASCADE,
+  category_id integer NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+  PRIMARY KEY (partner_id, category_id)
+);
+
+CREATE INDEX IF NOT EXISTS homepage_partner_categories_category_idx
+  ON homepage_partner_categories (category_id);
+`;
+
 export async function ensureHomepagePartnersSchema(pool: pg.Pool): Promise<void> {
   await pool.query(HOMEPAGE_PARTNERS_SQL);
+  await pool.query(HOMEPAGE_PARTNER_CATEGORIES_SQL);
 
   const { rows } = await pool.query<{ ok: boolean }>(`
     SELECT EXISTS (
