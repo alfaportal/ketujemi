@@ -59,12 +59,6 @@ export async function fulfillPaidCheckoutSession(session: Stripe.Checkout.Sessio
     await activateVipFromPayment(userId);
   }
 
-  const listingId = Number(session.metadata?.listing_id);
-  if (purpose === "top_listing" && Number.isFinite(listingId)) {
-    const { applyTopBoostToListing } = await import("./listing-top");
-    await applyTopBoostToListing(listingId);
-  }
-
   const { parseWalletTopupPurpose } = await import("./wallet");
   if (parseWalletTopupPurpose(purpose) && Number.isFinite(userId)) {
     const billingCountry = await resolveCheckoutBillingCountry(session);

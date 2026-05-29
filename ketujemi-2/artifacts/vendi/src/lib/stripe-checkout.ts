@@ -2,7 +2,12 @@ import { loadStripe, type Stripe } from "@stripe/stripe-js";
 
 const BUILD_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.trim() ?? "";
 
-export type StripeCheckoutPurpose = "extra_post" | "vip_month" | "top_listing";
+export type StripeCheckoutPurpose =
+  | "extra_post"
+  | "vip_month"
+  | "top_listing_s"
+  | "top_listing_m"
+  | "top_listing_l";
 
 export type CreateCheckoutSessionBody = {
   purpose: StripeCheckoutPurpose;

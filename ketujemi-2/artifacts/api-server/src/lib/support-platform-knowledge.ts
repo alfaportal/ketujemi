@@ -93,7 +93,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 6) Vendndodhja/qyteti, emri, telefon kontakti.
 7) Publikoni — **moderim AI** → njoftim aktiv deri **3 muaj**.
 8) Menaxhim: **Profili** → njoftimet e mia → ndrysho / fshi / **«Rifillo njoftimin»** pas skadimit (+3 muaj).
-9) **TOP €1** (opsional): promovim në krye të listës — **7 ditë** për blerje (shtohet mbi kohën ekzistuese).
+9) **TOP** (opsional): **€2 = 4 ditë**, **€5 = 15 ditë**, **€8 = 30 ditë** në krye të listës (zgjidhni paketën → Stripe).
 10) Mos postoni duplikat të njëjtë titull+përshkrim aktiv.
 
 === NJOFTIME FALAS (përdorues privat) ===
@@ -117,7 +117,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 
 === PAGESAT (Stripe) ===
 • Platforma përdor **Stripe Checkout** për pagesa me **kartë bankare** (Visa, Mastercard, etj.).
-• Stripe përdoret për: **Partner** (/partner), **TOP njoftimi** (€1), **Paketa njoftime** S/M/L, **VIP biznes** dhe rinovime.
+• Stripe përdoret për: **Partner** (/partner), **TOP njoftimi** (€2 / €5 / €8), **Paketa njoftime** S/M/L, **VIP biznes** dhe rinovime.
 • KetuJemi **NUK** mbledh pagesa për blerjen e produktit te shitësi — blerësi dhe shitësi bien dakord direkt.
 • Pas pagesës Stripe për partner/paketë, aktivizimi automatik në llogari.
 
@@ -144,7 +144,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 
 === FAQ — PYETJET MË TË SHPESHTA ===
 **Si të postoj?** → «Posto Falas», kategori, të dhëna, foto, publiko (deri 3 muaj).
-**Sa kushton postimi?** → Falas për privatë (10/kategori + 10 total aktive); TOP €1 opsional; biznes €1 pas 10 në kategori; partner €30/€50.
+**Sa kushton postimi?** → Falas për privatë (10/kategori + 10 total aktive); TOP opsional €2/€5/€8; biznes €1 pas 10 në kategori; partner €30/€50.
 **Sa foto?** → Deri në 10 për njoftim.
 **Si ta fshij/ndryshoj?** → Profili → njoftimet e mia.
 **Si kontaktoj shitësin?** → Telefono / WhatsApp në faqen e njoftimit.

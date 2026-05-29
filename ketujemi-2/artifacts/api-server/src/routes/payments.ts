@@ -5,7 +5,7 @@ import {
   stripePublishableKey,
   stripeSecret,
 } from "../lib/payments";
-import { isPhase2Enabled } from "../lib/listing-top";
+import { isPhase2Enabled, TOP_PACKAGE_LIST } from "../lib/listing-top";
 import { handleCreateCheckoutSession } from "../lib/create-checkout-session-handler";
 import { fulfillPaidCheckoutSession } from "../lib/stripe-fulfill-session";
 import { getSessionUser } from "../lib/session-user";
@@ -18,6 +18,13 @@ router.get("/payments/status", (_req, res) => {
     stripePublishableKey: stripePublishableKey(),
     devBypass: devPaymentBypassEnabled(),
     phase2: isPhase2Enabled(),
+    topPackages: TOP_PACKAGE_LIST.map((p) => ({
+      id: p.id,
+      purpose: p.purpose,
+      priceEur: p.priceEur,
+      days: p.days,
+      label: `${p.days} ditë`,
+    })),
   });
 });
 

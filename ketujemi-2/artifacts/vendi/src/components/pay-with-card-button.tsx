@@ -16,7 +16,7 @@ export type PayWithCardButtonProps = Omit<ButtonProps, "onClick"> & {
   hideWhenUnavailable?: boolean;
 };
 
-/** Reusable «Paguaj me kartë» — VIP, njoftim shtesë €1, TOP €1. */
+/** Reusable «Paguaj me kartë» — VIP, njoftim shtesë €1. */
 export function PayWithCardButton({
   purpose,
   listingId,

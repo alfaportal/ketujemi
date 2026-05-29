@@ -99,7 +99,7 @@ const DETAILED_FAQ: FaqEntry[] = [
     keywords:
       /posto|postim|si\s+(te|të)\s+post|si\s+postoj|how\s+to\s+post|објав|objav|kako\s+da\s+post|shitës|shites|shese|shes\b/i,
     reply: {
-      sq: "Postimi (hap pas hapi): 1) Hyr + verifikim email/SMS. 2) **«Posto Falas»**. 3) Kategori + nënkategori e saktë. 4) Titull, përshkrim, çmim €, deri **10 foto**. 5) Publiko (moderim AI) — aktiv deri **3 muaj**. Limit: **10 postime falas në muaj** për kategori kryesore (riniset çdo muaj). TOP €1 opsional. Rifillo pas skadimit nga njoftimi juaj.",
+      sq: "Postimi (hap pas hapi): 1) Hyr + verifikim email/SMS. 2) **«Posto Falas»**. 3) Kategori + nënkategori e saktë. 4) Titull, përshkrim, çmim €, deri **10 foto**. 5) Publiko (moderim AI) — aktiv deri **3 muaj**. Limit: **10 postime falas në muaj** për kategori kryesore (riniset çdo muaj). TOP opsional (€2/€5/€8). Rifillo pas skadimit nga njoftimi juaj.",
       mk: "Продавач: регистрација, верификација, **Posto Falas**, точна категорија, детали — 30 дена.",
       me: "Prodavač: registracija, verifikacija, **Posto Falas**, tačna kategorija, detalji — 30 dana.",
     },
@@ -123,9 +123,9 @@ const DETAILED_FAQ: FaqEntry[] = [
   {
     keywords: /top\b|në\s+krye|krye\s+list|featured/i,
     reply: {
-      sq: "**TOP €1**: njoftimi shfaqet mbi të tjerët në listë për **7 ditë** (çdo blerim sht +7 ditë).",
-      mk: "TOP €1: **7 дена** на врв на листата (секоја купување +7).",
-      me: "TOP €1: **7 dana** na vrhu liste (svaka kupovina +7).",
+      sq: "**TOP** (opsional): zgjidhni paketën — **€2 = 4 ditë**, **€5 = 15 ditë**, **€8 = 30 ditë** në krye të listës (Stripe).",
+      mk: "TOP: €2=4 дена, €5=15, €8=30 на врв.",
+      me: "TOP: €2=4 dana, €5=15, €8=30 na vrhu.",
     },
   },
   {
@@ -164,7 +164,7 @@ const DETAILED_FAQ: FaqEntry[] = [
   {
     keywords: /stripe|kart|card|pages|pay|checkout|bler pages/i,
     reply: {
-      sq: "Pagesat online në KetuJemi bëhen me **Stripe** (kartë bankare): partner **/partner** (Standard €30 / VIP €50), **TOP** njoftimi €1, paketa shtesë njoftimesh S/M/L. Blerja e produktit te shitësi **nuk** paguhet përmes KetuJemi — kontakt direkt me shitësin.",
+      sq: "Pagesat online në KetuJemi bëhen me **Stripe** (kartë bankare): partner **/partner** (Standard €30 / VIP €50), **TOP** njoftimi (€2/€5/€8), paketa shtesë njoftimesh S/M/L. Blerja e produktit te shitësi **nuk** paguhet përmes KetuJemi — kontakt direkt me shitësin.",
       mk: "Stripe за partner, TOP, пакети. Купување од продавач — директно, не преку платформата.",
       me: "Stripe za partner, TOP, pakete. Kupovina od prodavača — direktno.",
     },

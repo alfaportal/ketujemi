@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { CreditCard, Crown, Sparkles, Tag } from "lucide-react";
+import { CreditCard, Crown, Tag } from "lucide-react";
 import { useAuth, type AuthUser } from "@/lib/auth-context";
 import { fetchPaymentsStatus, type PaymentsStatus } from "@/lib/stripe-checkout";
 import { PayWithCardButton } from "@/components/pay-with-card-button";
+import { TopListingPackages } from "@/components/top-listing-packages";
 
 function isVipActive(user: AuthUser): boolean {
   return (
@@ -23,8 +24,7 @@ export type CardPaymentsPanelProps = {
 };
 
 /**
- * All card-payment actions in one place: VIP, extra listing €1, TOP €1.
- * Shown on profile, post flow, listing owner tools, and site-wide strip.
+ * Card payments: VIP, extra listing €1, TOP packages (€2 / €5 / €8).
  */
 export function CardPaymentsPanel({
   listingId,
@@ -88,14 +88,8 @@ export function CardPaymentsPanel({
 
   const paymentsReady = status?.cardPaymentsAvailable ?? false;
 
-  const inner = (
-    <div
-      className={
-        compact
-          ? "flex flex-wrap items-center gap-2"
-          : "flex flex-col sm:flex-row flex-wrap gap-2"
-      }
-    >
+  const businessButtons = (
+    <>
       {showVip ? (
         <PayWithCardButton
           purpose="vip_month"
@@ -128,30 +122,29 @@ export function CardPaymentsPanel({
           {compact ? "Njoftim +€1" : "Njoftim shtesë — €1"}
         </PayWithCardButton>
       ) : null}
-      {showTop ? (
-        <PayWithCardButton
-          purpose="top_listing"
-          listingId={listingId}
-          hideWhenUnavailable={false}
-          variant="outline"
-          size={compact ? "sm" : "default"}
-          disabled={status != null && !status.phase2}
-          className={
-            compact
-              ? "min-h-10 border-violet-200 text-violet-900 bg-white"
-              : "min-h-11 flex-1 border-violet-200 text-violet-900 bg-white hover:bg-violet-50"
-          }
-          title={
-            status && !status.phase2
-              ? "TOP aktivizohet në Fazën 2"
-              : !paymentsReady
-                ? "Konfiguroni Stripe në server"
-                : undefined
-          }
-        >
-          {compact ? "TOP €1" : "TOP në krye — €1"}
-        </PayWithCardButton>
+    </>
+  );
+
+  const topPackages = showTop ? (
+    <TopListingPackages
+      listingId={listingId!}
+      compact={compact}
+      phase2Enabled={status?.phase2 ?? false}
+      paymentsReady={paymentsReady}
+    />
+  ) : null;
+
+  const inner = compact ? (
+    <div className="flex flex-wrap items-center gap-2">
+      {businessButtons}
+      {topPackages}
+    </div>
+  ) : (
+    <div className="space-y-3">
+      {(showVip || showExtraPost) ? (
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2">{businessButtons}</div>
       ) : null}
+      {topPackages}
     </div>
   );
 
@@ -209,7 +202,7 @@ export function CardPaymentsPanel({
         ) : null}
         {showTop ? (
           <li className="flex items-center gap-1">
-            <Sparkles className="h-3 w-3" /> €1 TOP (njoftim në krye)
+            TOP: €2 (4d) · €5 (15d) · €8 (30d)
           </li>
         ) : null}
       </ul>

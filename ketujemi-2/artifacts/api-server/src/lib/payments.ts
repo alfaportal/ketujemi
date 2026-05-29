@@ -7,12 +7,20 @@ import {
   BUSINESS_VIP_MONTHLY_PRICE_EUR,
 } from "./business-rules";
 import { PARTNER_PACKAGE_PRICE_CENTS } from "./business-partner";
-import { applyTopBoostToListing, isPhase2Enabled } from "./listing-top";
+import {
+  applyTopBoostToListing,
+  isPhase2Enabled,
+  isTopListingPurpose,
+  topDaysForPurpose,
+  topPackageByPurpose,
+} from "./listing-top";
 
 export type PaymentPurpose =
   | "extra_post"
   | "vip_month"
-  | "top_listing"
+  | "top_listing_s"
+  | "top_listing_m"
+  | "top_listing_l"
   | "partner_standard"
   | "partner_vip"
   | "listing_package_s"
@@ -30,8 +38,6 @@ export function stripeSecret(): string | null {
   return key || null;
 }
 
-export const TOP_LISTING_PRICE_EUR = 1;
-
 export function paymentsConfigured(): boolean {
   return stripeSecret() != null;
 }
@@ -44,8 +50,9 @@ export function devPaymentBypassEnabled(): boolean {
 }
 
 function amountCents(purpose: PaymentPurpose): number {
+  const topPkg = topPackageByPurpose(purpose);
+  if (topPkg) return topPkg.priceEur * 100;
   if (purpose === "vip_month") return BUSINESS_VIP_MONTHLY_PRICE_EUR * 100;
-  if (purpose === "top_listing") return TOP_LISTING_PRICE_EUR * 100;
   if (purpose === "partner_vip") return PARTNER_PACKAGE_PRICE_CENTS.vip;
   if (purpose === "partner_standard") return PARTNER_PACKAGE_PRICE_CENTS.partner;
   if (purpose === "listing_package_s") return 500;
@@ -82,22 +89,24 @@ export async function createStripeCheckout(
   origin: string,
   listingId?: number,
 ): Promise<{ url: string; token: string; sessionId: string | null }> {
-  if (purpose === "top_listing" && !isPhase2Enabled()) {
+  if (isTopListingPurpose(purpose) && !isPhase2Enabled()) {
     throw new Error("PHASE_2_DISABLED");
   }
+
+  const topPkg = topPackageByPurpose(purpose);
 
   if (devPaymentBypassEnabled()) {
     const { token } = await createPaymentRecord(user.id, purpose, listingId);
     if (purpose === "vip_month") {
       await activateVipFromPayment(user.id);
     }
-    if (purpose === "top_listing" && listingId) {
-      await applyTopBoostToListing(listingId);
+    if (topPkg && listingId) {
+      await applyTopBoostToListing(listingId, topPkg.days);
     }
     const url =
       purpose === "vip_month"
         ? `${origin}/profile?payment=success&purpose=vip`
-        : purpose === "top_listing" && listingId
+        : topPkg && listingId
           ? `${origin}/listings/${listingId}?top=success`
           : `${origin}/listings/new?payment_token=${encodeURIComponent(token)}`;
     return { url, token, sessionId: null };
@@ -116,16 +125,18 @@ export async function createStripeCheckout(
   const successUrl =
     purpose === "vip_month"
       ? `${origin}/profile?payment=success&purpose=vip&${sessionQuery}`
-      : purpose === "top_listing" && listingId
+      : topPkg && listingId
         ? `${origin}/listings/${listingId}?top=success&${sessionQuery}`
         : `${origin}/listings/new?payment_token=${encodeURIComponent(token)}&${sessionQuery}`;
 
   const productName =
     purpose === "vip_month"
       ? "KetuJemi VIP Biznes (1 muaj)"
-      : purpose === "top_listing"
-        ? "KetuJemi TOP — njoftim në krye"
+      : topPkg
+        ? topPkg.stripeName
         : "KetuJemi — njoftim shtesë biznes";
+
+  const productDescription = topPkg?.stripeDescription;
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -133,7 +144,10 @@ export async function createStripeCheckout(
       {
         price_data: {
           currency: "eur",
-          product_data: { name: productName },
+          product_data: {
+            name: productName,
+            ...(productDescription ? { description: productDescription } : {}),
+          },
           unit_amount: cents,
         },
         quantity: 1,
@@ -147,6 +161,7 @@ export async function createStripeCheckout(
       purpose,
       payment_token: token,
       listing_id: listingId ? String(listingId) : "",
+      ...(topPkg ? { top_days: String(topPkg.days), top_package: topPkg.id } : {}),
     },
   });
 
@@ -196,8 +211,9 @@ export async function markPaymentPaidByToken(token: string): Promise<void> {
   if (row.purpose === "vip_month") {
     await activateVipFromPayment(row.user_id);
   }
-  if (row.purpose === "top_listing" && row.listing_id) {
-    await applyTopBoostToListing(row.listing_id);
+  const topDays = topDaysForPurpose(row.purpose);
+  if (topDays != null && row.listing_id) {
+    await applyTopBoostToListing(row.listing_id, topDays);
   }
   if (
     (row.purpose === "partner_standard" || row.purpose === "partner_vip") &&

@@ -5,7 +5,7 @@ import {
   type PaymentPurpose,
 } from "./payments";
 import { isBusinessAccount } from "./business-rules";
-import { isPhase2Enabled } from "./listing-top";
+import { isPhase2Enabled, isTopListingPurpose } from "./listing-top";
 import { userOwnsListing } from "./listing-ownership";
 import { db, listingsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
@@ -18,6 +18,14 @@ function appOrigin(req: Request): string {
   return host ? `${proto}://${host}` : "http://localhost:5173";
 }
 
+const CARD_CHECKOUT_PURPOSES = new Set<PaymentPurpose>([
+  "extra_post",
+  "vip_month",
+  "top_listing_s",
+  "top_listing_m",
+  "top_listing_l",
+]);
+
 /** Shared handler for Stripe Checkout session creation (card payments). */
 export async function handleCreateCheckoutSession(req: Request, res: Response): Promise<void> {
   const user = await getSessionUser(req);
@@ -27,7 +35,7 @@ export async function handleCreateCheckoutSession(req: Request, res: Response): 
   }
 
   const purpose = req.body?.purpose as PaymentPurpose;
-  if (purpose !== "extra_post" && purpose !== "vip_month" && purpose !== "top_listing") {
+  if (!CARD_CHECKOUT_PURPOSES.has(purpose)) {
     res.status(400).json({
       error: "Invalid purpose",
       message: "Lloji i pagesës nuk njihet.",
@@ -35,7 +43,7 @@ export async function handleCreateCheckoutSession(req: Request, res: Response): 
     return;
   }
 
-  if (purpose === "top_listing") {
+  if (isTopListingPurpose(purpose)) {
     if (!isPhase2Enabled()) {
       res.status(403).json({
         error: "PHASE_2_DISABLED",
