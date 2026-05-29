@@ -23,7 +23,7 @@ import { getCategoryLucideIcon } from "@/lib/category-lucide-icon";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { CategoryPhotoPickerRow, CategoryPhotoPickerCard } from "@/components/category-photo-picker";
 import { Skeleton } from "@/components/ui/skeleton";
-import { translateCategory } from "@/lib/category-translations";
+import { translateCategory, type MarketCode } from "@/lib/category-translations";
 import {
   categoryPath,
   navigateToCategory,
@@ -382,7 +382,16 @@ function sortChildrenByNameOrder(childrenIn: unknown[], order: readonly string[]
 }
 
 // ─── Level 1 subcategory card (body types) ────────────────────────────────────
-function BodyTypeCard({ category, onClick }: { category: any; onClick: () => void }) {
+function BodyTypeCard({
+  category,
+  onClick,
+  locale,
+}: {
+  category: any;
+  onClick: () => void;
+  locale: MarketCode;
+}) {
+  const label = translateCategory(category.name, locale);
   const photo = resolveCategoryImageUrl(category) || getCatPhoto(category.name);
   const Icon = getCatIcon(category.icon);
   return (
@@ -394,13 +403,13 @@ function BodyTypeCard({ category, onClick }: { category: any; onClick: () => voi
         <>
           <img
             src={photo}
-            alt={category.name}
+            alt={label}
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between gap-2">
             <span className="text-white font-bold text-sm drop-shadow leading-snug line-clamp-2">
-              {category.name}
+              {label}
             </span>
             {category.listing_count > 0 && (
               <span className="bg-white/20 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-full shrink-0">
@@ -415,7 +424,7 @@ function BodyTypeCard({ category, onClick }: { category: any; onClick: () => voi
             <Icon size={20} className="text-blue-600" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">{category.name}</div>
+            <div className="text-sm font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">{label}</div>
             {category.listing_count > 0 && <div className="text-xs text-gray-400">{category.listing_count}</div>}
           </div>
           <ChevronRight size={16} className="text-gray-300 group-hover:text-blue-400 flex-shrink-0" />
@@ -426,7 +435,16 @@ function BodyTypeCard({ category, onClick }: { category: any; onClick: () => voi
 }
 
 /** Kompjuterë hub — brand card matching BodyTypeCard (logo on dark fill, label at bottom). */
-function KompjuterBrandPhotoCard({ category, onClick }: { category: any; onClick: () => void }) {
+function KompjuterBrandPhotoCard({
+  category,
+  onClick,
+  locale,
+}: {
+  category: any;
+  onClick: () => void;
+  locale: MarketCode;
+}) {
+  const label = translateCategory(category.name, locale);
   const logoUrl = KOMPJUTER_BRAND_LOGOS[category.name] ?? null;
   const initials = KOMPJUTER_BRAND_INITIALS[category.name] ?? category.name.slice(0, 2).toUpperCase();
   const [imgErr, setImgErr] = useState(false);
@@ -453,7 +471,7 @@ function KompjuterBrandPhotoCard({ category, onClick }: { category: any; onClick
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
         <div className="absolute bottom-2 left-2 right-2">
           <span className="text-white font-bold text-sm sm:text-base drop-shadow leading-snug line-clamp-2">
-            {category.name}
+            {label}
           </span>
         </div>
       </div>
@@ -462,7 +480,16 @@ function KompjuterBrandPhotoCard({ category, onClick }: { category: any; onClick
 }
 
 // ─── Level 2 brand card ───────────────────────────────────────────────────────
-function BrandCard({ category, onClick }: { category: any; onClick: () => void }) {
+function BrandCard({
+  category,
+  onClick,
+  locale,
+}: {
+  category: any;
+  onClick: () => void;
+  locale: MarketCode;
+}) {
+  const label = translateCategory(category.name, locale);
   const color   = BRAND_COLORS[category.name] ?? "#1A4FCC";
   const logoUrl = BRAND_LOGOS[category.name];
   const thumb   = typeof category.image_url === "string" ? category.image_url.trim() : "";
@@ -484,7 +511,7 @@ function BrandCard({ category, onClick }: { category: any; onClick: () => void }
         ) : logoUrl && !imgErr ? (
           <img
             src={logoUrl}
-            alt={category.name}
+            alt={label}
             onError={() => setImgErr(true)}
             style={{
               width: 40, height: 40, objectFit: "contain",
@@ -496,12 +523,12 @@ function BrandCard({ category, onClick }: { category: any; onClick: () => void }
             className="w-10 h-10 rounded-full flex items-center justify-center"
             style={{ backgroundColor: color }}
           >
-            <span className="text-white text-xs font-black">{category.name.charAt(0)}</span>
+            <span className="text-white text-xs font-black">{label.charAt(0)}</span>
           </div>
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold text-gray-800 group-hover:text-blue-600 truncate transition-colors">{category.name}</div>
+        <div className="text-sm font-semibold text-gray-800 group-hover:text-blue-600 truncate transition-colors">{label}</div>
         {category.listing_count > 0 && (
           <div className="text-xs text-gray-400">{category.listing_count}</div>
         )}
@@ -1021,6 +1048,10 @@ export default function CategoryPage() {
 
   const isBrandLevel = depth === 3;
   const isBodyTypeLevel = depth === 2;
+  const isFemijeSubcategoryLevel =
+    isBodyTypeLevel &&
+    parentCategory != null &&
+    (parentCategory as { slug?: string }).slug === FEMIJE_HUB_SLUG;
 
   const isTelefonaHub = (currentCategory as any)?.slug === TELEFONA_HUB_SLUG;
   const orderedTelefonaTypes = sortChildrenByNameOrder(
@@ -1623,6 +1654,7 @@ export default function CategoryPage() {
                 <BodyTypeCard
                   key={sub.id}
                   category={sub}
+                  locale={locale}
                   onClick={() => navigateToCategory(setLocation, sub.id, categoryId)}
                 />
               ))}
@@ -1630,8 +1662,33 @@ export default function CategoryPage() {
           </div>
         )}
 
+        {isFemijeSubcategoryLevel && children.length > 0 ? (
+          <div className="mb-8">
+            <h2 className="text-lg font-black text-gray-900 mb-1">{t.subcategory}</h2>
+            <p className="text-sm text-gray-400 mb-4">
+              {children.length}{" "}
+              {(t as { subcategoriesAvail: string }).subcategoriesAvail}
+            </p>
+            <CategoryPhotoPickerRow>
+              {[...children]
+                .sort((a: { name: string }, b: { name: string }) =>
+                  a.name.localeCompare(b.name, "sq"),
+                )
+                .map((sub: { id: number; name: string; slug: string | null }) => (
+                  <CategoryPhotoPickerCard
+                    key={sub.id}
+                    onClick={() => navigateToCategory(setLocation, sub.id, categoryId)}
+                    imageSrc={femijeSubcategoryPhoto(sub.slug)}
+                    label={translateCategory(sub.name, locale)}
+                  />
+                ))}
+            </CategoryPhotoPickerRow>
+          </div>
+        ) : null}
+
         {/* Level 2 → show brands (Vetura body type → brands; not used on Motorr leaf categories) */}
         {isBodyTypeLevel &&
+          !isFemijeSubcategoryLevel &&
           children.length > 0 &&
           (parentCategory as any)?.slug !== MOTOR_SKUTER_HUB_SLUG &&
           (parentCategory as any)?.slug !== KAMIONE_FURGONE_HUB_SLUG &&
@@ -1649,6 +1706,7 @@ export default function CategoryPage() {
                 <BrandCard
                   key={brand.id}
                   category={brand}
+                  locale={locale}
                   onClick={() => navigateToCategory(setLocation, brand.id, categoryId)}
                 />
               ))}

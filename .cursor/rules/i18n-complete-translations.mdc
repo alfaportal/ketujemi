@@ -1,0 +1,19 @@
+---
+description: All user-visible text must be translated for every locale (sq, mk, mne)
+alwaysApply: true
+---
+
+# KetuJemi — complete i18n (mandatory)
+
+When the user selects **MK** or **MNE** (or any non–Albanian locale), **every** user-visible string must appear in that language — UI labels, headings, buttons, toasts, placeholders, AI hints, and **category names from the DB**.
+
+## Rules
+
+1. **Never show raw Albanian DB `category.name` in the UI** for mk/mne. Use `translateCategory(name, locale)` from `@/lib/category-translations` (and `femije-category-translations` for Fëmijë leaves). Keep the Albanian `name` only for lookups (logos, slugs, photos, API ids).
+2. **New copy** — add keys to `market-context.tsx` for **all four** markets (`ks`, `al`, `mk`, `mne`) in the same change. Do not ship hardcoded Albanian in components.
+3. **New categories** — add mk/mne entries to `category-translations.ts` or `femije-category-translations.ts` when seeding Albanian names.
+4. **Before finishing** — mentally check the changed screen in MK: breadcrumbs, cards, filters, empty states, and counts must match the selected language.
+
+## Do not repeat this mistake
+
+Leaving untranslated text (e.g. “Izberete marka” UI with Albanian subcategory titles) is a **blocking defect**, not a cosmetic issue.
