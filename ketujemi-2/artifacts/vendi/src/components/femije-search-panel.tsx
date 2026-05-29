@@ -22,8 +22,14 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  CategoryPhotoPickerCard,
+  CategoryPhotoPickerRow,
+} from "@/components/category-photo-picker";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
+import { translateCategory } from "@/lib/category-translations";
+import { translationKeyForUiLang } from "@/lib/ui-languages";
 import {
   FJ_BABY_TYPE_KEYS,
   FJ_BABY_TYPE_LABEL_KEY,
@@ -65,14 +71,14 @@ import {
   FJ_TOY_TYPE_KEYS,
   FJ_TOY_TYPE_LABEL_KEY,
   FJ_TOY_TYPE_SEARCH,
-  FJ_TYPE_KEYS,
-  FJ_TYPE_LABEL_KEY,
-  FJ_TYPE_PHOTOS,
+  FJ_TYPE_DB_SLUG,
   FJ_WEIGHT_KEYS,
   FJ_WEIGHT_LABEL_KEY,
   FJ_WEIGHT_SEARCH,
+  femijeSubcategoryPhoto,
+  getFemijeGroupLeafIds,
+  getFemijeHubSubcategoryRows,
   getFemijeLeafCategoryIds,
-  resolveFemijeTypeCategoryId,
   type FjBabyTypeKey,
   type FjCityKey,
   type FjConditionKey,
@@ -148,13 +154,20 @@ export function FemijeSearchPanel({
   onListingParamsChange,
   onScrollToResults,
 }: Props) {
-  const { t } = useMarket();
+  const { t, uiLang } = useMarket();
+  const locale = translationKeyForUiLang(uiLang);
+
+  const hubSubcategories = useMemo(
+    () => getFemijeHubSubcategoryRows(categories, hubId),
+    [categories, hubId],
+  );
 
   const leafCsv = useMemo(() => {
     const ids = getFemijeLeafCategoryIds(categories, hubId);
     return [...ids].sort((a, b) => a - b).join(",");
   }, [categories, hubId]);
 
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [typeKey, setTypeKey] = useState<FjTypeKey | null>(null);
   const [strollerType, setStrollerType] = useState<FjStrollerTypeKey | "">("");
   const [strollerBrand, setStrollerBrand] = useState<FjStrollerBrandKey | "">("");
@@ -213,15 +226,26 @@ export function FemijeSearchPanel({
     setRobeType("");
   };
 
-  const selectType = (key: FjTypeKey) => {
-    if (typeKey === key) {
+  const selectGroup = (row: FemijeCategoryRow) => {
+    if (selectedGroupId === row.id) {
+      setSelectedGroupId(null);
       setTypeKey(null);
       resetSubFilters();
-    } else {
-      setTypeKey(key);
-      resetSubFilters();
+      return;
     }
+    setSelectedGroupId(row.id);
+    resetSubFilters();
+    const slug = row.slug ?? "";
+    const match = (Object.entries(FJ_TYPE_DB_SLUG) as [FjTypeKey, string][]).find(
+      ([, s]) => s === slug,
+    );
+    setTypeKey(match ? match[0] : null);
   };
+
+  const selectedGroup = hubSubcategories.find((row) => row.id === selectedGroupId);
+  const typeTitle = selectedGroup
+    ? translateCategory(selectedGroup.name, locale)
+    : "";
 
   const callbackRef = useRef(onListingParamsChange);
   callbackRef.current = onListingParamsChange;
@@ -241,11 +265,14 @@ export function FemijeSearchPanel({
       category_ids: leafCsv,
     };
 
-    if (typeKey) {
-      const cid = resolveFemijeTypeCategoryId(categories, hubId, typeKey);
-      if (cid) {
-        p.category_id = cid;
+    if (selectedGroupId) {
+      const leafIds = getFemijeGroupLeafIds(categories, selectedGroupId);
+      if (leafIds.length === 1) {
+        p.category_id = leafIds[0];
         delete p.category_ids;
+      } else if (leafIds.length > 0) {
+        p.category_ids = [...leafIds].sort((a, b) => a - b).join(",");
+        delete p.category_id;
       }
     }
 
@@ -300,6 +327,7 @@ export function FemijeSearchPanel({
   }, [
     leafCsv,
     hubId,
+    selectedGroupId,
     typeKey,
     strollerType,
     strollerBrand,
@@ -328,7 +356,6 @@ export function FemijeSearchPanel({
   };
 
   const cityLabel = cityKey ? t[FJ_CITY_LABEL_KEY[cityKey]] : "";
-  const typeTitle = typeKey ? t[FJ_TYPE_LABEL_KEY[typeKey]] : "";
 
   return (
     <div className="mb-8 space-y-6 rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm overflow-hidden max-w-full">
@@ -339,38 +366,6 @@ export function FemijeSearchPanel({
         </h2>
         <p className="text-sm text-gray-500">{t.fj_panel_sub}</p>
       </div>
-
-      <section className="space-y-3">
-        <Label className="text-sm font-bold text-gray-900">{t.fj_sec_types}</Label>
-        <div className="grid grid-cols-2 gap-3">
-          {FJ_TYPE_KEYS.map((key) => {
-            const selected = typeKey === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => selectType(key)}
-                className={cn(
-                  "relative overflow-hidden rounded-2xl border text-left transition-all min-h-[7.5rem] touch-manipulation",
-                  selected
-                    ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
-                    : "border-gray-100 hover:border-blue-200 hover:shadow-md",
-                )}
-              >
-                <img
-                  src={FJ_TYPE_PHOTOS[key]}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-                <span className="absolute bottom-2 left-2 right-2 text-white text-sm font-bold leading-snug line-clamp-2 drop-shadow">
-                  {t[FJ_TYPE_LABEL_KEY[key]]}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
 
       {typeKey === "karroca" ? (
         <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">

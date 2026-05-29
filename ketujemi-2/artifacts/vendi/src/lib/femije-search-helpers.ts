@@ -356,18 +356,57 @@ export type FemijeCategoryRow = {
   parent_id: number | null;
 };
 
+export function getFemijeHubSubcategoryRows(
+  categories: FemijeCategoryRow[],
+  hubId: number,
+): FemijeCategoryRow[] {
+  const hub = Number(hubId);
+  return categories
+    .filter((c) => Number(c.parent_id) === hub)
+    .sort((a, b) => a.name.localeCompare(b.name, "sq"));
+}
+
+export function getFemijeGroupLeafIds(
+  categories: FemijeCategoryRow[],
+  groupId: number,
+): number[] {
+  const group = categories.find((c) => c.id === groupId);
+  if (!group?.slug) return [];
+
+  if (group.slug.startsWith("femije-type-")) return [groupId];
+
+  if (group.slug.startsWith("femije-grp-")) {
+    return categories
+      .filter(
+        (c) =>
+          Number(c.parent_id) === Number(groupId) &&
+          typeof c.slug === "string" &&
+          c.slug.startsWith("femije-leaf-"),
+      )
+      .map((c) => c.id);
+  }
+
+  if (group.slug.startsWith("femije-leaf-")) return [groupId];
+
+  return [];
+}
+
+export function femijeSubcategoryPhoto(slug: string | null | undefined): string {
+  if (!slug) return FEMIJE_HERO_PHOTO;
+  for (const key of FJ_TYPE_KEYS) {
+    if (FJ_TYPE_DB_SLUG[key] === slug) return FJ_TYPE_PHOTOS[key];
+  }
+  return FEMIJE_HERO_PHOTO;
+}
+
 export function getFemijeLeafCategoryIds(
   categories: FemijeCategoryRow[],
   hubId: number,
 ): number[] {
-  return categories
-    .filter(
-      (c) =>
-        c.parent_id === hubId &&
-        typeof c.slug === "string" &&
-        (c.slug as string).startsWith("femije-type-"),
-    )
-    .map((c) => c.id);
+  const ids = getFemijeHubSubcategoryRows(categories, hubId).flatMap((group) =>
+    getFemijeGroupLeafIds(categories, group.id),
+  );
+  return [...new Set(ids)];
 }
 
 export function resolveFemijeTypeCategoryId(

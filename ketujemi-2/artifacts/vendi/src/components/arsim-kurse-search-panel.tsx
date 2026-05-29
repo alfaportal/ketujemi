@@ -11,6 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  CategoryPhotoPickerCard,
+  CategoryPhotoPickerRow,
+} from "@/components/category-photo-picker";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
 import {
@@ -184,34 +188,17 @@ export function ArsimKurseSearchPanel({
           <Label className="text-sm font-bold text-gray-500 uppercase tracking-wide">
             {t.ak_sec_types}
           </Label>
-          <div className="grid grid-cols-2 gap-3">
-            {AK_TYPE_KEYS.map((key) => {
-              const selected = categoryKey === key;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => selectCategoryCard(key)}
-                  className={cn(
-                    "relative overflow-hidden rounded-2xl border text-left transition-all min-h-[7.5rem] touch-manipulation",
-                    selected
-                      ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
-                      : "border-gray-100 hover:border-blue-200 hover:shadow-md",
-                  )}
-                >
-                  <img
-                    src={AK_TYPE_PHOTOS[key]}
-                    alt=""
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-                  <span className="absolute bottom-2 left-2 right-2 text-white text-sm font-bold leading-snug line-clamp-2 drop-shadow">
-                    {t[AK_TYPE_LABEL_KEY[key]]}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          <CategoryPhotoPickerRow>
+            {AK_TYPE_KEYS.map((key) => (
+              <CategoryPhotoPickerCard
+                key={key}
+                selected={categoryKey === key}
+                onClick={() => selectCategoryCard(key)}
+                imageSrc={AK_TYPE_PHOTOS[key]}
+                label={t[AK_TYPE_LABEL_KEY[key]]}
+              />
+            ))}
+          </CategoryPhotoPickerRow>
         </section>
       </div>
 

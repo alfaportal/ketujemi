@@ -29,6 +29,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  CategoryPhotoPickerCard,
+  CategoryPhotoPickerRow,
+} from "@/components/category-photo-picker";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
 import {
@@ -155,38 +159,6 @@ function FilterSection({ title, children }: { title: string; children: ReactNode
       <p className="text-sm font-bold text-gray-900">{title}</p>
       {children}
     </div>
-  );
-}
-
-/** Image card with bottom label — category type cards. */
-function PhotoOverlayCard({
-  selected,
-  onClick,
-  imageSrc,
-  label,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  imageSrc: string;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "relative overflow-hidden rounded-2xl border text-left transition-all min-h-[7.5rem] touch-manipulation",
-        selected
-          ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
-          : "border-gray-100 hover:border-blue-200 hover:shadow-md",
-      )}
-    >
-      <img src={imageSrc} alt="" className="absolute inset-0 h-full w-full object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-      <span className="absolute bottom-2 left-2 right-2 text-white text-sm font-bold leading-snug line-clamp-2 drop-shadow">
-        {label}
-      </span>
-    </button>
   );
 }
 
@@ -418,34 +390,17 @@ export function TvElektronikeSearchPanel({
 
       <section className="space-y-3">
         <Label className="text-sm font-bold text-gray-900">{t.ep_sec_types}</Label>
-        <div className="grid grid-cols-2 gap-3">
-          {EP_TYPE_KEYS.filter((key) => key !== "laptop_kompjutere").map((key) => {
-            const selected = typeKey === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => selectType(key)}
-                className={cn(
-                  "relative overflow-hidden rounded-2xl border text-left transition-all min-h-[7.5rem] touch-manipulation",
-                  selected
-                    ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
-                    : "border-gray-100 hover:border-blue-200 hover:shadow-md",
-                )}
-              >
-                <img
-                  src={EP_TYPE_PHOTOS[key]}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-                <span className="absolute bottom-2 left-2 right-2 text-white text-sm font-bold leading-snug line-clamp-2 drop-shadow">
-                  {t[EP_TYPE_LABEL_KEY[key]]}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <CategoryPhotoPickerRow>
+          {EP_TYPE_KEYS.filter((key) => key !== "laptop_kompjutere").map((key) => (
+            <CategoryPhotoPickerCard
+              key={key}
+              selected={typeKey === key}
+              onClick={() => selectType(key)}
+              imageSrc={EP_TYPE_PHOTOS[key]}
+              label={t[EP_TYPE_LABEL_KEY[key]]}
+            />
+          ))}
+        </CategoryPhotoPickerRow>
       </section>
 
       {typeKey === "pajisje_medha" ? (

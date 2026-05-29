@@ -21,6 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  CategoryPhotoPickerCard,
+  CategoryPhotoPickerRow,
+} from "@/components/category-photo-picker";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
 import {
@@ -104,37 +108,6 @@ type HubTypeRow = {
   name: string;
   image_url?: string | null;
 };
-
-function TypePhotoCard({
-  selected,
-  onClick,
-  imageSrc,
-  label,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  imageSrc: string;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "relative overflow-hidden rounded-2xl border text-left transition-all min-h-[7.5rem] touch-manipulation",
-        selected
-          ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
-          : "border-gray-100 hover:border-blue-200 hover:shadow-md",
-      )}
-    >
-      <img src={imageSrc} alt="" className="absolute inset-0 h-full w-full object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-      <span className="absolute bottom-2 left-2 right-2 text-white text-sm font-bold leading-snug line-clamp-2 drop-shadow">
-        {label}
-      </span>
-    </button>
-  );
-}
 
 type Props = {
   hubId: number;
@@ -284,9 +257,9 @@ export function KompjuterLaptopHubPanel({
           <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide">
             {t.cat_sectionTypes}
           </h3>
-          <div className="grid grid-cols-2 gap-3">
+          <CategoryPhotoPickerRow>
             {types.map((row) => (
-              <TypePhotoCard
+              <CategoryPhotoPickerCard
                 key={row.id}
                 selected={selectedTypeId === row.id}
                 onClick={() => selectType(row)}
@@ -294,7 +267,7 @@ export function KompjuterLaptopHubPanel({
                 label={row.name}
               />
             ))}
-          </div>
+          </CategoryPhotoPickerRow>
         </div>
       )}
 

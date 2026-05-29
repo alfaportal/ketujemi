@@ -22,6 +22,10 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  CategoryPhotoPickerCard,
+  CategoryPhotoPickerRow,
+} from "@/components/category-photo-picker";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
 import {
@@ -334,34 +338,17 @@ export function RrobaKepuceSearchPanel({
 
       <section className="space-y-3">
         <Label className="text-sm font-bold text-gray-900">{t.rk_sec_types}</Label>
-        <div className="grid grid-cols-2 gap-3">
-          {RK_TYPE_KEYS.map((key) => {
-            const selected = typeKey === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => selectType(key)}
-                className={cn(
-                  "relative overflow-hidden rounded-2xl border text-left transition-all min-h-[7.5rem] touch-manipulation",
-                  selected
-                    ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
-                    : "border-gray-100 hover:border-blue-200 hover:shadow-md",
-                )}
-              >
-                <img
-                  src={RK_TYPE_PHOTOS[key]}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-                <span className="absolute bottom-2 left-2 right-2 text-white text-sm font-bold leading-snug line-clamp-2 drop-shadow">
-                  {t[RK_TYPE_LABEL_KEY[key]]}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <CategoryPhotoPickerRow>
+          {RK_TYPE_KEYS.map((key) => (
+            <CategoryPhotoPickerCard
+              key={key}
+              selected={typeKey === key}
+              onClick={() => selectType(key)}
+              imageSrc={RK_TYPE_PHOTOS[key]}
+              label={t[RK_TYPE_LABEL_KEY[key]]}
+            />
+          ))}
+        </CategoryPhotoPickerRow>
       </section>
 
       {typeKey === "meshkuj" ? (

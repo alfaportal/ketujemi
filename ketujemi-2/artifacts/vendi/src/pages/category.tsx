@@ -21,7 +21,7 @@ import {
 import { useMarket } from "@/lib/market-context";
 import { getCategoryLucideIcon } from "@/lib/category-lucide-icon";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
-import ListingCard from "@/components/listing-card";
+import { CategoryPhotoPickerRow, CategoryPhotoPickerCard } from "@/components/category-photo-picker";
 import { Skeleton } from "@/components/ui/skeleton";
 import { translateCategory } from "@/lib/category-translations";
 import {
@@ -94,7 +94,7 @@ import {
   getRrobaKepuceLeafCategoryIds,
 } from "@/lib/rroba-kepuce-search-helpers";
 import { FemijeSearchPanel } from "@/components/femije-search-panel";
-import { getFemijeLeafCategoryIds } from "@/lib/femije-search-helpers";
+import { getFemijeLeafCategoryIds, femijeSubcategoryPhoto } from "@/lib/femije-search-helpers";
 import { PuneSherbimeSearchPanel } from "@/components/pune-sherbime-search-panel";
 import { getPuneSherbimeLeafCategoryIds } from "@/lib/pune-sherbime-search-helpers";
 import { BujqesiBlegtoriSearchPanel } from "@/components/bujqesi-blegtori-search-panel";
@@ -388,23 +388,27 @@ function BodyTypeCard({ category, onClick }: { category: any; onClick: () => voi
   return (
     <button
       onClick={onClick}
-      className="group relative overflow-hidden bg-white border border-gray-100 hover:border-blue-200 hover:shadow-lg rounded-2xl transition-all duration-200 text-left w-full"
+      className="group relative shrink-0 snap-start overflow-hidden bg-white border border-gray-100 hover:border-blue-200 hover:shadow-lg rounded-2xl transition-all duration-200 text-left w-[10.75rem] sm:w-44 md:w-48 lg:w-[13rem] aspect-[4/3]"
     >
       {photo ? (
-        <div className="relative h-28 overflow-hidden">
-          <img src={photo} alt={category.name} className="w-full h-full object-cover" />
+        <>
+          <img
+            src={photo}
+            alt={category.name}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between">
-            <span className="text-white font-bold text-sm sm:text-base drop-shadow leading-snug line-clamp-2">
+          <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between gap-2">
+            <span className="text-white font-bold text-sm drop-shadow leading-snug line-clamp-2">
               {category.name}
             </span>
             {category.listing_count > 0 && (
-              <span className="bg-white/20 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-full">
+              <span className="bg-white/20 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-full shrink-0">
                 {category.listing_count}
               </span>
             )}
           </div>
-        </div>
+        </>
       ) : (
         <div className="flex items-center gap-3 p-4">
           <div className="w-10 h-10 rounded-xl bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center flex-shrink-0 transition-colors">
@@ -579,8 +583,9 @@ export default function CategoryPage() {
     }
   }, [market.code, t.beFirst]);
 
-  const currentCategory = allCategories?.find((c: any) => c.id === categoryId);
-  const children = allCategories?.filter((c: any) => c.parent_id === categoryId) ?? [];
+  const currentCategory = allCategories?.find((c: any) => Number(c.id) === Number(categoryId));
+  const children =
+    allCategories?.filter((c: any) => Number(c.parent_id) === Number(categoryId)) ?? [];
 
   const isVeturaHub =
     !!(currentCategory as any) &&
@@ -1478,7 +1483,29 @@ export default function CategoryPage() {
           />
         ) : null}
 
-        {isFemijeHub && femijeLeafCsv ? (
+        {isFemijeHub && children.length > 0 ? (
+          <div className="mb-8">
+            <h2 className="text-lg font-black text-gray-900 mb-4">
+              {(t as { fj_sec_types?: string }).fj_sec_types ?? t.bodyType}
+            </h2>
+            <CategoryPhotoPickerRow>
+              {[...children]
+                .sort((a: { name: string }, b: { name: string }) =>
+                  a.name.localeCompare(b.name, "sq"),
+                )
+                .map((sub: { id: number; name: string; slug: string | null }) => (
+                  <CategoryPhotoPickerCard
+                    key={sub.id}
+                    onClick={() => navigateToCategory(setLocation, sub.id, categoryId)}
+                    imageSrc={femijeSubcategoryPhoto(sub.slug)}
+                    label={translateCategory(sub.name, locale)}
+                  />
+                ))}
+            </CategoryPhotoPickerRow>
+          </div>
+        ) : null}
+
+        {isFemijeHub && allCategories?.length ? (
           <FemijeSearchPanel
             hubId={categoryId}
             categories={allCategories as any}
@@ -1591,7 +1618,7 @@ export default function CategoryPage() {
           !isKompjuterLaptopHub && (
           <div className="mb-8">
             <h2 className="text-lg font-black text-gray-900 mb-4">{t.bodyType}</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <CategoryPhotoPickerRow>
               {children.map((sub: any) => (
                 <BodyTypeCard
                   key={sub.id}
@@ -1599,7 +1626,7 @@ export default function CategoryPage() {
                   onClick={() => navigateToCategory(setLocation, sub.id, categoryId)}
                 />
               ))}
-            </div>
+            </CategoryPhotoPickerRow>
           </div>
         )}
 

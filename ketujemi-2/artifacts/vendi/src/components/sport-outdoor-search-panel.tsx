@@ -14,6 +14,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  CategoryPhotoPickerCard,
+  CategoryPhotoPickerRow,
+} from "@/components/category-photo-picker";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
 import { fillCount } from "@/lib/app-extra-i18n";
@@ -175,38 +179,24 @@ export function SportOutdoorSearchPanel({
           <Dumbbell size={20} className="text-blue-600 shrink-0" aria-hidden />
           {t.so_sec_sport_types}
         </h2>
-        <div className="grid grid-cols-2 gap-3">
+        <CategoryPhotoPickerRow>
           {SPORT_TYPE_KEYS.map((key) => {
             const selected = sportKey === key;
             const label = t[SPORT_TYPE_LABEL_KEY[key]] ?? key;
             return (
-              <button
+              <CategoryPhotoPickerCard
                 key={key}
-                type="button"
+                selected={selected}
                 onClick={() => {
                   setSportKey(selected ? null : key);
                   if (!selected) setDeviceKey("");
                 }}
-                className={cn(
-                  "relative overflow-hidden rounded-2xl border text-left transition-all min-h-[7.5rem] touch-manipulation",
-                  selected
-                    ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
-                    : "border-gray-100 hover:border-blue-200 hover:shadow-md",
-                )}
-              >
-                <img
-                  src={SPORT_TYPE_PHOTOS[key]}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
-                <span className="absolute bottom-2 left-2 right-2 text-white text-sm font-bold leading-snug line-clamp-2 drop-shadow">
-                  {label}
-                </span>
-              </button>
+                imageSrc={SPORT_TYPE_PHOTOS[key]}
+                label={label}
+              />
             );
           })}
-        </div>
+        </CategoryPhotoPickerRow>
       </section>
 
       {/* Section 2 — equipment */}

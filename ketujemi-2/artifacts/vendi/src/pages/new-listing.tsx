@@ -711,10 +711,11 @@ export default function NewListing() {
               description={watchDescription}
               currentParentId={Number(parentCatId) || 0}
               currentCategoryId={Number(bodyCatId) || 0}
+              currentBrandId={Number(brandCatId) || 0}
               onApply={(s) => {
                 form.setValue("parent_category_id", s.parent_category_id);
                 form.setValue("category_id", s.category_id);
-                form.setValue("brand_category_id", 0);
+                form.setValue("brand_category_id", s.brand_category_id ?? 0);
               }}
             />
 

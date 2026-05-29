@@ -1,11 +1,14 @@
 import { db, categoriesTable } from "@workspace/db";
 import { claudeJsonCompletion, isClaudeConfigured, langLabel, type UiLang } from "./claude-client";
+import { FEMIJE_HUB_SLUG, FEMIJE_SUGGEST_RULES } from "./femije-category-suggest-rules";
 
 export type CategorySuggestResult = {
   parent_category_id: number;
   category_id: number;
   parent_name: string;
   category_name: string;
+  brand_category_id?: number;
+  brand_name?: string;
   confidence: "high" | "medium" | "low";
   source: "rules" | "ai";
 };
@@ -84,7 +87,46 @@ function normalizeText(title: string, description: string): string {
   return `${title} ${description}`.trim().toLowerCase().normalize("NFC");
 }
 
+function femijeRuleMatch(text: string, cats: CategoryRow[]): CategorySuggestResult | null {
+  let best: { rule: (typeof FEMIJE_SUGGEST_RULES)[number]; weight: number } | null = null;
+
+  for (const rule of FEMIJE_SUGGEST_RULES) {
+    if (!rule.pattern.test(text)) continue;
+    if (rule.unless?.test(text)) continue;
+    if (!best || rule.weight > best.weight) best = { rule, weight: rule.weight };
+  }
+
+  if (!best) return null;
+
+  const hub = cats.find((c) => c.slug === FEMIJE_HUB_SLUG && !c.parent_id);
+  const group = cats.find(
+    (c) => c.slug === best.rule.groupSlug && c.parent_id === hub?.id,
+  );
+  if (!hub || !group) return null;
+
+  let brand: CategoryRow | undefined;
+  if (best.rule.leafSlug) {
+    brand = cats.find(
+      (c) => c.slug === best.rule.leafSlug && c.parent_id === group.id,
+    );
+  }
+
+  return {
+    parent_category_id: hub.id,
+    category_id: group.id,
+    parent_name: hub.name,
+    category_name: group.name,
+    brand_category_id: brand?.id,
+    brand_name: brand?.name,
+    confidence: best.weight >= 13 ? "high" : "medium",
+    source: "rules",
+  };
+}
+
 function ruleMatch(text: string, cats: CategoryRow[]): CategorySuggestResult | null {
+  const femije = femijeRuleMatch(text, cats);
+  if (femije) return femije;
+
   let best: { rule: SlugRule; weight: number } | null = null;
 
   for (const rule of SLUG_RULES) {
@@ -117,6 +159,13 @@ CRITICAL electronics rules:
 - Speakers, headphones, JBL, Bose, soundbars, earbuds → "Audio & Pajisje Zëri" (slug tv-type-audio-zeri), NEVER "Televizorë & Projektorë".
 - TVs, projectors, OLED/QLED → "Televizorë & Projektorë".
 - PlayStation/Xbox/Nintendo → "Konzola & Gaming".
+
+Fëmijë (baby & kids) rules:
+- Strollers, car seats, baby carriers → "Karroca & Transport" under Fëmijë.
+- Diapers, baby shampoo, bath → "Higjienë & Kujdes".
+- Toys, dolls → "Lodra & Lojëra"; Montessori/educational → "Lodra Edukative".
+- Maternity wear → "Veshje Shtatzënësie".
+- When Fëmijë fits, pick the most specific sub-group from femije-grp-* slugs.
 
 Reply ONLY JSON:
 {"parent_category_id":number,"category_id":number,"parent_name":"...","category_name":"...","confidence":"high"|"medium"|"low"}`;

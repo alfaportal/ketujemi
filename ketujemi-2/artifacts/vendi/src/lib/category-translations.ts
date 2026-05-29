@@ -2,10 +2,11 @@
 // Keys are the Albanian (base) names stored in the DB.
 // Markets: ks = Kosovo, al = Albania, mk = Macedonia, mne = Montenegro
 
+import { translateFemijeCategory } from "./femije-category-translations";
+
 export type MarketCode = "ks" | "al" | "mk" | "mne";
 
 export const CAT_TRANSLATIONS: Record<string, Record<MarketCode, string>> = {
-  // ── Parent categories ────────────────────────────────────────────────────────
   "Vetura":               { ks: "Vetura",               al: "Vetura",               mk: "Автомобили",                      mne: "Automobili" },
   "Motorr & Skuter":      { ks: "Motorr & Skuter",      al: "Motorr & Skuter",      mk: "Мотори & Скутери",                mne: "Motori & Skuteri" },
   "Kamionë & Furgonë":    { ks: "Kamionë & Furgonë",    al: "Kamionë & Furgonë",    mk: "Камиони & Комбиња",               mne: "Kamioni & Kombiji" },
@@ -195,5 +196,9 @@ export const CAT_TRANSLATIONS: Record<string, Record<MarketCode, string>> = {
 };
 
 export function translateCategory(name: string, localeCode: MarketCode): string {
-  return CAT_TRANSLATIONS[name]?.[localeCode] ?? name;
+  return (
+    CAT_TRANSLATIONS[name]?.[localeCode] ??
+    translateFemijeCategory(name, localeCode) ??
+    name
+  );
 }

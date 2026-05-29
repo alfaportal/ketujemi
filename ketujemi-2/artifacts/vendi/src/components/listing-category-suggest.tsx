@@ -8,6 +8,8 @@ export type CategorySuggestion = {
   category_id: number;
   parent_name: string;
   category_name: string;
+  brand_category_id?: number;
+  brand_name?: string;
   confidence: "high" | "medium" | "low";
   source: "rules" | "ai";
 };
@@ -17,6 +19,7 @@ type Props = {
   description: string;
   currentParentId: number;
   currentCategoryId: number;
+  currentBrandId?: number;
   onApply: (s: CategorySuggestion) => void;
 };
 
@@ -24,7 +27,10 @@ function encouragementMessage(title: string, suggestion: CategorySuggestion): st
   const label = title.trim();
   const short = label.length > 48 ? `${label.slice(0, 45)}…` : label;
   const product = short ? `«${short}»` : "Artikulli juaj";
-  return `${product} i përket kategorisë «${suggestion.category_name}» — duke zgjedhur kategorinë e duhur do të arrish 3x më shumë blerës!`;
+  const catLabel = suggestion.brand_name
+    ? `${suggestion.category_name} → ${suggestion.brand_name}`
+    : suggestion.category_name;
+  return `${product} i përket kategorisë «${catLabel}» — duke zgjedhur kategorinë e duhur do të arrish 3x më shumë blerës!`;
 }
 
 export function ListingCategorySuggest({
@@ -32,6 +38,7 @@ export function ListingCategorySuggest({
   description,
   currentParentId,
   currentCategoryId,
+  currentBrandId = 0,
   onApply,
 }: Props) {
   const { market } = useMarket();
@@ -69,14 +76,16 @@ export function ListingCategorySuggest({
   }, [ready, title, description, lang]);
 
   const suggestionKey = suggestion
-    ? `${suggestion.parent_category_id}-${suggestion.category_id}`
+    ? `${suggestion.parent_category_id}-${suggestion.category_id}-${suggestion.brand_category_id ?? 0}`
     : null;
 
   const alreadyMatches =
     suggestion &&
     currentParentId === suggestion.parent_category_id &&
     currentCategoryId === suggestion.category_id &&
-    currentCategoryId > 0;
+    currentCategoryId > 0 &&
+    (!suggestion.brand_category_id ||
+      currentBrandId === suggestion.brand_category_id);
 
   if (alreadyMatches || (suggestionKey && dismissedId === suggestionKey)) return null;
 
@@ -103,6 +112,7 @@ export function ListingCategorySuggest({
           <p className="text-gray-800 leading-relaxed">{encouragementMessage(title, suggestion)}</p>
           <p className="text-xs text-gray-500">
             {suggestion.parent_name} → {suggestion.category_name}
+            {suggestion.brand_name ? ` → ${suggestion.brand_name}` : ""}
           </p>
           <div className="flex flex-wrap gap-2 pt-0.5">
             <Button
