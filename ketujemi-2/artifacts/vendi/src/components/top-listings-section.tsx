@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
 import { Sparkles } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
@@ -15,6 +15,7 @@ import {
 
 const TOP_CAROUSEL_SLOW_MS = 3000;
 const TOP_CAROUSEL_FAST_THRESHOLD = 25;
+const TOP_EMPTY_SLOT_COUNT = 6;
 
 /** Few TOP listings: relaxed pace; 25+ speeds up so large sets keep moving. */
 function topCarouselTiming(count: number): { intervalMs: number; scrollDuration: number } {
@@ -39,6 +40,9 @@ const TOP_SLOT_FRAME = cn(
   "shadow-[0_3px_14px_rgba(26,86,160,0.22)]",
   "hover:border-[#1557B0] hover:shadow-[0_5px_20px_rgba(26,86,160,0.32)]",
 );
+
+const SLIDE_BASIS =
+  "min-w-0 shrink-0 grow-0 basis-[46%] sm:basis-[31%] md:basis-[23%] lg:basis-[18%] xl:basis-[15%]";
 
 function TopListingSlot({ listing, priceLabel }: { listing: TopListingCarouselItem; priceLabel: string }) {
   return (
@@ -70,19 +74,53 @@ function TopListingSlot({ listing, priceLabel }: { listing: TopListingCarouselIt
   );
 }
 
+function TopListingEmptySlot({ label, hint }: { label: string; hint: string }) {
+  return (
+    <Link
+      href="/listings/new"
+      className={cn(
+        TOP_SLOT_FRAME,
+        "relative flex flex-col items-center justify-center gap-1 px-2 border-dashed",
+        "hover:bg-blue-50/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1A56A0] focus-visible:ring-offset-2",
+      )}
+    >
+      <Sparkles className="h-5 w-5 text-[#1A56A0]/70" aria-hidden />
+      <span className="text-[10px] sm:text-xs font-black uppercase tracking-wide text-[#1A56A0] text-center leading-tight">
+        {label}
+      </span>
+      <span className="text-[9px] sm:text-[10px] font-semibold text-gray-500 text-center leading-tight">
+        {hint}
+      </span>
+    </Link>
+  );
+}
+
 function TopListingsCarousel({
   listings,
   loaded,
   priceFor,
+  emptyLabel,
+  emptyHint,
 }: {
   listings: TopListingCarouselItem[];
   loaded: boolean;
   priceFor: (eur: number) => string;
+  emptyLabel: string;
+  emptyHint: string;
 }) {
-  const { intervalMs, scrollDuration } = topCarouselTiming(listings.length);
+  const slideCount = listings.length > 0 ? listings.length : TOP_EMPTY_SLOT_COUNT;
+  const { intervalMs, scrollDuration } = topCarouselTiming(Math.max(slideCount, 1));
+
+  const carouselListings = useMemo(() => {
+    if (listings.length === 0) return [];
+    if (listings.length === 1) {
+      return [...listings, ...listings, ...listings];
+    }
+    return listings;
+  }, [listings]);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
-    loop: listings.length > 1,
+    loop: slideCount > 1,
     align: "start",
     duration: scrollDuration,
     dragFree: true,
@@ -91,16 +129,13 @@ function TopListingsCarousel({
   useEffect(() => {
     if (!emblaApi) return;
     emblaApi.reInit();
-  }, [emblaApi, listings]);
+  }, [emblaApi, carouselListings, listings.length]);
 
   useEffect(() => {
-    if (!emblaApi || listings.length < 2) return;
+    if (!emblaApi || slideCount < 2) return;
     const timer = setInterval(() => emblaApi.scrollNext(), intervalMs);
     return () => clearInterval(timer);
-  }, [emblaApi, listings.length, intervalMs]);
-
-  const slideBasis =
-    "min-w-0 shrink-0 grow-0 basis-[46%] sm:basis-[31%] md:basis-[23%] lg:basis-[18%] xl:basis-[15%]";
+  }, [emblaApi, slideCount, intervalMs]);
 
   return (
     <div className="overflow-hidden" ref={emblaRef}>
@@ -109,17 +144,23 @@ function TopListingsCarousel({
           ? Array.from({ length: 4 }, (_, i) => (
               <div
                 key={`top-sk-${i}`}
-                className={cn(slideBasis, TOP_SLOT_FRAME, "animate-pulse border-blue-200/60 bg-blue-50/50")}
+                className={cn(SLIDE_BASIS, TOP_SLOT_FRAME, "animate-pulse border-blue-200/60 bg-blue-50/50")}
               />
             ))
-          : listings.map((l) => (
-              <div key={l.id} className={slideBasis}>
-                <TopListingSlot
-                  listing={l}
-                  priceLabel={l.price === 0 ? "Me marrëveshje" : priceFor(Number(l.price))}
-                />
-              </div>
-            ))}
+          : listings.length > 0
+            ? carouselListings.map((l, i) => (
+                <div key={`${l.id}-${i}`} className={SLIDE_BASIS}>
+                  <TopListingSlot
+                    listing={l}
+                    priceLabel={l.price === 0 ? "Me marrëveshje" : priceFor(Number(l.price))}
+                  />
+                </div>
+              ))
+            : Array.from({ length: TOP_EMPTY_SLOT_COUNT }, (_, i) => (
+                <div key={`top-empty-${i}`} className={SLIDE_BASIS}>
+                  <TopListingEmptySlot label={emptyLabel} hint={emptyHint} />
+                </div>
+              ))}
       </div>
     </div>
   );
@@ -212,23 +253,30 @@ export function TopListingsSection({ className }: { className?: string }) {
     };
   }, [load, schedulePollUntilVisible]);
 
-  if (loaded && listings.length === 0) {
-    return null;
-  }
-
   return (
     <section
-      className={cn("bg-gray-50/80 border-b border-gray-100 py-6 sm:py-8", className)}
+      className={cn("bg-white border-b border-gray-100", className)}
       aria-labelledby="top-listings-heading"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2
-          id="top-listings-heading"
-          className="text-center text-lg font-black text-gray-900 mb-5 sm:mb-6"
-        >
-          {t.home_topListingsHeading}
-        </h2>
-        <TopListingsCarousel listings={listings} loaded={loaded} priceFor={priceFor} />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6 sm:pb-8 pt-0">
+        <div className="space-y-3 sm:space-y-4">
+          <p
+            id="top-listings-heading"
+            className="text-center text-xs sm:text-sm font-black uppercase tracking-wider text-[#1A56A0]"
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-[#1A56A0]" aria-hidden />
+              {t.home_topListingsRowLabel}
+            </span>
+          </p>
+          <TopListingsCarousel
+            listings={listings}
+            loaded={loaded}
+            priceFor={priceFor}
+            emptyLabel={t.home_topListingsEmptyLabel}
+            emptyHint={t.home_topListingsEmptyHint}
+          />
+        </div>
       </div>
     </section>
   );

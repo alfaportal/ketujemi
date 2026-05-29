@@ -18,6 +18,8 @@ type VipPartnersSectionProps = {
   /** home = VIP carousel after hero; hub = VIP + standard grid on category pages */
   variant?: VipPartnersSectionVariant;
   categoryId?: number;
+  /** Less padding below carousel (homepage TOP row follows). */
+  denseBottom?: boolean;
 };
 
 const HOME_VIP_FETCH_LIMIT = 24;
@@ -261,6 +263,7 @@ export function VipPartnersSection({
   className,
   variant = "hub",
   categoryId,
+  denseBottom = false,
 }: VipPartnersSectionProps) {
   const { t } = useMarket();
   const config = VARIANT_CONFIG[variant];
@@ -341,7 +344,11 @@ export function VipPartnersSection({
       <div
         className={cn(
           "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
-          isHome ? "py-6 sm:py-8" : "py-8 sm:py-10",
+          isHome
+            ? denseBottom
+              ? "pt-6 sm:pt-8 pb-2 sm:pb-3"
+              : "py-6 sm:py-8"
+            : "py-8 sm:py-10",
         )}
       >
         <h2
