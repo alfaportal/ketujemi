@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { Sparkles } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
@@ -6,12 +6,12 @@ import { cn } from "@/lib/utils";
 import { useMarket, convertPrice } from "@/lib/market-context";
 import { ListingCardImage } from "@/components/listing-card-image";
 import {
+  clearTopListingsPendingId,
+  consumeTopListingsPendingId,
   fetchTopListings,
-  TOP_LISTINGS_REFRESH_EVENT,
+  subscribeTopListingsRefresh,
   type TopListingCarouselItem,
 } from "@/lib/top-listings-events";
-
-const HOME_TOP_FETCH_LIMIT = 24;
 
 const TOP_SLOT_FRAME = cn(
   "h-28 sm:h-32 md:h-36 w-full rounded-xl overflow-hidden transition-all duration-200 flex flex-col",
@@ -53,12 +53,10 @@ function TopListingSlot({ listing, priceLabel }: { listing: TopListingCarouselIt
 function TopListingsCarousel({
   listings,
   loaded,
-  rowLabel,
   priceFor,
 }: {
   listings: TopListingCarouselItem[];
   loaded: boolean;
-  rowLabel: string;
   priceFor: (eur: number) => string;
 }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -67,6 +65,11 @@ function TopListingsCarousel({
     duration: 28,
     dragFree: true,
   });
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.reInit();
+  }, [emblaApi, listings]);
 
   useEffect(() => {
     if (!emblaApi || listings.length < 2) return;
@@ -78,32 +81,23 @@ function TopListingsCarousel({
     "min-w-0 shrink-0 grow-0 basis-[46%] sm:basis-[31%] md:basis-[23%] lg:basis-[18%] xl:basis-[15%]";
 
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <p className="text-center text-xs sm:text-sm font-black uppercase tracking-wider text-[#1A56A0]">
-        <span className="inline-flex items-center gap-1.5">
-          <Sparkles className="h-3.5 w-3.5 text-[#1A56A0]" strokeWidth={2.25} aria-hidden />
-          {rowLabel}
-        </span>
-      </p>
-
-      <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex touch-pan-y gap-3 sm:gap-4">
-          {!loaded
-            ? Array.from({ length: 4 }, (_, i) => (
-                <div
-                  key={`top-sk-${i}`}
-                  className={cn(slideBasis, TOP_SLOT_FRAME, "animate-pulse border-blue-200/60 bg-blue-50/50")}
+    <div className="overflow-hidden" ref={emblaRef}>
+      <div className="flex touch-pan-y gap-3 sm:gap-4">
+        {!loaded
+          ? Array.from({ length: 4 }, (_, i) => (
+              <div
+                key={`top-sk-${i}`}
+                className={cn(slideBasis, TOP_SLOT_FRAME, "animate-pulse border-blue-200/60 bg-blue-50/50")}
+              />
+            ))
+          : listings.map((l) => (
+              <div key={l.id} className={slideBasis}>
+                <TopListingSlot
+                  listing={l}
+                  priceLabel={l.price === 0 ? "Me marrëveshje" : priceFor(Number(l.price))}
                 />
-              ))
-            : listings.map((l) => (
-                <div key={l.id} className={slideBasis}>
-                  <TopListingSlot
-                    listing={l}
-                    priceLabel={l.price === 0 ? "Me marrëveshje" : priceFor(Number(l.price))}
-                  />
-                </div>
-              ))}
-        </div>
+              </div>
+            ))}
       </div>
     </div>
   );
@@ -113,46 +107,88 @@ export function TopListingsSection({ className }: { className?: string }) {
   const { t, market, rates } = useMarket();
   const [listings, setListings] = useState<TopListingCarouselItem[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const pollUntilRef = useRef<number | null>(null);
 
   const priceFor = useCallback(
     (eur: number) => convertPrice(eur, market, rates),
     [market, rates],
   );
 
-  const load = useCallback(async () => {
-    const rows = await fetchTopListings(HOME_TOP_FETCH_LIMIT);
+  const load = useCallback(async (): Promise<TopListingCarouselItem[]> => {
+    const rows = await fetchTopListings();
     setListings(rows);
     setLoaded(true);
+    return rows;
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoaded(false);
-    void fetchTopListings(HOME_TOP_FETCH_LIMIT).then((rows) => {
-      if (!cancelled) {
-        setListings(rows);
-        setLoaded(true);
+  const schedulePollUntilVisible = useCallback(
+    (listingId?: number) => {
+      if (pollUntilRef.current != null) {
+        window.clearInterval(pollUntilRef.current);
+        pollUntilRef.current = null;
       }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+      const pendingId = listingId ?? consumeTopListingsPendingId();
+      if (pendingId == null) {
+        void load();
+        return;
+      }
+
+      const started = Date.now();
+      const tick = async () => {
+        const rows = await load();
+        const found = rows.some((r) => r.id === pendingId);
+        if (found || Date.now() - started > 45_000) {
+          clearTopListingsPendingId();
+          if (pollUntilRef.current != null) {
+            window.clearInterval(pollUntilRef.current);
+            pollUntilRef.current = null;
+          }
+        }
+      };
+
+      void tick();
+      pollUntilRef.current = window.setInterval(() => {
+        void tick();
+      }, 2500);
+    },
+    [load],
+  );
 
   useEffect(() => {
-    const onRefresh = () => {
-      void load();
+    void load();
+    if (consumeTopListingsPendingId() != null) {
+      schedulePollUntilVisible();
+    }
+    return () => {
+      if (pollUntilRef.current != null) {
+        window.clearInterval(pollUntilRef.current);
+      }
     };
-    window.addEventListener(TOP_LISTINGS_REFRESH_EVENT, onRefresh);
+  }, [load, schedulePollUntilVisible]);
+
+  useEffect(() => {
+    const unsub = subscribeTopListingsRefresh(({ listingId }) => {
+      schedulePollUntilVisible(listingId);
+    });
     const onFocus = () => {
       void load();
     };
-    window.addEventListener("focus", onFocus);
-    return () => {
-      window.removeEventListener(TOP_LISTINGS_REFRESH_EVENT, onRefresh);
-      window.removeEventListener("focus", onFocus);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void load();
     };
-  }, [load]);
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisible);
+    const keepFresh = window.setInterval(() => {
+      if (document.visibilityState === "visible") void load();
+    }, 30_000);
+
+    return () => {
+      unsub();
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.clearInterval(keepFresh);
+    };
+  }, [load, schedulePollUntilVisible]);
 
   if (loaded && listings.length === 0) {
     return null;
@@ -164,12 +200,13 @@ export function TopListingsSection({ className }: { className?: string }) {
       aria-labelledby="top-listings-heading"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <TopListingsCarousel
-          listings={listings}
-          loaded={loaded}
-          rowLabel={t.home_topListingsRowLabel}
-          priceFor={priceFor}
-        />
+        <h2
+          id="top-listings-heading"
+          className="text-center text-lg font-black text-gray-900 mb-5 sm:mb-6"
+        >
+          {t.home_topListingsHeading}
+        </h2>
+        <TopListingsCarousel listings={listings} loaded={loaded} priceFor={priceFor} />
       </div>
     </section>
   );

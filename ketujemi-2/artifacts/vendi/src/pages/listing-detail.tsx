@@ -151,7 +151,7 @@ export default function ListingDetail() {
         .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId))
         .then(() => {
           void queryClient.invalidateQueries({ queryKey: getGetListingQueryKey(id) });
-          notifyTopListingsRefresh();
+          notifyTopListingsRefresh(id);
           toast({
             title: "TOP u aktivizua!",
             description: "Njoftimi juaj shfaqet në karuselin TOP në kryefaqe.",
@@ -167,7 +167,7 @@ export default function ListingDetail() {
       return;
     }
     finish();
-    notifyTopListingsRefresh();
+    notifyTopListingsRefresh(id);
     toast({ title: "Faleminderit! TOP do të shfaqet së shpejti." });
   }, [user, id, queryClient, toast]);
 
