@@ -99,6 +99,7 @@ import {
 } from "@/lib/rroba-kepuce-search-helpers";
 import { FemijeSearchPanel } from "@/components/femije-search-panel";
 import { getFemijeLeafCategoryIds, femijeSubcategoryPhoto } from "@/lib/femije-search-helpers";
+import { getFemijeSubcategoryDescription } from "@/lib/femije-subcategory-descriptions";
 import { PuneSherbimeSearchPanel } from "@/components/pune-sherbime-search-panel";
 import { getPuneSherbimeLeafCategoryIds } from "@/lib/pune-sherbime-search-helpers";
 import { BujqesiBlegtoriSearchPanel } from "@/components/bujqesi-blegtori-search-panel";
@@ -1057,6 +1058,14 @@ export default function CategoryPage() {
     parentCategory != null &&
     (parentCategory as { slug?: string }).slug === FEMIJE_HUB_SLUG;
 
+  const currentSlug = (currentCategory as { slug?: string | null })?.slug ?? "";
+  const isFemijeSubcategoryPage =
+    /^femije-(grp|type|leaf)-/.test(currentSlug) &&
+    (isFemijeSubcategoryLevel || isBrandLevel);
+  const femijeSubcategoryDescription = isFemijeSubcategoryPage
+    ? getFemijeSubcategoryDescription(currentSlug, locale)
+    : null;
+
   const isTelefonaHub = (currentCategory as any)?.slug === TELEFONA_HUB_SLUG;
   const orderedTelefonaTypes = sortChildrenByNameOrder(
     children.filter((c: any) => (TELEFONA_TYPE_ORDER as readonly string[]).includes(c.name)),
@@ -1368,6 +1377,12 @@ export default function CategoryPage() {
         >
           <ArrowLeft size={16} /> {t.back}
         </button>
+
+        {femijeSubcategoryDescription ? (
+          <p className="text-sm text-gray-600 leading-relaxed mb-6 -mt-2 max-w-3xl">
+            {femijeSubcategoryDescription}
+          </p>
+        ) : null}
 
         {isVeturaHub && veturaBrandLeafCsv ? (
           <VeturaSearchPanel
