@@ -74,24 +74,21 @@ function TopListingSlot({ listing, priceLabel }: { listing: TopListingCarouselIt
   );
 }
 
-function TopListingEmptySlot({ label, hint }: { label: string; hint: string }) {
+function TopListingEmptySlot() {
   return (
-    <Link
-      href="/listings/new"
+    <div
       className={cn(
         TOP_SLOT_FRAME,
-        "relative flex flex-col items-center justify-center gap-1 px-2 border-dashed",
-        "hover:bg-blue-50/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1A56A0] focus-visible:ring-offset-2",
+        "relative flex flex-col items-center justify-center gap-1 px-2 border-dashed border-[#1A56A0]/35",
+        "bg-blue-50/40 pointer-events-none select-none",
       )}
+      aria-hidden
     >
-      <Sparkles className="h-5 w-5 text-[#1A56A0]/70" aria-hidden />
-      <span className="text-[10px] sm:text-xs font-black uppercase tracking-wide text-[#1A56A0] text-center leading-tight">
-        {label}
+      <Sparkles className="h-5 w-5 text-[#1A56A0]/45" aria-hidden />
+      <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-[#1A56A0]/55 text-center">
+        TOP
       </span>
-      <span className="text-[9px] sm:text-[10px] font-semibold text-gray-500 text-center leading-tight">
-        {hint}
-      </span>
-    </Link>
+    </div>
   );
 }
 
@@ -99,14 +96,10 @@ function TopListingsCarousel({
   listings,
   loaded,
   priceFor,
-  emptyLabel,
-  emptyHint,
 }: {
   listings: TopListingCarouselItem[];
   loaded: boolean;
   priceFor: (eur: number) => string;
-  emptyLabel: string;
-  emptyHint: string;
 }) {
   const slideCount = listings.length > 0 ? listings.length : TOP_EMPTY_SLOT_COUNT;
   const { intervalMs, scrollDuration } = topCarouselTiming(Math.max(slideCount, 1));
@@ -158,7 +151,7 @@ function TopListingsCarousel({
               ))
             : Array.from({ length: TOP_EMPTY_SLOT_COUNT }, (_, i) => (
                 <div key={`top-empty-${i}`} className={SLIDE_BASIS}>
-                  <TopListingEmptySlot label={emptyLabel} hint={emptyHint} />
+                  <TopListingEmptySlot />
                 </div>
               ))}
       </div>
@@ -253,9 +246,6 @@ export function TopListingsHomeRow({ className }: { className?: string }) {
     };
   }, [load, schedulePollUntilVisible]);
 
-  const emptyLabel = t.home_topListingsEmptyLabel ?? "Bëje TOP";
-  const emptyHint = t.home_topListingsEmptyHint ?? "€2 · €5 · €8";
-
   return (
     <div
       className={cn("space-y-3 sm:space-y-4", className)}
@@ -271,13 +261,7 @@ export function TopListingsHomeRow({ className }: { className?: string }) {
           {t.home_topListingsRowLabel ?? "TOP Njoftime"}
         </span>
       </p>
-      <TopListingsCarousel
-        listings={listings}
-        loaded={loaded}
-        priceFor={priceFor}
-        emptyLabel={emptyLabel}
-        emptyHint={emptyHint}
-      />
+      <TopListingsCarousel listings={listings} loaded={loaded} priceFor={priceFor} />
     </div>
   );
 }

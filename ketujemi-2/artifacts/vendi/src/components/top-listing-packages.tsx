@@ -79,7 +79,8 @@ export function TopListingPackages({
         Zgjidh paketën TOP
       </p>
       <p className="text-[11px] text-gray-600 leading-snug">
-        Njoftimi shkon në krye të listës. Pas zgjedhjes hapet Stripe me paketën e zgjedhur.
+        Njoftimi shfaqet në karuselin «TOP Njoftime» në kryefaqe (poshtë partnerëve VIP). Zgjidh
+        paketën — pas pagesës me kartë vlen për ditët e shënuara.
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         {TOP_PACKAGES_PUBLIC.map((pkg) => {
@@ -99,7 +100,8 @@ export function TopListingPackages({
             >
               <div>
                 <p className="text-lg font-black text-violet-900">€{pkg.priceEur}</p>
-                <p className="text-sm font-bold text-gray-800">{pkg.label} TOP</p>
+                <p className="text-sm font-bold text-gray-800">{pkg.label} në kryefaqe</p>
+                <p className="text-[11px] text-gray-500 mt-0.5">Vlen {pkg.days} ditë nga pagesa</p>
               </div>
               <span className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-violet-800">
                 {busy ? (
