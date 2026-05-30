@@ -80,6 +80,9 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "auto-pjes-type-karoserie": pexelsPhoto(7561173),
   "auto-pjes-type-frenim": pexelsPhoto(794763),
   "auto-pjes-type-vajra-filtra": pexelsPhoto(924676),
+  "auto-pjes-type-ftohja-klima": pexelsPhoto(3807277),
+  "auto-pjes-type-elektrike": pexelsPhoto(162553),
+  "auto-pjes-type-te-tjera": pexelsPhoto(4374843),
 
   // —— Banesa ————————————————————————————————————————————————————————————————
   "banesa-type-apartamente-banesa": pexelsPhoto(1571463),

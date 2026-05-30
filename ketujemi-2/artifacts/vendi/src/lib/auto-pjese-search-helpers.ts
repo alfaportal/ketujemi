@@ -4,20 +4,37 @@ export const AUTO_PJESE_HUB_SLUG = "auto-pjese";
 export const AUTO_PJESE_HERO_PHOTO =
   "https://images.pexels.com/photos/4489711/pexels-photo-4489711.jpeg?auto=compress&cs=tinysrgb&w=1400&q=85";
 
-/** Canonical part-type names (DB category names). */
+/** Hub part-type display names (final spec order). */
 export const AUTO_PJESE_PART_NAMES = [
   "Akumulatorë",
-  "Amortizerë",
-  "Drita & LED",
   "Fellne & Goma",
-  "Motorrë",
-  "Pjesë Karoserie",
+  "Drita & LED",
+  "Amortizerë & Sustensioni",
+  "Motorrë & Pjesë Motorri",
+  "Ftohja & Klima",
+  "Pjesë Elektrike & Elektronike",
   "Sisteme Frenimi",
+  "Pjesë Karoserie",
   "Vajra & Filtra",
   "Të tjera Pjesë",
 ] as const;
 
 export type AutoPjesePartName = (typeof AUTO_PJESE_PART_NAMES)[number];
+
+/** Maps hub display name → DB category name (when they differ). */
+export const AUTO_PJESE_PART_DB_NAME: Record<AutoPjesePartName, string> = {
+  "Akumulatorë": "Akumulatorë",
+  "Fellne & Goma": "Fellne & Goma",
+  "Drita & LED": "Drita & LED",
+  "Amortizerë & Sustensioni": "Amortizerë",
+  "Motorrë & Pjesë Motorri": "Motorrë",
+  "Ftohja & Klima": "Ftohja & Klima",
+  "Pjesë Elektrike & Elektronike": "Pjesë Elektrike & Elektronike",
+  "Sisteme Frenimi": "Sisteme Frenimi",
+  "Pjesë Karoserie": "Pjesë Karoserie",
+  "Vajra & Filtra": "Vajra & Filtra",
+  "Të tjera Pjesë": "Të tjera Pjesë",
+};
 
 export type AutoPjeseSubcategoryGroup = {
   readonly label: string;
@@ -25,170 +42,208 @@ export type AutoPjeseSubcategoryGroup = {
 };
 
 /** Subcategory chips shown when a main part-type card is selected on the Auto Pjesë hub. */
-export const AUTO_PJESE_SUBCATEGORIES: Record<AutoPjesePartName, readonly AutoPjeseSubcategoryGroup[]> = {
-  "Akumulatorë": [
-    {
-      label: "Fuqia (Ah)",
-      items: ["45-55Ah", "60-75Ah", "80-100Ah", "Mbi 100Ah"],
-    },
-    {
-      label: "Teknologjia",
-      items: ["Standard Lead-Acid", "AGM / EFB Start-Stop"],
-    },
-    {
-      label: "Aksesorë",
-      items: ["Kabllo ndezjeje", "Karrikues", "Pinca dhe klema"],
-    },
-  ],
-  "Amortizerë": [
-    {
-      label: "Pozicioni",
-      items: ["Amortizerë të parë", "Amortizerë të pasmë", "Spira"],
-    },
-    {
-      label: "Pjesë përcjellëse",
-      items: ["Goma mbrojtëse", "Shpata amortizerit", "Sporte / Jastëkë ajri"],
-    },
-  ],
-  "Drita & LED": [
-    {
-      label: "Ndriçimi kryesor",
-      items: [
-        "Dritat e para (Farët)",
-        "Dritat e pasme (Stopat)",
-        "Dritat e mjegullës",
-        "Treguesit e drejtimit",
-      ],
-    },
-    {
-      label: "Teknologjia",
-      items: ["LED (H1/H4/H7/H11)", "Ksenon (D1S/D2S/D3S)", "Halogjene"],
-    },
-    {
-      label: "Ndriçimi i brendshëm",
-      items: ["Dritat e kabinës", "Ndriçimi i targës"],
-    },
-  ],
-  "Fellne & Goma": [
-    {
-      label: "Goma",
-      items: ["Verore", "Dimërore", "All Season"],
-    },
-    {
-      label: "Fellne",
-      items: ["Alumini (Alu-felne)", "Çeliku (Hekuri)"],
-    },
-    {
-      label: "Aksesorë",
-      items: ["Shurufe / Bulona", "Ventila dhe sensorë TPMS", "Kapakë fellnesh"],
-    },
-  ],
-  "Motorrë": [
-    {
-      label: "Pjesë të brendshme",
-      items: [
-        "Kokat e motorit / Garnitura",
-        "Klipat / Pistonat",
-        "Kushinetat",
-        "Karteri i vajit",
-      ],
-    },
-    {
-      label: "Rripat",
-      items: [
-        "Rrip kmarshri (Timing Belt)",
-        "Set rrip me zubçanikë",
-        "Rrip alternatori",
-      ],
-    },
-    {
-      label: "Ndezja",
-      items: ["Sveçica (Kandela)", "Grejës (Griaçë dizel)", "Bobina"],
-    },
-  ],
-  "Pjesë Karoserie": [
-    {
-      label: "Pjesë të jashtme",
-      items: [
-        "Parashoqet (Para/Prapa)",
-        "Krahët (Blatobranët)",
-        "Hauba",
-        "Dyert",
-        "Kapaku bagazhit",
-      ],
-    },
-    {
-      label: "Xhama dhe Pasqyra",
-      items: [
-        "Shofershajbna",
-        "Xhamat anësorë / të pasmë",
-        "Pasqyrat anësorë",
-      ],
-    },
-    {
-      label: "Plastike mbrojtëse",
-      items: ["Plastikat nën motor", "Plastikat krahëve (Korat)"],
-    },
-  ],
-  "Sisteme Frenimi": [
-    {
-      label: "Pjesë kryesore",
-      items: ["Disqe freni", "Plloça freni (Gurtnet)", "Mofet (Gurnet daulle)"],
-    },
-    {
-      label: "Sistemi hidraulik",
-      items: [
-        "Cilindrat e frenave",
-        "Kalliperat (Gjilpanat)",
-        "Zorrët e frenave",
-        "Sajllat e frenit të dorës",
-      ],
-    },
-  ],
-  "Vajra & Filtra": [
-    {
-      label: "Vajrat",
-      items: [
-        "Vaj motori (5W-30 / 10W-40 / 0W-20)",
-        "Vaj ndërruesi (Automatik / Manual)",
-        "Vaj frenave (DOT4 / DOT5.1)",
-        "Antifriz (G12 / G13)",
-      ],
-    },
-    {
-      label: "Filtrat",
-      items: [
-        "Filtër vaji",
-        "Filtër ajri",
-        "Filtër karburanti",
-        "Filtër kabine (Klimës)",
-      ],
-    },
-  ],
-  "Të tjera Pjesë": [
-    {
-      label: "Klima dhe Ftohja",
-      items: [
-        "Kompresori klimës",
-        "Radiatori ujit / klimës",
-        "Termostati",
-        "Pompa ujit",
-      ],
-    },
-    {
-      label: "Shkarkimi",
-      items: ["Auspuha", "Katalizatorë"],
-    },
-    {
-      label: "Pjesë Elektrike",
-      items: ["Alternatori", "Anlaseri (Starteri)", "Sensorë (ABS/Kamrad)"],
-    },
-    {
-      label: "Trapi / Sustensioni",
-      items: ["Shpatullat (Ushkat)", "Jabukicat", "Akrepët"],
-    },
-  ],
-};
+export const AUTO_PJESE_SUBCATEGORIES: Record<AutoPjesePartName, readonly AutoPjeseSubcategoryGroup[]> =
+  {
+    "Akumulatorë": [
+      {
+        label: "Fuqia (Ah)",
+        items: ["45–55Ah", "60–75Ah", "80–100Ah", "Mbi 100Ah"],
+      },
+      {
+        label: "Teknologjia",
+        items: ["Standard Lead-Acid", "AGM / EFB Start-Stop", "Litium (Li-Ion)"],
+      },
+      {
+        label: "Aksesorë",
+        items: ["Kabllo ndezjeje", "Karrikues", "Pinca dhe klema", "Testues akumulatori"],
+      },
+    ],
+    "Fellne & Goma": [
+      {
+        label: "Goma",
+        items: ["Verore", "Dimërore", "All Season", "Off-Road / 4x4"],
+      },
+      {
+        label: "Fellne",
+        items: ["Alumini (Alu-felne)", "Çeliku (Hekuri)", "Felne sportive"],
+      },
+      {
+        label: "Aksesorë",
+        items: ["Shurufe / Bulona", "Ventila dhe sensorë TPMS", "Kapakë fellnesh", "Zinxhirë bore"],
+      },
+    ],
+    "Drita & LED": [
+      {
+        label: "Ndriçimi kryesor",
+        items: [
+          "Dritat e para (Farët)",
+          "Dritat e pasme (Stopat)",
+          "Dritat e mjegullës",
+          "Treguesit e drejtimit",
+        ],
+      },
+      {
+        label: "Teknologjia",
+        items: ["LED (H1/H4/H7/H11)", "Ksenon (D1S/D2S/D3S)", "Halogjene"],
+      },
+      {
+        label: "Ndriçimi i brendshëm",
+        items: ["Dritat e kabinës", "Ndriçimi i targës", "Dritat nën prag"],
+      },
+    ],
+    "Amortizerë & Sustensioni": [
+      {
+        label: "Pozicioni",
+        items: ["Amortizerë të parë", "Amortizerë të pasmë", "Spira (Sustensioni)"],
+      },
+      {
+        label: "Pjesë përcjellëse",
+        items: ["Goma mbrojtëse", "Shpata amortizerit", "Sporte / Jastëkë ajri"],
+      },
+      {
+        label: "Drejtimi",
+        items: ["Timoneria (Rack)", "Pompë servo", "Shufra drejtimi", "Kapakë timonerie"],
+      },
+    ],
+    "Motorrë & Pjesë Motorri": [
+      {
+        label: "Pjesë të brendshme",
+        items: [
+          "Kokat e motorit / Garnitura",
+          "Klipat / Pistonat",
+          "Kushinetat",
+          "Karteri i vajit",
+        ],
+      },
+      {
+        label: "Rripat",
+        items: [
+          "Rrip kmarshri (Timing Belt)",
+          "Set rrip me zubçanikë",
+          "Rrip alternatori",
+          "Rrip kompresor klime",
+        ],
+      },
+      {
+        label: "Ndezja",
+        items: [
+          "Sveçica (Kandela)",
+          "Grejës (Griaçë dizel)",
+          "Bobina",
+          "Moduli i ndezjes",
+        ],
+      },
+    ],
+    "Ftohja & Klima": [
+      {
+        label: "Klima",
+        items: [
+          "Kompresor klimës",
+          "Radiator uji / klimës",
+          "Termostati",
+          "Pompa ujit",
+          "Kondensatori klimës",
+        ],
+      },
+      {
+        label: "Shkarkimi",
+        items: ["Auspuha", "Katalizatorë", "Grykë auspuhe", "Sensorë lambda"],
+      },
+    ],
+    "Pjesë Elektrike & Elektronike": [
+      {
+        label: "Gjenerimi",
+        items: ["Alternatori", "Anlaseri (Starteri)"],
+      },
+      {
+        label: "Sensorë & Kontrolli",
+        items: [
+          "Sensorë ABS/Kamrad",
+          "Sensorë parkimi",
+          "ECU / Kompjuteri i makinës",
+          "Kabllazha elektrike",
+        ],
+      },
+      {
+        label: "Audio & Multimedia",
+        items: ["Radio / Ekran", "Kamera parkimi", "Altoparlantë", "Amplifikatorë"],
+      },
+    ],
+    "Sisteme Frenimi": [
+      {
+        label: "Pjesë kryesore",
+        items: ["Disqe freni", "Plloça freni (Gurtnet)", "Mofet (Gurnet daulle)"],
+      },
+      {
+        label: "Sistemi hidraulik",
+        items: [
+          "Cilindrat e frenave",
+          "Kalliperat (Gjilpanat)",
+          "Zorrët e frenave",
+          "Sajllat e frenit të dorës",
+          "Pompa kryesore frenave",
+        ],
+      },
+    ],
+    "Pjesë Karoserie": [
+      {
+        label: "Pjesë të jashtme",
+        items: [
+          "Parashoqet (Para/Prapa)",
+          "Krahët (Blatobranët)",
+          "Hauba",
+          "Dyert",
+          "Kapaku bagazhit",
+          "Porogë / Pragovët",
+        ],
+      },
+      {
+        label: "Xhama dhe Pasqyra",
+        items: [
+          "Shofershajbna",
+          "Xhamat anësorë / të pasmë",
+          "Pasqyrat anësorë",
+          "Motorë pasqyre",
+        ],
+      },
+      {
+        label: "Plastike mbrojtëse",
+        items: ["Plastikat nën motor", "Plastikat krahëve (Korat)", "Deflektorë ere"],
+      },
+    ],
+    "Vajra & Filtra": [
+      {
+        label: "Vajrat",
+        items: [
+          "Vaj motori (5W-30 / 10W-40 / 0W-20)",
+          "Vaj ndërruesi (Automatik / Manual)",
+          "Vaj frenave (DOT4 / DOT5.1)",
+          "Antifriz (G12 / G13)",
+          "Vaj drejtimi servo",
+        ],
+      },
+      {
+        label: "Filtrat",
+        items: [
+          "Filtër vaji",
+          "Filtër ajri",
+          "Filtër karburanti",
+          "Filtër kabine (Klimës)",
+        ],
+      },
+    ],
+    "Të tjera Pjesë": [
+      {
+        label: "Të tjera",
+        items: [
+          "Rimorkio & Grepa tërheqëse",
+          "Mjete riparimi",
+          "Pajisje diagnostike (OBD)",
+          "Aksesore të ndryshme",
+        ],
+      },
+    ],
+  };
 
 export function getAutoPjeseSubcategoryGroups(
   partName: AutoPjesePartName | null,
@@ -200,18 +255,22 @@ export function getAutoPjeseSubcategoryGroups(
 export const AUTO_PJESE_PART_PHOTOS: Record<AutoPjesePartName, string> = {
   "Akumulatorë":
     "https://images.pexels.com/photos/2244746/pexels-photo-2244746.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "Amortizerë":
-    "https://images.pexels.com/photos/5542145/pexels-photo-5542145.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "Drita & LED":
-    "https://images.pexels.com/photos/30979646/pexels-photo-30979646.jpeg?auto=compress&cs=tinysrgb&w=400",
   "Fellne & Goma":
     "https://images.pexels.com/photos/36202185/pexels-photo-36202185.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "Motorrë":
+  "Drita & LED":
+    "https://images.pexels.com/photos/30979646/pexels-photo-30979646.jpeg?auto=compress&cs=tinysrgb&w=400",
+  "Amortizerë & Sustensioni":
+    "https://images.pexels.com/photos/5542145/pexels-photo-5542145.jpeg?auto=compress&cs=tinysrgb&w=400",
+  "Motorrë & Pjesë Motorri":
     "https://images.pexels.com/photos/190574/pexels-photo-190574.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "Pjesë Karoserie":
-    "https://images.pexels.com/photos/4489732/pexels-photo-4489732.jpeg?auto=compress&cs=tinysrgb&w=400",
+  "Ftohja & Klima":
+    "https://images.pexels.com/photos/3807277/pexels-photo-3807277.jpeg?auto=compress&cs=tinysrgb&w=400",
+  "Pjesë Elektrike & Elektronike":
+    "https://images.pexels.com/photos/162553/pexels-photo-162553.jpeg?auto=compress&cs=tinysrgb&w=400",
   "Sisteme Frenimi":
     "https://images.pexels.com/photos/34277923/pexels-photo-34277923.jpeg?auto=compress&cs=tinysrgb&w=400",
+  "Pjesë Karoserie":
+    "https://images.pexels.com/photos/4489732/pexels-photo-4489732.jpeg?auto=compress&cs=tinysrgb&w=400",
   "Vajra & Filtra":
     "https://images.pexels.com/photos/13065691/pexels-photo-13065691.jpeg?auto=compress&cs=tinysrgb&w=400",
   "Të tjera Pjesë":
@@ -250,7 +309,6 @@ export function isAutoPjeseBrand(value: string): value is AutoPjeseBrand {
   return (AUTO_PJESE_BRANDS as readonly string[]).includes(value);
 }
 
-/** Models for the compatibility picker — empty until a brand is chosen. */
 export function getAutoPjeseModelsForBrand(brand: string): readonly string[] {
   if (!isAutoPjeseBrand(brand)) return [];
   return AUTO_PJESE_MODELS[brand];
@@ -284,9 +342,6 @@ export const AUTO_PJESE_MODELS: Record<AutoPjeseBrand, readonly string[]> = {
 
 export const AUTO_PJESE_YEARS = Array.from({ length: 2026 - 1990 + 1 }, (_, i) => 2026 - i);
 
-export const TIRE_INCH_OPTS = ["R13", "R14", "R15", "R16", "R17", "R18", "R19", "R20", "R21+"] as const;
-export const TIRE_SEASON_OPTS = ["Verore", "Dimërore", "Gjithëvjetore"] as const;
-
 /** Stored in listing description for search + display. */
 export const AP_PART_CONDITION_DESC: Record<string, string> = {
   new: "Gjendja pjesës: E re",
@@ -307,24 +362,26 @@ export type AutoPjeseCategoryRow = {
   parent_id: number | null;
 };
 
+const AUTO_PJESE_DB_NAME_SET = new Set(Object.values(AUTO_PJESE_PART_DB_NAME));
+
 export function getAutoPiesePartTypeCategoryIds(
   categories: AutoPjeseCategoryRow[],
   hubId: number,
 ): number[] {
   return categories
-    .filter(
-      (c) =>
-        c.parent_id === hubId &&
-        (AUTO_PJESE_PART_NAMES as readonly string[]).includes(c.name),
-    )
+    .filter((c) => c.parent_id === hubId && AUTO_PJESE_DB_NAME_SET.has(c.name))
     .map((c) => c.id);
 }
 
 export function resolvePartTypeCategoryId(
   categories: AutoPjeseCategoryRow[],
   hubId: number,
-  partName: string,
+  partName: AutoPjesePartName | string,
 ): number | undefined {
-  const row = categories.find((c) => c.parent_id === hubId && c.name === partName);
+  const dbName =
+    partName in AUTO_PJESE_PART_DB_NAME
+      ? AUTO_PJESE_PART_DB_NAME[partName as AutoPjesePartName]
+      : partName;
+  const row = categories.find((c) => c.parent_id === hubId && c.name === dbName);
   return row?.id;
 }

@@ -17,6 +17,7 @@
     "seed:brands": "tsx ./src/seed.ts --brands-only",
     "seed:motorr-subcats": "tsx ./src/seed.ts --motorr-subcats-only",
     "seed:auto-pjes-subcats": "tsx ./src/seed.ts --auto-pjes-subcats-only",
+    "seed:auto-pjese-extra-types": "tsx ./src/seed-auto-pjese-extra-types.ts",
     "seed:banesa-subcats": "tsx ./src/seed.ts --banesa-subcats-only",
     "seed:kamione-subcats": "tsx ./src/seed.ts --kamione-subcats-only",
     "seed:general-subcats": "tsx ./src/seed.ts --general-subcats-only",

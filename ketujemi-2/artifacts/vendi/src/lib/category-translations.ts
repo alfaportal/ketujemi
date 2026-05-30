@@ -74,9 +74,13 @@ export const CAT_TRANSLATIONS: Record<string, Record<MarketCode, string>> = {
   // ── Auto Pjesë subcategories ─────────────────────────────────────────────────
   "Akumulatorë":           { ks: "Akumulatorë",           al: "Akumulatorë",           mk: "Акумулатори",                     mne: "Akumulatori" },
   "Amortizerë":            { ks: "Amortizerë",            al: "Amortizerë",            mk: "Амортизери",                       mne: "Amortizeri" },
+  "Amortizerë & Sustensioni": { ks: "Amortizerë & Sustensioni", al: "Amortizerë & Sustensioni", mk: "Амортизери & суспензија", mne: "Amortizeri & suspenzija" },
   "Drita & LED":           { ks: "Drita & LED",           al: "Drita & LED",           mk: "Светла & LED",                    mne: "Svjetla & LED" },
   "Fellne & Goma":         { ks: "Fellne & Goma",         al: "Fellne & Goma",         mk: "Фелни & Гуми",                    mne: "Felne & Gume" },
+  "Ftohja & Klima":        { ks: "Ftohja & Klima",        al: "Ftohja & Klima",        mk: "Ладење & клима",                  mne: "Hlađenje & klima" },
   "Motorrë":               { ks: "Motorrë",               al: "Motorrë",               mk: "Мотори за возила",                 mne: "Motori za vozila" },
+  "Motorrë & Pjesë Motorri": { ks: "Motorrë & Pjesë Motorri", al: "Motorrë & Pjesë Motorri", mk: "Мотор & делови мотор", mne: "Motor & dijelovi motora" },
+  "Pjesë Elektrike & Elektronike": { ks: "Pjesë Elektrike & Elektronike", al: "Pjesë Elektrike & Elektronike", mk: "Електрични & електронски делови", mne: "Električni & elektronski dijelovi" },
   "Pjesë Karoserie":       { ks: "Pjesë Karoserie",       al: "Pjesë Karoserie",       mk: "Делови каросерије",               mne: "Djelovi karoserije" },
   "Sisteme Frenimi":       { ks: "Sisteme Frenimi",       al: "Sisteme Frenimi",       mk: "Кочни системи",                   mne: "Kočni sistem" },
   "Vajra & Filtra":        { ks: "Vajra & Filtra",        al: "Vajra & Filtra",        mk: "Масла & филтри",                  mne: "Ulja & filteri" },

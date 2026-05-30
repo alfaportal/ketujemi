@@ -144,8 +144,12 @@ const CAT_PHOTOS: Record<string, string> = {
   "Motorrë":   "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
   "Akumulatorë": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&q=80",
   "Amortizerë": "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&q=80",
+  "Amortizerë & Sustensioni": "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&q=80",
   "Drita & LED": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400&q=80",
   "Fellne & Goma": "https://images.unsplash.com/photo-1558618047-e6f7bdf12e92?w=400&q=80",
+  "Ftohja & Klima": "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&q=80",
+  "Motorrë & Pjesë Motorri": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80",
+  "Pjesë Elektrike & Elektronike": "https://images.unsplash.com/photo-1625538791262-1a2288734c1b?w=400&q=80",
   "Pjesë Karoserie": "https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=400&q=80",
   "Sisteme Frenimi": "https://images.unsplash.com/photo-1471440671318-55bdb6469894?w=400&q=80",
   "Vajra & Filtra": "https://images.unsplash.com/photo-1626441963168-ae4d6d982c02?w=400&q=80",
@@ -326,12 +330,14 @@ const BANESA_TYPE_ORDER = [
 /** Display order for Auto Pjesë hub (types only). */
 const AUTO_PJESE_TYPE_ORDER = [
   "Akumulatorë",
-  "Amortizerë",
-  "Drita & LED",
   "Fellne & Goma",
-  "Motorrë",
-  "Pjesë Karoserie",
+  "Drita & LED",
+  "Amortizerë & Sustensioni",
+  "Motorrë & Pjesë Motorri",
+  "Ftohja & Klima",
+  "Pjesë Elektrike & Elektronike",
   "Sisteme Frenimi",
+  "Pjesë Karoserie",
   "Vajra & Filtra",
   "Të tjera Pjesë",
 ] as const;
@@ -1171,7 +1177,9 @@ export default function CategoryPage() {
     (KAMION_BRAND_ORDER as readonly string[]).includes(currentCategory?.name ?? "");
   const useWrenchEmptyListingIcon =
     isAutoPjesHub ||
-    (AUTO_PJESE_TYPE_ORDER as readonly string[]).includes(currentCategory?.name ?? "");
+    (AUTO_PJESE_TYPE_ORDER as readonly string[]).includes(currentCategory?.name ?? "") ||
+    currentCategory?.name === "Amortizerë" ||
+    currentCategory?.name === "Motorrë";
   const useHouseEmptyListingIcon =
     isBanesaShtepiHub ||
     (BANESA_TYPE_ORDER as readonly string[]).includes(currentCategory?.name ?? "");
