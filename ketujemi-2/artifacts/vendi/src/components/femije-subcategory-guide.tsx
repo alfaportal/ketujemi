@@ -38,11 +38,6 @@ export function FemijeSubcategoryGuide({ slug, locale }: Props) {
         </div>
       ) : null}
 
-      <p className="text-xs text-blue-900/90 bg-blue-100/60 rounded-lg px-3 py-2 leading-relaxed border border-blue-200/80">
-        {(t as { fj_guide_posting_location?: string }).fj_guide_posting_location ??
-          "Kategoria tregon vetëm llojin e produktit. Kur postoni, zgjidhni qytetin/shtetin te «Vendndodhja» — mund të postoni nga kudo (Kosovë, Shqipëri, Maqedoni, Mal i Zi)."}
-      </p>
-
       {guide.conditions.length > 0 ? (
         <div>
           <h2 className="text-sm font-black text-gray-900 mb-2">{conditionTitle}</h2>

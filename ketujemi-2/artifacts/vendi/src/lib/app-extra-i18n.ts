@@ -685,9 +685,8 @@ const KS_EXTRA: Record<string, string> = {
   fj_sec_price: "Çmimi (€)",
   fj_sec_location: "Lokacioni",
   fj_search_location_hint:
-    "Kërkoni sipas vendit ku është njoftimi (shtet + qytet). Kur postoni, vendndodhja zgjidhet veçmas — kategoria tregon vetëm llojin e produktit.",
-  fj_guide_posting_location:
-    "Kategoria tregon vetëm llojin e produktit. Kur postoni, zgjidhni qytetin/shtetin te «Vendndodhja» — mund të postoni nga kudo (Kosovë, Shqipëri, Maqedoni, Mal i Zi).",
+    "Kërkoni sipas vendit ku është njoftimi (shtet + qytet). Mund të postoni nga kudo.",
+  fj_guide_posting_location: "Mund të postoni nga kudo.",
   fj_from: "Nga",
   fj_to: "Deri",
   fj_area_lbl: "Lagjja",
@@ -2361,9 +2360,8 @@ const MK_EXTRA: Record<string, string> = {
   fj_sec_price: "Цена (€)",
   fj_sec_location: "Локација",
   fj_search_location_hint:
-    "Пребарувајте по место на огласот (држава + град). При објавување, локацијата е посебно — категоријата е само тип на производ.",
-  fj_guide_posting_location:
-    "Категоријата е само тип на производ. При објавување изберете град/држава во «Локација» — можете од каде било (Косово, Албанија, Македонија, Црна Гора).",
+    "Пребарувајте по место на огласот (држава + град). Можете да објавувате од каде било.",
+  fj_guide_posting_location: "Можете да објавувате од каде било.",
   fj_from: "Од",
   fj_to: "До",
   fj_area_lbl: "Населба",
@@ -3984,9 +3982,8 @@ const MNE_EXTRA: Record<string, string> = {
   fj_sec_price: "Cijena (€)",
   fj_sec_location: "Lokacija",
   fj_search_location_hint:
-    "Pretražujte po mjestu oglasa (država + grad). Pri objavi, lokacija je odvojeno — kategorija je samo vrsta proizvoda.",
-  fj_guide_posting_location:
-    "Kategorija je samo vrsta proizvoda. Pri objavi izaberite grad/državu u «Lokacija» — možete bilo gdje (Kosovo, Albanija, Makedonija, Crna Gora).",
+    "Pretražujte po mjestu oglasa (država + grad). Možete objaviti odakle god.",
+  fj_guide_posting_location: "Možete objaviti odakle god.",
   fj_from: "Od",
   fj_to: "Do",
   fj_area_lbl: "Naselje",

@@ -20,7 +20,6 @@ import {
   CategoryPhotoPickerCard,
   CategoryPhotoPickerGrid,
 } from "@/components/category-photo-picker";
-import { getFemijeSubcategoryGuide } from "@/lib/femije-subcategory-guides";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
 import { translateCategory } from "@/lib/category-translations";
@@ -417,19 +416,6 @@ export function FemijeSearchPanel({
             </h3>
             <p className="text-sm font-semibold text-blue-900 mt-0.5">{typeTitle}</p>
           </div>
-
-          {groupGuide ? (
-            <div className="space-y-3 text-sm text-gray-800">
-              <p className="leading-relaxed font-medium">{groupGuide.intro}</p>
-              {groupGuide.includes.length > 0 ? (
-                <ul className="list-disc pl-5 space-y-1.5 text-gray-700">
-                  {groupGuide.includes.map((line) => (
-                    <li key={line}>{line}</li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-          ) : null}
 
           {groupLeaves.length > 1 ? (
             <div className="space-y-3 border-t border-blue-100/80 pt-4">

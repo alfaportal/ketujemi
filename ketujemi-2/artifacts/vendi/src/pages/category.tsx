@@ -99,7 +99,6 @@ import {
 } from "@/lib/rroba-kepuce-search-helpers";
 import { FemijeSearchPanel } from "@/components/femije-search-panel";
 import { getFemijeLeafCategoryIds, femijeSubcategoryPhoto } from "@/lib/femije-search-helpers";
-import { FemijeSubcategoryGuide } from "@/components/femije-subcategory-guide";
 import { PuneSherbimeSearchPanel } from "@/components/pune-sherbime-search-panel";
 import { getPuneSherbimeLeafCategoryIds } from "@/lib/pune-sherbime-search-helpers";
 import { BujqesiBlegtoriSearchPanel } from "@/components/bujqesi-blegtori-search-panel";
@@ -595,25 +594,25 @@ export default function CategoryPage() {
       case "al":
         return {
           sub: "Bëhu i pari që posto në këtë kategori dhe arrij mijëra blerës potencialë!",
-          trust: "✓ Falas  ✓ I shpejtë  ✓ I sigurt",
+          trust: t.postFromAnywhere,
         };
       case "mk":
         return {
           sub: "Биди прв кој ќе огласи во оваа категорија и достигни илјадници потенцијални купувачи!",
-          trust: "✓ Бесплатно  ✓ Брзо  ✓ Сигурно",
+          trust: t.postFromAnywhere,
         };
       case "mne":
         return {
           sub: "Budi prvi koji objavljuje u ovoj kategoriji i dođi do hiljada potencijalnih kupaca!",
-          trust: "✓ Besplatno  ✓ Brzo  ✓ Sigurno",
+          trust: t.postFromAnywhere,
         };
       default:
         return {
           sub: t.beFirst,
-          trust: "✓ Free  ✓ Fast  ✓ Secure",
+          trust: t.postFromAnywhere,
         };
     }
-  }, [market.code, t.beFirst]);
+  }, [market.code, t.beFirst, t.postFromAnywhere]);
 
   const currentCategory = allCategories?.find((c: any) => Number(c.id) === Number(categoryId));
   const children =
@@ -1262,6 +1261,12 @@ export default function CategoryPage() {
           </div>
         </div>
       )}
+
+      {femijeGuideSlug ? (
+        <p className="mt-6 text-center text-sm text-slate-500 leading-relaxed">
+          {t.postFromAnywhere}
+        </p>
+      ) : null}
     </div>
   );
 
@@ -1377,10 +1382,6 @@ export default function CategoryPage() {
         >
           <ArrowLeft size={16} /> {t.back}
         </button>
-
-        {femijeGuideSlug ? (
-          <FemijeSubcategoryGuide slug={femijeGuideSlug} locale={locale} />
-        ) : null}
 
         {isVeturaHub && veturaBrandLeafCsv ? (
           <VeturaSearchPanel
