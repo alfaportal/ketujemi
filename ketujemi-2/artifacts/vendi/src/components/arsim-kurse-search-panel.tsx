@@ -1,9 +1,6 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { GetListingsParams } from "@workspace/api-client-react";
 import { GraduationCap, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -13,372 +10,367 @@ import {
 } from "@/components/ui/select";
 import {
   CategoryPhotoPickerCard,
-  CategoryPhotoPickerRow,
+  CategoryPhotoPickerGrid,
 } from "@/components/category-photo-picker";
-import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
+import { translateCategory } from "@/lib/category-translations";
+import { translationKeyForUiLang } from "@/lib/ui-languages";
+import { cnPrimaryBlue } from "@/lib/primary-button-classes";
+import { effectiveListingSearchQuery } from "@/lib/listing-search-query";
 import {
-  AK_CITY_KEYS,
-  AK_CITY_LABEL_KEY,
-  AK_CITY_SEARCH,
-  AK_FORMAT_KEYS,
-  AK_FORMAT_LABEL_KEY,
-  AK_FORMAT_SEARCH,
-  AK_SKILL_LEVEL_KEYS,
-  AK_SKILL_LEVEL_LABEL_KEY,
-  AK_SKILL_LEVEL_SEARCH,
-  AK_SUBCATEGORIES_BY_TYPE,
-  AK_TYPE_KEYS,
-  AK_TYPE_LABEL_KEY,
-  AK_TYPE_PHOTOS,
-  getAkSubcategorySearch,
-  getArsimKurseLeafCategoryIds,
-  resolveArsimTypeCategoryId,
-  type AkCityKey,
-  type AkFormatKey,
-  type AkSkillLevelKey,
-  type AkSubcategoryKey,
-  type AkTypeKey,
+  arsimSubcategoryPhoto,
+  getArsimKurseGroupRows,
+  getArsimKurseLeafRows,
+  getArsimKurseTypeRows,
   type ArsimKurseCategoryRow,
 } from "@/lib/arsim-kurse-search-helpers";
 
-const triggerClass =
-  "min-h-12 h-12 w-full text-[16px] rounded-xl border-slate-200 font-normal";
+export type ArsimKurseSearchVariant = "hub" | "type" | "group" | "leaf";
 
 type Props = {
+  variant: ArsimKurseSearchVariant;
   hubId: number;
+  scopeCategoryId?: number;
   categories: ArsimKurseCategoryRow[];
-  previewTotal: number | null;
-  previewLoading: boolean;
-  onListingParamsChange: (params: GetListingsParams) => void;
-  onScrollToResults?: () => void;
+  onNavigateToCategory: (childCategoryId: number) => void;
+  /** Listings refresh — leaf (final) page only. */
+  onListingParamsChange?: (params: GetListingsParams) => void;
 };
 
-function Field({
-  id,
-  label,
-  children,
-}: {
-  id: string;
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="space-y-2 min-w-0">
-      <Label htmlFor={id} className="text-sm font-bold text-gray-900">
-        {label}
-      </Label>
-      {children}
-    </div>
-  );
+const ALL = "all";
+
+function findRow(categories: ArsimKurseCategoryRow[], id: number | null | undefined) {
+  if (id == null) return null;
+  return categories.find((c) => Number(c.id) === Number(id)) ?? null;
 }
 
 export function ArsimKurseSearchPanel({
+  variant,
   hubId,
+  scopeCategoryId,
   categories,
-  previewTotal: _previewTotal,
-  previewLoading: _previewLoading,
+  onNavigateToCategory,
   onListingParamsChange,
-  onScrollToResults,
 }: Props) {
-  const { t } = useMarket();
+  const { t, uiLang } = useMarket();
+  const locale = translationKeyForUiLang(uiLang);
+  const isFinalPage = variant === "leaf";
 
-  const defaultCsv = useMemo(() => {
-    const ids = getArsimKurseLeafCategoryIds(categories, hubId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [categories, hubId]);
+  const hubTypes = useMemo(
+    () => getArsimKurseTypeRows(categories, hubId),
+    [categories, hubId],
+  );
 
-  const [categoryKey, setCategoryKey] = useState<AkTypeKey | "">("");
-  const [subcategoryKey, setSubcategoryKey] = useState<AkSubcategoryKey | "">("");
-  const [cityKey, setCityKey] = useState<AkCityKey | "">("");
-  const [formatKey, setFormatKey] = useState<AkFormatKey | "">("");
-  const [skillLevel, setSkillLevel] = useState<AkSkillLevelKey | "">("");
-  const [priceMin, setPriceMin] = useState("");
-  const [priceMax, setPriceMax] = useState("");
+  const scopeTypeId = useMemo(() => {
+    if (variant === "type" && scopeCategoryId) return scopeCategoryId;
+    if (variant === "group" && scopeCategoryId) {
+      return findRow(categories, scopeCategoryId)?.parent_id ?? null;
+    }
+    if (variant === "leaf" && scopeCategoryId) {
+      const group = findRow(categories, scopeCategoryId);
+      return group?.parent_id != null
+        ? findRow(categories, group.parent_id)?.parent_id ?? null
+        : null;
+    }
+    return null;
+  }, [variant, scopeCategoryId, categories]);
 
-  const subcategoryOptions = categoryKey ? AK_SUBCATEGORIES_BY_TYPE[categoryKey] : [];
+  const scopeGroupId = useMemo(() => {
+    if (variant === "group" && scopeCategoryId) return scopeCategoryId;
+    if (variant === "leaf" && scopeCategoryId) {
+      return findRow(categories, scopeCategoryId)?.parent_id ?? null;
+    }
+    return null;
+  }, [variant, scopeCategoryId, categories]);
+
+  const typeSelectOptions = useMemo((): ArsimKurseCategoryRow[] => {
+    if (variant === "hub") return hubTypes;
+    if (variant === "type" && scopeCategoryId) {
+      const row = findRow(categories, scopeCategoryId);
+      return row ? [row] : [];
+    }
+    if ((variant === "group" || variant === "leaf") && scopeTypeId) {
+      const row = findRow(categories, scopeTypeId);
+      return row ? [row] : [];
+    }
+    return [];
+  }, [variant, hubTypes, scopeCategoryId, scopeTypeId, categories]);
+
+  const groupSelectOptions = useMemo((): ArsimKurseCategoryRow[] => {
+    if (variant === "hub") return [];
+    if (variant === "type" && scopeCategoryId) {
+      return getArsimKurseGroupRows(categories, scopeCategoryId);
+    }
+    if ((variant === "group" || variant === "leaf") && scopeGroupId) {
+      const row = findRow(categories, scopeGroupId);
+      return row ? [row] : [];
+    }
+    return [];
+  }, [variant, scopeCategoryId, scopeGroupId, categories]);
+
+  const leafSelectOptions = useMemo((): ArsimKurseCategoryRow[] => {
+    if (variant === "hub" || variant === "type") return [];
+    if (variant === "group" && scopeCategoryId) {
+      return getArsimKurseLeafRows(categories, scopeCategoryId);
+    }
+    if (variant === "leaf" && scopeGroupId) {
+      return getArsimKurseLeafRows(categories, scopeGroupId);
+    }
+    return [];
+  }, [variant, scopeCategoryId, scopeGroupId, categories]);
+
+  const initialTypeId = useMemo(() => {
+    if (variant === "hub") return ALL;
+    if (scopeTypeId) return String(scopeTypeId);
+    return ALL;
+  }, [variant, scopeTypeId]);
+
+  const initialGroupId = useMemo(() => {
+    if (variant === "hub" || variant === "type") return ALL;
+    if (scopeGroupId) return String(scopeGroupId);
+    return ALL;
+  }, [variant, scopeGroupId]);
+
+  const initialLeafId = useMemo(() => {
+    if (variant === "leaf" && scopeCategoryId) return String(scopeCategoryId);
+    return ALL;
+  }, [variant, scopeCategoryId]);
+
+  const [typeId, setTypeId] = useState(initialTypeId);
+  const [groupId, setGroupId] = useState(initialGroupId);
+  const [leafId, setLeafId] = useState(initialLeafId);
+  const [searchText, setSearchText] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
 
   useEffect(() => {
-    setSubcategoryKey("");
-  }, [categoryKey]);
+    setTypeId(initialTypeId);
+    setGroupId(initialGroupId);
+    setLeafId(initialLeafId);
+  }, [initialTypeId, initialGroupId, initialLeafId]);
 
-  useEffect(() => {
-    if (subcategoryKey && categoryKey) {
-      const allowed = subcategoryOptions.map((o) => o.key);
-      if (!allowed.includes(subcategoryKey)) setSubcategoryKey("");
+  const photoGridRows = useMemo(() => {
+    if (variant === "hub") return hubTypes;
+    if (variant === "type" && scopeCategoryId) {
+      return getArsimKurseGroupRows(categories, scopeCategoryId);
     }
-  }, [subcategoryKey, categoryKey, subcategoryOptions]);
+    if (variant === "group" && scopeCategoryId) {
+      return getArsimKurseLeafRows(categories, scopeCategoryId);
+    }
+    return [];
+  }, [variant, hubTypes, categories, scopeCategoryId]);
 
-  const buildParams = (): GetListingsParams => {
-    const params: GetListingsParams = { page: 1, limit: 20 };
+  const photoGridTitle =
+    variant === "hub"
+      ? t.ak_sec_types
+      : variant === "type"
+        ? ((t as { ak_sec_groups?: string }).ak_sec_groups ?? t.subcategory)
+        : ((t as { ak_sec_leaves?: string }).ak_sec_leaves ?? t.subcategory);
 
-    if (categoryKey) {
-      const cid = resolveArsimTypeCategoryId(categories, hubId, categoryKey);
-      if (cid) params.category_id = cid;
-      else if (defaultCsv) params.category_ids = defaultCsv;
-    } else if (defaultCsv) {
-      params.category_ids = defaultCsv;
+  const callbackRef = useRef(onListingParamsChange);
+  callbackRef.current = onListingParamsChange;
+
+  const buildParams = (searchQuery = appliedSearch): GetListingsParams => {
+    const p: GetListingsParams = { page: 1, limit: 20 };
+
+    if (isFinalPage && scopeCategoryId) {
+      p.category_id = scopeCategoryId;
+      if (searchQuery) p.search = searchQuery;
+      return p;
     }
 
-    if (cityKey) params.location_search = AK_CITY_SEARCH[cityKey];
-
-    const searchBits: string[] = [];
-    if (categoryKey) {
-      const typeLabel = t[AK_TYPE_LABEL_KEY[categoryKey]];
-      if (typeLabel) searchBits.push(typeLabel);
-    }
-    if (categoryKey && subcategoryKey) {
-      const subSearch = getAkSubcategorySearch(categoryKey, subcategoryKey);
-      if (subSearch) searchBits.push(subSearch);
-    }
-    if (formatKey) searchBits.push(AK_FORMAT_SEARCH[formatKey]);
-    if (skillLevel && skillLevel !== "te_gjitha") {
-      const lvl = AK_SKILL_LEVEL_SEARCH[skillLevel];
-      if (lvl) searchBits.push(lvl);
-    }
-    if (searchBits.length) params.search = searchBits.join(" ");
-
-    const pMin = priceMin.trim() ? parseFloat(priceMin) : NaN;
-    const pMax = priceMax.trim() ? parseFloat(priceMax) : NaN;
-    if (Number.isFinite(pMin) && pMin >= 0) params.min_price = pMin;
-    if (Number.isFinite(pMax) && pMax >= 0) params.max_price = pMax;
-
-    return params;
+    if (searchQuery) p.search = searchQuery;
+    return p;
   };
 
   useEffect(() => {
-    onListingParamsChange(buildParams());
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- live preview
-  }, [
-    categoryKey,
-    subcategoryKey,
-    cityKey,
-    formatKey,
-    skillLevel,
-    priceMin,
-    priceMax,
-    defaultCsv,
-    hubId,
-    categories,
-    onListingParamsChange,
-  ]);
+    if (!isFinalPage || !callbackRef.current || !scopeCategoryId) return;
+    const timer = window.setTimeout(() => {
+      callbackRef.current?.(buildParams());
+    }, 300);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- leaf listings only
+  }, [isFinalPage, appliedSearch, scopeCategoryId]);
 
-  const handleSearch = () => {
-    onListingParamsChange(buildParams());
-    onScrollToResults?.();
+  const handleTypeChange = (value: string) => {
+    if (value === ALL) {
+      if (variant === "hub") {
+        setTypeId(ALL);
+        setGroupId(ALL);
+        setLeafId(ALL);
+      }
+      return;
+    }
+    const tid = Number(value);
+    if (!Number.isFinite(tid)) return;
+    if (variant === "leaf" && tid === scopeTypeId) {
+      onNavigateToCategory(tid);
+      return;
+    }
+    onNavigateToCategory(tid);
   };
 
-  const selectCategoryCard = (key: AkTypeKey) => {
-    setCategoryKey((prev) => (prev === key ? "" : key));
-    setSubcategoryKey("");
+  const handleGroupChange = (value: string) => {
+    if (value === ALL) {
+      if (variant === "type" && scopeCategoryId) {
+        onNavigateToCategory(scopeCategoryId);
+      }
+      return;
+    }
+    const gid = Number(value);
+    if (!Number.isFinite(gid)) return;
+    if (variant === "leaf" && gid === scopeGroupId) {
+      onNavigateToCategory(gid);
+      return;
+    }
+    onNavigateToCategory(gid);
   };
+
+  const handleLeafChange = (value: string) => {
+    if (value === ALL) {
+      if (variant === "group" && scopeCategoryId) {
+        onNavigateToCategory(scopeCategoryId);
+      }
+      return;
+    }
+    const lid = Number(value);
+    if (!Number.isFinite(lid)) return;
+    if (lid === scopeCategoryId) return;
+    onNavigateToCategory(lid);
+  };
+
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!isFinalPage) return;
+    const q = effectiveListingSearchQuery(searchText);
+    setAppliedSearch(q);
+    callbackRef.current?.(buildParams(q));
+  };
+
+  const selectLabelClass =
+    "text-sm font-semibold text-gray-500 mb-1.5 block uppercase tracking-wide";
+
+  const showTypeAll = variant === "hub";
+  const showGroupAll = variant === "type";
+  const showLeafAll = variant === "group";
 
   return (
-    <div className="mb-8 space-y-6 max-w-full overflow-hidden">
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm">
-        <div className="flex flex-col gap-1 border-b border-gray-100 pb-4 mb-4">
-          <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
-            <GraduationCap size={20} className="text-blue-600 shrink-0" aria-hidden />
-            {t.ak_panel_title}
-          </h2>
-          <p className="text-sm text-gray-500">{t.ak_panel_sub}</p>
-        </div>
-
-        <section className="space-y-3" aria-label={t.ak_sec_types}>
-          <Label className="text-sm font-bold text-gray-500 uppercase tracking-wide">
-            {t.ak_sec_types}
-          </Label>
-          <CategoryPhotoPickerRow>
-            {AK_TYPE_KEYS.map((key) => (
+    <div className="mb-8 space-y-6">
+      {photoGridRows.length > 0 ? (
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
+              <GraduationCap size={20} className="text-blue-600 shrink-0" aria-hidden />
+              {photoGridTitle}
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              {photoGridRows.length}{" "}
+              {(t as { subcategoriesAvail?: string }).subcategoriesAvail ??
+                "nënkategori të disponueshme"}
+            </p>
+          </div>
+          <CategoryPhotoPickerGrid>
+            {photoGridRows.map((row) => (
               <CategoryPhotoPickerCard
-                key={key}
-                selected={categoryKey === key}
-                onClick={() => selectCategoryCard(key)}
-                imageSrc={AK_TYPE_PHOTOS[key]}
-                label={t[AK_TYPE_LABEL_KEY[key]]}
+                key={row.id}
+                layout="grid"
+                onClick={() => onNavigateToCategory(row.id)}
+                imageSrc={arsimSubcategoryPhoto(row.slug, row.image_url, categories)}
+                label={translateCategory(row.name, locale)}
               />
             ))}
-          </CategoryPhotoPickerRow>
+          </CategoryPhotoPickerGrid>
         </section>
-      </div>
+      ) : null}
 
-      {/* Search table — below cards, outside buttons */}
-      <section
-        className="rounded-2xl border border-blue-100 bg-blue-50/30 p-4 sm:p-5 shadow-sm space-y-4"
-        aria-label={t.ak_search_btn}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field id="ak-category" label={t.ak_fld_category}>
-            <Select
-              value={categoryKey || "__any__"}
-              onValueChange={(v) => setCategoryKey(v === "__any__" ? "" : (v as AkTypeKey))}
-            >
-              <SelectTrigger id="ak-category" className={triggerClass}>
-                <SelectValue placeholder={t.ak_select_category_ph}>
-                  {categoryKey ? t[AK_TYPE_LABEL_KEY[categoryKey]] : t.ak_select_any}
-                </SelectValue>
+      <section className="space-y-4 border-t border-gray-100 pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="min-w-0">
+            <label className={selectLabelClass}>{t.category}</label>
+            <Select value={typeId} onValueChange={handleTypeChange}>
+              <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
+                <SelectValue placeholder={t.all} />
               </SelectTrigger>
-              <SelectContent className="max-h-[min(70vh,320px)]">
-                <SelectItem value="__any__" className="min-h-11">
-                  {t.ak_select_any}
-                </SelectItem>
-                {AK_TYPE_KEYS.map((key) => (
-                  <SelectItem key={key} value={key} className="min-h-11">
-                    {t[AK_TYPE_LABEL_KEY[key]]}
+              <SelectContent className="!max-h-[300px]">
+                {showTypeAll ? <SelectItem value={ALL}>{t.all}</SelectItem> : null}
+                {typeSelectOptions.map((row) => (
+                  <SelectItem key={row.id} value={String(row.id)}>
+                    {translateCategory(row.name, locale)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </Field>
+          </div>
 
-          <Field id="ak-subcategory" label={t.ak_fld_subcategory}>
+          <div className="min-w-0">
+            <label className={selectLabelClass}>{t.subcategory}</label>
             <Select
-              key={categoryKey || "__none__"}
-              value={subcategoryKey || "__any__"}
-              onValueChange={(v) =>
-                setSubcategoryKey(v === "__any__" ? "" : (v as AkSubcategoryKey))
-              }
-              disabled={!categoryKey}
+              value={variant === "hub" ? ALL : groupId}
+              onValueChange={handleGroupChange}
+              disabled={variant === "hub" || groupSelectOptions.length === 0}
             >
-              <SelectTrigger id="ak-subcategory" className={triggerClass}>
-                <SelectValue placeholder={t.ak_select_subcategory_ph}>
-                  {subcategoryKey
-                    ? t[
-                        subcategoryOptions.find((o) => o.key === subcategoryKey)?.labelKey ??
-                          ""
-                      ]
-                    : t.ak_select_any}
-                </SelectValue>
+              <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
+                <SelectValue placeholder={t.all} />
               </SelectTrigger>
-              <SelectContent className="max-h-[min(70vh,360px)]">
-                <SelectItem value="__any__" className="min-h-11">
-                  {t.ak_select_any}
-                </SelectItem>
-                {subcategoryOptions.map((opt) => (
-                  <SelectItem key={opt.key} value={opt.key} className="min-h-11">
-                    {t[opt.labelKey]}
+              <SelectContent className="!max-h-[300px]">
+                {showGroupAll ? <SelectItem value={ALL}>{t.all}</SelectItem> : null}
+                {groupSelectOptions.map((row) => (
+                  <SelectItem key={row.id} value={String(row.id)}>
+                    {translateCategory(row.name, locale)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </Field>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field id="ak-city" label={t.ak_fld_city}>
-            <Select
-              value={cityKey || "__any__"}
-              onValueChange={(v) => setCityKey(v === "__any__" ? "" : (v as AkCityKey))}
-            >
-              <SelectTrigger id="ak-city" className={triggerClass}>
-                <SelectValue placeholder={t.ak_select_city_ph}>
-                  {cityKey ? t[AK_CITY_LABEL_KEY[cityKey]] : t.ak_select_any}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="max-h-[min(70vh,320px)]">
-                <SelectItem value="__any__" className="min-h-11">
-                  {t.ak_select_any}
-                </SelectItem>
-                {AK_CITY_KEYS.map((key) => (
-                  <SelectItem key={key} value={key} className="min-h-11">
-                    {t[AK_CITY_LABEL_KEY[key]]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-
-          <Field id="ak-format" label={t.ak_sec_format}>
-            <Select
-              value={formatKey || "__any__"}
-              onValueChange={(v) => setFormatKey(v === "__any__" ? "" : (v as AkFormatKey))}
-            >
-              <SelectTrigger id="ak-format" className={triggerClass}>
-                <SelectValue placeholder={t.ak_select_format_ph}>
-                  {formatKey ? t[AK_FORMAT_LABEL_KEY[formatKey]] : t.ak_select_any}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__any__" className="min-h-11">
-                  {t.ak_select_any}
-                </SelectItem>
-                {AK_FORMAT_KEYS.map((key) => (
-                  <SelectItem key={key} value={key} className="min-h-11">
-                    {t[AK_FORMAT_LABEL_KEY[key]]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field id="ak-level" label={t.ak_sec_level}>
-            <Select
-              value={skillLevel || "__any__"}
-              onValueChange={(v) =>
-                setSkillLevel(v === "__any__" ? "" : (v as AkSkillLevelKey))
-              }
-            >
-              <SelectTrigger id="ak-level" className={triggerClass}>
-                <SelectValue placeholder={t.ak_select_level_ph}>
-                  {skillLevel ? t[AK_SKILL_LEVEL_LABEL_KEY[skillLevel]] : t.ak_select_any}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__any__" className="min-h-11">
-                  {t.ak_select_any}
-                </SelectItem>
-                {AK_SKILL_LEVEL_KEYS.map((key) => (
-                  <SelectItem key={key} value={key} className="min-h-11">
-                    {t[AK_SKILL_LEVEL_LABEL_KEY[key]]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-
-          <div className="space-y-2 min-w-0">
-            <p className="text-sm font-bold text-gray-900">{t.ak_sec_price}</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <span className="text-sm text-gray-600">{t.ak_from}</span>
-                <Input
-                  id="ak-price-min"
-                  type="number"
-                  inputMode="decimal"
-                  min={0}
-                  value={priceMin}
-                  onChange={(e) => setPriceMin(e.target.value)}
-                  placeholder="0"
-                  className="min-h-12 h-12 w-full text-[16px] rounded-xl"
-                />
-              </div>
-              <div className="space-y-2">
-                <span className="text-sm text-gray-600">{t.ak_to}</span>
-                <Input
-                  id="ak-price-max"
-                  type="number"
-                  inputMode="decimal"
-                  min={0}
-                  value={priceMax}
-                  onChange={(e) => setPriceMax(e.target.value)}
-                  placeholder="500"
-                  className="min-h-12 h-12 w-full text-[16px] rounded-xl"
-                />
-              </div>
-            </div>
           </div>
         </div>
 
-        <Button
-          type="button"
-          onClick={handleSearch}
-          className="w-full min-h-[48px] h-12 text-base font-bold bg-blue-600 hover:bg-blue-700 touch-manipulation"
-        >
-          <Search size={18} className="mr-2 shrink-0" aria-hidden />
-          {t.ak_search_btn}
-        </Button>
+        {variant === "group" || variant === "leaf" ? (
+          <div className="min-w-0 max-w-full md:max-w-[calc(50%-0.5rem)]">
+            <label className={selectLabelClass}>
+              {(t as { ak_fld_detail?: string }).ak_fld_detail ?? t.subcategory}
+            </label>
+            <Select
+              value={variant === "group" ? ALL : leafId}
+              onValueChange={handleLeafChange}
+              disabled={variant === "group" && leafSelectOptions.length === 0}
+            >
+              <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
+                <SelectValue placeholder={t.all} />
+              </SelectTrigger>
+              <SelectContent className="!max-h-[300px]">
+                {showLeafAll ? <SelectItem value={ALL}>{t.all}</SelectItem> : null}
+                {leafSelectOptions.map((row) => (
+                  <SelectItem key={row.id} value={String(row.id)}>
+                    {translateCategory(row.name, locale)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : null}
+
+        {isFinalPage ? (
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex flex-col gap-2 w-full md:flex-row md:items-center md:flex-nowrap md:gap-2"
+          >
+            <div className="relative flex-1 min-w-0">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                aria-hidden
+              />
+              <input
+                type="search"
+                placeholder={t.search}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                className="w-full min-h-12 pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-base sm:text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all bg-gray-50 focus:bg-white touch-manipulation"
+              />
+            </div>
+            <button type="submit" className={cnPrimaryBlue("w-full md:w-auto")}>
+              {t.searchBtn}
+            </button>
+          </form>
+        ) : null}
       </section>
     </div>
   );
