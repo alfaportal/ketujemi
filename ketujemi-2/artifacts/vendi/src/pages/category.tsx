@@ -42,6 +42,7 @@ import {
 import { VipPartnersSection } from "@/components/vip-partners-section";
 import { CategoryPartnersBanner } from "@/components/category-partners-banner";
 import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
+import SharedListingCard from "@/components/listing-card";
 import { SiteHeader } from "@/components/site-header";
 import { getVeturaBrandLeafCategoryIds } from "@/lib/vetura-search-helpers";
 import { VeturaSearchPanel } from "@/components/vetura-search-panel";
@@ -1268,7 +1269,7 @@ export default function CategoryPage() {
       ) : listingsData && listingsData.listings.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 min-[1200px]:grid-cols-3 gap-4">
           {listingsData.listings.map((listing: any) => (
-            <ListingCard key={listing.id} listing={listing} />
+            <SharedListingCard key={listing.id} listing={listing} />
           ))}
         </div>
       ) : (

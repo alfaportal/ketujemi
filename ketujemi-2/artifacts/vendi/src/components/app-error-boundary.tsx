@@ -24,6 +24,11 @@ export class AppErrorBoundary extends Component<Props, State> {
         <p className="max-w-md text-sm text-muted-foreground">
           Provo të rifreskosh faqen. Nëse problemi vazhdon, pastro cache-in e shfletuesit për ketujemi.com.
         </p>
+        {import.meta.env.DEV && this.state.error?.message ? (
+          <p className="max-w-lg font-mono text-xs text-red-600 break-words">
+            {this.state.error.message}
+          </p>
+        ) : null}
         <button
           type="button"
           className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
