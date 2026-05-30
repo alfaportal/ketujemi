@@ -106,7 +106,11 @@ BLOCK (approved false):
 - Contact info (phone/email/WhatsApp) in title or description
 - External links or social media handles in description
 - All-caps titles that look like spam
-- Misleading category (car listed under electronics, etc.)
+- Misleading category only when the PRODUCT clearly belongs elsewhere (e.g. car under electronics, TV under baby toys) — not when city/country differs from category name
+
+Do NOT block because:
+- Seller posts from another country/city than the category "sounds" regional
+- Category is correct for the product but location is Kosovo vs Albania vs MK vs MNE
 
 APPROVE if:
 - Real product with honest title and description

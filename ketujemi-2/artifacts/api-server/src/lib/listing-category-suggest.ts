@@ -153,6 +153,8 @@ function ruleMatch(text: string, cats: CategoryRow[]): CategorySuggestResult | n
 
 const AI_SYSTEM = `You classify second-hand listings for KetuJemi.com.
 
+Your ONLY job: suggest the category that matches the PRODUCT (what the item is). City, country, and seller location are irrelevant — never use geography in your decision.
+
 Given title + description, pick the BEST matching parent category and subcategory from the provided JSON catalog (use exact ids and names from the catalog).
 
 CRITICAL electronics rules:

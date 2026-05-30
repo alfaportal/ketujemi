@@ -11,7 +11,7 @@ alwaysApply: true
 2. **Posting location** is chosen separately in the listing form (`Vendndodhja` / country + city). Users may post from **Kosovo, Albania, North Macedonia, or Montenegro** regardless of which category they selected.
 3. **Category guides** (Fëmijë and others) must never imply geographic lock-in. Use wording like «kategoria është për llojin e produktit» — not «postoni vetëm këtu / vetëm në Kosovë».
 4. **Search filters** use country + city to find where **listings are located**, not where the poster must live.
-5. **AI posting assistant** and **category suggest** must only correct **product type** (wrong category). Never tell users they must sell only in a specific city/country because of the category.
+5. **AI posting assistant** — when category already fits the product, **no category/location nagging**; user may post freely. Suggest category change **only** when product type is wrong. **Category suggest** and **moderation** follow the same rule: product type only, never geography.
 
 ## Do not confuse users
 
