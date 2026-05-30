@@ -14,6 +14,8 @@ type CategoryPhotoPickerCardProps = {
   imageSrc: string;
   label: string;
   imageAlt?: string;
+  /** Used when image fails to load (hub-specific hero). */
+  fallbackImageSrc?: string;
   /** `grid` = 2×4 responsive grid (Fëmijë hub); default = horizontal scroll row. */
   layout?: "row" | "grid";
 };
@@ -24,6 +26,7 @@ export function CategoryPhotoPickerCard({
   imageSrc,
   label,
   imageAlt = "",
+  fallbackImageSrc = FEMIJE_HERO_PHOTO,
   layout = "row",
 }: CategoryPhotoPickerCardProps) {
   const [imgSrc, setImgSrc] = useState(imageSrc);
@@ -45,7 +48,7 @@ export function CategoryPhotoPickerCard({
       <img
         src={imgSrc}
         alt={imageAlt}
-        onError={() => setImgSrc(FEMIJE_HERO_PHOTO)}
+        onError={() => setImgSrc(fallbackImageSrc)}
         className="absolute inset-0 h-full w-full object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />

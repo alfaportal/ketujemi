@@ -18,6 +18,7 @@ import { useMarket } from "@/lib/market-context";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import {
+  ARSIM_KURSE_HERO_PHOTO,
   arsimSubcategoryPhoto,
   getArsimKurseGroupLeafIds,
   getArsimKurseGroupRows,
@@ -141,8 +142,8 @@ export function ArsimKurseSearchPanel({
   const selectedType = typeId ? hubTypes.find((r) => r.id === typeId) : null;
 
   return (
-    <div className="mb-8 space-y-6 max-w-full overflow-hidden">
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm">
+    <div className="mb-8 max-w-full overflow-hidden">
+      <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm space-y-0">
         <div className="flex flex-col gap-1 border-b border-gray-100 pb-4 mb-4">
           <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
             <GraduationCap size={20} className="text-blue-600 shrink-0" aria-hidden />
@@ -151,7 +152,7 @@ export function ArsimKurseSearchPanel({
           <p className="text-sm text-gray-500">{t.ak_panel_sub}</p>
         </div>
 
-        <section className="space-y-3" aria-label={t.ak_sec_types}>
+        <section className="space-y-3 pb-0" aria-label={t.ak_sec_types}>
           <Label className="text-sm font-bold text-gray-500 uppercase tracking-wide">
             {t.ak_sec_types}
           </Label>
@@ -162,82 +163,86 @@ export function ArsimKurseSearchPanel({
                 selected={typeId === row.id}
                 onClick={() => selectTypeCard(row.id)}
                 imageSrc={arsimSubcategoryPhoto(row.slug, row.image_url, categories)}
+                fallbackImageSrc={ARSIM_KURSE_HERO_PHOTO}
+                imageAlt={row.name}
                 label={translateCategory(row.name, locale)}
               />
             ))}
           </CategoryPhotoPickerRow>
         </section>
-      </div>
 
-      <section
-        className="rounded-2xl border border-blue-100 bg-blue-50/30 p-4 sm:p-5 shadow-sm space-y-4"
-        aria-label={t.ak_search_btn}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field id="ak-category" label={t.ak_fld_category}>
-            <Select
-              value={typeId ? String(typeId) : "__any__"}
-              onValueChange={(v) => setTypeId(v === "__any__" ? "" : Number(v))}
-            >
-              <SelectTrigger id="ak-category" className={triggerClass}>
-                <SelectValue placeholder={t.ak_select_category_ph}>
-                  {selectedType
-                    ? translateCategory(selectedType.name, locale)
-                    : t.ak_select_any}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="max-h-[min(70vh,320px)]">
-                <SelectItem value="__any__" className="min-h-11">
-                  {t.ak_select_any}
-                </SelectItem>
-                {hubTypes.map((row) => (
-                  <SelectItem key={row.id} value={String(row.id)} className="min-h-11">
-                    {translateCategory(row.name, locale)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-
-          <Field id="ak-subcategory" label={t.ak_fld_subcategory}>
-            <Select
-              key={typeId || "__none__"}
-              value={subcategoryId ? String(subcategoryId) : "__any__"}
-              onValueChange={(v) =>
-                setSubcategoryId(v === "__any__" ? "" : Number(v))
-              }
-              disabled={!typeId}
-            >
-              <SelectTrigger id="ak-subcategory" className={triggerClass}>
-                <SelectValue placeholder={t.ak_select_subcategory_ph}>
-                  {subcategoryId
-                    ? subcategoryOptions.find((o) => o.id === subcategoryId)?.label
-                    : t.ak_select_any}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="max-h-[min(70vh,360px)]">
-                <SelectItem value="__any__" className="min-h-11">
-                  {t.ak_select_any}
-                </SelectItem>
-                {subcategoryOptions.map((opt) => (
-                  <SelectItem key={opt.id} value={String(opt.id)} className="min-h-11">
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-        </div>
-
-        <Button
-          type="button"
-          onClick={handleSearch}
-          className="w-full min-h-[48px] h-12 text-base font-bold bg-blue-600 hover:bg-blue-700 touch-manipulation"
+        <section
+          className="border-t border-gray-100 pt-6 mt-6 space-y-4"
+          aria-label={t.ak_search_btn}
         >
-          <Search size={18} className="mr-2 shrink-0" aria-hidden />
-          {t.ak_search_btn}
-        </Button>
-      </section>
+          <div className="rounded-2xl border border-blue-100 bg-blue-50/30 p-4 sm:p-5 shadow-sm space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field id="ak-category" label={t.ak_fld_category}>
+                <Select
+                  value={typeId ? String(typeId) : "__any__"}
+                  onValueChange={(v) => setTypeId(v === "__any__" ? "" : Number(v))}
+                >
+                  <SelectTrigger id="ak-category" className={triggerClass}>
+                    <SelectValue placeholder={t.ak_select_category_ph}>
+                      {selectedType
+                        ? translateCategory(selectedType.name, locale)
+                        : t.ak_select_any}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[min(70vh,320px)]">
+                    <SelectItem value="__any__" className="min-h-11">
+                      {t.ak_select_any}
+                    </SelectItem>
+                    {hubTypes.map((row) => (
+                      <SelectItem key={row.id} value={String(row.id)} className="min-h-11">
+                        {translateCategory(row.name, locale)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              <Field id="ak-subcategory" label={t.ak_fld_subcategory}>
+                <Select
+                  key={typeId || "__none__"}
+                  value={subcategoryId ? String(subcategoryId) : "__any__"}
+                  onValueChange={(v) =>
+                    setSubcategoryId(v === "__any__" ? "" : Number(v))
+                  }
+                  disabled={!typeId}
+                >
+                  <SelectTrigger id="ak-subcategory" className={triggerClass}>
+                    <SelectValue placeholder={t.ak_select_subcategory_ph}>
+                      {subcategoryId
+                        ? subcategoryOptions.find((o) => o.id === subcategoryId)?.label
+                        : t.ak_select_any}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[min(70vh,360px)]">
+                    <SelectItem value="__any__" className="min-h-11">
+                      {t.ak_select_any}
+                    </SelectItem>
+                    {subcategoryOptions.map((opt) => (
+                      <SelectItem key={opt.id} value={String(opt.id)} className="min-h-11">
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
+
+            <Button
+              type="button"
+              onClick={handleSearch}
+              className="w-full min-h-[48px] h-12 text-base font-bold bg-blue-600 hover:bg-blue-700 touch-manipulation"
+            >
+              <Search size={18} className="mr-2 shrink-0" aria-hidden />
+              {t.ak_search_btn}
+            </Button>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
