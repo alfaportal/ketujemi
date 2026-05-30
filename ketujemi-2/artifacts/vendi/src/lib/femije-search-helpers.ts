@@ -361,6 +361,23 @@ export type FemijeCategoryRow = {
   name: string;
   slug: string | null;
   parent_id: number | null;
+  image_url?: string | null;
+};
+
+/** Maps hub group / legacy type slugs to search filter sets. */
+export const FJ_GROUP_SLUG_TO_TYPE: Partial<Record<string, FjTypeKey>> = {
+  "femije-type-karroca": "karroca",
+  "femije-grp-karroca-transport": "karroca",
+  "femije-type-foshnje": "foshnje",
+  "femije-grp-karrige-ulese": "foshnje",
+  "femije-type-ushqim-higjiene": "ushqim_higjiene",
+  "femije-grp-higjiene-kujdes": "ushqim_higjiene",
+  "femije-grp-ushqyerja-ushqimi": "ushqim_higjiene",
+  "femije-type-lodra": "lodra",
+  "femije-grp-lodra-lojera": "lodra",
+  "femije-grp-lodra-edukative": "lodra",
+  "femije-type-rroba": "rroba",
+  "femije-grp-rroba-kepuce": "rroba",
 };
 
 export function getFemijeHubSubcategoryRows(
@@ -370,6 +387,23 @@ export function getFemijeHubSubcategoryRows(
   const hub = Number(hubId);
   return categories
     .filter((c) => Number(c.parent_id) === hub)
+    .sort((a, b) => a.name.localeCompare(b.name, "sq"));
+}
+
+export function getFemijeGroupLeafRows(
+  categories: FemijeCategoryRow[],
+  groupId: number,
+): FemijeCategoryRow[] {
+  const group = categories.find((c) => c.id === groupId);
+  if (!group) return [];
+  if (group.slug?.startsWith("femije-type-")) return [group];
+  return categories
+    .filter(
+      (c) =>
+        Number(c.parent_id) === Number(groupId) &&
+        typeof c.slug === "string" &&
+        c.slug.startsWith("femije-leaf-"),
+    )
     .sort((a, b) => a.name.localeCompare(b.name, "sq"));
 }
 

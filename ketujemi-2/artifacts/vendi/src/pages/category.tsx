@@ -1531,29 +1531,6 @@ export default function CategoryPage() {
           />
         ) : null}
 
-        {isFemijeHub && children.length > 0 ? (
-          <div className="mb-8">
-            <h2 className="text-lg font-black text-gray-900 mb-4">
-              {(t as { fj_sec_types?: string }).fj_sec_types ?? t.bodyType}
-            </h2>
-            <CategoryPhotoPickerGrid>
-              {[...children]
-                .sort((a: { name: string }, b: { name: string }) =>
-                  a.name.localeCompare(b.name, "sq"),
-                )
-                .map((sub: { id: number; name: string; slug: string | null; image_url?: string | null }) => (
-                  <CategoryPhotoPickerCard
-                    key={sub.id}
-                    layout="grid"
-                    onClick={() => navigateToCategory(setLocation, sub.id, categoryId)}
-                    imageSrc={femijeSubcategoryPhoto(sub.slug, sub.image_url)}
-                    label={translateCategory(sub.name, locale)}
-                  />
-                ))}
-            </CategoryPhotoPickerGrid>
-          </div>
-        ) : null}
-
         {isFemijeHub && allCategories?.length ? (
           <FemijeSearchPanel
             hubId={categoryId}

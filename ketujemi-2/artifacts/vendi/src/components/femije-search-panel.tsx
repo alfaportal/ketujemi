@@ -18,8 +18,9 @@ import { hubLocationToListingParams } from "@/lib/hub-location-search";
 import type { HomeMarketCode } from "@/lib/market-context";
 import {
   CategoryPhotoPickerCard,
-  CategoryPhotoPickerRow,
+  CategoryPhotoPickerGrid,
 } from "@/components/category-photo-picker";
+import { getFemijeSubcategoryGuide } from "@/lib/femije-subcategory-guides";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
 import { translateCategory } from "@/lib/category-translations";
@@ -66,8 +67,10 @@ import {
   FJ_WEIGHT_KEYS,
   FJ_WEIGHT_LABEL_KEY,
   FJ_WEIGHT_SEARCH,
+  FJ_GROUP_SLUG_TO_TYPE,
   femijeSubcategoryPhoto,
   getFemijeGroupLeafIds,
+  getFemijeGroupLeafRows,
   getFemijeHubSubcategoryRows,
   getFemijeLeafCategoryIds,
   type FjBabyTypeKey,
@@ -159,6 +162,7 @@ export function FemijeSearchPanel({
   }, [categories, hubId]);
 
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+  const [selectedLeafId, setSelectedLeafId] = useState<number | null>(null);
   const [typeKey, setTypeKey] = useState<FjTypeKey | null>(null);
   const [strollerType, setStrollerType] = useState<FjStrollerTypeKey | "">("");
   const [strollerBrand, setStrollerBrand] = useState<FjStrollerBrandKey | "">("");
@@ -222,20 +226,41 @@ export function FemijeSearchPanel({
   const selectGroup = (row: FemijeCategoryRow) => {
     if (selectedGroupId === row.id) {
       setSelectedGroupId(null);
+      setSelectedLeafId(null);
       setTypeKey(null);
       resetSubFilters();
       return;
     }
     setSelectedGroupId(row.id);
+    setSelectedLeafId(null);
     resetSubFilters();
     const slug = row.slug ?? "";
-    const match = (Object.entries(FJ_TYPE_DB_SLUG) as [FjTypeKey, string][]).find(
+    const fromGroup = slug ? FJ_GROUP_SLUG_TO_TYPE[slug] : undefined;
+    const fromLegacy = (Object.entries(FJ_TYPE_DB_SLUG) as [FjTypeKey, string][]).find(
       ([, s]) => s === slug,
-    );
-    setTypeKey(match ? match[0] : null);
+    )?.[0];
+    setTypeKey(fromGroup ?? fromLegacy ?? null);
+  };
+
+  const selectLeaf = (row: FemijeCategoryRow) => {
+    setSelectedLeafId((prev) => (prev === row.id ? null : row.id));
   };
 
   const selectedGroup = hubSubcategories.find((row) => row.id === selectedGroupId);
+  const groupLeaves = useMemo(
+    () =>
+      selectedGroupId
+        ? getFemijeGroupLeafRows(categories, selectedGroupId)
+        : [],
+    [categories, selectedGroupId],
+  );
+  const groupGuide = useMemo(() => {
+    const slug = selectedGroup?.slug;
+    if (!slug) return null;
+    const marketLocale = uiLang === "mk" ? "mk" : uiLang === "mne" ? "mne" : "sq";
+    return getFemijeSubcategoryGuide(slug, marketLocale);
+  }, [selectedGroup?.slug, uiLang]);
+
   const typeTitle = selectedGroup
     ? translateCategory(selectedGroup.name, locale)
     : "";
@@ -258,7 +283,10 @@ export function FemijeSearchPanel({
       category_ids: leafCsv,
     };
 
-    if (selectedGroupId) {
+    if (selectedLeafId) {
+      p.category_id = selectedLeafId;
+      delete p.category_ids;
+    } else if (selectedGroupId) {
       const leafIds = getFemijeGroupLeafIds(categories, selectedGroupId);
       if (leafIds.length === 1) {
         p.category_id = leafIds[0];
@@ -319,6 +347,7 @@ export function FemijeSearchPanel({
     leafCsv,
     hubId,
     selectedGroupId,
+    selectedLeafId,
     typeKey,
     strollerType,
     strollerBrand,
@@ -355,7 +384,86 @@ export function FemijeSearchPanel({
         <p className="text-sm text-gray-500">{t.fj_panel_sub}</p>
       </div>
 
-      {typeKey === "karroca" ? (
+      <section className="space-y-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div>
+          <h3 className="text-base font-black text-gray-900">
+            {(t as { fj_sec_pick_sub?: string }).fj_sec_pick_sub ?? t.fj_sec_types}
+          </h3>
+          <p className="text-sm text-gray-500 mt-1">
+            {hubSubcategories.length}{" "}
+            {(t as { subcategoriesAvail?: string }).subcategoriesAvail ??
+              "nënkategori të disponueshme"}
+          </p>
+        </div>
+        <CategoryPhotoPickerGrid>
+          {hubSubcategories.map((row) => (
+            <CategoryPhotoPickerCard
+              key={row.id}
+              layout="grid"
+              selected={selectedGroupId === row.id}
+              onClick={() => selectGroup(row)}
+              imageSrc={femijeSubcategoryPhoto(row.slug, row.image_url)}
+              label={translateCategory(row.name, locale)}
+            />
+          ))}
+        </CategoryPhotoPickerGrid>
+      </section>
+
+      {selectedGroup ? (
+        <section className="space-y-4 rounded-xl border border-blue-100 bg-blue-50/40 p-4">
+          <div>
+            <h3 className="text-base font-black text-gray-900">
+              {(t as { fj_sec_contents?: string }).fj_sec_contents ?? typeTitle}
+            </h3>
+            <p className="text-sm font-semibold text-blue-900 mt-0.5">{typeTitle}</p>
+          </div>
+
+          {groupGuide ? (
+            <div className="space-y-3 text-sm text-gray-800">
+              <p className="leading-relaxed font-medium">{groupGuide.intro}</p>
+              {groupGuide.includes.length > 0 ? (
+                <ul className="list-disc pl-5 space-y-1.5 text-gray-700">
+                  {groupGuide.includes.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
+
+          {groupLeaves.length > 1 ? (
+            <div className="space-y-3 border-t border-blue-100/80 pt-4">
+              <div>
+                <h4 className="text-sm font-black text-gray-900">
+                  {(t as { subcategory?: string }).subcategory ?? "Nënkategoria"}
+                </h4>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {groupLeaves.length}{" "}
+                  {(t as { subcategoriesAvail?: string }).subcategoriesAvail ??
+                    "nënkategori të disponueshme"}
+                  {" · "}
+                  {(t as { fj_leaf_pick_hint?: string }).fj_leaf_pick_hint ??
+                    "Zgjidh nënkategori specifike (opsionale)"}
+                </p>
+              </div>
+              <CategoryPhotoPickerGrid>
+                {groupLeaves.map((leaf) => (
+                  <CategoryPhotoPickerCard
+                    key={leaf.id}
+                    layout="grid"
+                    selected={selectedLeafId === leaf.id}
+                    onClick={() => selectLeaf(leaf)}
+                    imageSrc={femijeSubcategoryPhoto(leaf.slug, leaf.image_url)}
+                    label={translateCategory(leaf.name, locale)}
+                  />
+                ))}
+              </CategoryPhotoPickerGrid>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      {selectedGroupId && typeKey === "karroca" ? (
         <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
           <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
           <FilterSection title={t.fj_sec_type}>
@@ -408,7 +516,7 @@ export function FemijeSearchPanel({
         </section>
       ) : null}
 
-      {typeKey === "foshnje" ? (
+      {selectedGroupId && typeKey === "foshnje" ? (
         <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
           <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
           <FilterSection title={t.fj_sec_type}>
@@ -453,7 +561,7 @@ export function FemijeSearchPanel({
         </section>
       ) : null}
 
-      {typeKey === "ushqim_higjiene" ? (
+      {selectedGroupId && typeKey === "ushqim_higjiene" ? (
         <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
           <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
           <FilterSection title={t.fj_sec_type}>
@@ -493,7 +601,7 @@ export function FemijeSearchPanel({
         </section>
       ) : null}
 
-      {typeKey === "lodra" ? (
+      {selectedGroupId && typeKey === "lodra" ? (
         <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
           <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
           <FilterSection title={t.fj_sec_type}>
@@ -525,7 +633,7 @@ export function FemijeSearchPanel({
         </section>
       ) : null}
 
-      {typeKey === "rroba" ? (
+      {selectedGroupId && typeKey === "rroba" ? (
         <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
           <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
           <FilterSection title={t.fj_sec_gender}>
