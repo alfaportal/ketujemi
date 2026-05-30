@@ -16,7 +16,7 @@ type CategoryPhotoPickerCardProps = {
   imageAlt?: string;
   /** Used when image fails to load (hub-specific hero). */
   fallbackImageSrc?: string;
-  /** `grid` = 2×4 responsive grid (Fëmijë hub); default = horizontal scroll row. */
+  /** `grid` = responsive static grid (no horizontal scroll); `row` = legacy alias, same as grid. */
   layout?: "row" | "grid";
 };
 
@@ -27,7 +27,7 @@ export function CategoryPhotoPickerCard({
   label,
   imageAlt = "",
   fallbackImageSrc = FEMIJE_HERO_PHOTO,
-  layout = "row",
+  layout = "grid",
 }: CategoryPhotoPickerCardProps) {
   const [imgSrc, setImgSrc] = useState(imageSrc);
 
@@ -37,7 +37,7 @@ export function CategoryPhotoPickerCard({
       onClick={onClick}
       className={cn(
         "relative overflow-hidden border text-left transition-all touch-manipulation",
-        layout === "grid"
+        layout === "grid" || layout === "row"
           ? cn("rounded-xl", categoryPhotoCardGridClass)
           : cn("shrink-0 snap-start rounded-2xl", categoryPhotoCardWidthClass),
         selected
@@ -55,7 +55,7 @@ export function CategoryPhotoPickerCard({
       <span
         className={cn(
           "absolute text-white font-bold leading-tight drop-shadow line-clamp-2",
-          layout === "grid"
+          layout === "grid" || layout === "row"
             ? "bottom-0 left-0 right-0 px-2.5 pb-3 pt-8 text-center text-sm"
             : "bottom-2 left-2 right-2 text-sm leading-snug",
         )}
@@ -66,22 +66,16 @@ export function CategoryPhotoPickerCard({
   );
 }
 
-export function CategoryPhotoPickerRow({ children }: { children: ReactNode }) {
+/** Static responsive grid — 2 cols mobile, 4 desktop; no horizontal scroll. */
+export function CategoryPhotoPickerGrid({ children }: { children: ReactNode }) {
   return (
-    <div
-      className={cn(
-        "flex gap-3 overflow-x-auto overscroll-x-contain scroll-smooth snap-x snap-mandatory",
-        "pb-2 -mx-1 px-1",
-        "[scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5",
-        "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300",
-      )}
-    >
+    <div className="grid w-full max-w-full grid-cols-2 md:grid-cols-4 gap-3 overflow-hidden">
       {children}
     </div>
   );
 }
 
-/** Fëmijë hub — same photo cards as {@link CategoryPhotoPickerRow} but 2×4 grid like Vetura body types. */
-export function CategoryPhotoPickerGrid({ children }: { children: ReactNode }) {
-  return <div className="grid grid-cols-2 md:grid-cols-4 gap-3">{children}</div>;
+/** @deprecated Use {@link CategoryPhotoPickerGrid} — kept as alias (no scroll row). */
+export function CategoryPhotoPickerRow({ children }: { children: ReactNode }) {
+  return <CategoryPhotoPickerGrid>{children}</CategoryPhotoPickerGrid>;
 }

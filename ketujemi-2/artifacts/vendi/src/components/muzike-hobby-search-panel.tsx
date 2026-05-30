@@ -406,7 +406,8 @@ export function MuzikeHobbySearchPanel({
   const typeTitle = typeKey ? t[MH_TYPE_LABEL_KEY[typeKey]] : "";
 
   return (
-    <div className="mb-8 space-y-6 rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm overflow-hidden max-w-full">
+    <div className="mb-8 max-w-full overflow-hidden">
+      <div className="space-y-6 rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm overflow-hidden">
       <div className="flex flex-col gap-1 border-b border-gray-100 pb-4">
         <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
           <Music size={20} className="text-blue-600 shrink-0" aria-hidden />
@@ -415,7 +416,7 @@ export function MuzikeHobbySearchPanel({
         <p className="text-sm text-gray-500">{t.mh_panel_sub}</p>
       </div>
 
-      <section className="space-y-3">
+      <section className="space-y-3 max-w-full overflow-hidden">
         <Label className="text-sm font-bold text-gray-900">{t.mh_sec_types}</Label>
         <CategoryPhotoPickerGrid>
           {MH_TYPE_KEYS.map((key) => (
@@ -778,6 +779,7 @@ export function MuzikeHobbySearchPanel({
         <Search size={18} className="mr-2 shrink-0" aria-hidden />
         {t.mh_search_btn}
       </Button>
+      </div>
     </div>
   );
 }
