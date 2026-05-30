@@ -103,7 +103,7 @@ BLOCK (approved false):
 - Duplicate-looking spam or off-platform-only ads with no real product
 - Listings with 0 images
 - Titles under 3 words or descriptions under 10 words
-- Contact info (phone/email/WhatsApp) in title or description
+- Contact info (phone/email/WhatsApp) copied into title or description (phone belongs in the phone field only — platform masks it for non-logged visitors)
 - External links or social media handles in description
 - All-caps titles that look like spam
 - Misleading category only when the PRODUCT clearly belongs elsewhere (e.g. car under electronics, TV under baby toys) — not when city/country differs from category name
