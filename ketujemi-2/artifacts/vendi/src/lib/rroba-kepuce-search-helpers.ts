@@ -4,15 +4,14 @@ export const RROBA_KEPUCE_HUB_SLUG = "rroba-kepuce";
 export const RROBA_KEPUCE_HERO_PHOTO =
   "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=1400&q=85";
 
-export const RK_TYPE_KEYS = ["meshkuj", "femra", "kepuce", "aksesore", "femije"] as const;
+export const RK_TYPE_KEYS = ["meshkuj", "femra", "aksesore", "kepuce"] as const;
 export type RkTypeKey = (typeof RK_TYPE_KEYS)[number];
 
 export const RK_TYPE_DB_SLUG: Record<RkTypeKey, string> = {
   meshkuj: "rroba-type-veshje-meshkuj",
   femra: "rroba-type-veshje-femra",
-  kepuce: "rroba-type-kepuce",
   aksesore: "rroba-type-aksesore",
-  femije: "rroba-type-veshje-femije",
+  kepuce: "rroba-type-kepuce",
 };
 
 export const RK_TYPE_PHOTOS: Record<RkTypeKey, string> = {
@@ -20,20 +19,17 @@ export const RK_TYPE_PHOTOS: Record<RkTypeKey, string> = {
     "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=400",
   femra:
     "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=400",
-  kepuce:
-    "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=400",
   aksesore:
     "https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=400",
-  femije:
-    "https://images.pexels.com/photos/19869761/pexels-photo-19869761.jpeg?auto=compress&cs=tinysrgb&w=400",
+  kepuce:
+    "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=400",
 };
 
 export const RK_TYPE_LABEL_KEY: Record<RkTypeKey, string> = {
   meshkuj: "rk_type_meshkuj",
   femra: "rk_type_femra",
-  kepuce: "rk_type_kepuce",
   aksesore: "rk_type_aksesore",
-  femije: "rk_type_femije",
+  kepuce: "rk_type_kepuce",
 };
 
 export const RK_MEN_TYPE_KEYS = [
@@ -45,6 +41,7 @@ export const RK_MEN_TYPE_KEYS = [
   "kostume",
   "sportive",
   "brendshme",
+  "ceremoniale",
 ] as const;
 export type RkMenTypeKey = (typeof RK_MEN_TYPE_KEYS)[number];
 
@@ -57,6 +54,19 @@ export const RK_MEN_TYPE_LABEL_KEY: Record<RkMenTypeKey, string> = {
   kostume: "rk_men_kostume",
   sportive: "rk_men_sportive",
   brendshme: "rk_men_brendshme",
+  ceremoniale: "rk_men_ceremoniale",
+};
+
+export const RK_MEN_DB_SLUG: Record<RkMenTypeKey, string> = {
+  jakne: "rroba-leaf-m-jakne-pallto",
+  kemisha: "rroba-leaf-m-kemisha",
+  tshirt: "rroba-leaf-m-tshirt-maica",
+  xhemper: "rroba-leaf-m-xhemper-duks",
+  pantallona: "rroba-leaf-m-pantallona-xhins",
+  kostume: "rroba-leaf-m-kostume-sako",
+  sportive: "rroba-leaf-m-sportive",
+  brendshme: "rroba-leaf-m-te-brendshme",
+  ceremoniale: "rroba-leaf-m-ceremoniale",
 };
 
 export const RK_MEN_TYPE_SEARCH: Record<RkMenTypeKey, string> = {
@@ -68,6 +78,7 @@ export const RK_MEN_TYPE_SEARCH: Record<RkMenTypeKey, string> = {
   kostume: "Kostume Sako",
   sportive: "Rroba Sportive",
   brendshme: "Të brendshme Piçama",
+  ceremoniale: "Veshje Ceremoniale",
 };
 
 export const RK_MEN_SIZE_KEYS = [
@@ -108,6 +119,8 @@ export const RK_WOMEN_TYPE_KEYS = [
   "sportive",
   "banjo",
   "brendshme",
+  "shtatzena",
+  "festive",
 ] as const;
 export type RkWomenTypeKey = (typeof RK_WOMEN_TYPE_KEYS)[number];
 
@@ -122,6 +135,23 @@ export const RK_WOMEN_TYPE_LABEL_KEY: Record<RkWomenTypeKey, string> = {
   sportive: "rk_wom_sportive",
   banjo: "rk_wom_banjo",
   brendshme: "rk_wom_brendshme",
+  shtatzena: "rk_wom_shtatzena",
+  festive: "rk_wom_festive",
+};
+
+export const RK_WOMEN_DB_SLUG: Record<RkWomenTypeKey, string> = {
+  fustane: "rroba-leaf-f-fustane-funde",
+  jakne: "rroba-leaf-f-jakne-gezof",
+  bluta: "rroba-leaf-f-bluza-kemisha",
+  tshirt: "rroba-leaf-f-tshirt-topa",
+  dukse: "rroba-leaf-f-duks-xhemper",
+  pantallona: "rroba-leaf-f-pantallona-xhins",
+  kostume: "rroba-leaf-f-kostume-sako",
+  sportive: "rroba-leaf-f-sportive",
+  banjo: "rroba-leaf-f-banjo-bikini",
+  brendshme: "rroba-leaf-f-te-brendshme-gjumi",
+  shtatzena: "rroba-leaf-f-shtatzena",
+  festive: "rroba-leaf-f-festive",
 };
 
 export const RK_WOMEN_TYPE_SEARCH: Record<RkWomenTypeKey, string> = {
@@ -135,6 +165,8 @@ export const RK_WOMEN_TYPE_SEARCH: Record<RkWomenTypeKey, string> = {
   sportive: "Rroba Sportive",
   banjo: "Rroba banjo Bikini",
   brendshme: "Të brendshme Gjumi",
+  shtatzena: "Veshje shtatzëna",
+  festive: "Veshje festive",
 };
 
 export const RK_WOMEN_SIZE_KEYS = [
@@ -208,6 +240,8 @@ export const RK_SHOE_TYPE_KEYS = [
   "cizme",
   "sandale",
   "shapka",
+  "sporte",
+  "ortopedike",
 ] as const;
 export type RkShoeTypeKey = (typeof RK_SHOE_TYPE_KEYS)[number];
 
@@ -217,6 +251,18 @@ export const RK_SHOE_TYPE_LABEL_KEY: Record<RkShoeTypeKey, string> = {
   cizme: "rk_shoe_cizme",
   sandale: "rk_shoe_sandale",
   shapka: "rk_shoe_shapka",
+  sporte: "rk_shoe_sporte",
+  ortopedike: "rk_shoe_ortopedike",
+};
+
+export const RK_SHOE_DB_SLUG: Record<RkShoeTypeKey, string> = {
+  atlete: "rroba-leaf-k-atlete",
+  elegante: "rroba-leaf-k-elegante",
+  cizme: "rroba-leaf-k-cizme",
+  sandale: "rroba-leaf-k-sandale",
+  shapka: "rroba-leaf-k-shapka",
+  sporte: "rroba-leaf-k-sporte",
+  ortopedike: "rroba-leaf-k-ortopedike",
 };
 
 export const RK_SHOE_TYPE_SEARCH: Record<RkShoeTypeKey, string> = {
@@ -225,6 +271,8 @@ export const RK_SHOE_TYPE_SEARCH: Record<RkShoeTypeKey, string> = {
   cizme: "Çizme",
   sandale: "Sandale Papuçe",
   shapka: "Shapka Shtëpiake",
+  sporte: "Këpucë sporte specifike",
+  ortopedike: "Këpucë ortopedike",
 };
 
 export const RK_SHOE_SIZE_KEYS = [
@@ -300,6 +348,17 @@ export const RK_ACC_TYPE_LABEL_KEY: Record<RkAccTypeKey, string> = {
   bizhuteri: "rk_acc_bizhuteri",
   ripe: "rk_acc_ripe",
   kapele: "rk_acc_kapele",
+};
+
+export const RK_ACC_DB_SLUG: Record<RkAccTypeKey, string> = {
+  canta_dore: "rroba-leaf-a-canta-dore",
+  canta_shpine: "rroba-leaf-a-canta-shpine",
+  portofol: "rroba-leaf-a-portofola",
+  ora: "rroba-leaf-a-ore-dore",
+  syze: "rroba-leaf-a-syze",
+  bizhuteri: "rroba-leaf-a-bizhuteri",
+  ripe: "rroba-leaf-a-rripa",
+  kapele: "rroba-leaf-a-kapele",
 };
 
 export const RK_ACC_TYPE_SEARCH: Record<RkAccTypeKey, string> = {
@@ -410,14 +469,50 @@ export function getRrobaKepuceLeafCategoryIds(
   categories: RrobaKepuceCategoryRow[],
   hubId: number,
 ): number[] {
+  const hub = Number(hubId);
+  const typeRows = categories.filter(
+    (c) =>
+      Number(c.parent_id) === hub &&
+      typeof c.slug === "string" &&
+      (c.slug as string).startsWith("rroba-type-") &&
+      (c.slug as string) !== "rroba-type-veshje-femije",
+  );
+  const typeIds = typeRows.map((c) => c.id);
+  const typeIdSet = new Set(typeIds);
+  const leafIds = categories
+    .filter(
+      (c) =>
+        c.parent_id != null &&
+        typeIdSet.has(Number(c.parent_id)) &&
+        typeof c.slug === "string" &&
+        (c.slug as string).startsWith("rroba-leaf-"),
+    )
+    .map((c) => c.id);
+  return [...new Set([...typeIds, ...leafIds])];
+}
+
+export function getRrobaTypeLeafCategoryIds(
+  categories: RrobaKepuceCategoryRow[],
+  hubId: number,
+  typeKey: RkTypeKey,
+): number[] {
+  const typeId = resolveRrobaTypeCategoryId(categories, hubId, typeKey);
+  if (!typeId) return [];
   return categories
     .filter(
       (c) =>
-        c.parent_id === hubId &&
+        Number(c.parent_id) === typeId &&
         typeof c.slug === "string" &&
-        (c.slug as string).startsWith("rroba-type-"),
+        (c.slug as string).startsWith("rroba-leaf-"),
     )
     .map((c) => c.id);
+}
+
+export function resolveRrobaLeafCategoryIdBySlug(
+  categories: RrobaKepuceCategoryRow[],
+  slug: string,
+): number | undefined {
+  return categories.find((c) => c.slug === slug)?.id;
 }
 
 export function resolveRrobaTypeCategoryId(

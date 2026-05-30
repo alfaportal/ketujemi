@@ -24,14 +24,14 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   CategoryPhotoPickerCard,
-  CategoryPhotoPickerRow,
+  CategoryPhotoPickerGrid,
 } from "@/components/category-photo-picker";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
 import {
   RK_ACC_TYPE_KEYS,
   RK_ACC_TYPE_LABEL_KEY,
-  RK_ACC_TYPE_SEARCH,
+  RK_ACC_DB_SLUG,
   RK_CITY_KEYS,
   RK_CITY_LABEL_KEY,
   RK_CITY_SEARCH,
@@ -44,18 +44,11 @@ import {
   RK_GENDER_KEYS,
   RK_GENDER_LABEL_KEY,
   RK_GENDER_SEARCH,
-  RK_KID_AGE_GROUPS,
-  RK_KID_GENDER_KEYS,
-  RK_KID_GENDER_LABEL_KEY,
-  RK_KID_GENDER_SEARCH,
-  RK_KID_TYPE_KEYS,
-  RK_KID_TYPE_LABEL_KEY,
-  RK_KID_TYPE_SEARCH,
   RK_MEN_SIZE_KEYS,
   RK_MEN_SIZE_LABEL_KEY,
   RK_MEN_TYPE_KEYS,
   RK_MEN_TYPE_LABEL_KEY,
-  RK_MEN_TYPE_SEARCH,
+  RK_MEN_DB_SLUG,
   RK_SHOE_MAT_KEYS,
   RK_SHOE_MAT_LABEL_KEY,
   RK_SHOE_MAT_SEARCH,
@@ -63,7 +56,7 @@ import {
   RK_SHOE_SIZE_LABEL_KEY,
   RK_SHOE_TYPE_KEYS,
   RK_SHOE_TYPE_LABEL_KEY,
-  RK_SHOE_TYPE_SEARCH,
+  RK_SHOE_DB_SLUG,
   RK_TYPE_KEYS,
   RK_TYPE_LABEL_KEY,
   RK_TYPE_PHOTOS,
@@ -74,17 +67,16 @@ import {
   RK_WOMEN_SIZE_LABEL_KEY,
   RK_WOMEN_TYPE_KEYS,
   RK_WOMEN_TYPE_LABEL_KEY,
-  RK_WOMEN_TYPE_SEARCH,
+  RK_WOMEN_DB_SLUG,
   getRrobaKepuceLeafCategoryIds,
+  getRrobaTypeLeafCategoryIds,
+  resolveRrobaLeafCategoryIdBySlug,
   resolveRrobaTypeCategoryId,
   type RkAccTypeKey,
   type RkCityKey,
   type RkClothMatKey,
   type RkConditionKey,
   type RkGenderKey,
-  type RkKidGenderKey,
-  type RkKidSizeKey,
-  type RkKidTypeKey,
   type RkMenSizeKey,
   type RkMenTypeKey,
   type RkShoeMatKey,
@@ -172,9 +164,6 @@ export function RrobaKepuceSearchPanel({
   const [shoeMat, setShoeMat] = useState<RkShoeMatKey | "">("");
   const [accType, setAccType] = useState<RkAccTypeKey | "">("");
   const [accGender, setAccGender] = useState<RkGenderKey | "">("");
-  const [kidGender, setKidGender] = useState<RkKidGenderKey | "">("");
-  const [kidSize, setKidSize] = useState<RkKidSizeKey | "">("");
-  const [kidType, setKidType] = useState<RkKidTypeKey | "">("");
   const [condition, setCondition] = useState<RkConditionKey | "">("");
   const [universalChecks, setUniversalChecks] = useState<
     Record<RkUniversalCheckKey, boolean>
@@ -201,9 +190,6 @@ export function RrobaKepuceSearchPanel({
     setShoeMat("");
     setAccType("");
     setAccGender("");
-    setKidGender("");
-    setKidSize("");
-    setKidType("");
   };
 
   const selectType = (key: RkTypeKey) => {
@@ -235,10 +221,30 @@ export function RrobaKepuceSearchPanel({
     };
 
     if (typeKey) {
-      const cid = resolveRrobaTypeCategoryId(categories, hubId, typeKey);
-      if (cid) {
-        p.category_id = cid;
-        delete p.category_ids;
+      let leafSlug: string | undefined;
+      if (typeKey === "meshkuj" && menType) leafSlug = RK_MEN_DB_SLUG[menType];
+      else if (typeKey === "femra" && womenType) leafSlug = RK_WOMEN_DB_SLUG[womenType];
+      else if (typeKey === "kepuce" && shoeType) leafSlug = RK_SHOE_DB_SLUG[shoeType];
+      else if (typeKey === "aksesore" && accType) leafSlug = RK_ACC_DB_SLUG[accType];
+
+      if (leafSlug) {
+        const leafId = resolveRrobaLeafCategoryIdBySlug(categories, leafSlug);
+        if (leafId) {
+          p.category_id = leafId;
+          delete p.category_ids;
+        }
+      } else {
+        const leafIds = getRrobaTypeLeafCategoryIds(categories, hubId, typeKey);
+        if (leafIds.length) {
+          p.category_ids = [...leafIds].sort((a, b) => a - b).join(",");
+          delete p.category_id;
+        } else {
+          const cid = resolveRrobaTypeCategoryId(categories, hubId, typeKey);
+          if (cid) {
+            p.category_id = cid;
+            delete p.category_ids;
+          }
+        }
       }
     }
 
@@ -249,25 +255,17 @@ export function RrobaKepuceSearchPanel({
     if (zone) searchBits.push(zone);
 
     if (typeKey === "meshkuj") {
-      if (menType) searchBits.push(RK_MEN_TYPE_SEARCH[menType]);
       if (menSize) searchBits.push(menSize.toUpperCase());
       if (clothMat) searchBits.push(RK_CLOTH_MAT_SEARCH[clothMat]);
     } else if (typeKey === "femra") {
-      if (womenType) searchBits.push(RK_WOMEN_TYPE_SEARCH[womenType]);
       if (womenSize) searchBits.push(womenSize.toUpperCase());
       if (clothMat) searchBits.push(RK_CLOTH_MAT_SEARCH[clothMat]);
     } else if (typeKey === "kepuce") {
       if (shoeGender) searchBits.push(RK_GENDER_SEARCH[shoeGender]);
-      if (shoeType) searchBits.push(RK_SHOE_TYPE_SEARCH[shoeType]);
       if (shoeSize) searchBits.push(`Numër ${shoeSize}`);
       if (shoeMat) searchBits.push(RK_SHOE_MAT_SEARCH[shoeMat]);
     } else if (typeKey === "aksesore") {
-      if (accType) searchBits.push(RK_ACC_TYPE_SEARCH[accType]);
       if (accGender) searchBits.push(RK_GENDER_SEARCH[accGender]);
-    } else if (typeKey === "femije") {
-      if (kidGender) searchBits.push(RK_KID_GENDER_SEARCH[kidGender]);
-      if (kidSize) searchBits.push(`${kidSize} cm`);
-      if (kidType) searchBits.push(RK_KID_TYPE_SEARCH[kidType]);
     }
 
     if (condition) searchBits.push(RK_CONDITION_SEARCH[condition]);
@@ -306,9 +304,6 @@ export function RrobaKepuceSearchPanel({
     shoeMat,
     accType,
     accGender,
-    kidGender,
-    kidSize,
-    kidType,
     condition,
     universalChecks,
     priceMin,
@@ -336,19 +331,20 @@ export function RrobaKepuceSearchPanel({
         <p className="text-sm text-gray-500">{t.rk_panel_sub}</p>
       </div>
 
-      <section className="space-y-3">
+      <section className="space-y-3 max-w-full overflow-hidden">
         <Label className="text-sm font-bold text-gray-900">{t.rk_sec_types}</Label>
-        <CategoryPhotoPickerRow>
+        <CategoryPhotoPickerGrid>
           {RK_TYPE_KEYS.map((key) => (
             <CategoryPhotoPickerCard
               key={key}
+              layout="grid"
               selected={typeKey === key}
               onClick={() => selectType(key)}
               imageSrc={RK_TYPE_PHOTOS[key]}
               label={t[RK_TYPE_LABEL_KEY[key]]}
             />
           ))}
-        </CategoryPhotoPickerRow>
+        </CategoryPhotoPickerGrid>
       </section>
 
       {typeKey === "meshkuj" ? (
@@ -524,58 +520,6 @@ export function RrobaKepuceSearchPanel({
                   onClick={() => toggleChip(accGender, k, setAccGender)}
                 >
                   {t[RK_GENDER_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </FilterSection>
-        </section>
-      ) : null}
-
-      {typeKey === "femije" ? (
-        <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-          <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
-          <FilterSection title={t.rk_sec_gender}>
-            <div className="grid grid-cols-2 gap-2">
-              {RK_KID_GENDER_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={kidGender === k}
-                  onClick={() => toggleChip(kidGender, k, setKidGender)}
-                >
-                  {t[RK_KID_GENDER_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </FilterSection>
-          <FilterSection title={t.rk_sec_age_group}>
-            {RK_KID_AGE_GROUPS.map((group) => (
-              <div key={group.groupKey} className="space-y-2 mb-4 last:mb-0">
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
-                  {t[group.labelKey]}
-                </p>
-                <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-                  {group.sizeKeys.map((size) => (
-                    <ChipButton
-                      key={size}
-                      selected={kidSize === size}
-                      onClick={() => toggleChip(kidSize, size, setKidSize)}
-                    >
-                      {size}
-                    </ChipButton>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </FilterSection>
-          <FilterSection title={t.rk_sec_kind}>
-            <div className="grid grid-cols-2 gap-2">
-              {RK_KID_TYPE_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={kidType === k}
-                  onClick={() => toggleChip(kidType, k, setKidType)}
-                >
-                  {t[RK_KID_TYPE_LABEL_KEY[k]]}
                 </ChipButton>
               ))}
             </div>
