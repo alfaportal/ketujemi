@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { GetListingsParams } from "@workspace/api-client-react";
-import { Search } from "lucide-react";
+import { Baby, Search } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -8,6 +8,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  CategoryPhotoPickerCard,
+  CategoryPhotoPickerGrid,
+} from "@/components/category-photo-picker";
 import { useMarket } from "@/lib/market-context";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
@@ -18,6 +22,7 @@ import {
   getFemijeGroupLeafRows,
   getFemijeHubSubcategoryRows,
   getFemijeLeafCategoryIds,
+  femijeSubcategoryPhoto,
   type FemijeCategoryRow,
 } from "@/lib/femije-search-helpers";
 
@@ -89,6 +94,29 @@ export function FemijeSearchPanel({
     if (!Number.isFinite(gid)) return [];
     return getFemijeGroupLeafRows(categories, gid);
   }, [categories, groupId]);
+
+  const groupScopeId =
+    variant === "group" && scopeCategoryId
+      ? scopeCategoryId
+      : groupId !== ALL && Number.isFinite(Number(groupId))
+        ? Number(groupId)
+        : null;
+
+  const photoGridRows = useMemo(() => {
+    if (variant === "hub") return hubGroups;
+    if (variant === "group" && scopeCategoryId) {
+      return getFemijeGroupLeafRows(categories, scopeCategoryId);
+    }
+    if (variant === "leaf" && groupScopeId) {
+      return getFemijeGroupLeafRows(categories, groupScopeId);
+    }
+    return [];
+  }, [variant, hubGroups, categories, scopeCategoryId, groupScopeId]);
+
+  const photoGridTitle =
+    variant === "hub"
+      ? (t as { fj_sec_pick_sub?: string }).fj_sec_pick_sub ?? t.fj_sec_types
+      : (t as { fj_sec_contents?: string }).fj_sec_contents ?? t.subcategory;
 
   const callbackRef = useRef(onListingParamsChange);
   callbackRef.current = onListingParamsChange;
@@ -233,6 +261,57 @@ export function FemijeSearchPanel({
           {t.searchBtn}
         </button>
       </form>
+
+      {photoGridRows.length > 0 ? (
+        <section className="space-y-4 pt-2">
+          <div>
+            <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
+              <Baby size={20} className="text-blue-600 shrink-0" aria-hidden />
+              {photoGridTitle}
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              {photoGridRows.length}{" "}
+              {(t as { subcategoriesAvail?: string }).subcategoriesAvail ??
+                "nënkategori të disponueshme"}
+            </p>
+          </div>
+          <CategoryPhotoPickerGrid>
+            {photoGridRows.map((row) => (
+              <CategoryPhotoPickerCard
+                key={row.id}
+                layout="grid"
+                onClick={() => onNavigateToCategory(row.id)}
+                imageSrc={femijeSubcategoryPhoto(row.slug, row.image_url)}
+                label={translateCategory(row.name, locale)}
+              />
+            ))}
+          </CategoryPhotoPickerGrid>
+        </section>
+      ) : null}
+
+      {variant === "hub" && leafOptions.length > 0 ? (
+        <section className="space-y-4 border-t border-gray-100 pt-6">
+          <div>
+            <h2 className="text-base font-black text-gray-900">{t.subcategory}</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              {leafOptions.length}{" "}
+              {(t as { subcategoriesAvail?: string }).subcategoriesAvail ??
+                "nënkategori të disponueshme"}
+            </p>
+          </div>
+          <CategoryPhotoPickerGrid>
+            {leafOptions.map((row) => (
+              <CategoryPhotoPickerCard
+                key={row.id}
+                layout="grid"
+                onClick={() => onNavigateToCategory(row.id)}
+                imageSrc={femijeSubcategoryPhoto(row.slug, row.image_url)}
+                label={translateCategory(row.name, locale)}
+              />
+            ))}
+          </CategoryPhotoPickerGrid>
+        </section>
+      ) : null}
     </div>
   );
 }
