@@ -1046,6 +1046,8 @@ export default function CategoryPage() {
     (!isArsimKurseHub || arsimKurseLeafCsv.length > 0) &&
     (!isMobiljeDekorimHub || mobiljeDekorimLeafCsv.length > 0) &&
     (!isRrobaKepuceHub || rrobaKepuceLeafCsv.length > 0) &&
+    !isFemijeHub &&
+    !isFemijeGroupPage &&
     (!isPuneSherbimeHub || puneSherbimeLeafCsv.length > 0) &&
     (!isBujqesiBlegtoriHub || bujqesiBlegtoriLeafCsv.length > 0) &&
     (!isMuzikeHobbyHub || muzikeHobbyLeafCsv.length > 0) &&
@@ -1590,9 +1592,6 @@ export default function CategoryPage() {
                 navigateToCategory(setLocation, childId, categoryId)
               }
               onListingParamsChange={setFemijeListParams}
-              onScrollToResults={() =>
-                resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-              }
             />
           </Suspense>
         ) : null}
@@ -1721,9 +1720,6 @@ export default function CategoryPage() {
                 navigateToCategory(setLocation, childId, categoryId)
               }
               onListingParamsChange={setFemijeListParams}
-              onScrollToResults={() =>
-                resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-              }
             />
           </Suspense>
         ) : null}
@@ -1778,7 +1774,10 @@ export default function CategoryPage() {
           <VipPartnersSection variant="hub" categoryId={categoryId} className="my-8" />
         ) : null}
 
-        {!isTelefonaHubPage && renderListingsSection()}
+        {!isTelefonaHubPage &&
+          !isFemijeHub &&
+          !isFemijeGroupPage &&
+          renderListingsSection()}
       </div>
     </div>
   );

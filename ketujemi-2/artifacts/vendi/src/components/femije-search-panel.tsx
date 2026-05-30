@@ -95,23 +95,13 @@ export function FemijeSearchPanel({
     return getFemijeGroupLeafRows(categories, gid);
   }, [categories, groupId]);
 
-  const groupScopeId =
-    variant === "group" && scopeCategoryId
-      ? scopeCategoryId
-      : groupId !== ALL && Number.isFinite(Number(groupId))
-        ? Number(groupId)
-        : null;
-
   const photoGridRows = useMemo(() => {
     if (variant === "hub") return hubGroups;
     if (variant === "group" && scopeCategoryId) {
       return getFemijeGroupLeafRows(categories, scopeCategoryId);
     }
-    if (variant === "leaf" && groupScopeId) {
-      return getFemijeGroupLeafRows(categories, groupScopeId);
-    }
     return [];
-  }, [variant, hubGroups, categories, scopeCategoryId, groupScopeId]);
+  }, [variant, hubGroups, categories, scopeCategoryId]);
 
   const photoGridTitle =
     variant === "hub"
@@ -170,18 +160,21 @@ export function FemijeSearchPanel({
   }, [groupId, leafId, appliedSearch, hubLeafCsv, variant, scopeCategoryId, categories]);
 
   const handleGroupChange = (value: string) => {
-    setGroupId(value);
-    setLeafId(ALL);
-    if (value === ALL) return;
+    if (value === ALL) {
+      setGroupId(ALL);
+      setLeafId(ALL);
+      return;
+    }
     const gid = Number(value);
     if (!Number.isFinite(gid)) return;
-    if (variant === "hub") return;
     onNavigateToCategory(gid);
   };
 
   const handleLeafChange = (value: string) => {
-    setLeafId(value);
-    if (value === ALL) return;
+    if (value === ALL) {
+      setLeafId(ALL);
+      return;
+    }
     const lid = Number(value);
     if (!Number.isFinite(lid)) return;
     onNavigateToCategory(lid);
@@ -192,7 +185,7 @@ export function FemijeSearchPanel({
     const q = effectiveListingSearchQuery(searchText);
     setAppliedSearch(q);
     callbackRef.current(buildParams(q));
-    onScrollToResults?.();
+    if (variant === "leaf") onScrollToResults?.();
   };
 
   const selectLabelClass =
@@ -215,30 +208,6 @@ export function FemijeSearchPanel({
           </div>
           <CategoryPhotoPickerGrid>
             {photoGridRows.map((row) => (
-              <CategoryPhotoPickerCard
-                key={row.id}
-                layout="grid"
-                onClick={() => onNavigateToCategory(row.id)}
-                imageSrc={femijeSubcategoryPhoto(row.slug, row.image_url)}
-                label={translateCategory(row.name, locale)}
-              />
-            ))}
-          </CategoryPhotoPickerGrid>
-        </section>
-      ) : null}
-
-      {variant === "hub" && leafOptions.length > 0 ? (
-        <section className="space-y-4">
-          <div>
-            <h2 className="text-base font-black text-gray-900">{t.subcategory}</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {leafOptions.length}{" "}
-              {(t as { subcategoriesAvail?: string }).subcategoriesAvail ??
-                "nënkategori të disponueshme"}
-            </p>
-          </div>
-          <CategoryPhotoPickerGrid>
-            {leafOptions.map((row) => (
               <CategoryPhotoPickerCard
                 key={row.id}
                 layout="grid"
