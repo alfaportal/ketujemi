@@ -12,6 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  CategoryPhotoPickerCard,
+  CategoryPhotoPickerGrid,
+} from "@/components/category-photo-picker";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
 import {
@@ -21,6 +25,7 @@ import {
   TEL_BRAND_GROUP_LABEL_KEY,
   TEL_BRAND_GROUP_PHOTOS,
   TEL_BRAND_GROUP_SLUG,
+  TELEFONA_HERO_PHOTO,
   TEL_DEVICE_KEYS,
   TEL_DEVICE_LABEL_KEY,
   TEL_DEVICE_PHOTOS,
@@ -358,71 +363,40 @@ export function TelefonaSearchPanel({
         <p className="text-sm text-gray-500">{t.tel_panel_sub}</p>
       </div>
 
-      <section className="space-y-3">
+      <section className="space-y-3 max-w-full overflow-hidden">
         <Label className="text-sm font-bold text-gray-900">{t.tel_sec_device}</Label>
-        <div className="grid grid-cols-2 gap-3">
-          {TEL_DEVICE_KEYS.map((key) => {
-            const selected = deviceKey === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => selectDevice(key)}
-                className={cn(
-                  "relative overflow-hidden rounded-2xl border text-left transition-all min-h-[7rem] touch-manipulation",
-                  selected
-                    ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
-                    : "border-gray-100 hover:border-blue-200 hover:shadow-md",
-                )}
-              >
-                <img
-                  src={TEL_DEVICE_PHOTOS[key]}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-                <div
-                  className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"
-                  aria-hidden
-                />
-                <span className="absolute bottom-2 left-2 right-2 text-white text-xs sm:text-sm font-bold leading-snug line-clamp-2 drop-shadow">
-                  {t[TEL_DEVICE_LABEL_KEY[key]]}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <CategoryPhotoPickerGrid>
+          {TEL_DEVICE_KEYS.map((key) => (
+            <CategoryPhotoPickerCard
+              key={key}
+              layout="grid"
+              selected={deviceKey === key}
+              onClick={() => selectDevice(key)}
+              imageSrc={TEL_DEVICE_PHOTOS[key]}
+              fallbackImageSrc={TELEFONA_HERO_PHOTO}
+              imageAlt={t[TEL_DEVICE_LABEL_KEY[key]]}
+              label={t[TEL_DEVICE_LABEL_KEY[key]]}
+            />
+          ))}
+        </CategoryPhotoPickerGrid>
       </section>
 
-      <section className="space-y-4 rounded-xl border border-blue-100 bg-blue-50/30 p-3 sm:p-4">
+      <section className="space-y-4 rounded-xl border border-blue-100 bg-blue-50/30 p-3 sm:p-4 max-w-full overflow-hidden">
         <Label className="text-sm font-bold text-gray-900">{t.tel_sec_brand}</Label>
-        <div className="grid grid-cols-2 gap-3">
-          {TEL_BRAND_GROUP_KEYS.map((key) => {
-            const selected = brandGroup === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => selectBrandGroup(key)}
-                className={cn(
-                  "relative overflow-hidden rounded-2xl border text-left transition-all min-h-[5.5rem] touch-manipulation",
-                  selected
-                    ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
-                    : "border-gray-200 bg-white hover:border-blue-300 hover:shadow-md",
-                )}
-              >
-                <img
-                  src={TEL_BRAND_GROUP_PHOTOS[key]}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                <span className="absolute bottom-2 left-2 right-2 text-white text-xs sm:text-sm font-bold leading-snug line-clamp-2 drop-shadow">
-                  {t[TEL_BRAND_GROUP_LABEL_KEY[key]]}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <CategoryPhotoPickerGrid>
+          {TEL_BRAND_GROUP_KEYS.map((key) => (
+            <CategoryPhotoPickerCard
+              key={key}
+              layout="grid"
+              selected={brandGroup === key}
+              onClick={() => selectBrandGroup(key)}
+              imageSrc={TEL_BRAND_GROUP_PHOTOS[key]}
+              fallbackImageSrc={TELEFONA_HERO_PHOTO}
+              imageAlt={t[TEL_BRAND_GROUP_LABEL_KEY[key]]}
+              label={t[TEL_BRAND_GROUP_LABEL_KEY[key]]}
+            />
+          ))}
+        </CategoryPhotoPickerGrid>
       </section>
 
       {brandGroup === "other_brands" && (
