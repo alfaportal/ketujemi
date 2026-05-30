@@ -21,7 +21,6 @@ import {
   getFemijeGroupLeafIds,
   getFemijeGroupLeafRows,
   getFemijeHubSubcategoryRows,
-  getFemijeLeafCategoryIds,
   femijeSubcategoryPhoto,
   type FemijeCategoryRow,
 } from "@/lib/femije-search-helpers";
@@ -34,8 +33,8 @@ type Props = {
   scopeCategoryId?: number;
   categories: FemijeCategoryRow[];
   onNavigateToCategory: (childCategoryId: number) => void;
-  onListingParamsChange: (params: GetListingsParams) => void;
-  onScrollToResults?: () => void;
+  /** Only used on leaf (final page) to refresh listings below. */
+  onListingParamsChange?: (params: GetListingsParams) => void;
 };
 
 const ALL = "all";
@@ -47,36 +46,30 @@ export function FemijeSearchPanel({
   categories,
   onNavigateToCategory,
   onListingParamsChange,
-  onScrollToResults,
 }: Props) {
   const { t, uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
+  const isFinalPage = variant === "leaf";
 
   const hubGroups = useMemo(
     () => getFemijeHubSubcategoryRows(categories, hubId),
     [categories, hubId],
   );
 
-  const hubLeafCsv = useMemo(() => {
-    const ids = getFemijeLeafCategoryIds(categories, hubId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [categories, hubId]);
-
   const initialGroupId = useMemo(() => {
-    if (variant === "hub") return ALL;
-    if (variant === "group" && scopeCategoryId) return String(scopeCategoryId);
-    if (variant === "leaf" && scopeCategoryId) {
+    if (!isFinalPage) return ALL;
+    if (scopeCategoryId) {
       const leaf = categories.find((c) => c.id === scopeCategoryId);
       const parentId = leaf?.parent_id;
       if (parentId) return String(parentId);
     }
     return ALL;
-  }, [variant, scopeCategoryId, categories]);
+  }, [isFinalPage, scopeCategoryId, categories]);
 
   const initialLeafId = useMemo(() => {
-    if (variant === "leaf" && scopeCategoryId) return String(scopeCategoryId);
+    if (isFinalPage && scopeCategoryId) return String(scopeCategoryId);
     return ALL;
-  }, [variant, scopeCategoryId]);
+  }, [isFinalPage, scopeCategoryId]);
 
   const [groupId, setGroupId] = useState(initialGroupId);
   const [leafId, setLeafId] = useState(initialLeafId);
@@ -89,11 +82,11 @@ export function FemijeSearchPanel({
   }, [initialGroupId, initialLeafId]);
 
   const leafOptions = useMemo(() => {
-    if (groupId === ALL) return [];
+    if (!isFinalPage || groupId === ALL) return [];
     const gid = Number(groupId);
     if (!Number.isFinite(gid)) return [];
     return getFemijeGroupLeafRows(categories, gid);
-  }, [categories, groupId]);
+  }, [categories, groupId, isFinalPage]);
 
   const photoGridRows = useMemo(() => {
     if (variant === "hub") return hubGroups;
@@ -135,16 +128,8 @@ export function FemijeSearchPanel({
       return p;
     }
 
-    if (variant === "group" && scopeCategoryId) {
-      const leafIds = getFemijeGroupLeafIds(categories, scopeCategoryId);
-      if (leafIds.length === 1) p.category_id = leafIds[0];
-      else if (leafIds.length > 0) {
-        p.category_ids = [...leafIds].sort((a, b) => a - b).join(",");
-      }
-    } else if (variant === "leaf" && scopeCategoryId) {
+    if (scopeCategoryId) {
       p.category_id = scopeCategoryId;
-    } else if (hubLeafCsv) {
-      p.category_ids = hubLeafCsv;
     }
 
     if (searchQuery) p.search = searchQuery;
@@ -152,12 +137,13 @@ export function FemijeSearchPanel({
   };
 
   useEffect(() => {
+    if (!isFinalPage || !callbackRef.current) return;
     const timer = window.setTimeout(() => {
-      callbackRef.current(buildParams());
+      callbackRef.current?.(buildParams());
     }, 300);
     return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- debounced listing preview
-  }, [groupId, leafId, appliedSearch, hubLeafCsv, variant, scopeCategoryId, categories]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- debounced listing refresh on leaf only
+  }, [isFinalPage, groupId, leafId, appliedSearch, scopeCategoryId, categories]);
 
   const handleGroupChange = (value: string) => {
     if (value === ALL) {
@@ -182,10 +168,10 @@ export function FemijeSearchPanel({
 
   const handleSearchSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
+    if (!isFinalPage) return;
     const q = effectiveListingSearchQuery(searchText);
     setAppliedSearch(q);
-    callbackRef.current(buildParams(q));
-    if (variant === "leaf") onScrollToResults?.();
+    callbackRef.current?.(buildParams(q));
   };
 
   const selectLabelClass =
@@ -220,69 +206,71 @@ export function FemijeSearchPanel({
         </section>
       ) : null}
 
-      <section className="space-y-4 border-t border-gray-100 pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="min-w-0">
-            <label className={selectLabelClass}>{t.category}</label>
-            <Select value={groupId} onValueChange={handleGroupChange}>
-              <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
-                <SelectValue placeholder={t.all} />
-              </SelectTrigger>
-              <SelectContent className="!max-h-[300px]">
-                <SelectItem value={ALL}>{t.all}</SelectItem>
-                {hubGroups.map((row) => (
-                  <SelectItem key={row.id} value={String(row.id)}>
-                    {translateCategory(row.name, locale)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      {isFinalPage ? (
+        <section className="space-y-4 border-t border-gray-100 pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="min-w-0">
+              <label className={selectLabelClass}>{t.category}</label>
+              <Select value={groupId} onValueChange={handleGroupChange}>
+                <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
+                  <SelectValue placeholder={t.all} />
+                </SelectTrigger>
+                <SelectContent className="!max-h-[300px]">
+                  <SelectItem value={ALL}>{t.all}</SelectItem>
+                  {getFemijeHubSubcategoryRows(categories, hubId).map((row) => (
+                    <SelectItem key={row.id} value={String(row.id)}>
+                      {translateCategory(row.name, locale)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="min-w-0">
+              <label className={selectLabelClass}>{t.subcategory}</label>
+              <Select
+                value={leafId}
+                onValueChange={handleLeafChange}
+                disabled={groupId === ALL || leafOptions.length === 0}
+              >
+                <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
+                  <SelectValue placeholder={t.all} />
+                </SelectTrigger>
+                <SelectContent className="!max-h-[300px]">
+                  <SelectItem value={ALL}>{t.all}</SelectItem>
+                  {leafOptions.map((row) => (
+                    <SelectItem key={row.id} value={String(row.id)}>
+                      {translateCategory(row.name, locale)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="min-w-0">
-            <label className={selectLabelClass}>{t.subcategory}</label>
-            <Select
-              value={leafId}
-              onValueChange={handleLeafChange}
-              disabled={groupId === ALL || leafOptions.length === 0}
-            >
-              <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
-                <SelectValue placeholder={t.all} />
-              </SelectTrigger>
-              <SelectContent className="!max-h-[300px]">
-                <SelectItem value={ALL}>{t.all}</SelectItem>
-                {leafOptions.map((row) => (
-                  <SelectItem key={row.id} value={String(row.id)}>
-                    {translateCategory(row.name, locale)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <form
-          onSubmit={handleSearchSubmit}
-          className="flex flex-col gap-2 w-full md:flex-row md:items-center md:flex-nowrap md:gap-2"
-        >
-          <div className="relative flex-1 min-w-0">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
-              aria-hidden
-            />
-            <input
-              type="search"
-              placeholder={t.search}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="w-full min-h-12 pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-base sm:text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all bg-gray-50 focus:bg-white touch-manipulation"
-            />
-          </div>
-          <button type="submit" className={cnPrimaryBlue("w-full md:w-auto")}>
-            {t.searchBtn}
-          </button>
-        </form>
-      </section>
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex flex-col gap-2 w-full md:flex-row md:items-center md:flex-nowrap md:gap-2"
+          >
+            <div className="relative flex-1 min-w-0">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                aria-hidden
+              />
+              <input
+                type="search"
+                placeholder={t.search}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                className="w-full min-h-12 pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-base sm:text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all bg-gray-50 focus:bg-white touch-manipulation"
+              />
+            </div>
+            <button type="submit" className={cnPrimaryBlue("w-full md:w-auto")}>
+              {t.searchBtn}
+            </button>
+          </form>
+        </section>
+      ) : null}
     </div>
   );
 }

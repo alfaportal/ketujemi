@@ -79,6 +79,14 @@ Pas `pnpm run build`, nëse chunk `category-*.js` rritet shumë → gjej importi
 
 ---
 
+## Fëmijë — drill-down (obligativ)
+
+1. **Hub / group:** vetëm foto → klik = **faqe e re** (`/categories/id`). Pa tabela, pa kërkim, pa shpallje poshtë.
+2. **Leaf:** tabela + kërkim + shpalljet (hapi final). Pa `scrollIntoView`.
+3. Mos shto grid të dytë ose njoftime që zgjerohën në të njëjtën URL.
+
+Rregull Cursor: `.cursor/rules/femije-drill-down-pages.mdc`
+
 ## Rregulla të shkurtra
 
 1. **Build + test kategorish + Console pa error** para push.

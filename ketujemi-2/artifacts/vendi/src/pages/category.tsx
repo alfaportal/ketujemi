@@ -1591,7 +1591,6 @@ export default function CategoryPage() {
               onNavigateToCategory={(childId) =>
                 navigateToCategory(setLocation, childId, categoryId)
               }
-              onListingParamsChange={setFemijeListParams}
             />
           </Suspense>
         ) : null}
@@ -1719,7 +1718,6 @@ export default function CategoryPage() {
               onNavigateToCategory={(childId) =>
                 navigateToCategory(setLocation, childId, categoryId)
               }
-              onListingParamsChange={setFemijeListParams}
             />
           </Suspense>
         ) : null}
@@ -1735,9 +1733,6 @@ export default function CategoryPage() {
                 navigateToCategory(setLocation, childId, categoryId)
               }
               onListingParamsChange={setFemijeListParams}
-              onScrollToResults={() =>
-                resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-              }
             />
           </Suspense>
         ) : null}
@@ -1775,8 +1770,7 @@ export default function CategoryPage() {
         ) : null}
 
         {!isTelefonaHubPage &&
-          !isFemijeHub &&
-          !isFemijeGroupPage &&
+          (isFemijeLeafPage || (!isFemijeHub && !isFemijeGroupPage)) &&
           renderListingsSection()}
       </div>
     </div>

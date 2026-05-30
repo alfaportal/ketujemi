@@ -1,0 +1,30 @@
+---
+description: Fëmijë category drill-down — every pick opens a new page; no inline expand or scroll-to-listings
+globs: ketujemi-2/artifacts/vendi/src/components/femije-search-panel.tsx,ketujemi-2/artifacts/vendi/src/pages/category.tsx
+alwaysApply: false
+---
+
+# Fëmijë — always new pages (no scroll / no expand)
+
+## Mandatory UX
+
+1. **Hub** (`femije` root): photo grid of groups only. Card click → `navigateToCategory` → **new URL** `/categories/{groupId}`.
+2. **Group** (`femije-grp-*`): photo grid of leaves only. Card click → **new URL** `/categories/{leafId}`.
+3. **Leaf** (`femije-leaf-*`): filters (dropdowns + search) + listings block on **this** page only — the final step.
+
+## Forbidden on hub and group
+
+- Do **not** show a second grid / extra content below after a dropdown change on the same URL.
+- Do **not** call `onListingParamsChange` / `useGetListings` preview on hub or group.
+- Do **not** `scrollIntoView` / `onScrollToResults` on hub or group.
+- Do **not** render `renderListingsSection()` on hub or group.
+
+## Dropdowns and search
+
+- Hub/group: **no** filter bar — navigation is photo cards only.
+- Leaf: dropdown change on subcategory → `onNavigateToCategory` (sibling leaf or parent group).
+- Leaf: search updates listings on the same page (final); **no** scroll animation to results.
+
+## Do not regress
+
+Never re-add “expand below”, debounced listing fetch on hub/group, or scroll-to-results for intermediate Fëmijë steps.
