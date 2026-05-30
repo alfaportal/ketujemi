@@ -81,9 +81,9 @@ Pas `pnpm run build`, nëse chunk `category-*.js` rritet shumë → gjej importi
 
 ## Fëmijë — drill-down (obligativ)
 
-1. **Hub / group:** vetëm foto → klik = **faqe e re** (`/categories/id`). Pa tabela, pa kërkim, pa shpallje poshtë.
-2. **Leaf:** tabela + kërkim + shpalljet (hapi final). Pa `scrollIntoView`.
-3. Mos shto grid të dytë ose njoftime që zgjerohën në të njëjtën URL.
+1. **Hub / group:** foto → faqe e re; **tabela poshtë fotove** (dropdown të fokusuara, jo gjithë hub-it).
+2. **Leaf:** tabela me **vetëm grupin prind + leaf-et e atij grupi**; kërkim + shpallje vetëm për `category_id` aktual.
+3. Zgjedhje në dropdown = **navigim**, jo zgjerim në të njëjtën faqe.
 
 Rregull Cursor: `.cursor/rules/femije-drill-down-pages.mdc`
 

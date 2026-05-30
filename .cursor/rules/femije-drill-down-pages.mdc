@@ -19,11 +19,13 @@ alwaysApply: false
 - Do **not** `scrollIntoView` / `onScrollToResults` on hub or group.
 - Do **not** render `renderListingsSection()` on hub or group.
 
-## Dropdowns and search
+## Dropdowns and search (below photos on every step)
 
-- Hub/group: **no** filter bar — navigation is photo cards only.
-- Leaf: dropdown change on subcategory → `onNavigateToCategory` (sibling leaf or parent group).
-- Leaf: search updates listings on the same page (final); **no** scroll animation to results.
+- **Hub:** KATEGORIA = all hub groups (pick → new page). NËNKATEGORIA disabled. No search bar.
+- **Group:** KATEGORIA = **this group only**. NËNKATEGORIA = **leaves in this group only** (pick → new leaf page).
+- **Leaf:** KATEGORIA = **parent group only** (not every hub category). NËNKATEGORIA = **sibling leaves in that group only**. Search + listings only here.
+
+Every dropdown change that selects another category → `onNavigateToCategory`, never expand content on the same URL.
 
 ## Do not regress
 

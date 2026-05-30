@@ -18,7 +18,6 @@ import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { cnPrimaryBlue } from "@/lib/primary-button-classes";
 import { effectiveListingSearchQuery } from "@/lib/listing-search-query";
 import {
-  getFemijeGroupLeafIds,
   getFemijeGroupLeafRows,
   getFemijeHubSubcategoryRows,
   femijeSubcategoryPhoto,
@@ -33,11 +32,16 @@ type Props = {
   scopeCategoryId?: number;
   categories: FemijeCategoryRow[];
   onNavigateToCategory: (childCategoryId: number) => void;
-  /** Only used on leaf (final page) to refresh listings below. */
+  /** Listings refresh — leaf (final) page only. */
   onListingParamsChange?: (params: GetListingsParams) => void;
 };
 
 const ALL = "all";
+
+function findRow(categories: FemijeCategoryRow[], id: number | null | undefined) {
+  if (id == null) return null;
+  return categories.find((c) => Number(c.id) === Number(id)) ?? null;
+}
 
 export function FemijeSearchPanel({
   variant,
@@ -56,20 +60,48 @@ export function FemijeSearchPanel({
     [categories, hubId],
   );
 
-  const initialGroupId = useMemo(() => {
-    if (!isFinalPage) return ALL;
-    if (scopeCategoryId) {
-      const leaf = categories.find((c) => c.id === scopeCategoryId);
-      const parentId = leaf?.parent_id;
-      if (parentId) return String(parentId);
+  const scopeGroupId = useMemo(() => {
+    if (variant === "group" && scopeCategoryId) return scopeCategoryId;
+    if (variant === "leaf" && scopeCategoryId) {
+      return findRow(categories, scopeCategoryId)?.parent_id ?? null;
     }
+    return null;
+  }, [variant, scopeCategoryId, categories]);
+
+  const groupSelectOptions = useMemo((): FemijeCategoryRow[] => {
+    if (variant === "hub") return hubGroups;
+    if (variant === "group" && scopeCategoryId) {
+      const row = findRow(categories, scopeCategoryId);
+      return row ? [row] : [];
+    }
+    if (variant === "leaf" && scopeGroupId) {
+      const row = findRow(categories, scopeGroupId);
+      return row ? [row] : [];
+    }
+    return [];
+  }, [variant, hubGroups, scopeCategoryId, scopeGroupId, categories]);
+
+  const leafSelectOptions = useMemo((): FemijeCategoryRow[] => {
+    if (variant === "hub") return [];
+    if (variant === "group" && scopeCategoryId) {
+      return getFemijeGroupLeafRows(categories, scopeCategoryId);
+    }
+    if (variant === "leaf" && scopeGroupId) {
+      return getFemijeGroupLeafRows(categories, scopeGroupId);
+    }
+    return [];
+  }, [variant, scopeCategoryId, scopeGroupId, categories]);
+
+  const initialGroupId = useMemo(() => {
+    if (variant === "hub") return ALL;
+    if (scopeGroupId) return String(scopeGroupId);
     return ALL;
-  }, [isFinalPage, scopeCategoryId, categories]);
+  }, [variant, scopeGroupId]);
 
   const initialLeafId = useMemo(() => {
-    if (isFinalPage && scopeCategoryId) return String(scopeCategoryId);
+    if (variant === "leaf" && scopeCategoryId) return String(scopeCategoryId);
     return ALL;
-  }, [isFinalPage, scopeCategoryId]);
+  }, [variant, scopeCategoryId]);
 
   const [groupId, setGroupId] = useState(initialGroupId);
   const [leafId, setLeafId] = useState(initialLeafId);
@@ -80,13 +112,6 @@ export function FemijeSearchPanel({
     setGroupId(initialGroupId);
     setLeafId(initialLeafId);
   }, [initialGroupId, initialLeafId]);
-
-  const leafOptions = useMemo(() => {
-    if (!isFinalPage || groupId === ALL) return [];
-    const gid = Number(groupId);
-    if (!Number.isFinite(gid)) return [];
-    return getFemijeGroupLeafRows(categories, gid);
-  }, [categories, groupId, isFinalPage]);
 
   const photoGridRows = useMemo(() => {
     if (variant === "hub") return hubGroups;
@@ -107,29 +132,10 @@ export function FemijeSearchPanel({
   const buildParams = (searchQuery = appliedSearch): GetListingsParams => {
     const p: GetListingsParams = { page: 1, limit: 20 };
 
-    if (leafId !== ALL) {
-      const lid = Number(leafId);
-      if (Number.isFinite(lid)) {
-        p.category_id = lid;
-        if (searchQuery) p.search = searchQuery;
-        return p;
-      }
-    }
-
-    if (groupId !== ALL) {
-      const gid = Number(groupId);
-      const leafIds = getFemijeGroupLeafIds(categories, gid);
-      if (leafIds.length === 1) {
-        p.category_id = leafIds[0];
-      } else if (leafIds.length > 0) {
-        p.category_ids = [...leafIds].sort((a, b) => a - b).join(",");
-      }
+    if (isFinalPage && scopeCategoryId) {
+      p.category_id = scopeCategoryId;
       if (searchQuery) p.search = searchQuery;
       return p;
-    }
-
-    if (scopeCategoryId) {
-      p.category_id = scopeCategoryId;
     }
 
     if (searchQuery) p.search = searchQuery;
@@ -137,32 +143,41 @@ export function FemijeSearchPanel({
   };
 
   useEffect(() => {
-    if (!isFinalPage || !callbackRef.current) return;
+    if (!isFinalPage || !callbackRef.current || !scopeCategoryId) return;
     const timer = window.setTimeout(() => {
       callbackRef.current?.(buildParams());
     }, 300);
     return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- debounced listing refresh on leaf only
-  }, [isFinalPage, groupId, leafId, appliedSearch, scopeCategoryId, categories]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- leaf listings only
+  }, [isFinalPage, appliedSearch, scopeCategoryId]);
 
   const handleGroupChange = (value: string) => {
     if (value === ALL) {
-      setGroupId(ALL);
-      setLeafId(ALL);
+      if (variant === "hub") {
+        setGroupId(ALL);
+        setLeafId(ALL);
+      }
       return;
     }
     const gid = Number(value);
     if (!Number.isFinite(gid)) return;
+    if (variant === "leaf" && gid === scopeGroupId) {
+      onNavigateToCategory(gid);
+      return;
+    }
     onNavigateToCategory(gid);
   };
 
   const handleLeafChange = (value: string) => {
     if (value === ALL) {
-      setLeafId(ALL);
+      if (variant === "group" && scopeCategoryId) {
+        onNavigateToCategory(scopeCategoryId);
+      }
       return;
     }
     const lid = Number(value);
     if (!Number.isFinite(lid)) return;
+    if (lid === scopeCategoryId) return;
     onNavigateToCategory(lid);
   };
 
@@ -176,6 +191,9 @@ export function FemijeSearchPanel({
 
   const selectLabelClass =
     "text-sm font-semibold text-gray-500 mb-1.5 block uppercase tracking-wide";
+
+  const showGroupAll = variant === "hub";
+  const showLeafAll = variant === "group";
 
   return (
     <div className="mb-8 space-y-6">
@@ -206,48 +224,48 @@ export function FemijeSearchPanel({
         </section>
       ) : null}
 
-      {isFinalPage ? (
-        <section className="space-y-4 border-t border-gray-100 pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="min-w-0">
-              <label className={selectLabelClass}>{t.category}</label>
-              <Select value={groupId} onValueChange={handleGroupChange}>
-                <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
-                  <SelectValue placeholder={t.all} />
-                </SelectTrigger>
-                <SelectContent className="!max-h-[300px]">
-                  <SelectItem value={ALL}>{t.all}</SelectItem>
-                  {getFemijeHubSubcategoryRows(categories, hubId).map((row) => (
-                    <SelectItem key={row.id} value={String(row.id)}>
-                      {translateCategory(row.name, locale)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="min-w-0">
-              <label className={selectLabelClass}>{t.subcategory}</label>
-              <Select
-                value={leafId}
-                onValueChange={handleLeafChange}
-                disabled={groupId === ALL || leafOptions.length === 0}
-              >
-                <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
-                  <SelectValue placeholder={t.all} />
-                </SelectTrigger>
-                <SelectContent className="!max-h-[300px]">
-                  <SelectItem value={ALL}>{t.all}</SelectItem>
-                  {leafOptions.map((row) => (
-                    <SelectItem key={row.id} value={String(row.id)}>
-                      {translateCategory(row.name, locale)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      <section className="space-y-4 border-t border-gray-100 pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="min-w-0">
+            <label className={selectLabelClass}>{t.category}</label>
+            <Select value={groupId} onValueChange={handleGroupChange}>
+              <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
+                <SelectValue placeholder={t.all} />
+              </SelectTrigger>
+              <SelectContent className="!max-h-[300px]">
+                {showGroupAll ? <SelectItem value={ALL}>{t.all}</SelectItem> : null}
+                {groupSelectOptions.map((row) => (
+                  <SelectItem key={row.id} value={String(row.id)}>
+                    {translateCategory(row.name, locale)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
+          <div className="min-w-0">
+            <label className={selectLabelClass}>{t.subcategory}</label>
+            <Select
+              value={leafId}
+              onValueChange={handleLeafChange}
+              disabled={variant === "hub" || leafSelectOptions.length === 0}
+            >
+              <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
+                <SelectValue placeholder={t.all} />
+              </SelectTrigger>
+              <SelectContent className="!max-h-[300px]">
+                {showLeafAll ? <SelectItem value={ALL}>{t.all}</SelectItem> : null}
+                {leafSelectOptions.map((row) => (
+                  <SelectItem key={row.id} value={String(row.id)}>
+                    {translateCategory(row.name, locale)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {isFinalPage ? (
           <form
             onSubmit={handleSearchSubmit}
             className="flex flex-col gap-2 w-full md:flex-row md:items-center md:flex-nowrap md:gap-2"
@@ -269,8 +287,8 @@ export function FemijeSearchPanel({
               {t.searchBtn}
             </button>
           </form>
-        </section>
-      ) : null}
+        ) : null}
+      </section>
     </div>
   );
 }
