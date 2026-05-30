@@ -12,6 +12,9 @@ export const PS_TYPE_KEYS = [
   "gastronomi",
   "marketing",
   "transporti",
+  "shendet_kujdes",
+  "pastrim_mirembajtje",
+  "sherbime_te_tjera",
 ] as const;
 
 export type PsTypeKey = (typeof PS_TYPE_KEYS)[number];
@@ -24,6 +27,9 @@ export const PS_TYPE_DB_SLUG: Record<PsTypeKey, string> = {
   gastronomi: "pune-type-gastronomi",
   marketing: "pune-type-marketing",
   transporti: "pune-type-transporti",
+  shendet_kujdes: "pune-type-shendet-kujdes",
+  pastrim_mirembajtje: "pune-type-pastrim-mirembajtje",
+  sherbime_te_tjera: "pune-type-sherbime-te-tjera",
 };
 
 export const PS_TYPE_PHOTOS: Record<PsTypeKey, string> = {
@@ -41,6 +47,12 @@ export const PS_TYPE_PHOTOS: Record<PsTypeKey, string> = {
     "https://images.pexels.com/photos/905163/pexels-photo-905163.jpeg?auto=compress&cs=tinysrgb&w=400",
   transporti:
     "https://images.pexels.com/photos/1427107/pexels-photo-1427107.jpeg?auto=compress&cs=tinysrgb&w=400",
+  shendet_kujdes:
+    "https://images.pexels.com/photos/8460157/pexels-photo-8460157.jpeg?auto=compress&cs=tinysrgb&w=400",
+  pastrim_mirembajtje:
+    "https://images.pexels.com/photos/48889/pexels-photo-48889.jpeg?auto=compress&cs=tinysrgb&w=400",
+  sherbime_te_tjera:
+    "https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg?auto=compress&cs=tinysrgb&w=400",
 };
 
 export const PS_TYPE_LABEL_KEY: Record<PsTypeKey, string> = {
@@ -51,6 +63,95 @@ export const PS_TYPE_LABEL_KEY: Record<PsTypeKey, string> = {
   gastronomi: "ps_type_gastronomi",
   marketing: "ps_type_marketing",
   transporti: "ps_type_transporti",
+  shendet_kujdes: "ps_type_shendet_kujdes",
+  pastrim_mirembajtje: "ps_type_pastrim_mirembajtje",
+  sherbime_te_tjera: "ps_type_sherbime_te_tjera",
+};
+
+export const PS_EXTRA_TYPE_KEYS = [
+  "shendet_kujdes",
+  "pastrim_mirembajtje",
+  "sherbime_te_tjera",
+] as const;
+export type PsExtraTypeKey = (typeof PS_EXTRA_TYPE_KEYS)[number];
+
+export function isPsExtraTypeKey(key: PsTypeKey): key is PsExtraTypeKey {
+  return (PS_EXTRA_TYPE_KEYS as readonly string[]).includes(key);
+}
+
+export const PS_SHENDET_KEYS = [
+  "infermier_shtepi",
+  "fizioterapi",
+  "psikolog_terapeut",
+  "kujdes_moshuar",
+  "babysitter",
+] as const;
+export type PsShendetKey = (typeof PS_SHENDET_KEYS)[number];
+
+export const PS_SHENDET_LABEL_KEY: Record<PsShendetKey, string> = {
+  infermier_shtepi: "ps_sh_infermier_shtepi",
+  fizioterapi: "ps_sh_fizioterapi",
+  psikolog_terapeut: "ps_sh_psikolog_terapeut",
+  kujdes_moshuar: "ps_sh_kujdes_moshuar",
+  babysitter: "ps_sh_babysitter",
+};
+
+export const PS_SHENDET_DB_SLUG: Record<PsShendetKey, string> = {
+  infermier_shtepi: "pune-leaf-infermier-kujdes-shtepi",
+  fizioterapi: "pune-leaf-fizioterapi",
+  psikolog_terapeut: "pune-leaf-psikolog-terapeut",
+  kujdes_moshuar: "pune-leaf-kujdes-te-moshuarit",
+  babysitter: "pune-leaf-babysitter-kujdes-femijesh",
+};
+
+export const PS_PASTRIM_KEYS = [
+  "pastrim_banesash",
+  "pastrim_ndertimi",
+  "pastrim_xhamash",
+  "dezinfektim",
+  "kopshte_oborr",
+] as const;
+export type PsPastrimKey = (typeof PS_PASTRIM_KEYS)[number];
+
+export const PS_PASTRIM_LABEL_KEY: Record<PsPastrimKey, string> = {
+  pastrim_banesash: "ps_pa_pastrim_banesash",
+  pastrim_ndertimi: "ps_pa_pastrim_ndertimi",
+  pastrim_xhamash: "ps_pa_pastrim_xhamash",
+  dezinfektim: "ps_pa_dezinfektim",
+  kopshte_oborr: "ps_pa_kopshte_oborr",
+};
+
+export const PS_PASTRIM_DB_SLUG: Record<PsPastrimKey, string> = {
+  pastrim_banesash: "pune-leaf-pastrim-banesash",
+  pastrim_ndertimi: "pune-leaf-pastrim-pas-ndertimit",
+  pastrim_xhamash: "pune-leaf-pastrim-xhamash",
+  dezinfektim: "pune-leaf-dezinfektim-dezinsektim",
+  kopshte_oborr: "pune-leaf-mirembajtje-kopshtesh-oborresh",
+};
+
+export const PS_SHERBIME_KEYS = [
+  "riparim_pajisje",
+  "riparim_telefona",
+  "fotokopje",
+  "noteriale",
+  "lirim_banesash",
+] as const;
+export type PsSherbimeKey = (typeof PS_SHERBIME_KEYS)[number];
+
+export const PS_SHERBIME_LABEL_KEY: Record<PsSherbimeKey, string> = {
+  riparim_pajisje: "ps_st_riparim_pajisje",
+  riparim_telefona: "ps_st_riparim_telefona",
+  fotokopje: "ps_st_fotokopje",
+  noteriale: "ps_st_noteriale",
+  lirim_banesash: "ps_st_lirim_banesash",
+};
+
+export const PS_SHERBIME_DB_SLUG: Record<PsSherbimeKey, string> = {
+  riparim_pajisje: "pune-leaf-riparim-pajisje-shtepiake",
+  riparim_telefona: "pune-leaf-riparim-telefona-laptop",
+  fotokopje: "pune-leaf-fotokopje-shtypshkrim",
+  noteriale: "pune-leaf-sherbime-noteriale-juridike",
+  lirim_banesash: "pune-leaf-lirim-banesash-zyrash",
 };
 
 export const PS_ADMIN_KEYS = [
@@ -285,14 +386,49 @@ export function getPuneSherbimeLeafCategoryIds(
   categories: PuneSherbimeCategoryRow[],
   hubId: number,
 ): number[] {
+  const hub = Number(hubId);
+  const typeRows = categories.filter(
+    (c) =>
+      Number(c.parent_id) === hub &&
+      typeof c.slug === "string" &&
+      (c.slug as string).startsWith("pune-type-"),
+  );
+  const typeIds = typeRows.map((c) => c.id);
+  const typeIdSet = new Set(typeIds);
+  const leafIds = categories
+    .filter(
+      (c) =>
+        c.parent_id != null &&
+        typeIdSet.has(Number(c.parent_id)) &&
+        typeof c.slug === "string" &&
+        (c.slug as string).startsWith("pune-leaf-"),
+    )
+    .map((c) => c.id);
+  return [...new Set([...typeIds, ...leafIds])];
+}
+
+export function getPuneSherbimeTypeLeafCategoryIds(
+  categories: PuneSherbimeCategoryRow[],
+  hubId: number,
+  typeKey: PsTypeKey,
+): number[] {
+  const typeId = resolvePuneSherbimeTypeCategoryId(categories, hubId, typeKey);
+  if (!typeId) return [];
   return categories
     .filter(
       (c) =>
-        c.parent_id === hubId &&
+        Number(c.parent_id) === typeId &&
         typeof c.slug === "string" &&
-        (c.slug as string).startsWith("pune-type-"),
+        (c.slug as string).startsWith("pune-leaf-"),
     )
     .map((c) => c.id);
+}
+
+export function resolvePuneSherbimeLeafCategoryIdBySlug(
+  categories: PuneSherbimeCategoryRow[],
+  slug: string,
+): number | undefined {
+  return categories.find((c) => c.slug === slug)?.id;
 }
 
 export function resolvePuneSherbimeTypeCategoryId(

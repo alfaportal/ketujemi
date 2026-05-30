@@ -23,7 +23,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   CategoryPhotoPickerCard,
-  CategoryPhotoPickerRow,
+  CategoryPhotoPickerGrid,
 } from "@/components/category-photo-picker";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
@@ -58,11 +58,26 @@ import {
   PS_TRANS_KEYS,
   PS_TRANS_LABEL_KEY,
   PS_TRANS_SEARCH,
+  PS_PASTRIM_KEYS,
+  PS_PASTRIM_LABEL_KEY,
+  PS_PASTRIM_DB_SLUG,
+  PS_SHENDET_KEYS,
+  PS_SHENDET_LABEL_KEY,
+  PS_SHENDET_DB_SLUG,
+  PS_SHERBIME_KEYS,
+  PS_SHERBIME_LABEL_KEY,
+  PS_SHERBIME_DB_SLUG,
   PS_TYPE_KEYS,
   PS_TYPE_LABEL_KEY,
   PS_TYPE_PHOTOS,
   getPuneSherbimeLeafCategoryIds,
+  getPuneSherbimeTypeLeafCategoryIds,
+  isPsExtraTypeKey,
+  resolvePuneSherbimeLeafCategoryIdBySlug,
   resolvePuneSherbimeTypeCategoryId,
+  type PsPastrimKey,
+  type PsShendetKey,
+  type PsSherbimeKey,
   type PsAdminKey,
   type PsBuildKey,
   type PsCityKey,
@@ -175,6 +190,9 @@ export function PuneSherbimeSearchPanel({
   const [gastroKind, setGastroKind] = useState<PsGastroKey | "">("");
   const [mktKind, setMktKind] = useState<PsMktKey | "">("");
   const [transKind, setTransKind] = useState<PsTransKey | "">("");
+  const [shendetKind, setShendetKind] = useState<PsShendetKey | "">("");
+  const [pastrimKind, setPastrimKind] = useState<PsPastrimKey | "">("");
+  const [sherbimeKind, setSherbimeKind] = useState<PsSherbimeKey | "">("");
   const [offerType, setOfferType] = useState<PsOfferKey | "">("");
   const [payMode, setPayMode] = useState<PsPayKey | "">("");
   const [priceMin, setPriceMin] = useState("");
@@ -191,6 +209,9 @@ export function PuneSherbimeSearchPanel({
     setGastroKind("");
     setMktKind("");
     setTransKind("");
+    setShendetKind("");
+    setPastrimKind("");
+    setSherbimeKind("");
   };
 
   const selectType = (key: PsTypeKey) => {
@@ -214,10 +235,34 @@ export function PuneSherbimeSearchPanel({
     };
 
     if (typeKey) {
-      const cid = resolvePuneSherbimeTypeCategoryId(categories, hubId, typeKey);
-      if (cid) {
-        p.category_id = cid;
+      if (isPsExtraTypeKey(typeKey)) {
         delete p.category_ids;
+        let leafSlug: string | undefined;
+        if (typeKey === "shendet_kujdes" && shendetKind) {
+          leafSlug = PS_SHENDET_DB_SLUG[shendetKind];
+        } else if (typeKey === "pastrim_mirembajtje" && pastrimKind) {
+          leafSlug = PS_PASTRIM_DB_SLUG[pastrimKind];
+        } else if (typeKey === "sherbime_te_tjera" && sherbimeKind) {
+          leafSlug = PS_SHERBIME_DB_SLUG[sherbimeKind];
+        }
+        if (leafSlug) {
+          const leafId = resolvePuneSherbimeLeafCategoryIdBySlug(categories, leafSlug);
+          if (leafId) p.category_id = leafId;
+        } else {
+          const leafIds = getPuneSherbimeTypeLeafCategoryIds(categories, hubId, typeKey);
+          if (leafIds.length) {
+            p.category_ids = [...leafIds].sort((a, b) => a - b).join(",");
+          } else {
+            const cid = resolvePuneSherbimeTypeCategoryId(categories, hubId, typeKey);
+            if (cid) p.category_id = cid;
+          }
+        }
+      } else {
+        const cid = resolvePuneSherbimeTypeCategoryId(categories, hubId, typeKey);
+        if (cid) {
+          p.category_id = cid;
+          delete p.category_ids;
+        }
       }
     }
 
@@ -273,6 +318,9 @@ export function PuneSherbimeSearchPanel({
     gastroKind,
     mktKind,
     transKind,
+    shendetKind,
+    pastrimKind,
+    sherbimeKind,
     offerType,
     payMode,
     priceMin,
@@ -300,19 +348,20 @@ export function PuneSherbimeSearchPanel({
         <p className="text-sm text-gray-500">{t.ps_panel_sub}</p>
       </div>
 
-      <section className="space-y-3">
+      <section className="space-y-3 max-w-full overflow-hidden">
         <Label className="text-sm font-bold text-gray-900">{t.ps_sec_types}</Label>
-        <CategoryPhotoPickerRow>
+        <CategoryPhotoPickerGrid>
           {PS_TYPE_KEYS.map((key) => (
             <CategoryPhotoPickerCard
               key={key}
+              layout="grid"
               selected={typeKey === key}
               onClick={() => selectType(key)}
               imageSrc={PS_TYPE_PHOTOS[key]}
               label={t[PS_TYPE_LABEL_KEY[key]]}
             />
           ))}
-        </CategoryPhotoPickerRow>
+        </CategoryPhotoPickerGrid>
       </section>
 
       {typeKey === "administrate" ? (
@@ -414,6 +463,51 @@ export function PuneSherbimeSearchPanel({
               labelKey={PS_TRANS_LABEL_KEY}
               selected={transKind}
               onSelect={setTransKind}
+              t={t}
+            />
+          </FilterSection>
+        </section>
+      ) : null}
+
+      {typeKey === "shendet_kujdes" ? (
+        <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
+          <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
+          <FilterSection title={t.ps_sec_kind}>
+            <KindChips
+              keys={PS_SHENDET_KEYS}
+              labelKey={PS_SHENDET_LABEL_KEY}
+              selected={shendetKind}
+              onSelect={setShendetKind}
+              t={t}
+            />
+          </FilterSection>
+        </section>
+      ) : null}
+
+      {typeKey === "pastrim_mirembajtje" ? (
+        <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
+          <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
+          <FilterSection title={t.ps_sec_kind}>
+            <KindChips
+              keys={PS_PASTRIM_KEYS}
+              labelKey={PS_PASTRIM_LABEL_KEY}
+              selected={pastrimKind}
+              onSelect={setPastrimKind}
+              t={t}
+            />
+          </FilterSection>
+        </section>
+      ) : null}
+
+      {typeKey === "sherbime_te_tjera" ? (
+        <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
+          <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
+          <FilterSection title={t.ps_sec_kind}>
+            <KindChips
+              keys={PS_SHERBIME_KEYS}
+              labelKey={PS_SHERBIME_LABEL_KEY}
+              selected={sherbimeKind}
+              onSelect={setSherbimeKind}
               t={t}
             />
           </FilterSection>
