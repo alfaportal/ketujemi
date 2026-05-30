@@ -97,7 +97,7 @@ import { RrobaKepuceSearchPanel } from "@/components/rroba-kepuce-search-panel";
 import {
   getRrobaKepuceLeafCategoryIds,
 } from "@/lib/rroba-kepuce-search-helpers";
-import { getFemijeLeafCategoryIds, femijeSubcategoryPhoto } from "@/lib/femije-search-helpers";
+import { getFemijeLeafCategoryIds } from "@/lib/femije-search-helpers";
 import { PuneSherbimeSearchPanel } from "@/components/pune-sherbime-search-panel";
 import { getPuneSherbimeLeafCategoryIds } from "@/lib/pune-sherbime-search-helpers";
 import { BujqesiBlegtoriSearchPanel } from "@/components/bujqesi-blegtori-search-panel";
@@ -118,13 +118,12 @@ const FemijeSearchPanel = lazy(() =>
 
 function FemijeSearchPanelFallback() {
   return (
-    <div className="mb-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-      <Skeleton className="h-6 w-48 mb-4" />
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton key={i} className="h-[108px] w-full rounded-xl" />
-        ))}
+    <div className="mb-8 space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Skeleton className="h-[72px] w-full rounded-xl" />
+        <Skeleton className="h-[72px] w-full rounded-xl" />
       </div>
+      <Skeleton className="h-12 w-full rounded-xl" />
     </div>
   );
 }
@@ -940,6 +939,9 @@ export default function CategoryPage() {
     if (isRrobaKepuceHub && rrobaKepuceLeafCsv) {
       return rrobaKepuceListParams ?? { category_ids: rrobaKepuceLeafCsv, page: 1, limit: 20 };
     }
+    if (isFemijeGroupPage) {
+      return femijeListParams ?? { category_id: categoryId, page: 1, limit: 20 };
+    }
     if (isFemijeLeafPage) {
       return femijeListParams ?? { category_id: categoryId, page: 1, limit: 20 };
     }
@@ -1004,8 +1006,8 @@ export default function CategoryPage() {
     isRrobaKepuceHub,
     rrobaKepuceLeafCsv,
     rrobaKepuceListParams,
-    isFemijeHub,
     isFemijeGroupPage,
+    isFemijeHub,
     isFemijeLeafPage,
     femijeLeafCsv,
     femijeListParams,
@@ -1043,8 +1045,6 @@ export default function CategoryPage() {
     (!isArsimKurseHub || arsimKurseLeafCsv.length > 0) &&
     (!isMobiljeDekorimHub || mobiljeDekorimLeafCsv.length > 0) &&
     (!isRrobaKepuceHub || rrobaKepuceLeafCsv.length > 0) &&
-    !isFemijeHub &&
-    !isFemijeGroupPage &&
     (!isPuneSherbimeHub || puneSherbimeLeafCsv.length > 0) &&
     (!isBujqesiBlegtoriHub || bujqesiBlegtoriLeafCsv.length > 0) &&
     (!isMuzikeHobbyHub || muzikeHobbyLeafCsv.length > 0) &&
@@ -1589,6 +1589,9 @@ export default function CategoryPage() {
                 navigateToCategory(setLocation, childId, categoryId)
               }
               onListingParamsChange={setFemijeListParams}
+              onScrollToResults={() =>
+                resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
             />
           </Suspense>
         ) : null}
@@ -1706,31 +1709,6 @@ export default function CategoryPage() {
           </div>
         )}
 
-        {isFemijeSubcategoryLevel && children.length > 0 ? (
-          <div className="mb-8">
-            <h2 className="text-lg font-black text-gray-900 mb-1">{t.subcategory}</h2>
-            <p className="text-sm text-gray-400 mb-4">
-              {children.length}{" "}
-              {(t as { subcategoriesAvail: string }).subcategoriesAvail}
-            </p>
-            <CategoryPhotoPickerGrid>
-              {[...children]
-                .sort((a: { name: string }, b: { name: string }) =>
-                  a.name.localeCompare(b.name, "sq"),
-                )
-                .map((sub: { id: number; name: string; slug: string | null; image_url?: string | null }) => (
-                  <CategoryPhotoPickerCard
-                    key={sub.id}
-                    layout="grid"
-                    onClick={() => navigateToCategory(setLocation, sub.id, categoryId)}
-                    imageSrc={femijeSubcategoryPhoto(sub.slug, sub.image_url)}
-                    label={translateCategory(sub.name, locale)}
-                  />
-                ))}
-            </CategoryPhotoPickerGrid>
-          </div>
-        ) : null}
-
         {isFemijeGroupPage && allCategories?.length ? (
           <Suspense fallback={<FemijeSearchPanelFallback />}>
             <FemijeSearchPanel
@@ -1742,6 +1720,9 @@ export default function CategoryPage() {
                 navigateToCategory(setLocation, childId, categoryId)
               }
               onListingParamsChange={setFemijeListParams}
+              onScrollToResults={() =>
+                resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
             />
           </Suspense>
         ) : null}
@@ -1796,7 +1777,7 @@ export default function CategoryPage() {
           <VipPartnersSection variant="hub" categoryId={categoryId} className="my-8" />
         ) : null}
 
-        {!isTelefonaHubPage && !isFemijeHub && !isFemijeGroupPage && renderListingsSection()}
+        {!isTelefonaHubPage && renderListingsSection()}
       </div>
     </div>
   );

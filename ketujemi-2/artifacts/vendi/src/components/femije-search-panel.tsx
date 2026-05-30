@@ -1,103 +1,31 @@
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type Dispatch,
-  type ReactNode,
-  type SetStateAction,
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { GetListingsParams } from "@workspace/api-client-react";
-import { Baby, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { HubLocationFilter } from "@/components/hub-location-filter";
-import { hubLocationToListingParams } from "@/lib/hub-location-search";
-import type { HomeMarketCode } from "@/lib/market-context";
+import { Search } from "lucide-react";
 import {
-  CategoryPhotoPickerCard,
-  CategoryPhotoPickerGrid,
-} from "@/components/category-photo-picker";
-import { cn } from "@/lib/utils";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useMarket } from "@/lib/market-context";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
+import { cnPrimaryBlue } from "@/lib/primary-button-classes";
+import { effectiveListingSearchQuery } from "@/lib/listing-search-query";
 import {
-  FJ_BABY_TYPE_KEYS,
-  FJ_BABY_TYPE_LABEL_KEY,
-  FJ_BABY_TYPE_SEARCH,
-  FJ_CONDITION_KEYS,
-  FJ_CONDITION_LABEL_KEY,
-  FJ_CONDITION_SEARCH,
-  FJ_FOOD_ITEM_KEYS,
-  FJ_FOOD_ITEM_LABEL_KEY,
-  FJ_FOOD_ITEM_SEARCH,
-  FJ_FOOD_TYPE_KEYS,
-  FJ_FOOD_TYPE_LABEL_KEY,
-  FJ_FOOD_TYPE_SEARCH,
-  FJ_INSTALL_KEYS,
-  FJ_INSTALL_LABEL_KEY,
-  FJ_INSTALL_SEARCH,
-  FJ_KID_GENDER_KEYS,
-  FJ_KID_GENDER_LABEL_KEY,
-  FJ_KID_GENDER_SEARCH,
-  FJ_ROBE_AGE_GROUPS,
-  FJ_ROBE_TYPE_KEYS,
-  FJ_ROBE_TYPE_LABEL_KEY,
-  FJ_ROBE_TYPE_SEARCH,
-  FJ_STROLLER_BRAND_KEYS,
-  FJ_STROLLER_BRAND_LABEL_KEY,
-  FJ_STROLLER_BRAND_SEARCH,
-  FJ_STROLLER_FEATURE_KEYS,
-  FJ_STROLLER_FEATURE_LABEL_KEY,
-  FJ_STROLLER_FEATURE_SEARCH,
-  FJ_STROLLER_TYPE_KEYS,
-  FJ_STROLLER_TYPE_LABEL_KEY,
-  FJ_STROLLER_TYPE_SEARCH,
-  FJ_TOY_AGE_KEYS,
-  FJ_TOY_AGE_LABEL_KEY,
-  FJ_TOY_AGE_SEARCH,
-  FJ_TOY_TYPE_KEYS,
-  FJ_TOY_TYPE_LABEL_KEY,
-  FJ_TOY_TYPE_SEARCH,
-  FJ_TYPE_DB_SLUG,
-  FJ_WEIGHT_KEYS,
-  FJ_WEIGHT_LABEL_KEY,
-  FJ_WEIGHT_SEARCH,
-  FJ_GROUP_SLUG_TO_TYPE,
-  femijeSubcategoryPhoto,
   getFemijeGroupLeafIds,
+  getFemijeGroupLeafRows,
   getFemijeHubSubcategoryRows,
   getFemijeLeafCategoryIds,
-  type FjBabyTypeKey,
-  type FjCityKey,
-  type FjConditionKey,
-  type FjFoodItemKey,
-  type FjFoodTypeKey,
-  type FjInstallKey,
-  type FjKidGenderKey,
-  type FjRobeSizeKey,
-  type FjRobeTypeKey,
-  type FjStrollerBrandKey,
-  type FjStrollerFeatureKey,
-  type FjStrollerTypeKey,
-  type FjToyAgeKey,
-  type FjToyTypeKey,
-  type FjTypeKey,
-  type FjWeightKey,
   type FemijeCategoryRow,
 } from "@/lib/femije-search-helpers";
-
-const inputClass = "min-h-12 h-12 w-full text-[16px] rounded-xl border-slate-200";
 
 export type FemijeSearchVariant = "hub" | "group" | "leaf";
 
 type Props = {
   variant: FemijeSearchVariant;
   hubId: number;
-  /** Group or leaf category id when variant is group/leaf */
   scopeCategoryId?: number;
   categories: FemijeCategoryRow[];
   onNavigateToCategory: (childCategoryId: number) => void;
@@ -105,50 +33,7 @@ type Props = {
   onScrollToResults?: () => void;
 };
 
-function ChipButton({
-  selected,
-  onClick,
-  children,
-  className,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "w-full rounded-xl border px-3 py-3 min-h-12 text-sm font-semibold text-left transition-colors touch-manipulation",
-        selected
-          ? "border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-600/20"
-          : "border-gray-200 bg-white text-gray-800 hover:border-blue-200",
-        className,
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-function FilterSection({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="space-y-3 border-t border-gray-100 pt-4 first:border-t-0 first:pt-0">
-      <p className="text-sm font-bold text-gray-900">{title}</p>
-      {children}
-    </div>
-  );
-}
-
-function resolveFemijeTypeKey(slug: string): FjTypeKey | null {
-  const fromGroup = FJ_GROUP_SLUG_TO_TYPE[slug];
-  const fromLegacy = (Object.entries(FJ_TYPE_DB_SLUG) as [FjTypeKey, string][]).find(
-    ([, s]) => s === slug,
-  )?.[0];
-  return fromGroup ?? fromLegacy ?? null;
-}
+const ALL = "all";
 
 export function FemijeSearchPanel({
   variant,
@@ -162,553 +47,192 @@ export function FemijeSearchPanel({
   const { t, uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
 
-  const hubSubcategories = useMemo(
+  const hubGroups = useMemo(
     () => getFemijeHubSubcategoryRows(categories, hubId),
     [categories, hubId],
   );
 
-  const leafCsv = useMemo(() => {
+  const hubLeafCsv = useMemo(() => {
     const ids = getFemijeLeafCategoryIds(categories, hubId);
     return [...ids].sort((a, b) => a - b).join(",");
   }, [categories, hubId]);
 
-  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
-  const [selectedLeafId, setSelectedLeafId] = useState<number | null>(null);
-  const [typeKey, setTypeKey] = useState<FjTypeKey | null>(null);
-  const [strollerType, setStrollerType] = useState<FjStrollerTypeKey | "">("");
-  const [strollerBrand, setStrollerBrand] = useState<FjStrollerBrandKey | "">("");
-  const [strollerFeatures, setStrollerFeatures] = useState<
-    Record<FjStrollerFeatureKey, boolean>
-  >({
-    cante: false,
-    rain: false,
-    mosquito: false,
-    winter: false,
-  });
-  const [babyType, setBabyType] = useState<FjBabyTypeKey | "">("");
-  const [weight, setWeight] = useState<FjWeightKey | "">("");
-  const [install, setInstall] = useState<FjInstallKey | "">("");
-  const [foodType, setFoodType] = useState<FjFoodTypeKey | "">("");
-  const [foodItems, setFoodItems] = useState<Record<FjFoodItemKey, boolean>>({
-    bottle: false,
-    pump: false,
-    sterilizer: false,
-    babyphone: false,
-    bath_tub: false,
-    changing_mat: false,
-  });
-  const [toyType, setToyType] = useState<FjToyTypeKey | "">("");
-  const [toyAge, setToyAge] = useState<FjToyAgeKey | "">("");
-  const [kidGender, setKidGender] = useState<FjKidGenderKey | "">("");
-  const [kidSize, setKidSize] = useState<FjRobeSizeKey | "">("");
-  const [robeType, setRobeType] = useState<FjRobeTypeKey | "">("");
-  const [condition, setCondition] = useState<FjConditionKey | "">("");
-  const [priceMin, setPriceMin] = useState("");
-  const [priceMax, setPriceMax] = useState("");
-  const [hubLocation, setHubLocation] = useState<{
-    countryCode: HomeMarketCode | "";
-    city: string;
-    areaZone: string;
-  }>({ countryCode: "", city: "", areaZone: "" });
+  const initialGroupId = useMemo(() => {
+    if (variant === "hub") return ALL;
+    if (variant === "group" && scopeCategoryId) return String(scopeCategoryId);
+    if (variant === "leaf" && scopeCategoryId) {
+      const leaf = categories.find((c) => c.id === scopeCategoryId);
+      const parentId = leaf?.parent_id;
+      if (parentId) return String(parentId);
+    }
+    return ALL;
+  }, [variant, scopeCategoryId, categories]);
 
-  const resetSubFilters = () => {
-    setStrollerType("");
-    setStrollerBrand("");
-    setStrollerFeatures({ cante: false, rain: false, mosquito: false, winter: false });
-    setBabyType("");
-    setWeight("");
-    setInstall("");
-    setFoodType("");
-    setFoodItems({
-      bottle: false,
-      pump: false,
-      sterilizer: false,
-      babyphone: false,
-      bath_tub: false,
-      changing_mat: false,
-    });
-    setToyType("");
-    setToyAge("");
-    setKidGender("");
-    setKidSize("");
-    setRobeType("");
-  };
-
-  const activeGroupId =
-    variant === "group" ? (scopeCategoryId ?? null) : selectedGroupId;
-
-  useEffect(() => {
-    if (variant !== "group" || !scopeCategoryId) return;
-    const row = categories.find((c) => c.id === scopeCategoryId);
-    setSelectedGroupId(scopeCategoryId);
-    setSelectedLeafId(null);
-    resetSubFilters();
-    setTypeKey(row?.slug ? resolveFemijeTypeKey(row.slug) : null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- scope mount only
+  const initialLeafId = useMemo(() => {
+    if (variant === "leaf" && scopeCategoryId) return String(scopeCategoryId);
+    return ALL;
   }, [variant, scopeCategoryId]);
 
+  const [groupId, setGroupId] = useState(initialGroupId);
+  const [leafId, setLeafId] = useState(initialLeafId);
+  const [searchText, setSearchText] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
+
   useEffect(() => {
-    if (variant !== "leaf" || !scopeCategoryId) return;
-    setSelectedLeafId(scopeCategoryId);
-    setSelectedGroupId(null);
-    setTypeKey(null);
-    resetSubFilters();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- scope mount only
-  }, [variant, scopeCategoryId]);
+    setGroupId(initialGroupId);
+    setLeafId(initialLeafId);
+  }, [initialGroupId, initialLeafId]);
 
-  const selectedGroup =
-    variant === "group"
-      ? categories.find((row) => row.id === scopeCategoryId)
-      : hubSubcategories.find((row) => row.id === selectedGroupId);
-
-  const typeTitle = selectedGroup
-    ? translateCategory(selectedGroup.name, locale)
-    : "";
+  const leafOptions = useMemo(() => {
+    if (groupId === ALL) return [];
+    const gid = Number(groupId);
+    if (!Number.isFinite(gid)) return [];
+    return getFemijeGroupLeafRows(categories, gid);
+  }, [categories, groupId]);
 
   const callbackRef = useRef(onListingParamsChange);
   callbackRef.current = onListingParamsChange;
 
-  const toggleChip = <T extends string>(
-    current: T | "",
-    value: T,
-    set: Dispatch<SetStateAction<T | "">>,
-  ) => {
-    set(current === value ? "" : value);
-  };
+  const buildParams = (searchQuery = appliedSearch): GetListingsParams => {
+    const p: GetListingsParams = { page: 1, limit: 20 };
 
-  const buildParams = (): GetListingsParams => {
-    const p: GetListingsParams = {
-      page: 1,
-      limit: 20,
-      category_ids: leafCsv,
-    };
+    if (leafId !== ALL) {
+      const lid = Number(leafId);
+      if (Number.isFinite(lid)) {
+        p.category_id = lid;
+        if (searchQuery) p.search = searchQuery;
+        return p;
+      }
+    }
 
-    const leafTarget =
-      variant === "leaf" && scopeCategoryId
-        ? scopeCategoryId
-        : selectedLeafId;
-    const groupTarget =
-      variant === "group" && scopeCategoryId
-        ? scopeCategoryId
-        : activeGroupId;
-
-    if (leafTarget) {
-      p.category_id = leafTarget;
-      delete p.category_ids;
-    } else if (groupTarget) {
-      const leafIds = getFemijeGroupLeafIds(categories, groupTarget);
+    if (groupId !== ALL) {
+      const gid = Number(groupId);
+      const leafIds = getFemijeGroupLeafIds(categories, gid);
       if (leafIds.length === 1) {
         p.category_id = leafIds[0];
-        delete p.category_ids;
       } else if (leafIds.length > 0) {
         p.category_ids = [...leafIds].sort((a, b) => a - b).join(",");
-        delete p.category_id;
       }
+      if (searchQuery) p.search = searchQuery;
+      return p;
     }
 
-    Object.assign(p, hubLocationToListingParams(hubLocation));
-
-    const searchBits: string[] = [];
-
-    if (typeKey === "karroca") {
-      if (strollerType) searchBits.push(FJ_STROLLER_TYPE_SEARCH[strollerType]);
-      if (strollerBrand) searchBits.push(FJ_STROLLER_BRAND_SEARCH[strollerBrand]);
-      for (const k of FJ_STROLLER_FEATURE_KEYS) {
-        if (strollerFeatures[k]) searchBits.push(FJ_STROLLER_FEATURE_SEARCH[k]);
+    if (variant === "group" && scopeCategoryId) {
+      const leafIds = getFemijeGroupLeafIds(categories, scopeCategoryId);
+      if (leafIds.length === 1) p.category_id = leafIds[0];
+      else if (leafIds.length > 0) {
+        p.category_ids = [...leafIds].sort((a, b) => a - b).join(",");
       }
-    } else if (typeKey === "foshnje") {
-      if (babyType) searchBits.push(FJ_BABY_TYPE_SEARCH[babyType]);
-      if (weight) searchBits.push(FJ_WEIGHT_SEARCH[weight]);
-      if (install) searchBits.push(FJ_INSTALL_SEARCH[install]);
-    } else if (typeKey === "ushqim_higjiene") {
-      if (foodType) searchBits.push(FJ_FOOD_TYPE_SEARCH[foodType]);
-      for (const k of FJ_FOOD_ITEM_KEYS) {
-        if (foodItems[k]) searchBits.push(FJ_FOOD_ITEM_SEARCH[k]);
-      }
-    } else if (typeKey === "lodra") {
-      if (toyType) searchBits.push(FJ_TOY_TYPE_SEARCH[toyType]);
-      if (toyAge) searchBits.push(FJ_TOY_AGE_SEARCH[toyAge]);
-    } else if (typeKey === "rroba") {
-      if (kidGender) searchBits.push(FJ_KID_GENDER_SEARCH[kidGender]);
-      if (kidSize) searchBits.push(`${kidSize} cm`);
-      if (robeType) searchBits.push(FJ_ROBE_TYPE_SEARCH[robeType]);
+    } else if (variant === "leaf" && scopeCategoryId) {
+      p.category_id = scopeCategoryId;
+    } else if (hubLeafCsv) {
+      p.category_ids = hubLeafCsv;
     }
 
-    if (condition) searchBits.push(FJ_CONDITION_SEARCH[condition]);
-
-    if (searchBits.length) p.search = searchBits.join(" ");
-
-    const minP = parseFloat(priceMin.replace(",", "."));
-    const maxP = parseFloat(priceMax.replace(",", "."));
-    if (Number.isFinite(minP) && priceMin.trim()) p.min_price = minP;
-    if (Number.isFinite(maxP) && priceMax.trim()) p.max_price = maxP;
-
+    if (searchQuery) p.search = searchQuery;
     return p;
   };
 
   useEffect(() => {
-    if (variant === "hub") return;
     const timer = window.setTimeout(() => {
       callbackRef.current(buildParams());
-    }, 400);
+    }, 300);
     return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- debounced live preview
-  }, [
-    variant,
-    scopeCategoryId,
-    leafCsv,
-    hubId,
-    activeGroupId,
-    selectedGroupId,
-    selectedLeafId,
-    typeKey,
-    strollerType,
-    strollerBrand,
-    strollerFeatures,
-    babyType,
-    weight,
-    install,
-    foodType,
-    foodItems,
-    toyType,
-    toyAge,
-    kidGender,
-    kidSize,
-    robeType,
-    condition,
-    priceMin,
-    priceMax,
-    hubLocation,
-    categories,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- debounced listing preview
+  }, [groupId, leafId, appliedSearch, hubLeafCsv, variant, scopeCategoryId, categories]);
 
-  const handleSearch = () => {
-    callbackRef.current(buildParams());
-    if (variant === "leaf") onScrollToResults?.();
+  const handleGroupChange = (value: string) => {
+    setGroupId(value);
+    setLeafId(ALL);
+    if (value === ALL) return;
+    const gid = Number(value);
+    if (!Number.isFinite(gid)) return;
+    if (variant === "hub") return;
+    onNavigateToCategory(gid);
   };
 
-  const showTypeFilters = variant === "group" && !!typeKey;
-  const showUniversal = variant === "group" || variant === "leaf";
+  const handleLeafChange = (value: string) => {
+    setLeafId(value);
+    if (value === ALL) return;
+    const lid = Number(value);
+    if (!Number.isFinite(lid)) return;
+    onNavigateToCategory(lid);
+  };
+
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const q = effectiveListingSearchQuery(searchText);
+    setAppliedSearch(q);
+    callbackRef.current(buildParams(q));
+    onScrollToResults?.();
+  };
+
+  const selectLabelClass =
+    "text-sm font-semibold text-gray-500 mb-1.5 block uppercase tracking-wide";
 
   return (
-    <div className="mb-8 space-y-6 rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm overflow-hidden max-w-full">
-      {variant === "hub" ? (
-        <section className="space-y-4">
-          <div>
-            <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
-              <Baby size={20} className="text-blue-600 shrink-0" aria-hidden />
-              {(t as { fj_sec_pick_sub?: string }).fj_sec_pick_sub ?? t.fj_sec_types}
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {hubSubcategories.length}{" "}
-              {(t as { subcategoriesAvail?: string }).subcategoriesAvail ??
-                "nënkategori të disponueshme"}
-            </p>
-          </div>
-          <CategoryPhotoPickerGrid>
-            {hubSubcategories.map((row) => (
-              <CategoryPhotoPickerCard
-                key={row.id}
-                layout="grid"
-                onClick={() => onNavigateToCategory(row.id)}
-                imageSrc={femijeSubcategoryPhoto(row.slug, row.image_url)}
-                label={translateCategory(row.name, locale)}
-              />
-            ))}
-          </CategoryPhotoPickerGrid>
-        </section>
-      ) : null}
+    <div className="mb-8 space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="min-w-0">
+          <label className={selectLabelClass}>{t.category}</label>
+          <Select value={groupId} onValueChange={handleGroupChange}>
+            <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
+              <SelectValue placeholder={t.all} />
+            </SelectTrigger>
+            <SelectContent className="!max-h-[300px]">
+              <SelectItem value={ALL}>{t.all}</SelectItem>
+              {hubGroups.map((row) => (
+                <SelectItem key={row.id} value={String(row.id)}>
+                  {translateCategory(row.name, locale)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      {showTypeFilters && typeKey === "karroca" ? (
-        <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-          <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
-          <FilterSection title={t.fj_sec_type}>
-            <div className="grid grid-cols-2 gap-2">
-              {FJ_STROLLER_TYPE_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={strollerType === k}
-                  onClick={() => toggleChip(strollerType, k, setStrollerType)}
-                >
-                  {t[FJ_STROLLER_TYPE_LABEL_KEY[k]]}
-                </ChipButton>
+        <div className="min-w-0">
+          <label className={selectLabelClass}>{t.subcategory}</label>
+          <Select
+            value={leafId}
+            onValueChange={handleLeafChange}
+            disabled={groupId === ALL || leafOptions.length === 0}
+          >
+            <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
+              <SelectValue placeholder={t.all} />
+            </SelectTrigger>
+            <SelectContent className="!max-h-[300px]">
+              <SelectItem value={ALL}>{t.all}</SelectItem>
+              {leafOptions.map((row) => (
+                <SelectItem key={row.id} value={String(row.id)}>
+                  {translateCategory(row.name, locale)}
+                </SelectItem>
               ))}
-            </div>
-          </FilterSection>
-          <FilterSection title={t.fj_sec_brand}>
-            <div className="grid grid-cols-2 gap-2">
-              {FJ_STROLLER_BRAND_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={strollerBrand === k}
-                  onClick={() => toggleChip(strollerBrand, k, setStrollerBrand)}
-                >
-                  {t[FJ_STROLLER_BRAND_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </FilterSection>
-          <FilterSection title={t.fj_sec_features}>
-            <div className="grid grid-cols-1 gap-3">
-              {FJ_STROLLER_FEATURE_KEYS.map((k) => (
-                <label
-                  key={k}
-                  className="flex items-center gap-3 min-h-12 cursor-pointer touch-manipulation"
-                >
-                  <Checkbox
-                    checked={strollerFeatures[k]}
-                    onCheckedChange={(c) =>
-                      setStrollerFeatures((prev) => ({ ...prev, [k]: c === true }))
-                    }
-                    className="h-5 w-5"
-                  />
-                  <span className="text-sm font-medium text-gray-800">
-                    {t[FJ_STROLLER_FEATURE_LABEL_KEY[k]]}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </FilterSection>
-        </section>
-      ) : null}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
-      {showTypeFilters && typeKey === "foshnje" ? (
-        <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-          <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
-          <FilterSection title={t.fj_sec_type}>
-            <div className="grid grid-cols-2 gap-2">
-              {FJ_BABY_TYPE_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={babyType === k}
-                  onClick={() => toggleChip(babyType, k, setBabyType)}
-                >
-                  {t[FJ_BABY_TYPE_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </FilterSection>
-          <FilterSection title={t.fj_sec_weight}>
-            <div className="grid grid-cols-2 gap-2">
-              {FJ_WEIGHT_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={weight === k}
-                  onClick={() => toggleChip(weight, k, setWeight)}
-                >
-                  {t[FJ_WEIGHT_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </FilterSection>
-          <FilterSection title={t.fj_sec_system}>
-            <div className="grid grid-cols-2 gap-2">
-              {FJ_INSTALL_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={install === k}
-                  onClick={() => toggleChip(install, k, setInstall)}
-                >
-                  {t[FJ_INSTALL_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </FilterSection>
-        </section>
-      ) : null}
-
-      {showTypeFilters && typeKey === "ushqim_higjiene" ? (
-        <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-          <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
-          <FilterSection title={t.fj_sec_type}>
-            <div className="grid grid-cols-2 gap-2">
-              {FJ_FOOD_TYPE_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={foodType === k}
-                  onClick={() => toggleChip(foodType, k, setFoodType)}
-                >
-                  {t[FJ_FOOD_TYPE_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </FilterSection>
-          <FilterSection title={t.fj_sec_items}>
-            <div className="grid grid-cols-1 gap-3">
-              {FJ_FOOD_ITEM_KEYS.map((k) => (
-                <label
-                  key={k}
-                  className="flex items-center gap-3 min-h-12 cursor-pointer touch-manipulation"
-                >
-                  <Checkbox
-                    checked={foodItems[k]}
-                    onCheckedChange={(c) =>
-                      setFoodItems((prev) => ({ ...prev, [k]: c === true }))
-                    }
-                    className="h-5 w-5"
-                  />
-                  <span className="text-sm font-medium text-gray-800">
-                    {t[FJ_FOOD_ITEM_LABEL_KEY[k]]}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </FilterSection>
-        </section>
-      ) : null}
-
-      {showTypeFilters && typeKey === "lodra" ? (
-        <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-          <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
-          <FilterSection title={t.fj_sec_type}>
-            <div className="grid grid-cols-2 gap-2">
-              {FJ_TOY_TYPE_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={toyType === k}
-                  onClick={() => toggleChip(toyType, k, setToyType)}
-                >
-                  {t[FJ_TOY_TYPE_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </FilterSection>
-          <FilterSection title={t.fj_sec_age}>
-            <div className="grid grid-cols-2 gap-2">
-              {FJ_TOY_AGE_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={toyAge === k}
-                  onClick={() => toggleChip(toyAge, k, setToyAge)}
-                >
-                  {t[FJ_TOY_AGE_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </FilterSection>
-        </section>
-      ) : null}
-
-      {showTypeFilters && typeKey === "rroba" ? (
-        <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-          <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
-          <FilterSection title={t.fj_sec_gender}>
-            <div className="grid grid-cols-2 gap-2">
-              {FJ_KID_GENDER_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={kidGender === k}
-                  onClick={() => toggleChip(kidGender, k, setKidGender)}
-                >
-                  {t[FJ_KID_GENDER_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </FilterSection>
-          <FilterSection title={t.fj_sec_age_group}>
-            {FJ_ROBE_AGE_GROUPS.map((group) => (
-              <div key={group.groupKey} className="space-y-2 mb-4 last:mb-0">
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
-                  {t[group.labelKey]}
-                </p>
-                <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-                  {group.sizeKeys.map((size) => (
-                    <ChipButton
-                      key={size}
-                      selected={kidSize === size}
-                      onClick={() => toggleChip(kidSize, size, setKidSize)}
-                    >
-                      {size}
-                    </ChipButton>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </FilterSection>
-          <FilterSection title={t.fj_sec_kind}>
-            <div className="grid grid-cols-2 gap-2">
-              {FJ_ROBE_TYPE_KEYS.map((k) => (
-                <ChipButton
-                  key={k}
-                  selected={robeType === k}
-                  onClick={() => toggleChip(robeType, k, setRobeType)}
-                >
-                  {t[FJ_ROBE_TYPE_LABEL_KEY[k]]}
-                </ChipButton>
-              ))}
-            </div>
-          </FilterSection>
-        </section>
-      ) : null}
-
-      {showUniversal ? (
-      <section className="space-y-5 rounded-xl border border-blue-100 bg-blue-50/30 p-4">
-        <h3 className="text-base font-black text-gray-900">{t.fj_sec_universal}</h3>
-
-        <FilterSection title={t.fj_sec_condition}>
-          <div className="grid grid-cols-2 gap-2">
-            {FJ_CONDITION_KEYS.map((k) => (
-              <ChipButton
-                key={k}
-                selected={condition === k}
-                onClick={() => toggleChip(condition, k, setCondition)}
-              >
-                {t[FJ_CONDITION_LABEL_KEY[k]]}
-              </ChipButton>
-            ))}
-          </div>
-        </FilterSection>
-
-        <FilterSection title={t.fj_sec_price}>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <span className="text-sm text-gray-600">{t.fj_from}</span>
-              <Input
-                type="number"
-                inputMode="decimal"
-                min={0}
-                value={priceMin}
-                onChange={(e) => setPriceMin(e.target.value)}
-                placeholder="0"
-                className={inputClass}
-              />
-            </div>
-            <div className="space-y-2">
-              <span className="text-sm text-gray-600">{t.fj_to}</span>
-              <Input
-                type="number"
-                inputMode="decimal"
-                min={0}
-                value={priceMax}
-                onChange={(e) => setPriceMax(e.target.value)}
-                placeholder="500"
-                className={inputClass}
-              />
-            </div>
-          </div>
-        </FilterSection>
-
-        <FilterSection title={t.fj_sec_location}>
-          <HubLocationFilter
-            value={hubLocation}
-            onChange={setHubLocation}
-            inputClass={inputClass}
-            areaId="fj-area"
-          />
-        </FilterSection>
-      </section>
-      ) : null}
-
-      {showUniversal ? (
-      <Button
-        type="button"
-        onClick={handleSearch}
-        className="w-full min-h-12 h-12 text-base font-bold bg-blue-600 hover:bg-blue-700 touch-manipulation"
+      <form
+        onSubmit={handleSearchSubmit}
+        className="flex flex-col gap-2 w-full md:flex-row md:items-center md:flex-nowrap md:gap-2"
       >
-        <Search size={18} className="mr-2 shrink-0" aria-hidden />
-        {t.fj_search_btn}
-      </Button>
-      ) : null}
+        <div className="relative flex-1 min-w-0">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+            aria-hidden
+          />
+          <input
+            type="search"
+            placeholder={t.search}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="w-full min-h-12 pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-base sm:text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all bg-gray-50 focus:bg-white touch-manipulation"
+          />
+        </div>
+        <button type="submit" className={cnPrimaryBlue("w-full md:w-auto")}>
+          {t.searchBtn}
+        </button>
+      </form>
     </div>
   );
 }
