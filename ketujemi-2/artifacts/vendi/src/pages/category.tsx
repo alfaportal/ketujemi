@@ -115,15 +115,8 @@ const FemijeSearchPanel = lazy(() =>
   import("@/components/femije-search-panel").then((m) => ({ default: m.FemijeSearchPanel })),
 );
 
-const ArsimKurseSearchPanel = lazy(() =>
-  import("@/components/arsim-kurse-search-panel").then((m) => ({
-    default: m.ArsimKurseSearchPanel,
-  })),
-);
-
-function ArsimKurseSearchPanelFallback() {
-  return FemijeSearchPanelFallback();
-}
+import { ArsimKurseSearchPanel } from "@/components/arsim-kurse-search-panel";
+import { getArsimKurseLeafCategoryIds } from "@/lib/arsim-kurse-search-helpers";
 
 function FemijeSearchPanelFallback() {
   return (
@@ -710,38 +703,6 @@ export default function CategoryPage() {
     (currentCategory as any).slug === ARSIM_KURSE_HUB_SLUG &&
     !(currentCategory as any).parent_id;
 
-  const isArsimKurseTypePage =
-    !!(parentCategory as { slug?: string })?.slug &&
-    (parentCategory as { slug?: string }).slug === ARSIM_KURSE_HUB_SLUG &&
-    currentSlug.startsWith("arsim-type-");
-
-  const isArsimKurseGroupPage =
-    typeof (parentCategory as { slug?: string })?.slug === "string" &&
-    (parentCategory as { slug?: string }).slug!.startsWith("arsim-type-") &&
-    currentSlug.startsWith("arsim-grp-");
-
-  const isArsimKurseLeafPage =
-    currentSlug.startsWith("arsim-leaf-") &&
-    typeof (parentCategory as { slug?: string })?.slug === "string" &&
-    (parentCategory as { slug?: string }).slug!.startsWith("arsim-grp-");
-
-  const arsimKurseHubCategoryId = useMemo(() => {
-    if (isArsimKurseHub) return categoryId;
-    if ((parentCategory as { slug?: string })?.slug === ARSIM_KURSE_HUB_SLUG) {
-      return (parentCategory as { id: number }).id;
-    }
-    if ((grandparentCategory as { slug?: string })?.slug === ARSIM_KURSE_HUB_SLUG) {
-      return (grandparentCategory as { id: number }).id;
-    }
-    if (
-      grandparentCategory &&
-      (parentCategory as { slug?: string })?.slug?.startsWith("arsim-type-")
-    ) {
-      return (grandparentCategory as { id: number }).id;
-    }
-    return categoryId;
-  }, [isArsimKurseHub, categoryId, parentCategory, grandparentCategory]);
-
   const isMobiljeDekorimHub =
     !!(currentCategory as any) &&
     (currentCategory as any).slug === MOBILJE_DEKORIM_HUB_SLUG &&
@@ -841,6 +802,12 @@ export default function CategoryPage() {
     const ids = getTelefonaHubChildCategoryIds(allCategories as any, categoryId);
     return [...ids].sort((a, b) => a - b).join(",");
   }, [allCategories, categoryId, isTelefonaHubPage]);
+
+  const arsimKurseLeafCsv = useMemo(() => {
+    if (!allCategories || !isArsimKurseHub) return "";
+    const ids = getArsimKurseLeafCategoryIds(allCategories as any, categoryId);
+    return [...ids].sort((a, b) => a - b).join(",");
+  }, [allCategories, categoryId, isArsimKurseHub]);
 
   const mobiljeDekorimLeafCsv = useMemo(() => {
     if (!allCategories || !isMobiljeDekorimHub) return "";
@@ -965,8 +932,8 @@ export default function CategoryPage() {
     if (isTelefonaHubPage && telefonaLeafCsv) {
       return telefonaListParams ?? { category_ids: telefonaLeafCsv, page: 1, limit: 20 };
     }
-    if (isArsimKurseLeafPage) {
-      return arsimKurseListParams ?? { category_id: categoryId, page: 1, limit: 20 };
+    if (isArsimKurseHub && arsimKurseLeafCsv) {
+      return arsimKurseListParams ?? { category_ids: arsimKurseLeafCsv, page: 1, limit: 20 };
     }
     if (isMobiljeDekorimHub && mobiljeDekorimLeafCsv) {
       return mobiljeDekorimListParams ?? { category_ids: mobiljeDekorimLeafCsv, page: 1, limit: 20 };
@@ -1032,7 +999,8 @@ export default function CategoryPage() {
     isTelefonaHubPage,
     telefonaLeafCsv,
     telefonaListParams,
-    isArsimKurseLeafPage,
+    isArsimKurseHub,
+    arsimKurseLeafCsv,
     arsimKurseListParams,
     isMobiljeDekorimHub,
     mobiljeDekorimLeafCsv,
@@ -1076,9 +1044,7 @@ export default function CategoryPage() {
     (!isSportOutdoorHub || sportOutdoorLeafCsv.length > 0) &&
     (!isLokaleZyreHub || lokaleZyreLeafCsv.length > 0) &&
     (!isTelefonaHubPage || telefonaLeafCsv.length > 0) &&
-    !isArsimKurseHub &&
-    !isArsimKurseTypePage &&
-    !isArsimKurseGroupPage &&
+    (!isArsimKurseHub || arsimKurseLeafCsv.length > 0) &&
     (!isMobiljeDekorimHub || mobiljeDekorimLeafCsv.length > 0) &&
     (!isRrobaKepuceHub || rrobaKepuceLeafCsv.length > 0) &&
     !isFemijeHub &&
@@ -1578,17 +1544,17 @@ export default function CategoryPage() {
           </>
         ) : null}
 
-        {isArsimKurseHub && allCategories?.length ? (
-          <Suspense fallback={<ArsimKurseSearchPanelFallback />}>
-            <ArsimKurseSearchPanel
-              variant="hub"
-              hubId={categoryId}
-              categories={allCategories as any}
-              onNavigateToCategory={(childId) =>
-                navigateToCategory(setLocation, childId, categoryId)
-              }
-            />
-          </Suspense>
+        {isArsimKurseHub && arsimKurseLeafCsv ? (
+          <ArsimKurseSearchPanel
+            hubId={categoryId}
+            categories={allCategories as any}
+            previewTotal={listingsData?.total ?? null}
+            previewLoading={isLoading}
+            onListingParamsChange={setArsimKurseListParams}
+            onScrollToResults={() =>
+              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }
+          />
         ) : null}
 
         {isMobiljeDekorimHub && mobiljeDekorimLeafCsv ? (
@@ -1743,49 +1709,6 @@ export default function CategoryPage() {
           </div>
         )}
 
-        {isArsimKurseTypePage && allCategories?.length ? (
-          <Suspense fallback={<ArsimKurseSearchPanelFallback />}>
-            <ArsimKurseSearchPanel
-              variant="type"
-              hubId={arsimKurseHubCategoryId}
-              scopeCategoryId={categoryId}
-              categories={allCategories as any}
-              onNavigateToCategory={(childId) =>
-                navigateToCategory(setLocation, childId, categoryId)
-              }
-            />
-          </Suspense>
-        ) : null}
-
-        {isArsimKurseGroupPage && allCategories?.length ? (
-          <Suspense fallback={<ArsimKurseSearchPanelFallback />}>
-            <ArsimKurseSearchPanel
-              variant="group"
-              hubId={arsimKurseHubCategoryId}
-              scopeCategoryId={categoryId}
-              categories={allCategories as any}
-              onNavigateToCategory={(childId) =>
-                navigateToCategory(setLocation, childId, categoryId)
-              }
-            />
-          </Suspense>
-        ) : null}
-
-        {isArsimKurseLeafPage && allCategories?.length ? (
-          <Suspense fallback={<ArsimKurseSearchPanelFallback />}>
-            <ArsimKurseSearchPanel
-              variant="leaf"
-              hubId={arsimKurseHubCategoryId}
-              scopeCategoryId={categoryId}
-              categories={allCategories as any}
-              onNavigateToCategory={(childId) =>
-                navigateToCategory(setLocation, childId, categoryId)
-              }
-              onListingParamsChange={setArsimKurseListParams}
-            />
-          </Suspense>
-        ) : null}
-
         {isFemijeGroupPage && allCategories?.length ? (
           <Suspense fallback={<FemijeSearchPanelFallback />}>
             <FemijeSearchPanel
@@ -1849,9 +1772,7 @@ export default function CategoryPage() {
         ) : null}
 
         {!isTelefonaHubPage &&
-          (isFemijeLeafPage ||
-            isArsimKurseLeafPage ||
-            (!isFemijeHub && !isFemijeGroupPage && !isArsimKurseHub && !isArsimKurseTypePage && !isArsimKurseGroupPage)) &&
+          (isFemijeLeafPage || (!isFemijeHub && !isFemijeGroupPage)) &&
           renderListingsSection()}
       </div>
     </div>

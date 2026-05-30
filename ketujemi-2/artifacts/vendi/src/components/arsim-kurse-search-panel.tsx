@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { GetListingsParams } from "@workspace/api-client-react";
 import { GraduationCap, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -10,367 +12,231 @@ import {
 } from "@/components/ui/select";
 import {
   CategoryPhotoPickerCard,
-  CategoryPhotoPickerGrid,
+  CategoryPhotoPickerRow,
 } from "@/components/category-photo-picker";
 import { useMarket } from "@/lib/market-context";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
-import { cnPrimaryBlue } from "@/lib/primary-button-classes";
-import { effectiveListingSearchQuery } from "@/lib/listing-search-query";
 import {
   arsimSubcategoryPhoto,
+  getArsimKurseGroupLeafIds,
   getArsimKurseGroupRows,
+  getArsimKurseLeafCategoryIds,
   getArsimKurseLeafRows,
   getArsimKurseTypeRows,
   type ArsimKurseCategoryRow,
 } from "@/lib/arsim-kurse-search-helpers";
 
-export type ArsimKurseSearchVariant = "hub" | "type" | "group" | "leaf";
+const triggerClass =
+  "min-h-12 h-12 w-full text-[16px] rounded-xl border-slate-200 font-normal";
 
 type Props = {
-  variant: ArsimKurseSearchVariant;
   hubId: number;
-  scopeCategoryId?: number;
   categories: ArsimKurseCategoryRow[];
-  onNavigateToCategory: (childCategoryId: number) => void;
-  /** Listings refresh — leaf (final) page only. */
-  onListingParamsChange?: (params: GetListingsParams) => void;
+  previewTotal: number | null;
+  previewLoading: boolean;
+  onListingParamsChange: (params: GetListingsParams) => void;
+  onScrollToResults?: () => void;
 };
 
-const ALL = "all";
-
-function findRow(categories: ArsimKurseCategoryRow[], id: number | null | undefined) {
-  if (id == null) return null;
-  return categories.find((c) => Number(c.id) === Number(id)) ?? null;
+function Field({
+  id,
+  label,
+  children,
+}: {
+  id: string;
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="space-y-2 min-w-0">
+      <Label htmlFor={id} className="text-sm font-bold text-gray-900">
+        {label}
+      </Label>
+      {children}
+    </div>
+  );
 }
 
 export function ArsimKurseSearchPanel({
-  variant,
   hubId,
-  scopeCategoryId,
   categories,
-  onNavigateToCategory,
+  previewTotal: _previewTotal,
+  previewLoading: _previewLoading,
   onListingParamsChange,
+  onScrollToResults,
 }: Props) {
   const { t, uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
-  const isFinalPage = variant === "leaf";
 
   const hubTypes = useMemo(
     () => getArsimKurseTypeRows(categories, hubId),
     [categories, hubId],
   );
 
-  const scopeTypeId = useMemo(() => {
-    if (variant === "type" && scopeCategoryId) return scopeCategoryId;
-    if (variant === "group" && scopeCategoryId) {
-      return findRow(categories, scopeCategoryId)?.parent_id ?? null;
-    }
-    if (variant === "leaf" && scopeCategoryId) {
-      const group = findRow(categories, scopeCategoryId);
-      return group?.parent_id != null
-        ? findRow(categories, group.parent_id)?.parent_id ?? null
-        : null;
-    }
-    return null;
-  }, [variant, scopeCategoryId, categories]);
+  const defaultCsv = useMemo(() => {
+    const ids = getArsimKurseLeafCategoryIds(categories, hubId);
+    return [...ids].sort((a, b) => a - b).join(",");
+  }, [categories, hubId]);
 
-  const scopeGroupId = useMemo(() => {
-    if (variant === "group" && scopeCategoryId) return scopeCategoryId;
-    if (variant === "leaf" && scopeCategoryId) {
-      return findRow(categories, scopeCategoryId)?.parent_id ?? null;
-    }
-    return null;
-  }, [variant, scopeCategoryId, categories]);
+  const [typeId, setTypeId] = useState<number | "">("");
+  const [subcategoryId, setSubcategoryId] = useState<number | "">("");
 
-  const typeSelectOptions = useMemo((): ArsimKurseCategoryRow[] => {
-    if (variant === "hub") return hubTypes;
-    if (variant === "type" && scopeCategoryId) {
-      const row = findRow(categories, scopeCategoryId);
-      return row ? [row] : [];
-    }
-    if ((variant === "group" || variant === "leaf") && scopeTypeId) {
-      const row = findRow(categories, scopeTypeId);
-      return row ? [row] : [];
-    }
-    return [];
-  }, [variant, hubTypes, scopeCategoryId, scopeTypeId, categories]);
-
-  const groupSelectOptions = useMemo((): ArsimKurseCategoryRow[] => {
-    if (variant === "hub") return [];
-    if (variant === "type" && scopeCategoryId) {
-      return getArsimKurseGroupRows(categories, scopeCategoryId);
-    }
-    if ((variant === "group" || variant === "leaf") && scopeGroupId) {
-      const row = findRow(categories, scopeGroupId);
-      return row ? [row] : [];
-    }
-    return [];
-  }, [variant, scopeCategoryId, scopeGroupId, categories]);
-
-  const leafSelectOptions = useMemo((): ArsimKurseCategoryRow[] => {
-    if (variant === "hub" || variant === "type") return [];
-    if (variant === "group" && scopeCategoryId) {
-      return getArsimKurseLeafRows(categories, scopeCategoryId);
-    }
-    if (variant === "leaf" && scopeGroupId) {
-      return getArsimKurseLeafRows(categories, scopeGroupId);
-    }
-    return [];
-  }, [variant, scopeCategoryId, scopeGroupId, categories]);
-
-  const initialTypeId = useMemo(() => {
-    if (variant === "hub") return ALL;
-    if (scopeTypeId) return String(scopeTypeId);
-    return ALL;
-  }, [variant, scopeTypeId]);
-
-  const initialGroupId = useMemo(() => {
-    if (variant === "hub" || variant === "type") return ALL;
-    if (scopeGroupId) return String(scopeGroupId);
-    return ALL;
-  }, [variant, scopeGroupId]);
-
-  const initialLeafId = useMemo(() => {
-    if (variant === "leaf" && scopeCategoryId) return String(scopeCategoryId);
-    return ALL;
-  }, [variant, scopeCategoryId]);
-
-  const [typeId, setTypeId] = useState(initialTypeId);
-  const [groupId, setGroupId] = useState(initialGroupId);
-  const [leafId, setLeafId] = useState(initialLeafId);
-  const [searchText, setSearchText] = useState("");
-  const [appliedSearch, setAppliedSearch] = useState("");
+  const subcategoryOptions = useMemo(() => {
+    if (!typeId) return [];
+    const groups = getArsimKurseGroupRows(categories, typeId);
+    return groups.flatMap((group) => {
+      const leaves = getArsimKurseLeafRows(categories, group.id);
+      return leaves.map((leaf) => ({
+        id: leaf.id,
+        label: `${translateCategory(group.name, locale)} — ${translateCategory(leaf.name, locale)}`,
+      }));
+    });
+  }, [typeId, categories, locale]);
 
   useEffect(() => {
-    setTypeId(initialTypeId);
-    setGroupId(initialGroupId);
-    setLeafId(initialLeafId);
-  }, [initialTypeId, initialGroupId, initialLeafId]);
+    setSubcategoryId("");
+  }, [typeId]);
 
-  const photoGridRows = useMemo(() => {
-    if (variant === "hub") return hubTypes;
-    if (variant === "type" && scopeCategoryId) {
-      return getArsimKurseGroupRows(categories, scopeCategoryId);
+  useEffect(() => {
+    if (subcategoryId && typeId) {
+      const allowed = subcategoryOptions.map((o) => o.id);
+      if (!allowed.includes(subcategoryId)) setSubcategoryId("");
     }
-    if (variant === "group" && scopeCategoryId) {
-      return getArsimKurseLeafRows(categories, scopeCategoryId);
-    }
-    return [];
-  }, [variant, hubTypes, categories, scopeCategoryId]);
+  }, [subcategoryId, typeId, subcategoryOptions]);
 
-  const photoGridTitle =
-    variant === "hub"
-      ? t.ak_sec_types
-      : variant === "type"
-        ? ((t as { ak_sec_groups?: string }).ak_sec_groups ?? t.subcategory)
-        : ((t as { ak_sec_leaves?: string }).ak_sec_leaves ?? t.subcategory);
+  const buildParams = (): GetListingsParams => {
+    const params: GetListingsParams = { page: 1, limit: 20 };
 
-  const callbackRef = useRef(onListingParamsChange);
-  callbackRef.current = onListingParamsChange;
-
-  const buildParams = (searchQuery = appliedSearch): GetListingsParams => {
-    const p: GetListingsParams = { page: 1, limit: 20 };
-
-    if (isFinalPage && scopeCategoryId) {
-      p.category_id = scopeCategoryId;
-      if (searchQuery) p.search = searchQuery;
-      return p;
+    if (subcategoryId) {
+      params.category_id = subcategoryId;
+    } else if (typeId) {
+      const groups = getArsimKurseGroupRows(categories, typeId);
+      const leafIds = groups.flatMap((g) => getArsimKurseGroupLeafIds(categories, g.id));
+      if (leafIds.length) {
+        params.category_ids = [...leafIds].sort((a, b) => a - b).join(",");
+      }
+    } else if (defaultCsv) {
+      params.category_ids = defaultCsv;
     }
 
-    if (searchQuery) p.search = searchQuery;
-    return p;
+    return params;
   };
 
   useEffect(() => {
-    if (!isFinalPage || !callbackRef.current || !scopeCategoryId) return;
-    const timer = window.setTimeout(() => {
-      callbackRef.current?.(buildParams());
-    }, 300);
-    return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- leaf listings only
-  }, [isFinalPage, appliedSearch, scopeCategoryId]);
+    onListingParamsChange(buildParams());
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- live preview
+  }, [typeId, subcategoryId, defaultCsv, hubId, categories, onListingParamsChange]);
 
-  const handleTypeChange = (value: string) => {
-    if (value === ALL) {
-      if (variant === "hub") {
-        setTypeId(ALL);
-        setGroupId(ALL);
-        setLeafId(ALL);
-      }
-      return;
-    }
-    const tid = Number(value);
-    if (!Number.isFinite(tid)) return;
-    if (variant === "leaf" && tid === scopeTypeId) {
-      onNavigateToCategory(tid);
-      return;
-    }
-    onNavigateToCategory(tid);
+  const handleSearch = () => {
+    onListingParamsChange(buildParams());
+    onScrollToResults?.();
   };
 
-  const handleGroupChange = (value: string) => {
-    if (value === ALL) {
-      if (variant === "type" && scopeCategoryId) {
-        onNavigateToCategory(scopeCategoryId);
-      }
-      return;
-    }
-    const gid = Number(value);
-    if (!Number.isFinite(gid)) return;
-    if (variant === "leaf" && gid === scopeGroupId) {
-      onNavigateToCategory(gid);
-      return;
-    }
-    onNavigateToCategory(gid);
+  const selectTypeCard = (id: number) => {
+    setTypeId((prev) => (prev === id ? "" : id));
+    setSubcategoryId("");
   };
 
-  const handleLeafChange = (value: string) => {
-    if (value === ALL) {
-      if (variant === "group" && scopeCategoryId) {
-        onNavigateToCategory(scopeCategoryId);
-      }
-      return;
-    }
-    const lid = Number(value);
-    if (!Number.isFinite(lid)) return;
-    if (lid === scopeCategoryId) return;
-    onNavigateToCategory(lid);
-  };
-
-  const handleSearchSubmit = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!isFinalPage) return;
-    const q = effectiveListingSearchQuery(searchText);
-    setAppliedSearch(q);
-    callbackRef.current?.(buildParams(q));
-  };
-
-  const selectLabelClass =
-    "text-sm font-semibold text-gray-500 mb-1.5 block uppercase tracking-wide";
-
-  const showTypeAll = variant === "hub";
-  const showGroupAll = variant === "type";
-  const showLeafAll = variant === "group";
+  const selectedType = typeId ? hubTypes.find((r) => r.id === typeId) : null;
 
   return (
-    <div className="mb-8 space-y-6">
-      {photoGridRows.length > 0 ? (
-        <section className="space-y-4">
-          <div>
-            <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
-              <GraduationCap size={20} className="text-blue-600 shrink-0" aria-hidden />
-              {photoGridTitle}
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {photoGridRows.length}{" "}
-              {(t as { subcategoriesAvail?: string }).subcategoriesAvail ??
-                "nënkategori të disponueshme"}
-            </p>
-          </div>
-          <CategoryPhotoPickerGrid>
-            {photoGridRows.map((row) => (
+    <div className="mb-8 space-y-6 max-w-full overflow-hidden">
+      <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm">
+        <div className="flex flex-col gap-1 border-b border-gray-100 pb-4 mb-4">
+          <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
+            <GraduationCap size={20} className="text-blue-600 shrink-0" aria-hidden />
+            {t.ak_panel_title}
+          </h2>
+          <p className="text-sm text-gray-500">{t.ak_panel_sub}</p>
+        </div>
+
+        <section className="space-y-3" aria-label={t.ak_sec_types}>
+          <Label className="text-sm font-bold text-gray-500 uppercase tracking-wide">
+            {t.ak_sec_types}
+          </Label>
+          <CategoryPhotoPickerRow>
+            {hubTypes.map((row) => (
               <CategoryPhotoPickerCard
                 key={row.id}
-                layout="grid"
-                onClick={() => onNavigateToCategory(row.id)}
+                selected={typeId === row.id}
+                onClick={() => selectTypeCard(row.id)}
                 imageSrc={arsimSubcategoryPhoto(row.slug, row.image_url, categories)}
                 label={translateCategory(row.name, locale)}
               />
             ))}
-          </CategoryPhotoPickerGrid>
+          </CategoryPhotoPickerRow>
         </section>
-      ) : null}
+      </div>
 
-      <section className="space-y-4 border-t border-gray-100 pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="min-w-0">
-            <label className={selectLabelClass}>{t.category}</label>
-            <Select value={typeId} onValueChange={handleTypeChange}>
-              <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
-                <SelectValue placeholder={t.all} />
-              </SelectTrigger>
-              <SelectContent className="!max-h-[300px]">
-                {showTypeAll ? <SelectItem value={ALL}>{t.all}</SelectItem> : null}
-                {typeSelectOptions.map((row) => (
-                  <SelectItem key={row.id} value={String(row.id)}>
-                    {translateCategory(row.name, locale)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="min-w-0">
-            <label className={selectLabelClass}>{t.subcategory}</label>
+      <section
+        className="rounded-2xl border border-blue-100 bg-blue-50/30 p-4 sm:p-5 shadow-sm space-y-4"
+        aria-label={t.ak_search_btn}
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field id="ak-category" label={t.ak_fld_category}>
             <Select
-              value={variant === "hub" ? ALL : groupId}
-              onValueChange={handleGroupChange}
-              disabled={variant === "hub" || groupSelectOptions.length === 0}
+              value={typeId ? String(typeId) : "__any__"}
+              onValueChange={(v) => setTypeId(v === "__any__" ? "" : Number(v))}
             >
-              <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
-                <SelectValue placeholder={t.all} />
+              <SelectTrigger id="ak-category" className={triggerClass}>
+                <SelectValue placeholder={t.ak_select_category_ph}>
+                  {selectedType
+                    ? translateCategory(selectedType.name, locale)
+                    : t.ak_select_any}
+                </SelectValue>
               </SelectTrigger>
-              <SelectContent className="!max-h-[300px]">
-                {showGroupAll ? <SelectItem value={ALL}>{t.all}</SelectItem> : null}
-                {groupSelectOptions.map((row) => (
-                  <SelectItem key={row.id} value={String(row.id)}>
+              <SelectContent className="max-h-[min(70vh,320px)]">
+                <SelectItem value="__any__" className="min-h-11">
+                  {t.ak_select_any}
+                </SelectItem>
+                {hubTypes.map((row) => (
+                  <SelectItem key={row.id} value={String(row.id)} className="min-h-11">
                     {translateCategory(row.name, locale)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Field>
+
+          <Field id="ak-subcategory" label={t.ak_fld_subcategory}>
+            <Select
+              key={typeId || "__none__"}
+              value={subcategoryId ? String(subcategoryId) : "__any__"}
+              onValueChange={(v) =>
+                setSubcategoryId(v === "__any__" ? "" : Number(v))
+              }
+              disabled={!typeId}
+            >
+              <SelectTrigger id="ak-subcategory" className={triggerClass}>
+                <SelectValue placeholder={t.ak_select_subcategory_ph}>
+                  {subcategoryId
+                    ? subcategoryOptions.find((o) => o.id === subcategoryId)?.label
+                    : t.ak_select_any}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="max-h-[min(70vh,360px)]">
+                <SelectItem value="__any__" className="min-h-11">
+                  {t.ak_select_any}
+                </SelectItem>
+                {subcategoryOptions.map((opt) => (
+                  <SelectItem key={opt.id} value={String(opt.id)} className="min-h-11">
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
         </div>
 
-        {variant === "group" || variant === "leaf" ? (
-          <div className="min-w-0 max-w-full md:max-w-[calc(50%-0.5rem)]">
-            <label className={selectLabelClass}>
-              {(t as { ak_fld_detail?: string }).ak_fld_detail ?? t.subcategory}
-            </label>
-            <Select
-              value={variant === "group" ? ALL : leafId}
-              onValueChange={handleLeafChange}
-              disabled={variant === "group" && leafSelectOptions.length === 0}
-            >
-              <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
-                <SelectValue placeholder={t.all} />
-              </SelectTrigger>
-              <SelectContent className="!max-h-[300px]">
-                {showLeafAll ? <SelectItem value={ALL}>{t.all}</SelectItem> : null}
-                {leafSelectOptions.map((row) => (
-                  <SelectItem key={row.id} value={String(row.id)}>
-                    {translateCategory(row.name, locale)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        ) : null}
-
-        {isFinalPage ? (
-          <form
-            onSubmit={handleSearchSubmit}
-            className="flex flex-col gap-2 w-full md:flex-row md:items-center md:flex-nowrap md:gap-2"
-          >
-            <div className="relative flex-1 min-w-0">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
-                aria-hidden
-              />
-              <input
-                type="search"
-                placeholder={t.search}
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                className="w-full min-h-12 pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-base sm:text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all bg-gray-50 focus:bg-white touch-manipulation"
-              />
-            </div>
-            <button type="submit" className={cnPrimaryBlue("w-full md:w-auto")}>
-              {t.searchBtn}
-            </button>
-          </form>
-        ) : null}
+        <Button
+          type="button"
+          onClick={handleSearch}
+          className="w-full min-h-[48px] h-12 text-base font-bold bg-blue-600 hover:bg-blue-700 touch-manipulation"
+        >
+          <Search size={18} className="mr-2 shrink-0" aria-hidden />
+          {t.ak_search_btn}
+        </Button>
       </section>
     </div>
   );
