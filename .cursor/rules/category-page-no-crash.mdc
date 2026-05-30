@@ -1,0 +1,50 @@
+---
+description: Prevent "Faqja nuk u ngarkua" — category.tsx hooks order, bundle size, pre-push checks
+globs: ketujemi-2/artifacts/vendi/src/pages/category.tsx,ketujemi-2/artifacts/vendi/src/lib/femije*.ts,ketujemi-2/artifacts/vendi/src/components/**/*search-panel*.tsx
+alwaysApply: false
+---
+
+# Category page must never crash
+
+`AppErrorBoundary` shows **"Faqja nuk u ngarkua"** on any React render error — not slow network. This must not ship.
+
+## Before every push touching vendi frontend
+
+1. `cd ketujemi-2/artifacts/vendi && pnpm run build` — do not push if build fails.
+2. `pnpm run dev` — manually open: home, one hub (e.g. Vetura), Fëmijë hub → `femije-grp-*` → `femije-leaf-*`, `/listings`.
+3. Browser Console must have **no** `[KetuJemi] App failed to render` while navigating.
+
+## `category.tsx` — variable order (critical)
+
+Declare **before** any `useMemo`, `useGetListings`, or `listingsQueryEnabled` that uses them:
+
+- `currentCategory`, `parentCategory`, `grandparentCategory`, `currentSlug`
+- All `is*Hub` / `isFemijeGroupPage` / `isFemijeLeafPage` flags
+- `femijeHubCategoryId` and leaf CSV memos that depend on those flags
+
+```typescript
+// ❌ Crashes every category page
+const q = useMemo(() => isFemijeGroupPage, [isFemijeGroupPage]);
+const isFemijeGroupPage = ...;
+
+// ✅
+const isFemijeGroupPage = ...;
+const q = useMemo(() => isFemijeGroupPage, [isFemijeGroupPage]);
+```
+
+## Bundle — do not pull huge files into the category chunk
+
+- **Never** import `femije-subcategory-guides.ts` (~310KB) from `category.tsx` or from helpers imported by every category page.
+- Slug maps → `femije-leaf-parent-group-slug.ts` only.
+- Heavy hub panels → `React.lazy()` + `Suspense` (pattern: `FemijeSearchPanel` in `category.tsx`).
+- Large guide/i18n data → import only in the component that displays it, not in shared category entry.
+
+After changes, if `category-*.js` chunk grows sharply in `vite build` output, find and remove the bad import.
+
+## After deploy
+
+Stale PWA/cache can show old broken JS. Tell users: hard refresh / incognito / clear cache for ketujemi.com — but **fix code first** if all categories fail immediately.
+
+## Debug production
+
+Console: `[KetuJemi] App failed to render` + message. `before initialization` → hook order bug. `Failed to fetch dynamically imported module` → cache/deploy mismatch.
