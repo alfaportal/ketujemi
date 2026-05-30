@@ -24,7 +24,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   CategoryPhotoPickerCard,
-  CategoryPhotoPickerRow,
+  CategoryPhotoPickerGrid,
 } from "@/components/category-photo-picker";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
@@ -417,17 +417,18 @@ export function MuzikeHobbySearchPanel({
 
       <section className="space-y-3">
         <Label className="text-sm font-bold text-gray-900">{t.mh_sec_types}</Label>
-        <CategoryPhotoPickerRow>
+        <CategoryPhotoPickerGrid>
           {MH_TYPE_KEYS.map((key) => (
             <CategoryPhotoPickerCard
               key={key}
+              layout="grid"
               selected={typeKey === key}
               onClick={() => selectType(key)}
               imageSrc={MH_TYPE_PHOTOS[key]}
               label={t[MH_TYPE_LABEL_KEY[key]]}
             />
           ))}
-        </CategoryPhotoPickerRow>
+        </CategoryPhotoPickerGrid>
       </section>
 
       {typeKey === "frymore" ? (
