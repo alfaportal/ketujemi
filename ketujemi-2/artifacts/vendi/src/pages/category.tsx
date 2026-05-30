@@ -618,6 +618,29 @@ export default function CategoryPage() {
   const children =
     allCategories?.filter((c: any) => Number(c.parent_id) === Number(categoryId)) ?? [];
 
+  const parentCategory = currentCategory && (currentCategory as any).parent_id
+    ? allCategories?.find((c: any) => Number(c.id) === Number((currentCategory as any).parent_id)) ??
+      null
+    : null;
+
+  const grandparentCategory =
+    parentCategory && (parentCategory as any).parent_id
+      ? allCategories?.find(
+          (c: any) => Number(c.id) === Number((parentCategory as any).parent_id),
+        ) ?? null
+      : null;
+
+  const currentSlug = (currentCategory as { slug?: string | null })?.slug ?? "";
+
+  const isFemijeGroupPage =
+    !!(parentCategory as { slug?: string })?.slug &&
+    (parentCategory as { slug?: string }).slug === FEMIJE_HUB_SLUG &&
+    currentSlug.startsWith("femije-grp-");
+
+  const isFemijeLeafPage =
+    currentSlug.startsWith("femije-leaf-") ||
+    (currentSlug.startsWith("femije-type-") && children.length === 0);
+
   const isVeturaHub =
     !!(currentCategory as any) &&
     (currentCategory as any).slug === VETURA_HUB_SLUG &&
@@ -677,6 +700,17 @@ export default function CategoryPage() {
     !!(currentCategory as any) &&
     (currentCategory as any).slug === FEMIJE_HUB_SLUG &&
     !(currentCategory as any).parent_id;
+
+  const femijeHubCategoryId = useMemo(() => {
+    if (isFemijeHub) return categoryId;
+    if ((parentCategory as { slug?: string })?.slug === FEMIJE_HUB_SLUG) {
+      return (parentCategory as { id: number }).id;
+    }
+    if ((grandparentCategory as { slug?: string })?.slug === FEMIJE_HUB_SLUG) {
+      return (grandparentCategory as { id: number }).id;
+    }
+    return categoryId;
+  }, [isFemijeHub, categoryId, parentCategory, grandparentCategory]);
 
   const isPuneSherbimeHub =
     !!(currentCategory as any) &&
@@ -1044,14 +1078,6 @@ export default function CategoryPage() {
     return <CategoryPageNotFound />;
   }
 
-  const parentCategory = currentCategory && (currentCategory as any).parent_id
-    ? allCategories.find((c: any) => c.id === (currentCategory as any).parent_id)
-    : null;
-
-  const grandparentCategory = parentCategory && (parentCategory as any).parent_id
-    ? allCategories.find((c: any) => c.id === (parentCategory as any).parent_id)
-    : null;
-
   const depth = !(currentCategory as any)?.parent_id ? 1
     : parentCategory && !(parentCategory as any).parent_id ? 2
     : 3;
@@ -1063,27 +1089,6 @@ export default function CategoryPage() {
     parentCategory != null &&
     (parentCategory as { slug?: string }).slug === FEMIJE_HUB_SLUG;
 
-  const currentSlug = (currentCategory as { slug?: string | null })?.slug ?? "";
-
-  const isFemijeGroupPage =
-    !!(parentCategory as { slug?: string })?.slug &&
-    (parentCategory as { slug?: string }).slug === FEMIJE_HUB_SLUG &&
-    currentSlug.startsWith("femije-grp-");
-
-  const isFemijeLeafPage =
-    currentSlug.startsWith("femije-leaf-") ||
-    (currentSlug.startsWith("femije-type-") && children.length === 0);
-
-  const femijeHubCategoryId = useMemo(() => {
-    if (isFemijeHub) return categoryId;
-    if ((parentCategory as { slug?: string })?.slug === FEMIJE_HUB_SLUG) {
-      return (parentCategory as { id: number }).id;
-    }
-    if ((grandparentCategory as { slug?: string })?.slug === FEMIJE_HUB_SLUG) {
-      return (grandparentCategory as { id: number }).id;
-    }
-    return categoryId;
-  }, [isFemijeHub, categoryId, parentCategory, grandparentCategory]);
   const femijeGuideSlug = isFemijeHub
     ? FEMIJE_HUB_SLUG
     : /^femije(-(grp|type|leaf)-|$)/.test(currentSlug) &&
