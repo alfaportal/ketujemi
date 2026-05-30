@@ -58,11 +58,13 @@ export const LZ_AFARISTE_GROUPS = [
     groupKey: "tregti",
     labelKey: "lz_grp_tregti",
     options: [
-      { key: "butik", labelKey: "lz_dest_butik", search: "Butik Rroba" },
+      { key: "butik", labelKey: "lz_dest_butik", search: "Butik Veshje" },
+      { key: "dyqan", labelKey: "lz_dest_dyqan", search: "Dyqan Rrobash Veshje" },
       { key: "market", labelKey: "lz_dest_market", search: "Market Ushqimore" },
       { key: "mishtore", labelKey: "lz_dest_mishtore", search: "Mishtore" },
       { key: "furre", labelKey: "lz_dest_furre", search: "Furrë Ëmbëltore" },
       { key: "barnatore", labelKey: "lz_dest_barnatore", search: "Barnatore" },
+      { key: "pajisje_it", labelKey: "lz_dest_pajisje_it", search: "Pajisje Teknologjike IT" },
     ],
   },
   {
@@ -72,6 +74,7 @@ export const LZ_AFARISTE_GROUPS = [
       { key: "bukuri", labelKey: "lz_dest_bukuri", search: "Sallon Bukurie Frizer" },
       { key: "autolarje", labelKey: "lz_dest_autolarje", search: "Autolarje Servis" },
       { key: "fitness", labelKey: "lz_dest_fitness", search: "Fitness Palestër" },
+      { key: "imobiliare", labelKey: "lz_dest_imobiliare", search: "Agjenci Imobiliare" },
     ],
   },
   {
@@ -81,6 +84,15 @@ export const LZ_AFARISTE_GROUPS = [
       { key: "klinike", labelKey: "lz_dest_klinike", search: "Klinikë Ordinancë" },
       { key: "laborator", labelKey: "lz_dest_laborator", search: "Laborator" },
       { key: "agjenci", labelKey: "lz_dest_agjenci", search: "Agjenci Kompani" },
+    ],
+  },
+  {
+    groupKey: "showroom",
+    labelKey: "lz_grp_showroom",
+    options: [
+      { key: "show_mobilje", labelKey: "lz_dest_show_mobilje", search: "Ekspozim Mobiljesh" },
+      { key: "show_vetura", labelKey: "lz_dest_show_vetura", search: "Ekspozim Veturash" },
+      { key: "show_tjera", labelKey: "lz_dest_show_tjera", search: "Ekspozim të tjera" },
     ],
   },
 ] as const;
@@ -93,6 +105,7 @@ export const LZ_OFFICE_TYPE_KEYS = [
   "open_space",
   "full_floor",
   "coworking",
+  "private_entry",
 ] as const;
 export type LzOfficeTypeKey = (typeof LZ_OFFICE_TYPE_KEYS)[number];
 
@@ -101,6 +114,7 @@ export const LZ_OFFICE_TYPE_LABEL_KEY: Record<LzOfficeTypeKey, string> = {
   open_space: "lz_off_open",
   full_floor: "lz_off_full_floor",
   coworking: "lz_off_coworking",
+  private_entry: "lz_off_private_entry",
 };
 
 export const LZ_OFFICE_TYPE_SEARCH: Record<LzOfficeTypeKey, string> = {
@@ -108,6 +122,7 @@ export const LZ_OFFICE_TYPE_SEARCH: Record<LzOfficeTypeKey, string> = {
   open_space: "Open Space",
   full_floor: "Kati i plotë",
   coworking: "Coworking",
+  private_entry: "Zyrë me hyrje private",
 };
 
 export const LZ_OFFICE_COUNT_KEYS = ["1", "2", "3", "4", "5p"] as const;
@@ -150,6 +165,8 @@ export const LZ_ZYRE_FEATURE_KEYS = [
   "server",
   "ac",
   "elevator",
+  "card_lock",
+  "fiber",
 ] as const;
 export type LzZyreFeatureKey = (typeof LZ_ZYRE_FEATURE_KEYS)[number];
 
@@ -159,6 +176,8 @@ export const LZ_ZYRE_FEATURE_LABEL_KEY: Record<LzZyreFeatureKey, string> = {
   server: "lz_zyre_server",
   ac: "lz_zyre_ac",
   elevator: "lz_zyre_elevator",
+  card_lock: "lz_zyre_card_lock",
+  fiber: "lz_zyre_fiber",
 };
 
 export const LZ_ZYRE_FEATURE_SEARCH: Record<LzZyreFeatureKey, string> = {
@@ -167,6 +186,8 @@ export const LZ_ZYRE_FEATURE_SEARCH: Record<LzZyreFeatureKey, string> = {
   server: "Server Room",
   ac: "Klimatizim",
   elevator: "Ashensor",
+  card_lock: "Kyçje me kartelë",
+  fiber: "Internet me fibër optike",
 };
 
 export const LZ_DEPO_TYPE_KEYS = ["general", "cold", "pharma"] as const;
@@ -199,7 +220,7 @@ export const LZ_CEILING_SEARCH: Record<LzCeilingKey, string> = {
   over6: "Mbi 6m",
 };
 
-export const LZ_DEPO_FEATURE_KEYS = ["ramp", "floor", "security", "admin"] as const;
+export const LZ_DEPO_FEATURE_KEYS = ["ramp", "floor", "security", "admin", "cctv", "tir", "ventilation"] as const;
 export type LzDepoFeatureKey = (typeof LZ_DEPO_FEATURE_KEYS)[number];
 
 export const LZ_DEPO_FEATURE_LABEL_KEY: Record<LzDepoFeatureKey, string> = {
@@ -207,31 +228,41 @@ export const LZ_DEPO_FEATURE_LABEL_KEY: Record<LzDepoFeatureKey, string> = {
   floor: "lz_depo_floor",
   security: "lz_depo_security",
   admin: "lz_depo_admin",
+  cctv: "lz_depo_cctv",
+  tir: "lz_depo_tir",
+  ventilation: "lz_depo_ventilation",
 };
 
 export const LZ_DEPO_FEATURE_SEARCH: Record<LzDepoFeatureKey, string> = {
   ramp: "Rrampa Shkarkim",
   floor: "Dysheme Industriale",
   security: "Siguri 24/7",
-  admin: "Zyrë administrative",
+  admin: "Zyrë administrative brenda",
+  cctv: "Sistem monitorimi CCTV",
+  tir: "Hyrje për kamionë TIR",
+  ventilation: "Ventilim",
 };
 
-export const LZ_IND_TYPE_KEYS = ["factory", "workshop", "complex"] as const;
+export const LZ_IND_TYPE_KEYS = ["factory", "workshop", "complex", "production_hall", "logistics"] as const;
 export type LzIndTypeKey = (typeof LZ_IND_TYPE_KEYS)[number];
 
 export const LZ_IND_TYPE_LABEL_KEY: Record<LzIndTypeKey, string> = {
   factory: "lz_ind_factory",
   workshop: "lz_ind_workshop",
   complex: "lz_ind_complex",
+  production_hall: "lz_ind_production_hall",
+  logistics: "lz_ind_logistics",
 };
 
 export const LZ_IND_TYPE_SEARCH: Record<LzIndTypeKey, string> = {
   factory: "Fabrikë Repart",
   workshop: "Punëtori",
   complex: "Kompleks Industrial",
+  production_hall: "Sallë prodhimi",
+  logistics: "Qendër Logjistike",
 };
 
-export const LZ_IND_FEATURE_KEYS = ["crane", "substation", "fire", "sewer"] as const;
+export const LZ_IND_FEATURE_KEYS = ["crane", "substation", "fire", "sewer", "industrial_power", "gate_height"] as const;
 export type LzIndFeatureKey = (typeof LZ_IND_FEATURE_KEYS)[number];
 
 export const LZ_IND_FEATURE_LABEL_KEY: Record<LzIndFeatureKey, string> = {
@@ -239,6 +270,8 @@ export const LZ_IND_FEATURE_LABEL_KEY: Record<LzIndFeatureKey, string> = {
   substation: "lz_ind_substation",
   fire: "lz_ind_fire",
   sewer: "lz_ind_sewer",
+  industrial_power: "lz_ind_industrial_power",
+  gate_height: "lz_ind_gate_height",
 };
 
 export const LZ_IND_FEATURE_SEARCH: Record<LzIndFeatureKey, string> = {
@@ -246,21 +279,25 @@ export const LZ_IND_FEATURE_SEARCH: Record<LzIndFeatureKey, string> = {
   substation: "Trafostacion",
   fire: "Kundër zjarrit",
   sewer: "Kanalizim Industrial",
+  industrial_power: "Fuqi elektrike industriale",
+  gate_height: "Lartësia e portës së hyrjes",
 };
 
-export const LZ_GAR_TYPE_KEYS = ["underground", "outdoor", "open"] as const;
+export const LZ_GAR_TYPE_KEYS = ["underground", "outdoor", "open", "box_garage"] as const;
 export type LzGarTypeKey = (typeof LZ_GAR_TYPE_KEYS)[number];
 
 export const LZ_GAR_TYPE_LABEL_KEY: Record<LzGarTypeKey, string> = {
   underground: "lz_gar_under",
   outdoor: "lz_gar_outdoor",
   open: "lz_gar_open",
+  box_garage: "lz_gar_box",
 };
 
 export const LZ_GAR_TYPE_SEARCH: Record<LzGarTypeKey, string> = {
   underground: "Nëntokësore",
   outdoor: "E jashtme",
   open: "Vendparkim i hapur",
+  box_garage: "Parking i mbyllur Box garage",
 };
 
 export const LZ_GAR_CAP_KEYS = ["1", "2", "3_5", "5p"] as const;
@@ -280,7 +317,7 @@ export const LZ_GAR_CAP_SEARCH: Record<LzGarCapKey, string> = {
   "5p": "5+ vetura",
 };
 
-export const LZ_GAR_FEATURE_KEYS = ["door", "power", "water", "repair"] as const;
+export const LZ_GAR_FEATURE_KEYS = ["door", "power", "water", "repair", "ev_charger"] as const;
 export type LzGarFeatureKey = (typeof LZ_GAR_FEATURE_KEYS)[number];
 
 export const LZ_GAR_FEATURE_LABEL_KEY: Record<LzGarFeatureKey, string> = {
@@ -288,6 +325,7 @@ export const LZ_GAR_FEATURE_LABEL_KEY: Record<LzGarFeatureKey, string> = {
   power: "lz_gar_power",
   water: "lz_gar_water",
   repair: "lz_gar_repair",
+  ev_charger: "lz_gar_ev_charger",
 };
 
 export const LZ_GAR_FEATURE_SEARCH: Record<LzGarFeatureKey, string> = {
@@ -295,6 +333,22 @@ export const LZ_GAR_FEATURE_SEARCH: Record<LzGarFeatureKey, string> = {
   power: "Rrymë e instaluar",
   water: "Ujë Kanalizim",
   repair: "Kanal riparim",
+  ev_charger: "Stacion karikimi vetura elektrike",
+};
+
+export const LZ_LEGAL_KEYS = ["flete", "kontrate", "leje"] as const;
+export type LzLegalKey = (typeof LZ_LEGAL_KEYS)[number];
+
+export const LZ_LEGAL_LABEL_KEY: Record<LzLegalKey, string> = {
+  flete: "lz_legal_flete",
+  kontrate: "lz_legal_kontrate",
+  leje: "lz_legal_leje",
+};
+
+export const LZ_LEGAL_SEARCH: Record<LzLegalKey, string> = {
+  flete: "Me fletë poseduese",
+  kontrate: "Me kontratë noteriale",
+  leje: "Leje për zhvillim aktiviteti",
 };
 
 export const LOKALE_ZYRE_CITY_KEYS = [

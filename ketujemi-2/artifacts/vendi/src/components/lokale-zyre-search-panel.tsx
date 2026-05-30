@@ -8,7 +8,7 @@ import {
   type SetStateAction,
 } from "react";
 import type { GetListingsParams } from "@workspace/api-client-react";
-import { Building2, Check, ChevronsUpDown, Euro, MapPin, Search } from "lucide-react";
+import { Building2, Check, ChevronsUpDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,7 +24,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   CategoryPhotoPickerCard,
-  CategoryPhotoPickerRow,
+  CategoryPhotoPickerGrid,
 } from "@/components/category-photo-picker";
 import { cn } from "@/lib/utils";
 import { useMarket } from "@/lib/market-context";
@@ -63,15 +63,15 @@ import {
   LZ_WC_COUNT_KEYS,
   LZ_WC_COUNT_LABEL_KEY,
   LZ_WC_COUNT_SEARCH,
+  LZ_LEGAL_KEYS,
+  LZ_LEGAL_LABEL_KEY,
+  LZ_LEGAL_SEARCH,
   LZ_ZYRE_FEATURE_KEYS,
   LZ_ZYRE_FEATURE_LABEL_KEY,
   LZ_ZYRE_FEATURE_SEARCH,
   LOKALE_PROPERTY_KEYS,
   LOKALE_PROPERTY_LABEL_KEY,
   LOKALE_PROPERTY_PHOTOS,
-  LOKALE_UNIVERSAL_FILTER_KEYS,
-  LOKALE_UNIVERSAL_LABEL_KEY,
-  LOKALE_UNIVERSAL_SEARCH,
   LOKALE_ZYRE_CITY_KEYS,
   LOKALE_ZYRE_CITY_LABEL_KEY,
   LOKALE_ZYRE_CITY_SEARCH,
@@ -80,8 +80,8 @@ import {
   resolveLokalePropertyCategoryId,
   type LokaleCityKey,
   type LokalePropertyKey,
-  type LokaleUniversalFilterKey,
   type LokaleZyreCategoryRow,
+  type LzLegalKey,
   type LzCeilingKey,
   type LzDepoFeatureKey,
   type LzDepoTypeKey,
@@ -150,6 +150,36 @@ function FilterSection({
   );
 }
 
+function LegalCharacteristicsSection({
+  legal,
+  setLegal,
+  t,
+}: {
+  legal: Record<LzLegalKey, boolean>;
+  setLegal: Dispatch<SetStateAction<Record<LzLegalKey, boolean>>>;
+  t: Record<string, string>;
+}) {
+  return (
+    <FilterSection title={t.lz_sec_legal}>
+      <div className="grid grid-cols-1 gap-3">
+        {LZ_LEGAL_KEYS.map((k) => (
+          <label
+            key={k}
+            className="flex items-center gap-3 min-h-12 cursor-pointer touch-manipulation"
+          >
+            <Checkbox
+              checked={legal[k]}
+              onCheckedChange={(c) => setLegal((prev) => ({ ...prev, [k]: c === true }))}
+              className="h-5 w-5"
+            />
+            <span className="text-sm font-medium text-gray-800">{t[LZ_LEGAL_LABEL_KEY[k]]}</span>
+          </label>
+        ))}
+      </div>
+    </FilterSection>
+  );
+}
+
 export function LokaleZyreSearchPanel({
   hubId,
   categories,
@@ -176,6 +206,8 @@ export function LokaleZyreSearchPanel({
     server: false,
     ac: false,
     elevator: false,
+    card_lock: false,
+    fiber: false,
   });
   const [depoType, setDepoType] = useState<LzDepoTypeKey | "">("");
   const [ceiling, setCeiling] = useState<LzCeilingKey | "">("");
@@ -184,6 +216,9 @@ export function LokaleZyreSearchPanel({
     floor: false,
     security: false,
     admin: false,
+    cctv: false,
+    tir: false,
+    ventilation: false,
   });
   const [indType, setIndType] = useState<LzIndTypeKey | "">("");
   const [yardSqm, setYardSqm] = useState("");
@@ -192,6 +227,8 @@ export function LokaleZyreSearchPanel({
     substation: false,
     fire: false,
     sewer: false,
+    industrial_power: false,
+    gate_height: false,
   });
   const [garType, setGarType] = useState<LzGarTypeKey | "">("");
   const [garCap, setGarCap] = useState<LzGarCapKey | "">("");
@@ -200,36 +237,64 @@ export function LokaleZyreSearchPanel({
     power: false,
     water: false,
     repair: false,
+    ev_charger: false,
   });
-  const [sqmMin, setSqmMin] = useState("");
-  const [sqmMax, setSqmMax] = useState("");
+  const [legal, setLegal] = useState<Record<LzLegalKey, boolean>>({
+    flete: false,
+    kontrate: false,
+    leje: false,
+  });
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [cityKey, setCityKey] = useState<LokaleCityKey | "">("");
   const [cityOpen, setCityOpen] = useState(false);
   const [areaZone, setAreaZone] = useState("");
-  const [universal, setUniversal] = useState<Record<LokaleUniversalFilterKey, boolean>>({
-    truck: false,
-    parking: false,
-    power: false,
-    heating: false,
-  });
 
   const resetSubFilters = () => {
     setAfaristeDest("");
     setOfficeType("");
     setOfficeCount("");
     setWcCount("");
-    setZyreFeatures({ meeting: false, kitchen: false, server: false, ac: false, elevator: false });
+    setZyreFeatures({
+      meeting: false,
+      kitchen: false,
+      server: false,
+      ac: false,
+      elevator: false,
+      card_lock: false,
+      fiber: false,
+    });
     setDepoType("");
     setCeiling("");
-    setDepoFeatures({ ramp: false, floor: false, security: false, admin: false });
+    setDepoFeatures({
+      ramp: false,
+      floor: false,
+      security: false,
+      admin: false,
+      cctv: false,
+      tir: false,
+      ventilation: false,
+    });
     setIndType("");
     setYardSqm("");
-    setIndFeatures({ crane: false, substation: false, fire: false, sewer: false });
+    setIndFeatures({
+      crane: false,
+      substation: false,
+      fire: false,
+      sewer: false,
+      industrial_power: false,
+      gate_height: false,
+    });
     setGarType("");
     setGarCap("");
-    setGarFeatures({ door: false, power: false, water: false, repair: false });
+    setGarFeatures({
+      door: false,
+      power: false,
+      water: false,
+      repair: false,
+      ev_charger: false,
+    });
+    setLegal({ flete: false, kontrate: false, leje: false });
   };
 
   const selectProperty = (key: LokalePropertyKey) => {
@@ -259,11 +324,6 @@ export function LokaleZyreSearchPanel({
         delete p.category_ids;
       }
     }
-
-    const sqMin = parseFloat(sqmMin.replace(",", "."));
-    const sqMax = parseFloat(sqmMax.replace(",", "."));
-    if (Number.isFinite(sqMin) && sqmMin.trim()) p.property_sqm_min = Math.round(sqMin);
-    if (Number.isFinite(sqMax) && sqmMax.trim()) p.property_sqm_max = Math.round(sqMax);
 
     if (cityKey) p.location_search = LOKALE_ZYRE_CITY_SEARCH[cityKey];
 
@@ -302,8 +362,10 @@ export function LokaleZyreSearchPanel({
       }
     }
 
-    for (const k of LOKALE_UNIVERSAL_FILTER_KEYS) {
-      if (universal[k]) searchBits.push(LOKALE_UNIVERSAL_SEARCH[k]);
+    if (propertyKey) {
+      for (const k of LZ_LEGAL_KEYS) {
+        if (legal[k]) searchBits.push(LZ_LEGAL_SEARCH[k]);
+      }
     }
 
     if (searchBits.length) p.search = searchBits.join(" ");
@@ -340,11 +402,9 @@ export function LokaleZyreSearchPanel({
     garType,
     garCap,
     garFeatures,
-    sqmMin,
-    sqmMax,
+    legal,
     cityKey,
     areaZone,
-    universal,
     priceMin,
     priceMax,
     categories,
@@ -370,17 +430,18 @@ export function LokaleZyreSearchPanel({
     <div className="mb-8 space-y-6 rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm overflow-hidden max-w-full">
       {/* Property type cards */}
       <section className="space-y-3">
-        <CategoryPhotoPickerRow>
+        <CategoryPhotoPickerGrid>
           {LOKALE_PROPERTY_KEYS.map((key) => (
             <CategoryPhotoPickerCard
               key={key}
+              layout="grid"
               selected={propertyKey === key}
               onClick={() => selectProperty(key)}
               imageSrc={LOKALE_PROPERTY_PHOTOS[key]}
               label={t[LOKALE_PROPERTY_LABEL_KEY[key]]}
             />
           ))}
-        </CategoryPhotoPickerRow>
+        </CategoryPhotoPickerGrid>
       </section>
 
       <div className="flex flex-col gap-1 border-t border-gray-100 pt-6">
@@ -415,6 +476,7 @@ export function LokaleZyreSearchPanel({
               </div>
             ))}
           </FilterSection>
+          <LegalCharacteristicsSection legal={legal} setLegal={setLegal} t={t} />
         </section>
       ) : null}
 
@@ -481,6 +543,7 @@ export function LokaleZyreSearchPanel({
               ))}
             </div>
           </FilterSection>
+          <LegalCharacteristicsSection legal={legal} setLegal={setLegal} t={t} />
         </section>
       ) : null}
 
@@ -534,6 +597,7 @@ export function LokaleZyreSearchPanel({
               ))}
             </div>
           </FilterSection>
+          <LegalCharacteristicsSection legal={legal} setLegal={setLegal} t={t} />
         </section>
       ) : null}
 
@@ -585,6 +649,7 @@ export function LokaleZyreSearchPanel({
               ))}
             </div>
           </FilterSection>
+          <LegalCharacteristicsSection legal={legal} setLegal={setLegal} t={t} />
         </section>
       ) : null}
 
@@ -638,41 +703,12 @@ export function LokaleZyreSearchPanel({
               ))}
             </div>
           </FilterSection>
+          <LegalCharacteristicsSection legal={legal} setLegal={setLegal} t={t} />
         </section>
       ) : null}
 
-      {/* Universal filters */}
       <section className="space-y-5 rounded-xl border border-blue-100 bg-blue-50/30 p-4">
         <h3 className="text-base font-black text-gray-900">{t.lz_sec_universal}</h3>
-
-        <FilterSection title={t.lz_sec_sqm}>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <span className="text-sm text-gray-600">{t.lz_from}</span>
-              <Input
-                type="number"
-                inputMode="decimal"
-                min={0}
-                value={sqmMin}
-                onChange={(e) => setSqmMin(e.target.value)}
-                placeholder="0"
-                className={inputClass}
-              />
-            </div>
-            <div className="space-y-2">
-              <span className="text-sm text-gray-600">{t.lz_to}</span>
-              <Input
-                type="number"
-                inputMode="decimal"
-                min={0}
-                value={sqmMax}
-                onChange={(e) => setSqmMax(e.target.value)}
-                placeholder="500"
-                className={inputClass}
-              />
-            </div>
-          </div>
-        </FilterSection>
 
         <FilterSection title={t.lz_sec_price}>
           <div className="grid grid-cols-2 gap-3">
@@ -783,28 +819,6 @@ export function LokaleZyreSearchPanel({
                 className={inputClass}
               />
             </div>
-          </div>
-        </FilterSection>
-
-        <FilterSection title={t.lz_sec_advanced}>
-          <div className="grid grid-cols-1 gap-3">
-            {LOKALE_UNIVERSAL_FILTER_KEYS.map((key) => (
-              <label
-                key={key}
-                className="flex items-center gap-3 min-h-12 cursor-pointer touch-manipulation"
-              >
-                <Checkbox
-                  checked={universal[key]}
-                  onCheckedChange={(c) =>
-                    setUniversal((prev) => ({ ...prev, [key]: c === true }))
-                  }
-                  className="h-5 w-5"
-                />
-                <span className="text-sm font-medium text-gray-800">
-                  {t[LOKALE_UNIVERSAL_LABEL_KEY[key]]}
-                </span>
-              </label>
-            ))}
           </div>
         </FilterSection>
       </section>
