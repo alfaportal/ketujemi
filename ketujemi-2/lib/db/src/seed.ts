@@ -3,6 +3,7 @@ import { eq, isNull } from "drizzle-orm";
 import { db, pool } from "./index.js";
 import { categoriesTable } from "./schema/categories.js";
 import { seedArsimKurseSubcategoriesAlways } from "./seed-arsim-kurse-subcategories.js";
+import { seedMuzikeHobbySubcategoriesAlways } from "./seed-muzike-hobby-subcategories.js";
 
 const PARENT_CATEGORIES: {
   name: string;
@@ -408,15 +409,6 @@ const BUJQESI_BLEGTORI_TYPES: { name: string; slug: string; icon: string }[] = [
   { name: "Ushqim për Kafshë", slug: "bujq-type-ushqim-kafshet", icon: "Wheat" },
 ];
 
-const MUZIKE_HOBBY_TYPES: { name: string; slug: string; icon: string }[] = [
-  { name: "Instrumente Frymore", slug: "muzike-type-frymore", icon: "Music" },
-  { name: "Instrumente me Tela", slug: "muzike-type-tela", icon: "Music" },
-  { name: "Instrumente me Tastierë", slug: "muzike-type-tastiere", icon: "Music" },
-  { name: "Libra", slug: "muzike-type-libra", icon: "Music" },
-  { name: "Pajisje Studio", slug: "muzike-type-studio", icon: "Music" },
-  { name: "Art, Teatër & Film", slug: "muzike-type-art-teater-film", icon: "Music" },
-];
-
 const KAFSHET_TYPES: { name: string; slug: string; icon: string }[] = [
   { name: "Akuariume", slug: "kafshet-type-akuariume", icon: "PawPrint" },
   { name: "Mace", slug: "kafshet-type-mace", icon: "PawPrint" },
@@ -504,7 +496,7 @@ async function seedRemainingMarketplaceHubSubcategoriesAlways() {
   await seedTypesUnderParentSlug("pune-sherbime", PUNE_SHERBIME_TYPES, "Punë & Shërbime");
   await seedTypesUnderParentSlug("bujqesi-blegtori", BUJQESI_BLEGTORI_TYPES, "Bujqësi & Blegtori");
   await seedArsimKurseSubcategoriesAlways();
-  await seedTypesUnderParentSlug("muzike-hobby", MUZIKE_HOBBY_TYPES, "Muzikë & Hobby");
+  await seedMuzikeHobbySubcategoriesAlways();
   await seedTypesUnderParentSlug("kafshet", KAFSHET_TYPES, "Kafshë");
 }
 

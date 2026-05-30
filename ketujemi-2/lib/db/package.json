@@ -25,6 +25,7 @@
     "seed:car-models": "tsx ./src/seed-car-models.ts",
     "seed:femije-subcats": "tsx ./src/seed-femije-subcategories.ts",
     "seed:arsim-kurse-subcats": "tsx ./src/seed-arsim-kurse-subcategories.ts",
+    "seed:muzike-hobby-subcats": "tsx ./src/seed-muzike-hobby-subcategories.ts",
     "seed:femije-hub-photos": "tsx ./src/apply-femije-hub-subcategory-images.ts",
     "seed:truck-models": "tsx ./src/seed-truck-models.ts",
     "seed:motor-models": "tsx ./src/seed-motor-models.ts",
