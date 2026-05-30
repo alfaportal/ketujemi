@@ -2,6 +2,7 @@ import "./load-env.js";
 import { eq, isNull } from "drizzle-orm";
 import { db, pool } from "./index.js";
 import { categoriesTable } from "./schema/categories.js";
+import { seedArsimKurseSubcategoriesAlways } from "./seed-arsim-kurse-subcategories.js";
 
 const PARENT_CATEGORIES: {
   name: string;
@@ -407,13 +408,6 @@ const BUJQESI_BLEGTORI_TYPES: { name: string; slug: string; icon: string }[] = [
   { name: "Ushqim për Kafshë", slug: "bujq-type-ushqim-kafshet", icon: "Wheat" },
 ];
 
-const ARSIM_KURSE_TYPES: { name: string; slug: string; icon: string }[] = [
-  { name: "Gjuhë të Huaja", slug: "arsim-type-gjuhe-huaja", icon: "GraduationCap" },
-  { name: "Kurse Profesionale", slug: "arsim-type-kurse-prof", icon: "GraduationCap" },
-  { name: "Mësime Private", slug: "arsim-type-mesime-private", icon: "GraduationCap" },
-  { name: "Trajnime IT", slug: "arsim-type-trajnime-it", icon: "GraduationCap" },
-];
-
 const MUZIKE_HOBBY_TYPES: { name: string; slug: string; icon: string }[] = [
   { name: "Instrumente Frymore", slug: "muzike-type-frymore", icon: "Music" },
   { name: "Instrumente me Tela", slug: "muzike-type-tela", icon: "Music" },
@@ -509,7 +503,7 @@ async function seedRemainingMarketplaceHubSubcategoriesAlways() {
   await seedTypesUnderParentSlug("sport-outdoor", SPORT_OUTDOOR_TYPES, "Sport & Outdoor");
   await seedTypesUnderParentSlug("pune-sherbime", PUNE_SHERBIME_TYPES, "Punë & Shërbime");
   await seedTypesUnderParentSlug("bujqesi-blegtori", BUJQESI_BLEGTORI_TYPES, "Bujqësi & Blegtori");
-  await seedTypesUnderParentSlug("arsim-kurse", ARSIM_KURSE_TYPES, "Arsim & Kurse");
+  await seedArsimKurseSubcategoriesAlways();
   await seedTypesUnderParentSlug("muzike-hobby", MUZIKE_HOBBY_TYPES, "Muzikë & Hobby");
   await seedTypesUnderParentSlug("kafshet", KAFSHET_TYPES, "Kafshë");
 }
@@ -655,6 +649,10 @@ async function seed() {
   }
   if (process.argv.includes("--general-subcats-only")) {
     await seedRemainingMarketplaceHubSubcategoriesAlways();
+    return;
+  }
+  if (process.argv.includes("--arsim-kurse-subcats-only")) {
+    await seedArsimKurseSubcategoriesAlways();
     return;
   }
   if (process.argv.includes("--brands-only")) {
