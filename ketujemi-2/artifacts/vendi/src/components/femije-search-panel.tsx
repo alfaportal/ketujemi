@@ -199,71 +199,9 @@ export function FemijeSearchPanel({
     "text-sm font-semibold text-gray-500 mb-1.5 block uppercase tracking-wide";
 
   return (
-    <div className="mb-8 space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="min-w-0">
-          <label className={selectLabelClass}>{t.category}</label>
-          <Select value={groupId} onValueChange={handleGroupChange}>
-            <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
-              <SelectValue placeholder={t.all} />
-            </SelectTrigger>
-            <SelectContent className="!max-h-[300px]">
-              <SelectItem value={ALL}>{t.all}</SelectItem>
-              {hubGroups.map((row) => (
-                <SelectItem key={row.id} value={String(row.id)}>
-                  {translateCategory(row.name, locale)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="min-w-0">
-          <label className={selectLabelClass}>{t.subcategory}</label>
-          <Select
-            value={leafId}
-            onValueChange={handleLeafChange}
-            disabled={groupId === ALL || leafOptions.length === 0}
-          >
-            <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
-              <SelectValue placeholder={t.all} />
-            </SelectTrigger>
-            <SelectContent className="!max-h-[300px]">
-              <SelectItem value={ALL}>{t.all}</SelectItem>
-              {leafOptions.map((row) => (
-                <SelectItem key={row.id} value={String(row.id)}>
-                  {translateCategory(row.name, locale)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <form
-        onSubmit={handleSearchSubmit}
-        className="flex flex-col gap-2 w-full md:flex-row md:items-center md:flex-nowrap md:gap-2"
-      >
-        <div className="relative flex-1 min-w-0">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
-            aria-hidden
-          />
-          <input
-            type="search"
-            placeholder={t.search}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            className="w-full min-h-12 pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-base sm:text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all bg-gray-50 focus:bg-white touch-manipulation"
-          />
-        </div>
-        <button type="submit" className={cnPrimaryBlue("w-full md:w-auto")}>
-          {t.searchBtn}
-        </button>
-      </form>
-
+    <div className="mb-8 space-y-6">
       {photoGridRows.length > 0 ? (
-        <section className="space-y-4 pt-2">
+        <section className="space-y-4">
           <div>
             <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
               <Baby size={20} className="text-blue-600 shrink-0" aria-hidden />
@@ -290,7 +228,7 @@ export function FemijeSearchPanel({
       ) : null}
 
       {variant === "hub" && leafOptions.length > 0 ? (
-        <section className="space-y-4 border-t border-gray-100 pt-6">
+        <section className="space-y-4">
           <div>
             <h2 className="text-base font-black text-gray-900">{t.subcategory}</h2>
             <p className="text-sm text-gray-500 mt-1">
@@ -312,6 +250,70 @@ export function FemijeSearchPanel({
           </CategoryPhotoPickerGrid>
         </section>
       ) : null}
+
+      <section className="space-y-4 border-t border-gray-100 pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="min-w-0">
+            <label className={selectLabelClass}>{t.category}</label>
+            <Select value={groupId} onValueChange={handleGroupChange}>
+              <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
+                <SelectValue placeholder={t.all} />
+              </SelectTrigger>
+              <SelectContent className="!max-h-[300px]">
+                <SelectItem value={ALL}>{t.all}</SelectItem>
+                {hubGroups.map((row) => (
+                  <SelectItem key={row.id} value={String(row.id)}>
+                    {translateCategory(row.name, locale)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="min-w-0">
+            <label className={selectLabelClass}>{t.subcategory}</label>
+            <Select
+              value={leafId}
+              onValueChange={handleLeafChange}
+              disabled={groupId === ALL || leafOptions.length === 0}
+            >
+              <SelectTrigger className="rounded-xl border-gray-200 min-h-12 h-12">
+                <SelectValue placeholder={t.all} />
+              </SelectTrigger>
+              <SelectContent className="!max-h-[300px]">
+                <SelectItem value={ALL}>{t.all}</SelectItem>
+                {leafOptions.map((row) => (
+                  <SelectItem key={row.id} value={String(row.id)}>
+                    {translateCategory(row.name, locale)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <form
+          onSubmit={handleSearchSubmit}
+          className="flex flex-col gap-2 w-full md:flex-row md:items-center md:flex-nowrap md:gap-2"
+        >
+          <div className="relative flex-1 min-w-0">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+              aria-hidden
+            />
+            <input
+              type="search"
+              placeholder={t.search}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="w-full min-h-12 pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-base sm:text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all bg-gray-50 focus:bg-white touch-manipulation"
+            />
+          </div>
+          <button type="submit" className={cnPrimaryBlue("w-full md:w-auto")}>
+            {t.searchBtn}
+          </button>
+        </form>
+      </section>
     </div>
   );
 }
