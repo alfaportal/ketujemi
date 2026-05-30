@@ -2,6 +2,7 @@
 // Keys are the Albanian (base) names stored in the DB.
 // Markets: ks = Kosovo, al = Albania, mk = Macedonia, mne = Montenegro
 
+import { translateArsimKurseCategory } from "./arsim-kurse-category-translations";
 import { translateFemijeCategory } from "./femije-category-translations";
 
 export type MarketCode = "ks" | "al" | "mk" | "mne";
@@ -198,6 +199,7 @@ export const CAT_TRANSLATIONS: Record<string, Record<MarketCode, string>> = {
 export function translateCategory(name: string, localeCode: MarketCode): string {
   return (
     CAT_TRANSLATIONS[name]?.[localeCode] ??
+    translateArsimKurseCategory(name, localeCode) ??
     translateFemijeCategory(name, localeCode) ??
     name
   );
