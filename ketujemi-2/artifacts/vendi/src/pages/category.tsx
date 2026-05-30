@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, Link, useRoute } from "wouter";
 import {
   useGetCategories,
@@ -97,7 +97,6 @@ import { RrobaKepuceSearchPanel } from "@/components/rroba-kepuce-search-panel";
 import {
   getRrobaKepuceLeafCategoryIds,
 } from "@/lib/rroba-kepuce-search-helpers";
-import { FemijeSearchPanel } from "@/components/femije-search-panel";
 import { getFemijeLeafCategoryIds, femijeSubcategoryPhoto } from "@/lib/femije-search-helpers";
 import { PuneSherbimeSearchPanel } from "@/components/pune-sherbime-search-panel";
 import { getPuneSherbimeLeafCategoryIds } from "@/lib/pune-sherbime-search-helpers";
@@ -112,6 +111,23 @@ import { KompjuterLaptopHubPanel } from "@/components/kompjuter-laptop-hub-panel
 import {
   getTvElektronikeLeafCategoryIds,
 } from "@/lib/tv-elektronike-search-helpers";
+
+const FemijeSearchPanel = lazy(() =>
+  import("@/components/femije-search-panel").then((m) => ({ default: m.FemijeSearchPanel })),
+);
+
+function FemijeSearchPanelFallback() {
+  return (
+    <div className="mb-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+      <Skeleton className="h-6 w-48 mb-4" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <Skeleton key={i} className="h-[108px] w-full rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /** Wide hero shot for Banesa & Shtëpi hub search page (urban / apartment skyline). */
 const BANESA_HERO_PHOTO =
@@ -1564,15 +1580,17 @@ export default function CategoryPage() {
         ) : null}
 
         {isFemijeHub && allCategories?.length ? (
-          <FemijeSearchPanel
-            variant="hub"
-            hubId={categoryId}
-            categories={allCategories as any}
-            onNavigateToCategory={(childId) =>
-              navigateToCategory(setLocation, childId, categoryId)
-            }
-            onListingParamsChange={setFemijeListParams}
-          />
+          <Suspense fallback={<FemijeSearchPanelFallback />}>
+            <FemijeSearchPanel
+              variant="hub"
+              hubId={categoryId}
+              categories={allCategories as any}
+              onNavigateToCategory={(childId) =>
+                navigateToCategory(setLocation, childId, categoryId)
+              }
+              onListingParamsChange={setFemijeListParams}
+            />
+          </Suspense>
         ) : null}
 
         {isPuneSherbimeHub && puneSherbimeLeafCsv ? (
@@ -1714,32 +1732,36 @@ export default function CategoryPage() {
         ) : null}
 
         {isFemijeGroupPage && allCategories?.length ? (
-          <FemijeSearchPanel
-            variant="group"
-            hubId={femijeHubCategoryId}
-            scopeCategoryId={categoryId}
-            categories={allCategories as any}
-            onNavigateToCategory={(childId) =>
-              navigateToCategory(setLocation, childId, categoryId)
-            }
-            onListingParamsChange={setFemijeListParams}
-          />
+          <Suspense fallback={<FemijeSearchPanelFallback />}>
+            <FemijeSearchPanel
+              variant="group"
+              hubId={femijeHubCategoryId}
+              scopeCategoryId={categoryId}
+              categories={allCategories as any}
+              onNavigateToCategory={(childId) =>
+                navigateToCategory(setLocation, childId, categoryId)
+              }
+              onListingParamsChange={setFemijeListParams}
+            />
+          </Suspense>
         ) : null}
 
         {isFemijeLeafPage && allCategories?.length ? (
-          <FemijeSearchPanel
-            variant="leaf"
-            hubId={femijeHubCategoryId}
-            scopeCategoryId={categoryId}
-            categories={allCategories as any}
-            onNavigateToCategory={(childId) =>
-              navigateToCategory(setLocation, childId, categoryId)
-            }
-            onListingParamsChange={setFemijeListParams}
-            onScrollToResults={() =>
-              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-            }
-          />
+          <Suspense fallback={<FemijeSearchPanelFallback />}>
+            <FemijeSearchPanel
+              variant="leaf"
+              hubId={femijeHubCategoryId}
+              scopeCategoryId={categoryId}
+              categories={allCategories as any}
+              onNavigateToCategory={(childId) =>
+                navigateToCategory(setLocation, childId, categoryId)
+              }
+              onListingParamsChange={setFemijeListParams}
+              onScrollToResults={() =>
+                resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
+            />
+          </Suspense>
         ) : null}
 
         {/* Level 2 → show brands (Vetura body type → brands; not used on Motorr leaf categories) */}

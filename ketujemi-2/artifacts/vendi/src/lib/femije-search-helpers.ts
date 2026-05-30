@@ -1,5 +1,5 @@
 import { FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG } from "./femije-hub-subcategory-photos";
-import { FEMIJE_LEAF_PARENT_GROUP_SLUG } from "./femije-subcategory-guides";
+import { FEMIJE_LEAF_PARENT_GROUP_SLUG } from "./femije-leaf-parent-group-slug";
 
 function isUsableCategoryImageUrl(url: string): boolean {
   return /^https?:\/\//i.test(url);
