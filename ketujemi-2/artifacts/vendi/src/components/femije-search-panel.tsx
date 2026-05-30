@@ -8,20 +8,14 @@ import {
   type SetStateAction,
 } from "react";
 import type { GetListingsParams } from "@workspace/api-client-react";
-import { Baby, Check, ChevronsUpDown, MapPin, Search } from "lucide-react";
+import { Baby, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { HubLocationFilter } from "@/components/hub-location-filter";
+import { hubLocationToListingParams } from "@/lib/hub-location-search";
+import type { HomeMarketCode } from "@/lib/market-context";
 import {
   CategoryPhotoPickerCard,
   CategoryPhotoPickerRow,
@@ -34,9 +28,6 @@ import {
   FJ_BABY_TYPE_KEYS,
   FJ_BABY_TYPE_LABEL_KEY,
   FJ_BABY_TYPE_SEARCH,
-  FJ_CITY_KEYS,
-  FJ_CITY_LABEL_KEY,
-  FJ_CITY_SEARCH,
   FJ_CONDITION_KEYS,
   FJ_CONDITION_LABEL_KEY,
   FJ_CONDITION_SEARCH,
@@ -199,9 +190,11 @@ export function FemijeSearchPanel({
   const [condition, setCondition] = useState<FjConditionKey | "">("");
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
-  const [cityKey, setCityKey] = useState<FjCityKey | "">("");
-  const [cityOpen, setCityOpen] = useState(false);
-  const [areaZone, setAreaZone] = useState("");
+  const [hubLocation, setHubLocation] = useState<{
+    countryCode: HomeMarketCode | "";
+    city: string;
+    areaZone: string;
+  }>({ countryCode: "", city: "", areaZone: "" });
 
   const resetSubFilters = () => {
     setStrollerType("");
@@ -276,11 +269,9 @@ export function FemijeSearchPanel({
       }
     }
 
-    if (cityKey) p.location_search = FJ_CITY_SEARCH[cityKey];
+    Object.assign(p, hubLocationToListingParams(hubLocation));
 
     const searchBits: string[] = [];
-    const zone = areaZone.trim();
-    if (zone) searchBits.push(zone);
 
     if (typeKey === "karroca") {
       if (strollerType) searchBits.push(FJ_STROLLER_TYPE_SEARCH[strollerType]);
@@ -345,8 +336,7 @@ export function FemijeSearchPanel({
     condition,
     priceMin,
     priceMax,
-    cityKey,
-    areaZone,
+    hubLocation,
     categories,
   ]);
 
@@ -354,8 +344,6 @@ export function FemijeSearchPanel({
     callbackRef.current(buildParams());
     onScrollToResults?.();
   };
-
-  const cityLabel = cityKey ? t[FJ_CITY_LABEL_KEY[cityKey]] : "";
 
   return (
     <div className="mb-8 space-y-6 rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm overflow-hidden max-w-full">
@@ -636,89 +624,12 @@ export function FemijeSearchPanel({
         </FilterSection>
 
         <FilterSection title={t.fj_sec_location}>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <span className="text-sm text-gray-600 flex items-center gap-1">
-                <MapPin size={14} className="text-blue-600" aria-hidden />
-                {t.lz_city_lbl}
-              </span>
-              <Popover open={cityOpen} onOpenChange={setCityOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={cityOpen}
-                    className={cn(
-                      "w-full justify-between font-normal rounded-xl",
-                      inputClass,
-                      !cityKey && "text-muted-foreground",
-                    )}
-                  >
-                    <span className="truncate">{cityKey ? cityLabel : t.lz_city_ph}</span>
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-[var(--radix-popover-trigger-width)] p-0 rounded-xl"
-                  align="start"
-                >
-                  <Command>
-                    <CommandInput placeholder={t.lz_city_search_ph} className="h-11" />
-                    <CommandList>
-                      <CommandEmpty>{t.lz_city_none}</CommandEmpty>
-                      <CommandGroup>
-                        <CommandItem
-                          value="__any__"
-                          onSelect={() => {
-                            setCityKey("");
-                            setCityOpen(false);
-                          }}
-                          className="min-h-11"
-                        >
-                          <Check
-                            className={cn("mr-2 h-4 w-4", !cityKey ? "opacity-100" : "opacity-0")}
-                          />
-                          {t.lz_city_any}
-                        </CommandItem>
-                        {FJ_CITY_KEYS.map((ck) => (
-                          <CommandItem
-                            key={ck}
-                            value={`${ck} ${FJ_CITY_SEARCH[ck]} ${t[FJ_CITY_LABEL_KEY[ck]]}`}
-                            onSelect={() => {
-                              setCityKey(ck);
-                              setCityOpen(false);
-                            }}
-                            className="min-h-11"
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                cityKey === ck ? "opacity-100" : "opacity-0",
-                              )}
-                            />
-                            {t[FJ_CITY_LABEL_KEY[ck]]}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="fj-area" className="text-sm text-gray-600">
-                {t.fj_area_lbl}
-              </Label>
-              <Input
-                id="fj-area"
-                value={areaZone}
-                onChange={(e) => setAreaZone(e.target.value)}
-                placeholder={t.fj_area_ph}
-                className={inputClass}
-              />
-            </div>
-          </div>
+          <HubLocationFilter
+            value={hubLocation}
+            onChange={setHubLocation}
+            inputClass={inputClass}
+            areaId="fj-area"
+          />
         </FilterSection>
       </section>
 

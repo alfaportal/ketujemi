@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { FEMIJE_HERO_PHOTO } from "@/lib/femije-search-helpers";
 
 export const categoryPhotoCardWidthClass =
   "w-[10.75rem] sm:w-44 md:w-48 lg:w-[13rem] aspect-[4/3]";
@@ -25,6 +26,8 @@ export function CategoryPhotoPickerCard({
   imageAlt = "",
   layout = "row",
 }: CategoryPhotoPickerCardProps) {
+  const [imgSrc, setImgSrc] = useState(imageSrc);
+
   return (
     <button
       type="button"
@@ -40,8 +43,9 @@ export function CategoryPhotoPickerCard({
       )}
     >
       <img
-        src={imageSrc}
+        src={imgSrc}
         alt={imageAlt}
+        onError={() => setImgSrc(FEMIJE_HERO_PHOTO)}
         className="absolute inset-0 h-full w-full object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />

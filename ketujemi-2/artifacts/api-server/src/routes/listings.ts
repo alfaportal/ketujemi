@@ -28,6 +28,10 @@ import {
 import { repostListing } from "../lib/listing-repost";
 import { incrementListingView } from "../lib/listing-view";
 import { listingFeedOrderBy, isTopActive } from "../lib/listing-top";
+import {
+  isListingHomeMarketCode,
+  LISTING_LOCATIONS_BY_COUNTRY,
+} from "../lib/listing-locations.js";
 import { moderateListingContent } from "../lib/listing-ai-moderation";
 import { logListingModerationRejection } from "../lib/listing-moderation-rejection-log";
 import { parseUiLang } from "../lib/claude-client";
@@ -161,6 +165,7 @@ router.get("/listings", async (req, res) => {
     category_ids,
     location,
     location_search,
+    listing_country,
     property_txn,
     property_subtype,
     property_sqm_min,
@@ -218,6 +223,19 @@ router.get("/listings", async (req, res) => {
   if (location_search && String(location_search).trim()) {
     const locTerm = `%${String(location_search).trim()}%`;
     conditions.push(ilike(listingsTable.location, locTerm));
+  }
+  if (
+    listing_country &&
+    isListingHomeMarketCode(String(listing_country).trim()) &&
+    !location_search?.trim() &&
+    !location
+  ) {
+    const cities = LISTING_LOCATIONS_BY_COUNTRY[String(listing_country).trim()] ?? [];
+    if (cities.length > 0) {
+      conditions.push(
+        or(...cities.map((city) => ilike(listingsTable.location, `%${city}%`)))!,
+      );
+    }
   }
   if (min_price != null) conditions.push(gte(listingsTable.price, String(min_price)));
   if (max_price != null) conditions.push(lte(listingsTable.price, String(max_price)));

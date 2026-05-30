@@ -31,6 +31,10 @@ export const GetListingsQueryParams = zod.object({
     .describe(
       "Case-insensitive partial match against listing `location` (ILIKE `%term%`)",
     ),
+  listing_country: zod.coerce
+    .string()
+    .optional()
+    .describe("Filter listings whose city is in this home market (`ks`, `al`, `mk`, `mne`)"),
   property_txn: zod.coerce
     .string()
     .optional()

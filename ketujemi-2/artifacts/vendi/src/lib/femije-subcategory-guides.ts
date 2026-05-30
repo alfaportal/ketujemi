@@ -234,7 +234,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-aksesore-karroce": {
-    intro: { sq: "Postoni vetëm për «Aksesorë karroce (çadra, mbulesë shiu, çanta)» brenda «Karroca & Transport». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Аксесоари за количка (чадор, дождевник, торба)» во «Колички & Транспорт».", mne: "Objavite samo za «Akcesori za kolica (suncobran, kišobran, torba)» u «Kolica & Transport»." },
+    intro: { sq: "Kjo kategori është për produkte si «Aksesorë karroce (çadra, mbulesë shiu, çanta)» brenda «Karroca & Transport». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Аксесоари за количка (чадор, дождевник, торба)» во «Колички & Транспорт».", mne: "Ova kategorija je za proizvode kao «Akcesori za kolica (suncobran, kišobran, torba)» u «Kolica & Transport»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -260,7 +260,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-aksesore-rroba": {
-    intro: { sq: "Postoni vetëm për «Aksesorë (kapele, doreza, shall, çanta shkolle)» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Аксесоари (капи, ракавици, шал, ученичка торба)» во «Облека & Обувки за деца».", mne: "Objavite samo za «Akcesori (kape, rukavice, šal, školska torba)» u «Odjeća & Cipele za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Aksesorë (kapele, doreza, shall, çanta shkolle)» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Аксесоари (капи, ракавици, шал, ученичка торба)» во «Облека & Обувки за деца».", mne: "Ova kategorija je za proizvode kao «Akcesori (kape, rukavice, šal, školska torba)» u «Odjeća & Cipele za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -286,7 +286,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-aspirator-kujdes": {
-    intro: { sq: "Postoni vetëm për «Aspirator hundësh & Kujdes i përditshëm» brenda «Higjienë & Kujdes». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Аспиратор за нос & Дневна нега» во «Хигиена & Нега».", mne: "Objavite samo za «Aspirator za nos & Dnevna njega» u «Higijena & Njega»." },
+    intro: { sq: "Kjo kategori është për produkte si «Aspirator hundësh & Kujdes i përditshëm» brenda «Higjienë & Kujdes». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Аспиратор за нос & Дневна нега» во «Хигиена & Нега».", mne: "Ova kategorija je za proizvode kao «Aspirator za nos & Dnevna njega» u «Higijena & Njega»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -338,7 +338,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-bllokues-sirtare": {
-    intro: { sq: "Postoni vetëm për «Bllokues sirtarësh & dollapësh» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Закljučувачи за фиоки & ормани» во «Безбедност на децата».", mne: "Objavite samo za «Brave za fioke & ormare» u «Sigurnost djece»." },
+    intro: { sq: "Kjo kategori është për produkte si «Bllokues sirtarësh & dollapësh» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Закljučувачи за фиоки & ормани» во «Безбедност на децата».", mne: "Ova kategorija je za proizvode kao «Brave za fioke & ormare» u «Sigurnost djece»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -364,7 +364,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-blloqe-lego": {
-    intro: { sq: "Postoni vetëm për «Blloqe ndërtimi & Lego» brenda «Lodra Edukative». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Градивни блокови & Lego» во «Едукативни играчки».", mne: "Objavite samo za «Građevni blokovi & Lego» u «Edukativne igračke»." },
+    intro: { sq: "Kjo kategori është për produkte si «Blloqe ndërtimi & Lego» brenda «Lodra Edukative». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Градивни блокови & Lego» во «Едукативни играчки».", mne: "Ova kategorija je za proizvode kao «Građevni blokovi & Lego» u «Edukativne igračke»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -390,7 +390,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-breza-shtatzanise": {
-    intro: { sq: "Postoni vetëm për «Breza shtatzënësie» brenda «Veshje Shtatzënësie». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Појас за бременост» во «Облека за бременост».", mne: "Objavite samo za «Pojas za trudnice» u «Odjeća za trudnice»." },
+    intro: { sq: "Kjo kategori është për produkte si «Breza shtatzënësie» brenda «Veshje Shtatzënësie». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Појас за бременост» во «Облека за бременост».", mne: "Ova kategorija je za proizvode kao «Pojas za trudnice» u «Odjeća za trudnice»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -416,7 +416,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-canta-dore": {
-    intro: { sq: "Postoni vetëm për «Çanta dore për foshnje» brenda «Çanta & Aksesorë Nënë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Торба за рака за бебе» во «Торби & Аксесоари за мајки».", mne: "Objavite samo za «Torba za ruku za bebe» u «Torbe & Akcesori za majke»." },
+    intro: { sq: "Kjo kategori është për produkte si «Çanta dore për foshnje» brenda «Çanta & Aksesorë Nënë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Торба за рака за бебе» во «Торби & Аксесоари за мајки».", mne: "Ova kategorija je za proizvode kao «Torba za ruku za bebe» u «Torbe & Akcesori za majke»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -442,7 +442,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-canta-shkolle": {
-    intro: { sq: "Postoni vetëm për «Çanta shkolle» brenda «Libra & Materiale Shkollore». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Ученичка торба» во «Книги & Школски материјали».", mne: "Objavite samo za «Školska torba» u «Knjige & Školski materijali»." },
+    intro: { sq: "Kjo kategori është për produkte si «Çanta shkolle» brenda «Libra & Materiale Shkollore». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Ученичка торба» во «Книги & Школски материјали».", mne: "Ova kategorija je za proizvode kao «Školska torba» u «Knjige & Školski materijali»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -468,7 +468,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-canta-shpine": {
-    intro: { sq: "Postoni vetëm për «Çanta shpine për foshnje (diaper bag)» brenda «Çanta & Aksesorë Nënë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Ранец за бебе (diaper bag)» во «Торби & Аксесоари за мајки».", mne: "Objavite samo za «Ruksak za bebe (diaper bag)» u «Torbe & Akcesori za majke»." },
+    intro: { sq: "Kjo kategori është për produkte si «Çanta shpine për foshnje (diaper bag)» brenda «Çanta & Aksesorë Nënë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Ранец за бебе (diaper bag)» во «Торби & Аксесоари за мајки».", mne: "Ova kategorija je za proizvode kao «Ruksak za bebe (diaper bag)» u «Torbe & Akcesori za majke»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -494,7 +494,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-dekorime-drita": {
-    intro: { sq: "Postoni vetëm për «Dekorime & Drita nate» brenda «Krevat & Dhomë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Декорации & Ноќни светла» во «Кревет & Детска соба».", mne: "Objavite samo za «Dekoracije & Noćna svjetla» u «Krevet & Dječija soba»." },
+    intro: { sq: "Kjo kategori është për produkte si «Dekorime & Drita nate» brenda «Krevat & Dhomë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Декорации & Ноќни светла» во «Кревет & Детска соба».", mne: "Ova kategorija je za proizvode kao «Dekoracije & Noćna svjetla» u «Krevet & Dječija soba»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -520,7 +520,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-dysheke-tekstile": {
-    intro: { sq: "Postoni vetëm për «Dyshekë & Tekstile (dyshekë, çarçafë, jastëkë, batanije)» brenda «Krevat & Dhomë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Мадраци & Текстил (чаршафи, перници, ќебиња)» во «Кревет & Детска соба».", mne: "Objavite samo za «Dušeci & Tekstil (plahte, jastuci, ćebad)» u «Krevet & Dječija soba»." },
+    intro: { sq: "Kjo kategori është për produkte si «Dyshekë & Tekstile (dyshekë, çarçafë, jastëkë, batanije)» brenda «Krevat & Dhomë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Мадраци & Текстил (чаршафи, перници, ќебиња)» во «Кревет & Детска соба».", mne: "Ova kategorija je za proizvode kao «Dušeci & Tekstil (plahte, jastuci, ćebad)» u «Krevet & Dječija soba»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -546,7 +546,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-ene-luge": {
-    intro: { sq: "Postoni vetëm për «Enë & Lugë fëmijësh» brenda «Ushqyerja & Ushqimi». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Садови & Лжици за деца» во «Исхрана & Храна».", mne: "Objavite samo za «Posuđe & Kašike za djecu» u «Ishrana & Hrana»." },
+    intro: { sq: "Kjo kategori është për produkte si «Enë & Lugë fëmijësh» brenda «Ushqyerja & Ushqimi». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Садови & Лжици за деца» во «Исхрана & Храна».", mne: "Ova kategorija je za proizvode kao «Posuđe & Kašike za djecu» u «Ishrana & Hrana»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -572,7 +572,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-fletore-materiale": {
-    intro: { sq: "Postoni vetëm për «Fletore & Materiale shkolle» brenda «Libra & Materiale Shkollore». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Тетратки & Школски материјали» во «Книги & Школски материјали».", mne: "Objavite samo za «Sveske & Školski materijali» u «Knjige & Školski materijali»." },
+    intro: { sq: "Kjo kategori është për produkte si «Fletore & Materiale shkolle» brenda «Libra & Materiale Shkollore». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Тетратки & Школски материјали» во «Книги & Школски материјали».", mne: "Ova kategorija je za proizvode kao «Sveske & Školski materijali» u «Knjige & Školski materijali»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -598,7 +598,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-fustane-shtatzanise": {
-    intro: { sq: "Postoni vetëm për «Fustane shtatzënësie» brenda «Veshje Shtatzënësie». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Фустани за бременост» во «Облека за бременост».", mne: "Objavite samo za «Haljine za trudnice» u «Odjeća za trudnice»." },
+    intro: { sq: "Kjo kategori është për produkte si «Fustane shtatzënësie» brenda «Veshje Shtatzënësie». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Фустани за бременост» во «Облека за бременост».", mne: "Ova kategorija je za proizvode kao «Haljine za trudnice» u «Odjeća za trudnice»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -624,7 +624,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-jastek-anatomik": {
-    intro: { sq: "Postoni vetëm për «Jastëkë anatomikë për gjumë» brenda «Veshje Shtatzënësie». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Анатомски перници за спиење» во «Облека за бременост».", mne: "Objavite samo za «Anatomski jastuci za spavanje» u «Odjeća za trudnice»." },
+    intro: { sq: "Kjo kategori është për produkte si «Jastëkë anatomikë për gjumë» brenda «Veshje Shtatzënësie». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Анатомски перници за спиење» во «Облека за бременост».", mne: "Ova kategorija je za proizvode kao «Anatomski jastuci za spavanje» u «Odjeća za trudnice»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -650,7 +650,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-jeleke-noti": {
-    intro: { sq: "Postoni vetëm për «Jelekë noti fëmijësh» brenda «Pishinë & Plazh për Fëmijë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Пливачки елеци за деца» во «Базен & Плажа за деца».", mne: "Objavite samo za «Prsluci za plivanje za djecu» u «Bazen & Plaža za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Jelekë noti fëmijësh» brenda «Pishinë & Plazh për Fëmijë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Пливачки елеци за деца» во «Базен & Плажа за деца».", mne: "Ova kategorija je za proizvode kao «Prsluci za plivanje za djecu» u «Bazen & Plaža za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -676,7 +676,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-jeleke-shpetimi": {
-    intro: { sq: "Postoni vetëm për «Jelekë shpëtimi fëmijësh» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Спасилачки детски елеци» во «Безбедност на децата».", mne: "Objavite samo za «Spasilački dječji prsluci» u «Sigurnost djece»." },
+    intro: { sq: "Kjo kategori është për produkte si «Jelekë shpëtimi fëmijësh» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Спасилачки детски елеци» во «Безбедност на децата».", mne: "Ova kategorija je za proizvode kao «Spasilački dječji prsluci» u «Sigurnost djece»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -702,7 +702,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-kapele-uv": {
-    intro: { sq: "Postoni vetëm për «Kapele dielli & Mbrojtje UV» brenda «Pishinë & Plazh për Fëmijë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Капи за сонце & UV заштита» во «Базен & Плажа за деца».", mne: "Objavite samo za «Kape za sunce & UV zaštita» u «Bazen & Plaža za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Kapele dielli & Mbrojtje UV» brenda «Pishinë & Plazh për Fëmijë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Капи за сонце & UV заштита» во «Базен & Плажа за деца».", mne: "Ova kategorija je za proizvode kao «Kape za sunce & UV zaštita» u «Bazen & Plaža za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -728,7 +728,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-karrige-makine-0": {
-    intro: { sq: "Postoni vetëm për «Karrige makine grup 0+ (0-13 kg)» brenda «Karrige & Ulëse Bebe». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Автоседиште група 0+ (0-13 kg)» во «Столчиња & Седишта за бебе».", mne: "Objavite samo za «Autosjediste grupa 0+ (0-13 kg)» u «Stolice & Sjedišta za bebe»." },
+    intro: { sq: "Kjo kategori është për produkte si «Karrige makine grup 0+ (0-13 kg)» brenda «Karrige & Ulëse Bebe». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Автоседиште група 0+ (0-13 kg)» во «Столчиња & Седишта за бебе».", mne: "Ova kategorija je za proizvode kao «Autosjediste grupa 0+ (0-13 kg)» u «Stolice & Sjedišta za bebe»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -754,7 +754,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-karrige-makine-1": {
-    intro: { sq: "Postoni vetëm për «Karrige makine grup 1 (9-18 kg)» brenda «Karrige & Ulëse Bebe». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Автоседиште група 1 (9-18 kg)» во «Столчиња & Седишта за бебе».", mne: "Objavite samo za «Autosjediste grupa 1 (9-18 kg)» u «Stolice & Sjedišta za bebe»." },
+    intro: { sq: "Kjo kategori është për produkte si «Karrige makine grup 1 (9-18 kg)» brenda «Karrige & Ulëse Bebe». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Автоседиште група 1 (9-18 kg)» во «Столчиња & Седишта за бебе».", mne: "Ova kategorija je za proizvode kao «Autosjediste grupa 1 (9-18 kg)» u «Stolice & Sjedišta za bebe»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -780,7 +780,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-karrige-makine-23": {
-    intro: { sq: "Postoni vetëm për «Karrige makine grup 2/3 (15-36 kg)» brenda «Karrige & Ulëse Bebe». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Автоседиште група 2/3 (15-36 kg)» во «Столчиња & Седишта за бебе».", mne: "Objavite samo za «Autosjediste grupa 2/3 (15-36 kg)» u «Stolice & Sjedišta za bebe»." },
+    intro: { sq: "Kjo kategori është për produkte si «Karrige makine grup 2/3 (15-36 kg)» brenda «Karrige & Ulëse Bebe». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Автоседиште група 2/3 (15-36 kg)» во «Столчиња & Седишта за бебе».", mne: "Ova kategorija je za proizvode kao «Autosjediste grupa 2/3 (15-36 kg)» u «Stolice & Sjedišta za bebe»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -806,7 +806,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-karrige-makine-grupe": {
-    intro: { sq: "Postoni vetëm për «Karrige makine (grup 0+, 1, 2/3)» brenda «Karroca & Transport». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Автоседишта (група 0+, 1, 2/3)» во «Колички & Транспорт».", mne: "Objavite samo za «Autosjedista (grupa 0+, 1, 2/3)» u «Kolica & Transport»." },
+    intro: { sq: "Kjo kategori është për produkte si «Karrige makine (grup 0+, 1, 2/3)» brenda «Karroca & Transport». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Автоседишта (група 0+, 1, 2/3)» во «Колички & Транспорт».", mne: "Ova kategorija je za proizvode kao «Autosjedista (grupa 0+, 1, 2/3)» u «Kolica & Transport»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -832,7 +832,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-karrige-ushqimi": {
-    intro: { sq: "Postoni vetëm për «Karrige ushqimi (high chair, portative, të palosshme)» brenda «Ushqyerja & Ushqimi». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Столчиња за храна (high chair, преносни, складни)» во «Исхрана & Храна».", mne: "Objavite samo za «Stolice za hranu (high chair, prenosive, sklopive)» u «Ishrana & Hrana»." },
+    intro: { sq: "Kjo kategori është për produkte si «Karrige ushqimi (high chair, portative, të palosshme)» brenda «Ushqyerja & Ushqimi». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Столчиња за храна (high chair, преносни, складни)» во «Исхрана & Храна».", mne: "Ova kategorija je za proizvode kao «Stolice za hranu (high chair, prenosive, sklopive)» u «Ishrana & Hrana»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -858,7 +858,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-karrige-ushqimi-larte": {
-    intro: { sq: "Postoni vetëm për «Karrige ushqimi të larta» brenda «Karrige & Ulëse Bebe». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Високи столчиња за храна» во «Столчиња & Седишта за бебе».", mne: "Objavite samo za «Visoke stolice za hranu» u «Stolice & Sjedišta za bebe»." },
+    intro: { sq: "Kjo kategori është për produkte si «Karrige ushqimi të larta» brenda «Karrige & Ulëse Bebe». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Високи столчиња за храна» во «Столчиња & Седишта за бебе».", mne: "Ova kategorija je za proizvode kao «Visoke stolice za hranu» u «Stolice & Sjedišta za bebe»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -884,7 +884,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-karrige-ushqimi-portative": {
-    intro: { sq: "Postoni vetëm për «Karrige ushqimi portative» brenda «Karrige & Ulëse Bebe». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Преносни столчиња за храна» во «Столчиња & Седишта за бебе».", mne: "Objavite samo za «Prenosive stolice za hranu» u «Stolice & Sjedišta za bebe»." },
+    intro: { sq: "Kjo kategori është për produkte si «Karrige ushqimi portative» brenda «Karrige & Ulëse Bebe». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Преносни столчиња за храна» во «Столчиња & Седишта за бебе».", mne: "Ova kategorija je za proizvode kao «Prenosive stolice za hranu» u «Stolice & Sjedišta za bebe»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -910,7 +910,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-karroca-binjake": {
-    intro: { sq: "Postoni vetëm për «Karroca për binjakë» brenda «Karroca & Transport». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Количка за близнаци» во «Колички & Транспорт».", mne: "Objavite samo za «Kolica za blizance» u «Kolica & Transport»." },
+    intro: { sq: "Kjo kategori është për produkte si «Karroca për binjakë» brenda «Karroca & Transport». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Количка за близнаци» во «Колички & Транспорт».", mne: "Ova kategorija je za proizvode kao «Kolica za blizance» u «Kolica & Transport»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -936,7 +936,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-karroca-cader": {
-    intro: { sq: "Postoni vetëm për «Karroca çadër» brenda «Karroca & Transport». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Количка чадор» во «Колички & Транспорт».", mne: "Objavite samo za «Kolica suncobran» u «Kolica & Transport»." },
+    intro: { sq: "Kjo kategori është për produkte si «Karroca çadër» brenda «Karroca & Transport». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Количка чадор» во «Колички & Транспорт».", mne: "Ova kategorija je za proizvode kao «Kolica suncobran» u «Kolica & Transport»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -962,7 +962,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-karroca-klasike": {
-    intro: { sq: "Postoni vetëm për «Karroca klasike» brenda «Karroca & Transport». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Класична количка» во «Колички & Транспорт».", mne: "Objavite samo za «Klasična kolica» u «Kolica & Transport»." },
+    intro: { sq: "Kjo kategori është për produkte si «Karroca klasike» brenda «Karroca & Transport». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Класична количка» во «Колички & Транспорт».", mne: "Ova kategorija je za proizvode kao «Klasična kolica» u «Kolica & Transport»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -988,7 +988,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-kaske-biciklete": {
-    intro: { sq: "Postoni vetëm për «Kaskë & Mbrojtëse biçiklete» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Кацига & Заштита за велосипед» во «Безбедност на децата».", mne: "Objavite samo za «Kaciga & Zaštita za bicikl» u «Sigurnost djece»." },
+    intro: { sq: "Kjo kategori është për produkte si «Kaskë & Mbrojtëse biçiklete» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Кацига & Заштита за велосипед» во «Безбедност на децата».", mne: "Ova kategorija je za proizvode kao «Kaciga & Zaštita za bicikl» u «Sigurnost djece»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1014,7 +1014,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-kepuce-femijesh": {
-    intro: { sq: "Postoni vetëm për «Këpucë fëmijësh (sportive, çizme, sandale)» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Детски обувки (спортски, чизми, сандали)» во «Облека & Обувки за деца».", mne: "Objavite samo za «Dječje cipele (sport, čizme, sandale)» u «Odjeća & Cipele za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Këpucë fëmijësh (sportive, çizme, sandale)» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Детски обувки (спортски, чизми, сандали)» во «Облека & Обувки за деца».", mne: "Ova kategorija je za proizvode kao «Dječje cipele (sport, čizme, sandale)» u «Odjeća & Cipele za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1040,7 +1040,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-kepuce-foshnjeje": {
-    intro: { sq: "Postoni vetëm për «Këpucë foshnjeje (hapat e parë)» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Обувки за новороденче (први чекори)» во «Облека & Обувки за деца».", mne: "Objavite samo za «Cipele za novorođenče (prvi koraci)» u «Odjeća & Cipele za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Këpucë foshnjeje (hapat e parë)» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Обувки за новороденче (први чекори)» во «Облека & Обувки за деца».", mne: "Ova kategorija je za proizvode kao «Cipele za novorođenče (prvi koraci)» u «Odjeća & Cipele za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1066,7 +1066,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-kostume-loje": {
-    intro: { sq: "Postoni vetëm për «Kostume & veshje loje» brenda «Lodra & Lojëra». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Костими & Облека за игра» во «Играчки & Игри».", mne: "Objavite samo za «Kostimi & Odjeća za igru» u «Igračke & Igre»." },
+    intro: { sq: "Kjo kategori është për produkte si «Kostume & veshje loje» brenda «Lodra & Lojëra». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Костими & Облека за игра» во «Играчки & Игри».", mne: "Ova kategorija je za proizvode kao «Kostimi & Odjeća za igru» u «Igračke & Igre»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1092,7 +1092,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-kostume-sporti": {
-    intro: { sq: "Postoni vetëm për «Kostume sporti» brenda «Aktivitet & Sport Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Спортски костими» во «Активности & Спорт за деца».", mne: "Objavite samo za «Sportski kostimi» u «Aktivnosti & Sport za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Kostume sporti» brenda «Aktivitet & Sport Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Спортски костими» во «Активности & Спорт за деца».", mne: "Ova kategorija je za proizvode kao «Sportski kostimi» u «Aktivnosti & Sport za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1118,7 +1118,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-krem-mbrojtes": {
-    intro: { sq: "Postoni vetëm për «Kremra mbrojtës fëmijësh» brenda «Pishinë & Plazh për Fëmijë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Заштитни кремови за деца» во «Базен & Плажа за деца».", mne: "Objavite samo za «Zaštitni kremovi za djecu» u «Bazen & Plaža za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Kremra mbrojtës fëmijësh» brenda «Pishinë & Plazh për Fëmijë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Заштитни кремови за деца» во «Базен & Плажа за деца».", mne: "Ova kategorija je za proizvode kao «Zaštitni kremovi za djecu» u «Bazen & Plaža za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1144,7 +1144,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-krevate-djepa": {
-    intro: { sq: "Postoni vetëm për «Krevatë & Djepa (krevat druri, djep lëkundës, krevat udhëtimi)» brenda «Krevat & Dhomë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Кревети & Лулки (дрво, лула, патнички)» во «Кревет & Детска соба».", mne: "Objavite samo za «Kreveti & Kolijevke (drvo, ljuljaška, putni)» u «Krevet & Dječija soba»." },
+    intro: { sq: "Kjo kategori është për produkte si «Krevatë & Djepa (krevat druri, djep lëkundës, krevat udhëtimi)» brenda «Krevat & Dhomë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Кревети & Лулки (дрво, лула, патнички)» во «Кревет & Детска соба».", mne: "Ova kategorija je za proizvode kao «Kreveti & Kolijevke (drvo, ljuljaška, putni)» u «Krevet & Dječija soba»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1170,7 +1170,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-lecke-topth": {
-    intro: { sq: "Postoni vetëm për «Leckë & Topth pelene» brenda «Higjienë & Kujdes». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Подлоги & Пеленски топови» во «Хигиена & Нега».", mne: "Objavite samo za «Podloge & Pelene kugle» u «Higijena & Njega»." },
+    intro: { sq: "Kjo kategori është për produkte si «Leckë & Topth pelene» brenda «Higjienë & Kujdes». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Подлоги & Пеленски топови» во «Хигиена & Нега».", mne: "Ova kategorija je za proizvode kao «Podloge & Pelene kugle» u «Higijena & Njega»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1196,7 +1196,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-lekundshe-kopsht": {
-    intro: { sq: "Postoni vetëm për «Lëkundshe & Lojëra kopshti» brenda «Aktivitet & Sport Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Лулки & Игралишни играчки» во «Активности & Спорт за деца».", mne: "Objavite samo za «Ljuljaške & Vrtne igračke» u «Aktivnosti & Sport za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Lëkundshe & Lojëra kopshti» brenda «Aktivitet & Sport Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Лулки & Игралишни играчки» во «Активности & Спорт за деца».", mne: "Ova kategorija je za proizvode kao «Ljuljaške & Vrtne igračke» u «Aktivnosti & Sport za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1222,7 +1222,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-libra-edukative": {
-    intro: { sq: "Postoni vetëm për «Libra edukativë (7-14 vjeç)» brenda «Libra & Materiale Shkollore». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Едукативни книги (7-14 год.)» во «Книги & Школски материјали».", mne: "Objavite samo za «Edukativne knjige (7-14 god.)» u «Knjige & Školski materijali»." },
+    intro: { sq: "Kjo kategori është për produkte si «Libra edukativë (7-14 vjeç)» brenda «Libra & Materiale Shkollore». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Едукативни книги (7-14 год.)» во «Книги & Школски материјали».", mne: "Ova kategorija je za proizvode kao «Edukativne knjige (7-14 god.)» u «Knjige & Školski materijali»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1248,7 +1248,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-libra-perralla": {
-    intro: { sq: "Postoni vetëm për «Libra me figura & Përralla (0-6 vjeç)» brenda «Libra & Materiale Shkollore». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Сликовници & Бајки (0-6 год.)» во «Книги & Школски материјали».", mne: "Objavite samo za «Slikovnice & Bajke (0-6 god.)» u «Knjige & Školski materijali»." },
+    intro: { sq: "Kjo kategori është për produkte si «Libra me figura & Përralla (0-6 vjeç)» brenda «Libra & Materiale Shkollore». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Сликовници & Бајки (0-6 год.)» во «Книги & Школски материјали».", mne: "Ova kategorija je za proizvode kao «Slikovnice & Bajke (0-6 god.)» u «Knjige & Školski materijali»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1274,7 +1274,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-libra-shkollor": {
-    intro: { sq: "Postoni vetëm për «Libra shkollor» brenda «Libra & Materiale Shkollore». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Учебници» во «Книги & Школски материјали».", mne: "Objavite samo za «Udžbenici» u «Knjige & Školski materijali»." },
+    intro: { sq: "Kjo kategori është për produkte si «Libra shkollor» brenda «Libra & Materiale Shkollore». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Учебници» во «Книги & Школски материјали».", mne: "Ova kategorija je za proizvode kao «Udžbenici» u «Knjige & Školski materijali»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1300,7 +1300,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-lodra-banjo": {
-    intro: { sq: "Postoni vetëm për «Lodra banje & pishinë» brenda «Lodra & Lojëra». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Играчки за бања & базен» во «Играчки & Игри».", mne: "Objavite samo za «Igračke za kupku & bazen» u «Igračke & Igre»." },
+    intro: { sq: "Kjo kategori është për produkte si «Lodra banje & pishinë» brenda «Lodra & Lojëra». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Играчки за бања & базен» во «Играчки & Игри».", mne: "Ova kategorija je za proizvode kao «Igračke za kupku & bazen» u «Igračke & Igre»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1326,7 +1326,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-lodra-elektronike": {
-    intro: { sq: "Postoni vetëm për «Lodra elektronike (me bateri, tableta fëmijësh)» brenda «Lodra & Lojëra». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Електронски играчки (на батерии, детски таблети)» во «Играчки & Игри».", mne: "Objavite samo za «Elektronske igračke (na baterije, dječji tableti)» u «Igračke & Igre»." },
+    intro: { sq: "Kjo kategori është për produkte si «Lodra elektronike (me bateri, tableta fëmijësh)» brenda «Lodra & Lojëra». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Електронски играчки (на батерии, детски таблети)» во «Играчки & Игри».", mne: "Ova kategorija je za proizvode kao «Elektronske igračke (na baterije, dječji tableti)» u «Igračke & Igre»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1352,7 +1352,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-lodra-klasike": {
-    intro: { sq: "Postoni vetëm për «Lodra klasike (kukulla, figura, makina, trena)» brenda «Lodra & Lojëra». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Класични играчки (кукли, фигури, коли, возови)» во «Играчки & Игри».", mne: "Objavite samo za «Klasične igračke (lutke, figure, autići, vozovi)» u «Igračke & Igre»." },
+    intro: { sq: "Kjo kategori është për produkte si «Lodra klasike (kukulla, figura, makina, trena)» brenda «Lodra & Lojëra». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Класични играчки (кукли, фигури, коли, возови)» во «Играчки & Игри».", mne: "Ova kategorija je za proizvode kao «Klasične igračke (lutke, figure, autići, vozovi)» u «Igračke & Igre»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1378,7 +1378,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-lodra-montessori": {
-    intro: { sq: "Postoni vetëm për «Lodra Montessori» brenda «Lodra Edukative». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Montessori играчки» во «Едукативни играчки».", mne: "Objavite samo za «Montessori igračke» u «Edukativne igračke»." },
+    intro: { sq: "Kjo kategori është për produkte si «Lodra Montessori» brenda «Lodra Edukative». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Montessori играчки» во «Едукативни играчки».", mne: "Ova kategorija je za proizvode kao «Montessori igračke» u «Edukativne igračke»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1404,7 +1404,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-lodra-muzikore": {
-    intro: { sq: "Postoni vetëm për «Lodra muzikore» brenda «Lodra Edukative». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Музички играчки» во «Едукативни играчки».", mne: "Objavite samo za «Muzičke igračke» u «Edukativne igračke»." },
+    intro: { sq: "Kjo kategori është për produkte si «Lodra muzikore» brenda «Lodra Edukative». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Музички играчки» во «Едукативни играчки».", mne: "Ova kategorija je za proizvode kao «Muzičke igračke» u «Edukativne igračke»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1430,7 +1430,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-lodra-reere": {
-    intro: { sq: "Postoni vetëm për «Lodra rëre & plazhi» brenda «Pishinë & Plazh për Fëmijë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Играчки за песок & плажа» во «Базен & Плажа за деца».", mne: "Objavite samo za «Igračke za pijesak & plažu» u «Bazen & Plaža za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Lodra rëre & plazhi» brenda «Pishinë & Plazh për Fëmijë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Играчки за песок & плажа» во «Базен & Плажа за деца».", mne: "Ova kategorija je za proizvode kao «Igračke za pijesak & plažu» u «Bazen & Plaža za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1456,7 +1456,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-lojera-shoqerore": {
-    intro: { sq: "Postoni vetëm për «Lojëra shoqërore (lojëra tavoline, puzzle, kartela)» brenda «Lodra & Lojëra». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Друштvenи игри (друштvenи, puzzle, карти)» во «Играчки & Игри».", mne: "Objavite samo za «Društvene igre (društvene, puzzle, karte)» u «Igračke & Igre»." },
+    intro: { sq: "Kjo kategori është për produkte si «Lojëra shoqërore (lojëra tavoline, puzzle, kartela)» brenda «Lodra & Lojëra». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Друштvenи игри (друштvenи, puzzle, карти)» во «Играчки & Игри».", mne: "Ova kategorija je za proizvode kao «Društvene igre (društvene, puzzle, karte)» u «Igračke & Igre»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1482,7 +1482,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-mbajtese-bebe": {
-    intro: { sq: "Postoni vetëm për «Mbajtëse bebe (kangaroo, wrap, sling)» brenda «Karroca & Transport». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Носилки за бебе (kangaroo, wrap, sling)» во «Колички & Транспорт».", mne: "Objavite samo za «Nosiljke za bebe (kangaroo, wrap, sling)» u «Kolica & Transport»." },
+    intro: { sq: "Kjo kategori është për produkte si «Mbajtëse bebe (kangaroo, wrap, sling)» brenda «Karroca & Transport». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Носилки за бебе (kangaroo, wrap, sling)» во «Колички & Транспорт».", mne: "Ova kategorija je za proizvode kao «Nosiljke za bebe (kangaroo, wrap, sling)» u «Kolica & Transport»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1508,7 +1508,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-mbajtese-shishesh": {
-    intro: { sq: "Postoni vetëm për «Mbajtëse shishesh» brenda «Çanta & Aksesorë Nënë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Држачи за шишета» во «Торби & Аксесоари за мајки».", mne: "Objavite samo za «Držači za flašice» u «Torbe & Akcesori za majke»." },
+    intro: { sq: "Kjo kategori është për produkte si «Mbajtëse shishesh» brenda «Çanta & Aksesorë Nënë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Држачи за шишета» во «Торби & Аксесоари за мајки».", mne: "Ova kategorija je za proizvode kao «Držači za flašice» u «Torbe & Akcesori za majke»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1534,7 +1534,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-mbrojtese-kendi": {
-    intro: { sq: "Postoni vetëm për «Mbrojtëse këndi & cepi tavolinash» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Заштита за агли & рабови на маса» во «Безбедност на децата».", mne: "Objavite samo za «Zaštita za uglove & ivice stola» u «Sigurnost djece»." },
+    intro: { sq: "Kjo kategori është për produkte si «Mbrojtëse këndi & cepi tavolinash» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Заштита за агли & рабови на маса» во «Безбедност на децата».", mne: "Ova kategorija je za proizvode kao «Zaštita za uglove & ivice stola» u «Sigurnost djece»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1560,7 +1560,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-mbrojtese-priza": {
-    intro: { sq: "Postoni vetëm për «Mbrojtëse prizash elektrike» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Заштита за штекери» во «Безбедност на децата».", mne: "Objavite samo za «Zaštita za utičnice» u «Sigurnost djece»." },
+    intro: { sq: "Kjo kategori është për produkte si «Mbrojtëse prizash elektrike» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Заштита за штекери» во «Безбедност на децата».", mne: "Ova kategorija je za proizvode kao «Zaštita za utičnice» u «Sigurnost djece»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1586,7 +1586,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-mbulesa-shi-diell": {
-    intro: { sq: "Postoni vetëm për «Mbulesa shi & dielli për karrocë» brenda «Çanta & Aksesorë Nënë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Заштита од дожд & сонце за количка» во «Торби & Аксесоари за мајки».", mne: "Objavite samo za «Zaštita od kiše & sunca za kolica» u «Torbe & Akcesori za majke»." },
+    intro: { sq: "Kjo kategori është për produkte si «Mbulesa shi & dielli për karrocë» brenda «Çanta & Aksesorë Nënë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Заштита од дожд & сонце за количка» во «Торби & Аксесоари за мајки».", mne: "Ova kategorija je za proizvode kao «Zaštita od kiše & sunca za kolica» u «Torbe & Akcesori za majke»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1612,7 +1612,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-mjete-vizatimi": {
-    intro: { sq: "Postoni vetëm për «Mjete vizatimi & Pikturimi» brenda «Libra & Materiale Shkollore». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Средства за цртање & Сликање» во «Книги & Школски материјали».", mne: "Objavite samo za «Sredstva za crtanje & Slikanje» u «Knjige & Školski materijali»." },
+    intro: { sq: "Kjo kategori është për produkte si «Mjete vizatimi & Pikturimi» brenda «Libra & Materiale Shkollore». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Средства за цртање & Сликање» во «Книги & Школски материјали».", mne: "Ova kategorija je za proizvode kao «Sredstva za crtanje & Slikanje» u «Knjige & Školski materijali»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1638,7 +1638,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-mobilje-dhome": {
-    intro: { sq: "Postoni vetëm për «Mobilje (dollap, komodë pelene, rafte lodra)» brenda «Krevat & Dhomë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Мебел (орман, комoda за пелени, полици)» во «Кревет & Детска соба».", mne: "Objavite samo za «Namještaj (ormar, komoda za pelene, police)» u «Krevet & Dječija soba»." },
+    intro: { sq: "Kjo kategori është për produkte si «Mobilje (dollap, komodë pelene, rafte lodra)» brenda «Krevat & Dhomë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Мебел (орман, комoda за пелени, полици)» во «Кревет & Детска соба».", mne: "Ova kategorija je za proizvode kao «Namještaj (ormar, komoda za pelene, police)» u «Krevet & Dječija soba»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1664,7 +1664,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-monitor-audio": {
-    intro: { sq: "Postoni vetëm për «Monitor bebe audio» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Аудио бебе монитор» во «Безбедност на децата».", mne: "Objavite samo za «Audio bebe monitor» u «Sigurnost djece»." },
+    intro: { sq: "Kjo kategori është për produkte si «Monitor bebe audio» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Аудио бебе монитор» во «Безбедност на децата».", mne: "Ova kategorija je za proizvode kao «Audio bebe monitor» u «Sigurnost djece»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1690,7 +1690,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-monitor-video": {
-    intro: { sq: "Postoni vetëm për «Monitor bebe video (kamera)» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Видео бебе монитор (кamera)» во «Безбедност на децата».", mne: "Objavite samo za «Video bebe monitor (kamera)» u «Sigurnost djece»." },
+    intro: { sq: "Kjo kategori është për produkte si «Monitor bebe video (kamera)» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Видео бебе монитор (кamera)» во «Безбедност на децата».", mne: "Ova kategorija je za proizvode kao «Video bebe monitor (kamera)» u «Sigurnost djece»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1716,7 +1716,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-organizatore-karroce": {
-    intro: { sq: "Postoni vetëm për «Organizatorë karroce» brenda «Çanta & Aksesorë Nënë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Организатори за количка» во «Торби & Аксесоари за мајки».", mne: "Objavite samo za «Organizatori za kolica» u «Torbe & Akcesori za majke»." },
+    intro: { sq: "Kjo kategori është për produkte si «Organizatorë karroce» brenda «Çanta & Aksesorë Nënë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Организатори за количка» во «Торби & Аксесоари за мајки».", mne: "Ova kategorija je za proizvode kao «Organizatori za kolica» u «Torbe & Akcesori za majke»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1742,7 +1742,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-pantallona-shtatzanise": {
-    intro: { sq: "Postoni vetëm për «Pantallona & Bluza shtatzënësie» brenda «Veshje Shtatzënësie». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Панталони & Маици за бременост» во «Облека за бременост».", mne: "Objavite samo za «Pantalone & Majice za trudnice» u «Odjeća za trudnice»." },
+    intro: { sq: "Kjo kategori është për produkte si «Pantallona & Bluza shtatzënësie» brenda «Veshje Shtatzënësie». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Панталони & Маици за бременост» во «Облека за бременост».", mne: "Ova kategorija je za proizvode kao «Pantalone & Majice za trudnice» u «Odjeća za trudnice»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1768,7 +1768,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-pelene-njeperdorimshme": {
-    intro: { sq: "Postoni vetëm për «Pelenë njëpërdorimshme» brenda «Higjienë & Kujdes». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Еднократни пелени» во «Хигиена & Нега».", mne: "Objavite samo za «Jednokratne pelene» u «Higijena & Njega»." },
+    intro: { sq: "Kjo kategori është për produkte si «Pelenë njëpërdorimshme» brenda «Higjienë & Kujdes». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Еднократни пелени» во «Хигиена & Нега».", mne: "Ova kategorija je za proizvode kao «Jednokratne pelene» u «Higijena & Njega»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1794,7 +1794,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-pelene-riperdorshme": {
-    intro: { sq: "Postoni vetëm për «Pelenë të ripërdorshme» brenda «Higjienë & Kujdes». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Многоразни пелени» во «Хигиена & Нега».", mne: "Objavite samo za «Višekratne pelene» u «Higijena & Njega»." },
+    intro: { sq: "Kjo kategori është për produkte si «Pelenë të ripërdorshme» brenda «Higjienë & Kujdes». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Многоразни пелени» во «Хигиена & Нега».", mne: "Ova kategorija je za proizvode kao «Višekratne pelene» u «Higijena & Njega»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1820,7 +1820,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-pishina-fryra": {
-    intro: { sq: "Postoni vetëm për «Pishina të fryra» brenda «Pishinë & Plazh për Fëmijë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Надuvливи базени» во «Базен & Плажа за деца».", mne: "Objavite samo za «Duvani bazeni» u «Bazen & Plaža za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Pishina të fryra» brenda «Pishinë & Plazh për Fëmijë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Надuvливи базени» во «Базен & Плажа за деца».", mne: "Ova kategorija je za proizvode kao «Duvani bazeni» u «Bazen & Plaža za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1846,7 +1846,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-pompe-gjiri": {
-    intro: { sq: "Postoni vetëm për «Pompë gjiri (elektrike & manuale)» brenda «Ushqyerja & Ushqimi». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Пумпи за дојка (електрични & рачни)» во «Исхрана & Храна».", mne: "Objavite samo za «Pumpe za grudi (električne & ručne)» u «Ishrana & Hrana»." },
+    intro: { sq: "Kjo kategori është për produkte si «Pompë gjiri (elektrike & manuale)» brenda «Ushqyerja & Ushqimi». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Пумпи за дојка (електрични & рачни)» во «Исхрана & Храна».", mne: "Ova kategorija je za proizvode kao «Pumpe za grudi (električne & ručne)» u «Ishrana & Hrana»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1872,7 +1872,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-porta-sigurie": {
-    intro: { sq: "Postoni vetëm për «Porta sigurie (shkallë & dhoma)» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Безбедносни врати (скали & соби)» во «Безбедност на децата».", mne: "Objavite samo za «Sigurnosna vrata (stepenice & sobe)» u «Sigurnost djece»." },
+    intro: { sq: "Kjo kategori është për produkte si «Porta sigurie (shkallë & dhoma)» brenda «Siguria e Fëmijëve». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Безбедносни врати (скали & соби)» во «Безбедност на децата».", mne: "Ova kategorija je za proizvode kao «Sigurnosna vrata (stepenice & sobe)» u «Sigurnost djece»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1898,7 +1898,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-produkte-kujdesi-shtatzanise": {
-    intro: { sq: "Postoni vetëm për «Produkte kujdesi (krem kundër strijave)» brenda «Veshje Shtatzënësie». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Нега (крем против стрии)» во «Облека за бременост».", mne: "Objavite samo za «Njega (krem protiv strija)» u «Odjeća za trudnice»." },
+    intro: { sq: "Kjo kategori është për produkte si «Produkte kujdesi (krem kundër strijave)» brenda «Veshje Shtatzënësie». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Нега (крем против стрии)» во «Облека за бременост».", mne: "Ova kategorija je za proizvode kao «Njega (krem protiv strija)» u «Odjeća za trudnice»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1924,7 +1924,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-produkte-lekure": {
-    intro: { sq: "Postoni vetëm për «Produkte lëkure (krem, shampo, vaj masazhi)» brenda «Higjienë & Kujdes». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Производи за кожа (крем, шампон, масажно масло)» во «Хигиена & Нега».", mne: "Objavite samo za «Proizvodi za kožu (krem, šampon, ulje za masažu)» u «Higijena & Njega»." },
+    intro: { sq: "Kjo kategori është për produkte si «Produkte lëkure (krem, shampo, vaj masazhi)» brenda «Higjienë & Kujdes». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Производи за кожа (крем, шампон, масажно масло)» во «Хигиена & Нега».", mne: "Ova kategorija je za proizvode kao «Proizvodi za kožu (krem, šampon, ulje za masažu)» u «Higijena & Njega»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1950,7 +1950,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-puzzle-edukative": {
-    intro: { sq: "Postoni vetëm për «Lojëra logjike & Puzzle edukative» brenda «Lodra Edukative». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Логички игри & Едукативни puzzle» во «Едукативни играчки».", mne: "Objavite samo za «Logičke igre & Edukativni puzzle» u «Edukativne igračke»." },
+    intro: { sq: "Kjo kategori është për produkte si «Lojëra logjike & Puzzle edukative» brenda «Lodra Edukative». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Логички игри & Едукативни puzzle» во «Едукативни играчки».", mne: "Ova kategorija je za proizvode kao «Logičke igre & Edukativni puzzle» u «Edukativne igračke»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -1976,7 +1976,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-rroba-foshnjeje": {
-    intro: { sq: "Postoni vetëm për «Rroba foshnjeje (0-12 muaj)» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Облека за новороденче (0-12 мес.)» во «Облека & Обувки за деца».", mne: "Objavite samo za «Odjeća za novorođenče (0-12 mj.)» u «Odjeća & Cipele za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Rroba foshnjeje (0-12 muaj)» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Облека за новороденче (0-12 мес.)» во «Облека & Обувки за деца».", mne: "Ova kategorija je za proizvode kao «Odjeća za novorođenče (0-12 mj.)» u «Odjeća & Cipele za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2002,7 +2002,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-rroba-shkollore": {
-    intro: { sq: "Postoni vetëm për «Rroba shkollore (6-14 vjeç)» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Школска облека (6-14 год.)» во «Облека & Обувки за деца».", mne: "Objavite samo za «Školska odjeća (6-14 god.)» u «Odjeća & Cipele za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Rroba shkollore (6-14 vjeç)» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Школска облека (6-14 год.)» во «Облека & Обувки за деца».", mne: "Ova kategorija je za proizvode kao «Školska odjeća (6-14 god.)» u «Odjeća & Cipele za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2028,7 +2028,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-rroba-vegjelish": {
-    intro: { sq: "Postoni vetëm për «Rroba vegjëlish (1-5 vjeç)» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Облека за мали деца (1-5 год.)» во «Облека & Обувки за деца».", mne: "Objavite samo za «Odjeća za malu djecu (1-5 god.)» u «Odjeća & Cipele za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Rroba vegjëlish (1-5 vjeç)» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Облека за мали деца (1-5 год.)» во «Облека & Обувки за деца».", mne: "Ova kategorija je za proizvode kao «Odjeća za malu djecu (1-5 god.)» u «Odjeća & Cipele za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2054,7 +2054,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-shishe-biberon": {
-    intro: { sq: "Postoni vetëm për «Shishe & Biberon» brenda «Ushqyerja & Ushqimi». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Шишета & Биберони» во «Исхрана & Храна».", mne: "Objavite samo za «Flašice & Cucle» u «Ishrana & Hrana»." },
+    intro: { sq: "Kjo kategori është për produkte si «Shishe & Biberon» brenda «Ushqyerja & Ushqimi». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Шишета & Биберони» во «Исхрана & Храна».", mne: "Ova kategorija je za proizvode kao «Flašice & Cucle» u «Ishrana & Hrana»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2080,7 +2080,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-shpatulla-patina": {
-    intro: { sq: "Postoni vetëm për «Shpatulla & Patina» brenda «Aktivitet & Sport Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Ролери & Патинки» во «Активности & Спорт за деца».", mne: "Objavite samo za «Roleri & Patinke» u «Aktivnosti & Sport za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Shpatulla & Patina» brenda «Aktivitet & Sport Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Ролери & Патинки» во «Активности & Спорт за деца».", mne: "Ova kategorija je za proizvode kao «Roleri & Patinke» u «Aktivnosti & Sport za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2106,7 +2106,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-sisteme-udhetimi": {
-    intro: { sq: "Postoni vetëm për «Sisteme udhëtimi (karroca + karrige makine)» brenda «Karroca & Transport». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Системи за патување (количка + автоседиште)» во «Колички & Транспорт».", mne: "Objavite samo za «Sistemi za putovanje (kolica + autosjediste)» u «Kolica & Transport»." },
+    intro: { sq: "Kjo kategori është për produkte si «Sisteme udhëtimi (karroca + karrige makine)» brenda «Karroca & Transport». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Системи за патување (количка + автоседиште)» во «Колички & Транспорт».", mne: "Ova kategorija je za proizvode kao «Sistemi za putovanje (kolica + autosjediste)» u «Kolica & Transport»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2132,7 +2132,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-sterilizues-ngrohes": {
-    intro: { sq: "Postoni vetëm për «Sterilizues & Ngrohës shishesh» brenda «Ushqyerja & Ushqimi». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Стерилизатори & Загревачи шишета» во «Исхрана & Храна».", mne: "Objavite samo za «Sterilizatori & Grijači flašica» u «Ishrana & Hrana»." },
+    intro: { sq: "Kjo kategori është për produkte si «Sterilizues & Ngrohës shishesh» brenda «Ushqyerja & Ushqimi». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Стерилизатори & Загревачи шишета» во «Исхрана & Храна».", mne: "Ova kategorija je za proizvode kao «Sterilizatori & Grijači flašica» u «Ishrana & Hrana»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2158,7 +2158,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-sutjena-gji": {
-    intro: { sq: "Postoni vetëm për «Sutjena & Veshje për gji» brenda «Veshje Shtatzënësie». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Градник & Облека за доење» во «Облека за бременост».", mne: "Objavite samo za «Grudnjak & Odjeća za dojenje» u «Odjeća za trudnice»." },
+    intro: { sq: "Kjo kategori është për produkte si «Sutjena & Veshje për gji» brenda «Veshje Shtatzënësie». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Градник & Облека за доење» во «Облека за бременост».", mne: "Ova kategorija je za proizvode kao «Grudnjak & Odjeća za dojenje» u «Odjeća za trudnice»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2184,7 +2184,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-tapete-sensor": {
-    intro: { sq: "Postoni vetëm për «Tapete loje & Stimulim sensor» brenda «Lodra Edukative». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Теписи за игра & Сензорна стимулација» во «Едукативни играчки».", mne: "Objavite samo za «Tepisi za igru & Senzorna stimulacija» u «Edukativne igračke»." },
+    intro: { sq: "Kjo kategori është për produkte si «Tapete loje & Stimulim sensor» brenda «Lodra Edukative». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Теписи за игра & Сензорна стимулација» во «Едукативни играчки».", mne: "Ova kategorija je za proizvode kao «Tepisi za igru & Senzorna stimulacija» u «Edukativne igračke»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2210,7 +2210,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-termometer-pajisje": {
-    intro: { sq: "Postoni vetëm për «Termometër & Pajisje shëndetësore» brenda «Higjienë & Kujdes». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Термометар & Здравствени уреди» во «Хигиена & Нега».", mne: "Objavite samo za «Termometar & Zdravstveni aparati» u «Higijena & Njega»." },
+    intro: { sq: "Kjo kategori është për produkte si «Termometër & Pajisje shëndetësore» brenda «Higjienë & Kujdes». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Термометар & Здравствени уреди» во «Хигиена & Нега».", mne: "Ova kategorija je za proizvode kao «Termometar & Zdravstveni aparati» u «Higijena & Njega»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2236,7 +2236,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-topa-sport": {
-    intro: { sq: "Postoni vetëm për «Topa & Pajisje sportive» brenda «Aktivitet & Sport Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Топки & Спортска опрема» во «Активности & Спорт за деца».", mne: "Objavite samo za «Lopte & Sportska oprema» u «Aktivnosti & Sport za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Topa & Pajisje sportive» brenda «Aktivitet & Sport Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Топки & Спортска опрема» во «Активности & Спорт за деца».", mne: "Ova kategorija je za proizvode kao «Lopte & Sportska oprema» u «Aktivnosti & Sport za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2262,7 +2262,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-trampoline": {
-    intro: { sq: "Postoni vetëm për «Trampolinë & Rrëshqitëse» brenda «Aktivitet & Sport Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Трамполини & Лизгалки» во «Активности & Спорт за деца».", mne: "Objavite samo za «Trampolini & Tobogani» u «Aktivnosti & Sport za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Trampolinë & Rrëshqitëse» brenda «Aktivitet & Sport Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Трамполини & Лизгалки» во «Активности & Спорт за деца».", mne: "Ova kategorija je za proizvode kao «Trampolini & Tobogani» u «Aktivnosti & Sport za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2288,7 +2288,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-trotinet-skiro": {
-    intro: { sq: "Postoni vetëm për «Trotineta & Skiro» brenda «Aktivitet & Sport Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Тротинети & Скиера» во «Активности & Спорт за деца».", mne: "Objavite samo za «Trotineti & Skejteri» u «Aktivnosti & Sport za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Trotineta & Skiro» brenda «Aktivitet & Sport Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Тротинети & Скиера» во «Активности & Спорт за деца».", mne: "Ova kategorija je za proizvode kao «Trotineti & Skejteri» u «Aktivnosti & Sport za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2314,7 +2314,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-ulese-ngritese": {
-    intro: { sq: "Postoni vetëm për «Ulëse ngritëse (booster seat)» brenda «Karrige & Ulëse Bebe». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Бустер седишта (booster seat)» во «Столчиња & Седишта за бебе».", mne: "Objavite samo za «Booster sjedišta» u «Stolice & Sjedišta za bebe»." },
+    intro: { sq: "Kjo kategori është për produkte si «Ulëse ngritëse (booster seat)» brenda «Karrige & Ulëse Bebe». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Бустер седишта (booster seat)» во «Столчиња & Седишта за бебе».", mne: "Ova kategorija je za proizvode kao «Booster sjedišta» u «Stolice & Sjedišta za bebe»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2340,7 +2340,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-ushqim-bebe": {
-    intro: { sq: "Postoni vetëm për «Ushqim bebe & Snacks» brenda «Ushqyerja & Ushqimi». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Храна за бебе & Snacks» во «Исхрана & Храна».", mne: "Objavite samo za «Hrana za bebe & Snacks» u «Ishrana & Hrana»." },
+    intro: { sq: "Kjo kategori është për produkte si «Ushqim bebe & Snacks» brenda «Ushqyerja & Ushqimi». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Храна за бебе & Snacks» во «Исхрана & Храна».", mne: "Ova kategorija je za proizvode kao «Hrana za bebe & Snacks» u «Ishrana & Hrana»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2366,7 +2366,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-vaske-banjoje": {
-    intro: { sq: "Postoni vetëm për «Vaskë banjoje foshnjeje» brenda «Higjienë & Kujdes». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Каде за купање бебе» во «Хигиена & Нега».", mne: "Objavite samo za «Kada za kupanje bebe» u «Higijena & Njega»." },
+    intro: { sq: "Kjo kategori është për produkte si «Vaskë banjoje foshnjeje» brenda «Higjienë & Kujdes». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Каде за купање бебе» во «Хигиена & Нега».", mne: "Ova kategorija je za proizvode kao «Kada za kupanje bebe» u «Higijena & Njega»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2392,7 +2392,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-veshje-banjo": {
-    intro: { sq: "Postoni vetëm për «Veshje banje & Not» brenda «Pishinë & Plazh për Fëmijë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Купалишна облека & Пливање» во «Базен & Плажа за деца».", mne: "Objavite samo za «Kupaćica & Plivanje» u «Bazen & Plaža za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Veshje banje & Not» brenda «Pishinë & Plazh për Fëmijë». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Купалишна облека & Пливање» во «Базен & Плажа за деца».", mne: "Ova kategorija je za proizvode kao «Kupaćica & Plivanje» u «Bazen & Plaža za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2418,7 +2418,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-veshje-dimri": {
-    intro: { sq: "Postoni vetëm për «Veshje dimri (pallto, xhaketa, kostume)» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Зимска облека (капути, јакни, костими)» во «Облека & Обувки за деца».", mne: "Objavite samo za «Zimska odjeća (kaputi, jakne, kostimi)» u «Odjeća & Cipele za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Veshje dimri (pallto, xhaketa, kostume)» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Зимска облека (капути, јакни, костими)» во «Облека & Обувки за деца».", mne: "Ova kategorija je za proizvode kao «Zimska odjeća (kaputi, jakne, kostimi)» u «Odjeća & Cipele za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },
@@ -2444,7 +2444,7 @@ const GUIDES: Record<string, FemijeSubcategoryGuide> = {
     ],
   },
   "femije-leaf-veshje-vere": {
-    intro: { sq: "Postoni vetëm për «Veshje vere» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Објавете само за «Летна облека» во «Облека & Обувки за деца».", mne: "Objavite samo za «Ljetna odjeća» u «Odjeća & Cipele za djecu»." },
+    intro: { sq: "Kjo kategori është për produkte si «Veshje vere» brenda «Rroba & Këpucë Fëmijësh». Produkti duhet të përputhet drejtpërdrejt me këtë emër kategorie.", mk: "Оваа категорија е за производи како «Летна облека» во «Облека & Обувки за деца».", mne: "Ova kategorija je za proizvode kao «Ljetna odjeća» u «Odjeća & Cipele za djecu»." },
     includes: [
       { sq: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mk: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar).", mne: "Përmendni në titull: markën, madhësinë/moshën, ngjyrën dhe gjendjen (i ri / i përdorur / për dhuratë / i dëmtuar)." },
       { sq: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mk: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti.", mne: "Shtoni foto reale nga të gjitha anët; mos përdorni foto stock nga interneti." },

@@ -53,6 +53,12 @@ paths:
           description: Case-insensitive partial match against listing `location` (ILIKE `%term%`)
           schema:
             type: string
+        - name: listing_country
+          in: query
+          description: Filter listings whose city is in this home market (`ks`, `al`, `mk`, `mne`)
+          schema:
+            type: string
+            enum: [ks, al, mk, mne]
         - name: property_txn
           in: query
           description: Real estate listing transaction (`shitje`, `qira`)

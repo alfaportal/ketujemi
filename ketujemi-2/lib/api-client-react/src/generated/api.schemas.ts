@@ -136,6 +136,8 @@ export type GetListingsParams = {
    * Case-insensitive partial match against listing `location` (ILIKE `%term%`)
    */
   location_search?: string;
+  /** Filter listings whose city is in this home market (`ks`, `al`, `mk`, `mne`). */
+  listing_country?: string;
   /**
    * Real estate listing transaction (`shitje`, `qira`)
    */
