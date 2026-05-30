@@ -890,6 +890,9 @@ export default function CategoryPage() {
     if (isRrobaKepuceHub && rrobaKepuceLeafCsv) {
       return rrobaKepuceListParams ?? { category_ids: rrobaKepuceLeafCsv, page: 1, limit: 20 };
     }
+    if (isFemijeLeafPage) {
+      return femijeListParams ?? { category_id: categoryId, page: 1, limit: 20 };
+    }
     if (isFemijeHub && femijeLeafCsv) {
       return femijeListParams ?? { category_ids: femijeLeafCsv, page: 1, limit: 20 };
     }
@@ -952,6 +955,8 @@ export default function CategoryPage() {
     rrobaKepuceLeafCsv,
     rrobaKepuceListParams,
     isFemijeHub,
+    isFemijeGroupPage,
+    isFemijeLeafPage,
     femijeLeafCsv,
     femijeListParams,
     isPuneSherbimeHub,
@@ -988,7 +993,8 @@ export default function CategoryPage() {
     (!isArsimKurseHub || arsimKurseLeafCsv.length > 0) &&
     (!isMobiljeDekorimHub || mobiljeDekorimLeafCsv.length > 0) &&
     (!isRrobaKepuceHub || rrobaKepuceLeafCsv.length > 0) &&
-    (!isFemijeHub || femijeLeafCsv.length > 0) &&
+    !isFemijeHub &&
+    !isFemijeGroupPage &&
     (!isPuneSherbimeHub || puneSherbimeLeafCsv.length > 0) &&
     (!isBujqesiBlegtoriHub || bujqesiBlegtoriLeafCsv.length > 0) &&
     (!isMuzikeHobbyHub || muzikeHobbyLeafCsv.length > 0) &&
@@ -1058,6 +1064,26 @@ export default function CategoryPage() {
     (parentCategory as { slug?: string }).slug === FEMIJE_HUB_SLUG;
 
   const currentSlug = (currentCategory as { slug?: string | null })?.slug ?? "";
+
+  const isFemijeGroupPage =
+    !!(parentCategory as { slug?: string })?.slug &&
+    (parentCategory as { slug?: string }).slug === FEMIJE_HUB_SLUG &&
+    currentSlug.startsWith("femije-grp-");
+
+  const isFemijeLeafPage =
+    currentSlug.startsWith("femije-leaf-") ||
+    (currentSlug.startsWith("femije-type-") && children.length === 0);
+
+  const femijeHubCategoryId = useMemo(() => {
+    if (isFemijeHub) return categoryId;
+    if ((parentCategory as { slug?: string })?.slug === FEMIJE_HUB_SLUG) {
+      return (parentCategory as { id: number }).id;
+    }
+    if ((grandparentCategory as { slug?: string })?.slug === FEMIJE_HUB_SLUG) {
+      return (grandparentCategory as { id: number }).id;
+    }
+    return categoryId;
+  }, [isFemijeHub, categoryId, parentCategory, grandparentCategory]);
   const femijeGuideSlug = isFemijeHub
     ? FEMIJE_HUB_SLUG
     : /^femije(-(grp|type|leaf)-|$)/.test(currentSlug) &&
@@ -1534,14 +1560,13 @@ export default function CategoryPage() {
 
         {isFemijeHub && allCategories?.length ? (
           <FemijeSearchPanel
+            variant="hub"
             hubId={categoryId}
             categories={allCategories as any}
-            previewTotal={listingsData?.total ?? null}
-            previewLoading={isLoading}
-            onListingParamsChange={setFemijeListParams}
-            onScrollToResults={() =>
-              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+            onNavigateToCategory={(childId) =>
+              navigateToCategory(setLocation, childId, categoryId)
             }
+            onListingParamsChange={setFemijeListParams}
           />
         ) : null}
 
@@ -1683,6 +1708,35 @@ export default function CategoryPage() {
           </div>
         ) : null}
 
+        {isFemijeGroupPage && allCategories?.length ? (
+          <FemijeSearchPanel
+            variant="group"
+            hubId={femijeHubCategoryId}
+            scopeCategoryId={categoryId}
+            categories={allCategories as any}
+            onNavigateToCategory={(childId) =>
+              navigateToCategory(setLocation, childId, categoryId)
+            }
+            onListingParamsChange={setFemijeListParams}
+          />
+        ) : null}
+
+        {isFemijeLeafPage && allCategories?.length ? (
+          <FemijeSearchPanel
+            variant="leaf"
+            hubId={femijeHubCategoryId}
+            scopeCategoryId={categoryId}
+            categories={allCategories as any}
+            onNavigateToCategory={(childId) =>
+              navigateToCategory(setLocation, childId, categoryId)
+            }
+            onListingParamsChange={setFemijeListParams}
+            onScrollToResults={() =>
+              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }
+          />
+        ) : null}
+
         {/* Level 2 → show brands (Vetura body type → brands; not used on Motorr leaf categories) */}
         {isBodyTypeLevel &&
           !isFemijeSubcategoryLevel &&
@@ -1715,7 +1769,7 @@ export default function CategoryPage() {
           <VipPartnersSection variant="hub" categoryId={categoryId} className="my-8" />
         ) : null}
 
-        {!isTelefonaHubPage && renderListingsSection()}
+        {!isTelefonaHubPage && !isFemijeHub && !isFemijeGroupPage && renderListingsSection()}
       </div>
     </div>
   );
