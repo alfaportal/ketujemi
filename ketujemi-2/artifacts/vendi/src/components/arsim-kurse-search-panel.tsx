@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import {
   CategoryPhotoPickerCard,
-  CategoryPhotoPickerRow,
+  CategoryPhotoPickerGrid,
 } from "@/components/category-photo-picker";
 import { useMarket } from "@/lib/market-context";
 import { translateCategory } from "@/lib/category-translations";
@@ -152,14 +152,22 @@ export function ArsimKurseSearchPanel({
           <p className="text-sm text-gray-500">{t.ak_panel_sub}</p>
         </div>
 
-        <section className="space-y-3 pb-0" aria-label={t.ak_sec_types}>
-          <Label className="text-sm font-bold text-gray-500 uppercase tracking-wide">
-            {t.ak_sec_types}
-          </Label>
-          <CategoryPhotoPickerRow>
+        <section className="space-y-4 pb-0" aria-label={t.ak_sec_types}>
+          <div>
+            <h3 className="text-base font-black text-gray-900">
+              {(t as { fj_sec_pick_sub?: string }).fj_sec_pick_sub ?? t.ak_sec_types}
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              {hubTypes.length}{" "}
+              {(t as { subcategoriesAvail?: string }).subcategoriesAvail ??
+                "nënkategori të disponueshme"}
+            </p>
+          </div>
+          <CategoryPhotoPickerGrid>
             {hubTypes.map((row) => (
               <CategoryPhotoPickerCard
                 key={row.id}
+                layout="grid"
                 selected={typeId === row.id}
                 onClick={() => selectTypeCard(row.id)}
                 imageSrc={arsimSubcategoryPhoto(row.slug, row.image_url, categories)}
@@ -168,7 +176,7 @@ export function ArsimKurseSearchPanel({
                 label={translateCategory(row.name, locale)}
               />
             ))}
-          </CategoryPhotoPickerRow>
+          </CategoryPhotoPickerGrid>
         </section>
 
         <section
