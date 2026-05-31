@@ -32,6 +32,7 @@ import { resolveCategoryImageUrl } from "@/lib/resolve-category-image";
 import {
   canonicalCategorySegment,
   categoryPath,
+  navigateCategoryBack,
   navigateToCategory,
   resolveCategoryId,
   useCategoryScroll,
@@ -651,7 +652,7 @@ export default function CategoryPage() {
     if (!canonical) return;
     const raw = segment.trim();
     if (raw === canonical) return;
-    setLocation(categoryPath(categoryId, canonical));
+    setLocation(categoryPath(categoryId, canonical), { replace: true });
   }, [segment, categoryId, allCategories, setLocation]);
 
   const emptyListingsCopy = useMemo(() => {
@@ -1609,7 +1610,13 @@ export default function CategoryPage() {
 
         <button
           type="button"
-          onClick={() => window.history.back()}
+          onClick={() =>
+            navigateCategoryBack(setLocation, {
+              currentCategory: currentCategory as CategoryRef,
+              parentCategory: parentCategory as CategoryRef | null,
+              sportDeviceActive: isSportDeviceLeafPage,
+            })
+          }
           className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 mb-6 transition-colors rounded-lg min-h-12 px-2 -ml-2 touch-manipulation py-2"
         >
           <ArrowLeft size={16} /> {t.back}
@@ -1688,7 +1695,7 @@ export default function CategoryPage() {
             hubId={categoryId}
             categories={allCategories as any}
             onNavigateToCategory={(childId) =>
-              navigateToCategory(setLocation, childId, categoryId)
+              navigateToCategory(setLocation, childId, categoryId, allCategories as CategoryRef[])
             }
             onNavigateToDevice={() => {}}
           />
@@ -1702,7 +1709,7 @@ export default function CategoryPage() {
             sportTypeKey={sportTypeKey}
             categories={allCategories as any}
             onNavigateToCategory={(childId) =>
-              navigateToCategory(setLocation, childId, categoryId)
+              navigateToCategory(setLocation, childId, categoryId, allCategories as CategoryRef[])
             }
             onNavigateToDevice={(deviceKey) => {
               setLocation(
@@ -1723,7 +1730,7 @@ export default function CategoryPage() {
             previewTotal={listingsData?.total ?? null}
             previewLoading={isLoading}
             onNavigateToCategory={(childId) =>
-              navigateToCategory(setLocation, childId, categoryId)
+              navigateToCategory(setLocation, childId, categoryId, allCategories as CategoryRef[])
             }
             onNavigateToDevice={(deviceKey) => {
               setLocation(
@@ -1743,7 +1750,7 @@ export default function CategoryPage() {
             hubId={categoryId}
             categories={allCategories as any}
             onNavigateToCategory={(childId) =>
-              navigateToCategory(setLocation, childId, categoryId)
+              navigateToCategory(setLocation, childId, categoryId, allCategories as CategoryRef[])
             }
           />
         ) : null}
@@ -1832,7 +1839,7 @@ export default function CategoryPage() {
               hubId={categoryId}
               categories={allCategories as any}
               onNavigateToCategory={(childId) =>
-                navigateToCategory(setLocation, childId, categoryId)
+                navigateToCategory(setLocation, childId, categoryId, allCategories as CategoryRef[])
               }
             />
           </Suspense>
@@ -1879,7 +1886,7 @@ export default function CategoryPage() {
                   key={sub.id}
                   category={sub}
                   locale={locale}
-                  onClick={() => navigateToCategory(setLocation, sub.id, categoryId)}
+                  onClick={() => navigateToCategory(setLocation, sub.id, categoryId, allCategories as CategoryRef[])}
                 />
               ))}
             </CategoryPhotoPickerRow>
@@ -1894,7 +1901,7 @@ export default function CategoryPage() {
               scopeCategoryId={categoryId}
               categories={allCategories as any}
               onNavigateToCategory={(childId) =>
-                navigateToCategory(setLocation, childId, categoryId)
+                navigateToCategory(setLocation, childId, categoryId, allCategories as CategoryRef[])
               }
             />
           </Suspense>
@@ -1908,7 +1915,7 @@ export default function CategoryPage() {
               scopeCategoryId={categoryId}
               categories={allCategories as any}
               onNavigateToCategory={(childId) =>
-                navigateToCategory(setLocation, childId, categoryId)
+                navigateToCategory(setLocation, childId, categoryId, allCategories as CategoryRef[])
               }
               onListingParamsChange={setFemijeListParams}
             />

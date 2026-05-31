@@ -150,9 +150,14 @@ function takeCategoryScroll(categoryId: number): number | null {
   return y;
 }
 
+type SetLocation = (
+  path: string,
+  options?: { replace?: boolean },
+) => void;
+
 /** Navigate to a category; stash parent scroll so back returns where you were. */
 export function navigateToCategory(
-  setLocation: (path: string) => void,
+  setLocation: SetLocation,
   toCategoryId: number,
   fromCategoryId?: number | null,
   categories?: readonly CategoryRef[],
@@ -167,6 +172,43 @@ export function navigateToCategory(
 
   const row = categories?.find((c) => Number(c.id) === Number(toCategoryId));
   setLocation(categoryPath(row ?? toCategoryId));
+}
+
+/**
+ * Explicit back target for category drill-down (hub → type → leaf).
+ * Prefer this over history.back() — canonical slug redirects can trap the stack.
+ */
+export function resolveCategoryBackPath(options: {
+  currentCategory: CategoryRef;
+  parentCategory: CategoryRef | null;
+  /** Sport Outdoor leaf step (?pajisja=) — back drops the query on the same type page. */
+  sportDeviceActive?: boolean;
+}): string | null {
+  const { currentCategory, parentCategory, sportDeviceActive } = options;
+  if (sportDeviceActive) return categoryPath(currentCategory);
+  if (parentCategory) return categoryPath(parentCategory);
+  return null;
+}
+
+/** UI "Kthehu" — go to parent type/hub (or home when at root). */
+export function navigateCategoryBack(
+  setLocation: SetLocation,
+  options: {
+    currentCategory: CategoryRef;
+    parentCategory: CategoryRef | null;
+    sportDeviceActive?: boolean;
+  },
+) {
+  const target = resolveCategoryBackPath(options);
+  if (target) {
+    setLocation(target);
+    return;
+  }
+  if (typeof window !== "undefined" && window.history.length > 1) {
+    window.history.back();
+    return;
+  }
+  setLocation("/");
 }
 
 /**
