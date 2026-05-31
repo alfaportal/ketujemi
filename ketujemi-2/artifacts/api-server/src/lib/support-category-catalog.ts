@@ -7,7 +7,7 @@ export type CategoryRoute = {
 };
 
 /**
- * All 18 KetuJemi main categories — offline chat matches these before Claude.
+ * All 20 KetuJemi main categories — offline chat matches these before Claude.
  * Subcategories mirror lib/db seed (hub types).
  */
 export const KETUJEMI_CATEGORY_ROUTES: CategoryRoute[] = [
@@ -204,7 +204,7 @@ export const KETUJEMI_CATEGORY_ROUTES: CategoryRoute[] = [
 
 /** Recognizes any main-category or common product term (short chat queries). */
 export const MARKETPLACE_CATEGORY_HINT =
-  /vetur|makin|motor|skuter|kamion|furgon|goma|felne|rrot|auto\s*pjes|banes|apartament|shtep|lokal|zyre|telefon|iphone|laptop|kompjuter|tv\b|frigorifer|klim|konzol|mobilje|divan|rrob|kepuc|femij|fëmij|biciklet|fitnes|punë|pune|bujq|blegt|arsim|kurs|muzik|hobi|instrument|gitar|liber|libra|kafsh|qen|mace/i;
+  /vetur|makin|motor|skuter|kamion|furgon|goma|felne|rrot|auto\s*pjes|banes|apartament|shtep|lokal|zyre|telefon|iphone|laptop|kompjuter|tv\b|frigorifer|klim|konzol|mobilje|divan|rrob|kepuc|femij|fëmij|biciklet|fitnes|punë|pune|bujq|blegt|arsim|kurs|muzik|hobi|instrument|gitar|liber|libra|kafsh|qen|mace|kërkoj|kerkoj|dhurat|falas\b/i;
 
 export function matchCategoryRoute(text: string, lang: UiLang): string | null {
   const t = text.trim();

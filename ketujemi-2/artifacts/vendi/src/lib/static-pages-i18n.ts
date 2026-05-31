@@ -166,7 +166,7 @@ const KS: StaticPagesCopy = {
       {
         title: "Limitet e postimeve (10 në muaj për kategori kryesore)",
         paragraphs: [
-          "Çdo përdorues ka të drejtë **10 postime falas në muaj** për **çdo kategori kryesore** (18 kategori: Vetura, Telefona, Banesa & Shtëpi, etj.). BMW, Sedan, Skuter etj. **numërohen brenda** kategorisë kryesore — jo veç e veç.",
+          "Çdo përdorues ka të drejtë **10 postime falas në muaj** për **çdo kategori kryesore** (20 kategori: Vetura, Telefona, Banesa & Shtëpi, etj.). BMW, Sedan, Skuter etj. **numërohen brenda** kategorisë kryesore — jo veç e veç.",
           "Numri **riniset çdo muaj kalendarik** (p.sh. 1–31 maj, pastaj 1–30 qershor). Nuk ka limit të veçantë «10 aktive njëkohësisht» — vetëm 10 postime në muaj për kategori.",
         ],
         bulletsIntro:
@@ -1199,7 +1199,7 @@ const MNE: StaticPagesCopy = {
       {
         title: "Limiti objava (10 mjesečno po glavnoj kategoriji)",
         paragraphs: [
-          "Svaki korisnik ima **10 besplatnih objava mjesečno** po **glavnoj kategoriji** (18). Potkategorije se broje unutar glavne — ne zasebno.",
+          "Svaki korisnik ima **10 besplatnih objava mjesečno** po **glavnoj kategoriji** (20). Potkategorije se broje unutar glavne — ne zasebno.",
           "Broj se resetuje svakog kalendarskog mjeseca. Nema posebnog limita «10 aktivnih odjednom».",
         ],
         bulletsIntro:

@@ -146,11 +146,11 @@ const DETAILED_FAQ: FaqEntry[] = [
   },
   {
     keywords:
-      /kategor|çfarë\s+kategori|cilat\s+kategori|18\s+kategori|lista\s+e\s+kategori|te\s+gjithe\s+kategori/i,
+      /kategor|çfarë\s+kategori|cilat\s+kategori|(?:18|20)\s+kategori|lista\s+e\s+kategori|te\s+gjithe\s+kategori/i,
     reply: {
-      sq: "**18 kategoritë** në KetuJemi: 1) Vetura 2) Motorr & Skuter 3) Kamionë & Furgonë 4) Auto Pjesë 5) Banesa & Shtëpi 6) Lokale & Zyrë 7) Telefona 8) Kompjuterë & Laptopë 9) Elektronikë & Pajisje Shtëpiake 10) Mobilje & Dekorime 11) Rroba & Këpucë 12) Fëmijë 13) Sport & Outdoor 14) Punë & Shërbime 15) Bujqësi & Blegtori 16) Arsim & Kurse 17) Muzikë & Hobby 18) Kafshë. Shkruani produktin (p.sh. «goma», «banesë») për rrugën e saktë.",
-      mk: "**18 категории**: Возила, Мотори, Камиони, Авто делови, Домови, Локали, Телефони, Компјутери, Електроника, Мебел, Облека, Деца, Спорт, Работа, Земјоделство, Образование, Музика, Животни.",
-      me: "**18 kategorija**: Vozila, Motori, Kamioni, Auto dijelovi, Stanovi, Lokali, Telefoni, Kompjuteri, Elektronika, Namještaj, Odjeća, Djeca, Sport, Posao, Poljoprivreda, Obrazovanje, Muzika, Životinje.",
+      sq: "**20 kategoritë** në KetuJemi: 1) Vetura 2) Motorr & Skuter 3) Kamionë & Furgonë 4) Auto Pjesë 5) Banesa & Shtëpi 6) Lokale & Zyrë 7) Telefona 8) Kompjuterë & Laptopë 9) Elektronikë & Pajisje Shtëpiake 10) Mobilje & Dekorime 11) Rroba & Këpucë 12) Fëmijë 13) Sport & Outdoor 14) Punë & Shërbime 15) Bujqësi & Blegtori 16) Arsim & Kurse 17) Muzikë & Hobby 18) Kafshë 19) Kërkoj të Blej 20) Dhurata & Falas. Shkruani produktin (p.sh. «goma», «banesë») për rrugën e saktë.",
+      mk: "**20 категории**: Возила, Мотори, Камиони, Авто делови, Домови, Локали, Телефони, Компјутери, Електроника, Мебел, Облека, Деца, Спорт, Работа, Земјоделство, Образование, Музика, Животни, Барам, Подароци.",
+      me: "**20 kategorija**: Vozila, Motori, Kamioni, Auto dijelovi, Stanovi, Lokali, Telefoni, Kompjuteri, Elektronika, Namještaj, Odjeća, Djeca, Sport, Posao, Poljoprivreda, Obrazovanje, Muzika, Životinje, Tražim, Pokloni.",
     },
   },
   {

@@ -11,7 +11,7 @@ KetuJemi.com është platformë njoftimesh (shpallje) për blerje/shitje në Bal
 • Moderim AI para publikimit; raportim «Raporto» në njoftim.
 
 === FAQET & NAVIGIMI (pa thënë vetëm «shiko faqen kryesore») ===
-• Faqja kryesore (/): 18 kategori + njoftime të fundit + TOP.
+• Faqja kryesore (/): 20 kategori + njoftime të fundit + TOP.
 • «Njoftimet» (/listings): të gjitha njoftimet + kërkim me fjalë kyçe.
 • Kategori (/category/…): klik kategori → nën-kategori (nëse ka) → markë/lloj (Vetura, Telefona…) → lista → hap njoftimin.
 • Njoftim (/listings/:id): foto (deri 10), titull, përshkrim, çmim €, sy/shikime, «Telefono», WhatsApp, «Raporto».
@@ -29,7 +29,7 @@ Diaspora (7): Gjermani, Austri, Zvicër, Itali, Francë, Angli, SHBA — me mone
 • SMS regjistrim: +383, +355, +389, +382 (Ballkan). Diaspora: regjistrim me **email** rekomandohet (SMS vetëm Ballkan).
 • Diaspora mund të postojë normalisht me numrin e vendit të tyre.
 
-=== 18 KATEGORITË KRYESORE + NËN-KATEGORI ===
+=== 20 KATEGORITË KRYESORE + NËN-KATEGORI ===
 
 1) **Vetura** — lloje: Sedan, Hatchback, SUV & Jeep, Kombi & Minivan, Kabriolet & Sportive, Kupe, Elektrike & Hibride, Pickup, Klasike & Vintage; pastaj marka (Audi, BMW, Mercedes-Benz, Volkswagen, Toyota, etj.).
 
@@ -122,7 +122,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 • Pas pagesës Stripe për partner/paketë, aktivizimi automatik në llogari.
 
 === SI BLERËS ===
-1) Gjeni kategorinë e saktë (tabela 18 kategorive) ose «Njoftimet» + kërkim.
+1) Gjeni kategorinë e saktë (tabela 20 kategorive) ose «Njoftimet» + kërkim.
 2) Hapni njoftimin — lexoni çmimin (shfaqet sipas tregut të zgjedhur).
 3) **«Telefono»** ose **WhatsApp** — kontakt direkt me shitësin.
 4) Takohuni personalisht, kontrolloni produktin, mos dërgoni para paraprakisht.
