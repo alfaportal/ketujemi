@@ -192,13 +192,14 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "pune-type-ndertimtari": pexelsPhoto(14367421),
   "pune-type-transporti":
     "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=1200&q=80",
-  "pune-type-zejtari": pexelsPhoto(3060859),
+  "pune-type-zejtari":
+    "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=1200&q=80",
   "pune-type-shendet-kujdes":
-    "https://images.unsplash.com/photo-1576091160399-7573ab762654?w=1200&q=80",
+    "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&q=80",
   "pune-type-pastrim-mirembajtje":
     "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80",
   "pune-type-sherbime-te-tjera":
-    "https://images.unsplash.com/photo-1454165804606-4f904313ff23?w=1200&q=80",
+    "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1200&q=80",
 
   "pune-leaf-infermier-kujdes-shtepi":
     "https://images.unsplash.com/photo-1576091160399-7573ab762654?w=1200&q=80",
