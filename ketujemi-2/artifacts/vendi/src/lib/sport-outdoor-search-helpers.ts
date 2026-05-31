@@ -274,6 +274,8 @@ export const SPORT_FB_DEVICE_PHOTOS: Partial<Record<SportDeviceKey, string>> = {
     "https://images.pexels.com/photos/3768593/pexels-photo-3768593.jpeg?w=400&q=80",
   fit_sup_shaker:
     "https://images.pexels.com/photos/5327558/pexels-photo-5327558.jpeg?w=400&q=80",
+  fit_sup_rripa:
+    "https://images.pexels.com/photos/5327461/pexels-photo-5327461.jpeg?w=400&q=80",
   fit_sup_doreza:
     "https://images.pexels.com/photos/45058/pexels-photo-45058.jpeg?w=400&q=80",
 };
