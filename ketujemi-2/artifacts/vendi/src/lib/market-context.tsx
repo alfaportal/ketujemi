@@ -365,7 +365,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     hero: "KetuJemi — Купи & Продај",
     heroSub: "Купи & продавај во Македонија — бесплатни огласи",
     categories: "Категории", viewAll: "Види ги сите",
-    trust1: "СМС и е-пошта верификација", trust2: "Бесплатно огласување", trust3: "18 категории",
+    trust1: "СМС и е-пошта верификација", trust2: "Бесплатно огласување", trust3: "20 категории",
     markets: "КетуЈеми на 11 пазари",
     back: "Назад", edit: "Уреди", delete: "Избриши", cancel: "Откажи",
     saveChanges: "Зачувај промени", saving: "Се зачувува...",
