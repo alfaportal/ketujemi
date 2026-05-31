@@ -93,6 +93,8 @@ const inputClass = "min-h-12 h-12 w-full text-[16px] rounded-xl border-slate-200
 
 type Props = {
   hubId: number;
+  scopeCategoryId?: number;
+  lockedTypeKey?: RkTypeKey | null;
   categories: RrobaKepuceCategoryRow[];
   previewTotal: number | null;
   previewLoading: boolean;
@@ -139,6 +141,8 @@ function FilterSection({ title, children }: { title: string; children: ReactNode
 
 export function RrobaKepuceSearchPanel({
   hubId,
+  scopeCategoryId,
+  lockedTypeKey = null,
   categories,
   previewTotal: _previewTotal,
   previewLoading: _previewLoading,
@@ -152,7 +156,10 @@ export function RrobaKepuceSearchPanel({
     return [...ids].sort((a, b) => a - b).join(",");
   }, [categories, hubId]);
 
-  const [typeKey, setTypeKey] = useState<RkTypeKey | null>(null);
+  const [typeKey, setTypeKey] = useState<RkTypeKey | null>(lockedTypeKey ?? null);
+  useEffect(() => {
+    if (lockedTypeKey) setTypeKey(lockedTypeKey);
+  }, [lockedTypeKey]);
   const [menType, setMenType] = useState<RkMenTypeKey | "">("");
   const [menSize, setMenSize] = useState<RkMenSizeKey | "">("");
   const [womenType, setWomenType] = useState<RkWomenTypeKey | "">("");
@@ -220,7 +227,10 @@ export function RrobaKepuceSearchPanel({
       category_ids: leafCsv,
     };
 
-    if (typeKey) {
+    if (scopeCategoryId) {
+      p.category_id = scopeCategoryId;
+      delete p.category_ids;
+    } else if (typeKey) {
       let leafSlug: string | undefined;
       if (typeKey === "meshkuj" && menType) leafSlug = RK_MEN_DB_SLUG[menType];
       else if (typeKey === "femra" && womenType) leafSlug = RK_WOMEN_DB_SLUG[womenType];
@@ -292,6 +302,7 @@ export function RrobaKepuceSearchPanel({
   }, [
     leafCsv,
     hubId,
+    scopeCategoryId,
     typeKey,
     menType,
     menSize,
@@ -331,6 +342,14 @@ export function RrobaKepuceSearchPanel({
         <p className="text-sm text-gray-500">{t.rk_panel_sub}</p>
       </div>
 
+      {lockedTypeKey ? (
+        <section className="space-y-1 rounded-xl bg-blue-50/60 border border-blue-100 px-4 py-3">
+          <h2 className="text-lg font-black text-gray-900">{t[RK_TYPE_LABEL_KEY[lockedTypeKey]]}</h2>
+          <p className="text-sm text-gray-600">{t.hub_drill_type_hint}</p>
+        </section>
+      ) : null}
+
+      {!lockedTypeKey ? (
       <section className="space-y-3 max-w-full overflow-hidden">
         <Label className="text-sm font-bold text-gray-900">{t.rk_sec_types}</Label>
         <CategoryPhotoPickerGrid>
@@ -346,6 +365,7 @@ export function RrobaKepuceSearchPanel({
           ))}
         </CategoryPhotoPickerGrid>
       </section>
+      ) : null}
 
       {typeKey === "meshkuj" ? (
         <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">

@@ -85,6 +85,8 @@ const inputClass = "min-h-12 h-12 w-full text-[16px] rounded-xl border-slate-200
 
 type Props = {
   hubId: number;
+  scopeCategoryId?: number;
+  lockedTypeKey?: BbTypeKey | null;
   categories: BujqesiBlegtoriCategoryRow[];
   previewTotal: number | null;
   previewLoading: boolean;
@@ -158,6 +160,8 @@ function KindChips<T extends string>({
 
 export function BujqesiBlegtoriSearchPanel({
   hubId,
+  scopeCategoryId,
+  lockedTypeKey = null,
   categories,
   previewTotal: _previewTotal,
   previewLoading: _previewLoading,
@@ -171,7 +175,10 @@ export function BujqesiBlegtoriSearchPanel({
     return [...ids].sort((a, b) => a - b).join(",");
   }, [categories, hubId]);
 
-  const [typeKey, setTypeKey] = useState<BbTypeKey | null>(null);
+  const [typeKey, setTypeKey] = useState<BbTypeKey | null>(lockedTypeKey ?? null);
+  useEffect(() => {
+    if (lockedTypeKey) setTypeKey(lockedTypeKey);
+  }, [lockedTypeKey]);
   const [machType, setMachType] = useState<BbMachTypeKey | "">("");
   const [power, setPower] = useState<BbPowerKey | "">("");
   const [prodYear, setProdYear] = useState("");
@@ -232,7 +239,10 @@ export function BujqesiBlegtoriSearchPanel({
       category_ids: leafCsv,
     };
 
-    if (typeKey) {
+    if (scopeCategoryId) {
+      p.category_id = scopeCategoryId;
+      delete p.category_ids;
+    } else if (typeKey) {
       const cid = resolveBujqesiBlegtoriTypeCategoryId(categories, hubId, typeKey);
       if (cid) {
         p.category_id = cid;
@@ -292,6 +302,7 @@ export function BujqesiBlegtoriSearchPanel({
   }, [
     leafCsv,
     hubId,
+    scopeCategoryId,
     typeKey,
     machType,
     power,
@@ -331,6 +342,14 @@ export function BujqesiBlegtoriSearchPanel({
         <p className="text-sm text-gray-500">{t.bb_panel_sub}</p>
       </div>
 
+      {lockedTypeKey ? (
+        <section className="space-y-1 rounded-xl bg-blue-50/60 border border-blue-100 px-4 py-3">
+          <h2 className="text-lg font-black text-gray-900">{t[BB_TYPE_LABEL_KEY[lockedTypeKey]]}</h2>
+          <p className="text-sm text-gray-600">{t.hub_drill_type_hint}</p>
+        </section>
+      ) : null}
+
+      {!lockedTypeKey ? (
       <section className="space-y-3">
         <Label className="text-sm font-bold text-gray-900">{t.bb_sec_types}</Label>
         <CategoryPhotoPickerRow>
@@ -345,6 +364,7 @@ export function BujqesiBlegtoriSearchPanel({
           ))}
         </CategoryPhotoPickerRow>
       </section>
+      ) : null}
 
       {typeKey === "makineri" ? (
         <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">

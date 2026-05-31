@@ -6,6 +6,10 @@ import { LISTING_ACTIVE_LIFETIME_DAYS } from "./listing-lifetime.js";
 import { userOwnsListing } from "./listing-ownership";
 import { isBusinessAccount } from "./business-rules";
 import { getUserExtraListingSlots, effectiveCategoryLimit } from "./listing-packages";
+import {
+  DHURATA_ACTIVE_LIFETIME_DAYS,
+  isDhurataFalasSlug,
+} from "../../../../lib/special-listing-categories.js";
 
 /** Free posts per calendar month (UTC) per parent category — subcategories share this pool. */
 export const DEFAULT_FREE_LISTING_LIMIT = 10;
@@ -38,6 +42,25 @@ export async function getCategoryPostingQuota(
   user: User,
   categoryId: number,
 ): Promise<CategoryPostingQuota> {
+  const { byId } = await loadAllCategories();
+  const rootId = resolveRootCategoryId(categoryId, byId);
+  const root = byId.get(rootId);
+  if (isDhurataFalasSlug(root?.slug)) {
+    return {
+      rootId,
+      active_used: 0,
+      active_limit: Number.MAX_SAFE_INTEGER,
+      monthly_posts_used: 0,
+      monthly_posts_limit: Number.MAX_SAFE_INTEGER,
+      base_limit: Number.MAX_SAFE_INTEGER,
+      extra_slots: 0,
+      listing_lifetime_days: DHURATA_ACTIVE_LIFETIME_DAYS,
+      allowed: true,
+      active_remaining: Number.MAX_SAFE_INTEGER,
+      monthly_remaining: Number.MAX_SAFE_INTEGER,
+    };
+  }
+
   const active = await countUserActiveListingsInCategoryRoot(user, categoryId);
   const monthly = await countUserPostsInCategoryRootThisMonth(user, categoryId);
   const active_remaining = Math.max(0, active.limit - active.used);
@@ -171,6 +194,11 @@ export async function assertFreeListingQuota(
   user: User,
   categoryId: number,
 ): Promise<void> {
+  const { byId } = await loadAllCategories();
+  const rootId = resolveRootCategoryId(categoryId, byId);
+  const root = byId.get(rootId);
+  if (isDhurataFalasSlug(root?.slug)) return;
+
   const q = await getCategoryPostingQuota(user, categoryId);
   if (q.allowed) return;
 

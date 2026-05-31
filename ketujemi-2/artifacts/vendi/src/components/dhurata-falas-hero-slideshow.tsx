@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 
 const DHURATA_HERO_SLIDESHOW_MS = 5_000;
 export const DHURATA_FALAS_HERO_SLIDESHOW_URLS = [
-  "https://images.pexels.com/photos/8257936/pexels-photo-8257936.jpeg?w=1920&q=80",
-  "https://images.pexels.com/photos/6612087/pexels-photo-6612087.jpeg?w=1920&q=80",
-  "https://images.pexels.com/photos/11794849/pexels-photo-11794849.jpeg?w=1920&q=80",
+  "https://images.pexels.com/photos/10905774/pexels-photo-10905774.jpeg?auto=compress&cs=tinysrgb&w=1920",
+  "https://images.pexels.com/photos/8257936/pexels-photo-8257936.jpeg?auto=compress&cs=tinysrgb&w=1920",
+  "https://images.pexels.com/photos/6612087/pexels-photo-6612087.jpeg?auto=compress&cs=tinysrgb&w=1920",
 ] as const;
 
 /** Full-bleed background slideshow for the Dhurata & Falas hub hero. */
@@ -31,7 +31,8 @@ export function DhurataFalasHeroSlideshow() {
           loading={i === 0 ? "eager" : "lazy"}
           sizes="100vw"
           className={cn(
-            "absolute inset-0 h-full w-full object-cover max-w-none transition-opacity duration-1000 ease-in-out",
+            "absolute inset-0 h-full w-full max-w-none object-cover transition-opacity duration-1000 ease-in-out",
+            i === 0 ? "object-[center_40%]" : "object-center",
             i === currentIndex ? "opacity-100" : "opacity-0",
           )}
         />

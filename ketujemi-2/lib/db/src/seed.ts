@@ -391,6 +391,9 @@ const SPORT_OUTDOOR_TYPES: { name: string; slug: string; icon: string }[] = [
   { name: "Pajisje Kampingu", slug: "sport-type-kampingu", icon: "Dumbbell" },
   { name: "Sportet me Top", slug: "sport-type-top", icon: "Dumbbell" },
   { name: "Sportet Dimërore", slug: "sport-type-dimerore", icon: "Dumbbell" },
+  { name: "Sportet Ajrore", slug: "sport-type-ajrore", icon: "Dumbbell" },
+  { name: "Sportet e Ujit", slug: "sport-type-ujit", icon: "Dumbbell" },
+  { name: "Rekreative & Hobby", slug: "sport-type-rekreative", icon: "Dumbbell" },
 ];
 
 const PUNE_SHERBIME_TYPES: { name: string; slug: string; icon: string }[] = [

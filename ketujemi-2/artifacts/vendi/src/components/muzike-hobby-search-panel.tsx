@@ -111,6 +111,8 @@ const inputClass = "min-h-12 h-12 w-full text-[16px] rounded-xl border-slate-200
 
 type Props = {
   hubId: number;
+  scopeCategoryId?: number;
+  lockedTypeKey?: MhTypeKey | null;
   categories: MuzikeHobbyCategoryRow[];
   previewTotal: number | null;
   previewLoading: boolean;
@@ -216,6 +218,8 @@ function CheckList<T extends string>({
 
 export function MuzikeHobbySearchPanel({
   hubId,
+  scopeCategoryId,
+  lockedTypeKey = null,
   categories,
   previewTotal: _previewTotal,
   previewLoading: _previewLoading,
@@ -229,7 +233,10 @@ export function MuzikeHobbySearchPanel({
     return [...ids].sort((a, b) => a - b).join(",");
   }, [categories, hubId]);
 
-  const [typeKey, setTypeKey] = useState<MhTypeKey | null>(null);
+  const [typeKey, setTypeKey] = useState<MhTypeKey | null>(lockedTypeKey ?? null);
+  useEffect(() => {
+    if (lockedTypeKey) setTypeKey(lockedTypeKey);
+  }, [lockedTypeKey]);
   const [windKind, setWindKind] = useState<MhWindKey | "">("");
   const [windChecks, setWindChecks] = useState<Record<MhWindCheckKey, boolean>>({
     cante: false,
@@ -312,7 +319,10 @@ export function MuzikeHobbySearchPanel({
       category_ids: leafCsv,
     };
 
-    if (typeKey) {
+    if (scopeCategoryId) {
+      p.category_id = scopeCategoryId;
+      delete p.category_ids;
+    } else if (typeKey) {
       const cid = resolveMuzikeHobbyTypeCategoryId(categories, hubId, typeKey);
       if (cid) {
         p.category_id = cid;
@@ -377,6 +387,7 @@ export function MuzikeHobbySearchPanel({
   }, [
     leafCsv,
     hubId,
+    scopeCategoryId,
     typeKey,
     windKind,
     windChecks,
@@ -416,6 +427,14 @@ export function MuzikeHobbySearchPanel({
         <p className="text-sm text-gray-500">{t.mh_panel_sub}</p>
       </div>
 
+      {lockedTypeKey ? (
+        <section className="space-y-1 rounded-xl bg-blue-50/60 border border-blue-100 px-4 py-3">
+          <h2 className="text-lg font-black text-gray-900">{t[MH_TYPE_LABEL_KEY[lockedTypeKey]]}</h2>
+          <p className="text-sm text-gray-600">{t.hub_drill_type_hint}</p>
+        </section>
+      ) : null}
+
+      {!lockedTypeKey ? (
       <section className="space-y-3 max-w-full overflow-hidden">
         <Label className="text-sm font-bold text-gray-900">{t.mh_sec_types}</Label>
         <CategoryPhotoPickerGrid>
@@ -431,6 +450,7 @@ export function MuzikeHobbySearchPanel({
           ))}
         </CategoryPhotoPickerGrid>
       </section>
+      ) : null}
 
       {typeKey === "frymore" ? (
         <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">

@@ -102,6 +102,8 @@ const inputClass = "min-h-12 h-12 w-full text-[16px] rounded-xl border-slate-200
 
 type Props = {
   hubId: number;
+  scopeCategoryId?: number;
+  lockedTypeKey?: MdTypeKey | null;
   categories: MobiljeDekorimCategoryRow[];
   previewTotal: number | null;
   previewLoading: boolean;
@@ -148,6 +150,8 @@ function FilterSection({ title, children }: { title: string; children: ReactNode
 
 export function MobiljeDekorimSearchPanel({
   hubId,
+  scopeCategoryId,
+  lockedTypeKey = null,
   categories,
   previewTotal: _previewTotal,
   previewLoading: _previewLoading,
@@ -161,7 +165,10 @@ export function MobiljeDekorimSearchPanel({
     return [...ids].sort((a, b) => a - b).join(",");
   }, [categories, hubId]);
 
-  const [typeKey, setTypeKey] = useState<MdTypeKey | null>(null);
+  const [typeKey, setTypeKey] = useState<MdTypeKey | null>(lockedTypeKey ?? null);
+  useEffect(() => {
+    if (lockedTypeKey) setTypeKey(lockedTypeKey);
+  }, [lockedTypeKey]);
   const [salType, setSalType] = useState<MdSalTypeKey | "">("");
   const [salMat, setSalMat] = useState<MdSalMatKey | "">("");
   const [salCap, setSalCap] = useState<MdSalCapKey | "">("");
@@ -232,7 +239,10 @@ export function MobiljeDekorimSearchPanel({
       category_ids: leafCsv,
     };
 
-    if (typeKey) {
+    if (scopeCategoryId) {
+      p.category_id = scopeCategoryId;
+      delete p.category_ids;
+    } else if (typeKey) {
       const cid = resolveMobiljeTypeCategoryId(categories, hubId, typeKey);
       if (cid) {
         p.category_id = cid;
@@ -293,6 +303,7 @@ export function MobiljeDekorimSearchPanel({
   }, [
     leafCsv,
     hubId,
+    scopeCategoryId,
     typeKey,
     salType,
     salMat,
@@ -335,6 +346,14 @@ export function MobiljeDekorimSearchPanel({
         <p className="text-sm text-gray-500">{t.md_panel_sub}</p>
       </div>
 
+      {lockedTypeKey ? (
+        <section className="space-y-1 rounded-xl bg-blue-50/60 border border-blue-100 px-4 py-3">
+          <h2 className="text-lg font-black text-gray-900">{t[MD_TYPE_LABEL_KEY[lockedTypeKey]]}</h2>
+          <p className="text-sm text-gray-600">{t.hub_drill_type_hint}</p>
+        </section>
+      ) : null}
+
+      {!lockedTypeKey ? (
       <section className="space-y-3">
         <Label className="text-sm font-bold text-gray-900">{t.md_sec_types}</Label>
         <CategoryPhotoPickerRow>
@@ -349,6 +368,7 @@ export function MobiljeDekorimSearchPanel({
           ))}
         </CategoryPhotoPickerRow>
       </section>
+      ) : null}
 
       {typeKey === "sallone_ulese" ? (
         <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">

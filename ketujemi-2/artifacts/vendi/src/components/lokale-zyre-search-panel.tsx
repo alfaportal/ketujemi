@@ -100,6 +100,8 @@ const inputClass = "min-h-12 h-12 w-full text-[16px] rounded-xl border-slate-200
 
 type Props = {
   hubId: number;
+  scopeCategoryId?: number;
+  lockedTypeKey?: LokalePropertyKey | null;
   categories: LokaleZyreCategoryRow[];
   previewTotal: number | null;
   previewLoading: boolean;
@@ -182,6 +184,8 @@ function LegalCharacteristicsSection({
 
 export function LokaleZyreSearchPanel({
   hubId,
+  scopeCategoryId,
+  lockedTypeKey = null,
   categories,
   previewTotal: _previewTotal,
   previewLoading: _previewLoading,
@@ -195,7 +199,10 @@ export function LokaleZyreSearchPanel({
     return [...ids].sort((a, b) => a - b).join(",");
   }, [categories, hubId]);
 
-  const [propertyKey, setPropertyKey] = useState<LokalePropertyKey | null>(null);
+  const [propertyKey, setPropertyKey] = useState<LokalePropertyKey | null>(lockedTypeKey ?? null);
+  useEffect(() => {
+    if (lockedTypeKey) setPropertyKey(lockedTypeKey);
+  }, [lockedTypeKey]);
   const [afaristeDest, setAfaristeDest] = useState("");
   const [officeType, setOfficeType] = useState<LzOfficeTypeKey | "">("");
   const [officeCount, setOfficeCount] = useState<LzOfficeCountKey | "">("");
@@ -317,7 +324,10 @@ export function LokaleZyreSearchPanel({
       category_ids: leafCsv,
     };
 
-    if (propertyKey) {
+    if (scopeCategoryId) {
+      p.category_id = scopeCategoryId;
+      delete p.category_ids;
+    } else if (propertyKey) {
       const cid = resolveLokalePropertyCategoryId(categories, hubId, propertyKey);
       if (cid) {
         p.category_id = cid;
@@ -387,6 +397,7 @@ export function LokaleZyreSearchPanel({
   }, [
     leafCsv,
     hubId,
+    scopeCategoryId,
     propertyKey,
     afaristeDest,
     officeType,
@@ -428,7 +439,7 @@ export function LokaleZyreSearchPanel({
 
   return (
     <div className="mb-8 space-y-6 rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm overflow-hidden max-w-full">
-      {/* Property type cards */}
+      {!lockedTypeKey ? (
       <section className="space-y-3">
         <CategoryPhotoPickerGrid>
           {LOKALE_PROPERTY_KEYS.map((key) => (
@@ -443,6 +454,7 @@ export function LokaleZyreSearchPanel({
           ))}
         </CategoryPhotoPickerGrid>
       </section>
+      ) : null}
 
       <div className="flex flex-col gap-1 border-t border-gray-100 pt-6">
         <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
@@ -451,6 +463,13 @@ export function LokaleZyreSearchPanel({
         </h2>
         <p className="text-sm text-gray-500">{t.lz_panel_sub}</p>
       </div>
+
+      {lockedTypeKey ? (
+        <section className="space-y-1 rounded-xl bg-blue-50/60 border border-blue-100 px-4 py-3">
+          <h2 className="text-lg font-black text-gray-900">{t[LOKALE_PROPERTY_LABEL_KEY[lockedTypeKey]]}</h2>
+          <p className="text-sm text-gray-600">{t.hub_drill_type_hint}</p>
+        </section>
+      ) : null}
 
       {/* Dynamic filters per property type */}
       {propertyKey === "afariste" ? (

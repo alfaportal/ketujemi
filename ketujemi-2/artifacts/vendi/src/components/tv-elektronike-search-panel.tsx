@@ -118,6 +118,8 @@ const inputClass = "min-h-12 h-12 w-full text-[16px] rounded-xl border-slate-200
 
 type Props = {
   hubId: number;
+  scopeCategoryId?: number;
+  lockedTypeKey?: EpTypeKey | null;
   categories: TvElektronikeCategoryRow[];
   previewTotal: number | null;
   previewLoading: boolean;
@@ -191,6 +193,8 @@ function KindChips<T extends string>({
 
 export function TvElektronikeSearchPanel({
   hubId,
+  scopeCategoryId,
+  lockedTypeKey = null,
   categories,
   previewTotal: _previewTotal,
   previewLoading: _previewLoading,
@@ -204,7 +208,10 @@ export function TvElektronikeSearchPanel({
     return [...ids].sort((a, b) => a - b).join(",");
   }, [categories, hubId]);
 
-  const [typeKey, setTypeKey] = useState<EpTypeKey | null>(null);
+  const [typeKey, setTypeKey] = useState<EpTypeKey | null>(lockedTypeKey ?? null);
+  useEffect(() => {
+    if (lockedTypeKey) setTypeKey(lockedTypeKey);
+  }, [lockedTypeKey]);
   const [applianceKind, setApplianceKind] = useState<EpApplianceKindKey | "">("");
   const [energyClass, setEnergyClass] = useState<EpEnergyKey | "">("");
   const [applianceWidth, setApplianceWidth] = useState<EpWidthKey | "">("");
@@ -285,7 +292,10 @@ export function TvElektronikeSearchPanel({
       p.category_id = hubId;
     }
 
-    if (typeKey) {
+    if (scopeCategoryId) {
+      p.category_id = scopeCategoryId;
+      delete p.category_ids;
+    } else if (typeKey) {
       const cid = resolveTvElektronikeTypeCategoryId(categories, hubId, typeKey);
       if (cid) {
         p.category_id = cid;
@@ -345,6 +355,7 @@ export function TvElektronikeSearchPanel({
   }, [
     leafCsv,
     hubId,
+    scopeCategoryId,
     typeKey,
     applianceKind,
     energyClass,
@@ -388,6 +399,14 @@ export function TvElektronikeSearchPanel({
         <p className="text-sm text-gray-500">{t.ep_panel_sub}</p>
       </div>
 
+      {lockedTypeKey ? (
+        <section className="space-y-1 rounded-xl bg-blue-50/60 border border-blue-100 px-4 py-3">
+          <h2 className="text-lg font-black text-gray-900">{t[EP_TYPE_LABEL_KEY[lockedTypeKey]]}</h2>
+          <p className="text-sm text-gray-600">{t.hub_drill_type_hint}</p>
+        </section>
+      ) : null}
+
+      {!lockedTypeKey ? (
       <section className="space-y-3">
         <Label className="text-sm font-bold text-gray-900">{t.ep_sec_types}</Label>
         <CategoryPhotoPickerRow>
@@ -402,6 +421,7 @@ export function TvElektronikeSearchPanel({
           ))}
         </CategoryPhotoPickerRow>
       </section>
+      ) : null}
 
       {typeKey === "pajisje_medha" ? (
         <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">

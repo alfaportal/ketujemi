@@ -1,5 +1,5 @@
 ﻿import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, Link, useRoute } from "wouter";
+import { useLocation, Link, useRoute, useSearch } from "wouter";
 import {
   useGetCategories,
   useGetListings,
@@ -67,7 +67,17 @@ import { BujqesiBlegtoriHeroSlideshow } from "@/components/bujqesi-blegtori-hero
 import { PuneSherbimeHeroSlideshow } from "@/components/pune-sherbime-hero-slideshow";
 import { KafshetHeroSlideshow } from "@/components/kafshet-hero-slideshow";
 import { KerkojTeBlejHeroSlideshow } from "@/components/kerkoj-te-blej-hero-slideshow";
-import { resolveCategoryImageUrl } from "@/lib/resolve-category-image";
+import { HubTypePicker } from "@/components/hub-type-picker";
+import { HubDrillDownFiltersPanel } from "@/components/hub-drill-down-filters-panel";
+import {
+  HUB_DRILL_DOWN_REGISTRY,
+  HUB_SLUG_TO_DRILL_DOWN_KEY,
+  type HubDrillDownRegistryKey,
+} from "@/lib/hub-drill-down-registry";
+import {
+  isHubTypePage,
+  resolveTypeKeyFromSlugMap,
+} from "@/lib/hub-drill-down";
 import {
   KAMION_SEARCH_BRAND_ORDER,
   getKamioneBrandLeafCategoryIds,
@@ -83,7 +93,15 @@ import {
   getAutoPiesePartTypeCategoryIds,
 } from "@/lib/auto-pjese-search-helpers";
 import { SportOutdoorSearchPanel } from "@/components/sport-outdoor-search-panel";
-import { getSportOutdoorLeafCategoryIds } from "@/lib/sport-outdoor-search-helpers";
+import {
+  getSportOutdoorLeafCategoryIds,
+  isSportDeviceValidForType,
+  parseSportDeviceFromSearch,
+  resolveSportTypeKeyFromSlug,
+  sportDeviceLeafPath,
+  SPORT_OUTDOOR_HUB_SLUG,
+  type SportDeviceKey,
+} from "@/lib/sport-outdoor-search-helpers";
 import { LokaleZyreSearchPanel } from "@/components/lokale-zyre-search-panel";
 import {
   LOKALE_ZYRE_HERO_PHOTO,
@@ -143,6 +161,15 @@ const BANESA_HERO_PHOTO =
 /** Wide hero shot for Motorr & Skuter hub search page (sport motorcycle). */
 const MOTORR_HERO_PHOTO =
   "https://images.pexels.com/photos/1715193/pexels-photo-1715193.jpeg?auto=compress&cs=tinysrgb&w=1400&q=85";
+
+/** Bump card/thumb URLs to full width for category hero banners. */
+function heroBannerImageUrl(url: string): string {
+  if (!url) return url;
+  if (url.includes("images.pexels.com") || url.includes("images.unsplash.com")) {
+    return url.replace(/([?&]w=)\d+/, "$11920");
+  }
+  return url;
+}
 
 // ─── Cover photos keyed by category name prefix ───────────────────────────────
 const CAT_PHOTOS: Record<string, string> = {
@@ -312,7 +339,6 @@ const BANESA_SHTEPI_HUB_SLUG = "banesa-shtepi";
 const TELEFONA_HUB_SLUG = "telefona";
 const KOMPJUTERE_LAPTOP_HUB_SLUG = "kompjutere-laptope";
 const VETURA_HUB_SLUG = "vetura";
-const SPORT_OUTDOOR_HUB_SLUG = "sport-outdoor";
 const LOKALE_ZYRE_HUB_SLUG = "lokale-zyre";
 const ARSIM_KURSE_HUB_SLUG = "arsim-kurse";
 const MOBILJE_DEKORIM_HUB_SLUG = "mobilje-dekorime";
@@ -592,6 +618,7 @@ function Breadcrumb({ items }: { items: { label: string; href?: string }[] }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function CategoryPage() {
   const [, setLocation] = useLocation();
+  const urlSearch = useSearch();
   const [, routeParams] = useRoute("/categories/:id");
   const goToPostListing = useGoToPostListing();
   const { t, market, uiLang } = useMarket();
@@ -709,6 +736,30 @@ export default function CategoryPage() {
     (currentCategory as any).slug === SPORT_OUTDOOR_HUB_SLUG &&
     !(currentCategory as any).parent_id;
 
+  const isSportTypePage =
+    !!(parentCategory as any) &&
+    (parentCategory as any).slug === SPORT_OUTDOOR_HUB_SLUG &&
+    !!(currentCategory as any).parent_id;
+
+  const sportTypeKey = resolveSportTypeKeyFromSlug(currentSlug);
+  const parsedSportDevice = parseSportDeviceFromSearch(urlSearch);
+  const sportDeviceKey: SportDeviceKey | null =
+    isSportTypePage &&
+    sportTypeKey &&
+    parsedSportDevice &&
+    isSportDeviceValidForType(sportTypeKey, parsedSportDevice)
+      ? parsedSportDevice
+      : null;
+  const isSportDeviceLeafPage = isSportTypePage && sportDeviceKey != null;
+
+  const sportOutdoorHubCategoryId = useMemo(() => {
+    if (isSportOutdoorHub) return categoryId;
+    if ((parentCategory as { slug?: string })?.slug === SPORT_OUTDOOR_HUB_SLUG) {
+      return (parentCategory as { id: number }).id;
+    }
+    return categoryId;
+  }, [isSportOutdoorHub, categoryId, parentCategory]);
+
   const isLokaleZyreHub =
     !!(currentCategory as any) &&
     (currentCategory as any).slug === LOKALE_ZYRE_HUB_SLUG &&
@@ -784,6 +835,57 @@ export default function CategoryPage() {
     !!(currentCategory as any) &&
     (currentCategory as any).slug === TV_ELEKTRONIKE_HUB_SLUG &&
     !(currentCategory as any).parent_id;
+
+  const drillDownHubKey = useMemo((): HubDrillDownRegistryKey | null => {
+    if (isKafshetHub) return "kafshet";
+    if (isBujqesiBlegtoriHub) return "bujqesi";
+    if (isMobiljeDekorimHub) return "mobilje";
+    if (isLokaleZyreHub) return "lokale";
+    if (isMuzikeHobbyHub) return "muzike";
+    if (isRrobaKepuceHub) return "rroba";
+    if (isPuneSherbimeHub) return "pune";
+    if (isTvElektronikeHub) return "tv";
+    return null;
+  }, [
+    isKafshetHub,
+    isBujqesiBlegtoriHub,
+    isMobiljeDekorimHub,
+    isLokaleZyreHub,
+    isMuzikeHobbyHub,
+    isRrobaKepuceHub,
+    isPuneSherbimeHub,
+    isTvElektronikeHub,
+  ]);
+
+  const drillDownTypeHubKey: HubDrillDownRegistryKey | null =
+    parentCategory?.slug && HUB_SLUG_TO_DRILL_DOWN_KEY[parentCategory.slug]
+      ? HUB_SLUG_TO_DRILL_DOWN_KEY[parentCategory.slug]
+      : null;
+
+  const isDrillDownTypePage =
+    !!drillDownTypeHubKey &&
+    isHubTypePage(
+      HUB_DRILL_DOWN_REGISTRY[drillDownTypeHubKey].hubSlug,
+      parentCategory,
+      currentCategory,
+    );
+
+  const drillDownTypeConfig = drillDownTypeHubKey
+    ? HUB_DRILL_DOWN_REGISTRY[drillDownTypeHubKey]
+    : null;
+
+  const drillDownTypeKey =
+    isDrillDownTypePage && drillDownTypeConfig
+      ? resolveTypeKeyFromSlugMap(currentSlug, drillDownTypeConfig.typeDbSlug)
+      : null;
+
+  const drillDownHubCategoryId = useMemo(() => {
+    if (drillDownHubKey) return categoryId;
+    if (drillDownTypeHubKey && parentCategory) {
+      return (parentCategory as { id: number }).id;
+    }
+    return categoryId;
+  }, [drillDownHubKey, drillDownTypeHubKey, categoryId, parentCategory]);
 
   const isKompjuterLaptopHub =
     !!(currentCategory as any) &&
@@ -954,6 +1056,32 @@ export default function CategoryPage() {
     if (isAutoPjesHub && autoPjeseLeafCsv) {
       return autoPjeseListParams ?? { category_ids: autoPjeseLeafCsv, page: 1, limit: 20 };
     }
+    if (isDrillDownTypePage && drillDownTypeHubKey && drillDownTypeKey) {
+      const drillFallback = { category_id: categoryId, page: 1, limit: 20 } satisfies GetListingsParams;
+      switch (drillDownTypeHubKey) {
+        case "kafshet":
+          return kafshetListParams ?? drillFallback;
+        case "bujqesi":
+          return bujqesiBlegtoriListParams ?? drillFallback;
+        case "mobilje":
+          return mobiljeDekorimListParams ?? drillFallback;
+        case "lokale":
+          return lokaleZyreListParams ?? drillFallback;
+        case "muzike":
+          return muzikeHobbyListParams ?? drillFallback;
+        case "rroba":
+          return rrobaKepuceListParams ?? drillFallback;
+        case "pune":
+          return puneSherbimeListParams ?? drillFallback;
+        case "tv":
+          return tvElektronikeListParams ?? drillFallback;
+        default:
+          return drillFallback;
+      }
+    }
+    if (isSportDeviceLeafPage) {
+      return sportOutdoorListParams ?? { category_id: categoryId, page: 1, limit: 20 };
+    }
     if (isSportOutdoorHub && sportOutdoorLeafCsv) {
       return sportOutdoorListParams ?? { category_ids: sportOutdoorLeafCsv, page: 1, limit: 20 };
     }
@@ -1024,6 +1152,11 @@ export default function CategoryPage() {
     isSportOutdoorHub,
     sportOutdoorLeafCsv,
     sportOutdoorListParams,
+    drillDownHubKey,
+    isDrillDownTypePage,
+    drillDownTypeHubKey,
+    drillDownTypeKey,
+    isSportDeviceLeafPage,
     isLokaleZyreHub,
     lokaleZyreLeafCsv,
     lokaleZyreListParams,
@@ -1067,24 +1200,19 @@ export default function CategoryPage() {
   const listingsQueryEnabled =
     Number.isFinite(categoryId) &&
     !!allCategories?.length &&
+    !drillDownHubKey &&
+    (!isDrillDownTypePage || !!drillDownTypeKey) &&
     (!isVeturaHub || veturaBrandLeafCsv.length > 0) &&
     (!isKamioneFurgoneHub || kamioneBrandLeafCsv.length > 0) &&
     (!isBanesaShtepiHub || banesaLeafCsv.length > 0) &&
     (!isMotorSkuterHub || motorBrandLeafCsv.length > 0) &&
     (!isAutoPjesHub || autoPjeseLeafCsv.length > 0) &&
-    (!isSportOutdoorHub || sportOutdoorLeafCsv.length > 0) &&
-    (!isLokaleZyreHub || lokaleZyreLeafCsv.length > 0) &&
+    (!isSportOutdoorHub || isSportDeviceLeafPage) &&
+    (!isSportTypePage || isSportDeviceLeafPage) &&
     (!isTelefonaHubPage || telefonaLeafCsv.length > 0) &&
     (!isArsimKurseHub || arsimKurseLeafCsv.length > 0) &&
-    (!isMobiljeDekorimHub || mobiljeDekorimLeafCsv.length > 0) &&
-    (!isRrobaKepuceHub || rrobaKepuceLeafCsv.length > 0) &&
     !isFemijeHub &&
-    !isFemijeGroupPage &&
-    (!isPuneSherbimeHub || puneSherbimeLeafCsv.length > 0) &&
-    (!isBujqesiBlegtoriHub || bujqesiBlegtoriLeafCsv.length > 0) &&
-    (!isMuzikeHobbyHub || muzikeHobbyLeafCsv.length > 0) &&
-    (!isKafshetHub || kafshetLeafCsv.length > 0) &&
-    !isTvElektronikeHub;
+    !isFemijeGroupPage;
 
   const { data: listingsData, isLoading } = useGetListings(listingsQueryParams, {
     query: {
@@ -1354,6 +1482,8 @@ export default function CategoryPage() {
     </div>
   );
 
+  const isGiftOrRequestHeroHub = isKerkojTeBlejHub || isDhurataFalasHub;
+
   return (
     <div className="min-h-screen bg-gray-50">
 
@@ -1362,7 +1492,9 @@ export default function CategoryPage() {
       {/* Hero banner */}
       <div
         className={
-          isVeturaHub ||
+          isGiftOrRequestHeroHub
+            ? "relative h-[min(78vw,640px)] min-h-[320px] sm:min-h-[420px] md:min-h-[520px] w-full max-w-[100vw] overflow-hidden isolate"
+            : isVeturaHub ||
           isMotorSkuterHub ||
           isKamioneFurgoneHub ||
           isAutoPjesHub ||
@@ -1379,11 +1511,9 @@ export default function CategoryPage() {
           isMuzikeHobbyHub ||
           isBujqesiBlegtoriHub ||
           isPuneSherbimeHub ||
-          isKafshetHub ||
-          isKerkojTeBlejHub ||
-          isDhurataFalasHub
+          isKafshetHub
             ? "relative h-[220px] md:h-[420px] w-full max-w-[100vw] overflow-hidden isolate"
-            : "relative min-h-[10rem] h-44 sm:h-40 w-full max-w-[100vw] overflow-hidden isolate"
+            : "relative h-[260px] sm:h-[300px] md:h-[400px] w-full max-w-[100vw] overflow-hidden isolate"
         }
       >
         {isVeturaHub ? (
@@ -1427,11 +1557,22 @@ export default function CategoryPage() {
         ) : isDhurataFalasHub ? (
           <DhurataFalasHeroSlideshow />
         ) : photo ? (
-          <img src={photo} alt={currentCategory?.name} className="absolute inset-0 w-full h-full object-cover max-w-none" sizes="100vw" />
+          <img
+            src={heroBannerImageUrl(photo)}
+            alt={currentCategory?.name}
+            className="absolute inset-0 w-full h-full object-cover object-center max-w-none"
+            sizes="100vw"
+          />
         ) : (
           <div className="w-full h-full" style={{ background: "linear-gradient(135deg, #0F2B7F 0%, #2563EB 100%)" }} />
         )}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/65 to-black/25" />
+        <div
+          className={
+            isGiftOrRequestHeroHub
+              ? "absolute inset-0 bg-gradient-to-r from-black/50 to-black/15"
+              : "absolute inset-0 bg-gradient-to-r from-black/65 to-black/25"
+          }
+        />
         <div className="relative z-10 flex h-full flex-col justify-center px-4 sm:px-6 max-w-7xl mx-auto gap-2 min-w-0">
           <Breadcrumb items={crumbItems} />
           <div className="flex items-start sm:items-center gap-3 min-w-0">
@@ -1542,10 +1683,52 @@ export default function CategoryPage() {
 
         {isSportOutdoorHub && sportOutdoorLeafCsv ? (
           <SportOutdoorSearchPanel
+            variant="hub"
             hubId={categoryId}
+            categories={allCategories as any}
+            onNavigateToCategory={(childId) =>
+              navigateToCategory(setLocation, childId, categoryId)
+            }
+            onNavigateToDevice={() => {}}
+          />
+        ) : null}
+
+        {isSportTypePage && !isSportDeviceLeafPage && sportTypeKey ? (
+          <SportOutdoorSearchPanel
+            variant="type"
+            hubId={sportOutdoorHubCategoryId}
+            scopeCategoryId={categoryId}
+            sportTypeKey={sportTypeKey}
+            categories={allCategories as any}
+            onNavigateToCategory={(childId) =>
+              navigateToCategory(setLocation, childId, categoryId)
+            }
+            onNavigateToDevice={(deviceKey) => {
+              setLocation(
+                sportDeviceLeafPath(categoryPath(currentCategory as CategoryRef), deviceKey),
+              );
+            }}
+          />
+        ) : null}
+
+        {isSportDeviceLeafPage && sportTypeKey && sportDeviceKey ? (
+          <SportOutdoorSearchPanel
+            variant="leaf"
+            hubId={sportOutdoorHubCategoryId}
+            scopeCategoryId={categoryId}
+            sportTypeKey={sportTypeKey}
+            deviceKey={sportDeviceKey}
             categories={allCategories as any}
             previewTotal={listingsData?.total ?? null}
             previewLoading={isLoading}
+            onNavigateToCategory={(childId) =>
+              navigateToCategory(setLocation, childId, categoryId)
+            }
+            onNavigateToDevice={(deviceKey) => {
+              setLocation(
+                sportDeviceLeafPath(categoryPath(currentCategory as CategoryRef), deviceKey),
+              );
+            }}
             onListingParamsChange={setSportOutdoorListParams}
             onScrollToResults={() =>
               resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
@@ -1553,13 +1736,56 @@ export default function CategoryPage() {
           />
         ) : null}
 
-        {isLokaleZyreHub && lokaleZyreLeafCsv ? (
-          <LokaleZyreSearchPanel
+        {drillDownHubKey ? (
+          <HubTypePicker
+            config={HUB_DRILL_DOWN_REGISTRY[drillDownHubKey]}
             hubId={categoryId}
+            categories={allCategories as any}
+            onNavigateToCategory={(childId) =>
+              navigateToCategory(setLocation, childId, categoryId)
+            }
+          />
+        ) : null}
+
+        {isDrillDownTypePage && drillDownTypeHubKey && drillDownTypeKey ? (
+          <HubDrillDownFiltersPanel
+            hubKey={drillDownTypeHubKey}
+            hubCategoryId={drillDownHubCategoryId}
+            scopeCategoryId={categoryId}
+            lockedTypeKey={drillDownTypeKey}
             categories={allCategories as any}
             previewTotal={listingsData?.total ?? null}
             previewLoading={isLoading}
-            onListingParamsChange={setLokaleZyreListParams}
+            onListingParamsChange={(params) => {
+              switch (drillDownTypeHubKey) {
+                case "kafshet":
+                  setKafshetListParams(params);
+                  break;
+                case "bujqesi":
+                  setBujqesiBlegtoriListParams(params);
+                  break;
+                case "mobilje":
+                  setMobiljeDekorimListParams(params);
+                  break;
+                case "lokale":
+                  setLokaleZyreListParams(params);
+                  break;
+                case "muzike":
+                  setMuzikeHobbyListParams(params);
+                  break;
+                case "rroba":
+                  setRrobaKepuceListParams(params);
+                  break;
+                case "pune":
+                  setPuneSherbimeListParams(params);
+                  break;
+                case "tv":
+                  setTvElektronikeListParams(params);
+                  break;
+                default:
+                  break;
+              }
+            }}
             onScrollToResults={() =>
               resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
             }
@@ -1598,32 +1824,6 @@ export default function CategoryPage() {
           />
         ) : null}
 
-        {isMobiljeDekorimHub && mobiljeDekorimLeafCsv ? (
-          <MobiljeDekorimSearchPanel
-            hubId={categoryId}
-            categories={allCategories as any}
-            previewTotal={listingsData?.total ?? null}
-            previewLoading={isLoading}
-            onListingParamsChange={setMobiljeDekorimListParams}
-            onScrollToResults={() =>
-              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-            }
-          />
-        ) : null}
-
-        {isRrobaKepuceHub && rrobaKepuceLeafCsv ? (
-          <RrobaKepuceSearchPanel
-            hubId={categoryId}
-            categories={allCategories as any}
-            previewTotal={listingsData?.total ?? null}
-            previewLoading={isLoading}
-            onListingParamsChange={setRrobaKepuceListParams}
-            onScrollToResults={() =>
-              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-            }
-          />
-        ) : null}
-
         {isFemijeHub && allCategories?.length ? (
           <Suspense fallback={<FemijeSearchPanelFallback />}>
             <FemijeSearchPanel
@@ -1635,71 +1835,6 @@ export default function CategoryPage() {
               }
             />
           </Suspense>
-        ) : null}
-
-        {isPuneSherbimeHub && puneSherbimeLeafCsv ? (
-          <PuneSherbimeSearchPanel
-            hubId={categoryId}
-            categories={allCategories as any}
-            previewTotal={listingsData?.total ?? null}
-            previewLoading={isLoading}
-            onListingParamsChange={setPuneSherbimeListParams}
-            onScrollToResults={() =>
-              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-            }
-          />
-        ) : null}
-
-        {isBujqesiBlegtoriHub && bujqesiBlegtoriLeafCsv ? (
-          <BujqesiBlegtoriSearchPanel
-            hubId={categoryId}
-            categories={allCategories as any}
-            previewTotal={listingsData?.total ?? null}
-            previewLoading={isLoading}
-            onListingParamsChange={setBujqesiBlegtoriListParams}
-            onScrollToResults={() =>
-              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-            }
-          />
-        ) : null}
-
-        {isMuzikeHobbyHub && muzikeHobbyLeafCsv ? (
-          <MuzikeHobbySearchPanel
-            hubId={categoryId}
-            categories={allCategories as any}
-            previewTotal={listingsData?.total ?? null}
-            previewLoading={isLoading}
-            onListingParamsChange={setMuzikeHobbyListParams}
-            onScrollToResults={() =>
-              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-            }
-          />
-        ) : null}
-
-        {isKafshetHub && kafshetLeafCsv ? (
-          <KafshetSearchPanel
-            hubId={categoryId}
-            categories={allCategories as any}
-            previewTotal={listingsData?.total ?? null}
-            previewLoading={isLoading}
-            onListingParamsChange={setKafshetListParams}
-            onScrollToResults={() =>
-              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-            }
-          />
-        ) : null}
-
-        {isTvElektronikeHub ? (
-          <TvElektronikeSearchPanel
-            hubId={categoryId}
-            categories={allCategories as any}
-            previewTotal={listingsData?.total ?? null}
-            previewLoading={isLoading}
-            onListingParamsChange={setTvElektronikeListParams}
-            onScrollToResults={() =>
-              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-            }
-          />
         ) : null}
 
         {isKompjuterLaptopHub ? (
@@ -1813,7 +1948,16 @@ export default function CategoryPage() {
         ) : null}
 
         {!isTelefonaHubPage &&
-          (isFemijeLeafPage || isDhurataFalasHub || isKerkojTeBlejHub || (!isFemijeHub && !isFemijeGroupPage)) &&
+          (isSportDeviceLeafPage ||
+            (isDrillDownTypePage && !!drillDownTypeKey) ||
+            isFemijeLeafPage ||
+            isDhurataFalasHub ||
+            isKerkojTeBlejHub ||
+            (!isFemijeHub &&
+              !isFemijeGroupPage &&
+              !drillDownHubKey &&
+              !isSportOutdoorHub &&
+              !(isSportTypePage && !isSportDeviceLeafPage))) &&
           (!isDhurataFalasHub ||
             isLoading ||
             (listingsData != null && listingsData.listings.length > 0)) &&

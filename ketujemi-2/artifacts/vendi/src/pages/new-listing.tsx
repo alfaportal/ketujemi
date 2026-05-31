@@ -338,7 +338,7 @@ export default function NewListing() {
   }, [user, form]);
 
   useEffect(() => {
-    if (!user || effectiveCategoryId < 1) {
+    if (!user || effectiveCategoryId < 1 || isDhurataCategory || isDhurataPostRoute) {
       setFreeQuota(null);
       return;
     }
@@ -369,7 +369,7 @@ export default function NewListing() {
     return () => {
       cancelled = true;
     };
-  }, [user, effectiveCategoryId]);
+  }, [user, effectiveCategoryId, isDhurataCategory, isDhurataPostRoute]);
 
   const createMutation = useCreateListing({
     mutation: {
@@ -758,7 +758,7 @@ export default function NewListing() {
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
         {user?.account_type === "business" ? <CardPaymentsPanel /> : null}
-        {freeQuota != null && effectiveCategoryId > 0 ? (
+        {freeQuota != null && effectiveCategoryId > 0 && !isDhurataCategory && !isDhurataPostRoute ? (
           <div
             className={`rounded-xl border px-4 py-3 text-sm font-medium space-y-2 ${
               freeQuota.allowed

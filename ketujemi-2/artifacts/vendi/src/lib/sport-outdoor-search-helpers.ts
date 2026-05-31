@@ -37,12 +37,15 @@ export const SPORT_TYPE_PHOTOS: Record<SportTypeKey, string> = {
 };
 
 /** Maps UI sport cards to seeded subcategory slugs when present. */
-export const SPORT_TYPE_DB_SLUG: Partial<Record<SportTypeKey, string>> = {
+export const SPORT_TYPE_DB_SLUG: Record<SportTypeKey, string> = {
   football: "sport-type-top",
   fitness: "sport-type-fitnes-joga",
   bike: "sport-type-bicikleta",
   camping: "sport-type-kampingu",
+  martial: "sport-type-ajrore",
   winter: "sport-type-dimerore",
+  water: "sport-type-ujit",
+  hobby: "sport-type-rekreative",
 };
 
 /** i18n keys under `so_type_*` in app-extra-i18n. */
@@ -477,7 +480,45 @@ export function resolveSportTypeCategoryId(
   sportKey: SportTypeKey,
 ): number | undefined {
   const slug = SPORT_TYPE_DB_SLUG[sportKey];
-  if (!slug) return undefined;
   const row = categories.find((c) => c.parent_id === hubId && c.slug === slug);
   return row?.id;
 }
+
+export function resolveSportTypeKeyFromSlug(slug: string | null | undefined): SportTypeKey | null {
+  if (!slug) return null;
+  for (const key of SPORT_TYPE_KEYS) {
+    if (SPORT_TYPE_DB_SLUG[key] === slug) return key;
+  }
+  return null;
+}
+
+export const SPORT_DEVICE_QUERY_PARAM = "pajisja";
+
+export function parseSportDeviceFromSearch(search: string): SportDeviceKey | null {
+  const raw = new URLSearchParams(search).get(SPORT_DEVICE_QUERY_PARAM)?.trim();
+  if (!raw || !(SPORT_DEVICE_KEYS as readonly string[]).includes(raw)) return null;
+  return raw as SportDeviceKey;
+}
+
+export function isSportDeviceValidForType(
+  sportKey: SportTypeKey,
+  deviceKey: SportDeviceKey,
+): boolean {
+  return SPORT_DEVICE_SECTIONS[sportKey].some((s) => s.itemKeys.includes(deviceKey));
+}
+
+export function sportDeviceLeafPath(categoryPath: string, deviceKey: SportDeviceKey): string {
+  return `${categoryPath}?${SPORT_DEVICE_QUERY_PARAM}=${encodeURIComponent(deviceKey)}`;
+}
+
+/** Short intro per sport type (i18n key suffix). */
+export const SPORT_TYPE_INTRO_KEY: Record<SportTypeKey, string> = {
+  football: "so_intro_football",
+  fitness: "so_intro_fitness",
+  bike: "so_intro_bike",
+  camping: "so_intro_camping",
+  martial: "so_intro_martial",
+  winter: "so_intro_winter",
+  water: "so_intro_water",
+  hobby: "so_intro_hobby",
+};
