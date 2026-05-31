@@ -155,14 +155,14 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "mobilje-type-sallone-ulese":
     "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1200&q=80",
   "mobilje-type-kuzhina":
-    "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&q=80",
+    "https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg?w=1200&q=80",
   "mobilje-type-dhoma-gjumit":
     "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=1200&q=80",
   "mobilje-type-kopsht-terasa":
     "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1200&q=80",
   "mobilje-type-ndricim": pexelsPhoto(1123262),
   "mobilje-type-tepihe-perde":
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80",
+    "https://images.pexels.com/photos/16820353/pexels-photo-16820353.jpeg?w=1200&q=80",
 
   // —— Rroba ——————————————————————————————————————————————————————————————————
   "rroba-type-aksesore": pexelsPhoto(1927259),
