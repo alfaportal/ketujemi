@@ -278,6 +278,10 @@ export const SPORT_FB_DEVICE_PHOTOS: Partial<Record<SportDeviceKey, string>> = {
     "https://images.pexels.com/photos/5327461/pexels-photo-5327461.jpeg?w=400&q=80",
   fit_sup_doreza:
     "https://images.pexels.com/photos/45058/pexels-photo-45058.jpeg?w=400&q=80",
+  bike_bik_mtb:
+    "https://images.pexels.com/photos/12328608/pexels-photo-12328608.jpeg?w=400&q=80",
+  bike_bik_kids:
+    "https://images.pexels.com/photos/206443/pexels-photo-206443.jpeg?w=400&q=80",
 };
 
 export function resolveSportDevicePhoto(
