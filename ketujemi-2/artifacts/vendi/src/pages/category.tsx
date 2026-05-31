@@ -1802,6 +1802,9 @@ export default function CategoryPage() {
 
         {!isTelefonaHubPage &&
           (isFemijeLeafPage || isDhurataFalasHub || (!isFemijeHub && !isFemijeGroupPage)) &&
+          (!isDhurataFalasHub ||
+            isLoading ||
+            (listingsData != null && listingsData.listings.length > 0)) &&
           renderListingsSection()}
       </div>
     </div>
