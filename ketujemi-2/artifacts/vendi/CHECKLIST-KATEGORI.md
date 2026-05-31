@@ -100,6 +100,12 @@ Rregull Cursor: `.cursor/rules/femije-drill-down-pages.mdc`
 
 Rregull Cursor: `.cursor/rules/category-images-nivel-1-2.mdc`
 
+## Scroll në kategori (drill-down)
+
+- Hyrje në nënkategori → scroll te `#category-focus` (filtra / picker), **jo** krye e faqes.
+- **Kthehu** → rikthen `scrollY` ku ishe (stash + `useCategoryScroll`).
+- `useScrollRestoration` **nuk** bën `scrollTo(0)` për `/categories/*`.
+
 ---
 
 ## Rregulla të shkurtra

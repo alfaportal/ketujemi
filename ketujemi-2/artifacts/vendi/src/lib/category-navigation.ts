@@ -1,11 +1,53 @@
 import { useLayoutEffect } from "react";
 import { PARENT_CATEGORY_SLUG_ORDER } from "@/lib/parent-category-slugs";
 import {
+  getScrollPosition,
   lastRouteChangeWasPop,
   markScrollPosition,
   scheduleRestoreScrollY,
   scrollLocationKey,
 } from "@/lib/scroll-restoration";
+
+/** Anchor after hero — filters / picker / Kthehu (not page top). */
+export const CATEGORY_FOCUS_ELEMENT_ID = "category-focus";
+
+const CATEGORY_FOCUS_SCROLL_MARGIN = 72;
+
+export type CategoryScrollIntent = "focus" | "restore";
+
+let pendingCategoryScrollIntent: CategoryScrollIntent | null = null;
+
+export function consumeCategoryScrollIntent(): CategoryScrollIntent | null {
+  const intent = pendingCategoryScrollIntent;
+  pendingCategoryScrollIntent = null;
+  return intent;
+}
+
+function measureCategoryFocusScrollY(): number | null {
+  if (typeof document === "undefined") return null;
+  const el = document.getElementById(CATEGORY_FOCUS_ELEMENT_ID);
+  if (!el) return null;
+  const top = el.getBoundingClientRect().top + window.scrollY - CATEGORY_FOCUS_SCROLL_MARGIN;
+  return Math.max(0, top);
+}
+
+/** Scroll to picker/filters block (below hero), with retries while layout settles. */
+export function scheduleScrollToCategoryFocus(): () => void {
+  const apply = () => {
+    const y = measureCategoryFocusScrollY();
+    if (y != null) scheduleRestoreScrollY(y);
+  };
+  apply();
+  const timers: ReturnType<typeof setTimeout>[] = [];
+  requestAnimationFrame(() => {
+    apply();
+    requestAnimationFrame(apply);
+  });
+  for (const ms of [50, 150, 350, 600, 900]) {
+    timers.push(window.setTimeout(apply, ms));
+  }
+  return () => timers.forEach(clearTimeout);
+}
 
 /** Shared category URL helpers — single source of truth for all category links. */
 
@@ -169,6 +211,7 @@ export function navigateToCategory(
     markScrollPosition(scrollLocationKey(window.location.pathname), window.scrollY);
   }
   categoryScrollRestore.delete(toCategoryId);
+  pendingCategoryScrollIntent = "focus";
 
   const row = categories?.find((c) => Number(c.id) === Number(toCategoryId));
   setLocation(categoryPath(row ?? toCategoryId));
@@ -199,36 +242,40 @@ export function navigateCategoryBack(
     sportDeviceActive?: boolean;
   },
 ) {
+  const currentId = Number(options.currentCategory.id);
+  if (options.sportDeviceActive && Number.isFinite(currentId)) {
+    stashCategoryScroll(currentId);
+  }
+  markScrollPosition(scrollLocationKey(window.location.pathname), window.scrollY);
+  pendingCategoryScrollIntent = "restore";
   setLocation(resolveCategoryBackPath(options));
 }
 
 /**
- * Category drill-down: forward → top; back (browser or UI) → restore prior scroll.
- * Works with useScrollRestoration (URL keys) — never forces top on popstate.
+ * Category pages: forward → scroll to #category-focus (picker/filters, not hero top).
+ * Back (Kthehu or browser) → restore prior scrollY. Global hook skips /categories/* top reset.
  */
 export function useCategoryScroll(categoryId: number) {
   useLayoutEffect(() => {
     if (!Number.isFinite(categoryId)) return;
 
+    const intent = consumeCategoryScrollIntent();
     const isPop = lastRouteChangeWasPop;
 
-    if (isPop) {
+    if (intent === "restore" || isPop) {
       const stashed = takeCategoryScroll(categoryId);
       if (stashed != null) {
         return scheduleRestoreScrollY(stashed);
       }
-      return;
+      if (isPop || intent === "restore") {
+        const saved = getScrollPosition(scrollLocationKey(window.location.pathname));
+        if (saved != null) {
+          return scheduleRestoreScrollY(saved);
+        }
+      }
+      if (intent === "restore") return;
     }
 
-    const stashed = takeCategoryScroll(categoryId);
-    if (stashed != null) {
-      return scheduleRestoreScrollY(stashed);
-    }
-
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    const timers = [0, 50].map((ms) =>
-      window.setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }), ms),
-    );
-    return () => timers.forEach(clearTimeout);
+    return scheduleScrollToCategoryFocus();
   }, [categoryId]);
 }

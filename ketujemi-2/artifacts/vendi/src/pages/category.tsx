@@ -30,6 +30,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { translateCategory, type MarketCode } from "@/lib/category-translations";
 import { resolveCategoryImageUrl } from "@/lib/resolve-category-image";
 import {
+  CATEGORY_FOCUS_ELEMENT_ID,
   canonicalCategorySegment,
   categoryPath,
   navigateCategoryBack,
@@ -1607,6 +1608,11 @@ export default function CategoryPage() {
       ) : null}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div
+          id={CATEGORY_FOCUS_ELEMENT_ID}
+          className="scroll-mt-20 -mt-1 h-0 w-full"
+          aria-hidden
+        />
 
         <button
           type="button"

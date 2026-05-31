@@ -44,6 +44,11 @@ export function useScrollRestoration() {
       return;
     }
 
+    // Category scroll is handled by useCategoryScroll (focus anchor + drill-down restore).
+    if (pathname.startsWith("/categories")) {
+      return;
+    }
+
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     markScrollPosition(key, 0);
   }, [pathname]);
