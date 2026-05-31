@@ -109,6 +109,7 @@ import { getMuzikeHobbyLeafCategoryIds } from "@/lib/muzike-hobby-search-helpers
 import { KafshetSearchPanel } from "@/components/kafshet-search-panel";
 import { getKafshetLeafCategoryIds } from "@/lib/kafshet-search-helpers";
 import { DhurataFalasHubIntro } from "@/components/dhurata-falas-hub-intro";
+import { DhurataFalasHeroSlideshow } from "@/components/dhurata-falas-hero-slideshow";
 import { isDhurataFalasSlug, isKerkojTeBlejSlug } from "@/lib/special-listing-categories";
 import { TvElektronikeSearchPanel } from "@/components/tv-elektronike-search-panel";
 import { KompjuterLaptopHubPanel } from "@/components/kompjuter-laptop-hub-panel";
@@ -1379,7 +1380,8 @@ export default function CategoryPage() {
           isBujqesiBlegtoriHub ||
           isPuneSherbimeHub ||
           isKafshetHub ||
-          isKerkojTeBlejHub
+          isKerkojTeBlejHub ||
+          isDhurataFalasHub
             ? "relative h-[220px] md:h-[420px] w-full max-w-[100vw] overflow-hidden isolate"
             : "relative min-h-[10rem] h-44 sm:h-40 w-full max-w-[100vw] overflow-hidden isolate"
         }
@@ -1422,6 +1424,8 @@ export default function CategoryPage() {
           <KafshetHeroSlideshow />
         ) : isKerkojTeBlejHub ? (
           <KerkojTeBlejHeroSlideshow />
+        ) : isDhurataFalasHub ? (
+          <DhurataFalasHeroSlideshow />
         ) : photo ? (
           <img src={photo} alt={currentCategory?.name} className="absolute inset-0 w-full h-full object-cover max-w-none" sizes="100vw" />
         ) : (

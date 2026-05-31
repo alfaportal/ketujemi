@@ -53,7 +53,7 @@ export const PARENT_CATEGORY_THUMB_BY_SLUG: Record<ParentCategorySlug, string> =
   "muzike-hobby": unsplash("1511379938547-c1f69419868d", 600),
   kafshet: unsplash("1450778869180-41d0601e046e", 600),
   "kerkoj-te-blej": "https://images.pexels.com/photos/6633607/pexels-photo-6633607.jpeg?w=600&q=80",
-  "dhurata-falas": unsplash("1513885535751-8b9238bd345b", 600),
+  "dhurata-falas": "https://images.pexels.com/photos/8257936/pexels-photo-8257936.jpeg?w=600&q=80",
 };
 
 /** Hub hero banners — 1920px (e njëjta tema, më e madhe). */
