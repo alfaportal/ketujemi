@@ -260,6 +260,10 @@ export const SPORT_FB_DEVICE_PHOTOS: Partial<Record<SportDeviceKey, string>> = {
     "https://images.pexels.com/photos/3836831/pexels-photo-3836831.jpeg?w=400&q=80",
   fit_mac_orbitek:
     "https://images.pexels.com/photos/4162595/pexels-photo-4162595.jpeg?w=400&q=80",
+  fit_pes_tega:
+    "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?w=400&q=80",
+  fit_pes_shufra:
+    "https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?w=400&q=80",
 };
 
 export function resolveSportDevicePhoto(
