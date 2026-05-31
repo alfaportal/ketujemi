@@ -52,7 +52,7 @@ export const PARENT_CATEGORY_THUMB_BY_SLUG: Record<ParentCategorySlug, string> =
   "arsim-kurse": unsplash("1503676260728-1c00da094a0b", 600),
   "muzike-hobby": unsplash("1511379938547-c1f69419868d", 600),
   kafshet: unsplash("1450778869180-41d0601e046e", 600),
-  "kerkoj-te-blej": unsplash("1556742049-0cfed4f7a07d", 600),
+  "kerkoj-te-blej": "https://images.pexels.com/photos/6633607/pexels-photo-6633607.jpeg?w=600&q=80",
   "dhurata-falas": unsplash("1513885535751-8b9238bd345b", 600),
 };
 

@@ -66,6 +66,7 @@ import { MuzikeHobbyHeroSlideshow } from "@/components/muzike-hobby-hero-slidesh
 import { BujqesiBlegtoriHeroSlideshow } from "@/components/bujqesi-blegtori-hero-slideshow";
 import { PuneSherbimeHeroSlideshow } from "@/components/pune-sherbime-hero-slideshow";
 import { KafshetHeroSlideshow } from "@/components/kafshet-hero-slideshow";
+import { KerkojTeBlejHeroSlideshow } from "@/components/kerkoj-te-blej-hero-slideshow";
 import { resolveCategoryImageUrl } from "@/lib/resolve-category-image";
 import {
   KAMION_SEARCH_BRAND_ORDER,
@@ -108,7 +109,7 @@ import { getMuzikeHobbyLeafCategoryIds } from "@/lib/muzike-hobby-search-helpers
 import { KafshetSearchPanel } from "@/components/kafshet-search-panel";
 import { getKafshetLeafCategoryIds } from "@/lib/kafshet-search-helpers";
 import { DhurataFalasHubIntro } from "@/components/dhurata-falas-hub-intro";
-import { isDhurataFalasSlug } from "@/lib/special-listing-categories";
+import { isDhurataFalasSlug, isKerkojTeBlejSlug } from "@/lib/special-listing-categories";
 import { TvElektronikeSearchPanel } from "@/components/tv-elektronike-search-panel";
 import { KompjuterLaptopHubPanel } from "@/components/kompjuter-laptop-hub-panel";
 import {
@@ -320,7 +321,6 @@ const PUNE_SHERBIME_HUB_SLUG = "pune-sherbime";
 const BUJQESI_BLEGTORI_HUB_SLUG = "bujqesi-blegtori";
 const MUZIKE_HOBBY_HUB_SLUG = "muzike-hobby";
 const KAFSHET_HUB_SLUG = "kafshet";
-const DHURATA_FALAS_HUB_SLUG = "dhurata-falas";
 const TV_ELEKTRONIKE_HUB_SLUG = "tv-elektronike";
 
 /** Display order for Banesa & Shtëpi hub. */
@@ -772,6 +772,11 @@ export default function CategoryPage() {
   const isDhurataFalasHub =
     !!(currentCategory as any) &&
     isDhurataFalasSlug((currentCategory as any).slug) &&
+    !(currentCategory as any).parent_id;
+
+  const isKerkojTeBlejHub =
+    !!(currentCategory as any) &&
+    isKerkojTeBlejSlug((currentCategory as any).slug) &&
     !(currentCategory as any).parent_id;
 
   const isTvElektronikeHub =
@@ -1373,7 +1378,8 @@ export default function CategoryPage() {
           isMuzikeHobbyHub ||
           isBujqesiBlegtoriHub ||
           isPuneSherbimeHub ||
-          isKafshetHub
+          isKafshetHub ||
+          isKerkojTeBlejHub
             ? "relative h-[220px] md:h-[420px] w-full max-w-[100vw] overflow-hidden isolate"
             : "relative min-h-[10rem] h-44 sm:h-40 w-full max-w-[100vw] overflow-hidden isolate"
         }
@@ -1414,6 +1420,8 @@ export default function CategoryPage() {
           <PuneSherbimeHeroSlideshow />
         ) : isKafshetHub ? (
           <KafshetHeroSlideshow />
+        ) : isKerkojTeBlejHub ? (
+          <KerkojTeBlejHeroSlideshow />
         ) : photo ? (
           <img src={photo} alt={currentCategory?.name} className="absolute inset-0 w-full h-full object-cover max-w-none" sizes="100vw" />
         ) : (
@@ -1801,7 +1809,7 @@ export default function CategoryPage() {
         ) : null}
 
         {!isTelefonaHubPage &&
-          (isFemijeLeafPage || isDhurataFalasHub || (!isFemijeHub && !isFemijeGroupPage)) &&
+          (isFemijeLeafPage || isDhurataFalasHub || isKerkojTeBlejHub || (!isFemijeHub && !isFemijeGroupPage)) &&
           (!isDhurataFalasHub ||
             isLoading ||
             (listingsData != null && listingsData.listings.length > 0)) &&
