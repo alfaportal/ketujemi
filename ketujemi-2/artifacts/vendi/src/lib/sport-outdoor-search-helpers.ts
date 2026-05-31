@@ -235,7 +235,7 @@ export const SPORT_FB_DEVICE_PHOTOS: Partial<Record<SportDeviceKey, string>> = {
   fb_fut_doreza:
     "https://images.pexels.com/photos/21222660/pexels-photo-21222660.jpeg?w=400&q=80",
   fb_fut_uniforma:
-    "https://images.pexels.com/photos/3621104/pexels-photo-3621104.jpeg?w=400&q=80",
+    "https://images.pexels.com/photos/16678677/pexels-photo-16678677.jpeg?w=400&q=80",
   fb_bas_topa:
     "https://images.pexels.com/photos/16955708/pexels-photo-16955708.jpeg?w=400&q=80",
   fb_bas_rrethe:
