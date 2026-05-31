@@ -282,6 +282,14 @@ export const SPORT_FB_DEVICE_PHOTOS: Partial<Record<SportDeviceKey, string>> = {
     "https://images.pexels.com/photos/12328608/pexels-photo-12328608.jpeg?w=400&q=80",
   bike_bik_kids:
     "https://images.pexels.com/photos/206443/pexels-photo-206443.jpeg?w=400&q=80",
+  bike_tro_electric:
+    "https://images.pexels.com/photos/13344135/pexels-photo-13344135.jpeg?w=400&q=80",
+  bike_tro_standard:
+    "https://images.pexels.com/photos/13311432/pexels-photo-13311432.jpeg?w=400&q=80",
+  bike_tro_roller:
+    "https://images.pexels.com/photos/18186110/pexels-photo-18186110.jpeg?w=400&q=80",
+  bike_tro_skate:
+    "https://images.pexels.com/photos/4577823/pexels-photo-4577823.jpeg?w=400&q=80",
 };
 
 export function resolveSportDevicePhoto(
