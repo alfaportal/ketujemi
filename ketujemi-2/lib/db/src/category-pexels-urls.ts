@@ -27,8 +27,10 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "kafshet-type-akuariume": pexelsPhoto(8116934),
   "kafshet-type-mace": pexelsPhoto(774731),
   "kafshet-type-qen": pexelsPhoto(1805164),
-  "kafshet-type-shpende": pexelsPhoto(1661179),
-  "kafshet-type-ushqim-aksesore": pexelsPhoto(8430954),
+  "kafshet-type-shpende":
+    "https://images.unsplash.com/photo-1444464666168-49d633b86797?w=1200&q=80",
+  "kafshet-type-ushqim-aksesore":
+    "https://images.unsplash.com/photo-1601758124510-52d02ddb7cbd?w=1200&q=80",
 
   // —— Motorr types ————————————————————————————————————————————————————————
   "motorr-type-chopper": pexelsPhoto(8911262),
@@ -181,8 +183,46 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "pune-type-it-dizajn": pexelsPhoto(11035380),
   "pune-type-marketing": pexelsPhoto(7661185),
   "pune-type-ndertimtari": pexelsPhoto(14367421),
-  "pune-type-transporti": pexelsPhoto(8386443),
+  "pune-type-transporti":
+    "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=1200&q=80",
   "pune-type-zejtari": pexelsPhoto(3060859),
+  "pune-type-shendet-kujdes":
+    "https://images.unsplash.com/photo-1576091160399-7573ab762654?w=1200&q=80",
+  "pune-type-pastrim-mirembajtje":
+    "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80",
+  "pune-type-sherbime-te-tjera":
+    "https://images.unsplash.com/photo-1454165804606-4f904313ff23?w=1200&q=80",
+
+  "pune-leaf-infermier-kujdes-shtepi":
+    "https://images.unsplash.com/photo-1576091160399-7573ab762654?w=1200&q=80",
+  "pune-leaf-fizioterapi":
+    "https://images.unsplash.com/photo-1579689622686-1febbcfcf55d?w=1200&q=80",
+  "pune-leaf-psikolog-terapeut":
+    "https://images.unsplash.com/photo-1573497019148-b8f877e9a4b6?w=1200&q=80",
+  "pune-leaf-kujdes-te-moshuarit":
+    "https://images.unsplash.com/photo-1519494027907-487105e21b5a?w=1200&q=80",
+  "pune-leaf-babysitter-kujdes-femijesh":
+    "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=1200&q=80",
+  "pune-leaf-pastrim-banesash":
+    "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80",
+  "pune-leaf-pastrim-pas-ndertimit":
+    "https://images.unsplash.com/photo-1504307651254-719259f0eaeb?w=1200&q=80",
+  "pune-leaf-pastrim-xhamash":
+    "https://images.unsplash.com/photo-1628177148706-557244849813?w=1200&q=80",
+  "pune-leaf-dezinfektim-dezinsektim":
+    "https://images.unsplash.com/photo-1585421516940-3404bb8c4e0e?w=1200&q=80",
+  "pune-leaf-mirembajtje-kopshtesh-oborresh":
+    "https://images.unsplash.com/photo-1416879595885-8e567c54c8c2?w=1200&q=80",
+  "pune-leaf-riparim-pajisje-shtepiake":
+    "https://images.unsplash.com/photo-1581094798790-844274a91716?w=1200&q=80",
+  "pune-leaf-riparim-telefona-laptop":
+    "https://images.unsplash.com/photo-1511706764698-9a0972c314af?w=1200&q=80",
+  "pune-leaf-fotokopje-shtypshkrim":
+    "https://images.unsplash.com/photo-1612815153068-4fd1302489bf?w=1200&q=80",
+  "pune-leaf-sherbime-noteriale-juridike":
+    "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1200&q=80",
+  "pune-leaf-lirim-banesash-zyrash":
+    "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&q=80",
 
   // —— Bujqësi —————————————————————————————————————————————————————————————————
   "bujq-type-bageti": pexelsPhoto(236474),
