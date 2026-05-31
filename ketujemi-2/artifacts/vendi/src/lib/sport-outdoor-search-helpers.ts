@@ -233,7 +233,7 @@ export const SPORT_FB_DEVICE_PHOTOS: Partial<Record<SportDeviceKey, string>> = {
   fb_fut_mbrojt:
     "https://images.pexels.com/photos/3732792/pexels-photo-3732792.jpeg?w=400&q=80",
   fb_fut_doreza:
-    "https://images.pexels.com/photos/6956525/pexels-photo-6956525.jpeg?w=400&q=80",
+    "https://images.pexels.com/photos/21222660/pexels-photo-21222660.jpeg?w=400&q=80",
   fb_fut_uniforma:
     "https://images.pexels.com/photos/3621104/pexels-photo-3621104.jpeg?w=400&q=80",
   fb_bas_topa:
@@ -245,9 +245,9 @@ export const SPORT_FB_DEVICE_PHOTOS: Partial<Record<SportDeviceKey, string>> = {
   fb_vol_topa:
     "https://images.pexels.com/photos/1263426/pexels-photo-1263426.jpeg?w=400&q=80",
   fb_vol_rrjeta:
-    "https://images.pexels.com/photos/1263425/pexels-photo-1263425.jpeg?w=400&q=80",
+    "https://images.pexels.com/photos/14392174/pexels-photo-14392174.jpeg?w=400&q=80",
   fb_vol_mbrojt:
-    "https://images.pexels.com/photos/4397832/pexels-photo-4397832.jpeg?w=400&q=80",
+    "https://images.pexels.com/photos/6203585/pexels-photo-6203585.jpeg?w=400&q=80",
   fb_ten_reketa:
     "https://images.pexels.com/photos/1103829/pexels-photo-1103829.jpeg?w=400&q=80",
   fb_ten_topa:
