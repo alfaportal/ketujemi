@@ -50,7 +50,7 @@ export const PS_TYPE_PHOTOS: Record<PsTypeKey, string> = {
   shendet_kujdes:
     "https://images.pexels.com/photos/8460157/pexels-photo-8460157.jpeg?auto=compress&cs=tinysrgb&w=400",
   pastrim_mirembajtje:
-    "https://images.pexels.com/photos/48889/pexels-photo-48889.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&q=80",
   sherbime_te_tjera:
     "https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg?auto=compress&cs=tinysrgb&w=400",
 };
