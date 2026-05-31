@@ -144,19 +144,26 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "tv-type-projektore": pexelsPhoto(768816),
 
   // —— Mobilje ————————————————————————————————————————————————————————————————
-  "mobilje-type-sallone-ulese": pexelsPhoto(1646792),
-  "mobilje-type-kuzhina": pexelsPhoto(1646792),
-  "mobilje-type-dhoma-gjumit": pexelsPhoto(1646975),
-  "mobilje-type-kopsht-terasa": pexelsPhoto(1350193),
+  "mobilje-type-sallone-ulese":
+    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1200&q=80",
+  "mobilje-type-kuzhina":
+    "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&q=80",
+  "mobilje-type-dhoma-gjumit":
+    "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=1200&q=80",
+  "mobilje-type-kopsht-terasa":
+    "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1200&q=80",
   "mobilje-type-ndricim": pexelsPhoto(1123262),
-  "mobilje-type-tepihe-perde": pexelsPhoto(1457845),
+  "mobilje-type-tepihe-perde":
+    "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=1200&q=80",
 
   // —— Rroba ——————————————————————————————————————————————————————————————————
   "rroba-type-aksesore": pexelsPhoto(1927259),
   "rroba-type-kepuce": pexelsPhoto(267320),
-  "rroba-type-veshje-femra": pexelsPhoto(1927258),
+  "rroba-type-veshje-femra":
+    "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=1200&q=80",
   "rroba-type-veshje-femije": pexelsPhoto(1927257),
-  "rroba-type-veshje-meshkuj": pexelsPhoto(267320),
+  "rroba-type-veshje-meshkuj":
+    "https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=1200&q=80",
 
   // —— Fëmijë (legacy type rows; groups use femije-hub-subcategory-photos.ts) ——
   "femije-type-karroca":
