@@ -28,6 +28,7 @@ import {
 } from "@/components/category-photo-picker";
 import { Skeleton } from "@/components/ui/skeleton";
 import { translateCategory, type MarketCode } from "@/lib/category-translations";
+import { resolveCategoryImageUrl } from "@/lib/resolve-category-image";
 import {
   canonicalCategorySegment,
   categoryPath,
