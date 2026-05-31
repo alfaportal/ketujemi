@@ -264,6 +264,8 @@ export const SPORT_FB_DEVICE_PHOTOS: Partial<Record<SportDeviceKey, string>> = {
     "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?w=400&q=80",
   fit_pes_shufra:
     "https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?w=400&q=80",
+  fit_pes_stola:
+    "https://images.pexels.com/photos/3837757/pexels-photo-3837757.jpeg?w=400&q=80",
 };
 
 export function resolveSportDevicePhoto(
