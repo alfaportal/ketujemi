@@ -16,9 +16,9 @@ export const RK_TYPE_DB_SLUG: Record<RkTypeKey, string> = {
 
 export const RK_TYPE_PHOTOS: Record<RkTypeKey, string> = {
   meshkuj:
-    "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=400&q=80",
   femra:
-    "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=400&q=80",
   aksesore:
     "https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=400",
   kepuce:
