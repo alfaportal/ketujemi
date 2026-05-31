@@ -176,21 +176,21 @@ export function navigateToCategory(
 
 /**
  * Explicit back target for category drill-down (hub → type → leaf).
- * Prefer this over history.back() — canonical slug redirects can trap the stack.
+ * Root hub (no parent) → homepage.
  */
 export function resolveCategoryBackPath(options: {
   currentCategory: CategoryRef;
   parentCategory: CategoryRef | null;
   /** Sport Outdoor leaf step (?pajisja=) — back drops the query on the same type page. */
   sportDeviceActive?: boolean;
-}): string | null {
+}): string {
   const { currentCategory, parentCategory, sportDeviceActive } = options;
   if (sportDeviceActive) return categoryPath(currentCategory);
   if (parentCategory) return categoryPath(parentCategory);
-  return null;
+  return "/";
 }
 
-/** UI "Kthehu" — go to parent type/hub (or home when at root). */
+/** UI "Kthehu" — parent hub/type, or homepage at root hub. */
 export function navigateCategoryBack(
   setLocation: SetLocation,
   options: {
@@ -199,16 +199,7 @@ export function navigateCategoryBack(
     sportDeviceActive?: boolean;
   },
 ) {
-  const target = resolveCategoryBackPath(options);
-  if (target) {
-    setLocation(target);
-    return;
-  }
-  if (typeof window !== "undefined" && window.history.length > 1) {
-    window.history.back();
-    return;
-  }
-  setLocation("/");
+  setLocation(resolveCategoryBackPath(options));
 }
 
 /**
