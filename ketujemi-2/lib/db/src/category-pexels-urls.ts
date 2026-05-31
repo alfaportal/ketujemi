@@ -154,7 +154,7 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
     "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1200&q=80",
   "mobilje-type-ndricim": pexelsPhoto(1123262),
   "mobilje-type-tepihe-perde":
-    "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=1200&q=80",
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80",
 
   // —— Rroba ——————————————————————————————————————————————————————————————————
   "rroba-type-aksesore": pexelsPhoto(1927259),
