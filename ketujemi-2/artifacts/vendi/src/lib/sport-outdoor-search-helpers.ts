@@ -224,6 +224,45 @@ export const SPORT_DEVICE_LABEL_KEY: Record<SportDeviceKey, string> = {
   hob_act_teleskop: "so_dev_hob_act_teleskop",
 };
 
+/** Futboll & sporte me top — foto për kartat në faqen e tipit (nivel 2). */
+export const SPORT_FB_DEVICE_PHOTOS: Partial<Record<SportDeviceKey, string>> = {
+  fb_fut_topa:
+    "https://images.pexels.com/photos/46798/the-ball-stadion-football-the-pitch-46798.jpeg?w=400&q=80",
+  fb_fut_kepuce:
+    "https://images.pexels.com/photos/774321/pexels-photo-774321.jpeg?w=400&q=80",
+  fb_fut_mbrojt:
+    "https://images.pexels.com/photos/3732792/pexels-photo-3732792.jpeg?w=400&q=80",
+  fb_fut_doreza:
+    "https://images.pexels.com/photos/6956525/pexels-photo-6956525.jpeg?w=400&q=80",
+  fb_fut_uniforma:
+    "https://images.pexels.com/photos/3621104/pexels-photo-3621104.jpeg?w=400&q=80",
+  fb_bas_topa:
+    "https://images.pexels.com/photos/16955708/pexels-photo-16955708.jpeg?w=400&q=80",
+  fb_bas_rrethe:
+    "https://images.pexels.com/photos/6217724/pexels-photo-6217724.jpeg?w=400&q=80",
+  fb_bas_patika:
+    "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?w=400&q=80",
+  fb_vol_topa:
+    "https://images.pexels.com/photos/1263426/pexels-photo-1263426.jpeg?w=400&q=80",
+  fb_vol_rrjeta:
+    "https://images.pexels.com/photos/1263425/pexels-photo-1263425.jpeg?w=400&q=80",
+  fb_vol_mbrojt:
+    "https://images.pexels.com/photos/4397832/pexels-photo-4397832.jpeg?w=400&q=80",
+  fb_ten_reketa:
+    "https://images.pexels.com/photos/1103829/pexels-photo-1103829.jpeg?w=400&q=80",
+  fb_ten_topa:
+    "https://images.pexels.com/photos/209977/pexels-photo-209977.jpeg?w=400&q=80",
+  fb_ten_pingpong:
+    "https://images.pexels.com/photos/976873/pexels-photo-976873.jpeg?w=400&q=80",
+};
+
+export function resolveSportDevicePhoto(
+  deviceKey: SportDeviceKey,
+  typeKey: SportTypeKey,
+): string {
+  return SPORT_FB_DEVICE_PHOTOS[deviceKey] ?? SPORT_TYPE_PHOTOS[typeKey];
+}
+
 /** Albanian tokens stored in listings / used for search. */
 export const SPORT_DEVICE_SEARCH: Record<SportDeviceKey, string> = {
   fb_fut_topa: "Topa",

@@ -34,6 +34,7 @@ import {
   SPORT_TYPE_KEYS,
   SPORT_TYPE_LABEL_KEY,
   SPORT_TYPE_PHOTOS,
+  resolveSportDevicePhoto,
   resolveSportTypeCategoryId,
   type SportBikeTypeKey,
   type SportDeviceKey,
@@ -239,7 +240,7 @@ export function SportOutdoorSearchPanel({
                   <CategoryPhotoPickerCard
                     key={k}
                     onClick={() => onNavigateToDevice(k)}
-                    imageSrc={SPORT_TYPE_PHOTOS[sportTypeKey]}
+                    imageSrc={resolveSportDevicePhoto(k, sportTypeKey)}
                     label={t[SPORT_DEVICE_LABEL_KEY[k]]}
                   />
                 ))}
