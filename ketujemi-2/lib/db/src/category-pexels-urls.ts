@@ -233,10 +233,12 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
     "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&q=80",
 
   // —— Bujqësi —————————————————————————————————————————————————————————————————
-  "bujq-type-bageti": pexelsPhoto(236474),
+  "bujq-type-bageti":
+    "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&q=80",
   "bujq-type-farera-plehra": pexelsPhoto(29039746),
   "bujq-type-makineri": pexelsPhoto(15833963),
-  "bujq-type-shpeze": pexelsPhoto(450326),
+  "bujq-type-shpeze":
+    "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=1200&q=80",
   "bujq-type-ushqim-kafshet": pexelsPhoto(29336312),
 
   // —— Arsim ——————————————————————————————————————————————————————————————————
