@@ -11,6 +11,11 @@ import { AppLayout } from "@/components/app-layout";
 import { RefetchOnVisible } from "@/components/refetch-on-visible";
 import { RouteLoading } from "@/components/route-loading";
 import { GoogleAnalytics } from "@/components/google-analytics";
+import {
+  LegacyCategoryRouteRedirect,
+  categoryHubRedirectComponent,
+} from "@/components/category-slug-redirect";
+import { PARENT_CATEGORY_SLUG_ORDER } from "@/lib/parent-category-slugs";
 
 const Home = lazy(() => import("@/pages/home"));
 const Listings = lazy(() => import("@/pages/listings"));
@@ -98,6 +103,14 @@ function Router() {
             <Route path="/partnerstvo" component={PartnerRegisterPage} />
             <Route path="/behu-partner" component={ProfilePage} />
             <Route path="/" component={Home} />
+            <Route path="/category/:id" component={LegacyCategoryRouteRedirect} />
+            {PARENT_CATEGORY_SLUG_ORDER.map((slug) => (
+              <Route
+                key={`hub-${slug}`}
+                path={`/${slug}`}
+                component={categoryHubRedirectComponent(slug)}
+              />
+            ))}
             <Route path="/categories/:id" component={CategoryPage} />
             <Route path="/listings/new" component={NewListing} />
             <Route path="/listings/:id/edit" component={EditListing} />

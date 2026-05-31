@@ -22,13 +22,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import {
   useMarket,
-  LOCATIONS,
   FORM_OPTIONS,
-  MARKETS,
-  homeMarketCodeFromMarket,
-  isHomeMarketCode,
-  type HomeMarketCode,
+  defaultListingMarketFromMarket,
+  isListingMarketCode,
+  locationsForListingMarket,
+  type ListingMarketCode,
 } from "@/lib/market-context";
+import { ListingCountryPicker } from "@/components/listing-country-picker";
 import { ListingCategorySuggest } from "@/components/listing-category-suggest";
 import { joinListingImageUrls } from "@/lib/listing-images";
 import { AP_PART_CONDITION_DESC } from "@/lib/auto-pjese-search-helpers";
@@ -182,10 +182,9 @@ export default function NewListing() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { market, t } = useMarket();
-  const [listingCountry, setListingCountry] = useState<HomeMarketCode>(() =>
-    homeMarketCodeFromMarket(market.code),
+  const [listingCountry, setListingCountry] = useState<ListingMarketCode>(() =>
+    defaultListingMarketFromMarket(market.code),
   );
-  const homeMarkets = MARKETS.filter((m) => isHomeMarketCode(m.code));
   const { data: allCategories } = useGetCategories();
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -265,14 +264,14 @@ export default function NewListing() {
   }, [bodyCatId, form]);
 
   useEffect(() => {
-    if (isHomeMarketCode(market.code)) {
+    if (isListingMarketCode(market.code)) {
       setListingCountry(market.code);
     }
   }, [market.code]);
 
   useEffect(() => {
     const loc = form.getValues("location");
-    const cities = LOCATIONS[listingCountry] ?? [];
+    const cities = locationsForListingMarket(listingCountry);
     if (loc && !cities.includes(loc)) {
       form.setValue("location", "");
     }
@@ -586,7 +585,7 @@ export default function NewListing() {
       .catch(() => toast({ title: t.postError, variant: "destructive" }));
   };
 
-  const cityList = LOCATIONS[listingCountry] ?? [];
+  const cityList = locationsForListingMarket(listingCountry);
   const hideContactFields = user != null && !userNeedsSellerProfile(user);
 
   if (authLoading || !user) {
@@ -1241,29 +1240,11 @@ export default function NewListing() {
 
             {/* ── 7. Location ── */}
             <Section title={t.locationSection}>
-              <div className="space-y-2">
-                <Label>Shteti</Label>
-                <div className="grid grid-cols-4 gap-2">
-                  {homeMarkets.map((m) => (
-                    <button
-                      key={m.code}
-                      type="button"
-                      data-testid={`button-listing-country-${m.code}`}
-                      onClick={() => setListingCountry(m.code as HomeMarketCode)}
-                      className={`min-h-12 rounded-xl border-2 text-sm font-semibold flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-colors ${
-                        listingCountry === m.code
-                          ? "border-blue-500 bg-blue-50 text-blue-800"
-                          : "border-gray-200 hover:border-gray-300 text-gray-700"
-                      }`}
-                    >
-                      <span className="text-lg leading-none" aria-hidden>
-                        {m.flag}
-                      </span>
-                      <span className="text-[10px] leading-tight px-1 text-center">{m.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <ListingCountryPicker
+                value={listingCountry}
+                onChange={setListingCountry}
+                className="mb-4"
+              />
               <FormField
                 control={form.control}
                 name="location"

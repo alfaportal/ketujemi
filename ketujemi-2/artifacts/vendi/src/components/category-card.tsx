@@ -93,7 +93,7 @@ export default function CategoryCard({ category, onClick }: Props) {
 
   return (
     <Link
-      href={categoryPath(category.id)}
+      href={categoryPath(category)}
       data-testid={`card-category-${category.id}`}
       className="block h-full"
     >

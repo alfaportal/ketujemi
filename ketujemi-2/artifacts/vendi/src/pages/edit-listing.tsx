@@ -16,13 +16,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import {
   useMarket,
-  LOCATIONS,
-  MARKETS,
-  homeMarketCodeFromMarket,
-  isHomeMarketCode,
-  type HomeMarketCode,
+  defaultListingMarketFromMarket,
+  isListingMarketCode,
+  locationsForListingMarket,
+  LISTING_MARKET_CODES,
+  type ListingMarketCode,
 } from "@/lib/market-context";
-import { Label } from "@/components/ui/label";
+import { ListingCountryPicker } from "@/components/listing-country-picker";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { userOwnsListing } from "@/lib/listing-ownership";
 import { AuthToolbar } from "@/components/auth-toolbar";
@@ -48,10 +48,9 @@ export default function EditListing() {
   const { toast } = useToast();
   const { t, market } = useMarket();
   const { user, loading: authLoading } = useAuth();
-  const [listingCountry, setListingCountry] = useState<HomeMarketCode>(() =>
-    homeMarketCodeFromMarket(market.code),
+  const [listingCountry, setListingCountry] = useState<ListingMarketCode>(() =>
+    defaultListingMarketFromMarket(market.code),
   );
-  const homeMarkets = MARKETS.filter((m) => isHomeMarketCode(m.code));
 
   const { data: listing, isLoading } = useGetListing(id, {
     query: {
@@ -123,10 +122,10 @@ export default function EditListing() {
     });
   };
 
-  const cityList = LOCATIONS[listingCountry] ?? [];
+  const cityList = locationsForListingMarket(listingCountry);
 
   useEffect(() => {
-    if (isHomeMarketCode(market.code)) {
+    if (isListingMarketCode(market.code)) {
       setListingCountry(market.code);
     }
   }, [market.code]);
@@ -134,8 +133,8 @@ export default function EditListing() {
   useEffect(() => {
     const loc = listing?.location;
     if (!loc) return;
-    for (const code of ["ks", "al", "mk", "mne"] as const) {
-      if ((LOCATIONS[code] ?? []).includes(loc)) {
+    for (const code of LISTING_MARKET_CODES) {
+      if (locationsForListingMarket(code).includes(loc)) {
         setListingCountry(code);
         return;
       }
@@ -144,7 +143,7 @@ export default function EditListing() {
 
   useEffect(() => {
     const loc = form.getValues("location");
-    const cities = LOCATIONS[listingCountry] ?? [];
+    const cities = locationsForListingMarket(listingCountry);
     if (loc && !cities.includes(loc)) {
       form.setValue("location", "");
     }
@@ -267,28 +266,11 @@ export default function EditListing() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label>Shteti</Label>
-              <div className="grid grid-cols-4 gap-2">
-                {homeMarkets.map((m) => (
-                  <button
-                    key={m.code}
-                    type="button"
-                    onClick={() => setListingCountry(m.code as HomeMarketCode)}
-                    className={`min-h-12 rounded-xl border-2 text-sm font-semibold flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-colors ${
-                      listingCountry === m.code
-                        ? "border-blue-500 bg-blue-50 text-blue-800"
-                        : "border-gray-200 hover:border-gray-300 text-gray-700"
-                    }`}
-                  >
-                    <span className="text-lg leading-none" aria-hidden>
-                      {m.flag}
-                    </span>
-                    <span className="text-[10px] leading-tight px-1 text-center">{m.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <ListingCountryPicker
+              value={listingCountry}
+              onChange={setListingCountry}
+              className="mb-4"
+            />
 
             <FormField
               control={form.control}

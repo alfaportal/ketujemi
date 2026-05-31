@@ -739,6 +739,13 @@ export const LOCATIONS: Record<string, string[]> = {
     "Gusinje",
     "Rožaje",
   ],
+  de: ["Berlin", "München", "Hamburg", "Frankfurt", "Köln", "Stuttgart", "Düsseldorf", "Dortmund"],
+  ch: ["Zürich", "Genève", "Basel", "Bern", "Lausanne", "Luzern"],
+  at: ["Wien", "Graz", "Linz", "Salzburg", "Innsbruck"],
+  fr: ["Paris", "Lyon", "Marseille", "Toulouse", "Nice", "Strasbourg"],
+  it: ["Milano", "Roma", "Torino", "Bologna", "Firenze", "Verona"],
+  gb: ["London", "Manchester", "Birmingham", "Leeds", "Glasgow", "Liverpool"],
+  us: ["New York", "Chicago", "Los Angeles", "Houston", "Boston", "Miami"],
 };
 
 export const ALL_LOCATIONS: string[] = [
@@ -746,24 +753,61 @@ export const ALL_LOCATIONS: string[] = [
   ...LOCATIONS.al,
   ...LOCATIONS.mk,
   ...LOCATIONS.mne,
+  ...LOCATIONS.de,
+  ...LOCATIONS.ch,
+  ...LOCATIONS.at,
+  ...LOCATIONS.fr,
+  ...LOCATIONS.it,
+  ...LOCATIONS.gb,
+  ...LOCATIONS.us,
 ];
 
-/** Balkan home markets that have a dedicated city list for listings. */
-export const HOME_MARKET_CODES = ["ks", "al", "mk", "mne"] as const;
+/** Balkan home markets with dedicated city lists on listing forms. */
+export const HOME_MARKET_CODES = ["ks", "al", "mk"] as const;
 export type HomeMarketCode = (typeof HOME_MARKET_CODES)[number];
+
+/** Diaspora markets on listing forms (Mal i Zi included here, not in home row). */
+export const DIASPORA_MARKET_CODES = ["de", "ch", "at", "fr", "it", "gb", "us", "mne"] as const;
+export type DiasporaMarketCode = (typeof DIASPORA_MARKET_CODES)[number];
+
+export const LISTING_MARKET_CODES = [...HOME_MARKET_CODES, ...DIASPORA_MARKET_CODES] as const;
+export type ListingMarketCode = (typeof LISTING_MARKET_CODES)[number];
+
+export const HOME_MARKET_ISO: Record<HomeMarketCode, string> = {
+  ks: "XK",
+  al: "AL",
+  mk: "MK",
+};
 
 export function isHomeMarketCode(code: string): code is HomeMarketCode {
   return (HOME_MARKET_CODES as readonly string[]).includes(code);
 }
 
-/** Map header market to listing country (diaspora → Kosovë by default). */
+export function isDiasporaMarketCode(code: string): code is DiasporaMarketCode {
+  return (DIASPORA_MARKET_CODES as readonly string[]).includes(code);
+}
+
+export function isListingMarketCode(code: string): code is ListingMarketCode {
+  return (LISTING_MARKET_CODES as readonly string[]).includes(code);
+}
+
+/** Map header market to listing country tile (home or diaspora). */
+export function defaultListingMarketFromMarket(code: string): ListingMarketCode {
+  return isListingMarketCode(code) ? code : "ks";
+}
+
+/** @deprecated Use {@link defaultListingMarketFromMarket} */
 export function homeMarketCodeFromMarket(code: string): HomeMarketCode {
   return isHomeMarketCode(code) ? code : "ks";
 }
 
+export function locationsForListingMarket(code: string): string[] {
+  if (!isListingMarketCode(code)) return [];
+  return LOCATIONS[code] ?? [];
+}
+
 export function locationsForHomeMarket(code: string): string[] {
-  if (!isHomeMarketCode(code)) return [];
-  return LOCATIONS[code];
+  return locationsForListingMarket(code);
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────

@@ -29,10 +29,12 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { translateCategory, type MarketCode } from "@/lib/category-translations";
 import {
+  canonicalCategorySegment,
   categoryPath,
   navigateToCategory,
   resolveCategoryId,
   useCategoryScroll,
+  type CategoryRef,
 } from "@/lib/category-navigation";
 import {
   CategoryPageLoading,
@@ -610,6 +612,15 @@ export default function CategoryPage() {
     const resolved = resolveCategoryId(segment, allCategories as any[] | undefined);
     return resolved ?? NaN;
   }, [segment, allCategories]);
+
+  useEffect(() => {
+    if (!allCategories?.length || !Number.isFinite(categoryId)) return;
+    const canonical = canonicalCategorySegment(segment, allCategories as CategoryRef[]);
+    if (!canonical) return;
+    const raw = segment.trim();
+    if (raw === canonical) return;
+    setLocation(categoryPath(categoryId, canonical));
+  }, [segment, categoryId, allCategories, setLocation]);
 
   const emptyListingsCopy = useMemo(() => {
     switch (market.code) {
@@ -1768,7 +1779,7 @@ export default function CategoryPage() {
                   key={brand.id}
                   category={brand}
                   locale={locale}
-                  onClick={() => navigateToCategory(setLocation, brand.id, categoryId)}
+                  onClick={() => navigateToCategory(setLocation, brand.id, categoryId, allCategories as CategoryRef[])}
                 />
               ))}
             </div>

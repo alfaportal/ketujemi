@@ -312,7 +312,7 @@ export default function HomePage() {
             return (
               <Link
                 key={cat.id}
-                href={categoryPath(cat.id)}
+                href={categoryPath(cat)}
                 data-testid={`link-category-${cat.id}`}
                 className="group flex flex-col bg-white rounded-xl sm:rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-200 cursor-pointer"
               >

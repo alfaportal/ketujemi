@@ -29,7 +29,7 @@ import { repostListing } from "../lib/listing-repost";
 import { incrementListingView } from "../lib/listing-view";
 import { listingFeedOrderBy, isTopActive } from "../lib/listing-top";
 import {
-  isListingHomeMarketCode,
+  isListingMarketCode,
   LISTING_LOCATIONS_BY_COUNTRY,
 } from "../lib/listing-locations.js";
 import { moderateListingContent } from "../lib/listing-ai-moderation";
@@ -226,7 +226,7 @@ router.get("/listings", async (req, res) => {
   }
   if (
     listing_country &&
-    isListingHomeMarketCode(String(listing_country).trim()) &&
+    isListingMarketCode(String(listing_country).trim()) &&
     !location_search?.trim() &&
     !location
   ) {

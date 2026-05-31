@@ -57,7 +57,7 @@ export function toHomepagePartnerDto(row: HomepagePartner): TrustedPartnerDto {
     business_name: row.business_name.trim(),
     partner_logo_url: row.logo_url.trim(),
     profile_photo_url: null,
-    profile_path: link,
+    profile_path: "/",
     click_url: link,
     tier,
     banner_urls: [],

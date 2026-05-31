@@ -3,6 +3,11 @@ import { Link } from "wouter";
 import { Star } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import { cn } from "@/lib/utils";
+import {
+  isExternalHref,
+  isInternalAppHref,
+  normalizeBareDomainHref,
+} from "@/lib/href-utils";
 
 export type PartnerSlotData = {
   id: number;
@@ -86,8 +91,8 @@ function VipBannerCarousel({
     return () => clearInterval(timer);
   }, [emblaApi, slides.length]);
 
-  const href = partner.click_url ?? partner.profile_path;
-  const external = !!partner.click_url;
+  const href = normalizeBareDomainHref(partner.click_url ?? partner.profile_path);
+  const external = isExternalHref(href) || !isInternalAppHref(href);
 
   const inner = (
     <div className={cn(frameClass, "relative block")} title={partner.business_name}>
@@ -153,8 +158,8 @@ export function PartnerSlot({ partner, frameClass, variant = "grid" }: PartnerSl
   }
 
   const img = partnerImageUrl(partner);
-  const href = partner.click_url ?? partner.profile_path;
-  const external = !!partner.click_url;
+  const href = normalizeBareDomainHref(partner.click_url ?? partner.profile_path);
+  const external = isExternalHref(href) || !isInternalAppHref(href);
 
   const content = (
     <div className="grid h-full w-full min-h-0 grid-rows-[minmax(0,1fr)_auto]">
