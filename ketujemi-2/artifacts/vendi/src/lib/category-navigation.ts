@@ -39,6 +39,8 @@ export const CATEGORY_SLUG_ALIASES: Record<string, string> = {
   vetura: "vetura",
   telefona: "telefona",
   kafshet: "kafshet",
+  "kerkoj-te-blej": "kerkoj-te-blej",
+  "dhurata-falas": "dhurata-falas",
   "lokale-zyre": "lokale-zyre",
   "kamione-furgone": "kamione-furgone",
   "rroba-kepuce": "rroba-kepuce",

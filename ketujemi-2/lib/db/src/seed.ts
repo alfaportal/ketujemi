@@ -28,6 +28,8 @@ const PARENT_CATEGORIES: {
   { name: "Arsim & Kurse", slug: "arsim-kurse", icon: "GraduationCap" },
   { name: "Muzikë & Hobby", slug: "muzike-hobby", icon: "Music" },
   { name: "Kafshë", slug: "kafshet", icon: "PawPrint" },
+  { name: "Kërkoj të Blej", slug: "kerkoj-te-blej", icon: "Search" },
+  { name: "Dhurata & Falas", slug: "dhurata-falas", icon: "Gift" },
 ];
 
 const VETURA_BODY_TYPES: { name: string; slug: string; icon: string }[] = [

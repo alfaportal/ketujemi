@@ -18,6 +18,8 @@ export const PARENT_CATEGORY_SLUG_ORDER = [
   "arsim-kurse",
   "muzike-hobby",
   "kafshet",
+  "kerkoj-te-blej",
+  "dhurata-falas",
 ] as const;
 
 const PARENT_SLUG_SET = new Set<string>(PARENT_CATEGORY_SLUG_ORDER);

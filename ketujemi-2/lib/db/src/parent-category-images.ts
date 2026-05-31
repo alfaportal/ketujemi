@@ -23,6 +23,8 @@ export const PARENT_CATEGORY_SLUGS = [
   "arsim-kurse",
   "muzike-hobby",
   "kafshet",
+  "kerkoj-te-blej",
+  "dhurata-falas",
 ] as const;
 
 export type ParentCategorySlug = (typeof PARENT_CATEGORY_SLUGS)[number];
@@ -50,6 +52,8 @@ export const PARENT_CATEGORY_THUMB_BY_SLUG: Record<ParentCategorySlug, string> =
   "arsim-kurse": unsplash("1503676260728-1c00da094a0b", 600),
   "muzike-hobby": unsplash("1511379938547-c1f69419868d", 600),
   kafshet: unsplash("1450778869180-41d0601e046e", 600),
+  "kerkoj-te-blej": unsplash("1556742049-0cfed4f7a07d", 600),
+  "dhurata-falas": unsplash("1513885535751-8b9238bd345b", 600),
 };
 
 /** Hub hero banners — 1920px (e njëjta tema, më e madhe). */
@@ -87,6 +91,8 @@ export const PARENT_CATEGORY_NAME_TO_SLUG: Record<string, ParentCategorySlug> = 
   "Arsim & Kurse": "arsim-kurse",
   "Muzikë & Hobby": "muzike-hobby",
   Kafshë: "kafshet",
+  "Kërkoj të Blej": "kerkoj-te-blej",
+  "Dhurata & Falas": "dhurata-falas",
 };
 
 const PARENT_SLUG_SET = new Set<string>(PARENT_CATEGORY_SLUGS);

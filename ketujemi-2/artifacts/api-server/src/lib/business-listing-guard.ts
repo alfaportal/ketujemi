@@ -10,6 +10,7 @@ export async function assertBusinessListingCreate(
     description: string;
     price: number;
     image_url?: string | null;
+    categoryRootSlug?: string | null;
   },
 ): Promise<void> {
   if (!isBusinessAccount(user)) return;

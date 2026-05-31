@@ -1,0 +1,46 @@
+/** Special marketplace parent categories — keep slugs in sync across DB seed, API, and UI. */
+export const KERKOJ_TE_BLEJ_SLUG = "kerkoj-te-blej" as const;
+export const DHURATA_FALAS_SLUG = "dhurata-falas" as const;
+
+export const KERKOJ_ACTIVE_LIFETIME_DAYS = 30;
+export const KERKOJ_MAX_PHOTOS = 3;
+export const KERKOJ_MAX_ACTIVE_PER_USER = 1;
+
+export const DHURATA_PRICE_ZERO_MESSAGE =
+  "Në kategorinë Dhurata & Falas çmimi duhet të jetë 0";
+
+/** Selling-language blocked in buyer-request posts. */
+export const KERKOJ_BLOCKED_WORD_PATTERNS: { re: RegExp; label: string }[] = [
+  { re: /\bshes\b/i, label: "shes" },
+  { re: /\bkam\s+p[ëe]r\s+shitje\b/i, label: "kam për shitje" },
+  { re: /\bofrojm[ëe]\b/i, label: "ofrojmë" },
+  { re: /\bme\s+shumic[ëe]\b/i, label: "me shumicë" },
+  { re: /\bdisponojm[ëe]\b/i, label: "disponojmë" },
+];
+
+export function isKerkojTeBlejSlug(slug: string | null | undefined): boolean {
+  return slug?.trim() === KERKOJ_TE_BLEJ_SLUG;
+}
+
+export function isDhurataFalasSlug(slug: string | null | undefined): boolean {
+  return slug?.trim() === DHURATA_FALAS_SLUG;
+}
+
+export function findKerkojBlockedWord(text: string): string | null {
+  const combined = text.trim();
+  if (!combined) return null;
+  for (const { re, label } of KERKOJ_BLOCKED_WORD_PATTERNS) {
+    if (re.test(combined)) return label;
+  }
+  return null;
+}
+
+export function countListingImages(imageUrl: string | null | undefined): number {
+  if (!imageUrl?.trim()) return 0;
+  return imageUrl.split(",").map((s) => s.trim()).filter(Boolean).length;
+}
+
+export function splitListingImageUrls(imageUrl: string | null | undefined): string[] {
+  if (!imageUrl?.trim()) return [];
+  return imageUrl.split(",").map((s) => s.trim()).filter(Boolean);
+}

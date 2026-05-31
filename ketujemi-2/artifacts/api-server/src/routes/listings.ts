@@ -56,7 +56,11 @@ import {
   primaryListingImageUrl,
   sanitizeListingImageUrlField,
 } from "../lib/listing-images";
-import { expiresAtAfterListingLifetime } from "../lib/listing-lifetime.js";
+import {
+  assertSpecialCategoryListingRules,
+  expiresAtForCategoryRootSlug,
+  resolveCategorySlugMeta,
+} from "../lib/listing-special-categories.js";
 
 const reportRate = new Map<string, number[]>();
 
@@ -412,6 +416,25 @@ router.post("/listings", async (req, res) => {
     return;
   }
 
+  const specialGate = await assertSpecialCategoryListingRules({
+    userId: viewer.id,
+    categoryId: parsed.data.category_id,
+    title: parsed.data.title,
+    description: parsed.data.description,
+    price: parsed.data.price,
+    imageUrl: safeImageUrl ?? null,
+  });
+  if (!specialGate.ok) {
+    res.status(403).json({
+      error: specialGate.error,
+      reason: specialGate.reason,
+      message: specialGate.message,
+    });
+    return;
+  }
+  const listingPrice = specialGate.price;
+  const categoryMeta = await resolveCategorySlugMeta(parsed.data.category_id);
+
   const twoLayer = await runTwoLayerModeration({
     userId: viewer.id,
     user: viewer,
@@ -434,8 +457,9 @@ router.post("/listings", async (req, res) => {
     await assertBusinessListingCreate(viewer, {
       title: parsed.data.title,
       description: parsed.data.description,
-      price: parsed.data.price,
+      price: listingPrice,
       image_url: safeImageUrl,
+      categoryRootSlug: categoryMeta?.rootSlug ?? null,
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -511,9 +535,10 @@ router.post("/listings", async (req, res) => {
     {
       title: parsed.data.title,
       description: parsed.data.description,
-      price: parsed.data.price,
+      price: listingPrice,
       price_agreement: priceAgreement,
       category_name: catRow?.name ?? null,
+      categoryRootSlug: categoryMeta?.rootSlug ?? null,
       image_url: safeImageUrl,
       condition: parsed.data.condition,
     },
@@ -559,7 +584,7 @@ router.post("/listings", async (req, res) => {
       user_id: viewer.id,
       title: parsed.data.title,
       description: parsed.data.description,
-      price: String(parsed.data.price),
+      price: String(listingPrice),
       category_id: parsed.data.category_id,
       location: parsed.data.location,
       seller_name: parsed.data.seller_name,
@@ -572,7 +597,7 @@ router.post("/listings", async (req, res) => {
       status: "active",
       moderation_status: "approved",
       moderation_reason: moderation.reason || null,
-      expires_at: expiresAtAfterListingLifetime(),
+      expires_at: expiresAtForCategoryRootSlug(categoryMeta?.rootSlug),
       vehicle_year: parsed.data.vehicle_year ?? null,
       vehicle_mileage_km: parsed.data.vehicle_mileage_km ?? null,
       vehicle_fuel: parsed.data.vehicle_fuel ?? null,

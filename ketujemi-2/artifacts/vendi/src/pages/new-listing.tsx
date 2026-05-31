@@ -46,6 +46,13 @@ import { CardPaymentsPanel } from "@/components/card-payments-panel";
 import {
   ListingPackagesModal,
 } from "@/components/listing-packages-modal";
+import {
+  DHURATA_PRICE_ZERO_MESSAGE,
+  findKerkojBlockedWord,
+  isDhurataFalasSlug,
+  isKerkojTeBlejSlug,
+  KERKOJ_MAX_PHOTOS,
+} from "@/lib/special-listing-categories";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 const schema = z.object({
@@ -252,6 +259,10 @@ export default function NewListing() {
   const subCats   = (allCategories ?? []).filter((c: any) => c.parent_id === Number(parentCatId));
   const brandCats = (allCategories ?? []).filter((c: any) => c.parent_id === Number(bodyCatId));
   const parentName = parentCats.find((c: any) => c.id === Number(parentCatId))?.name ?? "";
+  const parentSlug = parentCats.find((c: any) => c.id === Number(parentCatId))?.slug ?? "";
+  const isKerkojCategory = isKerkojTeBlejSlug(parentSlug);
+  const isDhurataCategory = isDhurataFalasSlug(parentSlug);
+  const maxPhotos = isKerkojCategory ? KERKOJ_MAX_PHOTOS : 10;
   const hasBrands = brandCats.length > 0;
 
   useEffect(() => {
@@ -262,6 +273,19 @@ export default function NewListing() {
   useEffect(() => {
     form.setValue("brand_category_id", 0);
   }, [bodyCatId, form]);
+
+  useEffect(() => {
+    if (isKerkojCategory || isDhurataCategory) {
+      form.setValue("price", 0);
+      form.setValue("price_agreement", false);
+    }
+  }, [isKerkojCategory, isDhurataCategory, form]);
+
+  useEffect(() => {
+    if (isKerkojCategory && imageUrls.length > KERKOJ_MAX_PHOTOS) {
+      setImageUrls((prev) => prev.slice(0, KERKOJ_MAX_PHOTOS));
+    }
+  }, [isKerkojCategory, imageUrls.length]);
 
   useEffect(() => {
     if (isListingMarketCode(market.code)) {
@@ -358,7 +382,7 @@ export default function NewListing() {
       toast({ title: t.uploadFailed, variant: "destructive" });
       return;
     }
-    const remaining = 10 - imageUrls.length;
+    const remaining = maxPhotos - imageUrls.length;
     const toUpload = files.slice(0, remaining);
     if (files.length > remaining) {
       toast({ title: `${t.tooManyPhotos} ${remaining} ${t.photosSuffix}`, variant: "destructive" });
@@ -441,6 +465,27 @@ export default function NewListing() {
       toast({ title: t.addAtLeastPhoto, variant: "destructive" });
       return;
     }
+    if (isKerkojCategory && imageUrls.length > KERKOJ_MAX_PHOTOS) {
+      toast({
+        title: `Maksimumi ${KERKOJ_MAX_PHOTOS} foto për kërkesa.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    if (isKerkojCategory) {
+      const blocked = findKerkojBlockedWord(`${data.title}\n${data.description}`);
+      if (blocked) {
+        toast({
+          title: `Gjuha e shitjes nuk lejohet në "Kërkoj të Blej" (fjalë e ndaluar: "${blocked}").`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    if (isDhurataCategory && !data.price_agreement && data.price > 0) {
+      toast({ title: DHURATA_PRICE_ZERO_MESSAGE, variant: "destructive" });
+      return;
+    }
     if (isAutoPjese(parentName)) {
       if (!data.category_id || Number(data.category_id) < 1) {
         toast({ title: t.ap_post_err_part, variant: "destructive" });
@@ -483,8 +528,8 @@ export default function NewListing() {
     const payload: Record<string, unknown> = {
       title: data.title,
       description: finalDescription,
-      price: data.price_agreement ? 0 : data.price,
-      price_agreement: data.price_agreement,
+      price: isKerkojCategory || isDhurataCategory || data.price_agreement ? 0 : data.price,
+      price_agreement: isKerkojCategory || isDhurataCategory ? false : data.price_agreement,
       lang: market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq",
       category_id: data.brand_category_id || data.category_id || data.parent_category_id,
       location: data.location,
@@ -546,6 +591,20 @@ export default function NewListing() {
           if (errData.error === "LISTING_MODERATION_REJECTED") {
             toast({
               title: errData.message ?? "Njoftimi u bllokua nga moderimi automatik.",
+              variant: "destructive",
+            });
+            return;
+          }
+          if (
+            errData.error === "DHURATA_PRICE_ZERO" ||
+            errData.error === "KERKOJ_PHOTO_REQUIRED" ||
+            errData.error === "KERKOJ_PHOTO_LIMIT" ||
+            errData.error === "KERKOJ_SELLING_LANGUAGE" ||
+            errData.error === "KERKOJ_ONE_ACTIVE" ||
+            errData.error === "KERKOJ_PHOTO_MISMATCH"
+          ) {
+            toast({
+              title: errData.message ?? "Postimi u bllokua.",
               variant: "destructive",
             });
             return;
@@ -1134,7 +1193,9 @@ export default function NewListing() {
             </Section>
 
             {/* ── 5. Price ── */}
+            {!isKerkojCategory && (
             <Section title={t.priceField}>
+              {!isDhurataCategory && (
               <FormField
                 control={form.control}
                 name="price_agreement"
@@ -1155,8 +1216,9 @@ export default function NewListing() {
                   </FormItem>
                 )}
               />
+              )}
 
-              {!priceAgreement && (
+              {(!priceAgreement || isDhurataCategory) && (
                 <FormField
                   control={form.control}
                   name="price"
@@ -1173,16 +1235,23 @@ export default function NewListing() {
                             placeholder="0"
                             className="pr-14"
                             {...field}
+                            readOnly={isDhurataCategory}
+                            disabled={isDhurataCategory}
+                            value={isDhurataCategory ? 0 : field.value}
                           />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-sm">EUR</span>
                         </div>
                       </FormControl>
+                      {isDhurataCategory && (
+                        <p className="text-sm text-gray-500">Në këtë kategori çmimi është gjithmonë 0 €.</p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               )}
             </Section>
+            )}
 
             {/* ── 6. Photos ── */}
             <Section title={t.photosSection} icon={Camera}>
@@ -1190,9 +1259,9 @@ export default function NewListing() {
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm font-medium">
                     {t.listingPhotos} <span className="text-red-500">*</span>
-                    <span className="text-gray-400 font-normal ml-1">(min 1, max 10)</span>
+                    <span className="text-gray-400 font-normal ml-1">(min 1, max {maxPhotos})</span>
                   </Label>
-                  <span className="text-sm text-gray-400">{imageUrls.length}/10</span>
+                  <span className="text-sm text-gray-400">{imageUrls.length}/{maxPhotos}</span>
                 </div>
 
                 <input
@@ -1204,7 +1273,7 @@ export default function NewListing() {
                   onChange={handleFileChange}
                 />
 
-                {imageUrls.length < 10 && (
+                {imageUrls.length < maxPhotos && (
                   <button
                     type="button"
                     onClick={() => uploadRef.current?.click()}
@@ -1222,7 +1291,7 @@ export default function NewListing() {
                         <ImagePlus size={30} />
                         <p className="text-sm font-semibold text-gray-600">{t.addPhoto}</p>
                         <p className="text-sm">{t.clickToSelect}</p>
-                        <p className="text-sm text-gray-300">JPG, PNG, WEBP • max 10</p>
+                        <p className="text-sm text-gray-300">JPG, PNG, WEBP • max {maxPhotos}</p>
                       </div>
                     )}
                   </button>
@@ -1374,8 +1443,8 @@ export default function NewListing() {
             <PostingAssistantPanel
               title={watchTitle}
               description={watchDescription}
-              price={priceAgreement ? 0 : Number(watchPrice) || 0}
-              priceAgreement={!!priceAgreement}
+              price={isKerkojCategory || isDhurataCategory || priceAgreement ? 0 : Number(watchPrice) || 0}
+              priceAgreement={isKerkojCategory || isDhurataCategory ? false : !!priceAgreement}
               categoryName={brandCats.find((c: { id: number }) => c.id === Number(brandCatId))?.name ?? subCats.find((c: { id: number }) => c.id === Number(bodyCatId))?.name}
               parentCategoryName={parentName}
               imageCount={imageUrls.length}
@@ -1391,7 +1460,11 @@ export default function NewListing() {
                   disabled={createMutation.isPending || (freeQuota != null && !freeQuota.allowed)}
                   data-testid="button-submit-listing"
                 >
-                  {createMutation.isPending ? t.posting : t.submitListing}
+                  {createMutation.isPending
+                    ? t.posting
+                    : isKerkojCategory
+                      ? "Posto Kërkesën"
+                      : t.submitListing}
                 </Button>
               </div>
             </div>

@@ -27,6 +27,8 @@ export const CAT_TRANSLATIONS: Record<string, Record<MarketCode, string>> = {
   "Arsim & Kurse":        { ks: "Arsim & Kurse",        al: "Arsim & Kurse",        mk: "Образование & Курсеви",           mne: "Obrazovanje & Kursevi" },
   "Muzikë & Hobby":       { ks: "Muzikë & Hobby",       al: "Muzikë & Hobby",       mk: "Музика & Хоби",                   mne: "Muzika & Hobi" },
   "Kafshë":               { ks: "Kafshë",               al: "Kafshë",               mk: "Животни",                         mne: "Životinje" },
+  "Kërkoj të Blej":       { ks: "Kërkoj të Blej",       al: "Kërkoj të Blej",       mk: "Барам да купам",                  mne: "Tražim da kupim" },
+  "Dhurata & Falas":      { ks: "Dhurata & Falas",      al: "Dhurata & Falas",      mk: "Донации & Бесплатно",             mne: "Pokloni & Besplatno" },
 
   // ── Vetura subcategories ─────────────────────────────────────────────────────
   "SUV & Jeep":            { ks: "SUV & Jeep",            al: "SUV & Jeep",            mk: "SUV & Џип",                       mne: "SUV & Džip" },

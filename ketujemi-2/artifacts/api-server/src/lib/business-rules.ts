@@ -2,6 +2,10 @@
  * KetuJemi business marketplace rules — enforced on listing create for business accounts.
  * @see ketujemi-2/docs/BUSINESS_RULES.md
  */
+import {
+  isDhurataFalasSlug,
+  isKerkojTeBlejSlug,
+} from "../../../../lib/special-listing-categories.js";
 
 /** Same per-root-category cap as private users (see category-quota). */
 export const BUSINESS_STANDARD_FREE_LISTINGS_PER_CATEGORY = 10;
@@ -67,12 +71,15 @@ export function validateBusinessListing(input: {
   description: string;
   price: number;
   image_url?: string | null;
+  categoryRootSlug?: string | null;
 }): BusinessListingValidationResult {
   const title = input.title.trim();
   const description = input.description.trim();
   const combined = `${title}\n${description}`;
+  const specialZeroPrice =
+    isKerkojTeBlejSlug(input.categoryRootSlug) || isDhurataFalasSlug(input.categoryRootSlug);
 
-  if (input.price <= 0) {
+  if (!specialZeroPrice && input.price <= 0) {
     return {
       ok: false,
       code: "BUSINESS_PRICE_REQUIRED",

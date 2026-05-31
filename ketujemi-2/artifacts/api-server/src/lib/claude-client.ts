@@ -96,3 +96,41 @@ export async function claudeTextCompletion(opts: {
       .trim() || ""
   );
 }
+
+/** Claude vision — JSON reply from image URL(s) + text prompt. */
+export async function claudeVisionJsonCompletion<T>(opts: {
+  system: string;
+  userText: string;
+  imageUrls: string[];
+  maxTokens?: number;
+}): Promise<T | null> {
+  if (!isClaudeConfigured() || opts.imageUrls.length === 0) {
+    return null;
+  }
+
+  const client = getAnthropicClient();
+  const content: Anthropic.MessageCreateParams["messages"][0]["content"] = [
+    ...opts.imageUrls.map(
+      (url) =>
+        ({
+          type: "image" as const,
+          source: { type: "url" as const, url },
+        }) satisfies Anthropic.ImageBlockParam,
+    ),
+    { type: "text", text: opts.userText },
+  ];
+
+  const message = await client.messages.create({
+    model: getClaudeModel(),
+    max_tokens: opts.maxTokens ?? 1024,
+    system: opts.system,
+    messages: [{ role: "user", content }],
+  });
+
+  const text = message.content
+    .filter((b) => b.type === "text")
+    .map((b) => b.text)
+    .join("\n");
+
+  return parseJsonObject<T>(text);
+}

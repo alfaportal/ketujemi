@@ -4,6 +4,12 @@ import {
   langLabel,
   type UiLang,
 } from "./claude-client";
+import {
+  countListingImages,
+  isDhurataFalasSlug,
+  isKerkojTeBlejSlug,
+  KERKOJ_MAX_PHOTOS,
+} from "../../../../lib/special-listing-categories.js";
 
 export type ModerationResult = {
   approved: boolean;
@@ -45,10 +51,13 @@ function ruleBasedModeration(input: {
   price: number;
   price_agreement?: boolean;
   image_url?: string | null;
+  categoryRootSlug?: string | null;
 }): ModerationResult {
   const title = input.title.trim();
   const desc = input.description.trim();
   const combined = `${title}\n${desc}`;
+  const isKerkoj = isKerkojTeBlejSlug(input.categoryRootSlug);
+  const isDhurata = isDhurataFalasSlug(input.categoryRootSlug);
 
   // Gjatësia e titullit
   if (title.length < 5)
@@ -69,14 +78,17 @@ function ruleBasedModeration(input: {
     return { approved: false, reason: "Mos shkruaj titullin me shkronja të mëdha (ALL CAPS)." };
 
   // Çmim
-  if (!input.price_agreement && input.price <= 0)
+  if (!isKerkoj && !isDhurata && !input.price_agreement && input.price <= 0)
     return { approved: false, reason: "Vendosni një çmim real (jo 0 €)." };
-  if (!input.price_agreement && input.price > 10000000)
+  if (!isKerkoj && !isDhurata && !input.price_agreement && input.price > 10000000)
     return { approved: false, reason: "Çmimi duket jorealiste — kontrolloje." };
 
   // Foto
-  if (!input.image_url)
+  const imageCount = countListingImages(input.image_url);
+  if (imageCount < 1)
     return { approved: false, reason: "Ju lutem ngarkoni të paktën një foto." };
+  if (isKerkoj && imageCount > KERKOJ_MAX_PHOTOS)
+    return { approved: false, reason: `Maksimumi ${KERKOJ_MAX_PHOTOS} foto për kërkesa.` };
 
   // Fjalë të ndaluara
   for (const { re, reason } of BLOCK_PATTERNS) {
@@ -127,6 +139,7 @@ export async function moderateListingContent(
     price: number;
     price_agreement?: boolean;
     category_name?: string | null;
+    categoryRootSlug?: string | null;
     image_url?: string | null;
     condition?: string | null;
   },
@@ -153,6 +166,7 @@ export async function moderateListingContent(
         price_eur: input.price,
         price_agreement: !!input.price_agreement,
         category: input.category_name ?? "unknown",
+        category_root_slug: input.categoryRootSlug ?? null,
         condition: input.condition ?? "unknown",
         image_count: imageCount,
       }),
