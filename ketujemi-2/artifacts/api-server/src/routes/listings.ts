@@ -12,7 +12,7 @@ import {
 } from "@workspace/api-zod";
 import { getSessionUser } from "../lib/session-user";
 import { userOwnsListing } from "../lib/listing-ownership";
-import { sellerFirstName, maskEmailInListingDescription } from "../lib/contact-mask";
+import { sellerFirstName, maskEmailInListingDescription, maskSellerPhone } from "../lib/contact-mask";
 import { assertAccountActive } from "../lib/user-ban";
 import {
   assertFreeListingQuota,
@@ -105,7 +105,42 @@ function applyViewerContact<
 }
 
 // ─── Helper: format listing with all fields ───────────────────────────────────
-function formatListing(l: typeof listingsTable.$inferSelect, categoryName: string | null) {
+function buildCategoryRootSlugMap(
+  cats: { id: number; slug: string | null; parent_id: number | null }[],
+): Map<number, string | null> {
+  const byId = new Map(cats.map((c) => [c.id, c]));
+  const memo = new Map<number, string | null>();
+
+  function rootSlugFor(id: number): string | null {
+    if (memo.has(id)) return memo.get(id)!;
+    const cat = byId.get(id);
+    if (!cat) return null;
+    let slug: string | null = null;
+    if (!cat.parent_id) {
+      slug = cat.slug?.trim() ?? null;
+    } else {
+      const parent = byId.get(cat.parent_id);
+      if (parent && !parent.parent_id) {
+        slug = parent.slug?.trim() ?? cat.slug?.trim() ?? null;
+      } else if (parent?.parent_id) {
+        const grand = byId.get(parent.parent_id);
+        slug = grand?.slug?.trim() ?? parent.slug?.trim() ?? cat.slug?.trim() ?? null;
+      } else {
+        slug = parent?.slug?.trim() ?? cat.slug?.trim() ?? null;
+      }
+    }
+    memo.set(id, slug);
+    return slug;
+  }
+
+  return new Map(cats.map((c) => [c.id, rootSlugFor(c.id)]));
+}
+
+function formatListing(
+  l: typeof listingsTable.$inferSelect,
+  categoryName: string | null,
+  categoryRootSlug: string | null = null,
+) {
   const now = new Date();
   const expires = l.expires_at ? new Date(l.expires_at) : null;
   const daysLeft = expires
@@ -120,6 +155,8 @@ function formatListing(l: typeof listingsTable.$inferSelect, categoryName: strin
     primary_image_url: primaryListingImageUrl(image_url),
     price: Number(l.price),
     category_name: categoryName,
+    category_root_slug: categoryRootSlug,
+    seller_phone_masked: maskSellerPhone(l.seller_phone),
     created_at: l.created_at.toISOString(),
     expires_at: l.expires_at ? l.expires_at.toISOString() : null,
     days_left: daysLeft,
@@ -369,12 +406,23 @@ router.get("/listings", async (req, res) => {
       .offset((page - 1) * limit),
   ]);
 
-  const cats = await db.select().from(categoriesTable);
+  const cats = await db
+    .select({
+      id: categoriesTable.id,
+      name: categoriesTable.name,
+      slug: categoriesTable.slug,
+      parent_id: categoriesTable.parent_id,
+    })
+    .from(categoriesTable);
   const catMap = new Map(cats.map((c) => [c.id, c.name]));
+  const catRootSlugMap = buildCategoryRootSlugMap(cats);
 
   const listings = await annotateListingsWithVipFlag(
     rows.map((l) =>
-      applyViewerContact(formatListing(l, catMap.get(l.category_id) ?? null), viewer),
+      applyViewerContact(
+        formatListing(l, catMap.get(l.category_id) ?? null, catRootSlugMap.get(l.category_id) ?? null),
+        viewer,
+      ),
     ),
   );
   res.json({ listings, total: totalResult[0]?.total ?? 0, page, limit });
@@ -633,7 +681,10 @@ router.post("/listings", async (req, res) => {
     .limit(1);
 
   const [created] = await annotateListingsWithVipFlag([
-    applyViewerContact(formatListing(row, cat[0]?.name ?? null), viewer),
+    applyViewerContact(
+      formatListing(row, cat[0]?.name ?? null, categoryMeta?.rootSlug ?? null),
+      viewer,
+    ),
   ]);
   res.status(201).json({
     ...created,
@@ -659,12 +710,23 @@ router.get("/listings/top", async (req, res) => {
     )
     .orderBy(desc(listingsTable.top_until), desc(listingsTable.listed_at));
 
-  const cats = await db.select().from(categoriesTable);
+  const cats = await db
+    .select({
+      id: categoriesTable.id,
+      name: categoriesTable.name,
+      slug: categoriesTable.slug,
+      parent_id: categoriesTable.parent_id,
+    })
+    .from(categoriesTable);
   const catMap = new Map(cats.map((c) => [c.id, c.name]));
+  const catRootSlugMap = buildCategoryRootSlugMap(cats);
   res.json(
     await annotateListingsWithVipFlag(
       rows.map((l) =>
-        applyViewerContact(formatListing(l, catMap.get(l.category_id) ?? null), viewer),
+        applyViewerContact(
+          formatListing(l, catMap.get(l.category_id) ?? null, catRootSlugMap.get(l.category_id) ?? null),
+          viewer,
+        ),
       ),
     ),
   );
@@ -681,12 +743,23 @@ router.get("/listings/featured", async (req, res) => {
     .orderBy(...listingFeedOrderBy)
     .limit(8);
 
-  const cats = await db.select().from(categoriesTable);
+  const cats = await db
+    .select({
+      id: categoriesTable.id,
+      name: categoriesTable.name,
+      slug: categoriesTable.slug,
+      parent_id: categoriesTable.parent_id,
+    })
+    .from(categoriesTable);
   const catMap = new Map(cats.map((c) => [c.id, c.name]));
+  const catRootSlugMap = buildCategoryRootSlugMap(cats);
   res.json(
     await annotateListingsWithVipFlag(
       rows.map((l) =>
-        applyViewerContact(formatListing(l, catMap.get(l.category_id) ?? null), viewer),
+        applyViewerContact(
+          formatListing(l, catMap.get(l.category_id) ?? null, catRootSlugMap.get(l.category_id) ?? null),
+          viewer,
+        ),
       ),
     ),
   );
@@ -703,12 +776,23 @@ router.get("/listings/recent", async (req, res) => {
     .orderBy(...listingFeedOrderBy)
     .limit(12);
 
-  const cats = await db.select().from(categoriesTable);
+  const cats = await db
+    .select({
+      id: categoriesTable.id,
+      name: categoriesTable.name,
+      slug: categoriesTable.slug,
+      parent_id: categoriesTable.parent_id,
+    })
+    .from(categoriesTable);
   const catMap = new Map(cats.map((c) => [c.id, c.name]));
+  const catRootSlugMap = buildCategoryRootSlugMap(cats);
   res.json(
     await annotateListingsWithVipFlag(
       rows.map((l) =>
-        applyViewerContact(formatListing(l, catMap.get(l.category_id) ?? null), viewer),
+        applyViewerContact(
+          formatListing(l, catMap.get(l.category_id) ?? null, catRootSlugMap.get(l.category_id) ?? null),
+          viewer,
+        ),
       ),
     ),
   );
@@ -966,16 +1050,13 @@ router.post("/listings/:id/repost", async (req, res) => {
     .where(eq(listingsTable.id, listingId))
     .limit(1);
 
-  const cat = row
-    ? await db
-        .select({ name: categoriesTable.name })
-        .from(categoriesTable)
-        .where(eq(categoriesTable.id, row.category_id))
-        .limit(1)
-    : [];
+  const catMeta = row ? await resolveCategorySlugMeta(row.category_id) : null;
 
   const listingOut = row
-    ? applyViewerContact(formatListing(row, cat[0]?.name ?? null), viewer)
+    ? applyViewerContact(
+        formatListing(row, catMeta?.name ?? null, catMeta?.rootSlug ?? null),
+        viewer,
+      )
     : null;
   const [listingAnnotated] = listingOut
     ? await annotateListingsWithVipFlag([listingOut])
@@ -1026,13 +1107,9 @@ router.get("/listings/:id", async (req, res) => {
     return;
   }
 
-  const cat = await db
-    .select({ name: categoriesTable.name })
-    .from(categoriesTable)
-    .where(eq(categoriesTable.id, row.category_id))
-    .limit(1);
+  const catMeta = await resolveCategorySlugMeta(row.category_id);
 
-  const formatted = formatListing(row, cat[0]?.name ?? null);
+  const formatted = formatListing(row, catMeta?.name ?? null, catMeta?.rootSlug ?? null);
   const payload = applyViewerContact(formatted, viewer) as ReturnType<typeof formatListing> & {
     can_repost: boolean;
   };
@@ -1155,14 +1232,13 @@ router.patch("/listings/:id", async (req, res) => {
     .where(eq(listingsTable.id, paramsParsed.data.id))
     .returning();
 
-  const cat = await db
-    .select({ name: categoriesTable.name })
-    .from(categoriesTable)
-    .where(eq(categoriesTable.id, updated.category_id))
-    .limit(1);
+  const catMeta = await resolveCategorySlugMeta(updated.category_id);
 
   const [patched] = await annotateListingsWithVipFlag([
-    applyViewerContact(formatListing(updated, cat[0]?.name ?? null), viewer),
+    applyViewerContact(
+      formatListing(updated, catMeta?.name ?? null, catMeta?.rootSlug ?? null),
+      viewer,
+    ),
   ]);
   res.json(patched);
 });

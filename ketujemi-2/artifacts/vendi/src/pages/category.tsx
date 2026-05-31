@@ -107,6 +107,8 @@ import { MuzikeHobbySearchPanel } from "@/components/muzike-hobby-search-panel";
 import { getMuzikeHobbyLeafCategoryIds } from "@/lib/muzike-hobby-search-helpers";
 import { KafshetSearchPanel } from "@/components/kafshet-search-panel";
 import { getKafshetLeafCategoryIds } from "@/lib/kafshet-search-helpers";
+import { DhurataFalasHubIntro } from "@/components/dhurata-falas-hub-intro";
+import { isDhurataFalasSlug } from "@/lib/special-listing-categories";
 import { TvElektronikeSearchPanel } from "@/components/tv-elektronike-search-panel";
 import { KompjuterLaptopHubPanel } from "@/components/kompjuter-laptop-hub-panel";
 import {
@@ -318,6 +320,7 @@ const PUNE_SHERBIME_HUB_SLUG = "pune-sherbime";
 const BUJQESI_BLEGTORI_HUB_SLUG = "bujqesi-blegtori";
 const MUZIKE_HOBBY_HUB_SLUG = "muzike-hobby";
 const KAFSHET_HUB_SLUG = "kafshet";
+const DHURATA_FALAS_HUB_SLUG = "dhurata-falas";
 const TV_ELEKTRONIKE_HUB_SLUG = "tv-elektronike";
 
 /** Display order for Banesa & Shtëpi hub. */
@@ -764,6 +767,11 @@ export default function CategoryPage() {
   const isKafshetHub =
     !!(currentCategory as any) &&
     (currentCategory as any).slug === KAFSHET_HUB_SLUG &&
+    !(currentCategory as any).parent_id;
+
+  const isDhurataFalasHub =
+    !!(currentCategory as any) &&
+    isDhurataFalasSlug((currentCategory as any).slug) &&
     !(currentCategory as any).parent_id;
 
   const isTvElektronikeHub =
@@ -1453,6 +1461,8 @@ export default function CategoryPage() {
           <ArrowLeft size={16} /> {t.back}
         </button>
 
+        {isDhurataFalasHub ? <DhurataFalasHubIntro /> : null}
+
         {isVeturaHub && veturaBrandLeafCsv ? (
           <VeturaSearchPanel
             veturaId={categoryId}
@@ -1791,7 +1801,7 @@ export default function CategoryPage() {
         ) : null}
 
         {!isTelefonaHubPage &&
-          (isFemijeLeafPage || (!isFemijeHub && !isFemijeGroupPage)) &&
+          (isFemijeLeafPage || isDhurataFalasHub || (!isFemijeHub && !isFemijeGroupPage)) &&
           renderListingsSection()}
       </div>
     </div>

@@ -6,6 +6,7 @@ import {
 } from "./claude-client";
 import {
   countListingImages,
+  DHURATA_MAX_PHOTOS,
   isDhurataFalasSlug,
   isKerkojTeBlejSlug,
   KERKOJ_MAX_PHOTOS,
@@ -89,6 +90,8 @@ function ruleBasedModeration(input: {
     return { approved: false, reason: "Ju lutem ngarkoni të paktën një foto." };
   if (isKerkoj && imageCount > KERKOJ_MAX_PHOTOS)
     return { approved: false, reason: `Maksimumi ${KERKOJ_MAX_PHOTOS} foto për kërkesa.` };
+  if (isDhurata && imageCount > DHURATA_MAX_PHOTOS)
+    return { approved: false, reason: `Maksimumi ${DHURATA_MAX_PHOTOS} foto për dhurata.` };
 
   // Fjalë të ndaluara
   for (const { re, reason } of BLOCK_PATTERNS) {

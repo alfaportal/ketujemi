@@ -1,11 +1,15 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { MapPin, Eye, Clock, AlertCircle, Crown } from "lucide-react";
+import { MapPin, Eye, Clock, AlertCircle, Crown, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMarket, convertPrice } from "@/lib/market-context";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { translateCategory } from "@/lib/category-translations";
 import { categoryPath } from "@/lib/category-navigation";
 import { ListingCardImage } from "@/components/listing-card-image";
+import { DHURATA_FALAS_SLUG, isDhurataFalasSlug } from "@/lib/special-listing-categories";
+import { maskSellerPhone } from "@/lib/mask-seller-phone";
+import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 
 // ─── Formatted timestamp ──────────────────────────────────────────────────────
 function formatDate(isoString: string): string {
@@ -50,13 +54,111 @@ interface ListingCardProps {
     expires_at?: string | null;
     category_name?: string | null;
     category_id?: number;
+    category_root_slug?: string | null;
+    seller_phone?: string | null;
+    seller_phone_masked?: string | null;
   };
+}
+
+function DhurataGiftListingCard({ listing }: ListingCardProps) {
+  const [, navigate] = useLocation();
+  const { user } = useAuth();
+  const [phoneRevealed, setPhoneRevealed] = useState(false);
+  const masked =
+    listing.seller_phone_masked ||
+    (listing.seller_phone ? maskSellerPhone(listing.seller_phone) : "+*** **** ***");
+  const fullPhone = listing.seller_phone?.trim() ?? "";
+
+  const handleContact = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      navigate(loginUrlWithReturn(`/listings/${listing.id}`));
+      return;
+    }
+    if (fullPhone) setPhoneRevealed(true);
+  };
+
+  return (
+    <div
+      className="group bg-white rounded-2xl overflow-hidden border border-green-100 hover:shadow-lg hover:border-green-200 transition-all duration-200"
+      data-testid={`card-listing-${listing.id}`}
+    >
+      <Link href={`/listings/${listing.id}`} className="block">
+        <div className="relative overflow-hidden aspect-[4/3] bg-gray-200">
+          <ListingCardImage
+            imageUrl={listing.image_url}
+            primaryImageUrl={listing.primary_image_url}
+            alt={listing.title}
+            className="group-hover:scale-105 transition-transform duration-300"
+          />
+          <div className="absolute top-2 left-2 bg-green-600 text-white text-sm font-bold px-2.5 py-1 rounded-lg shadow-sm">
+            🎁 FALAS
+          </div>
+        </div>
+      </Link>
+
+      <div className="p-3">
+        <Link href={`/listings/${listing.id}`}>
+          <h3
+            data-testid={`text-title-${listing.id}`}
+            className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 mb-2 group-hover:text-green-700 transition-colors"
+          >
+            {listing.title}
+          </h3>
+        </Link>
+
+        {listing.location ? (
+          <div className="flex items-center gap-1 text-sm text-gray-500 mb-1.5">
+            <MapPin size={11} className="shrink-0" />
+            <span>{listing.location}</span>
+          </div>
+        ) : null}
+
+        <div className="flex items-center gap-1 text-sm text-gray-400 mb-3">
+          <Clock size={11} />
+          <span>{formatDate(listing.created_at)}</span>
+        </div>
+
+        {phoneRevealed && fullPhone ? (
+          <a
+            href={`tel:${fullPhone}`}
+            className="flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-3 font-bold text-sm transition-colors mb-1"
+            data-testid={`link-seller-phone-${listing.id}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Phone size={16} />
+            {fullPhone}
+          </a>
+        ) : (
+          <button
+            type="button"
+            onClick={handleContact}
+            className="flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-3 font-bold text-sm transition-colors"
+            data-testid={`button-kontakto-${listing.id}`}
+          >
+            <Phone size={16} />
+            📞 Kontakto
+            <span className="text-green-100 font-normal text-xs ml-1">({masked})</span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function ListingCard({ listing }: ListingCardProps) {
   const { market, rates, t, uiLang } = useMarket();
   const [, navigate] = useLocation();
+  const isDhurata =
+    isDhurataFalasSlug(listing.category_root_slug) ||
+    listing.category_name === "Dhurata & Falas";
+
+  if (isDhurata) {
+    return <DhurataGiftListingCard listing={listing} />;
+  }
+
   const isToday = new Date(listing.created_at).toDateString() === new Date().toDateString();
   const daysLeft = getDaysLeft(listing.expires_at, market.code);
   const catName = translateCategory(listing.category_name ?? "", translationKeyForUiLang(uiLang));

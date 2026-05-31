@@ -112,6 +112,7 @@ function Router() {
               />
             ))}
             <Route path="/categories/:id" component={CategoryPage} />
+            <Route path="/listings/new/dhurata-falas" component={NewListing} />
             <Route path="/listings/new" component={NewListing} />
             <Route path="/listings/:id/edit" component={EditListing} />
             <Route path="/listings/:id" component={ListingDetail} />

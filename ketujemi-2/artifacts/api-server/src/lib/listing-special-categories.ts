@@ -2,7 +2,10 @@ import { db, categoriesTable, listingsTable } from "@workspace/db";
 import { and, eq, gt, isNull, or, sql } from "drizzle-orm";
 import {
   countListingImages,
+  DHURATA_ACTIVE_LIFETIME_DAYS,
+  DHURATA_MAX_PHOTOS,
   DHURATA_PRICE_ZERO_MESSAGE,
+  findDhurataBlockedWord,
   findKerkojBlockedWord,
   isDhurataFalasSlug,
   isKerkojTeBlejSlug,
@@ -74,9 +77,12 @@ export async function resolveCategorySlugMeta(categoryId: number): Promise<Categ
 }
 
 export function expiresAtForCategoryRootSlug(rootSlug: string | null | undefined): Date {
-  if (isKerkojTeBlejSlug(rootSlug)) {
+  if (isKerkojTeBlejSlug(rootSlug) || isDhurataFalasSlug(rootSlug)) {
+    const days = isDhurataFalasSlug(rootSlug)
+      ? DHURATA_ACTIVE_LIFETIME_DAYS
+      : KERKOJ_ACTIVE_LIFETIME_DAYS;
     const d = new Date();
-    d.setDate(d.getDate() + KERKOJ_ACTIVE_LIFETIME_DAYS);
+    d.setDate(d.getDate() + days);
     return d;
   }
   return expiresAtAfterListingLifetime();
@@ -129,10 +135,16 @@ async function getKerkojCategoryId(): Promise<number | null> {
   return row?.id ?? null;
 }
 
-const PHOTO_MATCH_SYSTEM = `You are a visual moderator for KetuJemi.com buyer-request listings ("Kërkoj të Blej").
+const KERKOJ_PHOTO_MATCH_SYSTEM = `You are a visual moderator for KetuJemi.com buyer-request listings ("Kërkoj të Blej").
 Reply with ONLY JSON: {"approved":boolean,"reason":"string"}
 - approved true when the photo(s) reasonably match what the title/description ask to BUY or FIND (same product type/category).
 - approved false when photos clearly show unrelated items, spam, or content that looks like a seller ad instead of a buyer request.
+- reason in Albanian when rejected; empty when approved.`;
+
+const DHURATA_PHOTO_MATCH_SYSTEM = `You are a visual moderator for KetuJemi.com free-gift listings ("Dhurata & Falas").
+Reply with ONLY JSON: {"approved":boolean,"reason":"string"}
+- approved true when the photo(s) reasonably match the title/description of the item being given away for free.
+- approved false when photos clearly show unrelated items, stock/watermarked internet photos, spam, or items that look like a paid sale ad.
 - reason in Albanian when rejected; empty when approved.`;
 
 async function verifyKerkojPhotoMatchesListing(input: {
@@ -146,11 +158,42 @@ async function verifyKerkojPhotoMatchesListing(input: {
   }
 
   const parsed = await claudeVisionJsonCompletion<{ approved: boolean; reason: string }>({
-    system: PHOTO_MATCH_SYSTEM,
+    system: KERKOJ_PHOTO_MATCH_SYSTEM,
     userText: JSON.stringify({
       title: input.title.trim(),
       description: input.description.trim().slice(0, 3000),
       instruction: "Do these photos match what the user is looking to buy?",
+    }),
+    imageUrls: urls,
+    maxTokens: 512,
+  });
+
+  if (!parsed || typeof parsed.approved !== "boolean") {
+    return { approved: true, reason: "" };
+  }
+
+  return {
+    approved: parsed.approved,
+    reason: typeof parsed.reason === "string" ? parsed.reason.trim() : "",
+  };
+}
+
+async function verifyDhurataPhotoMatchesListing(input: {
+  title: string;
+  description: string;
+  imageUrl: string | null;
+}): Promise<{ approved: boolean; reason: string }> {
+  const urls = splitListingImageUrls(input.imageUrl).slice(0, DHURATA_MAX_PHOTOS);
+  if (urls.length === 0) {
+    return { approved: false, reason: "Duhet të ngarkoni të paktën një foto." };
+  }
+
+  const parsed = await claudeVisionJsonCompletion<{ approved: boolean; reason: string }>({
+    system: DHURATA_PHOTO_MATCH_SYSTEM,
+    userText: JSON.stringify({
+      title: input.title.trim(),
+      description: input.description.trim().slice(0, 3000),
+      instruction: "Do these photos match the free gift described?",
     }),
     imageUrls: urls,
     maxTokens: 512,
@@ -191,6 +234,66 @@ export async function assertSpecialCategoryListingRules(input: {
         reason: DHURATA_PRICE_ZERO_MESSAGE,
       };
     }
+
+    const imageCount = countListingImages(input.imageUrl);
+    if (imageCount < 1) {
+      const reason = "Duhet të ngarkoni të paktën një foto.";
+      await notifyAdminSpecialListingIssue({
+        subject: "Dhurata & Falas — mungon foto",
+        lines: [`Përdoruesi #${input.userId} u bllokua.`, `Titulli: ${input.title}`, reason],
+        title: input.title,
+        reason,
+        categoryId: input.categoryId,
+        userId: input.userId,
+      });
+      return { ok: false, error: "DHURATA_PHOTO_REQUIRED", message: reason, reason };
+    }
+    if (imageCount > DHURATA_MAX_PHOTOS) {
+      const reason = `Maksimumi ${DHURATA_MAX_PHOTOS} foto për dhurata.`;
+      return { ok: false, error: "DHURATA_PHOTO_LIMIT", message: reason, reason };
+    }
+
+    const blocked = findDhurataBlockedWord(`${input.title}\n${input.description}`);
+    if (blocked) {
+      const reason = `Gjuha e shitjes nuk lejohet në "Dhurata & Falas" (fjalë e ndaluar: "${blocked}").`;
+      await notifyAdminSpecialListingIssue({
+        subject: "Dhurata & Falas — fjalë e ndaluar",
+        lines: [
+          `Përdoruesi #${input.userId} u bllokua automatikisht.`,
+          `Titulli: ${input.title}`,
+          reason,
+        ],
+        title: input.title,
+        reason,
+        categoryId: input.categoryId,
+        userId: input.userId,
+      });
+      return { ok: false, error: "DHURATA_SELLING_LANGUAGE", message: reason, reason };
+    }
+
+    const photoCheck = await verifyDhurataPhotoMatchesListing({
+      title: input.title,
+      description: input.description,
+      imageUrl: input.imageUrl,
+    });
+    if (!photoCheck.approved) {
+      const reason =
+        photoCheck.reason || "Fotoja nuk përputhet me titullin ose përshkrimin e dhuratës.";
+      await notifyAdminSpecialListingIssue({
+        subject: "Dhurata & Falas — foto e dyshimtë",
+        lines: [
+          `Përdoruesi #${input.userId} u bllokua automatikisht.`,
+          `Titulli: ${input.title}`,
+          reason,
+        ],
+        title: input.title,
+        reason,
+        categoryId: input.categoryId,
+        userId: input.userId,
+      });
+      return { ok: false, error: "DHURATA_PHOTO_MISMATCH", message: reason, reason };
+    }
+
     return { ok: true, price: 0 };
   }
 

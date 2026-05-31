@@ -3,8 +3,10 @@ export const KERKOJ_TE_BLEJ_SLUG = "kerkoj-te-blej" as const;
 export const DHURATA_FALAS_SLUG = "dhurata-falas" as const;
 
 export const KERKOJ_ACTIVE_LIFETIME_DAYS = 30;
+export const DHURATA_ACTIVE_LIFETIME_DAYS = 30;
 export const KERKOJ_MAX_PHOTOS = 3;
 export const KERKOJ_MAX_ACTIVE_PER_USER = 1;
+export const DHURATA_MAX_PHOTOS = 10;
 
 export const DHURATA_PRICE_ZERO_MESSAGE =
   "Në kategorinë Dhurata & Falas çmimi duhet të jetë 0";
@@ -16,6 +18,20 @@ export const KERKOJ_BLOCKED_WORD_PATTERNS: { re: RegExp; label: string }[] = [
   { re: /\bofrojm[ëe]\b/i, label: "ofrojmë" },
   { re: /\bme\s+shumic[ëe]\b/i, label: "me shumicë" },
   { re: /\bdisponojm[ëe]\b/i, label: "disponojmë" },
+];
+
+/** Blocked in free-gift posts — selling / payment language. */
+export const DHURATA_BLOCKED_WORD_PATTERNS: { re: RegExp; label: string }[] = [
+  { re: /\bshes\b/i, label: "shes" },
+  { re: /\bshit(?:je|ni)?\b/i, label: "shit" },
+  { re: /\bçmim\b/i, label: "çmim" },
+  { re: /\bcmim\b/i, label: "çmim" },
+  { re: /\bpaguaj\b/i, label: "paguaj" },
+  { re: /\btransfer\b/i, label: "transfer" },
+  { re: /\bbonuse\b/i, label: "bonuse" },
+  { re: /\bofert[ëe]\b/i, label: "ofertë" },
+  { re: /\bme\s+pages[ëe]\b/i, label: "me pagesë" },
+  { re: /\bkontraktoj\b/i, label: "kontraktoj" },
 ];
 
 export function isKerkojTeBlejSlug(slug: string | null | undefined): boolean {
@@ -30,6 +46,15 @@ export function findKerkojBlockedWord(text: string): string | null {
   const combined = text.trim();
   if (!combined) return null;
   for (const { re, label } of KERKOJ_BLOCKED_WORD_PATTERNS) {
+    if (re.test(combined)) return label;
+  }
+  return null;
+}
+
+export function findDhurataBlockedWord(text: string): string | null {
+  const combined = text.trim();
+  if (!combined) return null;
+  for (const { re, label } of DHURATA_BLOCKED_WORD_PATTERNS) {
     if (re.test(combined)) return label;
   }
   return null;

@@ -47,7 +47,13 @@ import {
   ListingPackagesModal,
 } from "@/components/listing-packages-modal";
 import {
+  DhurataGiftPledge,
+  DHURATA_PLEDGE_STORAGE_KEY,
+} from "@/components/dhurata-gift-pledge";
+import {
+  DHURATA_FALAS_SLUG,
   DHURATA_PRICE_ZERO_MESSAGE,
+  findDhurataBlockedWord,
   findKerkojBlockedWord,
   isDhurataFalasSlug,
   isKerkojTeBlejSlug,
@@ -184,7 +190,8 @@ function ImagePreview({ urls, onRemove, mainLabel }: { urls: string[]; onRemove:
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function NewListing() {
-  const [, setLocation] = useLocation();
+  const [pathname, setLocation] = useLocation();
+  const isDhurataPostRoute = pathname === "/listings/new/dhurata-falas";
   const { user, loading: authLoading, refresh } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -197,6 +204,13 @@ export default function NewListing() {
   const [isUploading, setIsUploading] = useState(false);
   const uploadRef = useRef<HTMLInputElement>(null);
   const imageUpload = useListingImageUpload();
+  const [dhurataPledgeOk, setDhurataPledgeOk] = useState(() => {
+    try {
+      return sessionStorage.getItem(DHURATA_PLEDGE_STORAGE_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
 
   const mc = market.code;
   const fuelOpts         = FORM_OPTIONS.fuel[mc]         ?? FORM_OPTIONS.fuel.ks;
@@ -303,8 +317,18 @@ export default function NewListing() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) setLocation(loginUrlWithReturn("/listings/new"));
-  }, [authLoading, user, setLocation]);
+    if (!user) setLocation(loginUrlWithReturn(pathname || "/listings/new"));
+  }, [authLoading, user, setLocation, pathname]);
+
+  useEffect(() => {
+    if (!allCategories || !isDhurataPostRoute) return;
+    const dhurata = (allCategories as { id: number; slug?: string | null; parent_id?: number | null }[])
+      .find((c) => !c.parent_id && c.slug === DHURATA_FALAS_SLUG);
+    if (dhurata) {
+      form.setValue("parent_category_id", dhurata.id);
+      form.setValue("category_id", dhurata.id);
+    }
+  }, [allCategories, isDhurataPostRoute, form]);
 
   useEffect(() => {
     if (!user || userNeedsSellerProfile(user)) return;
@@ -482,6 +506,16 @@ export default function NewListing() {
         return;
       }
     }
+    if (isDhurataCategory) {
+      const blocked = findDhurataBlockedWord(`${data.title}\n${data.description}`);
+      if (blocked) {
+        toast({
+          title: `Gjuha e shitjes nuk lejohet në "Dhurata & Falas" (fjalë e ndaluar: "${blocked}").`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
     if (isDhurataCategory && !data.price_agreement && data.price > 0) {
       toast({ title: DHURATA_PRICE_ZERO_MESSAGE, variant: "destructive" });
       return;
@@ -597,6 +631,10 @@ export default function NewListing() {
           }
           if (
             errData.error === "DHURATA_PRICE_ZERO" ||
+            errData.error === "DHURATA_PHOTO_REQUIRED" ||
+            errData.error === "DHURATA_PHOTO_LIMIT" ||
+            errData.error === "DHURATA_SELLING_LANGUAGE" ||
+            errData.error === "DHURATA_PHOTO_MISMATCH" ||
             errData.error === "KERKOJ_PHOTO_REQUIRED" ||
             errData.error === "KERKOJ_PHOTO_LIMIT" ||
             errData.error === "KERKOJ_SELLING_LANGUAGE" ||
@@ -651,6 +689,18 @@ export default function NewListing() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-3">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (isDhurataPostRoute && !dhurataPledgeOk) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AuthToolbar />
+        <DhurataGiftPledge
+          onAccepted={() => setDhurataPledgeOk(true)}
+          onBack={() => setLocation("/categories/dhurata-falas")}
+        />
       </div>
     );
   }
@@ -1397,6 +1447,7 @@ export default function NewListing() {
             ) : null}
 
             {/* ── 9. Condition ── */}
+            {!isDhurataCategory && (
             <Section title={isAutoPjese(parentName) ? t.ap_sec_condition : t.conditionField}>
               <FormField
                 control={form.control}
@@ -1439,6 +1490,7 @@ export default function NewListing() {
                 )}
               />
             </Section>
+            )}
 
             <PostingAssistantPanel
               title={watchTitle}
@@ -1456,15 +1508,21 @@ export default function NewListing() {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full min-h-14 text-base font-bold rounded-xl bg-blue-600 hover:bg-blue-700"
+                  className={`w-full min-h-14 text-base font-bold rounded-xl ${
+                    isDhurataCategory
+                      ? "bg-green-600 hover:bg-green-700"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
                   disabled={createMutation.isPending || (freeQuota != null && !freeQuota.allowed)}
                   data-testid="button-submit-listing"
                 >
                   {createMutation.isPending
                     ? t.posting
-                    : isKerkojCategory
-                      ? "Posto Kërkesën"
-                      : t.submitListing}
+                    : isDhurataCategory
+                      ? "🎁 Posto Dhuratën →"
+                      : isKerkojCategory
+                        ? "Posto Kërkesën"
+                        : t.submitListing}
                 </Button>
               </div>
             </div>
