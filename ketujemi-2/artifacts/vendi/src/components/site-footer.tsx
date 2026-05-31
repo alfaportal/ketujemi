@@ -49,7 +49,7 @@ const BASE_SOCIAL_LINKS: SocialLink[] = [
     iconClass: "hover:text-[#E4405F]",
   },
   {
-    href: "https://www.tiktok.com/@ketujemi",
+    href: "https://www.tiktok.com/@ketujemi7",
     label: "TikTok",
     Icon: FaTiktok,
     external: true,
