@@ -135,13 +135,21 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "kompj-msi": pexelsPhoto(2588757),
   "kompj-razer": pexelsPhoto(7770011),
 
-  // —— TV & Elektronikë ———————————————————————————————————————————————————————
-  "tv-type-televizore": pexelsPhoto(1571456),
-  "tv-type-kamera-foto": pexelsPhoto(911808),
-  "tv-type-konzola-lojrash": pexelsPhoto(4425762),
-  "tv-type-smart-watch": pexelsPhoto(4370377),
-  "tv-type-audio-zerimi": pexelsPhoto(164745),
-  "tv-type-projektore": pexelsPhoto(768816),
+  // —— TV & Elektronikë (nivel 2 banner — slug-et e seed) —————————————————————
+  "tv-type-pajisje-medha-shtepiake":
+    "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=1200&q=80",
+  "tv-type-klimatizim-ngrohje":
+    "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=1200&q=80",
+  "tv-type-televizore-projektor":
+    "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=1200&q=80",
+  "tv-type-konzola-gaming":
+    "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=1200&q=80",
+  "tv-type-audio-zeri":
+    "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=1200&q=80",
+  "tv-type-kamera-foto-smartwatch":
+    "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200&q=80",
+  "tv-type-laptop-kompjutere":
+    "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=1200&q=80",
 
   // —— Mobilje (nivel 2 banner — hero pas klikimit; jo MD_TYPE_PHOTOS) ——————————
   "mobilje-type-sallone-ulese":
