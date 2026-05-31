@@ -139,7 +139,7 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "tv-type-pajisje-medha-shtepiake":
     "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=1200&q=80",
   "tv-type-klimatizim-ngrohje":
-    "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=1200&q=80",
+    "https://images.pexels.com/photos/16592625/pexels-photo-16592625.jpeg?w=1200&q=80",
   "tv-type-televizore-projektor":
     "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=1200&q=80",
   "tv-type-konzola-gaming":
