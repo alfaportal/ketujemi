@@ -87,10 +87,26 @@ Pas `pnpm run build`, nëse chunk `category-*.js` rritet shumë → gjej importi
 
 Rregull Cursor: `.cursor/rules/femije-drill-down-pages.mdc`
 
+## Fotot — nivel 1 vs nivel 2 (mos i përzi)
+
+| Nivel | Ku shfaqet | Skedar | Çfarë vendoset |
+|-------|------------|--------|----------------|
+| **1** | Grid kartash në hub (p.sh. 6 karta Mobilje) | `*-search-helpers.ts` → `*_TYPE_PHOTOS` | **Pexels** origjinale (`w=400`) — si para punës së banner Unsplash |
+| **2** | Banner hero pas klikimit (`mobilje-type-kuzhina`, …) | `lib/db/src/category-pexels-urls.ts` | URL që jep përdoruesi (Unsplash `w=1200`) + Pexels për slug-et pa URL custom |
+
+- **Mos** kopjo URL nga `category-pexels-urls.ts` në `MD_TYPE_PHOTOS` / `RK_TYPE_PHOTOS`.
+- Hero në faqe tipi: `resolveCategoryImageUrl()` lexon slug map-in e nivelit 2.
+- Test: grid Kuzhina ≠ banner Kuzhina (foto të ndryshme).
+
+Rregull Cursor: `.cursor/rules/category-images-nivel-1-2.mdc`
+
+---
+
 ## Rregulla të shkurtra
 
 1. **Build + test kategorish + Console pa error** para push.
 2. **Mos përdor variabla para deklarimit** në `category.tsx`.
 3. **Mos tërhiq skedarë 300KB+** në bundle-in e çdo kategorie.
+4. **Foto hub grid ≠ foto banner tipi** — shiko tabelën më sipër.
 
 Rregull Cursor për agjentët: `.cursor/rules/category-page-no-crash.mdc`

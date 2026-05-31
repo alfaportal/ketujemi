@@ -14,6 +14,7 @@ export const RK_TYPE_DB_SLUG: Record<RkTypeKey, string> = {
   kepuce: "rroba-type-kepuce",
 };
 
+/** Nivel 1 — miniaturat në grid të hub-it. Mos vendos këtu URL Unsplash të banner-it (nivel 2 → `category-pexels-urls.ts`). */
 export const RK_TYPE_PHOTOS: Record<RkTypeKey, string> = {
   meshkuj:
     "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=400",

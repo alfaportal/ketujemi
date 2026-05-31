@@ -143,7 +143,7 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "tv-type-audio-zerimi": pexelsPhoto(164745),
   "tv-type-projektore": pexelsPhoto(768816),
 
-  // —— Mobilje ————————————————————————————————————————————————————————————————
+  // —— Mobilje (nivel 2 banner — hero pas klikimit; jo MD_TYPE_PHOTOS) ——————————
   "mobilje-type-sallone-ulese":
     "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1200&q=80",
   "mobilje-type-kuzhina":

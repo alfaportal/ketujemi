@@ -1,0 +1,46 @@
+---
+description: Category photos — nivel 1 hub grid vs nivel 2 type-page banner (never mix Unsplash into hub pickers)
+globs: ketujemi-2/lib/db/src/category-pexels-urls.ts,ketujemi-2/artifacts/vendi/src/lib/*search-helpers.ts,ketujemi-2/artifacts/vendi/src/lib/hub-drill-down-registry.ts,ketujemi-2/artifacts/vendi/src/pages/category.tsx
+alwaysApply: false
+---
+
+# Fotot e kategorive — nivel 1 vs nivel 2
+
+**Mos i përzi.** Përdoruesi dha URL Unsplash vetëm për banner-at pas klikimit (nivel 2), jo për kartat e grida në hub (nivel 1).
+
+## Nivel 1 — grid “Kategoria” në hub
+
+- Shembull: Mobilje → 6 karta (Sallone, Kuzhina, …).
+- Burimi: `*_TYPE_PHOTOS`, `*_PROPERTY_PHOTOS`, `LOKALE_PROPERTY_PHOTOS`, etj. në `*-search-helpers.ts`.
+- Regjistri: `hub-drill-down-registry.ts` → `typePhotos`.
+- **Vetëm Pexels** (ose URL që ishin **para** punës së drill-down / Unsplash banner) — **jo** të njëjtat URL si banner-i i nivelit 2.
+- Gabim i kaluar: commit `77024a3` kopjoi Unsplash nga `category-pexels-urls.ts` në `MD_TYPE_PHOTOS` / `RK_TYPE_PHOTOS` — **u kthye** në `7019221`.
+
+## Nivel 2 — faqe tipi pas klikimit
+
+- Shembull: `/category/mobilje-type-kuzhina` — hero/banner i madh.
+- Burimi: `SUBCATEGORY_IMAGE_URL_BY_SLUG` në `lib/db/src/category-pexels-urls.ts`.
+- Frontend: `resolveCategoryImageUrl()` → lexon slug map **para** `image_url` nga DB.
+- Këtu vendosen URL **Unsplash** që përdoruesi jep (zakonisht `w=1200`).
+- Opsional DB: `cd ketujemi-2/lib/db && pnpm run seed:category-images`
+
+## Kur përdoruesi dërgon foto të reja
+
+1. Pyet / konfirmo: **grid hub** apo **banner pas klikimit**?
+2. Grid → ndrysho vetëm `*_TYPE_PHOTOS` (Pexels, `w=400`).
+3. Banner → ndrysho vetëm slug në `category-pexels-urls.ts`.
+4. **Mos** kopjo të njëjtin URL në të dy skedarët.
+
+## Kategori me drill-down hub (registry)
+
+Kafshet, Bujqësi, Mobilje, Lokale, Muzikë, Rroba, Punë, TV — nivel 1 = helpers; nivel 2 = `category-pexels-urls` për slug `*-type-*` (dhe `pune-leaf-*` ku ka Unsplash).
+
+## Fëmijë (veçorë)
+
+- Grupet/leaf: `femije-hub-subcategory-photos.ts` + `resolveFemijeSubcategoryImage` — mos i ngatërro me Mobilje/Rroba.
+
+## Test pas ndryshimit
+
+1. Hub Mobilje — Kuzhina në grid = Pexels `1080721` (jo Unsplash `1556909114`).
+2. Kliko Kuzhina — banner = Unsplash nga `mobilje-type-kuzhina` në `category-pexels-urls.ts`.
+3. `pnpm run build` në `artifacts/vendi`.

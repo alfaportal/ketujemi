@@ -24,6 +24,7 @@ export const MD_TYPE_DB_SLUG: Record<MdTypeKey, string> = {
   tepihe_perde: "mobilje-type-tepihe-perde",
 };
 
+/** Nivel 1 — miniaturat në grid të hub-it. Mos vendos këtu URL Unsplash të banner-it (nivel 2 → `category-pexels-urls.ts`). */
 export const MD_TYPE_PHOTOS: Record<MdTypeKey, string> = {
   sallone_ulese:
     "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=400",
