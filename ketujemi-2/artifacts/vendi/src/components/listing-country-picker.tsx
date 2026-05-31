@@ -28,7 +28,7 @@ export function ListingCountryPicker({
     <div className={cn("space-y-3", className)}>
       <Label>{countryLabel}</Label>
 
-      <div className="grid grid-cols-3 gap-1.5 max-w-[14rem]">
+      <div className="grid grid-cols-3 gap-2 w-full">
         {homeMarkets.map((m) => {
           const selected = value === m.code;
           const iso = HOME_MARKET_ISO[m.code as keyof typeof HOME_MARKET_ISO];
@@ -39,14 +39,14 @@ export function ListingCountryPicker({
               data-testid={`button-listing-country-${m.code}`}
               onClick={() => onChange(m.code as ListingMarketCode)}
               className={cn(
-                "min-h-10 rounded-lg border-2 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-colors px-1",
+                "min-h-14 rounded-xl border-2 flex flex-col items-center justify-center gap-1 touch-manipulation transition-colors px-2 py-2",
                 selected
                   ? "border-blue-500 bg-blue-50 text-blue-800"
                   : "border-gray-200 hover:border-gray-300 text-gray-700",
               )}
             >
-              <span className="text-xs font-black leading-none tracking-wide">{iso}</span>
-              <span className="text-[9px] leading-tight text-center font-medium line-clamp-2">
+              <span className="text-base font-black leading-none tracking-wide">{iso}</span>
+              <span className="text-[11px] leading-tight text-center font-medium line-clamp-2">
                 {m.name}
               </span>
             </button>
