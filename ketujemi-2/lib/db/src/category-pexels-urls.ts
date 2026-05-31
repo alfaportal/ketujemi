@@ -95,7 +95,8 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
 
   // —— Lokale ————————————————————————————————————————————————————————————————
   "lokale-type-depo": pexelsPhoto(12706241),
-  "lokale-type-garazha": pexelsPhoto(8348183),
+  "lokale-type-garazha":
+    "https://images.pexels.com/photos/9139588/pexels-photo-9139588.jpeg?w=1200&q=80",
   "lokale-type-afariste": pexelsPhoto(7046155),
   "lokale-type-industriale": pexelsPhoto(6794929),
   "lokale-type-zyre": pexelsPhoto(28715052),
