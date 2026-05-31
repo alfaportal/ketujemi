@@ -24,20 +24,19 @@ export const MD_TYPE_DB_SLUG: Record<MdTypeKey, string> = {
   tepihe_perde: "mobilje-type-tepihe-perde",
 };
 
-/** Hub picker thumbnails — same photos as type-page heroes in category-pexels-urls.ts */
 export const MD_TYPE_PHOTOS: Record<MdTypeKey, string> = {
   sallone_ulese:
-    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80",
+    "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=400",
   dhoma_gjumit:
-    "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=400&q=80",
+    "https://images.pexels.com/photos/36676787/pexels-photo-36676787.jpeg?auto=compress&cs=tinysrgb&w=400",
   ndricim:
     "https://images.pexels.com/photos/1123262/pexels-photo-1123262.jpeg?auto=compress&cs=tinysrgb&w=400",
   kuzhina:
-    "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80",
+    "https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg?auto=compress&cs=tinysrgb&w=400",
   kopsht_terasa:
-    "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80",
+    "https://images.pexels.com/photos/27975920/pexels-photo-27975920.jpeg?auto=compress&cs=tinysrgb&w=400",
   tepihe_perde:
-    "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=400&q=80",
+    "https://images.pexels.com/photos/28379851/pexels-photo-28379851.jpeg?auto=compress&cs=tinysrgb&w=400",
 };
 
 export const MD_TYPE_LABEL_KEY: Record<MdTypeKey, string> = {
