@@ -119,7 +119,10 @@ import { TelefonaSearchPanel } from "@/components/telefona-search-panel";
 import {
   TEL_DEVICE_KEYS,
   TEL_DEVICE_LABEL_KEY,
+  TEL_BRAND_GROUP_SLUG,
   getTelefonaHubChildCategoryIds,
+  resolveTelefonaCategoryIdBySlug,
+  type TelBrandGroupKey,
   type TelDeviceKey,
 } from "@/lib/telefona-search-helpers";
 import { MobiljeDekorimSearchPanel } from "@/components/mobilje-dekorim-search-panel";
@@ -1956,6 +1959,23 @@ export default function CategoryPage() {
               onNavigateToDevice={(deviceKey) =>
                 setLocation(`${categoryPath(categoryId)}?device=${encodeURIComponent(deviceKey)}`)
               }
+              onNavigateToBrand={(brandGroupKey: TelBrandGroupKey) => {
+                const slug = TEL_BRAND_GROUP_SLUG[brandGroupKey];
+                if (!slug) return;
+                const brandId = resolveTelefonaCategoryIdBySlug(
+                  allCategories as any,
+                  categoryId,
+                  slug,
+                );
+                if (brandId) {
+                  navigateToCategory(
+                    setLocation,
+                    brandId,
+                    categoryId,
+                    allCategories as CategoryRef[],
+                  );
+                }
+              }}
             />
             {isParentCategoryHub ? (
               <VipPartnersSection variant="hub" categoryId={categoryId} className="my-8" />
@@ -1976,6 +1996,24 @@ export default function CategoryPage() {
             onScrollToResults={() =>
               resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
             }
+            onNavigateToBrand={(brandGroupKey: TelBrandGroupKey) => {
+              const slug = TEL_BRAND_GROUP_SLUG[brandGroupKey];
+              if (!slug) return;
+              const hub = isTelefonaTypePage && parentCategory ? (parentCategory as any).id : categoryId;
+              const brandId = resolveTelefonaCategoryIdBySlug(
+                allCategories as any,
+                hub,
+                slug,
+              );
+              if (brandId) {
+                navigateToCategory(
+                  setLocation,
+                  brandId,
+                  categoryId,
+                  allCategories as CategoryRef[],
+                );
+              }
+            }}
           />
         ) : null}
 

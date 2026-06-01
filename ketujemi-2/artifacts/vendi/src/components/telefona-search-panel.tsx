@@ -93,6 +93,7 @@ type Props = {
   variant?: "hub" | "type";
   fixedDeviceKey?: TelDeviceKey;
   onNavigateToDevice?: (deviceKey: TelDeviceKey) => void;
+  onNavigateToBrand?: (brandGroupKey: TelBrandGroupKey) => void;
 };
 
 function ChipButton({
@@ -133,6 +134,7 @@ export function TelefonaSearchPanel({
   variant = "hub",
   fixedDeviceKey,
   onNavigateToDevice,
+  onNavigateToBrand,
 }: Props) {
   const isTypePage = variant === "type";
   const { t } = useMarket();
@@ -221,6 +223,10 @@ export function TelefonaSearchPanel({
   }, [isTypePage, fixedDeviceKey]);
 
   const selectBrandGroup = (key: TelBrandGroupKey) => {
+    if (onNavigateToBrand && key !== "other_brands") {
+      onNavigateToBrand(key);
+      return;
+    }
     const next = brandGroup === key ? null : key;
     setBrandGroup(next);
     resetBrandFilters();
