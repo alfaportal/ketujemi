@@ -194,7 +194,7 @@ export function TelefonaSearchPanel({
   };
 
   const selectDevice = (key: TelDeviceKey) => {
-    if (!isTypePage && onNavigateToDevice) {
+    if (onNavigateToDevice) {
       onNavigateToDevice(key);
       return;
     }
@@ -407,7 +407,6 @@ export function TelefonaSearchPanel({
         <p className="text-sm text-gray-500">{t.tel_panel_sub}</p>
       </div>
 
-      {!isTypePage ? (
       <section className="space-y-3 max-w-full overflow-hidden">
         <Label className="text-sm font-bold text-gray-900">{t.tel_sec_device}</Label>
         <CategoryPhotoPickerGrid>
@@ -425,7 +424,6 @@ export function TelefonaSearchPanel({
           ))}
         </CategoryPhotoPickerGrid>
       </section>
-      ) : null}
 
       {!fixedBrandGroup ? (
       <section className="space-y-4 rounded-xl border border-blue-100 bg-blue-50/30 p-3 sm:p-4 max-w-full overflow-hidden">

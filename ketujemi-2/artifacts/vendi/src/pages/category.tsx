@@ -2052,6 +2052,12 @@ export default function CategoryPage() {
             onScrollToResults={() =>
               resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
             }
+            onNavigateToDevice={(deviceKey) => {
+              const hub = (isTelefonaTypePage || isTelefonaBrandCategoryPage) && parentCategory
+                ? (parentCategory as any).id
+                : categoryId;
+              setLocation(`${categoryPath(hub)}?device=${encodeURIComponent(deviceKey)}`);
+            }}
             onNavigateToBrand={(brandGroupKey: TelBrandGroupKey) => {
               const hub = isTelefonaTypePage && parentCategory ? (parentCategory as any).id : categoryId;
               setLocation(
