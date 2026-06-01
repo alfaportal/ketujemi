@@ -106,7 +106,6 @@ export const SPORT_DEVICE_KEYS = [
   "camp_food_kuzhina",
   "camp_food_termos",
   "camp_food_frigo",
-  "camp_tool_thike",
   "camp_tool_llamba",
   "camp_tool_canta",
   "air_fly_para",
@@ -189,7 +188,6 @@ export const SPORT_DEVICE_LABEL_KEY: Record<SportDeviceKey, string> = {
   camp_food_kuzhina: "so_dev_camp_food_kuzhina",
   camp_food_termos: "so_dev_camp_food_termos",
   camp_food_frigo: "so_dev_camp_food_frigo",
-  camp_tool_thike: "so_dev_camp_tool_thike",
   camp_tool_llamba: "so_dev_camp_tool_llamba",
   camp_tool_canta: "so_dev_camp_tool_canta",
   air_fly_para: "so_dev_air_fly_para",
@@ -304,10 +302,16 @@ export const SPORT_FB_DEVICE_PHOTOS: Partial<Record<SportDeviceKey, string>> = {
     "https://images.pexels.com/photos/8220281/pexels-photo-8220281.jpeg?w=400&q=80",
   camp_sleep_thase:
     "https://images.pexels.com/photos/6299741/pexels-photo-6299741.jpeg?w=400&q=80",
+  camp_sleep_dyshek:
+    "https://images.pexels.com/photos/5538697/pexels-photo-5538697.jpeg?w=400&q=80",
   camp_food_kuzhina:
     "https://images.pexels.com/photos/590078/pexels-photo-590078.jpeg?w=400&q=80",
   camp_food_termos:
     "https://images.pexels.com/photos/15782410/pexels-photo-15782410.jpeg?w=400&q=80",
+  camp_food_frigo:
+    "https://images.pexels.com/photos/3974682/pexels-photo-3974682.jpeg?w=400&q=80",
+  camp_tool_llamba:
+    "https://images.pexels.com/photos/5538611/pexels-photo-5538611.jpeg?w=400&q=80",
   camp_tool_canta:
     "https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?w=400&q=80",
 };
@@ -366,7 +370,6 @@ export const SPORT_DEVICE_SEARCH: Record<SportDeviceKey, string> = {
   camp_food_kuzhina: "Kuzhina kampingi",
   camp_food_termos: "Termosa Shishe",
   camp_food_frigo: "Çanta frigoriferike",
-  camp_tool_thike: "Thika Sëpata",
   camp_tool_llamba: "Llamba koke dore",
   camp_tool_canta: "Çanta shpine Hiking",
   air_fly_para: "Paraglajding",
@@ -468,7 +471,7 @@ export const SPORT_DEVICE_SECTIONS: Record<SportTypeKey, readonly SportDeviceSec
     },
     {
       groupLabelKey: "so_grp_camp_tools",
-      itemKeys: ["camp_tool_thike", "camp_tool_llamba", "camp_tool_canta"],
+      itemKeys: ["camp_tool_llamba", "camp_tool_canta"],
     },
   ],
   martial: [
