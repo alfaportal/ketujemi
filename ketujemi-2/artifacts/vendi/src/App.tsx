@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MarketProvider } from "@/lib/market-context";
@@ -15,12 +15,22 @@ import {
   LegacyCategoryRouteRedirect,
   categoryHubRedirectComponent,
 } from "@/components/category-slug-redirect";
-import { PARENT_CATEGORY_SLUG_ORDER } from "@/lib/parent-category-slugs";
+import { withRouteErrorBoundary } from "@/components/route-error-boundary";
+import {
+  APP_ROUTES,
+  CATCH_ALL_ROUTE,
+  type AppRouteDefinition,
+  type RouteId,
+} from "@/config/routes.config";
 
 const Home = lazy(() => import("@/pages/home"));
 const Listings = lazy(() => import("@/pages/listings"));
 const CategoryPage = lazy(() => import("@/pages/category"));
 const ListingDetail = lazy(() => import("@/pages/listing-detail"));
+
+const ListingsRoute = withRouteErrorBoundary(Listings);
+const CategoryPageRoute = withRouteErrorBoundary(CategoryPage);
+const ListingDetailRoute = withRouteErrorBoundary(ListingDetail);
 const NewListing = lazy(() => import("@/pages/new-listing"));
 const LoginPage = lazy(() => import("@/pages/login"));
 const ProfilePage = lazy(() => import("@/pages/profile"));
@@ -43,6 +53,42 @@ const PartnerRegisterPage = lazy(() => import("@/pages/partner"));
 const WalletBankPaymentPage = lazy(() => import("@/pages/wallet-bank-payment"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
+const ROUTE_COMPONENTS: Record<Exclude<RouteId, "category-hub-redirect">, ComponentType> = {
+  admin: AdminPanel,
+  login: LoginPage,
+  profile: ProfilePage,
+  "wallet-bank-payment": WalletBankPaymentPage,
+  "business-profile": BusinessProfilePage,
+  about: AboutPage,
+  rules: RulesPage,
+  privacy: PrivacyPage,
+  cookies: CookiesPage,
+  terms: TermsPage,
+  "business-rules": BusinessRulesPage,
+  contact: ContactPage,
+  faq: FaqPage,
+  security: SecurityPage,
+  press: PressPage,
+  "partner-register": PartnerRegisterPage,
+  "vip-packages": VipPackagesPage,
+  advertise: AdvertisePage,
+  home: Home,
+  "legacy-category-redirect": LegacyCategoryRouteRedirect,
+  category: CategoryPageRoute,
+  "new-listing": NewListing,
+  "edit-listing": EditListing,
+  "listing-detail": ListingDetailRoute,
+  listings: ListingsRoute,
+  "not-found": NotFound,
+};
+
+function resolveRouteComponent(route: AppRouteDefinition): ComponentType {
+  if (route.id === "category-hub-redirect" && route.hubSlug) {
+    return categoryHubRedirectComponent(route.hubSlug);
+  }
+  return ROUTE_COMPONENTS[route.id];
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -63,66 +109,14 @@ function Router() {
       <main key={pathname}>
         <Suspense fallback={<RouteLoading />}>
           <Switch>
-            <Route path="/admin" component={AdminPanel} />
-            <Route path="/admin-secret-panel" component={AdminPanel} />
-            <Route path="/login" component={LoginPage} />
-            <Route path="/profile" component={ProfilePage} />
-            <Route path="/wallet/bank-payment" component={WalletBankPaymentPage} />
-            <Route path="/biznes/:id" component={BusinessProfilePage} />
-            <Route path="/rreth-nesh" component={AboutPage} />
-            <Route path="/za-nas" component={AboutPage} />
-            <Route path="/o-nama" component={AboutPage} />
-            <Route path="/about" component={AboutPage} />
-            <Route path="/rregullat" component={RulesPage} />
-            <Route path="/pravila" component={RulesPage} />
-            <Route path="/rules" component={RulesPage} />
-            <Route path="/privatesia" component={PrivacyPage} />
-            <Route path="/privatnost" component={PrivacyPage} />
-            <Route path="/cookies" component={CookiesPage} />
-            <Route path="/kolacinja" component={CookiesPage} />
-            <Route path="/kolacici" component={CookiesPage} />
-            <Route path="/kushtet" component={TermsPage} />
-            <Route path="/uslovi" component={TermsPage} />
-            <Route path="/terms" component={TermsPage} />
-            <Route path="/business-rules" component={BusinessRulesPage} />
-            <Route path="/privacy" component={PrivacyPage} />
-            <Route path="/contact" component={ContactPage} />
-            <Route path="/kontakt" component={ContactPage} />
-            <Route path="/faq" component={FaqPage} />
-            <Route path="/siguria" component={SecurityPage} />
-            <Route path="/bezbednost" component={SecurityPage} />
-            <Route path="/sigurnost" component={SecurityPage} />
-            <Route path="/security" component={SecurityPage} />
-            <Route path="/shtypi" component={PressPage} />
-            <Route path="/mediji" component={PressPage} />
-            <Route path="/press" component={PressPage} />
-            <Route path="/hap-shitore" component={PartnerRegisterPage} />
-            <Route path="/otvori-prodavnica" component={PartnerRegisterPage} />
-            <Route path="/otvori-prodavnicu" component={PartnerRegisterPage} />
-            <Route path="/vip" component={VipPackagesPage} />
-            <Route path="/reklamoni" component={AdvertisePage} />
-            <Route path="/reklamiraj" component={AdvertisePage} />
-            <Route path="/advertise" component={AdvertisePage} />
-            <Route path="/partner" component={PartnerRegisterPage} />
-            <Route path="/partneritet" component={PartnerRegisterPage} />
-            <Route path="/partnerstvo" component={PartnerRegisterPage} />
-            <Route path="/behu-partner" component={ProfilePage} />
-            <Route path="/" component={Home} />
-            <Route path="/category/:id" component={LegacyCategoryRouteRedirect} />
-            {PARENT_CATEGORY_SLUG_ORDER.map((slug) => (
+            {APP_ROUTES.map((route) => (
               <Route
-                key={`hub-${slug}`}
-                path={`/${slug}`}
-                component={categoryHubRedirectComponent(slug)}
+                key={`${route.id}:${route.path}`}
+                path={route.path}
+                component={resolveRouteComponent(route)}
               />
             ))}
-            <Route path="/categories/:id" component={CategoryPage} />
-            <Route path="/listings/new/dhurata-falas" component={NewListing} />
-            <Route path="/listings/new" component={NewListing} />
-            <Route path="/listings/:id/edit" component={EditListing} />
-            <Route path="/listings/:id" component={ListingDetail} />
-            <Route path="/listings" component={Listings} />
-            <Route component={NotFound} />
+            <Route component={ROUTE_COMPONENTS[CATCH_ALL_ROUTE.id]} />
           </Switch>
         </Suspense>
       </main>
