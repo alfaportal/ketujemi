@@ -1,6 +1,5 @@
-import type { AppExtraMarketCode } from "@/lib/app-extra-i18n";
 import { useMarket } from "@/lib/market-context";
-import { translationKeyForUiLang } from "@/lib/ui-languages";
+import { translationKeyForUiLang, type UiTranslationLocale } from "@/lib/ui-languages";
 
 export type PartnerBenefit = { icon: string; title: string; desc: string };
 
@@ -412,13 +411,122 @@ Klik na „Registruj se kao partner" smatra se važećim elektronskim potpisom.`
     "Nakon aktivacije, prijavite se na /login sa poslovnim emailom za upravljanje oglasima.",
 };
 
+const EN: PartnerPageCopy = {
+  docTitle: "Partner — KetuJemi.com",
+  heroBadge: "Partner program",
+  heroTitle: "Grow your business with KetuJemi.com",
+  heroSubtitle: "50,000+ potential customers every month",
+  benefitsTitle: "Your benefits",
+  benefits: [
+    { icon: "📈", title: "Maximum visibility", desc: "featured listings at the top" },
+    { icon: "👥", title: "50,000+ active visitors", desc: "every month" },
+    { icon: "🎯", title: "Category targeting", desc: "and location" },
+    { icon: "📱", title: "Dedicated business panel", desc: "" },
+    { icon: "⭐", title: '"Verified Partner" badge', desc: "" },
+    { icon: "📊", title: "Detailed statistics", desc: "" },
+    { icon: "🚀", title: "Priority in search results", desc: "" },
+  ],
+  packagesTitle: "Packages",
+  standardTitle: "STANDARD PARTNER",
+  standardPrice: "€30",
+  periodPerMonth: "/month",
+  standardFeatures: [
+    "Custom shop on KetuJemi.com",
+    "Up to 50 active listings",
+    "Business logo with link on the homepage",
+    '"Verified Partner" badge',
+  ],
+  vipTitle: "VIP PARTNER",
+  vipPrice: "€50",
+  vipFeatures: [
+    "Everything in Standard +",
+    "Up to 100 active listings",
+    "Priority placement in search",
+    "Visible VIP badge",
+    "Advanced statistics",
+    "Large business logo on the homepage",
+  ],
+  formTitle: "Register as a partner",
+  formSubtitle: "Complete the form — automatic activation after payment.",
+  labelBusinessName: "Business name",
+  labelContactName: "Contact person",
+  labelEmail: "Email",
+  labelPhone: "Phone",
+  labelIban: "IBAN",
+  labelPackage: "Package",
+  packagePlaceholder: "Choose package",
+  packageStandard: "Standard Partner €30",
+  packageVip: "VIP Partner €50",
+  labelLogo: "Logo URL or upload",
+  logoUrlPlaceholder: "https://...",
+  uploadLogo: "Upload",
+  labelLink: "Your link (website, Instagram or Facebook — 1 link)",
+  linkPlaceholder: "https://instagram.com/...",
+  termsLabel: "I have read and accept the contract terms",
+  submitButton: "Register as partner",
+  contractTitle: "Full terms",
+  contractText: `SERVICE AGREEMENT — KETUJEMI.COM
+
+1. SUBJECT
+The client receives access to KetuJemi.com according to the selected package (Standard €30/month or VIP €50/month).
+
+2. TERM
+The agreement starts on the signing date and continues without a fixed end date.
+
+3. CANCELLATION
+The client must give written notice at least 3 months before the desired termination date.
+
+4. PAYMENT
+- Payment is charged monthly by automatic billing
+- IBAN is required before activation
+
+5. PRICE CHANGES
+KetuJemi.com may change prices with at least 3 months' notice.
+
+6. NON-PAYMENT
+Email reminders on days 3, 7, 15 and 30; suspension after 30 days.
+
+7. LIABILITY
+The client is responsible for the accuracy of published information.
+
+8. GOVERNING LAW
+According to the law of the country where the business operates.
+
+9. ELECTRONIC SIGNATURE
+Clicking "Register as partner" constitutes a valid electronic signature.`,
+  errRequired: "Please fill in all required fields.",
+  errTerms: "You must accept the contract terms.",
+  errLogoUnavailable: "Logo upload is unavailable — enter a URL.",
+  errUploadFailed: "Logo upload failed.",
+  errRegisterFailed: "Registration failed.",
+  errServer: "Could not reach the server. Please try again.",
+  errPaymentOpen: "Payment window did not open.",
+  successTitle: "Thank you!",
+  successPending:
+    "Your request was submitted. Check your email for the payment link — you will be activated automatically after payment.",
+  successPaid:
+    "Payment confirmed! Your Partner account is active. Check SMS/email for your code and sign in at /login.",
+  successHome: "Back to home",
+  landingCta: "Register as partner",
+  landingCtaHint:
+    "First create an account (email or phone), then choose a package and complete the partner form.",
+  termsOpenHint: "Read the full terms (opens below)",
+  successNoticeEmail:
+    "Check your email for confirmation and instructions for your shop.",
+  successNoticePayment:
+    "Package payment is online via Stripe. After payment, the Partner account activates automatically.",
+  successNoticeActivate:
+    "After activation, sign in at /login with your business email to manage listings.",
+};
+
 const BY_LOCALE: Record<PartnerPageLocaleKey, PartnerPageCopy> = {
   ks: SQ,
   mk: MK,
   mne: MNE,
+  en: EN,
 };
 
-type PartnerPageLocaleKey = Extract<AppExtraMarketCode, "ks" | "mk" | "mne">;
+type PartnerPageLocaleKey = UiTranslationLocale;
 
 export function partnerPageForLocale(locale: PartnerPageLocaleKey): PartnerPageCopy {
   return BY_LOCALE[locale];

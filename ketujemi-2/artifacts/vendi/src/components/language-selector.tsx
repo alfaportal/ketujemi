@@ -32,7 +32,7 @@ export function LanguageSelector({ variant = "on-light", compact }: LanguageSele
       <button
         type="button"
         data-testid="button-language-selector"
-        aria-label={`${current.displayCode} ${current.label}`}
+        aria-label={`${current.displayCode} — ${current.label}`}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={cn(
@@ -41,7 +41,8 @@ export function LanguageSelector({ variant = "on-light", compact }: LanguageSele
           onDark && "border border-white/25 bg-white/10 hover:bg-white/20 shadow-none",
         )}
       >
-        <span className="text-base leading-none" aria-hidden>
+        <span className="font-bold tracking-wide">{current.displayCode}</span>
+        <span className="text-base leading-none max-md:hidden" aria-hidden>
           {current.flag}
         </span>
         <ChevronDown
@@ -53,7 +54,7 @@ export function LanguageSelector({ variant = "on-light", compact }: LanguageSele
       {open && (
         <div
           role="listbox"
-          aria-label="Zgjidh gjuhën"
+          aria-label="Choose language"
           className={cn(
             "absolute top-full left-0 z-50 mt-1 min-w-[9.5rem] overflow-hidden rounded-lg border py-0.5 shadow-lg",
             onDark ? "border-white/20 bg-gray-900/95" : "border-gray-100 bg-white",
@@ -83,6 +84,9 @@ export function LanguageSelector({ variant = "on-light", compact }: LanguageSele
                       : "text-gray-800 hover:bg-gray-50",
                 )}
               >
+                <span className="w-6 shrink-0 font-bold text-[11px] tracking-wide">
+                  {lang.displayCode}
+                </span>
                 <span className="text-sm leading-none" aria-hidden>
                   {lang.flag}
                 </span>

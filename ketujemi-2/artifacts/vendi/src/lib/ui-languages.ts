@@ -3,16 +3,21 @@ export const UI_LANGUAGES = [
   { code: "sq", flag: "🇦🇱", label: "Shqip", displayCode: "AL" },
   { code: "mk", flag: "🇲🇰", label: "Maqedonisht", displayCode: "MK" },
   { code: "mne", flag: "🇲🇪", label: "Malazisht", displayCode: "ME" },
+  { code: "en", flag: "🇬🇧", label: "English", displayCode: "EN" },
 ] as const;
 
 export type UiLang = (typeof UI_LANGUAGES)[number]["code"];
 
 export const DEFAULT_UI_LANG: UiLang = "sq";
 
+/** UI language → translation bundle keys in `market-context` / `app-extra-i18n`. */
+export type UiTranslationLocale = "ks" | "mk" | "mne" | "en";
+
 /** Maps UI language → translation bundle keys in `market-context` / `app-extra-i18n`. */
-export function translationKeyForUiLang(uiLang: UiLang): "ks" | "mk" | "mne" {
+export function translationKeyForUiLang(uiLang: UiLang): UiTranslationLocale {
   if (uiLang === "mk") return "mk";
   if (uiLang === "mne") return "mne";
+  if (uiLang === "en") return "en";
   return "ks";
 }
 

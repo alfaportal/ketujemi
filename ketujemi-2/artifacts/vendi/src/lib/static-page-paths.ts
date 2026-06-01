@@ -51,6 +51,11 @@ export const INFO_STATIC_PATHS = new Set([
   "/partneritet",
   "/partnerstvo",
   "/behu-partner",
+  "/about",
+  "/security",
+  "/press",
+  "/advertise",
+  "/rules",
 ]);
 
 export function isInfoStaticPage(pathname: string): boolean {
@@ -75,6 +80,23 @@ export type StaticPagePaths = {
 
 /** Footer / help links — localized slugs per UI language. */
 export function staticPagePaths(uiLang: UiLang): StaticPagePaths {
+  if (uiLang === "en") {
+    return {
+      contact: "/contact",
+      faq: "/faq",
+      security: "/security",
+      press: "/press",
+      about: "/about",
+      rules: "/rules",
+      privacy: "/privacy",
+      cookies: "/cookies",
+      terms: "/terms",
+      openShop: FOOTER_BUSINESS_OPEN_SHOP_PATH,
+      vip: FOOTER_BUSINESS_VIP_PATH,
+      advertise: "/advertise",
+      partnership: FOOTER_BUSINESS_PARTNERSHIP_PATH,
+    };
+  }
   if (uiLang === "mk") {
     return {
       contact: "/kontakt",
@@ -139,6 +161,17 @@ export type FooterMarketsStripCopy = {
 };
 
 export function footerMarketsStripCopy(uiLang: UiLang): FooterMarketsStripCopy {
+  if (uiLang === "en") {
+    return {
+      title: "OFFICIAL MARKETS",
+      primary: [
+        { marketCode: "ks", name: "Kosovo", iso: "XK" },
+        { marketCode: "al", name: "Albania", iso: "AL" },
+        { marketCode: "mk", name: "North Macedonia", iso: "MK" },
+      ],
+      diasporaLabel: "+8 diaspora countries",
+    };
+  }
   if (uiLang === "mk") {
     return {
       title: "СЛУЖБЕНИ ПАЗАРИ",

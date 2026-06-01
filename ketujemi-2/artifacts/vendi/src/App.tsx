@@ -72,8 +72,10 @@ function Router() {
             <Route path="/rreth-nesh" component={AboutPage} />
             <Route path="/za-nas" component={AboutPage} />
             <Route path="/o-nama" component={AboutPage} />
+            <Route path="/about" component={AboutPage} />
             <Route path="/rregullat" component={RulesPage} />
             <Route path="/pravila" component={RulesPage} />
+            <Route path="/rules" component={RulesPage} />
             <Route path="/privatesia" component={PrivacyPage} />
             <Route path="/privatnost" component={PrivacyPage} />
             <Route path="/cookies" component={CookiesPage} />
@@ -90,14 +92,17 @@ function Router() {
             <Route path="/siguria" component={SecurityPage} />
             <Route path="/bezbednost" component={SecurityPage} />
             <Route path="/sigurnost" component={SecurityPage} />
+            <Route path="/security" component={SecurityPage} />
             <Route path="/shtypi" component={PressPage} />
             <Route path="/mediji" component={PressPage} />
+            <Route path="/press" component={PressPage} />
             <Route path="/hap-shitore" component={PartnerRegisterPage} />
             <Route path="/otvori-prodavnica" component={PartnerRegisterPage} />
             <Route path="/otvori-prodavnicu" component={PartnerRegisterPage} />
             <Route path="/vip" component={VipPackagesPage} />
             <Route path="/reklamoni" component={AdvertisePage} />
             <Route path="/reklamiraj" component={AdvertisePage} />
+            <Route path="/advertise" component={AdvertisePage} />
             <Route path="/partner" component={PartnerRegisterPage} />
             <Route path="/partneritet" component={PartnerRegisterPage} />
             <Route path="/partnerstvo" component={PartnerRegisterPage} />

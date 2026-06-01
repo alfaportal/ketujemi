@@ -11,8 +11,11 @@ import { srLatn } from "date-fns/locale/sr-Latn";
 import { sq } from "date-fns/locale/sq";
 import { KS_AK_FORM, MK_AK_FORM, MNE_AK_FORM } from "@/lib/arsim-kurse-form-i18n";
 import { KS_SO_DEVICE, MK_SO_DEVICE, MNE_SO_DEVICE } from "@/lib/sport-outdoor-device-i18n";
+import { EN_EXTRA } from "./app-extra-i18n-en";
+import type { UiTranslationLocale } from "./ui-languages";
 
 export type AppExtraMarketCode = "ks" | "al" | "mk" | "mne";
+export type AppExtraLocaleKey = AppExtraMarketCode | UiTranslationLocale;
 
 /** Canonical floor values stored in filters / listings (matches existing DB payloads). */
 export const BANESA_FLOOR_VALUES: readonly string[] = [
@@ -5235,11 +5238,12 @@ const MNE_EXTRA: Record<string, string> = {
   adm_set_btn: "Sačuvaj postavke",
 };
 
-export const EXTRA_TRANSLATIONS: Record<AppExtraMarketCode, Record<string, string>> = {
+export const EXTRA_TRANSLATIONS: Record<AppExtraLocaleKey, Record<string, string>> = {
   ks: KS_EXTRA,
   al: { ...KS_EXTRA, ...AL_OVERRIDES },
   mk: MK_EXTRA,
   mne: MNE_EXTRA,
+  en: EN_EXTRA,
 };
 
 export function fillCount(template: string, count: string): string {
@@ -5258,7 +5262,8 @@ export function fillPlaceholders(
 }
 
 /** Relative time strings (`formatDistanceToNow`) follow the active market. */
-export function dateFnsLocale(marketCode: string): Locale {
+export function dateFnsLocale(marketCode: string, uiLang?: string): Locale {
+  if (uiLang === "en") return enUS;
   switch (marketCode) {
     case "mk":
       return mk;

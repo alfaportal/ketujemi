@@ -93,10 +93,11 @@ export const ARSIM_CAT_TRANSLATIONS: Record<string, { mk: string; mne: string }>
 
 export function translateArsimKurseCategory(
   name: string,
-  localeCode: "mk" | "mne" | "ks" | "al",
+  localeCode: "mk" | "mne" | "ks" | "al" | "en",
 ): string | undefined {
-  if (localeCode !== "mk" && localeCode !== "mne") return undefined;
   const row = ARSIM_CAT_TRANSLATIONS[name];
   if (!row) return undefined;
+  if (localeCode === "en") return row.mne;
+  if (localeCode !== "mk" && localeCode !== "mne") return undefined;
   return row[localeCode];
 }

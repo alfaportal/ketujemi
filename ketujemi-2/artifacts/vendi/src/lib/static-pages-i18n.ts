@@ -1,8 +1,8 @@
-import type { AppExtraMarketCode } from "@/lib/app-extra-i18n";
+import { EN_STATIC_PAGES } from "@/lib/static-pages-i18n-en";
 import { useMarket } from "@/lib/market-context";
-import { translationKeyForUiLang } from "@/lib/ui-languages";
+import { translationKeyForUiLang, type UiTranslationLocale } from "@/lib/ui-languages";
 
-export type StaticPageLocaleKey = Extract<AppExtraMarketCode, "ks" | "mk" | "mne">;
+export type StaticPageLocaleKey = UiTranslationLocale;
 
 type PageSection = {
   title: string;
@@ -1662,6 +1662,7 @@ export const STATIC_PAGES: Record<StaticPageLocaleKey, StaticPagesCopy> = {
   ks: KS,
   mk: MK,
   mne: MNE,
+  en: EN_STATIC_PAGES,
 };
 
 export function staticPagesForLocale(locale: StaticPageLocaleKey): StaticPagesCopy {
