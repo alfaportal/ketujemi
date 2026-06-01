@@ -22,7 +22,8 @@ export function normalizeSmsPhoneDigits(raw: string | null | undefined): string 
   return digits;
 }
 
-async function sendViaVonage(phoneDigits: string, text: string): Promise<boolean> {
+/** Vonage SMS send (queue worker). */
+export async function runVonageSendSms(phoneDigits: string, text: string): Promise<boolean> {
   const creds = getCreds();
   if (!creds) return false;
 
@@ -55,13 +56,18 @@ async function sendViaVonage(phoneDigits: string, text: string): Promise<boolean
   return false;
 }
 
-/** Transactional SMS via Vonage (API Key + API Secret). */
+/** Transactional SMS via Vonage — enqueued when REDIS_URL is set. */
 export async function vonageSendSms(phoneDigits: string, text: string): Promise<boolean> {
   if (!hasVonageSmsCreds()) {
     logger.warn("vonage sms skipped — set VONAGE_API_KEY and VONAGE_API_SECRET");
     return false;
   }
-  return sendViaVonage(phoneDigits, text);
+  if (!process.env.REDIS_URL?.trim()) {
+    return runVonageSendSms(phoneDigits, text);
+  }
+  const { enqueueSms } = await import("../queues/jobQueue.js");
+  await enqueueSms("vonage-send", { phoneDigits, text });
+  return true;
 }
 
 export function buildListingPackageActivationSms(activationCode: string): string {

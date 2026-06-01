@@ -51,6 +51,8 @@ async function startServer(): Promise<void> {
     await purgeInvalidListingImagesOnStartup();
     logPaymentStackReadiness(logger);
     logger.info(vonageConfigSummary(), "vonage sms config (masked)");
+    const { startJobQueueWorkers } = await import("./queues/jobQueue.js");
+    startJobQueueWorkers();
   } catch (err) {
     logger.error({ err }, "Database schema migration failed");
     if (process.env.NODE_ENV === "production") {

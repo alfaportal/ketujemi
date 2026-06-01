@@ -25,7 +25,7 @@ function verifyBrand(): string {
   return process.env.VONAGE_VERIFY_BRAND?.trim() || "KetuJemi";
 }
 
-async function vonageVerifyRequestOnly(phoneDigits: string): Promise<string> {
+export async function runVonageVerifyRequestOnly(phoneDigits: string): Promise<string> {
   const { apiKey, apiSecret } = getCreds();
   const body = new URLSearchParams({
     api_key: apiKey,
@@ -56,7 +56,7 @@ async function vonageVerifyRequestOnly(phoneDigits: string): Promise<string> {
   return data.request_id;
 }
 
-async function vonageVerifyCheckOnly(requestId: string, code: string): Promise<void> {
+export async function runVonageVerifyCheckOnly(requestId: string, code: string): Promise<void> {
   const { apiKey, apiSecret } = getCreds();
   const body = new URLSearchParams({
     api_key: apiKey,
@@ -85,7 +85,11 @@ export async function vonageVerifyRequest(phoneDigits: string): Promise<string> 
       "SMS verification not configured. Set VONAGE_API_KEY and VONAGE_API_SECRET in Railway Variables.",
     );
   }
-  return vonageVerifyRequestOnly(phoneDigits);
+  if (!process.env.REDIS_URL?.trim()) {
+    return runVonageVerifyRequestOnly(phoneDigits);
+  }
+  const { enqueueSmsVerifyRequest } = await import("../queues/jobQueue.js");
+  return enqueueSmsVerifyRequest(phoneDigits);
 }
 
 /** Confirm OTP — Vonage; legacy `twilio:` request_id only for in-flight challenges. */
@@ -103,5 +107,10 @@ export async function vonageVerifyCheck(
     return;
   }
 
-  await vonageVerifyCheckOnly(requestId, code);
+  if (!process.env.REDIS_URL?.trim()) {
+    await runVonageVerifyCheckOnly(requestId, code);
+    return;
+  }
+  const { enqueueSmsVerifyCheck } = await import("../queues/jobQueue.js");
+  await enqueueSmsVerifyCheck(requestId, code);
 }

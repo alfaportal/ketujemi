@@ -17,10 +17,10 @@ export function toTwilioE164(phoneDigits: string): string {
 }
 
 /**
- * Transactional SMS via Twilio Messages API.
+ * Twilio Messages API send (queue worker).
  * Returns true when Twilio accepts the message (status queued/sent).
  */
-export async function twilioSendSms(phoneDigits: string, text: string): Promise<boolean> {
+export async function runTwilioSendSms(phoneDigits: string, text: string): Promise<boolean> {
   const auth = getTwilioAuth();
   const from = cleanTwilioEnv("TWILIO_PHONE_NUMBER");
   const accountSid = auth?.accountSid;
@@ -49,6 +49,16 @@ export async function twilioSendSms(phoneDigits: string, text: string): Promise<
     logger.error({ phoneDigits: phoneDigits.slice(-4), err: message }, "twilio sms failed");
     return false;
   }
+}
+
+/** Transactional SMS via Twilio — enqueued when REDIS_URL is set. */
+export async function twilioSendSms(phoneDigits: string, text: string): Promise<boolean> {
+  if (!process.env.REDIS_URL?.trim()) {
+    return runTwilioSendSms(phoneDigits, text);
+  }
+  const { enqueueSms } = await import("../queues/jobQueue.js");
+  await enqueueSms("twilio-send", { phoneDigits, text });
+  return true;
 }
 
 export async function twilioPostForm(

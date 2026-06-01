@@ -146,10 +146,10 @@ export function isTransactionalEmailConfigured(): boolean {
 }
 
 /**
- * Deliver email via SMTP, then Resend on SMTP failure or when SMTP is not set.
+ * Send email immediately (SMTP, then Resend). Used by queue workers.
  * Throws if nothing is configured or both providers fail.
  */
-export async function deliverEmail(mail: DeliverEmailOptions): Promise<void> {
+export async function deliverEmailNow(mail: DeliverEmailOptions): Promise<void> {
   const toList = recipients(mail.to);
   debugLog(mail.debugSource, "deliverEmail start", {
     to: toList,
@@ -184,6 +184,15 @@ export async function deliverEmail(mail: DeliverEmailOptions): Promise<void> {
     "email not sent — set RESEND_API_KEY and EMAIL_FROM (verified domain), or EMAIL_USER/EMAIL_PASS",
   );
   throw new Error("Email is not configured on the server");
+}
+
+/** Enqueue email for background delivery when REDIS_URL is set. */
+export async function deliverEmail(mail: DeliverEmailOptions): Promise<void> {
+  if (!process.env.REDIS_URL?.trim()) {
+    return deliverEmailNow(mail);
+  }
+  const { enqueueEmail } = await import("../queues/jobQueue.js");
+  await enqueueEmail(mail);
 }
 
 /** User-facing email (SMTP preferred, then Resend). Returns false if not configured. */
