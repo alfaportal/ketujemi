@@ -19,5 +19,6 @@ export { ensureFiscalSchema } from "./ensure-fiscal-schema.js";
 export { ensureOAuthSchema } from "./ensure-oauth-schema.js";
 export { ensureListingUserSchema } from "./ensure-listing-user-schema.js";
 export { ensureHomepagePartnersSchema } from "./ensure-homepage-partners-schema.js";
+export { ensureSportOutdoorTypeCategories } from "./ensure-sport-outdoor-types.js";
 
 export * from "./schema";

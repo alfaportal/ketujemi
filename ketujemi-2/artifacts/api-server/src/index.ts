@@ -4,6 +4,7 @@ import {
   ensureHomepagePartnersSchema,
   ensureListingUserSchema,
   ensureOAuthSchema,
+  ensureSportOutdoorTypeCategories,
   ensureWalletSchema,
   pool,
 } from "@workspace/db";
@@ -42,6 +43,8 @@ async function startServer(): Promise<void> {
     logger.info("Listing user_id + self-duplicate alerts schema verified");
     await ensureHomepagePartnersSchema(pool);
     logger.info("Homepage partners schema verified (homepage_partners)");
+    await ensureSportOutdoorTypeCategories(pool);
+    logger.info("Sport & Outdoor type subcategories verified (sport-type-*)");
     await purgeInvalidListingImagesOnStartup();
     logPaymentStackReadiness(logger);
     logger.info(vonageConfigSummary(), "vonage sms config (masked)");
