@@ -300,6 +300,16 @@ export const SPORT_FB_DEVICE_PHOTOS: Partial<Record<SportDeviceKey, string>> = {
     "https://images.pexels.com/photos/255934/pexels-photo-255934.jpeg?w=400&q=80",
   bike_pjese_pompa:
     "https://images.pexels.com/photos/5808019/pexels-photo-5808019.jpeg?w=400&q=80",
+  camp_sleep_tenda:
+    "https://images.pexels.com/photos/8220281/pexels-photo-8220281.jpeg?w=400&q=80",
+  camp_sleep_thase:
+    "https://images.pexels.com/photos/6299741/pexels-photo-6299741.jpeg?w=400&q=80",
+  camp_food_kuzhina:
+    "https://images.pexels.com/photos/590078/pexels-photo-590078.jpeg?w=400&q=80",
+  camp_food_termos:
+    "https://images.pexels.com/photos/15782410/pexels-photo-15782410.jpeg?w=400&q=80",
+  camp_tool_canta:
+    "https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?w=400&q=80",
 };
 
 export function resolveSportDevicePhoto(
