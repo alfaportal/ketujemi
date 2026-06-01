@@ -43,14 +43,14 @@ const HIGJIENE: Record<string, string> = {
 };
 
 const RROBA: Record<string, string> = {
-  "femije-leaf-rroba-foshnjeje": p(1927257),
-  "femije-leaf-rroba-vegjelish": p(35537),
+  "femije-leaf-rroba-foshnjeje": p(4321700),
+  "femije-leaf-rroba-vegjelish": p(1130180),
   "femije-leaf-rroba-shkollore": p(8612959),
-  "femije-leaf-veshje-dimri": p(1927254),
-  "femije-leaf-veshje-vere": p(1927256),
-  "femije-leaf-kepuce-foshnjeje": p(19048177),
+  "femije-leaf-veshje-dimri": p(30420279),
+  "femije-leaf-veshje-vere": p(1620769),
+  "femije-leaf-kepuce-foshnjeje": p(2271522),
   "femije-leaf-kepuce-femijesh": p(267320),
-  "femije-leaf-aksesore-rroba": p(1927259),
+  "femije-leaf-aksesore-rroba": p(18990251),
 };
 
 const LODRA: Record<string, string> = {
@@ -62,11 +62,11 @@ const LODRA: Record<string, string> = {
 };
 
 const EDUKATIVE: Record<string, string> = {
-  "femije-leaf-lodra-montessori": p(8613080),
-  "femije-leaf-blloqe-lego": p(163844),
-  "femije-leaf-lodra-muzikore": p(8613078),
-  "femije-leaf-tapete-sensor": p(4041398),
-  "femije-leaf-puzzle-edukative": p(2566107),
+  "femije-leaf-lodra-montessori": p(7269693),
+  "femije-leaf-blloqe-lego": p(298825),
+  "femije-leaf-lodra-muzikore": p(7577253),
+  "femije-leaf-tapete-sensor": p(4473562),
+  "femije-leaf-puzzle-edukative": p(6692835),
 };
 
 const LIBRA: Record<string, string> = {
@@ -115,23 +115,23 @@ const SHTATZANISE: Record<string, string> = {
 };
 
 const SIGURIA: Record<string, string> = {
-  "femije-leaf-porta-sigurie": p(3997992),
-  "femije-leaf-mbrojtese-kendi": p(4045504),
-  "femije-leaf-bllokues-sirtare": p(4045504),
-  "femije-leaf-mbrojtese-priza": p(4045504),
+  "femije-leaf-porta-sigurie": p(1442751),
+  "femije-leaf-mbrojtese-kendi": p(8429915),
+  "femije-leaf-bllokues-sirtare": p(5353881),
+  "femije-leaf-mbrojtese-priza": p(7937305),
   "femije-leaf-monitor-audio": p(3845458),
-  "femije-leaf-monitor-video": p(733853),
-  "femije-leaf-jeleke-shpetimi": p(3018737),
-  "femije-leaf-kaske-biciklete": p(8454446),
+  "femije-leaf-monitor-video": p(7282613),
+  "femije-leaf-jeleke-shpetimi": p(2525892),
+  "femije-leaf-kaske-biciklete": p(3932881),
 };
 
 const PISHINE: Record<string, string> = {
-  "femije-leaf-pishina-fryra": p(3018737),
-  "femije-leaf-veshje-banjo": p(1000445),
-  "femije-leaf-jeleke-noti": p(1000445),
-  "femije-leaf-lodra-reere": p(176743),
-  "femije-leaf-kapele-uv": p(2830117),
-  "femije-leaf-krem-mbrojtes": p(3997992),
+  "femije-leaf-pishina-fryra": p(36568259),
+  "femije-leaf-veshje-banjo": p(346776),
+  "femije-leaf-jeleke-noti": p(8094751),
+  "femije-leaf-lodra-reere": p(6138739),
+  "femije-leaf-kapele-uv": p(623042),
+  "femije-leaf-krem-mbrojtes": p(9496412),
 };
 
 export const FEMIJE_LEAF_SUBCATEGORY_PHOTOS: Record<string, string> = {
