@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { uploadImageToCloudinary } from "./cloudinary-config";
 
 const BUILD_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME?.trim() ?? "";
@@ -25,7 +26,7 @@ export function useListingImageUpload(): ListingImageUploadConfig & {
   useEffect(() => {
     let cancelled = false;
 
-    void fetch("/api/config/public", { credentials: "include" })
+    void fetchWithTimeout("/api/config/public", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : {}))
       .then(
         (data: {
@@ -65,7 +66,7 @@ export function useListingImageUpload(): ListingImageUploadConfig & {
       const ct = file.type?.trim() || "image/jpeg";
 
       if (provider === "b2") {
-        const pres = await fetch("/api/uploads/b2-presign", {
+        const pres = await fetchWithTimeout("/api/uploads/b2-presign", {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
@@ -80,7 +81,7 @@ export function useListingImageUpload(): ListingImageUploadConfig & {
           throw new Error("presign_failed");
         }
         const putCt = body.contentType?.trim() || ct;
-        const put = await fetch(body.uploadUrl, {
+        const put = await fetchWithTimeout(body.uploadUrl, {
           method: "PUT",
           body: file,
           headers: { "Content-Type": putCt },

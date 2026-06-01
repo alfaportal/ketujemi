@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { InfoEmailLine, LuxuryStaticShell } from "@/components/luxury-static-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +37,7 @@ export default function ContactPage() {
 
     setBusy(true);
     try {
-      const res = await fetch("/api/contact", {
+      const res = await fetchWithTimeout("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

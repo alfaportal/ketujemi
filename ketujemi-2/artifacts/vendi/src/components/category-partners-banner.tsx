@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { cn } from "@/lib/utils";
 import { PartnerSlot, type PartnerSlotData } from "@/components/partner-slot";
 
@@ -29,7 +30,7 @@ async function fetchTierPartners(
     tier,
     category_id: String(categoryId),
   });
-  const r = await fetch(`/api/partners/trusted?${params}`, { credentials: "include" });
+  const r = await fetchWithTimeout(`/api/partners/trusted?${params}`, { credentials: "include" });
   if (!r.ok) return [];
   const data = (await r.json()) as { partners?: PartnerSlotData[] };
   const list = Array.isArray(data.partners) ? data.partners : [];
@@ -81,7 +82,7 @@ export function CategoryPartnersBanner({ categoryId, className }: CategoryPartne
   useEffect(() => {
     if (!loaded || allPartners.length === 0 || impressionsSent.current) return;
     impressionsSent.current = true;
-    void fetch("/api/partners/analytics/impressions", {
+    void fetchWithTimeout("/api/partners/analytics/impressions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

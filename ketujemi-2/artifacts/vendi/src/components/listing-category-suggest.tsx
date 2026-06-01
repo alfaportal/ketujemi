@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Sparkles, Loader2, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMarket } from "@/lib/market-context";
@@ -63,7 +64,7 @@ export function ListingCategorySuggest({
 
     const timer = setTimeout(() => {
       setLoading(true);
-      void fetch("/api/ai/suggest-listing-category", {
+      void fetchWithTimeout("/api/ai/suggest-listing-category", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

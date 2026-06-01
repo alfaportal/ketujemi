@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Loader2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,7 +83,7 @@ export function PartnerProfilePanel({ user }: { user: AuthUser }) {
     }
     setBusy(true);
     try {
-      const res = await fetch("/api/auth/profile", {
+      const res = await fetchWithTimeout("/api/auth/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

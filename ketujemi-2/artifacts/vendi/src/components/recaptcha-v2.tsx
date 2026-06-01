@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import {
   forwardRef,
   useEffect,
@@ -82,7 +83,7 @@ export function useRecaptchaSiteKey(): {
     }
 
     let cancelled = false;
-    void fetch("/api/config/public", { credentials: "include" })
+    void fetchWithTimeout("/api/config/public", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : {}))
       .then((data: { recaptchaSiteKey?: string }) => {
         if (cancelled) return;

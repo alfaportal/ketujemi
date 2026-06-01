@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Link, useSearch } from "wouter";
 import { Building2, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
+import { getFetchErrorMessage } from "@/lib/fetch-with-timeout";
 
 type BankPaymentInfo = {
   token: string;
@@ -22,6 +24,7 @@ export default function WalletBankPaymentPage() {
   const { toast } = useToast();
   const [info, setInfo] = useState<BankPaymentInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const token = new URLSearchParams(search).get("token")?.trim() ?? "";
 
@@ -37,7 +40,7 @@ export default function WalletBankPaymentPage() {
     }
 
     let cancelled = false;
-    void fetch(`/api/wallet/bank-payment?token=${encodeURIComponent(token)}`, {
+    void fetchWithTimeout(`/api/wallet/bank-payment?token=${encodeURIComponent(token)}`, {
       credentials: "include",
     })
       .then(async (res) => {
@@ -47,8 +50,11 @@ export default function WalletBankPaymentPage() {
       .then((data) => {
         if (!cancelled) setInfo(data);
       })
-      .catch(() => {
-        if (!cancelled) setInfo(null);
+      .catch((e) => {
+        if (!cancelled) {
+          setInfo(null);
+          setLoadError(getFetchErrorMessage(e));
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -90,7 +96,9 @@ export default function WalletBankPaymentPage() {
   if (!info) {
     return (
       <div className="max-w-lg mx-auto px-4 py-12 text-center space-y-4">
-        <p className="text-gray-700">Pagesa nuk u gjet ose transferi bankar nuk është aktiv.</p>
+        <p className="text-gray-700" role="alert">
+          {loadError ?? "Pagesa nuk u gjet ose transferi bankar nuk është aktiv."}
+        </p>
         <Button asChild variant="outline">
           <Link href="/profile">Kthehu te profili</Link>
         </Button>

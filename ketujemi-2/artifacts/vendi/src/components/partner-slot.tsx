@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Link } from "wouter";
 import { Star } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
@@ -33,7 +34,7 @@ function partnerInitials(name: string): string {
 }
 
 function recordPartnerClick(partnerId: number) {
-  void fetch("/api/partners/analytics/click", {
+  void fetchWithTimeout("/api/partners/analytics/click", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import {
   CLOUDINARY_LISTINGS_FOLDER,
   CLOUDINARY_PARTNERS_FOLDER,
@@ -26,7 +27,7 @@ export function useCloudinaryConfig(): CloudinaryConfig {
     }
 
     let cancelled = false;
-    void fetch("/api/config/public", { credentials: "include" })
+    void fetchWithTimeout("/api/config/public", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : {}))
       .then((data: { cloudinaryCloudName?: string; cloudinaryUploadPreset?: string }) => {
         if (cancelled) return;
@@ -82,7 +83,7 @@ export async function uploadImageToCloudinary(
     fd.append("tags", "listing,deletable");
   }
 
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+  const res = await fetchWithTimeout(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
     method: "POST",
     body: fd,
   });

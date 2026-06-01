@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { MessageCircle, X, Send, Loader2, Mic } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
 import { useSecretAdminTap } from "@/lib/secret-admin-tap";
 import { cn } from "@/lib/utils";
+import { getFetchErrorMessage } from "@/lib/fetch-with-timeout";
 import {
   isDesktopVoiceInputAvailable,
   isMobileUserAgent,
@@ -105,7 +107,7 @@ export function SupportChatWidget() {
       busyRef.current = true;
 
       try {
-        const res = await fetch("/api/ai/support-chat", {
+        const res = await fetchWithTimeout("/api/ai/support-chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -128,12 +130,12 @@ export function SupportChatWidget() {
           return;
         }
         setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-      } catch {
+      } catch (e) {
         setMessages((prev) => [
           ...prev,
           {
             role: "assistant",
-            content: tx.ui_supportBusy ?? "Nuk u lidh me serverin. Provoni përsëri.",
+            content: getFetchErrorMessage(e),
           },
         ]);
       } finally {

@@ -1,4 +1,5 @@
 import { useLocation } from "wouter";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { useMarket } from "@/lib/market-context";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ export function AuthToolbar({ variant = "default", className }: Props) {
   const { t } = useMarket();
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    await fetchWithTimeout("/api/auth/logout", { method: "POST", credentials: "include" });
     await refresh();
   }
 

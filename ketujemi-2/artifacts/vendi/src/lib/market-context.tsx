@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import {
   DEFAULT_UI_LANG,
   isUiLang,
@@ -28,7 +29,7 @@ let _ratesFetched = false;
 export async function fetchLiveRates(): Promise<Record<string, number>> {
   if (_ratesFetched) return _ratesCache;
   try {
-    const res = await fetch("/api/exchange-rates");
+    const res = await fetchWithTimeout("/api/exchange-rates");
     if (res.ok) { _ratesCache = await res.json(); }
   } catch {}
   _ratesFetched = true;

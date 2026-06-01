@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,7 +51,7 @@ export function ReportListingDialog({ listingId, className }: Props) {
     }
     setBusy(true);
     try {
-      const res = await fetch(`/api/listings/${listingId}/report`, {
+      const res = await fetchWithTimeout(`/api/listings/${listingId}/report`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

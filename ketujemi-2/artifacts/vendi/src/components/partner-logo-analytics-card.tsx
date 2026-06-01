@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { fetchWithTimeout, getFetchErrorMessage } from "@/lib/fetch-with-timeout";
 import { BarChart3, Loader2 } from "lucide-react";
 import type { AuthUser } from "@/lib/auth-context";
 
@@ -20,6 +21,7 @@ function isVipActive(user: AuthUser): boolean {
 export function PartnerLogoAnalyticsCard({ user }: { user: AuthUser }) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user.account_type !== "business") {
@@ -27,10 +29,20 @@ export function PartnerLogoAnalyticsCard({ user }: { user: AuthUser }) {
       return;
     }
     let cancelled = false;
-    void fetch("/api/business/partner-analytics", { credentials: "include" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: Stats | null) => {
+    setLoadError(null);
+    void fetchWithTimeout("/api/business/partner-analytics", { credentials: "include" })
+      .then((r) => {
+        if (!r.ok) throw new Error("analytics_failed");
+        return r.json() as Promise<Stats>;
+      })
+      .then((data) => {
         if (!cancelled) setStats(data);
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setStats(null);
+          setLoadError(getFetchErrorMessage(e));
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -55,6 +67,10 @@ export function PartnerLogoAnalyticsCard({ user }: { user: AuthUser }) {
         <div className="flex justify-center py-4">
           <Loader2 className="h-6 w-6 animate-spin text-[#1A56A0]" />
         </div>
+      ) : loadError ? (
+        <p className="text-sm text-red-600" role="alert">
+          {loadError}
+        </p>
       ) : !vip ? (
         <p className="text-sm text-gray-600">
           Aktivizoni VIP për të shfaqur logon te «Partnerët tanë të besuar» dhe për të parë

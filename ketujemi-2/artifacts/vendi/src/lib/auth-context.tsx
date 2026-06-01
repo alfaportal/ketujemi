@@ -5,6 +5,7 @@ import {
   type ReactNode,
 } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 
 export type AuthUser = {
   id: number;
@@ -46,7 +47,7 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 async function fetchMe(): Promise<AuthUser | null> {
-  const r = await fetch("/api/auth/me", { credentials: "include" });
+  const r = await fetchWithTimeout("/api/auth/me", { credentials: "include" });
   if (r.status === 401) return null;
   if (!r.ok) throw new Error("auth_me_failed");
   const j = (await r.json()) as { user?: AuthUser };

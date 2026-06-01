@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { X, Loader2, Wallet, Check } from "lucide-react";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
@@ -30,7 +31,7 @@ export function ListingPackagesModal({ open, onClose, message }: Props) {
 
   useEffect(() => {
     if (!open) return;
-    void fetch("/api/wallet", { credentials: "include" })
+    void fetchWithTimeout("/api/wallet", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : null))
       .then(
         (
@@ -59,7 +60,7 @@ export function ListingPackagesModal({ open, onClose, message }: Props) {
     setBusy(pkg);
     setError(null);
     try {
-      const res = await fetch("/api/wallet/topup-checkout", {
+      const res = await fetchWithTimeout("/api/wallet/topup-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { fetchWithTimeout, getFetchErrorMessage } from "@/lib/fetch-with-timeout";
 import { Sparkles, Loader2 } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
 
@@ -26,6 +27,7 @@ export function PostingAssistantPanel({
   const { market } = useMarket();
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const lang = market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq";
 
@@ -37,12 +39,14 @@ export function PostingAssistantPanel({
   useEffect(() => {
     if (!fieldsReady) {
       setSuggestions([]);
+      setLoadError(null);
       return;
     }
 
     const timer = setTimeout(() => {
       setLoading(true);
-      void fetch("/api/ai/posting-suggestions", {
+      setLoadError(null);
+      void fetchWithTimeout("/api/ai/posting-suggestions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -57,18 +61,24 @@ export function PostingAssistantPanel({
           lang,
         }),
       })
-        .then((r) => (r.ok ? r.json() : null))
+        .then((r) => {
+          if (!r.ok) throw new Error("suggestions_failed");
+          return r.json();
+        })
         .then((j) => {
           setSuggestions((j as { suggestions?: Suggestion[] })?.suggestions ?? []);
         })
-        .catch(() => setSuggestions([]))
+        .catch((e) => {
+          setSuggestions([]);
+          setLoadError(getFetchErrorMessage(e));
+        })
         .finally(() => setLoading(false));
     }, 800);
 
     return () => clearTimeout(timer);
   }, [fieldsReady, title, description, price, priceAgreement, categoryName, parentCategoryName, imageCount, lang]);
 
-  if (suggestions.length === 0 && !loading) return null;
+  if (suggestions.length === 0 && !loading && !loadError) return null;
 
   return (
     <div className="rounded-xl border border-violet-100 bg-violet-50/80 px-4 py-3 text-sm space-y-2">
@@ -80,7 +90,11 @@ export function PostingAssistantPanel({
         )}
         Sugjerime AI
       </div>
-      {loading && suggestions.length === 0 ? (
+      {loadError ? (
+        <p className="text-red-600 text-xs" role="alert">
+          {loadError}
+        </p>
+      ) : loading && suggestions.length === 0 ? (
         <p className="text-violet-700 text-xs">Duke analizuar njoftimin…</p>
       ) : (
         <ul className="space-y-1.5 text-violet-900">

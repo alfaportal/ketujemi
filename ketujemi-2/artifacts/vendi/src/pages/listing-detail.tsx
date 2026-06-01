@@ -1,4 +1,5 @@
 import { useRoute, useLocation } from "wouter";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { useState, useMemo, useEffect } from "react";
 import { useGetListing, useDeleteListing, getGetListingsQueryKey, getGetRecentListingsQueryKey, getGetFeaturedListingsQueryKey, getGetListingQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -188,7 +189,7 @@ export default function ListingDetail() {
     if (!listing) return;
     setRepostBusy(true);
     try {
-      const res = await fetch(`/api/listings/${listing.id}/repost`, {
+      const res = await fetchWithTimeout(`/api/listings/${listing.id}/repost`, {
         method: "POST",
         credentials: "include",
       });
@@ -212,7 +213,7 @@ export default function ListingDetail() {
     if (!listing) return;
     setComplaintBusy(true);
     try {
-      const res = await fetch(`/api/listings/${listing.id}/complaint`, {
+      const res = await fetchWithTimeout(`/api/listings/${listing.id}/complaint`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

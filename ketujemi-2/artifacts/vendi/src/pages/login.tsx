@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Link, useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -88,7 +89,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     let cancelled = false;
-    void fetch("/api/config/public", { credentials: "include" })
+    void fetchWithTimeout("/api/config/public", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : {}))
       .then((data: { smsAuthEnabled?: boolean }) => {
         if (cancelled) return;
@@ -182,7 +183,7 @@ export default function LoginPage() {
 
   async function submitEmailSignin(): Promise<boolean> {
     if (!validateEmailPassword(email, password, toast)) return false;
-    const res = await fetch("/api/auth/register/email", {
+    const res = await fetchWithTimeout("/api/auth/register/email", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -229,7 +230,7 @@ export default function LoginPage() {
     }
     setBusy(true);
     try {
-      const res = await fetch("/api/auth/password/forgot", {
+      const res = await fetchWithTimeout("/api/auth/password/forgot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -269,7 +270,7 @@ export default function LoginPage() {
     }
     setBusy(true);
     try {
-      const res = await fetch("/api/auth/password/reset", {
+      const res = await fetchWithTimeout("/api/auth/password/reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -306,7 +307,7 @@ export default function LoginPage() {
     }
     setBusy(true);
     try {
-      const res = await fetch("/api/auth/verify/email", {
+      const res = await fetchWithTimeout("/api/auth/verify/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -352,7 +353,7 @@ export default function LoginPage() {
     if (!requireCaptcha()) return;
     setBusy(true);
     try {
-      const res = await fetch("/api/auth/sms/start", {
+      const res = await fetchWithTimeout("/api/auth/sms/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -388,7 +389,7 @@ export default function LoginPage() {
     }
     setBusy(true);
     try {
-      const res = await fetch("/api/auth/sms/verify", {
+      const res = await fetchWithTimeout("/api/auth/sms/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

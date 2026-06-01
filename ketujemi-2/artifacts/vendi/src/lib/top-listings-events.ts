@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 /** Dispatched after a TOP package payment succeeds so the home carousel refetches. */
 export const TOP_LISTINGS_REFRESH_EVENT = "ketujemi:top-listings-refresh";
 
@@ -98,12 +99,16 @@ export type TopListingCarouselItem = {
 
 /** Fetch every active paid TOP listing — no row limit. */
 export async function fetchTopListings(): Promise<TopListingCarouselItem[]> {
-  const r = await fetch("/api/listings/top", {
-    credentials: "include",
-    cache: "no-store",
-  });
-  if (!r.ok) return [];
-  const data = (await r.json()) as TopListingCarouselItem[] | { listings?: TopListingCarouselItem[] };
-  if (Array.isArray(data)) return data;
-  return Array.isArray(data.listings) ? data.listings : [];
+  try {
+    const r = await fetchWithTimeout("/api/listings/top", {
+      credentials: "include",
+      cache: "no-store",
+    });
+    if (!r.ok) return [];
+    const data = (await r.json()) as TopListingCarouselItem[] | { listings?: TopListingCarouselItem[] };
+    if (Array.isArray(data)) return data;
+    return Array.isArray(data.listings) ? data.listings : [];
+  } catch {
+    return [];
+  }
 }

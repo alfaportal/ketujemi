@@ -1,4 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import {
   getGetFeaturedListingsQueryKey,
   getGetListingQueryKey,
@@ -28,7 +29,7 @@ export async function recordListingView(
   }
 
   try {
-    const res = await fetch(`/api/listings/${listingId}/view`, {
+    const res = await fetchWithTimeout(`/api/listings/${listingId}/view`, {
       method: "POST",
       credentials: "include",
     });

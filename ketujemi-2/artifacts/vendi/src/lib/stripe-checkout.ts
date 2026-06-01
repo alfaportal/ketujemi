@@ -1,4 +1,5 @@
 import { loadStripe, type Stripe } from "@stripe/stripe-js";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 
 const BUILD_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.trim() ?? "";
 
@@ -28,7 +29,7 @@ let publishableKeyFetch: Promise<string | null> | null = null;
 export async function getStripePublishableKey(): Promise<string | null> {
   if (publishableKeyCache) return publishableKeyCache;
   if (!publishableKeyFetch) {
-    publishableKeyFetch = fetch("/api/config/public", { credentials: "include" })
+    publishableKeyFetch = fetchWithTimeout("/api/config/public", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : {}))
       .then((data: { stripePublishableKey?: string }) => {
         const key = data.stripePublishableKey?.trim() ?? "";
@@ -50,7 +51,7 @@ export type PaymentsStatus = {
 };
 
 export async function fetchPaymentsStatus(): Promise<PaymentsStatus> {
-  const res = await fetch("/api/payments/status", { credentials: "include" });
+  const res = await fetchWithTimeout("/api/payments/status", { credentials: "include" });
   const data = (await res.json().catch(() => ({}))) as {
     stripe?: boolean;
     devBypass?: boolean;
@@ -74,7 +75,7 @@ export async function fetchPaymentsStatus(): Promise<PaymentsStatus> {
 export async function createCheckoutSession(
   body: CreateCheckoutSessionBody,
 ): Promise<CreateCheckoutSessionResponse> {
-  const res = await fetch("/api/create-checkout-session", {
+  const res = await fetchWithTimeout("/api/create-checkout-session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -143,7 +144,7 @@ export type ConfirmStripeSessionResult = {
 export async function confirmStripeCheckoutSession(
   sessionId: string,
 ): Promise<ConfirmStripeSessionResult> {
-  const res = await fetch("/api/payments/confirm-session", {
+  const res = await fetchWithTimeout("/api/payments/confirm-session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

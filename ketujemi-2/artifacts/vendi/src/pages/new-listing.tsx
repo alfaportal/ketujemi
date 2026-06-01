@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { fetchWithTimeout, getFetchErrorMessage } from "@/lib/fetch-with-timeout";
 import { useLocation } from "wouter";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -266,6 +267,7 @@ export default function NewListing() {
     listing_lifetime_days?: number;
     business?: { needs_wallet_topup?: boolean; listing_price_eur?: number } | null;
   } | null>(null);
+  const [freeQuotaError, setFreeQuotaError] = useState<string | null>(null);
   const [showPackagesModal, setShowPackagesModal] = useState(false);
   const [packagesModalMessage, setPackagesModalMessage] = useState<string | undefined>();
   const effectiveCategoryId =
@@ -341,10 +343,12 @@ export default function NewListing() {
   useEffect(() => {
     if (!user || effectiveCategoryId < 1 || isDhurataCategory || isDhurataPostRoute) {
       setFreeQuota(null);
+      setFreeQuotaError(null);
       return;
     }
     let cancelled = false;
-    void fetch(`/api/listings/free-quota?category_id=${effectiveCategoryId}`, {
+    setFreeQuotaError(null);
+    void fetchWithTimeout(`/api/listings/free-quota?category_id=${effectiveCategoryId}`, {
       credentials: "include",
     })
       .then((r) => (r.ok ? r.json() : null))
@@ -364,8 +368,11 @@ export default function NewListing() {
           business: j.business ?? null,
         });
       })
-      .catch(() => {
-        if (!cancelled) setFreeQuota(null);
+      .catch((e) => {
+        if (!cancelled) {
+          setFreeQuota(null);
+          setFreeQuotaError(getFetchErrorMessage(e));
+        }
       });
     return () => {
       cancelled = true;
@@ -590,7 +597,7 @@ export default function NewListing() {
         : {}),
     };
 
-    void fetch("/api/listings", {
+    void fetchWithTimeout("/api/listings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -718,7 +725,7 @@ export default function NewListing() {
         open={showPackagesModal}
         onClose={() => {
           setShowPackagesModal(false);
-          void fetch(`/api/listings/free-quota?category_id=${effectiveCategoryId}`, {
+          void fetchWithTimeout(`/api/listings/free-quota?category_id=${effectiveCategoryId}`, {
             credentials: "include",
           })
             .then((r) => (r.ok ? r.json() : null))
@@ -765,6 +772,11 @@ export default function NewListing() {
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
         {user?.account_type === "business" ? <CardPaymentsPanel /> : null}
+        {freeQuotaError && effectiveCategoryId > 0 && !isDhurataCategory && !isDhurataPostRoute ? (
+          <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="alert">
+            {freeQuotaError}
+          </p>
+        ) : null}
         {freeQuota != null && effectiveCategoryId > 0 && !isDhurataCategory && !isDhurataPostRoute ? (
           <div
             className={`rounded-xl border px-4 py-3 text-sm font-medium space-y-2 ${

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Building2, Crown, Loader2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +33,7 @@ export function BusinessAccountCard({ user }: { user: AuthUser }) {
     }
     setBusy(true);
     try {
-      const res = await fetch("/api/auth/account/business", {
+      const res = await fetchWithTimeout("/api/auth/account/business", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { useEffect, useState } from "react";
 import { useSecretAdminTap } from "@/lib/secret-admin-tap";
 import {
@@ -220,7 +221,7 @@ export function SiteFooter() {
   const [socialLinks, setSocialLinks] = useState(BASE_SOCIAL_LINKS);
 
   useEffect(() => {
-    void fetch("/api/config/public", { credentials: "include" })
+    void fetchWithTimeout("/api/config/public", { credentials: "include" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data: { facebookPageUrl?: string | null; instagramProfileUrl?: string } | null) => {
         if (!data) return;

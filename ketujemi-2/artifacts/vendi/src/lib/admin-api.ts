@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 const BASE = "/api/admin";
 
 function getToken(): string {
@@ -12,7 +13,7 @@ function authHeaders(): HeadersInit {
 }
 
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetchWithTimeout(`${BASE}${path}`, {
     ...opts,
     headers: { ...authHeaders(), ...(opts.headers ?? {}) },
   });
@@ -25,7 +26,7 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
 
 /** Owner-only: password from ADMIN_PANEL_PASSWORD (no username). */
 export async function adminLogin(password: string): Promise<string> {
-  const res = await fetch(`${BASE}/login`, {
+  const res = await fetchWithTimeout(`${BASE}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ password }),

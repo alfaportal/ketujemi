@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { useLocation } from "wouter";
 import { SiteHeader } from "@/components/site-header";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
@@ -106,7 +107,7 @@ export default function PartnerPage() {
         return;
       }
       setPhase("register");
-      void fetch(`/api/partners/${resumeId}/checkout`, { method: "POST" })
+      void fetchWithTimeout(`/api/partners/${resumeId}/checkout`, { method: "POST" })
         .then((r) => r.json())
         .then((data: { checkout_url?: string; error?: string }) => {
           if (data.checkout_url) window.location.href = data.checkout_url;
@@ -208,7 +209,7 @@ export default function PartnerPage() {
 
     setBusy(true);
     try {
-      const res = await fetch("/api/partners/register", {
+      const res = await fetchWithTimeout("/api/partners/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

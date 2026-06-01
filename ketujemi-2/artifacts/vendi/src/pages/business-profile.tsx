@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Link, useRoute } from "wouter";
 import { ArrowLeft, Building2, Crown, Loader2, MapPin } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import SharedListingCard from "@/components/listing-card";
 import { useMarket } from "@/lib/market-context";
+import { getFetchErrorMessage } from "@/lib/fetch-with-timeout";
 
 type BusinessProfile = {
   id: number;
@@ -44,6 +46,7 @@ export default function BusinessProfilePage() {
   const [listings, setListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!Number.isFinite(id) || id < 1) {
@@ -55,10 +58,14 @@ export default function BusinessProfilePage() {
     let cancelled = false;
     setLoading(true);
     setNotFound(false);
+    setLoadError(null);
 
     void Promise.all([
-      fetch(`/api/businesses/${id}`).then((r) => (r.ok ? r.json() : null)),
-      fetch(`/api/businesses/${id}/listings`).then((r) => (r.ok ? r.json() : null)),
+      fetchWithTimeout(`/api/businesses/${id}`).then((r) => {
+        if (!r.ok) throw new Error("business_failed");
+        return r.json();
+      }),
+      fetchWithTimeout(`/api/businesses/${id}/listings`).then((r) => (r.ok ? r.json() : null)),
     ])
       .then(([prof, listData]) => {
         if (cancelled) return;
@@ -71,6 +78,13 @@ export default function BusinessProfilePage() {
         setProfile(prof as BusinessProfile);
         const rows = (listData as { listings?: ListingRow[] })?.listings ?? [];
         setListings(rows);
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setLoadError(getFetchErrorMessage(e));
+          setProfile(null);
+          setListings([]);
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -102,7 +116,22 @@ export default function BusinessProfilePage() {
           </div>
         ) : null}
 
-        {!loading && notFound ? (
+        {!loading && loadError ? (
+          <div className="mt-12 text-center space-y-3">
+            <p className="text-lg font-semibold text-gray-800" role="alert">
+              {loadError}
+            </p>
+            <button
+              type="button"
+              className="text-blue-600 font-medium"
+              onClick={() => window.location.reload()}
+            >
+              Rifresko
+            </button>
+          </div>
+        ) : null}
+
+        {!loading && !loadError && notFound ? (
           <div className="mt-12 text-center">
             <p className="text-lg font-semibold text-gray-800">Biznesi nuk u gjet.</p>
             <Link href="/listings" className="text-blue-600 font-medium mt-4 inline-block">
@@ -111,7 +140,7 @@ export default function BusinessProfilePage() {
           </div>
         ) : null}
 
-        {!loading && profile ? (
+        {!loading && !loadError && profile ? (
           <>
             <div className="mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col sm:flex-row gap-6 items-start">
               <div className="shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">

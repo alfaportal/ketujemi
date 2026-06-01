@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Link } from "wouter";
 import { Eye } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMarket } from "@/lib/market-context";
+import { getFetchErrorMessage } from "@/lib/fetch-with-timeout";
 import { ListingCardImage } from "@/components/listing-card-image";
 
 type Similar = {
@@ -22,17 +24,28 @@ export function SimilarListingsSection({ listingId }: Props) {
   const [items, setItems] = useState<Similar[]>([]);
   const [heading, setHeading] = useState("Mund të të interesojë gjithashtu");
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    void fetch(`/api/ai/listings/${listingId}/similar`)
-      .then((r) => (r.ok ? r.json() : null))
+    setLoadError(null);
+    void fetchWithTimeout(`/api/ai/listings/${listingId}/similar`)
+      .then((r) => {
+        if (!r.ok) throw new Error("similar_failed");
+        return r.json();
+      })
       .then((j) => {
         if (cancelled || !j) return;
         setItems((j as { similar?: Similar[] }).similar ?? []);
         const h = (j as { heading?: string }).heading;
         if (h) setHeading(h);
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setItems([]);
+          setLoadError(getFetchErrorMessage(e));
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -42,7 +55,7 @@ export function SimilarListingsSection({ listingId }: Props) {
     };
   }, [listingId]);
 
-  if (!loading && items.length === 0) return null;
+  if (!loading && !loadError && items.length === 0) return null;
 
   const currency = market.symbol;
 
@@ -55,6 +68,10 @@ export function SimilarListingsSection({ listingId }: Props) {
             <Skeleton key={i} className="h-36 rounded-xl" />
           ))}
         </div>
+      ) : loadError ? (
+        <p className="text-sm text-gray-500" role="alert">
+          {loadError}
+        </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {items.map((item) => (

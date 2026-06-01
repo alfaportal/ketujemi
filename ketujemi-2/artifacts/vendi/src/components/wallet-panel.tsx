@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Loader2, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
 import { useMarket } from "@/lib/market-context";
+import { getFetchErrorMessage } from "@/lib/fetch-with-timeout";
 
 type WalletTopup = {
   id: string;
@@ -30,24 +32,28 @@ export function WalletPanel({ className = "" }: { className?: string }) {
   const { toast } = useToast();
   const [data, setData] = useState<WalletData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [busyPkg, setBusyPkg] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
-      const res = await fetch("/api/wallet", { credentials: "include" });
+      const res = await fetchWithTimeout("/api/wallet", { credentials: "include" });
       if (!res.ok) {
         setData(null);
+        setLoadError(tx.ui_networkError ?? "Gabim rrjeti");
         return;
       }
       const j = (await res.json()) as WalletData;
       setData(j);
-    } catch {
+    } catch (e) {
       setData(null);
+      setLoadError(getFetchErrorMessage(e));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tx.ui_networkError]);
 
   useEffect(() => {
     void load();
@@ -56,7 +62,7 @@ export function WalletPanel({ className = "" }: { className?: string }) {
   async function startTopup(pkg: string) {
     setBusyPkg(pkg);
     try {
-      const res = await fetch("/api/wallet/topup-checkout", {
+      const res = await fetchWithTimeout("/api/wallet/topup-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -75,8 +81,8 @@ export function WalletPanel({ className = "" }: { className?: string }) {
         return;
       }
       window.location.href = body.url;
-    } catch {
-      toast({ title: tx.ui_networkError ?? "Gabim rrjeti", variant: "destructive" });
+    } catch (e) {
+      toast({ title: getFetchErrorMessage(e), variant: "destructive" });
     } finally {
       setBusyPkg(null);
     }
@@ -111,6 +117,10 @@ export function WalletPanel({ className = "" }: { className?: string }) {
         <div className="flex justify-center py-4">
           <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
         </div>
+      ) : loadError ? (
+        <p className="text-sm text-red-600 text-center py-2" role="alert">
+          {loadError}
+        </p>
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3">

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Link, useLocation } from "wouter";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -122,7 +123,7 @@ export default function ProfilePage() {
     }
     setPasswordBusy(true);
     try {
-      const res = await fetch("/api/auth/password/change", {
+      const res = await fetchWithTimeout("/api/auth/password/change", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -154,7 +155,7 @@ export default function ProfilePage() {
     if (!user) return;
     setBusy(true);
     try {
-      const res = await fetch("/api/auth/profile", {
+      const res = await fetchWithTimeout("/api/auth/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
