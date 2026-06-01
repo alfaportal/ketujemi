@@ -1,6 +1,6 @@
 /**
  * Writes {@link FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG} into `categories.image_url`
- * for the 19 Fëmijë hub subcategories (matched by slug).
+ * for Fëmijë hub groups, legacy types, and catalog leaf slugs (matched by slug).
  */
 import "./load-env.js";
 import { eq } from "drizzle-orm";

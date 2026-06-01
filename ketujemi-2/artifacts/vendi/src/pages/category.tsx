@@ -125,7 +125,7 @@ import { RrobaKepuceSearchPanel } from "@/components/rroba-kepuce-search-panel";
 import {
   getRrobaKepuceLeafCategoryIds,
 } from "@/lib/rroba-kepuce-search-helpers";
-import { getFemijeLeafCategoryIds } from "@/lib/femije-search-helpers";
+import { femijeSubcategoryPhoto, getFemijeLeafCategoryIds } from "@/lib/femije-search-helpers";
 import { PuneSherbimeSearchPanel } from "@/components/pune-sherbime-search-panel";
 import { getPuneSherbimeLeafCategoryIds } from "@/lib/pune-sherbime-search-helpers";
 import { BujqesiBlegtoriSearchPanel } from "@/components/bujqesi-blegtori-search-panel";
@@ -1361,13 +1361,23 @@ export default function CategoryPage() {
         ? AUTO_PJESE_HERO_PHOTO
         : isLokaleZyreHub
           ? LOKALE_ZYRE_HERO_PHOTO
-          : isSportDeviceLeafPage && sportDeviceKey && sportTypeKey
-            ? resolveSportDevicePhoto(sportDeviceKey, sportTypeKey)
-            : isSportTypePage && sportTypeKey
-              ? resolveSportTypeBannerUrl(sportTypeKey)
-              : resolveCategoryImageUrl(currentCategory as any) ||
-              getCatPhoto(currentCategory?.name ?? "") ||
-              "";
+          : isFemijeLeafPage
+            ? femijeSubcategoryPhoto(
+                currentSlug,
+                (currentCategory as { image_url?: string | null })?.image_url,
+              )
+            : isFemijeGroupPage
+              ? femijeSubcategoryPhoto(
+                  currentSlug,
+                  (currentCategory as { image_url?: string | null })?.image_url,
+                )
+              : isSportDeviceLeafPage && sportDeviceKey && sportTypeKey
+                ? resolveSportDevicePhoto(sportDeviceKey, sportTypeKey)
+                : isSportTypePage && sportTypeKey
+                  ? resolveSportTypeBannerUrl(sportTypeKey)
+                  : resolveCategoryImageUrl(currentCategory as any) ||
+                    getCatPhoto(currentCategory?.name ?? "") ||
+                    "";
   const sportHeroTitle =
     isSportDeviceLeafPage && sportDeviceKey
       ? (t[SPORT_DEVICE_LABEL_KEY[sportDeviceKey]] ?? sportDeviceKey)

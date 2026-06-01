@@ -1,6 +1,8 @@
-/** Unsplash thumbnails for the 19 direct children of the Fëmijë hub (14 groups + 5 legacy femije-type-*). */
+/** Hub groups + legacy types; leaf rows live in femije-leaf-subcategory-photos.ts (merged below). */
 
-export const FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
+import { FEMIJE_LEAF_AKTIVITET_SPORT_PHOTOS } from "./femije-leaf-subcategory-photos.js";
+
+const FEMIJE_HUB_GROUP_AND_TYPE_PHOTOS: Record<string, string> = {
   "femije-grp-karroca-transport":
     "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400",
   "femije-grp-krevat-dhome":
@@ -18,7 +20,7 @@ export const FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = 
   "femije-grp-libra-shkollore":
     "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400",
   "femije-grp-aktivitet-sport":
-    "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400",
+    "https://images.pexels.com/photos/35537/child-children-girl-happy.jpeg?auto=compress&cs=tinysrgb&w=400",
   "femije-grp-karrige-ulese":
     "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400",
   "femije-grp-canta-nene":
@@ -39,4 +41,9 @@ export const FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = 
     "https://images.unsplash.com/photo-1522771930-78848d9293e8?w=400",
   "femije-type-ushqim-higjiene":
     "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400",
+};
+
+export const FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
+  ...FEMIJE_HUB_GROUP_AND_TYPE_PHOTOS,
+  ...FEMIJE_LEAF_AKTIVITET_SPORT_PHOTOS,
 };

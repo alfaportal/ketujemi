@@ -436,12 +436,12 @@ export function femijeSubcategoryPhoto(
   slug: string | null | undefined,
   imageUrl?: string | null,
 ): string {
-  const fromDbRaw = typeof imageUrl === "string" ? imageUrl.trim() : "";
-  const fromDb = fromDbRaw && isUsableCategoryImageUrl(fromDbRaw) ? fromDbRaw : "";
-  if (fromDb) return fromDb;
   if (slug && FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG[slug]) {
     return FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG[slug];
   }
+  const fromDbRaw = typeof imageUrl === "string" ? imageUrl.trim() : "";
+  const fromDb = fromDbRaw && isUsableCategoryImageUrl(fromDbRaw) ? fromDbRaw : "";
+  if (fromDb) return fromDb;
   if (slug?.startsWith("femije-leaf-")) {
     const groupSlug = FEMIJE_LEAF_PARENT_GROUP_SLUG[slug];
     if (groupSlug && FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG[groupSlug]) {
