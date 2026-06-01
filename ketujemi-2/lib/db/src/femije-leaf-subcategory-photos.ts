@@ -6,21 +6,21 @@ const p = (id: number) => pexelsPhoto(id, 400);
 
 /** Karroca & Transport */
 const KARROCA: Record<string, string> = {
-  "femije-leaf-karroca-klasike": p(4196249),
-  "femije-leaf-karroca-cader": p(7210554),
-  "femije-leaf-karroca-binjake": p(15552238),
-  "femije-leaf-sisteme-udhetimi": p(10662919),
-  "femije-leaf-karrige-makine-grupe": p(3756475),
-  "femije-leaf-mbajtese-bebe": p(7546906),
-  "femije-leaf-aksesore-karroce": p(3997931),
+  "femije-leaf-karroca-klasike": p(8924170),
+  "femije-leaf-karroca-cader": p(15552523),
+  "femije-leaf-karroca-binjake": p(31668247),
+  "femije-leaf-sisteme-udhetimi": p(6182086),
+  "femije-leaf-karrige-makine-grupe": p(6182086),
+  "femije-leaf-mbajtese-bebe": p(7282912),
+  "femije-leaf-aksesore-karroce": p(15552523),
 };
 
 /** Krevat & Dhomë */
 const KREVAT: Record<string, string> = {
-  "femije-leaf-krevate-djepa": p(599821),
-  "femije-leaf-dysheke-tekstile": p(4041398),
-  "femije-leaf-mobilje-dhome": p(7071898),
-  "femije-leaf-dekorime-drita": p(3603724),
+  "femije-leaf-krevate-djepa": p(4321700),
+  "femije-leaf-dysheke-tekstile": p(30435352),
+  "femije-leaf-mobilje-dhome": p(5825540),
+  "femije-leaf-dekorime-drita": p(860882),
 };
 
 /** Ushqyerja */
@@ -58,11 +58,11 @@ const RROBA: Record<string, string> = {
 
 /** Lodra & Lojëra */
 const LODRA: Record<string, string> = {
-  "femije-leaf-lodra-klasike": p(3603724),
-  "femije-leaf-lojera-shoqerore": p(2566107),
-  "femije-leaf-lodra-elektronike": p(8613048),
-  "femije-leaf-lodra-banjo": p(3018737),
-  "femije-leaf-kostume-loje": p(2830182),
+  "femije-leaf-lodra-klasike": p(860882),
+  "femije-leaf-lojera-shoqerore": p(7296631),
+  "femije-leaf-lodra-elektronike": p(6372976),
+  "femije-leaf-lodra-banjo": p(30806455),
+  "femije-leaf-kostume-loje": p(5961611),
 };
 
 /** Lodra Edukative */
@@ -76,12 +76,12 @@ const EDUKATIVE: Record<string, string> = {
 
 /** Libra & Shkollë */
 const LIBRA: Record<string, string> = {
-  "femije-leaf-libra-perralla": p(159711),
-  "femije-leaf-libra-edukative": p(159775),
-  "femije-leaf-libra-shkollor": p(2566107),
+  "femije-leaf-libra-perralla": p(12548628),
+  "femije-leaf-libra-edukative": p(261763),
+  "femije-leaf-libra-shkollor": p(256541),
   "femije-leaf-fletore-materiale": p(256541),
-  "femije-leaf-mjete-vizatimi": p(2564553),
-  "femije-leaf-canta-shkolle": p(8612959),
+  "femije-leaf-mjete-vizatimi": p(3891207),
+  "femije-leaf-canta-shkolle": p(8807020),
 };
 
 /** Aktivitet & Sport */
