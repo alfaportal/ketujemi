@@ -36,12 +36,12 @@ const USHQYERJA: Record<string, string> = {
 /** Higjienë */
 const HIGJIENE: Record<string, string> = {
   "femije-leaf-pelene-njeperdorimshme": p(3875089),
-  "femije-leaf-pelene-riperdorshme": p(19041018),
-  "femije-leaf-lecke-topth": p(6832350),
-  "femije-leaf-vaske-banjoje": p(2866258),
-  "femije-leaf-produkte-lekure": p(3997992),
+  "femije-leaf-pelene-riperdorshme": p(7692266),
+  "femije-leaf-lecke-topth": p(5938356),
+  "femije-leaf-vaske-banjoje": p(279561),
+  "femije-leaf-produkte-lekure": p(30435352),
   "femije-leaf-termometer-pajisje": p(3845458),
-  "femije-leaf-aspirator-kujdes": p(4033302),
+  "femije-leaf-aspirator-kujdes": p(3875089),
 };
 
 /** Rroba & Këpucë */
@@ -97,21 +97,21 @@ const SPORT: Record<string, string> = {
 
 /** Karrige & Ulëse */
 const KARRIGE: Record<string, string> = {
-  "femije-leaf-karrige-ushqimi-larte": p(8612973),
-  "femije-leaf-karrige-ushqimi-portative": p(4045504),
-  "femije-leaf-karrige-makine-0": p(10662919),
-  "femije-leaf-karrige-makine-1": p(3756475),
-  "femije-leaf-karrige-makine-23": p(3756475),
-  "femije-leaf-ulese-ngritese": p(3756475),
+  "femije-leaf-karrige-ushqimi-larte": p(6582167),
+  "femije-leaf-karrige-ushqimi-portative": p(4669022),
+  "femije-leaf-karrige-makine-0": p(6182086),
+  "femije-leaf-karrige-makine-1": p(30014151),
+  "femije-leaf-karrige-makine-23": p(8305241),
+  "femije-leaf-ulese-ngritese": p(1130180),
 };
 
 /** Çanta Nënë */
 const CANTA: Record<string, string> = {
-  "femije-leaf-canta-shpine": p(3997931),
-  "femije-leaf-canta-dore": p(6180974),
-  "femije-leaf-organizatore-karroce": p(7210554),
-  "femije-leaf-mbajtese-shishesh": p(3933250),
-  "femije-leaf-mbulesa-shi-diell": p(3997931),
+  "femije-leaf-canta-shpine": p(1157389),
+  "femije-leaf-canta-dore": p(8807020),
+  "femije-leaf-organizatore-karroce": p(7282720),
+  "femije-leaf-mbajtese-shishesh": p(6624450),
+  "femije-leaf-mbulesa-shi-diell": p(15552523),
 };
 
 /** Veshje Shtatzënësie */
