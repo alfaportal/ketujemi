@@ -1,8 +1,8 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-import type { MetaOAuthProvider } from "./meta-oauth-config";
+export type OAuthProvider = "facebook" | "instagram" | "google";
 
 export type OAuthStatePayload = {
-  provider: MetaOAuthProvider;
+  provider: OAuthProvider;
   returnTo: string;
   nonce: string;
 };
@@ -40,7 +40,13 @@ export function verifyOAuthState(state: string): OAuthStatePayload | null {
   }
   try {
     const payload = JSON.parse(Buffer.from(data, "base64url").toString("utf8")) as OAuthStatePayload;
-    if (payload.provider !== "facebook" && payload.provider !== "instagram") return null;
+    if (
+      payload.provider !== "facebook" &&
+      payload.provider !== "instagram" &&
+      payload.provider !== "google"
+    ) {
+      return null;
+    }
     if (typeof payload.returnTo !== "string" || typeof payload.nonce !== "string") return null;
     return payload;
   } catch {

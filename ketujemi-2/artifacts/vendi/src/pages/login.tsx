@@ -15,6 +15,7 @@ import {
   useRecaptchaSiteKey,
   type RecaptchaV2Handle,
 } from "@/components/recaptcha-v2";
+import { SocialOAuthButtons } from "@/components/social-oauth-buttons";
 
 /** Regjistrohu = email (hyrje menjëherë nëse ke llogari; kod vetëm për të reja). Kyçu = telefon. */
 type Flow = "register" | "login";
@@ -83,6 +84,9 @@ export default function LoginPage() {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [smsAuthEnabled, setSmsAuthEnabled] = useState(false);
+  const [googleOAuthEnabled, setGoogleOAuthEnabled] = useState(false);
+  const [facebookOAuthEnabled, setFacebookOAuthEnabled] = useState(false);
+  const [instagramOAuthEnabled, setInstagramOAuthEnabled] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const recaptchaRef = useRef<RecaptchaV2Handle>(null);
   const { captchaRequired, siteKey: recaptchaSiteKey } = useRecaptchaSiteKey();
@@ -91,12 +95,25 @@ export default function LoginPage() {
     let cancelled = false;
     void fetchWithTimeout("/api/config/public", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : {}))
-      .then((data: { smsAuthEnabled?: boolean }) => {
+      .then((data: {
+        smsAuthEnabled?: boolean;
+        googleOAuthEnabled?: boolean;
+        facebookOAuthEnabled?: boolean;
+        instagramOAuthEnabled?: boolean;
+      }) => {
         if (cancelled) return;
         setSmsAuthEnabled(Boolean(data.smsAuthEnabled));
+        setGoogleOAuthEnabled(Boolean(data.googleOAuthEnabled));
+        setFacebookOAuthEnabled(Boolean(data.facebookOAuthEnabled));
+        setInstagramOAuthEnabled(Boolean(data.instagramOAuthEnabled));
       })
       .catch(() => {
-        if (!cancelled) setSmsAuthEnabled(false);
+        if (!cancelled) {
+          setSmsAuthEnabled(false);
+          setGoogleOAuthEnabled(false);
+          setFacebookOAuthEnabled(false);
+          setInstagramOAuthEnabled(false);
+        }
       });
     return () => {
       cancelled = true;
@@ -123,6 +140,21 @@ export default function LoginPage() {
     }
     if (params.get("error") === "verify") {
       toast({ title: t.toast_verifyFail, variant: "destructive" });
+    }
+    const oauthErr = params.get("error");
+    if (oauthErr === "google_denied") {
+      toast({ title: t.login_oauth_google_denied, variant: "destructive" });
+    } else if (oauthErr === "google_failed") {
+      toast({ title: t.login_oauth_google_failed, variant: "destructive" });
+    } else if (
+      oauthErr === "facebook_denied" ||
+      oauthErr === "facebook_failed" ||
+      oauthErr === "instagram_denied" ||
+      oauthErr === "instagram_failed" ||
+      oauthErr === "oauth_state" ||
+      oauthErr === "oauth_code"
+    ) {
+      toast({ title: t.login_oauth_failed, variant: "destructive" });
     }
     if (params.get("verified") === "1") {
       void refresh().then(() => setLocation(returnTo));
@@ -421,6 +453,23 @@ export default function LoginPage() {
   const isRegister = flow === "register";
   const isVerify = step === "verify";
 
+  const oauthLabels = {
+    or: t.login_oauth_or,
+    google: t.login_google_btn,
+    facebook: t.login_oauth_facebook,
+    instagram: t.login_oauth_instagram,
+  };
+
+  const oauthButtons = (
+    <SocialOAuthButtons
+      returnTo={returnTo}
+      googleEnabled={googleOAuthEnabled}
+      facebookEnabled={facebookOAuthEnabled}
+      instagramEnabled={instagramOAuthEnabled}
+      labels={oauthLabels}
+    />
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between max-w-lg mx-auto w-full">
@@ -604,6 +653,7 @@ export default function LoginPage() {
                 <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
                   {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_submit_login}
                 </Button>
+                {oauthButtons}
                 {passwordFailCount >= 2 ? (
                   <button
                     type="button"
@@ -678,6 +728,7 @@ export default function LoginPage() {
                 >
                   {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_sendSmsBtn}
                 </Button>
+                {oauthButtons}
                 <p className="text-center text-sm text-gray-500">
                   {t.login_needEmailAccount}{" "}
                   <button

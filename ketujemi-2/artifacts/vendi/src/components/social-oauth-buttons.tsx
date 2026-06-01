@@ -1,22 +1,52 @@
-import { FaFacebook, FaInstagram } from "react-icons/fa";
+import { FaFacebook, FaGoogle, FaInstagram } from "react-icons/fa";
 
 type Props = {
   returnTo: string;
+  googleEnabled: boolean;
   facebookEnabled: boolean;
   instagramEnabled: boolean;
+  labels: {
+    or: string;
+    google: string;
+    facebook: string;
+    instagram: string;
+  };
 };
 
-function oauthStartUrl(provider: "facebook" | "instagram", returnTo: string): string {
+function oauthStartUrl(
+  provider: "facebook" | "instagram",
+  returnTo: string,
+): string {
   const params = new URLSearchParams({ return: returnTo });
   return `/api/auth/oauth/${provider}/start?${params}`;
 }
 
-export function SocialOAuthButtons({ returnTo, facebookEnabled, instagramEnabled }: Props) {
-  if (!facebookEnabled && !instagramEnabled) return null;
+function googleStartUrl(): string {
+  return "/auth/google/start";
+}
+
+export function SocialOAuthButtons({
+  returnTo,
+  googleEnabled,
+  facebookEnabled,
+  instagramEnabled,
+  labels,
+}: Props) {
+  if (!googleEnabled && !facebookEnabled && !instagramEnabled) return null;
 
   return (
     <div className="space-y-3 pt-2">
-      <p className="text-xs text-gray-500 uppercase tracking-wide text-center">ose</p>
+      <p className="text-xs text-gray-500 uppercase tracking-wide text-center">{labels.or}</p>
+
+      {googleEnabled ? (
+        <a
+          href={googleStartUrl()}
+          className="flex w-full min-h-12 items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 hover:bg-gray-50 transition-colors"
+        >
+          <FaGoogle className="h-5 w-5 shrink-0 text-[#4285F4]" aria-hidden />
+          {labels.google}
+        </a>
+      ) : null}
 
       {facebookEnabled ? (
         <a
@@ -24,7 +54,7 @@ export function SocialOAuthButtons({ returnTo, facebookEnabled, instagramEnabled
           className="flex w-full min-h-12 items-center justify-center gap-2 rounded-md border border-[#1877F2]/30 bg-[#1877F2]/5 px-4 text-sm font-semibold text-[#1877F2] hover:bg-[#1877F2]/10 transition-colors"
         >
           <FaFacebook className="h-5 w-5 shrink-0" aria-hidden />
-          Vazhdo me Facebook
+          {labels.facebook}
         </a>
       ) : null}
 
@@ -34,13 +64,9 @@ export function SocialOAuthButtons({ returnTo, facebookEnabled, instagramEnabled
           className="flex w-full min-h-12 items-center justify-center gap-2 rounded-md border border-pink-300/50 bg-gradient-to-r from-[#fdf497]/20 via-[#fd5949]/10 to-[#d6249f]/10 px-4 text-sm font-semibold text-[#C13584] hover:from-[#fdf497]/30 hover:via-[#fd5949]/15 hover:to-[#d6249f]/15 transition-colors"
         >
           <FaInstagram className="h-5 w-5 shrink-0" aria-hidden />
-          Vazhdo me Instagram
+          {labels.instagram}
         </a>
       ) : null}
-
-      <p className="text-[11px] text-gray-500 text-center leading-snug">
-        Faqja zyrtare: KetuJemi.com · Instagram @jemi.ketu
-      </p>
     </div>
   );
 }

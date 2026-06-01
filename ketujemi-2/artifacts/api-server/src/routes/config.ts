@@ -3,6 +3,7 @@ import { isRecaptchaRequired } from "../lib/recaptcha-verify";
 import { hasEmailDeliveryConfigured, isEmailVerificationRequired } from "../lib/email-auth";
 import { isSmsAuthEnabled } from "../lib/sms-auth";
 import { isFacebookOAuthEnabled, isInstagramOAuthEnabled, facebookPageUrl, instagramProfileUrl } from "../lib/meta-oauth-config";
+import { isGoogleOAuthEnabled } from "../lib/google-oauth-config";
 import { isB2UploadConfigured } from "../lib/b2-upload-presign";
 import { paymentsConfigured, stripePublishableKey } from "../lib/payments";
 
@@ -52,6 +53,7 @@ router.get("/config/public", (_req, res) => {
     emailConfigured: hasEmailDeliveryConfigured(),
     facebookOAuthEnabled: isFacebookOAuthEnabled(),
     instagramOAuthEnabled: isInstagramOAuthEnabled(),
+    googleOAuthEnabled: isGoogleOAuthEnabled(),
     facebookPageUrl: facebookPageUrl(),
     instagramProfileUrl: instagramProfileUrl(),
   });

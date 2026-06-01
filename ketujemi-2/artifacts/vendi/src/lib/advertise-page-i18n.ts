@@ -165,7 +165,7 @@ const MK: AdvertisePageCopy = {
       title: "2. Спонзорирани огласи",
       bullets: [
         "Вашиот оглас се прикажува на врвот на избраната категорија — пред сите други",
-        'Означен како „Спонзорирано“ — висока видливост, зачувана доверба',
+        'Означен како "Спонзорирано" — висока видливост, зачувана доверба',
         "Таргетирање по категорија: Возила, Електроника, Недвижности, итн.",
         "Идеално за: продажба на конкретни производи, промоција на продавница",
       ],
@@ -264,7 +264,7 @@ const MNE: AdvertisePageCopy = {
       title: "2. Sponsorizovani oglasi",
       bullets: [
         "Vaš oglas se prikazuje na vrhu izabrane kategorije — ispred svih ostalih",
-        'Označeno kao „Sponsorizovano“ — visoka vidljivost, očuvano povjerenje",
+        'Označeno kao "Sponsorizovano" — visoka vidljivost, očuvano povjerenje',
         "Targetiranje po kategoriji: Vozila, Elektronika, Nekretnine, itd.",
         "Idealno za: prodaju specifičnih proizvoda, promociju prodavnice",
       ],
