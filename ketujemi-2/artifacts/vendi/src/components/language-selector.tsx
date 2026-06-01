@@ -42,9 +42,6 @@ export function LanguageSelector({ variant = "on-light", compact }: LanguageSele
         )}
       >
         <span className="font-bold tracking-wide">{current.displayCode}</span>
-        <span className="text-base leading-none max-md:hidden" aria-hidden>
-          {current.flag}
-        </span>
         <ChevronDown
           size={14}
           className={cn("shrink-0 opacity-80 transition-transform", open && "rotate-180")}
@@ -86,9 +83,6 @@ export function LanguageSelector({ variant = "on-light", compact }: LanguageSele
               >
                 <span className="w-6 shrink-0 font-bold text-[11px] tracking-wide">
                   {lang.displayCode}
-                </span>
-                <span className="text-sm leading-none" aria-hidden>
-                  {lang.flag}
                 </span>
                 <span>{lang.label}</span>
               </button>
