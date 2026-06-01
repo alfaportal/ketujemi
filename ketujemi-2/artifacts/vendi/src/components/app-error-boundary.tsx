@@ -55,7 +55,7 @@ export class AppErrorBoundary extends Component<Props, State> {
         <p className="max-w-md text-sm text-muted-foreground">
           Provo të rifreskosh faqen. Nëse problemi vazhdon, pastro cache-in e shfletuesit për ketujemi.com.
         </p>
-        {import.meta.env.DEV && this.state.error?.message ? (
+        {this.state.error?.message ? (
           <p className="max-w-lg font-mono text-xs text-red-600 break-words">
             {this.state.error.message}
           </p>
