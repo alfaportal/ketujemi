@@ -670,8 +670,10 @@ export default function CategoryPage() {
     if (!canonical) return;
     const raw = segment.trim();
     if (raw === canonical) return;
-    setLocation(categoryPath(categoryId, canonical), { replace: true });
-  }, [segment, categoryId, allCategories, setLocation]);
+    const qs = (urlSearch ?? "").trim();
+    const nextPath = qs ? `${categoryPath(categoryId, canonical)}?${qs}` : categoryPath(categoryId, canonical);
+    setLocation(nextPath, { replace: true });
+  }, [segment, categoryId, allCategories, setLocation, urlSearch]);
 
   const emptyListingsCopy = useMemo(() => {
     switch (market.code) {
