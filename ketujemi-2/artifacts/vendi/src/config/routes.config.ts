@@ -19,6 +19,7 @@ export type RouteId =
   | "security"
   | "press"
   | "partner-register"
+  | "open-shop"
   | "vip-packages"
   | "advertise"
   | "home"
@@ -159,10 +160,12 @@ export const APP_ROUTES: AppRouteDefinition[] = [
     { path: "/mediji", marketPrefix: "mk" },
     { path: "/press", marketPrefix: "en" },
   ]),
-  ...staticAliases("partner-register", [
+  ...staticAliases("open-shop", [
     { path: "/hap-shitore", marketPrefix: "sq" },
     { path: "/otvori-prodavnica", marketPrefix: "mk" },
     { path: "/otvori-prodavnicu", marketPrefix: "mne" },
+  ]),
+  ...staticAliases("partner-register", [
     { path: "/partner", marketPrefix: null },
     { path: "/partneritet", marketPrefix: "sq" },
     { path: "/partnerstvo", marketPrefix: "mne" },

@@ -11,8 +11,8 @@ export function partnerSignupHref(tier?: "vip" | "standard"): string {
   return `${PARTNER_SIGNUP_PATH}?${params.toString()}#regjistrohu`;
 }
 
-/** Footer BIZNESE column — same path for all UI languages */
-export const FOOTER_BUSINESS_OPEN_SHOP_PATH = "/partner";
+/** Footer BIZNESE column — open shop landing (Albanian canonical path) */
+export const FOOTER_BUSINESS_OPEN_SHOP_PATH = "/hap-shitore";
 export const FOOTER_BUSINESS_VIP_PATH = "/vip";
 export const FOOTER_BUSINESS_PARTNERSHIP_PATH = "/partner";
 
@@ -91,7 +91,7 @@ export function staticPagePaths(uiLang: UiLang): StaticPagePaths {
       privacy: "/privacy",
       cookies: "/cookies",
       terms: "/terms",
-      openShop: FOOTER_BUSINESS_OPEN_SHOP_PATH,
+      openShop: "/hap-shitore",
       vip: FOOTER_BUSINESS_VIP_PATH,
       advertise: "/advertise",
       partnership: FOOTER_BUSINESS_PARTNERSHIP_PATH,
@@ -108,7 +108,7 @@ export function staticPagePaths(uiLang: UiLang): StaticPagePaths {
       privacy: "/privatnost",
       cookies: "/kolacinja",
       terms: "/uslovi",
-      openShop: FOOTER_BUSINESS_OPEN_SHOP_PATH,
+      openShop: "/otvori-prodavnica",
       vip: FOOTER_BUSINESS_VIP_PATH,
       advertise: "/reklamiraj",
       partnership: FOOTER_BUSINESS_PARTNERSHIP_PATH,
@@ -125,7 +125,7 @@ export function staticPagePaths(uiLang: UiLang): StaticPagePaths {
       privacy: "/privatnost",
       cookies: "/kolacici",
       terms: "/uslovi",
-      openShop: FOOTER_BUSINESS_OPEN_SHOP_PATH,
+      openShop: "/otvori-prodavnicu",
       vip: FOOTER_BUSINESS_VIP_PATH,
       advertise: "/reklamiraj",
       partnership: FOOTER_BUSINESS_PARTNERSHIP_PATH,
@@ -141,7 +141,7 @@ export function staticPagePaths(uiLang: UiLang): StaticPagePaths {
     privacy: "/privatesia",
     cookies: "/cookies",
     terms: "/kushtet",
-    openShop: FOOTER_BUSINESS_OPEN_SHOP_PATH,
+    openShop: "/hap-shitore",
     vip: FOOTER_BUSINESS_VIP_PATH,
     advertise: "/reklamoni",
     partnership: FOOTER_BUSINESS_PARTNERSHIP_PATH,
