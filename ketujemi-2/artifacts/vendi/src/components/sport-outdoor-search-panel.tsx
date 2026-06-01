@@ -35,7 +35,6 @@ import {
   SPORT_TYPE_LABEL_KEY,
   SPORT_TYPE_PHOTOS,
   resolveSportDevicePhoto,
-  resolveSportTypeCategoryId,
   type SportBikeTypeKey,
   type SportDeviceKey,
   type SportGenderKey,
@@ -54,6 +53,7 @@ type Props = {
   sportTypeKey?: SportTypeKey | null;
   deviceKey?: SportDeviceKey | null;
   categories: SportOutdoorCategoryRow[];
+  onNavigateToSportType: (typeKey: SportTypeKey) => void;
   onNavigateToCategory: (childCategoryId: number) => void;
   onNavigateToDevice: (deviceKey: SportDeviceKey) => void;
   previewTotal?: number | null;
@@ -69,6 +69,7 @@ export function SportOutdoorSearchPanel({
   sportTypeKey,
   deviceKey,
   categories,
+  onNavigateToSportType,
   onNavigateToCategory,
   onNavigateToDevice,
   previewTotal = null,
@@ -162,10 +163,9 @@ export function SportOutdoorSearchPanel({
   const typeSelectOptions = useMemo(() => {
     return SPORT_TYPE_KEYS.map((key) => ({
       key,
-      id: resolveSportTypeCategoryId(categories, hubId, key),
       label: t[SPORT_TYPE_LABEL_KEY[key]] ?? key,
-    })).filter((o) => o.id != null);
-  }, [categories, hubId, t]);
+    }));
+  }, [t]);
 
   const deviceSelectOptions = useMemo(() => {
     if (!sportTypeKey) return [];
@@ -179,8 +179,8 @@ export function SportOutdoorSearchPanel({
   }, [sportTypeKey, deviceSections, t]);
 
   const handleTypeSelect = (value: string) => {
-    const row = typeSelectOptions.find((o) => String(o.id) === value);
-    if (row?.id) onNavigateToCategory(row.id);
+    const row = typeSelectOptions.find((o) => o.key === value);
+    if (row) onNavigateToSportType(row.key);
   };
 
   const handleDeviceSelect = (value: string) => {
@@ -202,14 +202,11 @@ export function SportOutdoorSearchPanel({
           </div>
           <CategoryPhotoPickerGrid>
             {SPORT_TYPE_KEYS.map((key) => {
-              const cid = resolveSportTypeCategoryId(categories, hubId, key);
               const label = t[SPORT_TYPE_LABEL_KEY[key]] ?? key;
               return (
                 <CategoryPhotoPickerCard
                   key={key}
-                  onClick={() => {
-                    if (cid) onNavigateToCategory(cid);
-                  }}
+                  onClick={() => onNavigateToSportType(key)}
                   imageSrc={SPORT_TYPE_PHOTOS[key]}
                   label={label}
                 />
@@ -424,7 +421,7 @@ export function SportOutdoorSearchPanel({
                   </SelectTrigger>
                   <SelectContent className="!max-h-[300px]">
                     {typeSelectOptions.map((o) => (
-                      <SelectItem key={o.key} value={String(o.id)}>
+                      <SelectItem key={o.key} value={o.key}>
                         {o.label}
                       </SelectItem>
                     ))}

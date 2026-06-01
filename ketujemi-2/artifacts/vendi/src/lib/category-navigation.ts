@@ -197,6 +197,27 @@ type SetLocation = (
   options?: { replace?: boolean },
 ) => void;
 
+/** Sport & Outdoor hub card → type subcategory (by id or canonical slug). */
+export function navigateToSportType(
+  setLocation: SetLocation,
+  categories: readonly CategoryRef[],
+  hubId: number,
+  sportTypeSlug: string,
+  fromCategoryId: number,
+) {
+  const row = categories.find(
+    (c) => Number(c.parent_id) === Number(hubId) && c.slug === sportTypeSlug,
+  );
+  if (row?.id) {
+    navigateToCategory(setLocation, row.id, fromCategoryId, categories);
+    return;
+  }
+  stashCategoryScroll(fromCategoryId);
+  markScrollPosition(scrollLocationKey(window.location.pathname), window.scrollY);
+  pendingCategoryScrollIntent = "focus";
+  setLocation(categoryPath(0, sportTypeSlug));
+}
+
 /** Navigate to a category; stash parent scroll so back returns where you were. */
 export function navigateToCategory(
   setLocation: SetLocation,

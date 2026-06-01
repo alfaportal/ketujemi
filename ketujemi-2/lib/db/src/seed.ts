@@ -652,6 +652,10 @@ async function seed() {
     await seedArsimKurseSubcategoriesAlways();
     return;
   }
+  if (process.argv.includes("--sport-subcats-only")) {
+    await seedTypesUnderParentSlug("sport-outdoor", SPORT_OUTDOOR_TYPES, "Sport & Outdoor");
+    return;
+  }
   if (process.argv.includes("--brands-only")) {
     await seedBrandsUnderVetura();
     return;

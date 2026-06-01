@@ -21,6 +21,7 @@
     "seed:banesa-subcats": "tsx ./src/seed.ts --banesa-subcats-only",
     "seed:kamione-subcats": "tsx ./src/seed.ts --kamione-subcats-only",
     "seed:general-subcats": "tsx ./src/seed.ts --general-subcats-only",
+    "seed:sport-subcats": "tsx ./src/seed.ts --sport-subcats-only",
     "seed:category-images": "tsx ./src/apply-category-images.ts",
     "seed:parent-images": "tsx ./src/apply-parent-category-images.ts",
     "seed:car-models": "tsx ./src/seed-car-models.ts",

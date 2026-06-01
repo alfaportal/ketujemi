@@ -35,6 +35,7 @@ import {
   categoryPath,
   navigateCategoryBack,
   navigateToCategory,
+  navigateToSportType,
   resolveCategoryId,
   useCategoryScroll,
   type CategoryRef,
@@ -103,6 +104,7 @@ import {
   resolveSportTypeKeyFromSlug,
   sportDeviceLeafPath,
   SPORT_OUTDOOR_HUB_SLUG,
+  SPORT_TYPE_DB_SLUG,
   type SportDeviceKey,
 } from "@/lib/sport-outdoor-search-helpers";
 import { LokaleZyreSearchPanel } from "@/components/lokale-zyre-search-panel";
@@ -1700,6 +1702,15 @@ export default function CategoryPage() {
             variant="hub"
             hubId={categoryId}
             categories={allCategories as any}
+            onNavigateToSportType={(key) =>
+              navigateToSportType(
+                setLocation,
+                allCategories as CategoryRef[],
+                categoryId,
+                SPORT_TYPE_DB_SLUG[key],
+                categoryId,
+              )
+            }
             onNavigateToCategory={(childId) =>
               navigateToCategory(setLocation, childId, categoryId, allCategories as CategoryRef[])
             }
@@ -1714,6 +1725,15 @@ export default function CategoryPage() {
             scopeCategoryId={categoryId}
             sportTypeKey={sportTypeKey}
             categories={allCategories as any}
+            onNavigateToSportType={(key) =>
+              navigateToSportType(
+                setLocation,
+                allCategories as CategoryRef[],
+                sportOutdoorHubCategoryId,
+                SPORT_TYPE_DB_SLUG[key],
+                categoryId,
+              )
+            }
             onNavigateToCategory={(childId) =>
               navigateToCategory(setLocation, childId, categoryId, allCategories as CategoryRef[])
             }
@@ -1735,6 +1755,15 @@ export default function CategoryPage() {
             categories={allCategories as any}
             previewTotal={listingsData?.total ?? null}
             previewLoading={isLoading}
+            onNavigateToSportType={(key) =>
+              navigateToSportType(
+                setLocation,
+                allCategories as CategoryRef[],
+                sportOutdoorHubCategoryId,
+                SPORT_TYPE_DB_SLUG[key],
+                categoryId,
+              )
+            }
             onNavigateToCategory={(childId) =>
               navigateToCategory(setLocation, childId, categoryId, allCategories as CategoryRef[])
             }
