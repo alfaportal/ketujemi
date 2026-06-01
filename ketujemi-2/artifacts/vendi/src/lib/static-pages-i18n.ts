@@ -51,6 +51,11 @@ export type ContactCopy = {
   toastError: string;
   faqTitle: string;
   faq: { q: string; a: string }[];
+  phoneLabel?: string;
+  phoneValue?: string;
+  addressLabel?: string;
+  addressValue?: string;
+  formNote?: string;
 };
 
 export type FaqItemCopy = {
@@ -555,8 +560,12 @@ const KS: StaticPagesCopy = {
     contactSectionTitle: "Kontakti",
     officialEmailLabel: "Email Zyrtar:",
     technicalSupportLabel: "Suport Teknik:",
+    phoneLabel: "Telefon:",
+    phoneValue: "+383 43 555 294",
+    addressLabel: "Adresa:",
+    addressValue: "REVOLUTION INVEST Sh.p.k., Ferizaj, Republika e Kosovës",
     hoursLabel: "Orari i Punës:",
-    hoursValue: "E Hënë - E Premte, 09:00 - 17:00",
+    hoursValue: "E Hënë – E Premte, 09:00 – 17:00",
     emailLabel: "Email Zyrtar:",
     supportEmailLabel: "Suport Teknik:",
     facebookLabel: "Facebook:",
@@ -568,31 +577,22 @@ const KS: StaticPagesCopy = {
     messageLabel: "Mesazhi",
     subjectPlaceholder: "Zgjidhni subjektin",
     subjects: [
-      { value: "pyetje", label: "Pyetje" },
+      { value: "pyetje", label: "Pyetje e përgjithshme" },
       { value: "problem", label: "Problem teknik" },
-      { value: "raportim", label: "Raportim" },
-      { value: "partneritet", label: "Partneritet" },
+      { value: "raportim", label: "Raportim njoftimi" },
+      { value: "partneritet", label: "Partneritet dhe biznes" },
+      { value: "shtypi", label: "Shtypi dhe media" },
+      { value: "ligjor", label: "Kërkesë ligjore" },
       { value: "tjeter", label: "Tjetër" },
     ],
     submitBtn: "Dërgo Mesazhin",
     toastRequired: "Plotësoni të gjitha fushat e detyrueshme",
     toastSuccess: "Mesazhi u dërgua. Do t'ju përgjigjemi së shpejti.",
     toastError: "Mesazhi nuk u dërgua. Provoni përsëri ose na shkruani me email.",
+    formNote:
+      "Mesazhet dërgohen te support@ketujemi.com dhe info@ketujemi.com. Përgjigjem brenda 24 orëve në ditët e punës.",
     faqTitle: "Pyetje të shpeshta (FAQ)",
-    faq: [
-      {
-        q: "Si mund të postoj një njoftim?",
-        a: "Kliko butonin «Posto Njoftim», plotëso të dhënat dhe ngarko fotot.",
-      },
-      {
-        q: "Sa kushton postimi i njoftimeve?",
-        a: "Postimi për përdoruesit e thjeshtë është plotësisht falas.",
-      },
-      {
-        q: "Si mund ta fshij ose modifikoj njoftimin tim?",
-        a: "Hyni në llogarinë tuaj te seksioni «Njoftimet e mia» për t'i menaxhuar ato.",
-      },
-    ],
+    faq: [],
   },
   faq: {
     title: "Pyetjet e Shpeshta (FAQ)",
@@ -602,108 +602,54 @@ const KS: StaticPagesCopy = {
     featured: [
       {
         q: "Si të postoj njoftim?",
-        a: "Kliko butonin «Posto Njoftim», plotëso të dhënat dhe ngarko fotot.",
+        a: "Kliko butonin «Posto Njoftim» në krye të faqes, zgjidhni kategorinë e duhur, plotësoni titullin, përshkrimin dhe çmimin, ngarko deri 10 foto dhe publiko. Njoftimi bëhet aktiv menjëherë pas moderimit automatik.",
       },
       {
-        q: "Sa kushton?",
-        a: "Plotësisht falas për përdoruesit e thjeshtë.",
+        q: "Sa kushton postimi?",
+        a: "Postimi bazë është plotësisht falas — 10 njoftime falas në muaj për çdo kategori kryesore. Kur arrini limitin, mund të blini kredi shtesë nga portofoli (Paketa S €5 / M €10 / L €20).",
       },
       {
         q: "Si ta fshij njoftimin?",
-        a: "Hyni në llogarinë tuaj te Profili / «Njoftimet e mia» për ta menaxhuar ose fshirë.",
+        a: "Hyni në llogarinë tuaj te Profili → «Njoftimet e mia», zgjidhni njoftimin dhe klikoni «Fshi». Njoftimi hiqet menjëherë dhe definitivisht.",
+      },
+      {
+        q: "Sa kohë qëndron aktiv njoftimi im?",
+        a: "Çdo njoftim qëndron aktiv 3 muaj (90 ditë) nga data e postimit. Pas kësaj fshihet automatikisht. Data e skadimit shfaqet në faqen e njoftimit.",
+      },
+      {
+        q: "Pse duhet numri i telefonit?",
+        a: "Numri i telefonit kërkohet për verifikim SMS para postimit të parë. Kjo na ndihmon të mbajmë platformën të sigurt dhe pa llogari false.",
+      },
+      {
+        q: "A mund të hyj me Google ose Facebook?",
+        a: "Po. Mund të regjistroheni dhe të hyni me llogarinë tuaj Google ose Facebook me 1 klikim. Numri i telefonit do të kërkohet gjithsesi para postimit të parë.",
+      },
+      {
+        q: "Sa foto mund të ngarkoj për njoftim?",
+        a: "Deri 10 foto për njoftim. Rekomandojmë foto të vërteta të produktit tuaj — jo foto nga interneti ose katalogë.",
+      },
+      {
+        q: "Njoftimi im u refuzua — pse?",
+        a: "Njoftimet refuzohen nëse përmbajnë produkte të ndaluara, foto jo të vërteta, çmim të pasaktë ose informacion mashtrues. Do të njoftoheni me email për arsyen e refuzimit.",
+      },
+      {
+        q: "Si ta raportoj një njoftim të dyshimtë?",
+        a: "Klikoni butonin «Raporto» drejtpërdrejt në faqen e njoftimit ose na shkruani në support@ketujemi.com. Veprojmë brenda 24 orëve.",
+      },
+      {
+        q: "Si funksionon portofoli?",
+        a: "Portofoli është bilanci juaj i krediteve në platformë. Mund ta ngarkoni me Paketa S/M/L dhe të përdorni kreditet për postime shtesë kur kaloni limitin mujor falas. Krediti nuk skadon dhe nuk kthehet në para të gatshme.",
+      },
+      {
+        q: "A mund të ndryshoj njoftimin pasi e kam postuar?",
+        a: "Po. Hyni te Profili → «Njoftimet e mia», zgjidhni njoftimin dhe klikoni «Ndrysho». Mund të ndryshoni titullin, përshkrimin, çmimin dhe fotot.",
+      },
+      {
+        q: "Çfarë bëj nëse jam mashtruar?",
+        a: "Na kontaktoni menjëherë në support@ketujemi.com me detajet e rastit. Gjithashtu, raportoni rastin te Policia e Kosovës pasi KetuJemi.com nuk është palë në transaksione mes përdoruesve.",
       },
     ],
-    sections: [
-      {
-        title: "Postimi i Njoftimeve",
-        items: [
-          {
-            q: "Si të postoj një njoftim?",
-            a: 'Klikoni «Posto Njoftim», zgjidhni kategorinë, plotësoni të dhënat dhe ngarkoni fotot. Njoftimi publikohet menjëherë.',
-          },
-          {
-            q: "Sa njoftime falas mund të postoj?",
-            a: "Përdoruesit kanë 10 njoftime falas për çdo kategori + verifikim.",
-          },
-          {
-            q: "A mund të postoj nga jashtë vendit?",
-            a: "Po! Diaspora nga Gjermani, Zvicër, Austri, Francë, Itali, Angli dhe SHBA mund të postojë normalisht me numrin e tyre të telefonit.",
-          },
-          {
-            q: "Sa foto mund të ngarkoi për një njoftim?",
-            a: "Deri në 10 foto për njoftim.",
-          },
-        ],
-      },
-      {
-        title: "Llogaria & Siguria",
-        items: [
-          {
-            q: "Si të krijoj llogari?",
-            a: "Me numër telefoni (SMS) ose Google. Numri i telefonit kërkohet gjithmonë para postimit të parë.",
-          },
-          {
-            q: "Si të verifikoj llogarinë?",
-            a: "Do të merrni SMS me kod 6-shifror. Futeni kodin dhe llogaria aktivizohet menjëherë.",
-          },
-          {
-            q: "Çfarë bëj nëse harroj fjalëkalimin?",
-            a: 'Klikoni "Harrova fjalëkalimin" dhe do të merrni SMS ose email për rivendosje.',
-          },
-        ],
-      },
-      {
-        title: "Blerja & Shitja",
-        items: [
-          {
-            q: "A është KetuJemi falas?",
-            a: "Po! Postimi bazë është plotësisht falas!",
-          },
-          {
-            q: "Si të kontaktoj shitësin?",
-            a: 'Klikoni «Kontakto Shitësin» në njoftim dhe dërgoni mesazh direkt.',
-          },
-          {
-            q: "Çfarë bëj nëse dikush po mashtron?",
-            aEmail: {
-              before: 'Klikoni «Raporto» në njoftim ose na kontaktoni në ',
-              between: " dhe ",
-              after: ". Veprojmë brenda 24 orëve.",
-            },
-          },
-          {
-            q: "A garanton KetuJemi produktet?",
-            a: "KetuJemi është platformë ndërmjetëse. Ju rekomandojmë të takoheni personalisht dhe të kontrolloni produktin para blerjes.",
-          },
-        ],
-      },
-      {
-        title: "Paketat VIP",
-        items: [
-          {
-            q: "Çfarë është paketa VIP?",
-            a: 'Paketa VIP ofron njoftime të pakufizuara, pozicion të lartë në kërkim dhe badge «VIP» për 30€ muaj.',
-          },
-          {
-            q: "Kur aktivizohet paketa VIP?",
-            a: "Paketa VIP aktivizohet për disa përdorues!",
-          },
-        ],
-      },
-      {
-        title: "Teknik",
-        items: [
-          {
-            q: "A funksionon KetuJemi në telefon?",
-            a: "Po! KetuJemi është optimizuar për telefon. Mund ta përdorni nga çdo pajisje.",
-          },
-          {
-            q: "Në cilat vende funksionon KetuJemi?",
-            a: "Kosovë, Shqipëri, Maqedoni e Veriut dhe Mal i Zi. Plus diaspora në 7 vende të Europës dhe SHBA.",
-          },
-        ],
-      },
-    ],
+    sections: [],
   },
   security: {
     title: "Siguria Online",
@@ -711,11 +657,66 @@ const KS: StaticPagesCopy = {
       "Këshilla dhe udhëzime zyrtare për t'u mbrojtur gjatë blerjeve dhe shitjeve online në KetuJemi.com.",
     sections: [
       {
-        title: "Rregullat e Sigurisë",
+        title: "Rregullat e artë të sigurisë",
         bullets: [
-          "Mos dërgoni para avans pa u takuar me shitësin në vend publik.",
-          "Kontrolloni produktin dhe dokumentet përpara pagesës.",
-          "Raportoni njoftimet e dyshimta në support@ketujemi.com.",
+          "Mos dërgoni para avans pa u takuar me shitësin në vend publik",
+          "Kontrolloni produktin dhe dokumentet përpara çdo pagese",
+          "Preferoni pagesa në dorë gjatë takimit personal — evitoni transfertat bankare me të panjohur",
+          "Komunikoni vetëm përmes sistemit të mesazheve të platformës — mos kaloni te numra personal ose WhatsApp para takimit",
+          "Raportoni çdo njoftim të dyshimtë në support@ketujemi.com",
+        ],
+      },
+      {
+        title: "Si të identifikoni një mashtrim",
+        bulletsIntro: "Kini kujdes nëse shitësi/blerësi:",
+        bullets: [
+          "Kërkon para avans para takimit ose dorëzimit",
+          "Ofron çmim shumë të ulët pa arsye logjike",
+          "Refuzon të takohet personalisht ose kërkon vetëm dërgim postar",
+          "Kërkon të komunikoni jashtë platformës menjëherë",
+          "Dërgon lidhje të dyshimta ose kërkon të dhëna bankare",
+          "Pretendon se është jashtë vendit dhe kërkon transfertë ndërkombëtare",
+        ],
+      },
+      {
+        title: "Këshilla për shitësit",
+        bullets: [
+          "Mos jepni adresën e shtëpisë tuaj në njoftim — takohuni në vend publik",
+          "Mos pranoni çeqe ose transferta bankare nga blerës të panjohur pa verifikim",
+          "Nëse blerësi kërkon të paguajë më shumë se çmimi dhe ju kërkon t'i ktheni diferencën — është mashtrim i sigurt",
+          "Fotot e vërteta të produktit mbrojnë edhe ju — blerësi di saktësisht çfarë blen",
+        ],
+      },
+      {
+        title: "Këshilla për blerësit",
+        bullets: [
+          "Shikoni profilin e shitësit — koha e regjistrimit, njoftimet e tjera, vlerësimet",
+          "Kërkoni foto shtesë ose video të produktit para vendimit",
+          "Takohuni gjatë ditës në vend publik (qendër tregtare, kafene)",
+          "Kontrolloni produktin plotësisht para pagesës — kthimi pas pagesës është vullnet i shitësit, jo detyrim i platformës",
+          "Mos klikoni lidhje të jashtme që ju dërgon shitësi",
+        ],
+      },
+      {
+        title: "Çfarë bëjmë ne për sigurinë tuaj",
+        bullets: [
+          "Verifikim SMS i detyrueshëm para postimit të parë",
+          "Sistem raportimi 24/7 — veprojmë brenda 24 orëve",
+          "Moderim automatik i njoftimeve të dyshimta",
+          "Bllokimi i llogarive mashtruese pas raportimit të verifikuar",
+        ],
+      },
+      {
+        title: "Nëse jeni mashtruar",
+        bullets: [
+          "Mos bëni pagesa të tjera",
+          "Ruani të gjitha mesazhet dhe provat",
+          "Raportoni te support@ketujemi.com me detajet e plota",
+          "Raportoni rastin te Policia e Kosovës — 192 ose te stacioni i policisë më i afërt",
+          "Nëse keni bërë transfertë bankare, kontaktoni bankën tuaj menjëherë",
+        ],
+        paragraphsAfter: [
+          "KetuJemi.com nuk është palë në transaksione mes përdoruesve dhe nuk mund të garantojë rimbursim, por do të bashkëpunojmë plotësisht me autoritetet kompetente.",
         ],
       },
     ],
@@ -727,17 +728,35 @@ const KS: StaticPagesCopy = {
     mediaEmailLabel: "Email për Media:",
     sections: [
       {
-        title: "Çfarë ofrojmë medias",
+        title: "Rreth KetuJemi.com",
+        paragraphs: [
+          "KetuJemi.com është platforma kryesore shqiptare e shpalljeve online, e zhvilluar dhe operuar nga REVOLUTION INVEST Sh.p.k., me seli në Ferizaj, Kosovë. Platforma operon në 4 tregje: Kosovë, Shqipëri, Maqedoni e Veriut dhe Mal i Zi.",
+        ],
+      },
+      {
+        title: "Çfarë ofrojmë mediave",
         bullets: [
-          "Logo dhe materiale vizuale të KetuJemi.com (me kërkesë)",
-          "Intervista me ekipin drejtues (me takim paraprak)",
-          "Të dhëna statistikore të përgjithshme për platformën",
+          "Logo dhe materiale vizuale të KetuJemi.com (me kërkesë me email)",
+          "Intervista me ekipin drejtues (me takim paraprak — minimum 48 orë njoftim)",
+          "Të dhëna statistikore të përgjithshme për platformën (numër njoftimesh, kategoritë kryesore, tregjet aktive)",
+          "Komunikata zyrtare dhe njoftime për shtyp",
         ],
       },
       {
         title: "Kohëzgjatja e përgjigjes",
         paragraphs: [
-          "Kërkesat për shtyp përgjigjen brenda 2–3 ditëve pune. Për urgjenca, shënoni «Shtypi» në formularin e kontaktit.",
+          "Kërkesat për shtyp përgjigjen brenda 2–3 ditëve të punës. Për urgjencat, shënoni «SHTYPI — URGJENT» në subjektin e email-it.",
+        ],
+      },
+      {
+        title: "Informacion kontakti për media",
+        bullets: [
+          "Email për Media: info@ketujemi.com",
+          "Subjekti: «Kërkesë Media — [emri i medias]»",
+          "Operatori ligjor: REVOLUTION INVEST Sh.p.k., Ferizaj, NRB 811314567",
+        ],
+        paragraphsAfter: [
+          "Çdo komunikatë zyrtare vjen vetëm nga adresat @ketujemi.com ose @revolutioninvest.com. Kini kujdes nga adresa të tjera që pretendojnë të jenë KetuJemi.",
         ],
       },
     ],

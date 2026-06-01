@@ -5,10 +5,12 @@ const router: IRouter = Router();
 const LOG = "POST /contact";
 
 const SUBJECT_LABELS: Record<string, string> = {
-  pyetje: "Pyetje",
+  pyetje: "Pyetje e përgjithshme",
   problem: "Problem teknik",
-  raportim: "Raportim",
-  partneritet: "Partneritet",
+  raportim: "Raportim njoftimi",
+  partneritet: "Partneritet dhe biznes",
+  shtypi: "Shtypi dhe media",
+  ligjor: "Kërkesë ligjore",
   tjeter: "Tjetër",
 };
 

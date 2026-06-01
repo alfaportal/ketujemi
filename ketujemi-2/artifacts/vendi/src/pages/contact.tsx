@@ -77,6 +77,16 @@ export default function ContactPage() {
       <div className="space-y-4 pb-2 border-b border-gray-100">
         <InfoEmailLine label={c.officialEmailLabel} email={INFO_EMAIL} />
         <InfoEmailLine label={c.technicalSupportLabel} email={SUPPORT_EMAIL} />
+        {c.phoneLabel && c.phoneValue ? (
+          <p className="text-sm sm:text-base">
+            <span className="font-semibold text-gray-800">{c.phoneLabel}</span> {c.phoneValue}
+          </p>
+        ) : null}
+        {c.addressLabel && c.addressValue ? (
+          <p className="text-sm sm:text-base">
+            <span className="font-semibold text-gray-800">{c.addressLabel}</span> {c.addressValue}
+          </p>
+        ) : null}
         <p className="text-sm sm:text-base">
           <span className="font-semibold text-gray-800">{c.hoursLabel}</span> {c.hoursValue}
         </p>
@@ -150,6 +160,9 @@ export default function ContactPage() {
           >
             {busy ? "…" : c.submitBtn}
           </Button>
+          {c.formNote ? (
+            <p className="text-sm text-gray-600 leading-relaxed">{c.formNote}</p>
+          ) : null}
         </form>
       </div>
     </LuxuryStaticShell>
