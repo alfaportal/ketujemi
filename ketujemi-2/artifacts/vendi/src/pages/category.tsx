@@ -917,6 +917,13 @@ export default function CategoryPage() {
     return categoryId;
   }, [isKompjuterLaptopHub, isKompjuterTypePage, categoryId, parentCategory]);
 
+  const kompjuterHubChildren = useMemo(() => {
+    if (!allCategories) return [];
+    return allCategories.filter(
+      (c: any) => Number(c.parent_id) === Number(kompjuterHubCategoryId),
+    );
+  }, [allCategories, kompjuterHubCategoryId]);
+
   const isParentCategoryHub =
     isVeturaHub ||
     isKamioneFurgoneHub ||
@@ -1314,11 +1321,15 @@ export default function CategoryPage() {
     TELEFONA_BRAND_ORDER,
   );
   const orderedKompjuterTypes = sortChildrenByNameOrder(
-    children.filter((c: any) => (KOMPJUTER_TYPE_ORDER as readonly string[]).includes(c.name)),
+    kompjuterHubChildren.filter((c: any) =>
+      (KOMPJUTER_TYPE_ORDER as readonly string[]).includes(c.name),
+    ),
     KOMPJUTER_TYPE_ORDER,
   );
   const orderedKompjuterBrands = sortChildrenByNameOrder(
-    children.filter((c: any) => (KOMPJUTER_BRAND_ORDER as readonly string[]).includes(c.name)),
+    kompjuterHubChildren.filter((c: any) =>
+      (KOMPJUTER_BRAND_ORDER as readonly string[]).includes(c.name),
+    ),
     KOMPJUTER_BRAND_ORDER,
   );
 
