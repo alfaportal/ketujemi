@@ -314,6 +314,28 @@ const KS: StaticPagesCopy = {
           "Mund të kërkoni korrigjim ose fshirje duke na kontaktuar në support@ketujemi.com.",
         ],
       },
+      {
+        title: "Hyrje me Google ose Facebook",
+        paragraphs: [
+          "Nëse hyni me Google ose Facebook, marrim vetëm emrin dhe email-in nga ata — asgjë tjetër. Nuk kemi qasje në llogarinë tuaj sociale.",
+        ],
+      },
+      {
+        title: "Cookies",
+        paragraphs: [
+          "Përdorim cookies teknike për sesionin tuaj. Nuk përdorim cookies reklamash.",
+        ],
+      },
+      {
+        title: "Të dhënat e shpalljeve",
+        paragraphs: [
+          "Kur fshini një shpallje, ajo hiqet menjëherë nga faqja publike. Teksti dhe metatë e shpalljes mund të mbeten në kopje rezervë (backup) të sigurta deri në 30 ditë, pastaj fshihen. Fotot hiqen nga shërbimi i ruajtjes kur fshihet shpallja.",
+        ],
+      },
+      {
+        title: "Mosha minimale",
+        paragraphs: ["Platforma është për persona mbi 16 vjeç."],
+      },
     ],
   },
   cookies: {
@@ -831,6 +853,28 @@ const MK: StaticPagesCopy = {
           "Можете да побарате корекција или бришење на support@ketujemi.com.",
         ],
       },
+      {
+        title: "Најава преку Google или Facebook",
+        paragraphs: [
+          "Ако најавите преку Google или Facebook, добиваме само име и email од нив — ништо друго. Немаме пристап до вашата социјална сметка.",
+        ],
+      },
+      {
+        title: "Колачиња (cookies)",
+        paragraphs: [
+          "Користиме технички колачиња за вашата сесија. Не користиме рекламни колачиња.",
+        ],
+      },
+      {
+        title: "Податоци од огласи",
+        paragraphs: [
+          "Кога ќе избришете оглас, веднаш се отстранува од јавната страница. Текстот и метаподатоците може да останат во безбедна резервна копија до 30 дена, потоа се бришат. Фотографиите се отстрануваат од складиштето кога огласот се брише.",
+        ],
+      },
+      {
+        title: "Минимална возраст",
+        paragraphs: ["Платформата е за лица постари од 16 години."],
+      },
     ],
   },
   cookies: {
@@ -1345,6 +1389,28 @@ const MNE: StaticPagesCopy = {
           "Podaci su šifrovani. Ne prodajemo ih trećim stranama za marketing.",
           "Možete zatražiti ispravku ili brisanje na support@ketujemi.com.",
         ],
+      },
+      {
+        title: "Prijava putem Google ili Facebook",
+        paragraphs: [
+          "Ako se prijavite putem Google ili Facebook, primamo samo ime i email od njih — ništa drugo. Nemamo pristup vašem društvenom nalogu.",
+        ],
+      },
+      {
+        title: "Kolačići",
+        paragraphs: [
+          "Koristimo tehničke kolačiće za vašu sesiju. Ne koristimo reklamne kolačiće.",
+        ],
+      },
+      {
+        title: "Podaci o oglasima",
+        paragraphs: [
+          "Kada obrišete oglas, odmah se uklanja sa javne stranice. Tekst i metapodaci oglasa mogu ostati u sigurnoj rezervnoj kopiji do 30 dana, zatim se brišu. Fotografije se uklanjaju iz skladišta kada se oglas obriše.",
+        ],
+      },
+      {
+        title: "Minimalna starost",
+        paragraphs: ["Platforma je namijenjena osobama starijim od 16 godina."],
       },
     ],
   },

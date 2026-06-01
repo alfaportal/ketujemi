@@ -202,6 +202,28 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
           "You may request correction or deletion at support@ketujemi.com.",
         ],
       },
+      {
+        title: "Sign in with Google or Facebook",
+        paragraphs: [
+          "If you sign in with Google or Facebook, we only receive your name and email from them — nothing else. We do not have access to your social account.",
+        ],
+      },
+      {
+        title: "Cookies",
+        paragraphs: [
+          "We use technical cookies for your session. We do not use advertising cookies.",
+        ],
+      },
+      {
+        title: "Listing data",
+        paragraphs: [
+          "When you delete a listing, it is removed from the public site immediately. Listing text and metadata may remain in secure backups for up to 30 days, then deleted. Photos are removed from storage when the listing is deleted.",
+        ],
+      },
+      {
+        title: "Minimum age",
+        paragraphs: ["The platform is for people aged 16 and over."],
+      },
     ],
   },
   cookies: {
