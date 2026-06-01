@@ -314,6 +314,26 @@ export const SPORT_FB_DEVICE_PHOTOS: Partial<Record<SportDeviceKey, string>> = {
     "https://images.pexels.com/photos/5538611/pexels-photo-5538611.jpeg?w=400&q=80",
   camp_tool_canta:
     "https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?w=400&q=80",
+  win_ski_ski:
+    "https://images.pexels.com/photos/30417375/pexels-photo-30417375.jpeg?w=400&q=80",
+  win_ski_kepuce:
+    "https://images.pexels.com/photos/34006713/pexels-photo-34006713.jpeg?w=400&q=80",
+  win_ski_shkop:
+    "https://images.pexels.com/photos/7219260/pexels-photo-7219260.jpeg?w=400&q=80",
+  win_ski_lidhese:
+    "https://images.pexels.com/photos/20091365/pexels-photo-20091365.jpeg?w=400&q=80",
+  win_sb_derrasa:
+    "https://images.pexels.com/photos/7406822/pexels-photo-7406822.jpeg?w=400&q=80",
+  win_sb_kepuce:
+    "https://images.pexels.com/photos/7406675/pexels-photo-7406675.jpeg?w=400&q=80",
+  win_sb_lidhese:
+    "https://images.pexels.com/photos/20146487/pexels-photo-20146487.jpeg?w=400&q=80",
+  win_cl_jakne:
+    "https://images.pexels.com/photos/36084981/pexels-photo-36084981.jpeg?w=400&q=80",
+  win_cl_goggles:
+    "https://images.pexels.com/photos/36548332/pexels-photo-36548332.jpeg?w=400&q=80",
+  win_cl_doreza:
+    "https://images.pexels.com/photos/35591365/pexels-photo-35591365.jpeg?w=400&q=80",
 };
 
 export function resolveSportDevicePhoto(
