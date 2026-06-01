@@ -31,11 +31,11 @@ export const FJ_TYPE_DB_SLUG: Record<FjTypeKey, string> = {
 
 export const FJ_TYPE_PHOTOS: Record<FjTypeKey, string> = {
   karroca:
-    "https://images.pexels.com/photos/8924170/pexels-photo-8924170.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/7282720/pexels-photo-7282720.jpeg?auto=compress&cs=tinysrgb&w=400",
   foshnje:
-    "https://images.pexels.com/photos/6582167/pexels-photo-6582167.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/3875089/pexels-photo-3875089.jpeg?auto=compress&cs=tinysrgb&w=400",
   ushqim_higjiene:
-    "https://images.pexels.com/photos/1640767/pexels-photo-1640767.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/4669022/pexels-photo-4669022.jpeg?auto=compress&cs=tinysrgb&w=400",
   lodra:
     "https://images.pexels.com/photos/7296631/pexels-photo-7296631.jpeg?auto=compress&cs=tinysrgb&w=400",
   rroba:
