@@ -154,6 +154,23 @@ const KS: StaticPagesCopy = {
           "Njoftime të vërteta, në kategorinë e duhur, me foto dhe përshkrim të qartë",
           "Çmim real ose shënim i qartë nëse është falas / me marrëveshje",
           "Një produkt ose shërbim për njoftim (jo reklamë e përgjithshme)",
+          "Foto të vërteta të produktit tuaj — jo foto nga interneti ose katalogë",
+        ],
+      },
+      {
+        title: "Produktet dhe shërbimet e ndaluara",
+        paragraphs: ["Është rreptësisht e ndaluar të postoni njoftime për:"],
+        bullets: [
+          "Armë dhe municione — armë zjarri, thika luftarake, eksplozivë, fishekë, silenciatorë dhe çdo pajisje që klasifikohet si armë sipas ligjit",
+          "Drogë dhe substanca të ndaluara — çdo substancë narkotike, psikotrope ose të ndaluara me ligj, pavarësisht formës ose sasisë",
+          "Ilaçe pa recetë — barna që kërkojnë recetë mjekësore, suplemente të paautorizuara, steroidë, substanca dopinguese",
+          "Produkte të falsifikuara — mallra me logo ose markë të imituar (rroba, orë, çanta, elektronikë, dokumente), kopje të produkteve origjinale të paraqitura si të vërteta",
+          "Kafshë të egra dhe të mbrojtura — shitja ose blerja e kafshëve të egra, shpendëve egër, reptilëve ose çdo lloji të mbrojtur me ligj vendor ose ndërkombëtar",
+          "Shërbime seksuale — çdo ofertë e shërbimeve seksuale, eskorte, ose përmbajtje pornografike",
+          "Bileta dhe dokumente false — bileta koncertesh, ndeshjes ose transporti të falsifikuara; dokumente identiteti, diploma ose çertifikata të rreme",
+          "Organe dhe pjesë trupi njerëzor — çdo lloj tregtimi me organe, gjak, inde ose materiale biologjike njerëzore",
+          "Materiale që nxisin urrejtje — përmbajtje raciste, diskriminuese, ekstremiste ose që nxisin dhunë ndaj grupeve ose individëve",
+          "Mallra të vjedhura — çdo produkt i siguruar në mënyrë të paligjshme, pavarësisht nëse dihet ose dyshohet origjina",
         ],
       },
       {
@@ -166,18 +183,16 @@ const KS: StaticPagesCopy = {
       {
         title: "Limitet e postimeve (10 në muaj për kategori kryesore)",
         paragraphs: [
-          "Çdo përdorues ka të drejtë **10 postime falas në muaj** për **çdo kategori kryesore** (20 kategori: Vetura, Telefona, Banesa & Shtëpi, etj.). BMW, Sedan, Skuter etj. **numërohen brenda** kategorisë kryesore — jo veç e veç.",
-          "Numri **riniset çdo muaj kalendarik** (p.sh. 1–31 maj, pastaj 1–30 qershor). Nuk ka limit të veçantë «10 aktive njëkohësisht» — vetëm 10 postime në muaj për kategori.",
+          "Çdo përdorues ka të drejtë 10 postime falas në muaj për çdo kategori kryesore (Vetura, Telefona, Banesa & Shtëpi, etj.). Nënkategoritë (p.sh. BMW, Sedan, Skuter) numërohen brenda kategorisë kryesore — jo veç e veç.",
+          "Numri riniset çdo muaj kalendarik (p.sh. 1–31 maj, pastaj 1–30 qershor). Kur arrini 10 postime në muaj për një kategori kryesore, mund të blini kredi në portofol (Paketa S / M / L):",
         ],
-        bulletsIntro:
-          "Kur arrini 10 postime në muaj për një kategori kryesore, mund të blini kredi në portofol (Paketa S / M / L) — pagesë me Stripe:",
         bullets: [
           "Paketa S — €5 (~16 postime të paguara, €0.30 për shpallje nga portofoli)",
           "Paketa M — €10 (~33 postime)",
           "Paketa L — €20 (~66 postime)",
         ],
         paragraphsAfter: [
-          "Krediti në portofol nuk skadon derisa të harxhohet. Emrat S, M, L janë madhësi pakete (Small / Medium / Large). Çdo njoftim lejon deri 10 fotografi të vërteta (Cloudinary).",
+          "Krediti në portofol nuk skadon derisa të harxhohet. Çdo njoftim lejon deri 10 fotografi të vërteta (Cloudinary).",
         ],
       },
       {
@@ -189,11 +204,24 @@ const KS: StaticPagesCopy = {
         ],
       },
       {
-        title: "Çfarë ndalohet",
+        title: "Pronësia e fotografive",
+        paragraphs: [
+          "Duke postuar fotografi në KëtuJemi.com, konfirmoni se jeni pronar i tyre ose keni leje të plotë për t'i përdorur. KëtuJemi.com nuk mban përgjegjësi për shkelje të të drejtave të autorit nga përdoruesit.",
+        ],
+      },
+      {
+        title: "Pasojat e shkeljeve",
         bullets: [
-          "Spam, mashtrim, përmbajtje ofenduese ose e paligjshme",
-          "Foto stock / internet pa lidhje me produktin real",
-          "Numra telefoni ose email të shumëfishtë për të anashkaluar rregullat",
+          "Fshirjen e menjëhershme të njoftimit pa paralajmërim",
+          "Suspendimin e përkohshëm të llogarisë (3–30 ditë, sipas rëndësisë së shkeljes)",
+          "Bllokimin e përhershëm të llogarisë dhe numrit të telefonit për shkelje të rënda ose të përsëritura",
+          "Raportimin te autoritetet kompetente për raste që përfshijnë veprimtari të paligjshme",
+        ],
+      },
+      {
+        title: "Kontakti mes përdoruesve",
+        paragraphs: [
+          "Rekomandojmë të komunikoni vetëm përmes sistemit të mesazheve të platformës për mbrojtjen tuaj. KëtuJemi.com nuk mban përgjegjësi për mashtrime që ndodhin jashtë platformës (WhatsApp, Viber, pagesë paraprake, etj.).",
         ],
       },
       {
@@ -207,7 +235,7 @@ const KS: StaticPagesCopy = {
   terms: {
     title: "Termat dhe Kushtet",
     tagline:
-      "Duke përdorur KetuJemi.com, pranoni termat dhe kushtet e mëposhtëm të operatorit ligjor të platformës.",
+      "Duke përdorur KetuJemi.com, pranoni termat dhe kushtet e mëposhtme të operatorit ligjor të platformës.",
     sections: [
       {
         title: "Subjekti ligjor dhe platforma",
@@ -220,7 +248,7 @@ const KS: StaticPagesCopy = {
           "Emri i plotë i kompanisë: REVOLUTION INVEST Sh.p.k.",
           "NRB (numri i regjistrimit të biznesit): 811314567",
           "Selia: Ferizaj, Republika e Kosovës",
-          "Email: revolutioninvest05@gmail.com",
+          "Email: revolutionsinvest05@gmail.com",
           "Telefon: +383 43 555 294",
           "Faqja: www.ketujemi.com",
         ],
@@ -249,23 +277,49 @@ const KS: StaticPagesCopy = {
           "Pagesat për paketa VIP/TOP, reklama ose shërbime të tjera të platformës janë, për rregull, të pakthyeshme, përveç kur ligji zbatues e kërkon ndryshe ose kur ne e konfirmojmë me shkrim një gabim teknik të verifikuar nga ana jonë.",
         ],
         bullets: [
-          "Kërkesat për rimbursim të portofolit refuzohen, përveç rasteve të detyrueshme me ligj.",
-          "Për mosmarrëveshje rreth një blerjeje mes përdoruesish, kontaktoni palën tjetër; ne mund të ndërmjetësojmë vetëm në masën e moderimit të përmbajtjes.",
+          "Kërkesat për rimbursim të portofolit refuzohen, përveç rasteve të detyrueshme me ligj",
+          "Për mosmarrëveshje rreth një blerjeje mes përdoruesish, kontaktoni palën tjetër; ne mund të ndërmjetësojmë vetëm në masën e moderimit të përmbajtjes",
         ],
       },
       {
         title: "Llogaria dhe postimi",
         bullets: [
           "Duhet të keni llogari të verifikuar (email dhe/ose telefon, sipas rregullave aktuale) për të postuar",
-          "Jeni përgjegjës për ruajtjen e të dhënave të llogarisë",
+          "Jeni përgjegjës për ruajtjen e të dhënave të llogarisë suaj",
           "Respektoni limitet e postimeve dhe rregullat e kategorive",
+          "Llogaria nuk mund të transferohet te një person tjetër",
         ],
       },
       {
         title: "Përmbajtja",
         bullets: [
           "Mos postoni materiale që shkelin të drejtat e autorit ose ligjin",
-          "Platforma mund të heqë ose pezullojë njoftime që shkelin rregullat",
+          "Platforma mund të heqë ose pezullojë njoftime që shkelin rregullat pa paralajmërim paraprak",
+          "Duke postuar, i jepni KëtuJemi.com të drejtën e shfaqjes së përmbajtjes suaj në platformë",
+        ],
+      },
+      {
+        title: "Pronësia intelektuale e platformës",
+        paragraphs: [
+          "Logo, dizajni, kodi dhe struktura e KëtuJemi.com janë pronë ekskluzive e REVOLUTION INVEST Sh.p.k. Ndalohet kopjimi, riprodhimi ose përdorimi i tyre pa leje me shkrim.",
+        ],
+      },
+      {
+        title: "Ligji i zbatueshëm dhe mosmarrëveshjet",
+        paragraphs: [
+          "Këto terma dhe kushte rregullohen nga ligji i Republikës së Kosovës. Çdo mosmarrëveshje që rrjedh nga përdorimi i platformës do të zgjidhet nga gjykatat kompetente të Ferizajt, Republika e Kosovës. Versioni në gjuhën shqipe është versioni zyrtar dhe i detyrueshëm në rast konflikti me versione të tjera gjuhësore.",
+        ],
+      },
+      {
+        title: "Ndërprerja e shërbimit",
+        paragraphs: [
+          "REVOLUTION INVEST Sh.p.k. rezervon të drejtën të ndërpresë, modifikojë ose pezullojë platformën ose çdo pjesë të saj në çdo kohë, me ose pa njoftim paraprak, pa pasur përgjegjësi ligjore ndaj përdoruesve.",
+        ],
+      },
+      {
+        title: "Force Majeure",
+        paragraphs: [
+          "Nuk mbajmë përgjegjësi për ndërprerje ose dëme të shkaktuara nga ngjarje jashtë kontrollit tonë të arsyeshëm, duke përfshirë sulme kibernetike, ndërprerje infrastrukturore, fatkeqësi natyrore ose vendime qeveritare.",
         ],
       },
       {
@@ -273,7 +327,7 @@ const KS: StaticPagesCopy = {
         paragraphs: ["Për pyetje ligjore, shërbime platforme, raportime ose mbështetje:"],
         bullets: [
           "REVOLUTION INVEST Sh.p.k., Ferizaj — NRB 811314567",
-          "Email kompanie: revolutioninvest05@gmail.com · Tel: +383 43 555 294",
+          "Email kompanie: revolutionsinvest05@gmail.com · Tel: +383 43 555 294",
           "Platforma: info@ketujemi.com · support@ketujemi.com",
           "Formular: www.ketujemi.com/kontakt",
           "Orari i punës: E hënë – E premte, 09:00 – 17:00",
@@ -295,8 +349,16 @@ const KS: StaticPagesCopy = {
         title: "Çfarë mbledhim",
         bullets: [
           "Emri dhe email-i (për llogari dhe komunikim)",
-          "Numri i telefonit (verifikim SMS)",
-          "Adresa IP (siguri dhe parandalim mashtrimesh)",
+          "Numri i telefonit (verifikim SMS — i detyrueshëm para postimit të parë)",
+          "Adresa IP (siguri dhe parandalim mashtrimi)",
+          "Të dhënat e njoftimeve që postoni (tekst, foto, çmim, kategori)",
+          "Të dhënat e sesionit dhe cookies teknike (shih seksionin Cookies më poshtë)",
+        ],
+      },
+      {
+        title: "Hyrja me rrjete sociale (Google / Facebook)",
+        paragraphs: [
+          "Nëse zgjidhni të hyni me Google ose Facebook, marrim vetëm emrin tuaj dhe adresën e email-it nga ata shërbime — asgjë tjetër. Nuk kemi qasje në postimet, kontaktet, mesazhet ose çdo të dhënë tjetër të llogarisë suaj sociale. E përdorim vetëm për identifikimin tuaj në platformë.",
         ],
       },
       {
@@ -305,36 +367,34 @@ const KS: StaticPagesCopy = {
           "Autentifikim dhe mbështetje përdoruesish",
           "Parandalim spam-i dhe abuzimit",
           "Përmirësim i shërbimit (statistika të përgjithshme, pa shitje të dhënash)",
-        ],
-      },
-      {
-        title: "Ruajtja dhe të drejtat",
-        paragraphs: [
-          "Të dhënat ruhen të enkriptuara. Nuk i shesim palëve të treta për marketing.",
-          "Mund të kërkoni korrigjim ose fshirje duke na kontaktuar në support@ketujemi.com.",
-        ],
-      },
-      {
-        title: "Hyrje me Google ose Facebook",
-        paragraphs: [
-          "Nëse hyni me Google ose Facebook, marrim vetëm emrin dhe email-in nga ata — asgjë tjetër. Nuk kemi qasje në llogarinë tuaj sociale.",
+          "Verifikim i numrit të telefonit përmes SMS (Vonage)",
+          "Ruajtje e fotografive të njoftimeve (Cloudinary — serverë ndërkombëtarë)",
         ],
       },
       {
         title: "Cookies",
         paragraphs: [
-          "Përdorim cookies teknike për sesionin tuaj. Nuk përdorim cookies reklamash.",
+          "Përdorim cookies teknike për të mbajtur sesionin tuaj aktiv (p.sh. të mbeteni të loguar). Nuk përdorim cookies reklamash dhe nuk ndajmë të dhëna me platforma reklamuese. Mund t'i çaktivizoni cookies në shfletuesin tuaj, por kjo mund të ndikojë në funksionimin e platformës.",
         ],
       },
       {
-        title: "Të dhënat e shpalljeve",
+        title: "Ruajtja dhe të drejtat",
         paragraphs: [
-          "Kur fshini një shpallje, ajo hiqet menjëherë nga faqja publike. Teksti dhe metatë e shpalljes mund të mbeten në kopje rezervë (backup) të sigurta deri në 30 ditë, pastaj fshihen. Fotot hiqen nga shërbimi i ruajtjes kur fshihet shpallja.",
+          "Të dhënat ruhen të enkriptuara. Nuk i shesim palëve të treta për marketing. Fotografitë dhe të dhënat e njoftimeve mund të ruhen deri 30 ditë pas fshirjes për qëllime backup — pastaj fshihen përfundimisht. Llogaritë joaktive për më shumë se 24 muaj mund të fshihen pas njoftimit me email.",
+          "Mund të kërkoni korrigjim ose fshirje duke na kontaktuar në support@ketujemi.com.",
+        ],
+      },
+      {
+        title: "Transferimi ndërkombëtar i të dhënave",
+        paragraphs: [
+          "Disa shërbime që përdorim (Cloudinary për foto, Vonage për SMS) kanë serverë jashtë Kosovës. Të dhënat tuaja mund të transferohen dhe ruhen jashtë vendit, gjithmonë në përputhje me standardet ndërkombëtare të sigurisë.",
         ],
       },
       {
         title: "Mosha minimale",
-        paragraphs: ["Platforma është për persona mbi 16 vjeç."],
+        paragraphs: [
+          "Platforma është për persona mbi 16 vjeç. Nëse jeni nën këtë moshë, nuk lejohet të krijoni llogari.",
+        ],
       },
     ],
   },
