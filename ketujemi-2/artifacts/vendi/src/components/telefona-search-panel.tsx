@@ -89,6 +89,10 @@ type Props = {
   previewLoading: boolean;
   onListingParamsChange: (params: GetListingsParams) => void;
   onScrollToResults?: () => void;
+  /** Hub: cards navigate to type page; Type: fixed device filters. */
+  variant?: "hub" | "type";
+  fixedDeviceKey?: TelDeviceKey;
+  onNavigateToDevice?: (deviceKey: TelDeviceKey) => void;
 };
 
 function ChipButton({
@@ -126,7 +130,11 @@ export function TelefonaSearchPanel({
   previewLoading,
   onListingParamsChange,
   onScrollToResults,
+  variant = "hub",
+  fixedDeviceKey,
+  onNavigateToDevice,
 }: Props) {
+  const isTypePage = variant === "type";
   const { t } = useMarket();
 
   const defaultCsv = useMemo(() => {
@@ -134,7 +142,9 @@ export function TelefonaSearchPanel({
     return [...ids].sort((a, b) => a - b).join(",");
   }, [categories, hubId]);
 
-  const [deviceKey, setDeviceKey] = useState<TelDeviceKey | null>(null);
+  const [deviceKey, setDeviceKey] = useState<TelDeviceKey | null>(
+    isTypePage && fixedDeviceKey ? fixedDeviceKey : null,
+  );
   const [smartphoneSub, setSmartphoneSub] = useState<TelSmartphoneSubKey | null>(null);
   const [quickFilters, setQuickFilters] = useState<Partial<Record<TelQuickFilterKey, boolean>>>({});
   const [marketCondition, setMarketCondition] = useState<TelMarketConditionKey | "">("");
@@ -180,6 +190,10 @@ export function TelefonaSearchPanel({
   };
 
   const selectDevice = (key: TelDeviceKey) => {
+    if (!isTypePage && onNavigateToDevice) {
+      onNavigateToDevice(key);
+      return;
+    }
     const next = deviceKey === key ? null : key;
     setDeviceKey(next);
     setSmartphoneSub(null);
@@ -191,6 +205,20 @@ export function TelefonaSearchPanel({
     setCompatBrand("");
     setCompatModel("");
   };
+
+  useEffect(() => {
+    if (isTypePage && fixedDeviceKey) {
+      setDeviceKey(fixedDeviceKey);
+      setSmartphoneSub(null);
+      setQuickFilters({});
+      setMarketCondition("");
+      setBrandGroup(null);
+      resetBrandFilters();
+      setAksesoreItem("");
+      setCompatBrand("");
+      setCompatModel("");
+    }
+  }, [isTypePage, fixedDeviceKey]);
 
   const selectBrandGroup = (key: TelBrandGroupKey) => {
     const next = brandGroup === key ? null : key;
@@ -363,6 +391,7 @@ export function TelefonaSearchPanel({
         <p className="text-sm text-gray-500">{t.tel_panel_sub}</p>
       </div>
 
+      {!isTypePage ? (
       <section className="space-y-3 max-w-full overflow-hidden">
         <Label className="text-sm font-bold text-gray-900">{t.tel_sec_device}</Label>
         <CategoryPhotoPickerGrid>
@@ -380,6 +409,7 @@ export function TelefonaSearchPanel({
           ))}
         </CategoryPhotoPickerGrid>
       </section>
+      ) : null}
 
       <section className="space-y-4 rounded-xl border border-blue-100 bg-blue-50/30 p-3 sm:p-4 max-w-full overflow-hidden">
         <Label className="text-sm font-bold text-gray-900">{t.tel_sec_brand}</Label>

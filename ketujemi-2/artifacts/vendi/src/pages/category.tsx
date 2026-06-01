@@ -116,7 +116,12 @@ import {
   getLokaleZyreLeafCategoryIds,
 } from "@/lib/lokale-zyre-search-helpers";
 import { TelefonaSearchPanel } from "@/components/telefona-search-panel";
-import { getTelefonaHubChildCategoryIds } from "@/lib/telefona-search-helpers";
+import {
+  TEL_DEVICE_KEYS,
+  TEL_DEVICE_LABEL_KEY,
+  getTelefonaHubChildCategoryIds,
+  type TelDeviceKey,
+} from "@/lib/telefona-search-helpers";
 import { MobiljeDekorimSearchPanel } from "@/components/mobilje-dekorim-search-panel";
 import {
   getMobiljeDekorimLeafCategoryIds,
@@ -782,6 +787,34 @@ export default function CategoryPage() {
     (currentCategory as any).slug === TELEFONA_HUB_SLUG &&
     !(currentCategory as any).parent_id;
 
+  const telDeviceFromSearch = useMemo((): TelDeviceKey | null => {
+    const raw = new URLSearchParams(urlSearch).get("device");
+    if (!raw) return null;
+    return (TEL_DEVICE_KEYS as readonly string[]).includes(raw) ? (raw as TelDeviceKey) : null;
+  }, [urlSearch]);
+
+  const telefonaTypeBySlug = useMemo((): TelDeviceKey | null => {
+    if (currentSlug === "telefona-type-smartphones") return "smartphones";
+    if (
+      currentSlug === "telefona-type-pjese-rezerve" ||
+      currentSlug === "telefona-type-aksesore-smartphone"
+    ) {
+      return "aksesore_pjese";
+    }
+    return null;
+  }, [currentSlug]);
+
+  const isTelefonaVirtualTypePage = isTelefonaHubPage && telDeviceFromSearch != null;
+  const isTelefonaTypePage =
+    !!parentCategory &&
+    (parentCategory as { slug?: string }).slug === TELEFONA_HUB_SLUG &&
+    telefonaTypeBySlug != null;
+  const activeTelefonaTypeKey: TelDeviceKey | null = isTelefonaTypePage
+    ? telefonaTypeBySlug
+    : isTelefonaVirtualTypePage
+      ? telDeviceFromSearch
+      : null;
+
   const isArsimKurseHub =
     !!(currentCategory as any) &&
     (currentCategory as any).slug === ARSIM_KURSE_HUB_SLUG &&
@@ -1435,6 +1468,9 @@ export default function CategoryPage() {
     }
   } else {
     crumbItems.push({ label: translateCategory(currentCategory?.name ?? "", locale) });
+    if (isTelefonaVirtualTypePage && activeTelefonaTypeKey) {
+      crumbItems.push({ label: t[TEL_DEVICE_LABEL_KEY[activeTelefonaTypeKey]] });
+    }
   }
 
   const hubResultsId = isVeturaHub
@@ -1906,7 +1942,7 @@ export default function CategoryPage() {
           />
         ) : null}
 
-        {isTelefonaHubPage && telefonaLeafCsv ? (
+        {isTelefonaHubPage && !isTelefonaVirtualTypePage && telefonaLeafCsv ? (
           <>
             <TelefonaSearchPanel
               hubId={categoryId}
@@ -1917,12 +1953,30 @@ export default function CategoryPage() {
               onScrollToResults={() =>
                 resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
               }
+              onNavigateToDevice={(deviceKey) =>
+                setLocation(`${categoryPath(categoryId)}?device=${encodeURIComponent(deviceKey)}`)
+              }
             />
             {isParentCategoryHub ? (
               <VipPartnersSection variant="hub" categoryId={categoryId} className="my-8" />
             ) : null}
             {renderListingsSection()}
           </>
+        ) : null}
+
+        {(isTelefonaVirtualTypePage || isTelefonaTypePage) && activeTelefonaTypeKey ? (
+          <TelefonaSearchPanel
+            variant="type"
+            fixedDeviceKey={activeTelefonaTypeKey}
+            hubId={isTelefonaTypePage && parentCategory ? (parentCategory as any).id : categoryId}
+            categories={allCategories as any}
+            previewTotal={listingsData?.total ?? null}
+            previewLoading={isLoading}
+            onListingParamsChange={setTelefonaListParams}
+            onScrollToResults={() =>
+              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }
+          />
         ) : null}
 
         {isArsimKurseHub && arsimKurseLeafCsv ? (
@@ -2082,10 +2136,11 @@ export default function CategoryPage() {
           <VipPartnersSection variant="hub" categoryId={categoryId} className="my-8" />
         ) : null}
 
-        {!isTelefonaHubPage &&
+        {(!isTelefonaHubPage || isTelefonaVirtualTypePage) &&
           (isSportDeviceLeafPage ||
             (isDrillDownTypePage && !!drillDownTypeKey) ||
             isFemijeLeafPage ||
+            isTelefonaVirtualTypePage ||
             isKompjuterTypePage ||
             isDhurataFalasHub ||
             isKerkojTeBlejHub ||
