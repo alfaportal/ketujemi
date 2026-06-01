@@ -6,6 +6,7 @@ type State = { error: Error | null };
 /** Catches render/chunk errors so production never shows a silent white screen. */
 export class AppErrorBoundary extends Component<Props, State> {
   state: State = { error: null };
+  private readonly chunkReloadKey = "__ketujemi_chunk_reload_once__";
 
   static getDerivedStateFromError(error: Error): State {
     return { error };
@@ -13,6 +14,17 @@ export class AppErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[KetuJemi] App failed to render", error, info.componentStack);
+
+    // Recover from stale SW/cache after deploy: try one forced reload for chunk-load errors.
+    const message = `${error?.name ?? ""} ${error?.message ?? ""}`.toLowerCase();
+    const isChunkLoadError =
+      message.includes("failed to fetch dynamically imported module") ||
+      message.includes("importing a module script failed") ||
+      message.includes("loading chunk");
+    if (!isChunkLoadError || typeof window === "undefined") return;
+    if (window.sessionStorage.getItem(this.chunkReloadKey) === "1") return;
+    window.sessionStorage.setItem(this.chunkReloadKey, "1");
+    window.location.reload();
   }
 
   render() {
