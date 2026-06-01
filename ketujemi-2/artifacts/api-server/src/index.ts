@@ -1,4 +1,3 @@
-import "./instrument";
 import app from "./app";
 import {
   ensureFiscalSchema,
