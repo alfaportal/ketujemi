@@ -176,6 +176,10 @@ type Props = {
   previewLoading: boolean;
   onListingParamsChange: (params: GetListingsParams) => void;
   onScrollToResults?: () => void;
+  /** Hub: cards navigate to dedicated view. Type: fixed card filters. */
+  variant?: "hub" | "type";
+  fixedCardKey?: string;
+  onNavigateToCard?: (cardKey: string) => void;
 };
 
 function flattenCards(): BanesaPropCard[] {
@@ -189,7 +193,11 @@ export function BanesaSearchPanel({
   previewLoading,
   onListingParamsChange,
   onScrollToResults,
+  variant = "hub",
+  fixedCardKey,
+  onNavigateToCard,
 }: Props) {
+  const isTypePage = variant === "type";
   const { t } = useMarket();
   const leafIds = useMemo(() => {
     return categories
@@ -211,7 +219,7 @@ export function BanesaSearchPanel({
   }, []);
 
   const [txn, setTxn] = useState<"shitje" | "qira" | null>(null);
-  const [selectedCardKey, setSelectedCardKey] = useState<string | null>(null);
+  const [selectedCardKey, setSelectedCardKey] = useState<string | null>(fixedCardKey ?? null);
   const [locationSearch, setLocationSearch] = useState("");
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
@@ -221,6 +229,10 @@ export function BanesaSearchPanel({
 
   const callbackRef = useRef(onListingParamsChange);
   callbackRef.current = onListingParamsChange;
+
+  useEffect(() => {
+    if (fixedCardKey) setSelectedCardKey(fixedCardKey);
+  }, [fixedCardKey]);
 
   const buildParams = (): GetListingsParams => {
     const p: GetListingsParams = {
@@ -301,6 +313,7 @@ export function BanesaSearchPanel({
   return (
     <div className="mb-10 rounded-2xl border border-slate-200/80 bg-white p-6 md:p-8 shadow-sm ring-1 ring-slate-100">
       {/* PROPERTY TYPE CARDS BY SECTION - above search form */}
+      {!isTypePage ? (
       <div className="space-y-10 mb-8">
         {PROPERTY_SECTIONS.map((sec) => (
           <div key={sec.secKey} className="space-y-4">
@@ -315,7 +328,13 @@ export function BanesaSearchPanel({
                     key={c.key}
                     type="button"
                     aria-pressed={active}
-                    onClick={() => setSelectedCardKey(active ? null : c.key)}
+                    onClick={() => {
+                      if (onNavigateToCard) {
+                        onNavigateToCard(c.key);
+                        return;
+                      }
+                      setSelectedCardKey(active ? null : c.key);
+                    }}
                     className={cn(
                       "flex flex-col items-stretch rounded-xl border-2 text-left outline-none overflow-hidden transition-all focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 touch-manipulation",
                       active
@@ -339,6 +358,7 @@ export function BanesaSearchPanel({
           </div>
         ))}
       </div>
+      ) : null}
 
       {/* Kërko prona - search form */}
       <div className="flex flex-col gap-1 border-t border-slate-100 pt-8 pb-5 mb-6">

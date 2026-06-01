@@ -742,6 +742,12 @@ export default function CategoryPage() {
     (currentCategory as any).slug === BANESA_SHTEPI_HUB_SLUG &&
     !(currentCategory as any).parent_id;
 
+  const banesaCardFromSearch = useMemo((): string | null => {
+    const raw = new URLSearchParams(urlSearch).get("prop");
+    return raw && raw.trim() ? raw : null;
+  }, [urlSearch]);
+  const isBanesaVirtualTypePage = isBanesaShtepiHub && banesaCardFromSearch != null;
+
   const isMotorSkuterHub =
     !!(currentCategory as any) &&
     (currentCategory as any).slug === MOTOR_SKUTER_HUB_SLUG &&
@@ -1778,8 +1784,26 @@ export default function CategoryPage() {
           />
         ) : null}
 
-        {isBanesaShtepiHub && banesaLeafCsv ? (
+        {isBanesaShtepiHub && !isBanesaVirtualTypePage && banesaLeafCsv ? (
           <BanesaSearchPanel
+            banesaHubId={categoryId}
+            categories={allCategories as any}
+            previewTotal={listingsData?.total ?? null}
+            previewLoading={isLoading}
+            onListingParamsChange={setBanesaListParams}
+            onScrollToResults={() =>
+              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }
+            onNavigateToCard={(cardKey) =>
+              setLocation(`${categoryPath(categoryId)}?prop=${encodeURIComponent(cardKey)}`)
+            }
+          />
+        ) : null}
+
+        {isBanesaVirtualTypePage && banesaCardFromSearch ? (
+          <BanesaSearchPanel
+            variant="type"
+            fixedCardKey={banesaCardFromSearch}
             banesaHubId={categoryId}
             categories={allCategories as any}
             previewTotal={listingsData?.total ?? null}
