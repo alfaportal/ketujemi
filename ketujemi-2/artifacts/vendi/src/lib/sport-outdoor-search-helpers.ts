@@ -27,13 +27,13 @@ export const SPORT_TYPE_PHOTOS: Record<SportTypeKey, string> = {
   camping:
     "https://images.pexels.com/photos/1687845/pexels-photo-1687845.jpeg?auto=compress&cs=tinysrgb&w=400",
   martial:
-    "https://images.pexels.com/photos/4428289/pexels-photo-4428289.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/16538177/pexels-photo-16538177.jpeg?w=400&q=80",
   winter:
     "https://images.pexels.com/photos/848599/pexels-photo-848599.jpeg?auto=compress&cs=tinysrgb&w=400",
   water:
-    "https://images.pexels.com/photos/31027349/pexels-photo-31027349.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/1032650/pexels-photo-1032650.jpeg?w=400&q=80",
   hobby:
-    "https://images.pexels.com/photos/12465522/pexels-photo-12465522.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/411207/pexels-photo-411207.jpeg?w=400&q=80",
 };
 
 /** Maps UI sport cards to seeded subcategory slugs when present. */
@@ -314,6 +314,46 @@ export const SPORT_FB_DEVICE_PHOTOS: Partial<Record<SportDeviceKey, string>> = {
     "https://images.pexels.com/photos/5538611/pexels-photo-5538611.jpeg?w=400&q=80",
   camp_tool_canta:
     "https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?w=400&q=80",
+  air_fly_para:
+    "https://images.pexels.com/photos/16538177/pexels-photo-16538177.jpeg?w=400&q=80",
+  air_fly_sky:
+    "https://images.pexels.com/photos/2169160/pexels-photo-2169160.jpeg?w=400&q=80",
+  air_fly_drone:
+    "https://images.pexels.com/photos/1096278/pexels-photo-1096278.jpeg?w=400&q=80",
+  air_safe_rripa:
+    "https://images.pexels.com/photos/681165/pexels-photo-681165.jpeg?w=400&q=80",
+  air_safe_helmet:
+    "https://images.pexels.com/photos/3808079/pexels-photo-3808079.jpeg?w=400&q=80",
+  air_safe_vario:
+    "https://images.pexels.com/photos/21316269/pexels-photo-21316269.jpeg?w=400&q=80",
+  wat_boat_barka:
+    "https://images.pexels.com/photos/273882/pexels-photo-273882.jpeg?w=400&q=80",
+  wat_boat_kajak:
+    "https://images.pexels.com/photos/31027349/pexels-photo-31027349.jpeg?w=400&q=80",
+  wat_boat_zhytje:
+    "https://images.pexels.com/photos/3764579/pexels-photo-3764579.jpeg?w=400&q=80",
+  wat_boat_neoprene:
+    "https://images.pexels.com/photos/9293859/pexels-photo-9293859.jpeg?w=400&q=80",
+  wat_beach_surf:
+    "https://images.pexels.com/photos/1266829/pexels-photo-1266829.jpeg?w=400&q=80",
+  wat_beach_jastek:
+    "https://images.pexels.com/photos/1143756/pexels-photo-1143756.jpeg?w=400&q=80",
+  wat_beach_jelek:
+    "https://images.pexels.com/photos/279833/pexels-photo-279833.jpeg?w=400&q=80",
+  hob_game_shah:
+    "https://images.pexels.com/photos/411207/pexels-photo-411207.jpeg?w=400&q=80",
+  hob_game_pikado:
+    "https://images.pexels.com/photos/3800461/pexels-photo-3800461.jpeg?w=400&q=80",
+  hob_game_bilardo:
+    "https://images.pexels.com/photos/3683090/pexels-photo-3683090.jpeg?w=400&q=80",
+  hob_game_letra:
+    "https://images.pexels.com/photos/1704196/pexels-photo-1704196.jpeg?w=400&q=80",
+  hob_act_peshkim:
+    "https://images.pexels.com/photos/12465522/pexels-photo-12465522.jpeg?w=400&q=80",
+  hob_act_hark:
+    "https://images.pexels.com/photos/6592838/pexels-photo-6592838.jpeg?w=400&q=80",
+  hob_act_teleskop:
+    "https://images.pexels.com/photos/1148694/pexels-photo-1148694.jpeg?w=400&q=80",
   win_ski_ski:
     "https://images.pexels.com/photos/30417375/pexels-photo-30417375.jpeg?w=400&q=80",
   win_ski_kepuce:

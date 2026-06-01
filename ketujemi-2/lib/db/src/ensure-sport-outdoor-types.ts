@@ -1,4 +1,11 @@
 import type pg from "pg";
+import { SUBCATEGORY_IMAGE_URL_BY_SLUG } from "./category-pexels-urls.js";
+
+const SPORT_TYPE_BANNER_SLUGS = [
+  "sport-type-ajrore",
+  "sport-type-ujit",
+  "sport-type-rekreative",
+] as const;
 
 /** Idempotent — inserts Sport & Outdoor type subcategories when missing (prod Neon gap). */
 const SPORT_OUTDOOR_TYPES_SQL = `
@@ -40,4 +47,13 @@ END $$;
 
 export async function ensureSportOutdoorTypeCategories(pool: pg.Pool): Promise<void> {
   await pool.query(SPORT_OUTDOOR_TYPES_SQL);
+
+  for (const slug of SPORT_TYPE_BANNER_SLUGS) {
+    const image_url = SUBCATEGORY_IMAGE_URL_BY_SLUG[slug];
+    if (!image_url) continue;
+    await pool.query(
+      `UPDATE categories SET image_url = $1 WHERE slug = $2`,
+      [image_url, slug],
+    );
+  }
 }

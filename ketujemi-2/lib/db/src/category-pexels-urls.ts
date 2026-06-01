@@ -193,9 +193,9 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "sport-type-top":
     "https://images.pexels.com/photos/46798/the-ball-stadion-football-the-pitch-46798.jpeg?w=1200&q=80",
   "sport-type-dimerore": pexelsPhoto(848612),
-  "sport-type-ajrore": pexelsPhoto(4428289),
-  "sport-type-ujit": pexelsPhoto(31027349),
-  "sport-type-rekreative": pexelsPhoto(12465522),
+  "sport-type-ajrore": pexelsPhoto(16538177, 1200),
+  "sport-type-ujit": pexelsPhoto(1032650, 1200),
+  "sport-type-rekreative": pexelsPhoto(411207, 1200),
 
   // —— Punë ————————————————————————————————————————————————————————————————————
   "pune-type-administrate": pexelsPhoto(3184464),
