@@ -24,7 +24,6 @@ export type PartnerPageCopy = {
   labelContactName: string;
   labelEmail: string;
   labelPhone: string;
-  labelIban: string;
   labelPackage: string;
   packagePlaceholder: string;
   packageStandard: string;
@@ -59,51 +58,69 @@ export type PartnerPageCopy = {
 
 const SQ: PartnerPageCopy = {
   docTitle: "Partner — KetuJemi.com",
-  heroBadge: "Programi Partner",
+  heroBadge: "PROGRAMI PARTNER",
   heroTitle: "Rrit Biznesin Tënd me KetuJemi.com",
   heroSubtitle: "Mbi 50,000 klientë të mundshëm çdo muaj",
-  benefitsTitle: "Përfitimet tuaja",
+  benefitsTitle: "PËRFITIMET TUAJA",
   benefits: [
-    { icon: "📈", title: "Dukshmëri maksimale", desc: "shpallje të featured në krye" },
-    { icon: "👥", title: "50,000+ vizitorë aktivë", desc: "çdo muaj" },
+    {
+      icon: "📈",
+      title: "Dukshmëri maksimale",
+      desc: "shpallje të featured në krye të rezultateve",
+    },
+    { icon: "👥", title: "50,000+ vizitorë aktivë", desc: "çdo muaj në platformë" },
     { icon: "🎯", title: "Targetim sipas kategorisë", desc: "dhe lokacionit" },
-    { icon: "📱", title: "Panel i dedikuar biznesi", desc: "" },
-    { icon: "⭐", title: 'Badge "Partner i Verifikuar"', desc: "" },
-    { icon: "📊", title: "Statistika të detajuara", desc: "" },
-    { icon: "🚀", title: "Prioritet në rezultatet e kërkimit", desc: "" },
+    { icon: "🗂️", title: "Panel i dedikuar biznesi", desc: "menaxho gjithçka nga një vend" },
+    {
+      icon: "⭐",
+      title: 'Badge "Partner i Verifikuar"',
+      desc: "besueshmëri e shtuar tek blerësit",
+    },
+    {
+      icon: "📊",
+      title: "Statistika të detajuara",
+      desc: "shiko sa njerëz shohin njoftimet tua",
+    },
+    {
+      icon: "🚀",
+      title: "Prioritet në rezultatet e kërkimit",
+      desc: "del para konkurrentëve",
+    },
   ],
-  packagesTitle: "Paketat",
+  packagesTitle: "PAKETAT",
   standardTitle: "PARTNER STANDARD",
   standardPrice: "€30",
   periodPerMonth: "/muaj",
   standardFeatures: [
     "Dyqan i personalizuar në KetuJemi.com",
-    "Deri 50 njoftime aktive",
+    "Deri 50 njoftime aktive njëkohësisht",
     "Logo e biznesit me link në faqen kryesore",
-    'Badge "Partner i Verifikuar"',
+    'Badge "Partner i Verifikuar" në çdo njoftim',
+    "Panel biznesi me statistika bazë",
+    "Suport me email brenda 24 orëve",
   ],
-  vipTitle: "VIP PARTNER",
+  vipTitle: "VIP PARTNER (E rekomanduar)",
   vipPrice: "€50",
   vipFeatures: [
-    "Gjithçka e Standard +",
-    "Deri 100 njoftime aktive",
-    "Pozicion prioritar në kërkim (del i pari)",
-    "Badge VIP i dukshëm",
-    "Statistika të avancuara",
+    "Gjithçka nga Standard +",
+    "Deri 100 njoftime aktive njëkohësisht",
+    "Pozicion prioritar në kërkim — del i pari",
+    "Badge VIP i dukshëm në çdo njoftim",
     "Logo e madhe e biznesit me link në faqen kryesore",
+    "Statistika të avancuara — shikime, klikime, kontakte",
+    "Suport prioritar me telefon dhe email",
   ],
-  formTitle: "Regjistrohu si Partner",
-  formSubtitle: "Plotësoni formularin — aktivizimi automatik pas pagesës.",
+  formTitle: "FORMULARI I REGJISTRIMIT",
+  formSubtitle: "",
   labelBusinessName: "Emri i Biznesit",
   labelContactName: "Emri i Kontaktit",
   labelEmail: "Email",
   labelPhone: "Telefon",
-  labelIban: "IBAN",
   labelPackage: "Paketa",
   packagePlaceholder: "Zgjidhni paketën",
-  packageStandard: "Partner Standard €30",
-  packageVip: "VIP Partner €50",
-  labelLogo: "Logo URL ose upload logo",
+  packageStandard: "Standard €30/muaj",
+  packageVip: "VIP €50/muaj",
+  labelLogo: "Logo (URL ose upload — fakultativ)",
   logoUrlPlaceholder: "https://...",
   uploadLogo: "Ngarko",
   labelLink: "Linku juaj (website, Instagram ose Facebook — 1 link)",
@@ -114,53 +131,35 @@ const SQ: PartnerPageCopy = {
   contractText: `KONTRATË SHËRBIMI — KETUJEMI.COM
 
 1. OBJEKTI I KONTRATËS
-Klienti merr akses në platformën KetuJemi.com sipas 
-paketës së zgjedhur (Standard €30/muaj ose VIP €50/muaj).
-Platforma ofron hapësirë reklamuese dixhitale, 
-dukshmëri ndaj konsumatorëve aktivë dhe mjete 
-profesionale për menaxhimin e shpalljeve.
+Klienti merr akses në platformën KetuJemi.com sipas paketës së zgjedhur (Standard €30/muaj ose VIP €50/muaj). Platforma ofron hapësirë reklamuese dixhitale, dukshmëri ndaj konsumatorëve aktivë dhe mjete profesionale për menaxhimin e shpalljeve.
 
 2. KOHËZGJATJA
-Kontrata fillon nga data e nënshkrimit dhe vazhdon 
-pa afat të caktuar. Palët mund ta zgjasin ose 
-ndryshojnë me marrëveshje të ndërsjellë me shkrim.
+Kontrata fillon nga data e pagesës së parë dhe vazhdon pa afat të caktuar. Palët mund ta zgjasin ose ndryshojnë me marrëveshje të ndërsjellë me shkrim.
 
 3. KUSHTET E ANULIMIT
-Klienti është i detyruar të njoftojë me shkrim 
-minimum 3 muaj para datës së dëshiruar të përfundimit.
-Gjatë kësaj periudhe pagesa vazhdon normalisht.
+Klienti mund të anulojë abonimin në çdo kohë duke njoftuar me email në info@ketujemi.com minimum 30 ditë para datës së dëshiruar të përfundimit. Pagesat e bëra nuk rimbursohen.
 
 4. PAGESA
-- Pagesa bëhet çdo muaj automatikisht
-- IBAN-i është i detyrueshëm para aktivizimit
-- Pagesa e parë bëhet në ditën e nënshkrimit
+Pagesa bëhet çdo muaj automatikisht me kartë bankare përmes Stripe. Pagesa e parë bëhet në ditën e regjistrimit dhe aktivizon menjëherë paketën e zgjedhur. Nëse pagesa dështon, llogaria pezullohet pas 3 ditëve njoftim.
 
 5. NDRYSHIMI I ÇMIMEVE
-KetuJemi.com ka të drejtë të ndryshojë çmimet me 
-njoftim minimum 3 muaj paraprak me email.
-Klienti ka të drejtë të anulojë brenda 30 ditëve 
-nga njoftimi pa penalitet.
+KetuJemi.com ka të drejtë të ndryshojë çmimet me njoftim minimum 30 ditë paraprak me email. Klienti ka të drejtë të anulojë brenda 30 ditëve nga njoftimi pa penalitet.
 
 6. MOS PAGESA — PROCEDURA
+
 Paralajmërimi 1: Email pas 3 ditësh vonesë
-Paralajmërimi 2: Email pas 7 ditësh
-Paralajmërimi 3: Email pas 15 ditësh + pezullim i përkohshëm
-Paralajmërimi 4: Email pas 30 ditësh + kalimi te 
-organi kompetent sipas legjislacionit në fuqi
+Paralajmërimi 2: Email pas 7 ditësh + pezullim i përkohshëm i llogarisë
+Paralajmërimi 3: Email pas 15 ditësh + pezullim i plotë
+Paralajmërimi 4: Email pas 30 ditësh + kalimi te organi kompetent sipas legjislacionit në fuqi
 
 7. PËRGJEGJËSIA E KLIENTIT
-Klienti është përgjegjës për saktësinë e informacionit 
-të publikuar. KetuJemi.com rezervon të drejtën të heqë 
-çdo përmbajtje që shkel rregullat e platformës.
+Klienti është përgjegjës për saktësinë e informacionit të publikuar. KetuJemi.com rezervon të drejtën të heqë çdo përmbajtje që shkel rregullat e platformës pa rimbursim. Klienti garanton se posedon të drejtat e logjove dhe materialeve që ngarkon.
 
 8. LIGJI I ZBATUESHËM
-Kontrata rregullohet sipas legjislacionit të vendit 
-ku biznesi është i regjistruar dhe vepron.
+Kjo kontratë rregullohet sipas legjislacionit të Republikës së Kosovës. Çdo mosmarrëveshje që rrjedh nga kjo kontratë zgjidhet nga gjykatat kompetente të Ferizajt, Republika e Kosovës.
 
 9. NËNSHKRIMI ELEKTRONIK
-Klikimi i butonit "Regjistrohu si Partner" konsiderohet 
-nënshkrim i vlefshëm elektronik dhe regjistrohet 
-me datë, orë dhe IP adresë.`,
+Klikimi i butonit "Regjistrohu si Partner" dhe plotësimi i formularit konsiderohet nënshkrim i vlefshëm elektronik dhe regjistrohet me datë, orë dhe IP adresë. Klienti pranon se ka lexuar dhe kuptuar të gjitha kushtet e kësaj kontrate.`,
   errRequired: "Plotësoni të gjitha fushat e detyrueshme.",
   errTerms: "Duhet të pranoni kushtet e kontratës.",
   errLogoUnavailable: "Ngarkimi i logos nuk është i disponueshëm — vendosni URL.",
@@ -175,9 +174,8 @@ me datë, orë dhe IP adresë.`,
     "Pagesa u konfirmua! Llogaria juaj Partner është aktive. Kontrolloni SMS/email për kodin e aktivizimit dhe hyni në /login.",
   successHome: "Kthehu në faqen kryesore",
   landingCta: "Regjistrohu si Partner",
-  landingCtaHint:
-    "Së pari krijoni llogarinë (email ose telefon), pastaj zgjidhni paketën dhe plotësoni formularin partner.",
-  termsOpenHint: "Lexoni kushtet e plota (hapen poshtë)",
+  landingCtaHint: "Scroll te formulari i regjistrimit më poshtë.",
+  termsOpenHint: "Lexoni kushtet e plota",
   successNoticeEmail:
     "Kontrolloni emailin tuaj — aty do të gjeni konfirmimin e regjistrimit dhe udhëzimet e hapësirës.",
   successNoticePayment:
@@ -227,7 +225,6 @@ const MK: PartnerPageCopy = {
   labelContactName: "Контакт лице",
   labelEmail: "Email",
   labelPhone: "Телефон",
-  labelIban: "IBAN",
   labelPackage: "Пакет",
   packagePlaceholder: "Изберете пакет",
   packageStandard: "Standard Partner €30",
@@ -340,7 +337,6 @@ const MNE: PartnerPageCopy = {
   labelContactName: "Kontakt osoba",
   labelEmail: "Email",
   labelPhone: "Telefon",
-  labelIban: "IBAN",
   labelPackage: "Paket",
   packagePlaceholder: "Izaberite paket",
   packageStandard: "Partner Standard €30",
@@ -452,7 +448,6 @@ const EN: PartnerPageCopy = {
   labelContactName: "Contact person",
   labelEmail: "Email",
   labelPhone: "Phone",
-  labelIban: "IBAN",
   labelPackage: "Package",
   packagePlaceholder: "Choose package",
   packageStandard: "Standard Partner €30",

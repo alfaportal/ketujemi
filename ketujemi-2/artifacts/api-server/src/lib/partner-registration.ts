@@ -62,7 +62,8 @@ export function validatePartnerRegistration(
   const contact_name = String(raw.contact_name ?? "").trim();
   const email = normalizeEmail(String(raw.email ?? ""));
   const phone = normalizePhone(String(raw.phone ?? ""));
-  const iban = normalizeIban(String(raw.iban ?? ""));
+  const ibanRaw = String(raw.iban ?? "").trim();
+  const iban = ibanRaw ? normalizeIban(ibanRaw) : "";
   const pkg = normalizePackage(String(raw.package ?? ""));
   const logo_url =
     typeof raw.logo_url === "string" && raw.logo_url.trim()
@@ -79,7 +80,7 @@ export function validatePartnerRegistration(
   }
   if (!email) return { ok: false, message: "Email i pavlefshëm." };
   if (!phone) return { ok: false, message: "Telefon i pavlefshëm." };
-  if (!iban) return { ok: false, message: "IBAN i pavlefshëm." };
+  if (ibanRaw && !iban) return { ok: false, message: "IBAN i pavlefshëm." };
   if (!pkg) return { ok: false, message: "Zgjidhni një paketë." };
   if (!accepted_terms) {
     return { ok: false, message: "Duhet të pranoni kushtet e kontratës." };

@@ -67,7 +67,6 @@ export default function PartnerPage() {
   const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [iban, setIban] = useState("");
   const [pkg, setPkg] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [link, setLink] = useState("");
@@ -196,7 +195,6 @@ export default function PartnerPage() {
       !contactName.trim() ||
       !email.trim() ||
       !phone.trim() ||
-      !iban.trim() ||
       !pkg ||
       !link.trim()
     ) {
@@ -218,7 +216,7 @@ export default function PartnerPage() {
           contact_name: contactName.trim(),
           email: email.trim(),
           phone: phone.trim(),
-          iban: iban.trim(),
+          iban: "",
           package: pkg,
           logo_url: logoUrl.trim() || null,
           link: link.trim(),
@@ -333,7 +331,9 @@ export default function PartnerPage() {
               {c.heroBadge}
             </p>
             <h1 className="text-xl sm:text-2xl font-black text-gray-900">{c.formTitle}</h1>
-            <p className="mt-1 text-sm text-gray-500">{c.formSubtitle}</p>
+            {c.formSubtitle ? (
+              <p className="mt-1 text-sm text-gray-500">{c.formSubtitle}</p>
+            ) : null}
           </div>
         </section>
       )}
@@ -441,14 +441,6 @@ export default function PartnerPage() {
                     />
                   </Field>
                 </div>
-                <Field label={c.labelIban} required>
-                  <Input
-                    value={iban}
-                    onChange={(e) => setIban(e.target.value)}
-                    placeholder="AL00 0000 0000 0000 0000 0000 0000"
-                    autoComplete="off"
-                  />
-                </Field>
                 <Field label={c.labelPackage} required>
                   <Select value={pkg} onValueChange={setPkg}>
                     <SelectTrigger>
