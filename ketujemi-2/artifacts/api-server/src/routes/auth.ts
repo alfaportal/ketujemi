@@ -18,6 +18,7 @@ import {
 } from "../lib/user-session";
 import { normalizePhone } from "../lib/phone-prefixes";
 import { assertSmsStartAllowed, clientIp } from "../lib/sms-rate-limit";
+import { authLoginRegisterLimiter } from "../lib/express-rate-limiters";
 import { hasEmailDeliveryConfigured, isEmailVerificationRequired } from "../lib/email-auth";
 import { isSmsAuthEnabled, SMS_AUTH_DISABLED_MESSAGE } from "../lib/sms-auth";
 import { isRecaptchaRequired, verifyRecaptchaToken } from "../lib/recaptcha-verify";
@@ -154,7 +155,7 @@ async function sessionUserId(req: {
 }
 
 // ─── POST /auth/register/email ────────────────────────────────────────────────
-router.post("/auth/register/email", async (req, res) => {
+router.post("/auth/register/email", authLoginRegisterLimiter, async (req, res) => {
   try {
     const email = normalizeEmail(req.body?.email);
     const password = typeof req.body?.password === "string" ? req.body.password : "";
@@ -413,7 +414,7 @@ router.get("/auth/verify/email/link", async (req, res) => {
 });
 
 // ─── POST /auth/login/email/start — instant login (no code) for existing email ─
-router.post("/auth/login/email/start", async (req, res) => {
+router.post("/auth/login/email/start", authLoginRegisterLimiter, async (req, res) => {
   try {
     const email = normalizeEmail(req.body?.email);
     const password = typeof req.body?.password === "string" ? req.body.password : "";
@@ -442,7 +443,7 @@ router.post("/auth/login/email/start", async (req, res) => {
 });
 
 // ─── POST /auth/login/email — instant login when email codes are off ────────
-router.post("/auth/login/email", async (req, res) => {
+router.post("/auth/login/email", authLoginRegisterLimiter, async (req, res) => {
   try {
     const email = normalizeEmail(req.body?.email);
     const password = typeof req.body?.password === "string" ? req.body.password : "";
@@ -922,7 +923,7 @@ router.get("/auth/account/business-quota", async (req, res) => {
 });
 
 // ─── POST /auth/sms/start ───────────────────────────────────────────────────
-router.post("/auth/sms/start", async (req, res) => {
+router.post("/auth/sms/start", authLoginRegisterLimiter, async (req, res) => {
   if (!isSmsAuthEnabled()) {
     res.status(503).json({
       error: "SMS_AUTH_DISABLED",
@@ -1020,7 +1021,7 @@ router.post("/auth/sms/start", async (req, res) => {
 });
 
 // ─── POST /auth/sms/verify ──────────────────────────────────────────────────
-router.post("/auth/sms/verify", async (req, res) => {
+router.post("/auth/sms/verify", authLoginRegisterLimiter, async (req, res) => {
   if (!isSmsAuthEnabled()) {
     res.status(503).json({
       error: "SMS_AUTH_DISABLED",

@@ -11,6 +11,7 @@ import {
   DeleteListingParams,
 } from "@workspace/api-zod";
 import { getSessionUser } from "../lib/session-user";
+import { postListingLimiter, searchLimiter } from "../lib/express-rate-limiters";
 import { userOwnsListing } from "../lib/listing-ownership";
 import { sellerFirstName, maskEmailInListingDescription, maskSellerPhone } from "../lib/contact-mask";
 import { assertAccountActive } from "../lib/user-ban";
@@ -193,7 +194,7 @@ function activeCondition() {
 }
 
 // ─── GET /listings ────────────────────────────────────────────────────────────
-router.get("/listings", async (req, res) => {
+router.get("/listings", searchLimiter, async (req, res) => {
   requestPurgeExpiredListings();
   const parsed = GetListingsQueryParams.safeParse(req.query);
   if (!parsed.success) {
@@ -429,7 +430,7 @@ router.get("/listings", async (req, res) => {
 });
 
 // ─── POST /listings ───────────────────────────────────────────────────────────
-router.post("/listings", async (req, res) => {
+router.post("/listings", postListingLimiter, async (req, res) => {
   const viewer = await getSessionUser(req);
   if (!viewer) {
     res.status(401).json({ error: "Authentication required" });
