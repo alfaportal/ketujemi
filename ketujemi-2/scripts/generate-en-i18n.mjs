@@ -1,16 +1,135 @@
 /**
- * Generates English UI strings from KS + MNE blocks in app-extra-i18n.ts
- * and adds `en` fields to category-translations.ts.
- *
- * Run from repo root: node ketujemi-2/scripts/generate-en-i18n.mjs
+ * Generates complete English UI bundles.
+ * Run: node ketujemi-2/scripts/generate-en-i18n.mjs
  */
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { applyEnglishPhrases } from "./english-phrases.mjs";
+
+/** Fallback word-level Albanian → English for long static paragraphs. */
+const AL_WORDS = [
+  ["është", "is"],
+  ["janë", "are"],
+  ["për", "for"],
+  ["dhe", "and"],
+  ["në", "in"],
+  ["të", "to"],
+  ["me", "with"],
+  ["nga", "from"],
+  ["ose", "or"],
+  ["një", "a"],
+  ["nuk", "not"],
+  ["ju", "you"],
+  ["ne", "we"],
+  ["nëse", "if"],
+  ["kur", "when"],
+  ["që", "that"],
+  ["si", "as"],
+  ["duhet", "must"],
+  ["mund", "can"],
+  ["pas", "after"],
+  ["para", "before"],
+  ["çdo", "every"],
+  ["vetëm", "only"],
+  ["gjithë", "all"],
+  ["përdoruesit", "users"],
+  ["përdorues", "user"],
+  ["njoftim", "listing"],
+  ["njoftime", "listings"],
+  ["shpallje", "listing"],
+  ["postim", "post"],
+  ["postoni", "post"],
+  ["kategori", "category"],
+  ["kategorinë", "category"],
+  ["shitës", "seller"],
+  ["blerës", "buyer"],
+  ["platforma", "platform"],
+  ["platformës", "platform"],
+  ["falas", "free"],
+  ["Operatori", "Operator"],
+  ["ligjor", "legal"],
+  ["Misioni", "Mission"],
+  ["Rregullat", "Rules"],
+  ["Politika", "Policy"],
+  ["Kontakt", "Contact"],
+  ["Pyetje", "Questions"],
+  ["Siguria", "Security"],
+  ["thjesht", "simply"],
+  ["transparent", "transparent"],
+  ["mbledhim", "collect"],
+  ["përdorim", "use"],
+  ["ruhen", "stored"],
+  ["enkriptuara", "encrypted"],
+  ["shesim", "sell"],
+  ["marketing", "marketing"],
+  ["kërkoni", "request"],
+  ["fshirje", "deletion"],
+  ["korrigjim", "correction"],
+  ["verifikim", "verification"],
+  ["autentifikim", "authentication"],
+  ["mbështetje", "support"],
+  ["parandalim", "prevention"],
+  ["mashtrimesh", "fraud"],
+  ["abuzimit", "abuse"],
+  ["përmirësim", "improvement"],
+  ["statistika", "statistics"],
+  ["shërbimit", "service"],
+  ["plotësoni", "fill in"],
+  ["dërgo", "send"],
+  ["mesazhin", "message"],
+  ["subjektin", "subject"],
+  ["emri", "name"],
+  ["email-i", "email"],
+  ["telefonit", "phone"],
+  ["adresa", "address"],
+  ["ligjore", "legal"],
+  ["operatorit", "operator"],
+  ["pranoni", "accept"],
+  ["termat", "terms"],
+  ["kushtet", "conditions"],
+  ["përgjegjësi", "responsibility"],
+  ["vërtetësinë", "accuracy"],
+  ["postimit", "listing"],
+  ["tuaj", "your"],
+  ["tonë", "our"],
+  ["zyrtare", "official"],
+  ["diaspora", "diaspora"],
+  ["shqiptare", "Albanian"],
+  ["tregje", "markets"],
+  ["tregun", "market"],
+  ["lokal", "local"],
+  ["shpejt", "quickly"],
+  ["thjesht", "simply"],
+  ["sigurt", "safely"],
+  ["komisione", "fees"],
+  ["fshehura", "hidden"],
+  ["bazë", "basic"],
+  ["hapësirë", "space"],
+  ["ndërmjetëse", "intermediary"],
+  ["marrëveshja", "agreement"],
+  ["çmimit", "price"],
+  ["dorëzimit", "delivery"],
+  ["drejt", "direct"],
+  ["palëve", "parties"],
+  ["mes", "between"],
+  ["palë", "party"],
+];
+
+function wordTranslate(text) {
+  let s = applyEnglishPhrases(text);
+  for (const [sq, en] of AL_WORDS) {
+    s = s.replace(new RegExp(`\\b${sq}\\b`, "gi"), en);
+  }
+  return s;
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
 const vendiLib = path.join(root, "artifacts", "vendi", "src", "lib");
+
+const ALBANIAN_CHARS = /[ëçËÇ]/;
+const CYRILLIC = /[\u0400-\u04FF]/;
 
 function extractObjectBlock(source, startMarker, endMarker) {
   const start = source.indexOf(startMarker);
@@ -33,175 +152,30 @@ function parseRecordEntries(body) {
   const re = /^\s+(\w+):\s*(?:"((?:\\.|[^"\\])*)"|`([\s\S]*?)`),?\s*$/gm;
   let m;
   while ((m = re.exec(body)) !== null) {
-    entries.push({ key: m[1], value: (m[2] ?? m[3] ?? "").replace(/\\n/g, "\n").replace(/\\"/g, '"') });
+    entries.push({
+      key: m[1],
+      value: (m[2] ?? m[3] ?? "").replace(/\\n/g, "\n").replace(/\\"/g, '"'),
+    });
   }
   return entries;
 }
 
-/** Serbian/Latin Montenegrin → English (UI chrome). */
-const SR_EN = [
-  [/Izaberite/gi, "Select"],
-  [/Izaberi/gi, "Select"],
-  [/Pretraži/gi, "Search"],
-  [/Traži/gi, "Search"],
-  [/Primijeni/gi, "Apply"],
-  [/Očisti/gi, "Clear"],
-  [/Nazad/gi, "Back"],
-  [/Uredi/gi, "Edit"],
-  [/Obriši/gi, "Delete"],
-  [/Otkaži/gi, "Cancel"],
-  [/Sačuvaj/gi, "Save"],
-  [/Čuvanje/gi, "Saving"],
-  [/Dodaj/gi, "Add"],
-  [/Objavi/gi, "Post"],
-  [/Besplatno/gi, "Free"],
-  [/Danas/gi, "Today"],
-  [/Sve\b/gi, "All"],
-  [/Grad\b/gi, "City"],
-  [/Cijena/gi, "Price"],
-  [/Kategorij/gi, "Categor"],
-  [/Filtri/gi, "Filters"],
-  [/Oglasi/gi, "Listings"],
-  [/oglas/gi, "listing"],
-  [/Nije pronađeno/gi, "Not found"],
-  [/Molimo sačekajte/gi, "Please wait"],
-  [/Učitavanje/gi, "Uploading"],
-  [/Stanje/gi, "Condition"],
-  [/Lokacija/gi, "Location"],
-  [/Kontakt/gi, "Contact"],
-  [/Opis/gi, "Description"],
-  [/Detalji/gi, "Details"],
-  [/Marka/gi, "Brand"],
-  [/Model/gi, "Model"],
-  [/Godina/gi, "Year"],
-  [/Prodaja/gi, "Sale"],
-  [/Izdavanje/gi, "Rent"],
-  [/Kupovina/gi, "Buy"],
-  [/Nov\b/gi, "New"],
-  [/Korišten/gi, "Used"],
-  [/Po dogovoru/gi, "Negotiable"],
-  [/Prijavi se/gi, "Log in"],
-  [/Odjavi se/gi, "Log out"],
-  [/Pomoć/gi, "Help"],
-  [/Pravila/gi, "Rules"],
-  [/Privatnost/gi, "Privacy"],
-  [/Kolačići/gi, "Cookies"],
-  [/Uslovi/gi, "Terms"],
-  [/Sigurnost/gi, "Security"],
-  [/Mediji/gi, "Press"],
-  [/O nama/gi, "About us"],
-  [/Dijaspora/gi, "Diaspora"],
-  [/Tržišt/gi, "Market"],
-  [/Potkategorij/gi, "Subcategor"],
-  [/dostupn/gi, "available"],
-  [/ukupno/gi, "total"],
-  [/pregleda/gi, "views"],
-  [/Stranica/gi, "Page"],
-  [/ od /gi, " of "],
-  [/Crnoj Gori/gi, "the Balkans"],
-  [/Makedonij/gi, "North Macedonia"],
-  [/Albanij/gi, "Albania"],
-  [/Kosov/gi, "Kosovo"],
-];
-
-/** Albanian → English (common UI). */
-const SQ_EN = [
-  [/Shpalljet/gi, "Listings"],
-  [/shpallje/gi, "listing"],
-  [/Kërko/gi, "Search"],
-  [/Filtrat/gi, "Filters"],
-  [/Kategoria/gi, "Category"],
-  [/Qyteti/gi, "City"],
-  [/Çmimi/gi, "Price"],
-  [/Zbato/gi, "Apply"],
-  [/Pastro/gi, "Clear"],
-  [/Kthehu/gi, "Back"],
-  [/Edito/gi, "Edit"],
-  [/Fshi/gi, "Delete"],
-  [/Anulo/gi, "Cancel"],
-  [/Ruaj/gi, "Save"],
-  [/Duke ruajtur/gi, "Saving"],
-  [/Posto/gi, "Post"],
-  [/Falas/gi, "Free"],
-  [/Sot/gi, "Today"],
-  [/Të gjitha/gi, "All"],
-  [/Kategoritë/gi, "Categories"],
-  [/Shiko të gjitha/gi, "View all"],
-  [/Përshkrimi/gi, "Description"],
-  [/Detajet/gi, "Details"],
-  [/Shitësi/gi, "Seller"],
-  [/Telefono/gi, "Call"],
-  [/Zgjidh/gi, "Select"],
-  [/Nënkategoria/gi, "Subcategory"],
-  [/Vendndodhja/gi, "Location"],
-  [/Kontakti/gi, "Contact"],
-  [/Fotot/gi, "Photos"],
-  [/Gjendja/gi, "Condition"],
-  [/Hyr/gi, "Log in"],
-  [/Dil/gi, "Log out"],
-  [/Kyçu/gi, "Log in"],
-  [/Me marrëveshje/gi, "Negotiable"],
-  [/Nuk u gjet/gi, "Nothing found"],
-  [/Nuk ka/gi, "No"],
-  [/ende/gi, "yet"],
-  [/Bëhu i pari/gi, "Be the first"],
-  [/Mund të postoni/gi, "You can post"],
-  [/nga kudo/gi, "from anywhere"],
-];
-
-const KEY_OVERRIDES = {
-  nav_menuAria: "Open menu",
-  nav_menuTitle: "Menu",
-  nav_home: "Home",
-  nav_postShort: "Post",
-  home_adAria: "Advertisement",
-  home_adBadge: "Ad",
-  home_adHeadline: "Your ad here —",
-  home_adContactPrefix: "Contact:",
-  home_carouselPrev: "Previous slide",
-  home_carouselNext: "Next slide",
-  home_carouselDot: "Show slide {n}",
-  home_partnerHeading: "Our trusted partners",
-  home_partnerEmptySignupVip: "Sign up as VIP Partner",
-  home_partnerEmptySignupStandard: "Sign up as Partner",
-  home_topListingsHeading: "TOP listings",
-  home_topListingsRowLabel: "TOP listings",
-  home_monthPartnerBadge: "Partner of the month",
-  login_heading: "Log in",
-  login_heading_register: "Sign up",
-  login_sub_login: "Enter your email or phone and password.",
-  login_sub_login_email_verify:
-    "Enter email and password — you will receive a code by email, then sign in.",
-  login_sub_register: "Email or phone + password only. Ready in seconds.",
-  login_welcomeBack: "Welcome back!",
-  login_forgotPassword: "Forgot password? Reset via email",
-  login_forgotHint: "Enter your email — we will send a reset code.",
-  login_resetHint: "Enter the code from your email and a new password.",
-  login_forgotBtn: "Send code",
-  login_resetBtn: "Save new password",
-  login_backToSignin: "← Back to email + password",
-  login_passwordResetDone: "Password changed. You are signed in.",
-  nf_title: "Page not found",
-  nf_body: "This page does not exist or has moved. Check the address and try again.",
-  cat_pickPartKind: "Choose part type",
-  cat_pickKindBrand: "Choose type or brand",
-  cat_sectionTypes: "Types",
-  cat_sectionBrands: "Brands",
-};
-
-const ALBANIAN_CHARS = /[ëçËÇ]/;
-
-function toEnglish(key, ks, mne) {
-  if (KEY_OVERRIDES[key]) return KEY_OVERRIDES[key];
-  let s = ks;
-  for (const [re, rep] of SQ_EN) s = s.replace(re, rep);
-  if (ALBANIAN_CHARS.test(s) && mne) {
-    let m = mne;
-    for (const [re, rep] of SR_EN) m = m.replace(re, rep);
-    if (!ALBANIAN_CHARS.test(m)) s = m;
+function parseConstObject(filePath, constName) {
+  const src = fs.readFileSync(filePath, "utf8");
+  const marker = `const ${constName}`;
+  const start = src.indexOf(marker);
+  if (start < 0) return [];
+  const open = src.indexOf("{", start);
+  let depth = 0;
+  for (let i = open; i < src.length; i++) {
+    const ch = src[i];
+    if (ch === "{") depth++;
+    else if (ch === "}") {
+      depth--;
+      if (depth === 0) return parseRecordEntries(src.slice(open + 1, i));
+    }
   }
-  for (const [re, rep] of SR_EN) s = s.replace(re, rep);
-  return s;
+  return [];
 }
 
 function escapeTs(str) {
@@ -215,12 +189,147 @@ function escapeTs(str) {
 
 function formatRecord(name, entries) {
   const lines = entries.map(({ key, value }) => {
-    const v = value.includes("\n") || value.length > 120
-      ? `\`${value.replace(/`/g, "\\`")}\``
-      : `"${escapeTs(value)}"`;
+    const v =
+      value.includes("\n") || value.length > 120
+        ? `\`${value.replace(/`/g, "\\`")}\``
+        : `"${escapeTs(value)}"`;
     return `  ${key}: ${v},`;
   });
   return `export const ${name}: Record<string, string> = {\n${lines.join("\n")}\n};\n`;
+}
+
+const KEY_OVERRIDES = {
+  ui_emptyListingsSubLong:
+    "Be the first to post in this category and reach thousands of potential buyers!",
+  ui_walletPerListing: "1 listing = €0.30 from balance",
+  ui_walletCreditHint: "Credit does not expire — spend until used (@ €0.30/listing)",
+  ui_walletListingsRemaining: "Listings remaining",
+  ui_supportChatTitle: "Help",
+  ui_payByCard: "Pay by card",
+  ui_packagesContinuePost: "You can continue posting your listing.",
+  ui_categorySuggestPick: "Choose this category",
+  ui_giftPledgeLegal:
+    'By clicking "Continue" you accept full legal responsibility for the accuracy of your listing.',
+  ui_giftCategoryPriceNote: "In this category the price is always €0.",
+  ui_walletTopupLimit: "You have reached the free limit. Top up your wallet (€0.30 per listing).",
+  ui_walletPostSuccess: "Listing posted. Balance: €{balance} — {remaining} listings remaining.",
+  ui_walletExtraPostCost:
+    "You have reached the free limit. Each extra listing costs €{price} from your wallet.",
+  ui_sellLangBlocked: 'Selling language is not allowed in "Wanted to Buy" (blocked word: "{word}").',
+  ui_contentModerationFail: "Content did not pass automatic review.",
+  ui_bankPaymentLogin: "Sign in to see payment instructions.",
+  ui_bankPaymentNotFound: "Payment not found or bank transfer is not active.",
+  ui_bankPaymentTitle: "Bank transfer (Kosovo)",
+  ui_bankPaymentSub: "Bank transfer for wallet top-up",
+  ui_beneficiaryLabel: "Beneficiary",
+  ui_reportProblemPh: "Describe the problem…",
+  ui_streetAddressPh: "Street, house number…",
+  ui_postGiftBtn: "🎁 Post gift →",
+  ui_postRequestBtn: "Post request",
+  ui_paymentMethodsAria: "Payment methods",
+  ui_diasporaMarketsTitle: "Germany, Switzerland, Austria, France, Italy, UK, USA, Montenegro",
+  ui_giftPledgeBack: "Back",
+  ui_giftPledgeWarnTitle: "⚠️ READ CAREFULLY BEFORE YOU CONTINUE",
+  ui_giftPledgeIntro1:
+    "This section is for kind-hearted people who want to help others.",
+  ui_giftPledgeIntro2: "Any misuse is taken with the utmost seriousness.",
+  ui_giftPledgeItem1:
+    "I confirm the item is completely FREE — I will not ask for any payment, favour or service in return",
+  ui_giftPledgeItem2:
+    "I confirm the item exists physically and is available — this is not a fake or fraudulent listing",
+  ui_giftPledgeItem3:
+    "I confirm the photos are real and of my item — not stock images or someone else's photos",
+  ui_giftPledgeItem4:
+    "I understand anyone who misuses this section for fraud, advertising or harmful purposes is reported immediately and permanently banned",
+  ui_giftPledgeItem5:
+    "I understand KetuJemi monitors every post in this category and may remove any listing without warning",
+  ui_giftPledgeContinue: "✅ I understand & agree — Continue →",
+  ui_supportWelcome:
+    "Hello! Ask briefly — I will guide you where to go on KetuJemi.",
+  ui_supportBusy: "Could not reach the server. Please try again.",
+  ui_supportVoiceError:
+    "Microphone was not enabled. Allow the microphone in your browser and try again.",
+  ui_supportVoiceHttps: "For voice (🎤) open the page over HTTPS: https://ketujemi.com",
+  ui_supportVoiceMobile: "For voice use Chrome on desktop.",
+  ui_supportVoiceUnsupported:
+    "This browser does not support voice. Use Chrome or Edge on desktop.",
+  ui_supportTyping: "Typing…",
+  ui_supportListening: "Listening… speak now",
+  ui_supportInputPh: "Type your question…",
+  ui_supportListeningPh: "Listening to voice…",
+  ui_supportVoiceStopAria: "Stop and send",
+  ui_supportVoiceStartAria: "Speak with voice",
+  ui_supportCloseAria: "Close",
+  ui_supportFab: "Help",
+  ui_categorySuggestTitle: "AI category tip",
+  ui_categorySuggestAnalyzing: "Analyzing your title…",
+  ui_categorySuggestDismiss: "Thanks, I know",
+  ui_categorySuggestMsg:
+    "{product} belongs in category «{category}» — choosing the right category helps you reach more buyers!",
+  ui_categorySuggestDefaultProduct: "Your item",
+  ui_walletTitle: "Wallet",
+  ui_walletBalanceLabel: "Balance",
+  ui_walletTopupTitle: "Top up wallet (S / M / L)",
+  ui_walletPayOnline: "Pay online",
+  ui_walletStripeNotConfigured:
+    "Online payment is not configured on the server yet (Stripe or Kosovo bank).",
+  ui_walletStripeHint:
+    "Pay by card (Visa/Mastercard) via Stripe — available from Kosovo and the diaspora.",
+  ui_walletRefresh: "Refresh balance",
+  ui_paymentFailed: "Payment failed",
+  ui_networkError: "Network error",
+  lz_country_any: "All countries",
+  lz_country_lbl: "Country",
+  lz_country_ph: "Select country",
+};
+
+function toEnglish(key, ks, mne) {
+  if (KEY_OVERRIDES[key]) return KEY_OVERRIDES[key];
+  let base = ks;
+  if (mne && !CYRILLIC.test(mne)) base = mne;
+  let s = wordTranslate(base);
+  if (ALBANIAN_CHARS.test(s) || CYRILLIC.test(s)) {
+    s = wordTranslate(ks);
+  }
+  if (CYRILLIC.test(s) && mne && !CYRILLIC.test(mne)) {
+    s = wordTranslate(mne);
+  }
+  return s;
+}
+
+function translateStringValue(value) {
+  const raw = value.replace(/\\n/g, "\n").replace(/\\"/g, '"');
+  const exact = applyEnglishPhrases(raw);
+  if (!ALBANIAN_CHARS.test(exact)) return exact;
+  return wordTranslate(raw);
+}
+
+/** Static legal pages: phrase map only (word-level breaks Albanian/MNE prose). */
+function translateStaticStringValue(value) {
+  const raw = value.replace(/\\n/g, "\n").replace(/\\"/g, '"');
+  return applyEnglishPhrases(raw);
+}
+
+function translateTsStringLiterals(chunk, staticPages = false) {
+  const tr = (inner) => {
+    const raw = inner.replace(/\\n/g, "\n").replace(/\\"/g, '"');
+    return escapeTs(
+      staticPages ? translateStaticStringValue(raw) : translateStringValue(raw),
+    );
+  };
+  let out = chunk.replace(
+    /^(\s+)(\w+):\s*"((?:\\.|[^"\\])*)"/gm,
+    (_, indent, key, inner) => `${indent}${key}: "${tr(inner)}"`,
+  );
+  out = out.replace(
+    /^(\s+)"((?:\\.|[^"\\])*)",?\s*$/gm,
+    (_, indent, inner) => `${indent}"${tr(inner)}",`,
+  );
+  out = out.replace(
+    /:\s*\[\s*"((?:\\.|[^"\\])*)"\s*\]/g,
+    (_, inner) => `: ["${tr(inner)}"]`,
+  );
+  return out;
 }
 
 // ── app-extra-i18n-en.ts ─────────────────────────────────────────────────────
@@ -230,100 +339,135 @@ const ksBody = extractObjectBlock(extraSrc, "const KS_EXTRA", "const AL_OVERRIDE
 const mneBody = extractObjectBlock(extraSrc, "const MNE_EXTRA", "export const EXTRA_TRANSLATIONS");
 const ksEntries = parseRecordEntries(ksBody);
 const mneMap = Object.fromEntries(parseRecordEntries(mneBody).map((e) => [e.key, e.value]));
-const enEntries = ksEntries.map(({ key, value }) => ({
-  key,
-  value: toEnglish(key, value, mneMap[key]),
-}));
+
+const akKs = parseConstObject(path.join(vendiLib, "arsim-kurse-form-i18n.ts"), "KS");
+const akMne = Object.fromEntries(
+  parseConstObject(path.join(vendiLib, "arsim-kurse-form-i18n.ts"), "MNE").map((e) => [e.key, e.value]),
+);
+const soKs = parseConstObject(path.join(vendiLib, "sport-outdoor-device-i18n.ts"), "KS");
+const soMne = Object.fromEntries(
+  parseConstObject(path.join(vendiLib, "sport-outdoor-device-i18n.ts"), "MNE").map((e) => [e.key, e.value]),
+);
+
+const allKeys = new Map();
+for (const e of [...ksEntries, ...akKs, ...soKs]) allKeys.set(e.key, e.value);
+for (const [key, ks] of allKeys) {
+  allKeys.set(key, ks);
+}
+
+const enEntries = [...allKeys.entries()]
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([key, ks]) => ({
+    key,
+    value: toEnglish(key, ks, mneMap[key] ?? soMne[key] ?? akMne[key]),
+  }));
+
 const enExtraPath = path.join(vendiLib, "app-extra-i18n-en.ts");
 fs.writeFileSync(
   enExtraPath,
-  `/** Auto-generated English UI strings — run ketujemi-2/scripts/generate-en-i18n.mjs to refresh */\n\n${formatRecord("EN_EXTRA", enEntries)}`,
+  `/** Auto-generated — run ketujemi-2/scripts/generate-en-i18n.mjs */\n\n${formatRecord("EN_EXTRA", enEntries)}`,
   "utf8",
 );
 console.log(`Wrote ${enExtraPath} (${enEntries.length} keys)`);
 
-// ── category en fields ───────────────────────────────────────────────────────
-const CAT_EN = {
-  Vetura: "Cars",
-  "Motorr & Skuter": "Motorcycles & Scooters",
-  "Kamionë & Furgonë": "Trucks & Vans",
-  "Auto Pjesë": "Auto Parts",
-  "Banesa & Shtëpi": "Homes & Apartments",
-  "Lokale & Zyrë": "Commercial & Office",
-  Telefona: "Phones",
-  "Kompjuterë & Laptopë": "Computers & Laptops",
-  "TV & Elektronikë": "Electronics & Home Appliances",
-  "Elektronikë & Pajisje Shtëpiake": "Electronics & Home Appliances",
-  "Mobilje & Dekorime": "Furniture & Decor",
-  "Rroba & Këpucë": "Clothing & Shoes",
-  Fëmijë: "Kids",
-  "Sport & Outdoor": "Sports & Outdoor",
-  "Punë & Shërbime": "Jobs & Services",
-  "Bujqësi & Blegtori": "Agriculture & Livestock",
-  "Arsim & Kurse": "Education & Courses",
-  "Muzikë & Hobby": "Music & Hobby",
-  Kafshë: "Pets",
-  "Kërkoj të Blej": "Wanted to Buy",
-  "Dhurata & Falas": "Gifts & Free",
-};
+// ── arsim / sport EN consts ──────────────────────────────────────────────────
+const enAk = akKs.map(({ key, value }) => ({ key, value: toEnglish(key, value, akMne[key]) }));
+const enSo = soKs.map(({ key, value }) => ({ key, value: toEnglish(key, value, soMne[key]) }));
 
-const catPath = path.join(vendiLib, "category-translations.ts");
-let catSrc = fs.readFileSync(catPath, "utf8");
-if (!catSrc.includes('export type MarketCode = "ks"')) {
-  throw new Error("Unexpected category-translations format");
-}
-catSrc = catSrc.replace(
-  'export type MarketCode = "ks" | "al" | "mk" | "mne";',
-  'export type MarketCode = "ks" | "al" | "mk" | "mne";\nexport type UiCategoryLocale = MarketCode | "en";',
-);
-catSrc = catSrc.replace(
-  /export function translateCategory\(name: string, localeCode: MarketCode\): string \{/,
-  `export function translateCategory(name: string, localeCode: UiCategoryLocale): string {
-  if (localeCode === "en") {
-    return (
-      CAT_EN[name] ??
-      CAT_TRANSLATIONS[name]?.mne ??
-      translateArsimKurseCategory(name, "mne") ??
-      translateFemijeCategory(name, "mne") ??
-      name
-    );
-  }`,
-);
-if (!catSrc.includes("const CAT_EN")) {
-  const enBlock =
-    "\n/** English category labels (UI language en). */\nconst CAT_EN: Record<string, string> = " +
-    JSON.stringify(CAT_EN, null, 2).replace(/"([^"]+)":/g, '"$1":') +
-    ";\n";
-  catSrc = catSrc.replace(
-    "export const CAT_TRANSLATIONS:",
-    `${enBlock}\nexport const CAT_TRANSLATIONS:`,
+const akPath = path.join(vendiLib, "arsim-kurse-form-i18n.ts");
+let akSrc = fs.readFileSync(akPath, "utf8");
+if (!akSrc.includes("export const EN_AK_FORM")) {
+  akSrc = akSrc.replace(
+    "export const MNE_AK_FORM = MNE;",
+    `${formatRecord("EN_AK", enAk).replace("Record<string, string>", "Record<keyof typeof KS, string>")}\nexport const EN_AK_FORM = EN_AK;\nexport const MNE_AK_FORM = MNE;`,
   );
+  fs.writeFileSync(akPath, akSrc, "utf8");
+  console.log("Updated arsim-kurse-form-i18n.ts with EN_AK_FORM");
 }
-fs.writeFileSync(catPath, catSrc, "utf8");
-console.log("Updated category-translations.ts");
 
-// ── static-pages-i18n-en.ts (from KS block) ───────────────────────────────────
+const soPath = path.join(vendiLib, "sport-outdoor-device-i18n.ts");
+let soSrc = fs.readFileSync(soPath, "utf8");
+if (!soSrc.includes("export const EN_SO_DEVICE")) {
+  soSrc = soSrc.replace(
+    "export const MNE_SO_DEVICE = MNE;",
+    `${formatRecord("EN_SO", enSo).replace("Record<string, string>", "Record<keyof typeof KS, string>")}\nexport const EN_SO_DEVICE = EN_SO;\nexport const MNE_SO_DEVICE = MNE;`,
+  );
+  fs.writeFileSync(soPath, soSrc, "utf8");
+  console.log("Updated sport-outdoor-device-i18n.ts with EN_SO_DEVICE");
+}
+
+// ── static-pages-i18n-en.ts (from MNE Latin — phrase map to English) ─────────────
 const staticPath = path.join(vendiLib, "static-pages-i18n.ts");
 const staticSrc = fs.readFileSync(staticPath, "utf8");
-const ksStaticStart = staticSrc.indexOf("const KS: StaticPagesCopy = {");
-const mkStaticStart = staticSrc.indexOf("const MK: StaticPagesCopy = {");
-if (ksStaticStart < 0 || mkStaticStart < 0) throw new Error("static-pages KS/MK markers missing");
-let ksStaticBlock = staticSrc.slice(ksStaticStart, mkStaticStart);
-ksStaticBlock = ksStaticBlock.replace(
-  /: "((?:\\.|[^"\\])*)"/g,
-  (_, inner) => {
-    const raw = inner.replace(/\\n/g, "\n").replace(/\\"/g, '"');
-    return `: "${escapeTs(toEnglish("", raw, ""))}"`;
-  },
-);
-ksStaticBlock = ksStaticBlock.replace(
-  /: `([\s\S]*?)`/g,
-  (_, inner) => `: \`${inner.replace(/\\/g, "\\\\").replace(/`/g, "\\`")}\``,
-);
+const mneStaticStart = staticSrc.indexOf("const MNE: StaticPagesCopy = {");
+const mneStaticEnd = staticSrc.indexOf("export const STATIC_PAGES:");
+let mneStaticBlock = staticSrc.slice(mneStaticStart, mneStaticEnd);
+mneStaticBlock = translateTsStringLiterals(mneStaticBlock, true);
+mneStaticBlock = mneStaticBlock.replace("const MNE:", "export const EN_STATIC_PAGES:");
+
 const enStaticPath = path.join(vendiLib, "static-pages-i18n-en.ts");
 fs.writeFileSync(
   enStaticPath,
-  `/** Auto-generated English static pages — run ketujemi-2/scripts/generate-en-i18n.mjs */\nimport type { StaticPagesCopy } from "./static-pages-i18n";\n\n${ksStaticBlock.replace("const KS:", "export const EN_STATIC_PAGES:")}\n`,
+  `/** Auto-generated — run ketujemi-2/scripts/generate-en-i18n.mjs */\nimport type { StaticPagesCopy } from "./static-pages-i18n";\n\n${mneStaticBlock}`,
   "utf8",
 );
 console.log(`Wrote ${enStaticPath}`);
+
+// ── category-translations — full CAT_EN ───────────────────────────────────────
+const catPath = path.join(vendiLib, "category-translations.ts");
+const catSrc = fs.readFileSync(catPath, "utf8");
+const catBody = extractObjectBlock(catSrc, "export const CAT_TRANSLATIONS", "};");
+const catRe = /"((?:\\.|[^"\\])+)":\s*\{\s*ks:\s*"((?:\\.|[^"\\])*)",\s*al:[^,]+,\s*mk:\s*"((?:\\.|[^"\\])*)",\s*mne:\s*"((?:\\.|[^"\\])*)"\s*\}/g;
+const catEn = {};
+let cm;
+while ((cm = catRe.exec(catBody)) !== null) {
+  const name = cm[1];
+  const ks = cm[2];
+  const mne = cm[4];
+  catEn[name] = toEnglish(name, ks, mne);
+}
+
+const catEnPath = path.join(vendiLib, "category-translations-en.generated.ts");
+fs.writeFileSync(
+  catEnPath,
+  `/** Auto-generated English category labels */\nexport const CAT_EN_GENERATED: Record<string, string> = ${JSON.stringify(catEn, null, 2)};\n`,
+  "utf8",
+);
+
+let updatedCat = catSrc;
+if (!updatedCat.includes("category-translations-en.generated")) {
+  updatedCat = updatedCat.replace(
+    'import { translateFemijeCategory } from "./femije-category-translations";',
+    'import { translateFemijeCategory } from "./femije-category-translations";\nimport { CAT_EN_GENERATED } from "./category-translations-en.generated";',
+  );
+}
+updatedCat = updatedCat.replace(
+  /const CAT_EN: Record<string, string> = \{[\s\S]*?\};/,
+  "",
+);
+updatedCat = updatedCat.replace(
+  /CAT_EN\[name\]/g,
+  "CAT_EN_GENERATED[name]",
+);
+if (!updatedCat.includes("UiCategoryLocale")) {
+  updatedCat = updatedCat.replace(
+    'export type MarketCode = "ks" | "al" | "mk" | "mne";',
+    'export type MarketCode = "ks" | "al" | "mk" | "mne";\nexport type UiCategoryLocale = MarketCode | "en";',
+  );
+}
+if (!updatedCat.includes('localeCode === "en"')) {
+  updatedCat = updatedCat.replace(
+    /export function translateCategory\(name: string, localeCode: [^)]+\): string \{/,
+    `export function translateCategory(name: string, localeCode: UiCategoryLocale): string {
+  if (localeCode === "en") {
+    return (
+      CAT_EN_GENERATED[name] ??
+      translateArsimKurseCategory(name, "en") ??
+      translateFemijeCategory(name, "en") ??
+      name
+    );
+  }`,
+  );
+}
+fs.writeFileSync(catPath, updatedCat, "utf8");
+console.log(`Wrote ${catEnPath} (${Object.keys(catEn).length} categories)`);

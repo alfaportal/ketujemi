@@ -677,11 +677,15 @@ export default function CategoryPage() {
   }, [segment, categoryId, allCategories, setLocation, urlSearch]);
 
   const emptyListingsCopy = useMemo(() => {
+    const subLong = (t as { ui_emptyListingsSubLong?: string }).ui_emptyListingsSubLong;
+    if (uiLang === "en" && subLong) {
+      return { sub: subLong, trust: t.postFromAnywhere };
+    }
     switch (market.code) {
       case "ks":
       case "al":
         return {
-          sub: "Bëhu i pari që posto në këtë kategori dhe arrij mijëra blerës potencialë!",
+          sub: subLong ?? "Bëhu i pari që posto në këtë kategori dhe arrij mijëra blerës potencialë!",
           trust: t.postFromAnywhere,
         };
       case "mk":
@@ -700,7 +704,7 @@ export default function CategoryPage() {
           trust: t.postFromAnywhere,
         };
     }
-  }, [market.code, t.beFirst, t.postFromAnywhere]);
+  }, [market.code, uiLang, t]);
 
   const currentCategory = allCategories?.find((c: any) => Number(c.id) === Number(categoryId));
   const children =

@@ -160,7 +160,7 @@ export function ArsimKurseSearchPanel({
             <p className="text-sm text-gray-500 mt-1">
               {hubTypes.length}{" "}
               {(t as { subcategoriesAvail?: string }).subcategoriesAvail ??
-                "nënkategori të disponueshme"}
+                t.subcategoriesAvail}
             </p>
           </div>
           <CategoryPhotoPickerGrid>

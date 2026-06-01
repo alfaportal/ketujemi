@@ -11,7 +11,9 @@ import { srLatn } from "date-fns/locale/sr-Latn";
 import { sq } from "date-fns/locale/sq";
 import { KS_AK_FORM, MK_AK_FORM, MNE_AK_FORM } from "@/lib/arsim-kurse-form-i18n";
 import { KS_SO_DEVICE, MK_SO_DEVICE, MNE_SO_DEVICE } from "@/lib/sport-outdoor-device-i18n";
+import { EN_AK_FORM } from "./arsim-kurse-form-i18n";
 import { EN_EXTRA } from "./app-extra-i18n-en";
+import { EN_SO_DEVICE } from "./sport-outdoor-device-i18n";
 import type { UiTranslationLocale } from "./ui-languages";
 
 export type AppExtraMarketCode = "ks" | "al" | "mk" | "mne";
@@ -1793,6 +1795,85 @@ const AL_OVERRIDES: Record<string, string> = {
   adm_users_loading_listings: "Duke ngarkuar njoftimet…",
   adm_cat_modal_body: "Njoftimet mbeten aktive por humbasin lidhjen me këtë kategori.",
   adm_rep_view: "Shiko njoftimin",
+  ui_emptyListingsSubLong:
+    "Bëhu i pari që posto në këtë kategori dhe arrij mijëra blerës potencialë!",
+  ui_walletPerListing: "1 shpallje = €0.30 nga balanca",
+  ui_walletCreditHint: "Kredi pa afat — deri sa ta harxhoni (@ €0.30/shpallje)",
+  ui_walletListingsRemaining: "Shpallje të mbetura",
+  ui_supportChatTitle: "Ndihmë",
+  ui_payByCard: "Bli me kartë",
+  ui_packagesContinuePost: "Mund të vazhdoni me postimin e njoftimit.",
+  ui_categorySuggestPick: "Zgjidh këtë kategori",
+  ui_giftPledgeLegal:
+    'Duke klikuar "Vazhdo" ju merrni përgjegjësi të plotë ligjore për vërtetësinë e postimit tuaj.',
+  ui_giftCategoryPriceNote: "Në këtë kategori çmimi është gjithmonë 0 €.",
+  ui_walletTopupLimit: "Ke arritur limitin falas. Mbush portofolin (€0.30 për shpallje).",
+  ui_walletPostSuccess: "Shpallja u postua. Balanca: €{balance} — {remaining} shpallje të mbetura.",
+  ui_walletExtraPostCost:
+    "Keni arritur limitin falas. Çdo shpallje shtesë kushton €{price} nga portofoli.",
+  ui_sellLangBlocked: 'Gjuha e shitjes nuk lejohet në "Kërkoj të Blej" (fjalë e ndaluar: "{word}").',
+  ui_contentModerationFail: "Përmbajtja nuk kaloi kontrollin automatik.",
+  ui_bankPaymentLogin: "Hyni në llogari për të parë udhëzimet e pagesës.",
+  ui_bankPaymentNotFound: "Pagesa nuk u gjet ose transferi bankar nuk është aktiv.",
+  ui_bankPaymentTitle: "Pagesë bankare (Kosovë)",
+  ui_bankPaymentSub: "Transfer bankar për portofolin",
+  ui_beneficiaryLabel: "Përfituesi",
+  ui_reportProblemPh: "Përshkruani problemin…",
+  ui_streetAddressPh: "Rruga, nr. shtëpisë...",
+  ui_postGiftBtn: "🎁 Posto Dhuratën →",
+  ui_postRequestBtn: "Posto Kërkesën",
+  ui_paymentMethodsAria: "Metodat e pagesës",
+  ui_diasporaMarketsTitle: "Gjermani, Zvicër, Austri, Francë, Itali, Angli, SHBA, Mal i Zi",
+  ui_giftPledgeBack: "Kthehu",
+  ui_giftPledgeWarnTitle: "⚠️ LEXO ME KUJDES PARA SE TË VAZHDOSH",
+  ui_giftPledgeIntro1:
+    "Ky seksion është krijuar për njerëz me zemër të mirë që duan të ndihmojnë të tjerët.",
+  ui_giftPledgeIntro2: "Çdo keqpërdorim trajtohet me seriozitetin më të lartë.",
+  ui_giftPledgeItem1:
+    "Konfirmoj që sendi është plotësisht FALAS — nuk do të kërkojë asnjë kompensim, para, favor, apo shërbim në këmbim",
+  ui_giftPledgeItem2:
+    "Konfirmoj që sendi ekziston fizikisht dhe është i disponueshëm — nuk është shpallje e rreme apo mashtruese",
+  ui_giftPledgeItem3:
+    "Konfirmoj që fotot janë reale dhe të sendit tim — jo foto nga interneti apo e dikujt tjetër",
+  ui_giftPledgeItem4:
+    "Kuptoj që çdo person që keqpërdor këtë seksion për mashtrim, reklamë, ose qëllime të liga — raportohet menjëherë dhe bllokohet përgjithmonë nga platforma",
+  ui_giftPledgeItem5:
+    "Kuptoj që KetuJemi monitoron çdo postim në këtë kategori dhe rezervon të drejtën ta heqë çdo shpallje pa paralajmërim",
+  ui_giftPledgeContinue: "✅ Kuptova & Jam Dakord — Vazhdo →",
+  ui_supportWelcome:
+    "Përshëndetje! Pyetni shkurt — do t'ju udhëzoj ku të shkoni në KetuJemi.",
+  ui_supportBusy: "Nuk u lidh me serverin. Provoni përsëri.",
+  ui_supportVoiceError:
+    "Mikrofoni nuk u aktivizua. Lejoni mikrofonin në shfletues dhe provoni përsëri.",
+  ui_supportVoiceHttps: "Për zërin (🎤) hapni faqen me HTTPS: https://ketujemi.com",
+  ui_supportVoiceMobile: "Për funksionin e zërit përdor Chrome në desktop.",
+  ui_supportVoiceUnsupported:
+    "Ky shfletues nuk mbështet zërin. Përdorni Chrome ose Edge në desktop.",
+  ui_supportTyping: "Duke shkruar…",
+  ui_supportListening: "Po dëgjoj… flisni tani",
+  ui_supportInputPh: "Shkruani pyetjen…",
+  ui_supportListeningPh: "Po dëgjohet zëri…",
+  ui_supportVoiceStopAria: "Ndalo dhe dërgo",
+  ui_supportVoiceStartAria: "Fol me zë",
+  ui_supportCloseAria: "Mbyll",
+  ui_supportFab: "Ndihmë",
+  ui_categorySuggestTitle: "Këshillë AI për kategori",
+  ui_categorySuggestAnalyzing: "Duke analizuar titullin tuaj…",
+  ui_categorySuggestDismiss: "Faleminderit, e di",
+  ui_categorySuggestMsg:
+    "{product} i përket kategorisë «{category}» — duke zgjedhur kategorinë e duhur do të arrish 3x më shumë blerës!",
+  ui_categorySuggestDefaultProduct: "Artikulli juaj",
+  ui_walletTitle: "Portofoli",
+  ui_walletBalanceLabel: "Balanca",
+  ui_walletTopupTitle: "Mbush portofolin (S / M / L)",
+  ui_walletPayOnline: "Pagesa online",
+  ui_walletStripeNotConfigured:
+    "Pagesa online nuk është konfiguruar ende në server (Stripe ose bankë KS).",
+  ui_walletStripeHint:
+    "Paguani me kartë (Visa/Mastercard) përmes Stripe — e disponueshme nga Kosova dhe diaspora.",
+  ui_walletRefresh: "Rifresko balancën",
+  ui_paymentFailed: "Pagesa dështoi",
+  ui_networkError: "Gabim rrjeti",
 };
 
 const MK_EXTRA: Record<string, string> = {
@@ -5243,7 +5324,7 @@ export const EXTRA_TRANSLATIONS: Record<AppExtraLocaleKey, Record<string, string
   al: { ...KS_EXTRA, ...AL_OVERRIDES },
   mk: MK_EXTRA,
   mne: MNE_EXTRA,
-  en: EN_EXTRA,
+  en: { ...EN_EXTRA, ...EN_SO_DEVICE, ...EN_AK_FORM },
 };
 
 export function fillCount(template: string, count: string): string {

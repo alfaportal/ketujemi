@@ -206,7 +206,7 @@ function FooterMarketsStrip({
         </span>
         <span
           className="text-white/75 font-medium shrink-0"
-          title="Gjermani, Zvicër, Austri, Francë, Itali, Angli, SHBA, Mal i Zi"
+          title={(t as { ui_diasporaMarketsTitle?: string }).ui_diasporaMarketsTitle ?? "Gjermani, Zvicër, Austri, Francë, Itali, Angli, SHBA, Mal i Zi"}
         >
           {copy.diasporaLabel}
         </span>

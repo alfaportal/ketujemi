@@ -818,38 +818,54 @@ export const FORM_OPTIONS: Record<string, Record<string, string[]>> = {
     al:  ["Benzinë", "Naftë", "Elektrik", "Hibrid", "Gaz (LPG)", "Tjetër"],
     mk:  ["Бензин", "Дизел", "Електричен", "Хибрид", "Гас (ТНГ)", "Друго"],
     mne: ["Benzin", "Dizel", "Električni", "Hibrid", "Gas (LPG)", "Ostalo"],
+    en:  ["Petrol", "Diesel", "Electric", "Hybrid", "LPG", "Other"],
   },
   transmission: {
     ks:  ["Manuale", "Automatike", "Gjysëm-automatike"],
     al:  ["Manuale", "Automatike", "Gjysëm-automatike"],
     mk:  ["Рачен", "Автоматски", "Полу-автоматски"],
     mne: ["Manuelni", "Automatski", "Poluautomatski"],
+    en:  ["Manual", "Automatic", "Semi-automatic"],
   },
   bodyType: {
     ks:  ["Sedan", "Hatchback", "SUV / Jeep", "Kombi", "Kabriolet", "Kupe", "Pikap", "Furgon"],
     al:  ["Sedan", "Hatchback", "SUV / Jeep", "Kombi", "Kabriolet", "Kupe", "Pikap", "Furgon"],
     mk:  ["Седан", "Хечбек", "Теренец / Џип", "Комби", "Кабриолет", "Купе", "Пикап", "Фургон"],
     mne: ["Sedan", "Hatchback", "Terenac / Džip", "Kombi", "Kabriolet", "Kupe", "Pikap", "Kombi/Van"],
+    en:  ["Sedan", "Hatchback", "SUV / Jeep", "Estate", "Convertible", "Coupe", "Pickup", "Van"],
   },
   color: {
     ks:  ["E zezë", "E bardhë", "Gri / Argjend", "E kaltër", "E kuqe", "E gjelbër", "E verdhë / Gold", "Kafe / Beige", "Portokalli", "Vjollcë", "Tjetër"],
     al:  ["E zezë", "E bardhë", "Gri / Argjend", "E kaltër", "E kuqe", "E gjelbër", "E verdhë / Gold", "Kafe / Beige", "Portokalli", "Vjollcë", "Tjetër"],
     mk:  ["Црна", "Бела", "Сива / Сребрена", "Сина", "Црвена", "Зелена", "Жолта / Злато", "Кафеава / Беж", "Портокалова", "Виолетова", "Друго"],
     mne: ["Crna", "Bijela", "Siva / Srebrna", "Plava", "Crvena", "Zelena", "Žuta / Zlatna", "Smeđa / Bež", "Narandžasta", "Ljubičasta", "Ostalo"],
+    en:  ["Black", "White", "Grey / Silver", "Blue", "Red", "Green", "Yellow / Gold", "Brown / Beige", "Orange", "Purple", "Other"],
   },
   techCondition: {
     ks:  ["E shkëlqyer", "Shumë e mirë", "E mirë", "E pranueshme", "Për riparim"],
     al:  ["E shkëlqyer", "Shumë e mirë", "E mirë", "E pranueshme", "Për riparim"],
     mk:  ["Одлична", "Многу добра", "Добра", "Прифатлива", "За поправка"],
     mne: ["Odlično", "Veoma dobra", "Dobra", "Prihvatljivo", "Za popravku"],
+    en:  ["Excellent", "Very good", "Good", "Acceptable", "For repair"],
   },
   furnished: {
     ks:  ["I mobiluar", "Pjesërisht i mobiluar", "Pa mobilje"],
     al:  ["I mobiluar", "Pjesërisht i mobiluar", "Pa mobilje"],
     mk:  ["Наместено", "Делумно наместено", "Без мебел"],
     mne: ["Namješteno", "Djelimično namješteno", "Bez namještaja"],
+    en:  ["Furnished", "Partly furnished", "Unfurnished"],
   },
 };
+
+/** Listing-form option labels for the active UI language (falls back to ks). */
+export function formOptionsForUiLang(
+  field: keyof typeof FORM_OPTIONS,
+  uiLang: string,
+): string[] {
+  const opts = FORM_OPTIONS[field];
+  if (uiLang === "en" && opts.en?.length) return opts.en;
+  return opts.ks;
+}
 
 // ─── Locations per market ─────────────────────────────────────────────────────
 export const LOCATIONS: Record<string, string[]> = {

@@ -4,37 +4,10 @@
 
 import { translateArsimKurseCategory } from "./arsim-kurse-category-translations";
 import { translateFemijeCategory } from "./femije-category-translations";
+import { CAT_EN_GENERATED } from "./category-translations-en.generated";
 
 export type MarketCode = "ks" | "al" | "mk" | "mne";
 export type UiCategoryLocale = MarketCode | "en";
-export type UiCategoryLocale = MarketCode | "en";
-export type UiCategoryLocale = MarketCode | "en";
-
-
-/** English category labels (UI language en). */
-const CAT_EN: Record<string, string> = {
-  "Vetura": "Cars",
-  "Motorr & Skuter": "Motorcycles & Scooters",
-  "Kamionë & Furgonë": "Trucks & Vans",
-  "Auto Pjesë": "Auto Parts",
-  "Banesa & Shtëpi": "Homes & Apartments",
-  "Lokale & Zyrë": "Commercial & Office",
-  "Telefona": "Phones",
-  "Kompjuterë & Laptopë": "Computers & Laptops",
-  "TV & Elektronikë": "Electronics & Home Appliances",
-  "Elektronikë & Pajisje Shtëpiake": "Electronics & Home Appliances",
-  "Mobilje & Dekorime": "Furniture & Decor",
-  "Rroba & Këpucë": "Clothing & Shoes",
-  "Fëmijë": "Kids",
-  "Sport & Outdoor": "Sports & Outdoor",
-  "Punë & Shërbime": "Jobs & Services",
-  "Bujqësi & Blegtori": "Agriculture & Livestock",
-  "Arsim & Kurse": "Education & Courses",
-  "Muzikë & Hobby": "Music & Hobby",
-  "Kafshë": "Pets",
-  "Kërkoj të Blej": "Wanted to Buy",
-  "Dhurata & Falas": "Gifts & Free"
-};
 
 export const CAT_TRANSLATIONS: Record<string, Record<MarketCode, string>> = {
   "Vetura":               { ks: "Vetura",               al: "Vetura",               mk: "Автомобили",                      mne: "Automobili" },
@@ -234,10 +207,9 @@ export const CAT_TRANSLATIONS: Record<string, Record<MarketCode, string>> = {
 export function translateCategory(name: string, localeCode: UiCategoryLocale): string {
   if (localeCode === "en") {
     return (
-      CAT_EN[name] ??
-      CAT_TRANSLATIONS[name]?.mne ??
-      translateArsimKurseCategory(name, "mne") ??
-      translateFemijeCategory(name, "mne") ??
+      CAT_EN_GENERATED[name] ??
+      translateArsimKurseCategory(name, "en") ??
+      translateFemijeCategory(name, "en") ??
       name
     );
   }

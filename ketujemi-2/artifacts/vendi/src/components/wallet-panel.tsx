@@ -3,6 +3,7 @@ import { Loader2, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
+import { useMarket } from "@/lib/market-context";
 
 type WalletTopup = {
   id: string;
@@ -23,6 +24,8 @@ type WalletData = {
 };
 
 export function WalletPanel({ className = "" }: { className?: string }) {
+  const { t } = useMarket();
+  const tx = t as Record<string, string | undefined>;
   const { user, refresh } = useAuth();
   const { toast } = useToast();
   const [data, setData] = useState<WalletData | null>(null);
@@ -66,14 +69,14 @@ export function WalletPanel({ className = "" }: { className?: string }) {
       };
       if (!res.ok || !body.url) {
         toast({
-          title: body.message ?? body.error ?? "Pagesa dështoi",
+          title: body.message ?? body.error ?? (tx.ui_paymentFailed ?? "Pagesa dështoi"),
           variant: "destructive",
         });
         return;
       }
       window.location.href = body.url;
     } catch {
-      toast({ title: "Gabim rrjeti", variant: "destructive" });
+      toast({ title: tx.ui_networkError ?? "Gabim rrjeti", variant: "destructive" });
     } finally {
       setBusyPkg(null);
     }
@@ -93,9 +96,13 @@ export function WalletPanel({ className = "" }: { className?: string }) {
           <Wallet className="text-emerald-700" size={20} />
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className="font-bold text-gray-900">Portofoli</h2>
+          <h2 className="font-bold text-gray-900">{tx.ui_walletTitle ?? "Portofoli"}</h2>
           <p className="text-sm text-gray-600 mt-0.5">
-            1 shpallje = <span className="font-semibold">€0.30</span> nga balanca
+            {tx.ui_walletPerListing ?? (
+              <>
+                1 shpallje = <span className="font-semibold">€0.30</span> nga balanca
+              </>
+            )}
           </p>
         </div>
       </div>
@@ -108,18 +115,26 @@ export function WalletPanel({ className = "" }: { className?: string }) {
         <>
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-white border border-emerald-100 px-4 py-3">
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Balanca</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                {tx.ui_walletBalanceLabel ?? "Balanca"}
+              </p>
               <p className="text-2xl font-black text-emerald-700">€{balance}</p>
             </div>
             <div className="rounded-xl bg-white border border-emerald-100 px-4 py-3">
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Shpallje të mbetura</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                {tx.ui_walletListingsRemaining ?? "Shpallje të mbetura"}
+              </p>
               <p className="text-2xl font-black text-gray-900">{remaining}</p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm font-semibold text-gray-800">Mbush portofolin (S / M / L)</p>
-            <p className="text-xs text-gray-500">Kredi pa afat — deri sa ta harxhoni (@ €0.30/shpallje)</p>
+            <p className="text-sm font-semibold text-gray-800">
+              {tx.ui_walletTopupTitle ?? "Mbush portofolin (S / M / L)"}
+            </p>
+            <p className="text-xs text-gray-500">
+              {tx.ui_walletCreditHint ?? "Kredi pa afat — deri sa ta harxhoni (@ €0.30/shpallje)"}
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {(data?.topups ?? [
                 { id: "s", price_eur: 5, listings: 16, label: "Paketa S — €5 (~16)" },
@@ -140,7 +155,7 @@ export function WalletPanel({ className = "" }: { className?: string }) {
                     <>
                       <span className="font-bold">{t.label}</span>
                       <span className="text-xs text-gray-500 font-normal">
-                        Pagesa online
+                        {tx.ui_walletPayOnline ?? "Pagesa online"}
                       </span>
                     </>
                   )}
@@ -149,11 +164,13 @@ export function WalletPanel({ className = "" }: { className?: string }) {
             </div>
             {!canPay ? (
               <p className="text-xs text-amber-700">
-                Pagesa online nuk është konfiguruar ende në server (Stripe ose bankë KS).
+                {tx.ui_walletStripeNotConfigured ??
+                  "Pagesa online nuk është konfiguruar ende në server (Stripe ose bankë KS)."}
               </p>
             ) : data?.kosovoStripe ? (
               <p className="text-xs text-gray-500">
-                Paguani me kartë (Visa/Mastercard) përmes Stripe — e disponueshme nga Kosova dhe diaspora.
+                {tx.ui_walletStripeHint ??
+                  "Paguani me kartë (Visa/Mastercard) përmes Stripe — e disponueshme nga Kosova dhe diaspora."}
               </p>
             ) : null}
           </div>
@@ -168,7 +185,7 @@ export function WalletPanel({ className = "" }: { className?: string }) {
               void refresh();
             }}
           >
-            Rifresko balancën
+            {tx.ui_walletRefresh ?? "Rifresko balancën"}
           </Button>
         </>
       )}

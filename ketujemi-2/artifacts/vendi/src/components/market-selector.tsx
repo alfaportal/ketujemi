@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { MARKETS, useMarket } from "@/lib/market-context";
+import { marketDisplayName } from "@/lib/market-labels-i18n";
 
 type MarketSelectorProps = {
   /** `on-dark` for hero overlay; `on-light` for white navbar. */
@@ -8,7 +9,7 @@ type MarketSelectorProps = {
 };
 
 export function MarketSelector({ variant = "on-light" }: MarketSelectorProps) {
-  const { market, setMarket } = useMarket();
+  const { market, setMarket, uiLang } = useMarket();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -27,7 +28,7 @@ export function MarketSelector({ variant = "on-light" }: MarketSelectorProps) {
       <button
         type="button"
         data-testid="button-market-selector"
-        aria-label={market.name}
+        aria-label={marketDisplayName(market, uiLang)}
         aria-expanded={open}
         onClick={() => setOpen(!open)}
         className={cn(
@@ -51,8 +52,8 @@ export function MarketSelector({ variant = "on-light" }: MarketSelectorProps) {
               <button
                 key={m.code}
                 type="button"
-                title={m.name}
-                aria-label={m.name}
+                title={marketDisplayName(m, uiLang)}
+                aria-label={marketDisplayName(m, uiLang)}
                 data-testid={`option-market-${m.code}`}
                 onClick={() => {
                   setMarket(m);

@@ -83,4 +83,32 @@ const MNE: Record<keyof typeof KS, string> = {
 
 export const KS_AK_FORM = KS;
 export const MK_AK_FORM = MK;
+export const EN_AK: Record<keyof typeof KS, string> = {
+  ak_fld_category: "Select categoru",
+  ak_fld_subcategory: "Select potcategoru",
+  ak_fld_city: "City",
+  ak_select_category_ph: "Select categoru…",
+  ak_select_subcategory_ph: "Select potcategoru…",
+  ak_select_city_ph: "Select city…",
+  ak_select_format_ph: "Select format…",
+  ak_select_level_ph: "Select nivo…",
+  ak_select_any: "Sve",
+  ak_fmt_hybrid: "Hybrid",
+  ak_skill_beginner: "Yesčetni",
+  ak_skill_intermediate: "Srednji",
+  ak_skill_advanced: "Napredni",
+  ak_skill_all: "Svi nivoi",
+  ak_city_prishtine: "Priština",
+  ak_city_ferizaj: "Uroševac",
+  ak_city_prizren: "Prizren",
+  ak_city_peje: "Peć",
+  ak_city_mitrovice: "Mitrovica",
+  ak_city_gjakove: "Đakovica",
+  ak_city_gjilan: "Gnjilane",
+  ak_city_tirane: "Tirana",
+  ak_city_shkup: "Skoplje",
+  ak_city_podgorice: "Yesdgorica",
+};
+
+export const EN_AK_FORM = EN_AK;
 export const MNE_AK_FORM = MNE;

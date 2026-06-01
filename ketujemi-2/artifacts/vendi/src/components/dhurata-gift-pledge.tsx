@@ -2,15 +2,16 @@ import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useMarket } from "@/lib/market-context";
 
 export const DHURATA_PLEDGE_STORAGE_KEY = "ketujemi-dhurata-pledge-v2";
 
-const PLEDGE_ITEMS = [
-  "Konfirmoj që sendi është plotësisht FALAS — nuk do të kërkojë asnjë kompensim, para, favor, apo shërbim në këmbim",
-  "Konfirmoj që sendi ekziston fizikisht dhe është i disponueshëm — nuk është shpallje e rreme apo mashtruese",
-  "Konfirmoj që fotot janë reale dhe të sendit tim — jo foto nga interneti apo e dikujt tjetër",
-  "Kuptoj që çdo person që keqpërdor këtë seksion për mashtrim, reklamë, ose qëllime të liga — raportohet menjëherë dhe bllokohet përgjithmonë nga platforma",
-  "Kuptoj që KetuJemi monitoron çdo postim në këtë kategori dhe rezervon të drejtën ta heqë çdo shpallje pa paralajmërim",
+const PLEDGE_ITEM_KEYS = [
+  "ui_giftPledgeItem1",
+  "ui_giftPledgeItem2",
+  "ui_giftPledgeItem3",
+  "ui_giftPledgeItem4",
+  "ui_giftPledgeItem5",
 ] as const;
 
 type Props = {
@@ -19,7 +20,10 @@ type Props = {
 };
 
 export function DhurataGiftPledge({ onAccepted, onBack }: Props) {
-  const [checked, setChecked] = useState<boolean[]>(() => PLEDGE_ITEMS.map(() => false));
+  const { t } = useMarket();
+  const tx = t as Record<string, string | undefined>;
+  const pledgeItems = PLEDGE_ITEM_KEYS.map((key) => tx[key] ?? "");
+  const [checked, setChecked] = useState<boolean[]>(() => pledgeItems.map(() => false));
   const allChecked = checked.every(Boolean);
 
   const toggle = (index: number) => {
@@ -44,30 +48,31 @@ export function DhurataGiftPledge({ onAccepted, onBack }: Props) {
           onClick={onBack}
           className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 mb-6 min-h-12"
         >
-          <ArrowLeft size={16} /> Kthehu
+          <ArrowLeft size={16} /> {tx.ui_giftPledgeBack ?? "Kthehu"}
         </button>
       ) : null}
 
       <div className="rounded-3xl border border-amber-200 bg-white p-6 sm:p-8 shadow-sm">
         <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 mb-5">
           <p className="text-sm font-black text-amber-900 tracking-wide">
-            ⚠️ LEXO ME KUJDES PARA SE TË VAZHDOSH
+            {tx.ui_giftPledgeWarnTitle ?? "⚠️ LEXO ME KUJDES PARA SE TË VAZHDOSH"}
           </p>
         </div>
 
         <div className="text-sm text-gray-700 leading-relaxed mb-6 space-y-2">
           <p>
-            Ky seksion është krijuar për njerëz me zemër të mirë që duan të ndihmojnë të tjerët.
+            {tx.ui_giftPledgeIntro1 ??
+              "Ky seksion është krijuar për njerëz me zemër të mirë që duan të ndihmojnë të tjerët."}
           </p>
           <p className="font-medium text-gray-900">
-            Çdo keqpërdorim trajtohet me seriozitetin më të lartë.
+            {tx.ui_giftPledgeIntro2 ?? "Çdo keqpërdorim trajtohet me seriozitetin më të lartë."}
           </p>
         </div>
 
         <div className="space-y-3 mb-6">
-          {PLEDGE_ITEMS.map((text, index) => (
+          {pledgeItems.map((text, index) => (
             <label
-              key={text}
+              key={PLEDGE_ITEM_KEYS[index]}
               className="flex items-start gap-3 cursor-pointer rounded-xl border border-gray-200 p-4 hover:bg-amber-50/40 transition-colors"
             >
               <Checkbox
@@ -82,7 +87,11 @@ export function DhurataGiftPledge({ onAccepted, onBack }: Props) {
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 mb-6 text-center text-sm text-gray-700 leading-relaxed">
-          <p className="font-semibold text-gray-900 mb-1">🔒 Duke klikuar &quot;Vazhdo&quot; ju merrni përgjegjësi të plotë ligjore për vërtetësinë e postimit tuaj.</p>
+          <p className="font-semibold text-gray-900 mb-1">
+            🔒{" "}
+            {tx.ui_giftPledgeLegal ??
+              'Duke klikuar "Vazhdo" ju merrni përgjegjësi të plotë ligjore për vërtetësinë e postimit tuaj.'}
+          </p>
         </div>
 
         <Button
@@ -93,7 +102,7 @@ export function DhurataGiftPledge({ onAccepted, onBack }: Props) {
           onClick={handleContinue}
           data-testid="button-dhurata-pledge-continue"
         >
-          ✅ Kuptova & Jam Dakord — Vazhdo →
+          {tx.ui_giftPledgeContinue ?? "✅ Kuptova & Jam Dakord — Vazhdo →"}
         </Button>
       </div>
     </div>

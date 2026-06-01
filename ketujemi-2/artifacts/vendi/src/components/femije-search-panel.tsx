@@ -207,7 +207,7 @@ export function FemijeSearchPanel({
             <p className="text-sm text-gray-500 mt-1">
               {photoGridRows.length}{" "}
               {(t as { subcategoriesAvail?: string }).subcategoriesAvail ??
-                "nënkategori të disponueshme"}
+                t.subcategoriesAvail}
             </p>
           </div>
           <CategoryPhotoPickerGrid>

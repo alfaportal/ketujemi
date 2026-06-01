@@ -14,50 +14,12 @@ import {
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
-const WELCOME: Record<string, string> = {
-  ks: "Përshëndetje! Pyetni shkurt — do t'ju udhëzoj ku të shkoni në KetuJemi.",
-  al: "Përshëndetje! Pyetni shkurt — do t'ju udhëzoj ku të shkoni në KetuJemi.",
-  mk: "Здраво! Поставете кратко прашање — ќе ви кажам каде на KetuJemi.",
-  me: "Zdravo! Kratko pitanje — reći ću vam gdje na KetuJemi.",
-};
-
-const FALLBACK_BUSY: Record<string, string> = {
-  ks: "Nuk u lidh me serverin. Provoni përsëri.",
-  al: "Nuk u lidh me serverin. Provoni përsëri.",
-  mk: "Нема врска со серверот. Обидете се повторно.",
-  me: "Nema veze sa serverom. Pokušajte ponovo.",
-};
-
-const VOICE_ERROR: Record<string, string> = {
-  ks: "Mikrofoni nuk u aktivizua. Lejoni mikrofonin në shfletues dhe provoni përsëri.",
-  al: "Mikrofoni nuk u aktivizua. Lejoni mikrofonin në shfletues dhe provoni përsëri.",
-  mk: "Микрофонот не се активира. Дозволете пристап и обидете се повторно.",
-  me: "Mikrofon se nije aktivirao. Dozvolite pristup i pokušajte ponovo.",
-};
-
-const VOICE_HTTPS_HINT: Record<string, string> = {
-  ks: "Për zërin (🎤) hapni faqen me HTTPS: https://ketujemi.com",
-  al: "Për zërin (🎤) hapni faqen me HTTPS: https://ketujemi.com",
-  mk: "За глас (🎤) отворете https://ketujemi.com",
-  me: "Za glas (🎤) otvorite https://ketujemi.com",
-};
-
-const VOICE_MOBILE_DESKTOP: Record<string, string> = {
-  ks: "Për funksionin e zërit përdor Chrome në desktop.",
-  al: "Për funksionin e zërit përdor Chrome në desktop.",
-  mk: "За глас користете Chrome на десктоп.",
-  me: "Za glas koristite Chrome na desktopu.",
-};
-
-const VOICE_UNSUPPORTED: Record<string, string> = {
-  ks: "Ky shfletues nuk mbështet zërin. Përdorni Chrome ose Edge në desktop.",
-  al: "Ky shfletues nuk mbështet zërin. Përdorni Chrome ose Edge në desktop.",
-  mk: "Овој прелистувач не поддржува глас. Користете Chrome или Edge на десктоп.",
-  me: "Ovaj pregledač ne podržava glas. Koristite Chrome ili Edge na desktopu.",
-};
-
 export function SupportChatWidget() {
-  const { market } = useMarket();
+  const { market, t } = useMarket();
+  const tx = t as Record<string, string | undefined>;
+  const welcome =
+    tx.ui_supportWelcome ??
+    "Përshëndetje! Pyetni shkurt — do t'ju udhëzoj ku të shkoni në KetuJemi.";
   const { registerTap } = useSecretAdminTap();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -76,7 +38,6 @@ export function SupportChatWidget() {
   const inputRef = useRef(input);
 
   const lang = market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq";
-  const welcome = WELCOME[market.code] ?? WELCOME.ks;
   welcomeRef.current = welcome;
 
   useEffect(() => {
@@ -161,7 +122,7 @@ export function SupportChatWidget() {
             ...prev,
             {
               role: "assistant",
-              content: FALLBACK_BUSY[market.code] ?? FALLBACK_BUSY.ks,
+              content: tx.ui_supportBusy ?? "Nuk u lidh me serverin. Provoni përsëri.",
             },
           ]);
           return;
@@ -172,7 +133,7 @@ export function SupportChatWidget() {
           ...prev,
           {
             role: "assistant",
-            content: FALLBACK_BUSY[market.code] ?? FALLBACK_BUSY.ks,
+            content: tx.ui_supportBusy ?? "Nuk u lidh me serverin. Provoni përsëri.",
           },
         ]);
       } finally {
@@ -200,8 +161,10 @@ export function SupportChatWidget() {
             {
               role: "assistant",
               content: !isSecurePageContext()
-                ? (VOICE_HTTPS_HINT[market.code] ?? VOICE_HTTPS_HINT.ks)
-                : (VOICE_ERROR[market.code] ?? VOICE_ERROR.ks),
+                ? (tx.ui_supportVoiceHttps ??
+                    "Për zërin (🎤) hapni faqen me HTTPS: https://ketujemi.com")
+                : (tx.ui_supportVoiceError ??
+                    "Mikrofoni nuk u aktivizua. Lejoni mikrofonin në shfletues dhe provoni përsëri."),
             },
           ]);
           return;
@@ -210,7 +173,9 @@ export function SupportChatWidget() {
           ...prev,
           {
             role: "assistant",
-            content: VOICE_UNSUPPORTED[market.code] ?? VOICE_UNSUPPORTED.ks,
+            content:
+              tx.ui_supportVoiceUnsupported ??
+              "Ky shfletues nuk mbështet zërin. Përdorni Chrome ose Edge në desktop.",
           },
         ]);
       },
@@ -228,7 +193,9 @@ export function SupportChatWidget() {
         ...prev,
         {
           role: "assistant",
-          content: VOICE_UNSUPPORTED[market.code] ?? VOICE_UNSUPPORTED.ks,
+          content:
+            tx.ui_supportVoiceUnsupported ??
+            "Ky shfletues nuk mbështet zërin. Përdorni Chrome ose Edge në desktop.",
         },
       ]);
       return;
@@ -244,7 +211,8 @@ export function SupportChatWidget() {
         ...prev,
         {
           role: "assistant",
-          content: VOICE_MOBILE_DESKTOP[market.code] ?? VOICE_MOBILE_DESKTOP.ks,
+          content:
+            tx.ui_supportVoiceMobile ?? "Për funksionin e zërit përdor Chrome në desktop.",
         },
       ]);
       return;
@@ -255,7 +223,9 @@ export function SupportChatWidget() {
         ...prev,
         {
           role: "assistant",
-          content: VOICE_UNSUPPORTED[market.code] ?? VOICE_UNSUPPORTED.ks,
+          content:
+            tx.ui_supportVoiceUnsupported ??
+            "Ky shfletues nuk mbështet zërin. Përdorni Chrome ose Edge në desktop.",
         },
       ]);
       return;
@@ -276,7 +246,7 @@ export function SupportChatWidget() {
           style={{ maxHeight: "min(420px, 70vh)" }}
         >
           <div className="flex items-center justify-between px-4 py-3 bg-[#1A56A0] text-white">
-            <span className="font-bold text-sm">💬 Ndihmë</span>
+            <span className="font-bold text-sm">💬 {tx.ui_supportChatTitle ?? "Ndihmë"}</span>
             <button
               type="button"
               className="p-1 rounded-lg hover:bg-white/15 min-h-9 min-w-9 flex items-center justify-center"
@@ -284,7 +254,7 @@ export function SupportChatWidget() {
                 if (listening) stopListening();
                 setOpen(false);
               }}
-              aria-label="Mbyll"
+              aria-label={tx.ui_supportCloseAria ?? "Mbyll"}
             >
               <X className="h-5 w-5" />
             </button>
@@ -305,24 +275,25 @@ export function SupportChatWidget() {
             ))}
             {voiceNeedsHttps ? (
               <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
-                {VOICE_HTTPS_HINT[market.code] ?? VOICE_HTTPS_HINT.ks}
+                {tx.ui_supportVoiceHttps ??
+                  "Për zërin (🎤) hapni faqen me HTTPS: https://ketujemi.com"}
               </p>
             ) : null}
             {showMobileVoiceHint ? (
               <p className="text-xs text-gray-600 bg-gray-100 border border-gray-200 rounded-lg px-2 py-1.5">
-                {VOICE_MOBILE_DESKTOP[market.code] ?? VOICE_MOBILE_DESKTOP.ks}
+                {tx.ui_supportVoiceMobile ?? "Për funksionin e zërit përdor Chrome në desktop."}
               </p>
             ) : null}
             {busy ? (
               <div className="flex items-center gap-2 text-gray-500 text-xs px-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Duke shkruar…
+                {tx.ui_supportTyping ?? "Duke shkruar…"}
               </div>
             ) : null}
             {listening ? (
               <div className="flex items-center gap-2 text-red-600 text-xs px-2 font-medium">
                 <span className="inline-block h-2 w-2 rounded-full bg-red-600 animate-pulse" />
-                Po dëgjoj… flisni tani
+                {tx.ui_supportListening ?? "Po dëgjoj… flisni tani"}
               </div>
             ) : null}
             <div ref={bottomRef} />
@@ -337,7 +308,11 @@ export function SupportChatWidget() {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={listening ? "Po dëgjohet zëri…" : "Shkruani pyetjen…"}
+              placeholder={
+                listening
+                  ? (tx.ui_supportListeningPh ?? "Po dëgjohet zëri…")
+                  : (tx.ui_supportInputPh ?? "Shkruani pyetjen…")
+              }
               className="flex-1 min-h-11 rounded-xl border border-gray-200 px-3 text-base sm:text-sm"
               disabled={busy || listening}
               readOnly={listening}
@@ -354,7 +329,11 @@ export function SupportChatWidget() {
                     ? "bg-red-600 animate-pulse ring-2 ring-red-400 ring-offset-1"
                     : "bg-[#1A56A0] hover:bg-[#164a8c]",
                 )}
-                aria-label={listening ? "Ndalo dhe dërgo" : "Fol me zë"}
+                aria-label={
+                  listening
+                    ? (tx.ui_supportVoiceStopAria ?? "Ndalo dhe dërgo")
+                    : (tx.ui_supportVoiceStartAria ?? "Fol me zë")
+                }
                 aria-pressed={listening}
               >
                 <Mic className={cn("h-4 w-4", listening && "scale-110")} />
@@ -381,7 +360,7 @@ export function SupportChatWidget() {
         data-testid="button-support-chat"
       >
         <MessageCircle className="h-5 w-5" />
-        Ndihmë
+        {tx.ui_supportFab ?? "Ndihmë"}
       </button>
     </>
   );

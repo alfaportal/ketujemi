@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   useMarket,
   FORM_OPTIONS,
+  formOptionsForUiLang,
   defaultListingMarketFromMarket,
   isListingMarketCode,
   locationsForListingMarket,
@@ -195,7 +196,8 @@ export default function NewListing() {
   const { user, loading: authLoading, refresh } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { market, t } = useMarket();
+  const { market, t, uiLang } = useMarket();
+  const tx = t as Record<string, string | undefined>;
   const [listingCountry, setListingCountry] = useState<ListingMarketCode>(() =>
     defaultListingMarketFromMarket(market.code),
   );
@@ -212,13 +214,12 @@ export default function NewListing() {
     }
   });
 
-  const mc = market.code;
-  const fuelOpts         = FORM_OPTIONS.fuel[mc]         ?? FORM_OPTIONS.fuel.ks;
-  const transmissionOpts = FORM_OPTIONS.transmission[mc] ?? FORM_OPTIONS.transmission.ks;
-  const bodyTypeOpts     = FORM_OPTIONS.bodyType[mc]     ?? FORM_OPTIONS.bodyType.ks;
-  const colorOpts        = FORM_OPTIONS.color[mc]        ?? FORM_OPTIONS.color.ks;
-  const techCondOpts     = FORM_OPTIONS.techCondition[mc] ?? FORM_OPTIONS.techCondition.ks;
-  const furnishedOpts    = FORM_OPTIONS.furnished[mc]    ?? FORM_OPTIONS.furnished.ks;
+  const fuelOpts = formOptionsForUiLang("fuel", uiLang);
+  const transmissionOpts = formOptionsForUiLang("transmission", uiLang);
+  const bodyTypeOpts = formOptionsForUiLang("bodyType", uiLang);
+  const colorOpts = formOptionsForUiLang("color", uiLang);
+  const techCondOpts = formOptionsForUiLang("techCondition", uiLang);
+  const furnishedOpts = formOptionsForUiLang("furnished", uiLang);
 
   const parentCats = (allCategories ?? []).filter((c: any) => !c.parent_id);
 
@@ -390,7 +391,7 @@ export default function NewListing() {
           return;
         }
         if (data?.error === "BUSINESS_QUOTA_EXCEEDED") {
-          setPackagesModalMessage("Keni arritur limitin falas. Mbushni portofolin (€0.30 për shpallje).");
+          setPackagesModalMessage(tx.ui_walletTopupLimit ?? "Keni arritur limitin falas. Mbushni portofolin (€0.30 për shpallje).");
           setShowPackagesModal(true);
           return;
         }
@@ -500,7 +501,10 @@ export default function NewListing() {
       const blocked = findKerkojBlockedWord(`${data.title}\n${data.description}`);
       if (blocked) {
         toast({
-          title: `Gjuha e shitjes nuk lejohet në "Kërkoj të Blej" (fjalë e ndaluar: "${blocked}").`,
+          title: (tx.ui_sellLangBlocked ?? 'Gjuha e shitjes nuk lejohet (fjalë e ndaluar: "{word}").').replace(
+            "{word}",
+            blocked,
+          ),
           variant: "destructive",
         });
         return;
@@ -510,7 +514,10 @@ export default function NewListing() {
       const blocked = findDhurataBlockedWord(`${data.title}\n${data.description}`);
       if (blocked) {
         toast({
-          title: `Gjuha e shitjes nuk lejohet në "Dhurata & Falas" (fjalë e ndaluar: "${blocked}").`,
+          title: (tx.ui_sellLangBlocked ?? 'Gjuha e shitjes nuk lejohet (fjalë e ndaluar: "{word}").').replace(
+            "{word}",
+            blocked,
+          ),
           variant: "destructive",
         });
         return;
@@ -606,7 +613,7 @@ export default function NewListing() {
             errData.error === "EXTERNAL_LINK_IN_DESCRIPTION"
           ) {
             toast({
-              title: errData.message ?? "Përmbajtja nuk kaloi kontrollin automatik.",
+              title: errData.message ?? tx.ui_contentModerationFail ?? "Përmbajtja nuk kaloi kontrollin automatik.",
               variant: "destructive",
             });
             return;
@@ -769,7 +776,10 @@ export default function NewListing() {
             <p>
               {freeQuota.allowed
                 ? `Postime falas këtë muaj në këtë kategori: ${freeQuota.monthly_remaining ?? freeQuota.remaining} / ${freeQuota.monthly_posts_limit ?? freeQuota.limit} (riniset çdo muaj)`
-                : `Keni arritur limitin falas. Çdo shpallje shtesë kushton €${freeQuota.business?.listing_price_eur ?? 0.3} nga portofoli.`}
+                : (tx.ui_walletExtraPostCost ?? "Keni arritur limitin falas. Çdo shpallje shtesë kushton €{price} nga portofoli.").replace(
+                    "{price}",
+                    String(freeQuota.business?.listing_price_eur ?? 0.3),
+                  )}
             </p>
             <p className="text-xs font-normal opacity-90">
               Çdo postim qëndron online{" "}
@@ -1293,7 +1303,7 @@ export default function NewListing() {
                         </div>
                       </FormControl>
                       {isDhurataCategory && (
-                        <p className="text-sm text-gray-500">Në këtë kategori çmimi është gjithmonë 0 €.</p>
+                        <p className="text-sm text-gray-500">{tx.ui_giftCategoryPriceNote ?? "Në këtë kategori çmimi është gjithmonë 0 €."}</p>
                       )}
                       <FormMessage />
                     </FormItem>
@@ -1519,9 +1529,9 @@ export default function NewListing() {
                   {createMutation.isPending
                     ? t.posting
                     : isDhurataCategory
-                      ? "🎁 Posto Dhuratën →"
+                      ? (tx.ui_postGiftBtn ?? "🎁 Posto Dhuratën →")
                       : isKerkojCategory
-                        ? "Posto Kërkesën"
+                        ? (tx.ui_postRequestBtn ?? "Posto Kërkesën")
                         : t.submitListing}
                 </Button>
               </div>
