@@ -1,4 +1,5 @@
 import { SiteHeader } from "@/components/site-header";
+import { StaticPageBackLink } from "@/components/static-page-back-link";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +15,7 @@ export function LuxuryStaticShell({ title, tagline, children }: LuxuryStaticShel
     <div className="bg-[#f4f6f8]">
       <SiteHeader />
       <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        <StaticPageBackLink className="mb-3" />
         <header className="mb-6 sm:mb-8">
           <div
             className="h-1 w-12 rounded-full mb-4"

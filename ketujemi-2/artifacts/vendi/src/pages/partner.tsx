@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { useLocation } from "wouter";
 import { SiteHeader } from "@/components/site-header";
+import { StaticPageBackLink } from "@/components/static-page-back-link";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -250,7 +251,8 @@ export default function PartnerPage() {
     return (
       <div className="min-h-screen bg-[#f0f4f9]">
         <SiteHeader />
-        <div className="max-w-lg mx-auto px-4 py-12 sm:py-16">
+        <div className="max-w-lg mx-auto px-4 pt-4 pb-12 sm:py-16">
+          <StaticPageBackLink fallbackPath="/" />
           <div className="text-center mb-8">
             <div
               className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full text-white"
@@ -282,9 +284,26 @@ export default function PartnerPage() {
     );
   }
 
+  const handlePartnerBack = () => {
+    if (phase === "register") {
+      setPhase("landing");
+      window.history.replaceState({}, "", "/partner");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    setLocation("/");
+  };
+
   return (
     <div className="min-h-screen bg-[#f0f4f9]">
       <SiteHeader />
+      <div className="max-w-4xl mx-auto px-4 pt-3 sm:pt-4">
+        <StaticPageBackLink onBack={handlePartnerBack} />
+      </div>
 
       {phase === "landing" ? (
         <section
