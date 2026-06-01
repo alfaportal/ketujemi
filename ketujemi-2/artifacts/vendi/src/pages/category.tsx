@@ -117,12 +117,11 @@ import {
 } from "@/lib/lokale-zyre-search-helpers";
 import { TelefonaSearchPanel } from "@/components/telefona-search-panel";
 import {
+  TEL_BRAND_GROUP_LABEL_KEY,
   TEL_BRAND_GROUP_KEYS,
   TEL_DEVICE_KEYS,
   TEL_DEVICE_LABEL_KEY,
-  TEL_BRAND_GROUP_SLUG,
   getTelefonaHubChildCategoryIds,
-  resolveTelefonaCategoryIdBySlug,
   type TelBrandGroupKey,
   type TelDeviceKey,
 } from "@/lib/telefona-search-helpers";
@@ -1490,6 +1489,9 @@ export default function CategoryPage() {
     if (isTelefonaVirtualTypePage && activeTelefonaTypeKey) {
       crumbItems.push({ label: t[TEL_DEVICE_LABEL_KEY[activeTelefonaTypeKey]] });
     }
+    if (isTelefonaVirtualBrandPage && telBrandFromSearch) {
+      crumbItems.push({ label: t[TEL_BRAND_GROUP_LABEL_KEY[telBrandFromSearch]] });
+    }
   }
 
   const hubResultsId = isVeturaHub
@@ -1994,26 +1996,9 @@ export default function CategoryPage() {
                 setLocation(`${categoryPath(categoryId)}?device=${encodeURIComponent(deviceKey)}`)
               }
               onNavigateToBrand={(brandGroupKey: TelBrandGroupKey) => {
-                const slug = TEL_BRAND_GROUP_SLUG[brandGroupKey];
-                if (!slug) {
-                  setLocation(
-                    `${categoryPath(categoryId)}?brand=${encodeURIComponent(brandGroupKey)}`,
-                  );
-                  return;
-                }
-                const brandId = resolveTelefonaCategoryIdBySlug(
-                  allCategories as any,
-                  categoryId,
-                  slug,
+                setLocation(
+                  `${categoryPath(categoryId)}?brand=${encodeURIComponent(brandGroupKey)}`,
                 );
-                if (brandId) {
-                  navigateToCategory(
-                    setLocation,
-                    brandId,
-                    categoryId,
-                    allCategories as CategoryRef[],
-                  );
-                }
               }}
             />
             {isParentCategoryHub ? (
@@ -2039,27 +2024,10 @@ export default function CategoryPage() {
               resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
             }
             onNavigateToBrand={(brandGroupKey: TelBrandGroupKey) => {
-              const slug = TEL_BRAND_GROUP_SLUG[brandGroupKey];
-              if (!slug) {
-                setLocation(
-                  `${categoryPath(categoryId)}?brand=${encodeURIComponent(brandGroupKey)}`,
-                );
-                return;
-              }
               const hub = isTelefonaTypePage && parentCategory ? (parentCategory as any).id : categoryId;
-              const brandId = resolveTelefonaCategoryIdBySlug(
-                allCategories as any,
-                hub,
-                slug,
+              setLocation(
+                `${categoryPath(hub)}?brand=${encodeURIComponent(brandGroupKey)}`,
               );
-              if (brandId) {
-                navigateToCategory(
-                  setLocation,
-                  brandId,
-                  categoryId,
-                  allCategories as CategoryRef[],
-                );
-              }
             }}
           />
         ) : null}
