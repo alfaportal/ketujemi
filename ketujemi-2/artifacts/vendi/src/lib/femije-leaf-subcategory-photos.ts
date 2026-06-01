@@ -7,13 +7,13 @@ function pexels(id: number, w = 400): string {
 const p = (id: number) => pexels(id);
 
 const KARROCA: Record<string, string> = {
-  "femije-leaf-karroca-klasike": p(8924170),
-  "femije-leaf-karroca-cader": p(15552523),
-  "femije-leaf-karroca-binjake": p(31668247),
-  "femije-leaf-sisteme-udhetimi": p(6182086),
+  "femije-leaf-karroca-klasike": p(4965348),
+  "femije-leaf-karroca-cader": p(17693507),
+  "femije-leaf-karroca-binjake": p(12797847),
+  "femije-leaf-sisteme-udhetimi": p(7282720),
   "femije-leaf-karrige-makine-grupe": p(6182086),
   "femije-leaf-mbajtese-bebe": p(7282912),
-  "femije-leaf-aksesore-karroce": p(15552523),
+  "femije-leaf-aksesore-karroce": p(11874485),
 };
 
 const KREVAT: Record<string, string> = {

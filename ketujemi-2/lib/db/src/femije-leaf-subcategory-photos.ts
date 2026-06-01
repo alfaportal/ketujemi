@@ -4,15 +4,15 @@ import { pexelsPhoto } from "./category-pexels-urls.js";
 
 const p = (id: number) => pexelsPhoto(id, 400);
 
-/** Karroca & Transport */
+/** Karroca & Transport — verified stroller / car-seat subjects only */
 const KARROCA: Record<string, string> = {
-  "femije-leaf-karroca-klasike": p(8924170),
-  "femije-leaf-karroca-cader": p(15552523),
-  "femije-leaf-karroca-binjake": p(31668247),
-  "femije-leaf-sisteme-udhetimi": p(6182086),
+  "femije-leaf-karroca-klasike": p(4965348),
+  "femije-leaf-karroca-cader": p(17693507),
+  "femije-leaf-karroca-binjake": p(12797847),
+  "femije-leaf-sisteme-udhetimi": p(7282720),
   "femije-leaf-karrige-makine-grupe": p(6182086),
   "femije-leaf-mbajtese-bebe": p(7282912),
-  "femije-leaf-aksesore-karroce": p(15552523),
+  "femije-leaf-aksesore-karroce": p(11874485),
 };
 
 /** Krevat & Dhomë */
