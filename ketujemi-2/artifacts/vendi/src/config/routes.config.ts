@@ -177,6 +177,13 @@ export const APP_ROUTES: AppRouteDefinition[] = [
     marketPrefix: null,
     fallbackPath: HOME_FALLBACK,
   },
+  {
+    id: "vip-packages",
+    path: "/paketa-vip",
+    requiresAuth: false,
+    marketPrefix: "sq",
+    fallbackPath: HOME_FALLBACK,
+  },
   ...staticAliases("advertise", [
     { path: "/reklamoni", marketPrefix: "sq" },
     { path: "/reklamiraj", marketPrefix: "mk" },

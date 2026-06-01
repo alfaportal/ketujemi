@@ -45,6 +45,7 @@ export const INFO_STATIC_PATHS = new Set([
   "/otvori-prodavnica",
   "/otvori-prodavnicu",
   "/vip",
+  "/paketa-vip",
   "/reklamoni",
   "/reklamiraj",
   "/partner",
