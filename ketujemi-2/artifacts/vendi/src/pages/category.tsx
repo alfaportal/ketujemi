@@ -140,6 +140,10 @@ import { isDhurataFalasSlug, isKerkojTeBlejSlug } from "@/lib/special-listing-ca
 import { TvElektronikeSearchPanel } from "@/components/tv-elektronike-search-panel";
 import { KompjuterLaptopHubPanel } from "@/components/kompjuter-laptop-hub-panel";
 import {
+  KOMPJUTER_TYPE_PHOTOS,
+  isKompjuterHubTypeName,
+} from "@/lib/kompjuter-laptop-search-helpers";
+import {
   getTvElektronikeLeafCategoryIds,
 } from "@/lib/tv-elektronike-search-helpers";
 
@@ -900,6 +904,19 @@ export default function CategoryPage() {
     (currentCategory as any).slug === KOMPJUTERE_LAPTOP_HUB_SLUG &&
     !(currentCategory as any).parent_id;
 
+  const isKompjuterTypePage =
+    parentCategory != null &&
+    (parentCategory as { slug?: string }).slug === KOMPJUTERE_LAPTOP_HUB_SLUG &&
+    isKompjuterHubTypeName((currentCategory as { name?: string })?.name ?? "");
+
+  const kompjuterHubCategoryId = useMemo(() => {
+    if (isKompjuterLaptopHub) return categoryId;
+    if (isKompjuterTypePage && parentCategory) {
+      return (parentCategory as { id: number }).id;
+    }
+    return categoryId;
+  }, [isKompjuterLaptopHub, isKompjuterTypePage, categoryId, parentCategory]);
+
   const isParentCategoryHub =
     isVeturaHub ||
     isKamioneFurgoneHub ||
@@ -1140,6 +1157,9 @@ export default function CategoryPage() {
     if (isKompjuterLaptopHub) {
       return kompjuterListParams ?? { category_id: categoryId, page: 1, limit: 20 };
     }
+    if (isKompjuterTypePage) {
+      return kompjuterListParams ?? { category_id: categoryId, page: 1, limit: 20 };
+    }
     return { category_id: categoryId, limit: 20 };
   }, [
     isVeturaHub,
@@ -1201,6 +1221,7 @@ export default function CategoryPage() {
     tvElektronikeLeafCsv,
     tvElektronikeListParams,
     isKompjuterLaptopHub,
+    isKompjuterTypePage,
     kompjuterListParams,
     categoryId,
   ]);
@@ -1350,6 +1371,7 @@ export default function CategoryPage() {
     (TELEFONA_BRAND_ORDER as readonly string[]).includes(currentCategory?.name ?? "");
   const useLaptopEmptyListingIcon =
     isKompjuterLaptopHub ||
+    isKompjuterTypePage ||
     (KOMPJUTER_TYPE_ORDER as readonly string[]).includes(currentCategory?.name ?? "") ||
     (KOMPJUTER_BRAND_ORDER as readonly string[]).includes(currentCategory?.name ?? "");
 
@@ -1361,12 +1383,17 @@ export default function CategoryPage() {
         ? AUTO_PJESE_HERO_PHOTO
         : isLokaleZyreHub
           ? LOKALE_ZYRE_HERO_PHOTO
-          : isFemijeLeafPage
-            ? femijeSubcategoryPhoto(
-                currentSlug,
-                (currentCategory as { image_url?: string | null })?.image_url,
-              )
-            : isFemijeGroupPage
+            : isKompjuterTypePage &&
+                isKompjuterHubTypeName((currentCategory as { name?: string })?.name ?? "")
+              ? KOMPJUTER_TYPE_PHOTOS[
+                  (currentCategory as { name: keyof typeof KOMPJUTER_TYPE_PHOTOS }).name
+                ]
+              : isFemijeLeafPage
+              ? femijeSubcategoryPhoto(
+                  currentSlug,
+                  (currentCategory as { image_url?: string | null })?.image_url,
+                )
+              : isFemijeGroupPage
               ? femijeSubcategoryPhoto(
                   currentSlug,
                   (currentCategory as { image_url?: string | null })?.image_url,
@@ -1433,7 +1460,9 @@ export default function CategoryPage() {
                                   ? "kafshet-results"
                                   : isTvElektronikeHub
                                     ? "tv-elektronike-results"
-                                    : undefined;
+                                    : isKompjuterLaptopHub || isKompjuterTypePage
+                                      ? "kompjuter-results"
+                                      : undefined;
 
   const renderListingsSection = () => (
     <div ref={resultsAnchorRef} id={hubResultsId} className="scroll-mt-28">
@@ -1919,6 +1948,27 @@ export default function CategoryPage() {
             onScrollToResults={() =>
               resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
             }
+            onNavigateToType={(typeId) =>
+              navigateToCategory(
+                setLocation,
+                typeId,
+                categoryId,
+                allCategories as CategoryRef[],
+              )
+            }
+          />
+        ) : null}
+
+        {isKompjuterTypePage ? (
+          <KompjuterLaptopHubPanel
+            variant="type"
+            hubId={kompjuterHubCategoryId}
+            fixedTypeId={categoryId}
+            types={orderedKompjuterTypes}
+            onListingParamsChange={setKompjuterListParams}
+            onScrollToResults={() =>
+              resultsAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }
           />
         ) : null}
 
@@ -2025,6 +2075,7 @@ export default function CategoryPage() {
           (isSportDeviceLeafPage ||
             (isDrillDownTypePage && !!drillDownTypeKey) ||
             isFemijeLeafPage ||
+            isKompjuterTypePage ||
             isDhurataFalasHub ||
             isKerkojTeBlejHub ||
             (!isFemijeHub &&

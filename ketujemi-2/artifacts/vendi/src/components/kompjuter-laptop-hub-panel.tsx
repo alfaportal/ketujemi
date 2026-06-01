@@ -114,6 +114,10 @@ type Props = {
   types: HubTypeRow[];
   onListingParamsChange: (params: GetListingsParams) => void;
   onScrollToResults?: () => void;
+  /** Hub: type cards navigate away. Type: fixed category (e.g. Tabletë) with sub-filters. */
+  variant?: "hub" | "type";
+  fixedTypeId?: number;
+  onNavigateToType?: (typeCategoryId: number) => void;
 };
 
 export function KompjuterLaptopHubPanel({
@@ -121,11 +125,17 @@ export function KompjuterLaptopHubPanel({
   types,
   onListingParamsChange,
   onScrollToResults,
+  variant = "hub",
+  fixedTypeId,
+  onNavigateToType,
 }: Props) {
+  const isTypePage = variant === "type";
   const { t } = useMarket();
   const [brand, setBrand] = useState<EpBrandKey | "">("");
   const [model, setModel] = useState<EpBrandModelKey | "">("");
-  const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
+  const [selectedTypeId, setSelectedTypeId] = useState<number | null>(
+    isTypePage && fixedTypeId != null ? fixedTypeId : null,
+  );
   const [typeSub, setTypeSub] = useState<KompjuterSubItemKey | null>(null);
   const [activeFilters, setActiveFilters] = useState<Set<KompjuterFilterKey>>(() => new Set());
   const [hasWarranty, setHasWarranty] = useState(false);
@@ -157,7 +167,19 @@ export function KompjuterLaptopHubPanel({
     });
   };
 
+  useEffect(() => {
+    if (isTypePage && fixedTypeId != null) {
+      setSelectedTypeId(fixedTypeId);
+      setTypeSub(null);
+      setActiveFilters(new Set());
+    }
+  }, [isTypePage, fixedTypeId]);
+
   const selectType = (row: HubTypeRow) => {
+    if (!isTypePage && onNavigateToType) {
+      onNavigateToType(row.id);
+      return;
+    }
     if (selectedTypeId === row.id) {
       setSelectedTypeId(null);
       setTypeSub(null);
@@ -250,9 +272,12 @@ export function KompjuterLaptopHubPanel({
     });
   }, [filterGroups]);
 
+  const showTypePicker = !isTypePage && types.length > 0;
+  const showFilters = isTypePage || selectedTypeId != null;
+
   return (
     <div className="mb-8 space-y-8">
-      {types.length > 0 && (
+      {showTypePicker ? (
         <div className="space-y-3">
           <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide">
             {t.cat_sectionTypes}
@@ -261,7 +286,7 @@ export function KompjuterLaptopHubPanel({
             {types.map((row) => (
               <CategoryPhotoPickerCard
                 key={row.id}
-                selected={selectedTypeId === row.id}
+                selected={false}
                 onClick={() => selectType(row)}
                 imageSrc={typePhoto(row.name)}
                 label={row.name}
@@ -269,7 +294,7 @@ export function KompjuterLaptopHubPanel({
             ))}
           </CategoryPhotoPickerRow>
         </div>
-      )}
+      ) : null}
 
       {selectedTypeName && subItems.length > 0 ? (
         <div ref={subSectionRef} className="space-y-3 scroll-mt-24">
@@ -290,6 +315,7 @@ export function KompjuterLaptopHubPanel({
         </div>
       ) : null}
 
+      {showFilters ? (
       <section className="space-y-5 rounded-xl border border-blue-100 bg-blue-50/30 p-4">
         {selectedTypeName && filterGroups.length > 0
           ? filterGroups.map((group) => (
@@ -485,7 +511,9 @@ export function KompjuterLaptopHubPanel({
           </label>
         </FilterSection>
       </section>
+      ) : null}
 
+      {showFilters ? (
       <Button
         type="button"
         onClick={handleSearch}
@@ -494,6 +522,7 @@ export function KompjuterLaptopHubPanel({
         <Search size={18} className="mr-2 shrink-0" aria-hidden />
         {t.ep_search_btn_laptop}
       </Button>
+      ) : null}
 
     </div>
   );
