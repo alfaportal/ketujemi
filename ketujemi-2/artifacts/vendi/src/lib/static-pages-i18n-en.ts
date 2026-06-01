@@ -95,65 +95,92 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
   },
   terms: {
     title: "Terms and conditions",
-    tagline: "By using KetuJemi.com you accept the following terms of the platform's legal operator.",
+    tagline:
+      "By using KetuJemi.com you accept the following terms and conditions of the platform's legal operator.",
     sections: [
       {
         title: "Legal entity and platform",
         paragraphs: [
-          "KetuJemi.com (Buy & Sell) is operated by REVOLUTION INVEST Sh.p.k., based in Ferizaj, Republic of Kosovo.",
-          "Payments for platform services (wallet, VIP/TOP, advertising, etc.) are made on behalf of this entity. KetuJemi.com is a trade name; the legal relationship is with REVOLUTION INVEST Sh.p.k.",
+          "KetuJemi.com (Buy & Sell) is operated and offered by REVOLUTION INVEST Sh.p.k., based in Ferizaj, Republic of Kosovo.",
+          "Payments for platform services (wallet, VIP/TOP packages, advertising, etc.) are made on behalf of this entity. KetuJemi.com is a trade name; the legal relationship with users is with REVOLUTION INVEST Sh.p.k.",
         ],
         bulletsIntro: "Official operator details:",
         bullets: [
-          "Full name: REVOLUTION INVEST Sh.p.k.",
+          "Full legal name: REVOLUTION INVEST Sh.p.k.",
           "NRB (business registration number): 811314567",
           "Registered office: Ferizaj, Republic of Kosovo",
-          "Email: revolutioninvest05@gmail.com",
+          "Email: revolutionsinvest05@gmail.com",
           "Phone: +383 43 555 294",
-          "Web: www.ketujemi.com",
+          "Website: www.ketujemi.com",
         ],
       },
       {
         title: "Role of the platform",
         paragraphs: [
-          "KetuJemi.com is only an intermediary space. REVOLUTION INVEST Sh.p.k. is not a party to sales contracts between users.",
-          "The user bears full legal responsibility for every listing they publish.",
+          "KetuJemi.com is only an intermediary space between buyers and sellers. REVOLUTION INVEST Sh.p.k. is not a party to sales contracts between users.",
+          "The user bears full legal responsibility for the accuracy and legality of every listing they publish.",
         ],
       },
       {
         title: "Limited liability for goods and services",
         paragraphs: [
-          "KetuJemi.com does not buy, sell or own the products in listings. Every transaction (price, payment, delivery, warranty) is agreed directly between buyer and seller.",
-          "We do not guarantee the quality, condition, legality or availability of goods or services posted by other users.",
-          "We are not liable for direct or indirect damage from use of the platform, disputes between parties, off-platform payments or third-party actions.",
-          "Our maximum liability, where the law allows, is limited to amounts paid for platform services (packages, VIP, TOP) in the last 12 months — not the value of goods sold between users.",
+          "KetuJemi.com does not buy, sell or own the products listed in ads. Every transaction (price, payment, delivery, warranty) is agreed directly between buyer and seller.",
+          "We do not guarantee the quality, condition, legality or availability of any goods or services advertised by other users.",
+          "We are not liable for direct or indirect damage arising from use of the platform, disputes between parties, off-platform payments, or third-party actions.",
+          "Our maximum liability, where the law allows, is limited to amounts paid for platform services (e.g. packages, VIP, TOP) in the last 12 months — not the value of goods sold between users.",
         ],
       },
       {
         title: "Refunds and wallet policy",
         paragraphs: [
-          "Sredstva uplaćena u vaš novčanik na KetuJemi.com koriste se za troškove platforme (npr. dodatni listingi) i ne vraćaju se u gotovini nakon što su zadužena na račun.",
-          "Condition novčanika ne prenosi se na drugi račun i ne kompenzuje transakcije između kupaca i prodavaca.",
-          "Plaćanja za VIP/TOP, reklame ili druge usluge platforme su, Yes pravilu, nepovratna, osim kada primjenjivi zakon zahtijeva drugačije ili kada mi pisano potvrdimo verifikovanu tehničku grešku sa naše strane.",
+          "Funds credited to your KetuJemi.com wallet are used for platform fees (e.g. additional listings) and are not refunded in cash once credited to the account.",
+          "Wallet balance cannot be transferred to another account and does not compensate for transactions between buyers and sellers.",
+          "Payments for VIP/TOP packages, advertising or other platform services are, as a rule, non-refundable, except where applicable law requires otherwise or we confirm in writing a verified technical error on our side.",
         ],
         bullets: [
-          "Requesti za povrat sredstava iz novčanika se odbijaju, osim kada to zakon zahtijeva.",
-          "Za sporove oko kupovine među korisnicima kontaktirajte drugu stranu; mi posredujemo samo kroz moderaciju sadržaja.",
-        ],
-      },
-      {
-        title: "Nalog i objavljivanje",
-        bullets: [
-          "Potreban je verifikovan nalog (email i/ili phone, prema aktuelnim pravilima) za objavljivanje",
-          "Vi ste odgovorni za sigurnost naloga",
-          "Yesštujte limite i pravila categora",
+          "Requests to refund wallet funds are declined except where legally required.",
+          "For disputes about a purchase between users, contact the other party; we can only help through content moderation.",
         ],
       },
       {
-        title: "Sadržaj",
+        title: "Account and posting",
         bullets: [
-          "Ne objavljujte materijal koji krši autorska prava ili zakon",
-          "Platforma može ukloniti listinge koji krše pravila",
+          "You need a verified account (email and/or phone, per current rules) to post listings",
+          "You are responsible for keeping your account credentials secure",
+          "Respect posting limits and category rules",
+          "Accounts cannot be transferred to another person",
+        ],
+      },
+      {
+        title: "Content",
+        bullets: [
+          "Do not post material that infringes copyright or breaks the law",
+          "The platform may remove or suspend listings that break the rules without prior notice",
+          "By posting, you grant KetuJemi.com the right to display your content on the platform",
+        ],
+      },
+      {
+        title: "Platform intellectual property",
+        paragraphs: [
+          "The KetuJemi.com logo, design, code and structure are the exclusive property of REVOLUTION INVEST Sh.p.k. Copying, reproduction or use without written permission is prohibited.",
+        ],
+      },
+      {
+        title: "Applicable law and disputes",
+        paragraphs: [
+          "These terms are governed by the laws of the Republic of Kosovo. Any dispute arising from use of the platform shall be resolved by the competent courts of Ferizaj, Republic of Kosovo. The Albanian-language version is the official and binding version in case of conflict with translations in other languages.",
+        ],
+      },
+      {
+        title: "Service interruption",
+        paragraphs: [
+          "REVOLUTION INVEST Sh.p.k. reserves the right to interrupt, modify or suspend the platform or any part of it at any time, with or without prior notice, without legal liability to users.",
+        ],
+      },
+      {
+        title: "Force majeure",
+        paragraphs: [
+          "We are not liable for interruptions or damage caused by events beyond our reasonable control, including cyber attacks, infrastructure outages, natural disasters or government decisions.",
         ],
       },
       {
@@ -161,16 +188,16 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
         paragraphs: ["For legal questions, platform services, reports or support:"],
         bullets: [
           "REVOLUTION INVEST Sh.p.k., Ferizaj — NRB 811314567",
-          "Email kompanije: revolutioninvest05@gmail.com · Tel: +383 43 555 294",
-          "Platforma: info@ketujemi.com · support@ketujemi.com",
-          "Formular: www.ketujemi.com/kontakt",
+          "Company email: revolutionsinvest05@gmail.com · Tel: +383 43 555 294",
+          "Platform: info@ketujemi.com · support@ketujemi.com",
+          "Form: www.ketujemi.com/kontakt",
           "Working hours: Monday – Friday, 09:00 – 17:00",
         ],
       },
       {
-        title: "Izmjene",
+        title: "Changes",
         paragraphs: [
-          "Terms se mogu ažurirati; aktuelna verzija je na ovoj stranici. Nastavak korišćenja nakon izmjena smatra se prihvatanjem.",
+          "These terms may be updated; the current version is always published on this page. Continued use after changes is considered acceptance.",
         ],
       },
     ],
@@ -182,47 +209,53 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
       {
         title: "What we collect",
         bullets: [
-          "Ime i email (nalog i komunikacija)",
-          "Phone (SMS verification)",
-          "IP adresa (sigurnost i sprečavanje prevara)",
-        ],
-      },
-      {
-        title: "Why we use them",
-        bullets: [
-          "Prijava i podrška korisnicima",
-          "Sprečavanje spama i zloupotrebe",
-          "Poboljšanje usluge (bez prodaje podataka)",
-        ],
-      },
-      {
-        title: "Storage and your rights",
-        paragraphs: [
-          "Data is encrypted. We do not sell it to third parties for marketing.",
-          "You may request correction or deletion at support@ketujemi.com.",
+          "Name and email (account and communication)",
+          "Phone number (SMS verification — required before your first listing)",
+          "IP address (security and fraud prevention)",
+          "Listing data you post (text, photos, price, category)",
+          "Session data and technical cookies (see Cookies section below)",
         ],
       },
       {
         title: "Sign in with Google or Facebook",
         paragraphs: [
-          "If you sign in with Google or Facebook, we only receive your name and email from them — nothing else. We do not have access to your social account.",
+          "If you choose to sign in with Google or Facebook, we only receive your name and email address from those services — nothing else. We do not have access to your posts, contacts, messages or any other data on your social account. We use this only to identify you on the platform.",
+        ],
+      },
+      {
+        title: "Why we use them",
+        bullets: [
+          "Authentication and user support",
+          "Spam and abuse prevention",
+          "Service improvement (aggregate statistics, no sale of personal data)",
+          "Phone verification via SMS (Vonage)",
+          "Storage of listing photos (Cloudinary — international servers)",
         ],
       },
       {
         title: "Cookies",
         paragraphs: [
-          "We use technical cookies for your session. We do not use advertising cookies.",
+          "We use technical cookies to keep your session active (e.g. stay signed in). We do not use advertising cookies and do not share data with ad platforms. You can disable cookies in your browser, but this may affect how the platform works.",
         ],
       },
       {
-        title: "Listing data",
+        title: "Storage and your rights",
         paragraphs: [
-          "When you delete a listing, it is removed from the public site immediately. Listing text and metadata may remain in secure backups for up to 30 days, then deleted. Photos are removed from storage when the listing is deleted.",
+          "Data is stored encrypted. We do not sell it to third parties for marketing. Photos and listing data may be kept for up to 30 days after deletion for backup purposes, then permanently deleted. Inactive accounts for more than 24 months may be deleted after email notice.",
+          "You may request correction or deletion by contacting support@ketujemi.com.",
+        ],
+      },
+      {
+        title: "International data transfers",
+        paragraphs: [
+          "Some services we use (Cloudinary for photos, Vonage for SMS) have servers outside Kosovo. Your data may be transferred and stored abroad, always in line with international security standards.",
         ],
       },
       {
         title: "Minimum age",
-        paragraphs: ["The platform is for people aged 16 and over."],
+        paragraphs: [
+          "The platform is for people aged 16 and over. If you are under this age, you may not create an account.",
+        ],
       },
     ],
   },
@@ -231,300 +264,338 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
     tagline: "How we use cookies on KetuJemi.com.",
     sections: [
       {
-        title: "Vrste kolačića",
-        bullets: [
-          "Neophodni: prijava i sigurnost sesije",
-          "Funkcionalni: preference (tržište / jezik)",
-          "Analitički: **Google Analytics 4** — posjećene stranice, posjetioci, približna location; anonimizirana IP",
+        title: "What are cookies",
+        paragraphs: [
+          "Cookies are small text files stored on your device when you visit a website. We use them to ensure the platform works correctly and to improve your experience.",
         ],
       },
       {
-        title: "Vaša kontrola",
+        title: "Types of cookies we use",
+        bullets: [
+          "Essential — required for basic operation: sign-in, session security, navigation. These cannot be disabled.",
+          "Functional — save your preferences such as selected market (Kosovo / Albania / etc.) and language. Without them you would need to choose each time.",
+          "Analytics — Google Analytics 4: we collect anonymous data such as pages visited, visitor counts and approximate location (country/city). IP addresses are anonymised — we do not identify individuals.",
+        ],
+      },
+      {
+        title: "What we do NOT do with cookies",
+        bullets: [
+          "We do not use advertising or third-party tracking cookies",
+          "We do not share cookie data with advertising companies",
+          "We do not build advertising profiles based on your behaviour",
+        ],
+      },
+      {
+        title: "Your control",
         paragraphs: [
-          "Možete ih isključiti u viewsču. Neke funkcije (npr. ostajanje prijavljeni) možda neće raditi bez njih.",
+          'You can turn off or delete cookies in your browser settings at any time. Some features (such as staying signed in) may not work without essential cookies. For browser-specific help: Chrome, Firefox, Safari, Edge — see "Settings → Privacy".',
+        ],
+      },
+      {
+        title: "Changes",
+        paragraphs: [
+          "This policy may be updated. The current version is always published on this page.",
         ],
       },
     ],
   },
   openShop: {
-    title: "Otvori svoju prodavnicu",
-    tagline: "Kreiraj biznis profile na KetuJemi.com. Register firmu, dodaj logo i prodaji na 11 tržišta.",
-    ctaLabel: "Yesčni odmah",
+    title: "Open your shop",
+    tagline:
+      "Create your business profile on KetuJemi.com. Register your company, add your logo and sell to thousands of customers across 11 markets.",
+    ctaLabel: "Start now",
   },
   vipPackages: {
-    title: "Biznis i VIP paketi",
-    tagline: "Select paket:",
+    title: "Business & VIP packages",
+    tagline: "Choose the package that fits your business:",
     bullets: [
-      "Standard prodavnica (€30/mjesec): Neograničeni listingi, javni profile, podrška 24/7.",
-      "VIP Partner (€50/mjesec): All iz Standard + logo na Yesčetnoj, VIP bedž i statistika.",
+      "Standard shop (€30/month): Unlimited listings, public business profile, 24/7 support.",
+      "VIP Partner (€50/month): Everything in Standard + logo on the homepage, VIP badge on listings and logo view statistics.",
     ],
-    ctaLabel: "Select paket",
+    ctaLabel: "Choose your package",
   },
   advertise: {
-    title: "Reklamiraj na KetuJemi.com",
-    tagline: "Banner, sponzorisani listingi i prilagođeni paketi za velike biznise.",
+    title: "Advertise on KetuJemi.com",
+    tagline: "Banner, sponsored listings and custom packages for larger businesses.",
     contactLabel: "Contact:",
     contactEmail: "info@ketujemi.com",
   },
   partnership: {
-    title: "Partnerstvo",
-    tagline: "Strateško partnerstvo za rast na 11 tržišta.",
+    title: "Partnership",
+    tagline: "Strategic partnerships for growth across 11 markets.",
     contactLabel: "Contact:",
     contactEmail: "support@ketujemi.com",
   },
   businessRules: {
-    title: "Rules za biznise",
+    title: "Business rules",
     subtitle: "KetuJemi.com",
-    tagline: "Listings za registrovane biznise",
-    sanctionsTableHeaders: { violation: "Kršenje", consequence: "Mjera" },
+    tagline: "Listings for registered businesses",
+    sanctionsTableHeaders: { violation: "Violation", consequence: "Action" },
     sections: [
       {
-        title: "Registracija i verification",
+        title: "Registration & verification",
         bullets: [
-          "Biznis nalog je odvojen od privatnog naloga.",
-          "Za prelazak na biznis: verifikovan email + SMS phone.",
+          "Business accounts are separate from private accounts.",
+          "To switch to business: verified email + SMS-verified phone.",
         ],
       },
       {
-        title: "Šta biznisi mogu objavljivati",
-        bulletsIntro: "Dozvoljen je samo specifičan listing za proizvod ili uslugu:",
+        title: "What businesses may post",
+        bulletsIntro: "Only specific listings for a product or service are allowed:",
         bullets: [
-          "Jasan proizvod ili usluga (ne opšta reklama)",
-          "Stvarna price u eurima (€), veća od 0",
-          "Aktuelne fotografije (ne stock / internet)",
-          "Dovoljno detaljan opis",
+          "Clear product or service (not general advertising)",
+          "Real price in euros (€), greater than 0",
+          "Current product photos (not stock / internet images)",
+          "Sufficiently detailed description",
         ],
       },
       {
-        title: "Šta se automatski blokira",
+        title: "What is blocked automatically",
         bullets: [
-          "Opšte reklame („kontaktirajte nas“, „zvanična page“, itd.)",
-          "Price 0, „Yes dogovoru“ ili „kontaktirajte nas“",
-          "Stock fotografije (pexels, unsplash, itd.)",
-          "Prekratak ili nespecifičan naslov",
-          "Isti naslov dva puta (duplikat)",
+          'General ads ("contact us", "official page", etc.)',
+          'Price 0, "by agreement" or "contact us"',
+          "Stock photos (pexels, unsplash, etc.)",
+          "Title too short or not specific",
+          "Same title twice (duplicate)",
         ],
       },
       {
-        title: "Limiti objavljivanja",
+        title: "Posting limits",
         bullets: [
-          "Standardni biznis: 10 besplatnih listings Yes categori + verification",
-          "Nakon 10 listings u istoj categori: €0.30/listing iz novčanika",
-          "VIP Biznis ☆: neograničeni listingi za €50/mjesec",
-          "Kvota se provjerava automatski na vašem nalogu",
+          "Standard business: 10 free listings per category + verification",
+          "After 10 listings in the same category: €0.30/listing from wallet",
+          "VIP Business ☆: unlimited listings for €50/month",
+          "Quota is checked automatically on your account",
         ],
       },
       {
-        title: "Komunikacija sa kupcima",
+        title: "Communication with buyers",
         bullets: [
-          "Kupci moraju dobiti odgovor preko platforme.",
-          "3 žalbe za neodgovor → upozorenje emailom",
-          "5 žalbi za neodgovor → suspenzija 30 dana",
+          "Buyers must receive a reply through the platform.",
+          "3 complaints for no reply → warning by email",
+          "5 complaints for no reply → 30-day suspension",
         ],
       },
       {
-        title: "Posljedice kršenja",
+        title: "Consequences of violations",
         table: [
-          { label: "1", value: "Email upozorenje" },
-          { label: "2", value: "Brisanje oglasa" },
-          { label: "3", value: "Suspenzija 30 dana" },
-          { label: "4+", value: "Trajno blokiranje" },
+          { label: "1", value: "Warning email" },
+          { label: "2", value: "Listing removed" },
+          { label: "3", value: "30-day suspension" },
+          { label: "4+", value: "Permanent ban" },
         ],
       },
       {
-        title: "Privatni nalozi",
+        title: "Private accounts",
         paragraphs: [
-          "Privatni korisnici imaju drugačija pravila (10 besplatnih listings Yes categori, itd.). Pogledajte Uslove korišćenja u footeru.",
+          "Private users have different rules (10 free listings per category, etc.). See Terms of use in the footer.",
         ],
       },
     ],
   },
   contact: {
     title: "Contact us",
-    tagline: "Tu smo za svako pitanje, prijedlog ili tehničku podršku. Odgovorićemo vam u roku od 24 sata.",
+    tagline:
+      "We are here to help with any question, suggestion or technical support. Our team will reply within 24 hours.",
     contactSectionTitle: "Contact",
-    officialEmailLabel: "Zvanični email:",
-    technicalSupportLabel: "Tehnička podrška:",
-    hoursLabel: "Radno vrijeme:",
-    hoursValue: "Ponedjeljak - Petak, 09:00 - 17:00",
-    emailLabel: "Zvanični email:",
-    supportEmailLabel: "Tehnička podrška:",
+    officialEmailLabel: "Official email:",
+    technicalSupportLabel: "Technical support:",
+    phoneLabel: "Phone:",
+    phoneValue: "+383 43 555 294",
+    addressLabel: "Address:",
+    addressValue: "REVOLUTION INVEST Sh.p.k., Ferizaj, Republic of Kosovo",
+    hoursLabel: "Working hours:",
+    hoursValue: "Monday – Friday, 09:00 – 17:00",
+    emailLabel: "Official email:",
+    supportEmailLabel: "Technical support:",
     facebookLabel: "Facebook:",
     instagramLabel: "Instagram:",
-    formTitle: "Contact formular",
-    nameLabel: "Vaše ime",
+    formTitle: "Contact form",
+    nameLabel: "Your name",
     emailFieldLabel: "Email",
-    subjectLabel: "Predmet",
-    messageLabel: "Poruka",
-    subjectPlaceholder: "Select predmet",
+    subjectLabel: "Subject",
+    messageLabel: "Message",
+    subjectPlaceholder: "Choose a subject",
     subjects: [
-      { value: "pyetje", label: "Pitanje" },
-      { value: "problem", label: "Tehnički problem" },
-      { value: "raportim", label: "Prijava" },
-      { value: "partneritet", label: "Partnerstvo" },
-      { value: "tjeter", label: "Ostalo" },
+      { value: "pyetje", label: "General question" },
+      { value: "problem", label: "Technical problem" },
+      { value: "raportim", label: "Report a listing" },
+      { value: "partneritet", label: "Partnership and business" },
+      { value: "shtypi", label: "Press and media" },
+      { value: "ligjor", label: "Legal request" },
+      { value: "tjeter", label: "Other" },
     ],
-    submitBtn: "Send poruku",
-    toastRequired: "Popunite sva obavezna polja",
-    toastSuccess: "Poruka je senta. Odgovorićemo vam u roku od 24 sata.",
-    toastError: "Poruka nije senta. Pokušajte ponovo ili nam pišite na email.",
+    submitBtn: "Send message",
+    toastRequired: "Please fill in all required fields",
+    toastSuccess: "Message sent. We will reply soon.",
+    toastError: "Message not sent. Try again or email us directly.",
+    formNote:
+      "Messages are sent to support@ketujemi.com and info@ketujemi.com. We reply within 24 hours on business days.",
     faqTitle: "Frequently asked questions (FAQ)",
-    faq: [
-      {
-        q: "Kako da postm listing?",
-        a: "Click «Post listing», popunite podatke i učitajte fotografije.",
-      },
-      {
-        q: "Koliko košta objavljivanje?",
-        a: "Objavljivanje za obične korisnike je potpuno free.",
-      },
-      {
-        q: "Kako da obrišem ili izmijenim listing?",
-        a: "Sign in se i upravljajte listingima u odjeljku «Moji listingi».",
-      },
-    ],
+    faq: [],
   },
   faq: {
     title: "Frequently asked questions (FAQ)",
-    tagline: "Pronađite brze odgovore na najčešća pitanja o korišćenju platforme KetuJemi.com.",
-    featuredTitle: "Glavna pitanja",
+    tagline:
+      "Find quick answers to the most common questions about using KetuJemi.com.",
+    featuredTitle: "Main questions",
     featured: [
       {
-        q: "Kako da postm listing?",
-        a: 'Kliknite «Objavi oglas», popunite podatke i učitajte fotografije.',
+        q: "How do I post a listing?",
+        a: "Click «Post listing» at the top of the page, choose the right category, fill in title, description and price, upload up to 10 photos and publish. The listing goes live right after automatic moderation.",
       },
       {
-        q: "Koliko košta objavljivanje?",
-        a: "Objavljivanje za obične korisnike je potpuno free.",
+        q: "How much does posting cost?",
+        a: "Basic posting is completely free — 10 free listings per month for each main category. When you reach the limit, you can buy extra credit from your wallet (Package S €5 / M €10 / L €20).",
       },
       {
-        q: "Kako da obrišem ili izmijenim listing?",
-        a: "Sign in se i upravljajte listingima u odjeljku «Moji listingi».",
+        q: "How do I delete a listing?",
+        a: "Sign in, go to Profile → «My listings», select the listing and click «Delete». It is removed immediately and permanently.",
+      },
+      {
+        q: "How long does my listing stay active?",
+        a: "Each listing stays active for 3 months (90 days) from the posting date, then is removed automatically. The expiry date is shown on the listing page.",
+      },
+      {
+        q: "Why is a phone number required?",
+        a: "A phone number is required for SMS verification before your first listing. This helps keep the platform safe and free of fake accounts.",
+      },
+      {
+        q: "Can I sign in with Google or Facebook?",
+        a: "Yes. You can register and sign in with Google or Facebook in one click. A phone number is still required before your first listing.",
+      },
+      {
+        q: "How many photos can I upload per listing?",
+        a: "Up to 10 photos per listing. We recommend real photos of your product — not images from the internet or catalogues.",
+      },
+      {
+        q: "My listing was rejected — why?",
+        a: "Listings are rejected if they contain prohibited products, fake photos, incorrect prices or misleading information. You will be notified by email with the reason.",
+      },
+      {
+        q: "How do I report a suspicious listing?",
+        a: "Click «Report» on the listing page or email support@ketujemi.com. We act within 24 hours.",
+      },
+      {
+        q: "How does the wallet work?",
+        a: "The wallet is your credit balance on the platform. You can top it up with Packages S/M/L and use credits for extra posts when you exceed the monthly free limit. Credit does not expire and is not refunded in cash.",
+      },
+      {
+        q: "Can I edit a listing after posting?",
+        a: "Yes. Go to Profile → «My listings», select the listing and click «Edit». You can change title, description, price and photos.",
+      },
+      {
+        q: "What if I have been scammed?",
+        a: "Contact us immediately at support@ketujemi.com with details. Also report the case to the Kosovo Police, as KetuJemi.com is not a party to transactions between users.",
       },
     ],
-    sections: [
-      {
-        title: "Objavljivanje listings",
-        items: [
-          {
-            q: "Kako da postm listing?",
-            a: 'Kliknite "+ Objavi oglas", izaberite kategoriju, popunite podatke i učitajte fotografije. Oglas se objavljuje odmah.',
-          },
-          {
-            q: "Koliko besplatnih listings mogu postti?",
-            a: "Korisnici imaju 10 besplatnih listings Yes categori + verification.",
-          },
-          {
-            q: "Mogu li da objavljujem iz inostranstva?",
-            a: "Da! Diaspora iz Njemačke, Švicarske, Austrije, Francuske, Italyje, Engleske i SAD može normalno objavljivati sa svojim brojem phonea.",
-          },
-          {
-            q: "Koliko fotografija mogu učitati Yes listingu?",
-            a: "Do 10 fotografija Yes listingu.",
-          },
-        ],
-      },
-      {
-        title: "Nalog i sigurnost",
-        items: [
-          {
-            q: "Kako da kreiram nalog?",
-            a: "Putem broja phonea (SMS) ili Google. Phone number je obavezan prije prvog objavljivanja.",
-          },
-          {
-            q: "Kako da verifikujem nalog?",
-            a: "Dobićete SMS sa 6-cifrenim kodom. Enter kod i nalog se aktivira odmah.",
-          },
-          {
-            q: "Šta ako zaboravim passwordu?",
-            a: 'Kliknite "Zaboravio/la sam lozinku" i dobićete SMS ili email za resetovanje.',
-          },
-        ],
-      },
-      {
-        title: "Buy i prodaja",
-        items: [
-          {
-            q: "Da li je KetuJemi besplatan?",
-            a: "Da! Osnovno objavljivanje je potpuno free!",
-          },
-          {
-            q: "Kako da kontaktiram prodavca?",
-            a: 'Kliknite "Kontaktiraj prodavca" na oglasu i pošaljite direktnu poruku.',
-          },
-          {
-            q: "Šta da uradim ako neko vara?",
-            aEmail: {
-              before: 'Kliknite "Prijavi" na oglasu ili nas kontaktirajte na ',
-              between: " i ",
-              after: ". Djelujemo u roku od 24 sata.",
-            },
-          },
-          {
-            q: "Da li KetuJemi garantuje proizvode?",
-            a: "KetuJemi je posrednička platforma. Preporučujemo lični susret i provjeru proizvoda prije kupovine.",
-          },
-        ],
-      },
-      {
-        title: "VIP paketi",
-        items: [
-          {
-            q: "Šta je VIP paket?",
-            a: 'VIP paket nudi neograničene oglase, visoku poziciju u pretrazi i badge "VIP" za 30€ mjesečno.',
-          },
-          {
-            q: "Kada se aktivira VIP paket?",
-            a: "VIP paket se aktivira za neke korisnike!",
-          },
-        ],
-      },
-      {
-        title: "Tehničko",
-        items: [
-          {
-            q: "Da li KetuJemi radi na phoneu?",
-            a: "Da! KetuJemi je optimizovan za phone. Možete ga koristiti sa bilo kojeg uređaja.",
-          },
-          {
-            q: "Na kojim mjestima radi KetuJemi?",
-            a: "Kosovo, Albania, North Macedonia i Montenegro. Plus dijaspora u 7 evropskih zemalja i SAD.",
-          },
-        ],
-      },
-    ],
+    sections: [],
   },
   security: {
-    title: "Online sigurnost",
-    tagline: "Savjeti i zvanične smjernice za zaštitu i sigurno iskustvo pri kupovini i prodaji na KetuJemi.com.",
+    title: "Online safety",
+    tagline:
+      "Official tips and guidelines to stay safe when buying and selling on KetuJemi.com.",
     sections: [
       {
-        title: "Rules sigurnosti",
+        title: "Golden safety rules",
         bullets: [
-          "Ne šaljite avans: Uvijek se sretnite sa prodavcem na javnom mjestu i check proizvod prije plaćanja.",
-          "Check proizvod: Prije kupovine vozila ili elektronike, check fizičko condition i pravnu dokumentaciju.",
-          "Sign in zloupotrebe: Ako primijetite sumnjiv listing, click «Sign in» ili pišite na support@ketujemi.com.",
+          "Do not send money in advance without meeting the seller in a public place",
+          "Check the product and documents before any payment",
+          "Prefer cash payment at an in-person meeting — avoid bank transfers to strangers",
+          "Communicate only through the platform messaging system — do not move to personal numbers or WhatsApp before meeting",
+          "Report any suspicious listing to support@ketujemi.com",
+        ],
+      },
+      {
+        title: "How to spot a scam",
+        bulletsIntro: "Be careful if the seller/buyer:",
+        bullets: [
+          "Asks for advance payment before meeting or delivery",
+          "Offers a price that is unrealistically low",
+          "Refuses to meet in person or only wants postal delivery",
+          "Insists on communicating off the platform immediately",
+          "Sends suspicious links or asks for bank details",
+          "Claims to be abroad and asks for an international transfer",
+        ],
+      },
+      {
+        title: "Tips for sellers",
+        bullets: [
+          "Do not put your home address in the listing — meet in a public place",
+          "Do not accept cheques or bank transfers from unknown buyers without verification",
+          "If a buyer offers to pay more than the price and asks you to return the difference — it is a common scam",
+          "Real product photos protect you too — the buyer knows exactly what they are getting",
+        ],
+      },
+      {
+        title: "Tips for buyers",
+        bullets: [
+          "Check the seller's profile — registration date, other listings, ratings",
+          "Ask for extra photos or video of the product before deciding",
+          "Meet during the day in a public place (shopping centre, café)",
+          "Inspect the product fully before paying — returns after payment depend on the seller, not the platform",
+          "Do not click external links sent by the seller",
+        ],
+      },
+      {
+        title: "What we do for your safety",
+        bullets: [
+          "Mandatory SMS verification before the first listing",
+          "24/7 reporting system — we act within 24 hours",
+          "Automatic moderation of suspicious listings",
+          "Blocking of fraudulent accounts after verified reports",
+        ],
+      },
+      {
+        title: "If you have been scammed",
+        bullets: [
+          "Do not make further payments",
+          "Keep all messages and evidence",
+          "Report to support@ketujemi.com with full details",
+          "Report to the Kosovo Police — 192 or your nearest police station",
+          "If you made a bank transfer, contact your bank immediately",
+        ],
+        paragraphsAfter: [
+          "KetuJemi.com is not a party to transactions between users and cannot guarantee refunds, but we will fully cooperate with the competent authorities.",
         ],
       },
     ],
   },
   press: {
-    title: "Za štampu i medije",
-    tagline: "Zvanične informacije za medije, novinare i marketinška partnerstva.",
-    mediaEmailLabel: "Email za medije:",
+    title: "Press and media",
+    tagline: "Official information for media, journalists and marketing partnerships.",
+    mediaEmailLabel: "Media email:",
     sections: [
       {
-        title: "Šta nudimo medijima",
-        bullets: [
-          "Logo i vizuelni materijali (na request)",
-          "Intervjui sa timom (uz prethodnu najavu)",
-          "Opšta statistika platforme",
+        title: "About KetuJemi.com",
+        paragraphs: [
+          "KetuJemi.com is the leading Albanian online classifieds platform, developed and operated by REVOLUTION INVEST Sh.p.k., based in Ferizaj, Kosovo. The platform operates in 4 markets: Kosovo, Albania, North Macedonia and Montenegro.",
         ],
       },
       {
-        title: "Vrijeme odgovora",
+        title: "What we offer media",
+        bullets: [
+          "KetuJemi.com logo and visual assets (on request by email)",
+          "Interviews with the leadership team (by appointment — minimum 48 hours notice)",
+          "General platform statistics (listing counts, main categories, active markets)",
+          "Official communications and press releases",
+        ],
+      },
+      {
+        title: "Response time",
         paragraphs: [
-          "Requesti za štampu se odgovaraju za 2–3 radna dana. Za hitne slučajeve, navedite «Press» u kontakt formularu.",
+          'Press requests are answered within 2–3 business days. For urgent matters, put «PRESS — URGENT» in the email subject.',
+        ],
+      },
+      {
+        title: "Media contact information",
+        bullets: [
+          "Media email: info@ketujemi.com",
+          "Subject: «Media request — [outlet name]»",
+          "Legal operator: REVOLUTION INVEST Sh.p.k., Ferizaj, NRB 811314567",
+        ],
+        paragraphsAfter: [
+          "Official communications come only from @ketujemi.com or @revolutioninvest.com addresses. Beware of other addresses claiming to be KetuJemi.",
         ],
       },
     ],
