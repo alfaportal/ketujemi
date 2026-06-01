@@ -101,6 +101,7 @@ import {
   getSportOutdoorLeafCategoryIds,
   isSportDeviceValidForType,
   parseSportDeviceFromSearch,
+  resolveSportDevicePhoto,
   resolveSportTypeBannerUrl,
   resolveSportTypeKeyFromSlug,
   sportDeviceLeafPath,
@@ -1360,9 +1361,11 @@ export default function CategoryPage() {
         ? AUTO_PJESE_HERO_PHOTO
         : isLokaleZyreHub
           ? LOKALE_ZYRE_HERO_PHOTO
-          : isSportTypePage && sportTypeKey
-            ? resolveSportTypeBannerUrl(sportTypeKey)
-            : resolveCategoryImageUrl(currentCategory as any) ||
+          : isSportDeviceLeafPage && sportDeviceKey && sportTypeKey
+            ? resolveSportDevicePhoto(sportDeviceKey, sportTypeKey)
+            : isSportTypePage && sportTypeKey
+              ? resolveSportTypeBannerUrl(sportTypeKey)
+              : resolveCategoryImageUrl(currentCategory as any) ||
               getCatPhoto(currentCategory?.name ?? "") ||
               "";
   const sportHeroTitle =
