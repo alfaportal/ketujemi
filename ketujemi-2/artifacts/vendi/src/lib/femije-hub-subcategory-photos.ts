@@ -1,49 +1,36 @@
-/** Hub groups + legacy types; leaf rows in femije-leaf-subcategory-photos.ts. */
+/** Hub groups + legacy types; all leaf slugs in femije-leaf-subcategory-photos.ts. */
 
-import { FEMIJE_LEAF_AKTIVITET_SPORT_PHOTOS } from "./femije-leaf-subcategory-photos";
+import { FEMIJE_LEAF_SUBCATEGORY_PHOTOS } from "./femije-leaf-subcategory-photos";
+
+function pexels(id: number, w = 400): string {
+  return `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${w}`;
+}
+
+const p = (id: number) => pexels(id);
 
 const FEMIJE_HUB_GROUP_AND_TYPE_PHOTOS: Record<string, string> = {
-  "femije-grp-karroca-transport":
-    "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400",
-  "femije-grp-krevat-dhome":
-    "https://images.unsplash.com/photo-1586105251261-72a756497a11?w=400",
-  "femije-grp-ushqyerja-ushqimi":
-    "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400",
-  "femije-grp-higjiene-kujdes":
-    "https://images.unsplash.com/photo-1584515933487-779824d29309?w=400",
-  "femije-grp-rroba-kepuce":
-    "https://images.unsplash.com/photo-1522771930-78848d9293e8?w=400",
-  "femije-grp-lodra-lojera":
-    "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=400",
-  "femije-grp-lodra-edukative":
-    "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400",
-  "femije-grp-libra-shkollore":
-    "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400",
-  "femije-grp-aktivitet-sport":
-    "https://images.pexels.com/photos/35537/child-children-girl-happy.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "femije-grp-karrige-ulese":
-    "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400",
-  "femije-grp-canta-nene":
-    "https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?w=400",
-  "femije-grp-veshje-shtatzanise":
-    "https://images.unsplash.com/photo-1493894473891-10fc1e5dbd22?w=400",
-  "femije-grp-siguria":
-    "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400",
-  "femije-grp-pishine-plazh":
-    "https://images.unsplash.com/photo-1473496169904-658ba7574b0d?w=400",
-  "femije-type-karroca":
-    "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400",
-  "femije-type-lodra":
-    "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=400",
-  "femije-type-foshnje":
-    "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400",
-  "femije-type-rroba":
-    "https://images.unsplash.com/photo-1522771930-78848d9293e8?w=400",
-  "femije-type-ushqim-higjiene":
-    "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400",
+  "femije-grp-karroca-transport": p(4196249),
+  "femije-grp-krevat-dhome": p(599821),
+  "femije-grp-ushqyerja-ushqimi": p(3933250),
+  "femije-grp-higjiene-kujdes": p(3875089),
+  "femije-grp-rroba-kepuce": p(1927257),
+  "femije-grp-lodra-lojera": p(3603724),
+  "femije-grp-lodra-edukative": p(8613080),
+  "femije-grp-libra-shkollore": p(159711),
+  "femije-grp-aktivitet-sport": p(206443),
+  "femije-grp-karrige-ulese": p(8612973),
+  "femije-grp-canta-nene": p(3997931),
+  "femije-grp-veshje-shtatzanise": p(3738084),
+  "femije-grp-siguria": p(3997992),
+  "femije-grp-pishine-plazh": p(3018737),
+  "femije-type-karroca": p(4196249),
+  "femije-type-lodra": p(3603724),
+  "femije-type-foshnje": p(3875089),
+  "femije-type-rroba": p(1927257),
+  "femije-type-ushqim-higjiene": p(3933250),
 };
 
 export const FEMIJE_HUB_SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   ...FEMIJE_HUB_GROUP_AND_TYPE_PHOTOS,
-  ...FEMIJE_LEAF_AKTIVITET_SPORT_PHOTOS,
+  ...FEMIJE_LEAF_SUBCATEGORY_PHOTOS,
 };

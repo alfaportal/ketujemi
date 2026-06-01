@@ -4,6 +4,7 @@ import {
   ensureHomepagePartnersSchema,
   ensureListingUserSchema,
   ensureOAuthSchema,
+  ensureFemijeCategoryImages,
   ensureSportOutdoorTypeCategories,
   ensureWalletSchema,
   pool,
@@ -45,6 +46,8 @@ async function startServer(): Promise<void> {
     logger.info("Homepage partners schema verified (homepage_partners)");
     await ensureSportOutdoorTypeCategories(pool);
     logger.info("Sport & Outdoor type subcategories verified (sport-type-*)");
+    await ensureFemijeCategoryImages(pool);
+    logger.info("Fëmijë category thumbnails synced (groups + leaves)");
     await purgeInvalidListingImagesOnStartup();
     logPaymentStackReadiness(logger);
     logger.info(vonageConfigSummary(), "vonage sms config (masked)");

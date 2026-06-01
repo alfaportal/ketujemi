@@ -175,16 +175,11 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
     "https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=1200&q=80",
 
   // —— Fëmijë (legacy type rows; groups use femije-hub-subcategory-photos.ts) ——
-  "femije-type-karroca":
-    "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400",
-  "femije-type-lodra":
-    "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=400",
-  "femije-type-foshnje":
-    "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400",
-  "femije-type-rroba":
-    "https://images.unsplash.com/photo-1522771930-78848d9293e8?w=400",
-  "femije-type-ushqim-higjiene":
-    "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400",
+  "femije-type-karroca": pexelsPhoto(4196249, 400),
+  "femije-type-lodra": pexelsPhoto(3603724, 400),
+  "femije-type-foshnje": pexelsPhoto(3875089, 400),
+  "femije-type-rroba": pexelsPhoto(1927257, 400),
+  "femije-type-ushqim-higjiene": pexelsPhoto(3933250, 400),
 
   // —— Sport ——————————————————————————————————————————————————————————————————
   "sport-type-bicikleta": pexelsPhoto(2882234),
