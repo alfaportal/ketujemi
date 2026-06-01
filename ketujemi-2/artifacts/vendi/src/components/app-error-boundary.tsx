@@ -6,7 +6,7 @@ type State = { error: Error | null };
 /** Catches render/chunk errors so production never shows a silent white screen. */
 export class AppErrorBoundary extends Component<Props, State> {
   state: State = { error: null };
-  private readonly chunkReloadKey = "__ketujemi_chunk_reload_once__";
+  private readonly chunkReloadKey = "__ketujemi_chunk_recover_once__";
 
   static getDerivedStateFromError(error: Error): State {
     return { error };
@@ -15,7 +15,7 @@ export class AppErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[KetuJemi] App failed to render", error, info.componentStack);
 
-    // Recover from stale SW/cache after deploy: try one forced reload for chunk-load errors.
+    // Recover from stale SW/cache after deploy.
     const message = `${error?.name ?? ""} ${error?.message ?? ""}`.toLowerCase();
     const isChunkLoadError =
       message.includes("failed to fetch dynamically imported module") ||
@@ -24,7 +24,26 @@ export class AppErrorBoundary extends Component<Props, State> {
     if (!isChunkLoadError || typeof window === "undefined") return;
     if (window.sessionStorage.getItem(this.chunkReloadKey) === "1") return;
     window.sessionStorage.setItem(this.chunkReloadKey, "1");
-    window.location.reload();
+    void this.recoverFromStaleCache();
+  }
+
+  private async recoverFromStaleCache() {
+    try {
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+      if ("caches" in window) {
+        const names = await caches.keys();
+        await Promise.all(names.map((n) => caches.delete(n)));
+      }
+    } catch (e) {
+      console.warn("[KetuJemi] stale cache recovery failed", e);
+    } finally {
+      const url = new URL(window.location.href);
+      url.searchParams.set("__recover", Date.now().toString());
+      window.location.replace(url.toString());
+    }
   }
 
   render() {
