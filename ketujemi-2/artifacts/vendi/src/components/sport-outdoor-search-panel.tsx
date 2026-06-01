@@ -35,6 +35,7 @@ import {
   SPORT_TYPE_LABEL_KEY,
   SPORT_TYPE_PHOTOS,
   resolveSportDevicePhoto,
+  resolveSportTypeBannerUrl,
   type SportBikeTypeKey,
   type SportDeviceKey,
   type SportGenderKey,
@@ -249,10 +250,23 @@ export function SportOutdoorSearchPanel({
 
       {variant === "leaf" && sportTypeKey && deviceKey ? (
         <>
-          <section className="space-y-1 rounded-xl bg-blue-50/60 border border-blue-100 px-4 py-3">
+          <div className="overflow-hidden rounded-2xl border border-gray-100 shadow-sm">
+            <img
+              src={resolveSportTypeBannerUrl(sportTypeKey)}
+              alt={t[SPORT_TYPE_LABEL_KEY[sportTypeKey]] ?? sportTypeKey}
+              className="w-full h-36 sm:h-44 md:h-52 object-cover object-center"
+              loading="lazy"
+            />
+          </div>
+          <section className="space-y-2 rounded-xl bg-blue-50/60 border border-blue-100 px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
               {t[SPORT_TYPE_LABEL_KEY[sportTypeKey]]}
             </p>
+            <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+              {t[SPORT_TYPE_INTRO_KEY[sportTypeKey]] ?? t.so_type_pick_hint}
+            </p>
+          </section>
+          <section className="space-y-1 rounded-xl border border-gray-100 bg-white px-4 py-3">
             <h2 className="text-lg font-black text-gray-900">
               {t[SPORT_DEVICE_LABEL_KEY[deviceKey]]}
             </h2>

@@ -1,3 +1,5 @@
+import { SUBCATEGORY_IMAGE_URL_BY_SLUG } from "@workspace/category-images";
+
 /** Sport & Outdoor hub slug (matches seeded category). */
 export const SPORT_OUTDOOR_HUB_SLUG = "sport-outdoor";
 
@@ -667,6 +669,17 @@ export function isSportDeviceValidForType(
 
 export function sportDeviceLeafPath(categoryPath: string, deviceKey: SportDeviceKey): string {
   return `${categoryPath}?${SPORT_DEVICE_QUERY_PARAM}=${encodeURIComponent(deviceKey)}`;
+}
+
+/** Nivel-2 hero banner — same image on type page and every device leaf under that type. */
+export function resolveSportTypeBannerUrl(typeKey: SportTypeKey): string {
+  const slug = SPORT_TYPE_DB_SLUG[typeKey];
+  const fromCatalog = SUBCATEGORY_IMAGE_URL_BY_SLUG[slug];
+  if (fromCatalog) {
+    return fromCatalog.replace(/([?&]w=)\d+/, "$11200");
+  }
+  const thumb = SPORT_TYPE_PHOTOS[typeKey];
+  return thumb.includes("w=") ? thumb.replace(/w=\d+/, "w=1200") : `${thumb}${thumb.includes("?") ? "&" : "?"}w=1200`;
 }
 
 /** Short intro per sport type (i18n key suffix). */

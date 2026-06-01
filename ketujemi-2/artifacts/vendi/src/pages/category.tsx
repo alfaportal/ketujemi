@@ -101,8 +101,10 @@ import {
   getSportOutdoorLeafCategoryIds,
   isSportDeviceValidForType,
   parseSportDeviceFromSearch,
+  resolveSportTypeBannerUrl,
   resolveSportTypeKeyFromSlug,
   sportDeviceLeafPath,
+  SPORT_DEVICE_LABEL_KEY,
   SPORT_OUTDOOR_HUB_SLUG,
   SPORT_TYPE_DB_SLUG,
   type SportDeviceKey,
@@ -1358,15 +1360,31 @@ export default function CategoryPage() {
         ? AUTO_PJESE_HERO_PHOTO
         : isLokaleZyreHub
           ? LOKALE_ZYRE_HERO_PHOTO
-          : resolveCategoryImageUrl(currentCategory as any) ||
-            getCatPhoto(currentCategory?.name ?? "") ||
-            "";
+          : isSportTypePage && sportTypeKey
+            ? resolveSportTypeBannerUrl(sportTypeKey)
+            : resolveCategoryImageUrl(currentCategory as any) ||
+              getCatPhoto(currentCategory?.name ?? "") ||
+              "";
+  const sportHeroTitle =
+    isSportDeviceLeafPage && sportDeviceKey
+      ? (t[SPORT_DEVICE_LABEL_KEY[sportDeviceKey]] ?? sportDeviceKey)
+      : translateCategory(currentCategory?.name ?? "", locale);
   const Icon = getCatIcon(currentCategory?.icon ?? "Car");
 
   const crumbItems: { label: string; href?: string }[] = [{ label: "KetuJemi", href: "/" }];
   if (grandparentCategory) crumbItems.push({ label: translateCategory(grandparentCategory.name, locale), href: categoryPath(grandparentCategory.id) });
   if (parentCategory) crumbItems.push({ label: translateCategory(parentCategory.name, locale), href: categoryPath(parentCategory.id) });
-  crumbItems.push({ label: translateCategory(currentCategory?.name ?? "", locale) });
+  if (isSportTypePage && sportTypeKey) {
+    crumbItems.push({
+      label: translateCategory(currentCategory?.name ?? "", locale),
+      href: isSportDeviceLeafPage ? categoryPath(currentCategory as CategoryRef) : undefined,
+    });
+    if (isSportDeviceLeafPage && sportDeviceKey) {
+      crumbItems.push({ label: t[SPORT_DEVICE_LABEL_KEY[sportDeviceKey]] ?? sportDeviceKey });
+    }
+  } else {
+    crumbItems.push({ label: translateCategory(currentCategory?.name ?? "", locale) });
+  }
 
   const hubResultsId = isVeturaHub
     ? "vetura-results"
@@ -1564,7 +1582,7 @@ export default function CategoryPage() {
         ) : photo ? (
           <img
             src={heroBannerImageUrl(photo)}
-            alt={currentCategory?.name}
+            alt={sportHeroTitle}
             className="absolute inset-0 w-full h-full object-cover object-center max-w-none"
             sizes="100vw"
           />
@@ -1595,7 +1613,7 @@ export default function CategoryPage() {
             </div>
             <div className="min-w-0 flex-1 pt-1 sm:pt-0">
               <h1 className="text-lg sm:text-2xl md:text-2xl font-black text-white hyphens-auto break-words">
-                {translateCategory(currentCategory?.name ?? "", locale)}
+                {sportHeroTitle}
               </h1>
               {listingsData && listingsData.total > 0 && (
                 <div className="text-white/75 text-sm mt-1">{listingsData.total} {t.listings.toLowerCase()}</div>
