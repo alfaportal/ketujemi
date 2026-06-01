@@ -119,6 +119,7 @@ import { TelefonaSearchPanel } from "@/components/telefona-search-panel";
 import {
   TEL_BRAND_GROUP_LABEL_KEY,
   TEL_BRAND_GROUP_KEYS,
+  TEL_BRAND_GROUP_SLUG,
   TEL_DEVICE_KEYS,
   TEL_DEVICE_LABEL_KEY,
   getTelefonaHubChildCategoryIds,
