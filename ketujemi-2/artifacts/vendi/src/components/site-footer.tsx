@@ -148,10 +148,12 @@ function FooterMarketsStrip({
   market,
   setMarket,
   uiLang,
+  diasporaMarketsTitle,
 }: {
   market: Market;
   setMarket: (m: Market) => void;
   uiLang: Parameters<typeof footerMarketsStripCopy>[0];
+  diasporaMarketsTitle: string;
 }) {
   const copy = footerMarketsStripCopy(uiLang);
 
@@ -204,10 +206,7 @@ function FooterMarketsStrip({
         <span className="text-white/35 mx-0.5 sm:mx-1" aria-hidden>
           ·
         </span>
-        <span
-          className="text-white/75 font-medium shrink-0"
-          title={(t as { ui_diasporaMarketsTitle?: string }).ui_diasporaMarketsTitle ?? "Gjermani, Zvicër, Austri, Francë, Itali, Angli, SHBA, Mal i Zi"}
-        >
+        <span className="text-white/75 font-medium shrink-0" title={diasporaMarketsTitle}>
           {copy.diasporaLabel}
         </span>
       </div>
@@ -284,7 +283,15 @@ export function SiteFooter() {
           <FooterColumnBlock {...businessColumn} />
         </div>
 
-        <FooterMarketsStrip market={market} setMarket={setMarket} uiLang={uiLang} />
+        <FooterMarketsStrip
+          market={market}
+          setMarket={setMarket}
+          uiLang={uiLang}
+          diasporaMarketsTitle={
+            (t as { ui_diasporaMarketsTitle?: string }).ui_diasporaMarketsTitle ??
+            "Gjermani, Zvicër, Austri, Francë, Itali, Angli, SHBA, Mal i Zi"
+          }
+        />
 
         <div
           className={cn(

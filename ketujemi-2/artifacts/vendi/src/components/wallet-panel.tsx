@@ -140,20 +140,20 @@ export function WalletPanel({ className = "" }: { className?: string }) {
                 { id: "s", price_eur: 5, listings: 16, label: "Paketa S — €5 (~16)" },
                 { id: "m", price_eur: 10, listings: 33, label: "Paketa M — €10 (~33)" },
                 { id: "l", price_eur: 20, listings: 66, label: "Paketa L — €20 (~66)" },
-              ]).map((t) => (
+              ]).map((pkg) => (
                 <Button
-                  key={t.id}
+                  key={pkg.id}
                   type="button"
                   variant="outline"
                   className="min-h-12 h-auto py-2 flex flex-col gap-0.5 border-emerald-200 hover:bg-emerald-50"
                   disabled={busyPkg != null || !canPay}
-                  onClick={() => void startTopup(t.id)}
+                  onClick={() => void startTopup(pkg.id)}
                 >
-                  {busyPkg === t.id ? (
+                  {busyPkg === pkg.id ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <>
-                      <span className="font-bold">{t.label}</span>
+                      <span className="font-bold">{pkg.label}</span>
                       <span className="text-xs text-gray-500 font-normal">
                         {tx.ui_walletPayOnline ?? "Pagesa online"}
                       </span>

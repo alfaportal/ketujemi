@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { errorPageCopyForStoredLang } from "@/lib/error-page-i18n";
 
 type Props = { children: ReactNode };
 type State = { error: Error | null };
@@ -49,12 +50,12 @@ export class AppErrorBoundary extends Component<Props, State> {
   render() {
     if (!this.state.error) return this.props.children;
 
+    const copy = errorPageCopyForStoredLang();
+
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center">
-        <p className="text-lg font-semibold text-foreground">Faqja nuk u ngarkua</p>
-        <p className="max-w-md text-sm text-muted-foreground">
-          Provo të rifreskosh faqen. Nëse problemi vazhdon, pastro cache-in e shfletuesit për ketujemi.com.
-        </p>
+        <p className="text-lg font-semibold text-foreground">{copy.title}</p>
+        <p className="max-w-md text-sm text-muted-foreground">{copy.hint}</p>
         {this.state.error?.message ? (
           <p className="max-w-lg font-mono text-xs text-red-600 break-words">
             {this.state.error.message}
@@ -65,7 +66,7 @@ export class AppErrorBoundary extends Component<Props, State> {
           className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           onClick={() => window.location.reload()}
         >
-          Rifresko
+          {copy.refresh}
         </button>
       </div>
     );
