@@ -117,6 +117,7 @@ import {
 } from "@/lib/lokale-zyre-search-helpers";
 import { TelefonaSearchPanel } from "@/components/telefona-search-panel";
 import {
+  TEL_BRAND_GROUP_KEYS,
   TEL_DEVICE_KEYS,
   TEL_DEVICE_LABEL_KEY,
   TEL_BRAND_GROUP_SLUG,
@@ -796,6 +797,14 @@ export default function CategoryPage() {
     return (TEL_DEVICE_KEYS as readonly string[]).includes(raw) ? (raw as TelDeviceKey) : null;
   }, [urlSearch]);
 
+  const telBrandFromSearch = useMemo((): TelBrandGroupKey | null => {
+    const raw = new URLSearchParams(urlSearch).get("brand");
+    if (!raw) return null;
+    return (TEL_BRAND_GROUP_KEYS as readonly string[]).includes(raw)
+      ? (raw as TelBrandGroupKey)
+      : null;
+  }, [urlSearch]);
+
   const telefonaTypeBySlug = useMemo((): TelDeviceKey | null => {
     if (currentSlug === "telefona-type-smartphones") return "smartphones";
     if (
@@ -808,6 +817,7 @@ export default function CategoryPage() {
   }, [currentSlug]);
 
   const isTelefonaVirtualTypePage = isTelefonaHubPage && telDeviceFromSearch != null;
+  const isTelefonaVirtualBrandPage = isTelefonaHubPage && telBrandFromSearch != null;
   const isTelefonaTypePage =
     !!parentCategory &&
     (parentCategory as { slug?: string }).slug === TELEFONA_HUB_SLUG &&
@@ -1945,7 +1955,7 @@ export default function CategoryPage() {
           />
         ) : null}
 
-        {isTelefonaHubPage && !isTelefonaVirtualTypePage && telefonaLeafCsv ? (
+        {isTelefonaHubPage && !isTelefonaVirtualTypePage && !isTelefonaVirtualBrandPage && telefonaLeafCsv ? (
           <>
             <TelefonaSearchPanel
               hubId={categoryId}
@@ -1961,7 +1971,12 @@ export default function CategoryPage() {
               }
               onNavigateToBrand={(brandGroupKey: TelBrandGroupKey) => {
                 const slug = TEL_BRAND_GROUP_SLUG[brandGroupKey];
-                if (!slug) return;
+                if (!slug) {
+                  setLocation(
+                    `${categoryPath(categoryId)}?brand=${encodeURIComponent(brandGroupKey)}`,
+                  );
+                  return;
+                }
                 const brandId = resolveTelefonaCategoryIdBySlug(
                   allCategories as any,
                   categoryId,
@@ -1984,10 +1999,13 @@ export default function CategoryPage() {
           </>
         ) : null}
 
-        {(isTelefonaVirtualTypePage || isTelefonaTypePage) && activeTelefonaTypeKey ? (
+        {(isTelefonaVirtualTypePage ||
+          isTelefonaTypePage ||
+          isTelefonaVirtualBrandPage) ? (
           <TelefonaSearchPanel
             variant="type"
-            fixedDeviceKey={activeTelefonaTypeKey}
+            fixedDeviceKey={activeTelefonaTypeKey ?? undefined}
+            fixedBrandGroup={isTelefonaVirtualBrandPage ? telBrandFromSearch ?? undefined : undefined}
             hubId={isTelefonaTypePage && parentCategory ? (parentCategory as any).id : categoryId}
             categories={allCategories as any}
             previewTotal={listingsData?.total ?? null}
@@ -1998,7 +2016,12 @@ export default function CategoryPage() {
             }
             onNavigateToBrand={(brandGroupKey: TelBrandGroupKey) => {
               const slug = TEL_BRAND_GROUP_SLUG[brandGroupKey];
-              if (!slug) return;
+              if (!slug) {
+                setLocation(
+                  `${categoryPath(categoryId)}?brand=${encodeURIComponent(brandGroupKey)}`,
+                );
+                return;
+              }
               const hub = isTelefonaTypePage && parentCategory ? (parentCategory as any).id : categoryId;
               const brandId = resolveTelefonaCategoryIdBySlug(
                 allCategories as any,
@@ -2174,11 +2197,12 @@ export default function CategoryPage() {
           <VipPartnersSection variant="hub" categoryId={categoryId} className="my-8" />
         ) : null}
 
-        {(!isTelefonaHubPage || isTelefonaVirtualTypePage) &&
+        {(!isTelefonaHubPage || isTelefonaVirtualTypePage || isTelefonaVirtualBrandPage) &&
           (isSportDeviceLeafPage ||
             (isDrillDownTypePage && !!drillDownTypeKey) ||
             isFemijeLeafPage ||
             isTelefonaVirtualTypePage ||
+            isTelefonaVirtualBrandPage ||
             isKompjuterTypePage ||
             isDhurataFalasHub ||
             isKerkojTeBlejHub ||

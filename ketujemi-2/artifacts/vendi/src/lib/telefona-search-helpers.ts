@@ -528,8 +528,23 @@ export function resolveTelefonaCategoryIdBySlug(
   hubId: number,
   slug: string,
 ): number | undefined {
-  const row = categories.find((c) => c.parent_id === hubId && c.slug === slug);
-  return row?.id;
+  const direct = categories.find((c) => c.parent_id === hubId && c.slug === slug);
+  if (direct) return direct.id;
+
+  // Fallback: allow slugs nested under a type page (hub -> type -> brand/item).
+  const inHubTree = (row: TelefonaCategoryRow): boolean => {
+    let pid = row.parent_id;
+    let guard = 0;
+    while (pid != null && guard < 12) {
+      if (pid === hubId) return true;
+      pid = categories.find((c) => c.id === pid)?.parent_id ?? null;
+      guard += 1;
+    }
+    return false;
+  };
+
+  const nested = categories.find((c) => c.slug === slug && inHubTree(c));
+  return nested?.id;
 }
 
 export function resolveDeviceTypeCategoryIds(

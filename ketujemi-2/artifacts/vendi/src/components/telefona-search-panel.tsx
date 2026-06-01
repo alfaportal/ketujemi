@@ -94,6 +94,7 @@ type Props = {
   fixedDeviceKey?: TelDeviceKey;
   onNavigateToDevice?: (deviceKey: TelDeviceKey) => void;
   onNavigateToBrand?: (brandGroupKey: TelBrandGroupKey) => void;
+  fixedBrandGroup?: TelBrandGroupKey;
 };
 
 function ChipButton({
@@ -135,6 +136,7 @@ export function TelefonaSearchPanel({
   fixedDeviceKey,
   onNavigateToDevice,
   onNavigateToBrand,
+  fixedBrandGroup,
 }: Props) {
   const isTypePage = variant === "type";
   const { t } = useMarket();
@@ -150,7 +152,7 @@ export function TelefonaSearchPanel({
   const [smartphoneSub, setSmartphoneSub] = useState<TelSmartphoneSubKey | null>(null);
   const [quickFilters, setQuickFilters] = useState<Partial<Record<TelQuickFilterKey, boolean>>>({});
   const [marketCondition, setMarketCondition] = useState<TelMarketConditionKey | "">("");
-  const [brandGroup, setBrandGroup] = useState<TelBrandGroupKey | null>(null);
+  const [brandGroup, setBrandGroup] = useState<TelBrandGroupKey | null>(fixedBrandGroup ?? null);
   const [otherBrand, setOtherBrand] = useState<TelOtherBrandKey | "">("");
   const [model, setModel] = useState("");
   const [storage, setStorage] = useState<TelStorageKey | "">("");
@@ -222,8 +224,16 @@ export function TelefonaSearchPanel({
     }
   }, [isTypePage, fixedDeviceKey]);
 
+  useEffect(() => {
+    if (fixedBrandGroup) {
+      setBrandGroup(fixedBrandGroup);
+      resetBrandFilters();
+      setOtherBrand("");
+    }
+  }, [fixedBrandGroup]);
+
   const selectBrandGroup = (key: TelBrandGroupKey) => {
-    if (onNavigateToBrand && key !== "other_brands") {
+    if (onNavigateToBrand) {
       onNavigateToBrand(key);
       return;
     }
@@ -417,6 +427,7 @@ export function TelefonaSearchPanel({
       </section>
       ) : null}
 
+      {!fixedBrandGroup ? (
       <section className="space-y-4 rounded-xl border border-blue-100 bg-blue-50/30 p-3 sm:p-4 max-w-full overflow-hidden">
         <Label className="text-sm font-bold text-gray-900">{t.tel_sec_brand}</Label>
         <CategoryPhotoPickerGrid>
@@ -434,6 +445,7 @@ export function TelefonaSearchPanel({
           ))}
         </CategoryPhotoPickerGrid>
       </section>
+      ) : null}
 
       {brandGroup === "other_brands" && (
         <section className="space-y-3">
