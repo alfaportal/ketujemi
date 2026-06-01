@@ -24,12 +24,12 @@ const KREVAT: Record<string, string> = {
 };
 
 const USHQYERJA: Record<string, string> = {
-  "femije-leaf-shishe-biberon": p(3933250),
-  "femije-leaf-pompe-gjiri": p(6149892),
-  "femije-leaf-karrige-ushqimi": p(8612973),
-  "femije-leaf-sterilizues-ngrohes": p(4045504),
-  "femije-leaf-ene-luge": p(5732933),
-  "femije-leaf-ushqim-bebe": p(1407346),
+  "femije-leaf-shishe-biberon": p(6624450),
+  "femije-leaf-pompe-gjiri": p(3074935),
+  "femije-leaf-karrige-ushqimi": p(4669022),
+  "femije-leaf-sterilizues-ngrohes": p(3279203),
+  "femije-leaf-ene-luge": p(7946745),
+  "femije-leaf-ushqim-bebe": p(1001914),
 };
 
 const HIGJIENE: Record<string, string> = {
@@ -106,12 +106,12 @@ const CANTA: Record<string, string> = {
 };
 
 const SHTATZANISE: Record<string, string> = {
-  "femije-leaf-fustane-shtatzanise": p(3738084),
-  "femije-leaf-pantallona-shtatzanise": p(6149892),
-  "femije-leaf-sutjena-gji": p(6149892),
-  "femije-leaf-breza-shtatzanise": p(3738084),
-  "femije-leaf-jastek-anatomik": p(4041398),
-  "femije-leaf-produkte-kujdesi-shtatzanise": p(3997992),
+  "femije-leaf-fustane-shtatzanise": p(618923),
+  "femije-leaf-pantallona-shtatzanise": p(23645578),
+  "femije-leaf-sutjena-gji": p(7491221),
+  "femije-leaf-breza-shtatzanise": p(10606514),
+  "femije-leaf-jastek-anatomik": p(6651881),
+  "femije-leaf-produkte-kujdesi-shtatzanise": p(19854098),
 };
 
 const SIGURIA: Record<string, string> = {
