@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { fetchWithTimeout, getFetchErrorMessage } from "@/lib/fetch-with-timeout";
 import { useLocation } from "wouter";
 import { useForm, useWatch } from "react-hook-form";
@@ -33,7 +33,6 @@ import {
 import { ListingCountryPicker } from "@/components/listing-country-picker";
 import { ListingCategorySuggest } from "@/components/listing-category-suggest";
 import { joinListingImageUrls } from "@/lib/listing-images";
-import { AP_PART_CONDITION_DESC } from "@/lib/auto-pjese-search-helpers";
 import { useListingImageUpload } from "@/lib/listing-image-upload";
 import {
   useAuth,
@@ -52,15 +51,8 @@ import {
   DhurataGiftPledge,
   DHURATA_PLEDGE_STORAGE_KEY,
 } from "@/components/dhurata-gift-pledge";
-import {
-  DHURATA_FALAS_SLUG,
-  DHURATA_PRICE_ZERO_MESSAGE,
-  findDhurataBlockedWord,
-  findKerkojBlockedWord,
-  isDhurataFalasSlug,
-  isKerkojTeBlejSlug,
-  KERKOJ_MAX_PHOTOS,
-} from "@/lib/special-listing-categories";
+import { DHURATA_FALAS_SLUG } from "@/lib/special-listing-categories";
+import { categoryEngine } from "@/services/CategoryEngine";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 const schema = z.object({
@@ -102,42 +94,6 @@ const schema = z.object({
 });
 
 type FormData = z.infer<typeof schema>;
-
-const CLIENT_BLOCKED_WORDS = [
-  "mashtrim",
-  "droge",
-  "drogë",
-  "kokain",
-  "heroin",
-  "armë",
-  "arme",
-  "falsifikim",
-  "spam",
-  "seks",
-  "fyerje",
-];
-
-function hasPhoneInDescriptionClient(description: string): boolean {
-  return /(?:\+?\d[\d\s\-()]{6,}\d)/.test(description);
-}
-
-function hasExternalLinkClient(description: string): boolean {
-  return /(https?:\/\/|www\.)\S+/i.test(description);
-}
-
-function findBlockedWordClient(text: string): string | null {
-  const normalized = text.toLowerCase().normalize("NFC");
-  for (const word of CLIENT_BLOCKED_WORDS) {
-    if (normalized.includes(word.toLowerCase().normalize("NFC"))) return word;
-  }
-  return null;
-}
-
-// ─── Category groups ──────────────────────────────────────────────────────────
-const isVetura    = (name: string) => name === "Vetura";
-const isAutoPjese = (name: string) => name === "Auto Pjesë";
-const isRealEstate = (name: string) => name === "Banesa & Shtëpi" || name === "Lokale & Zyrë";
-const isPhone     = (name: string) => name === "Telefona";
 
 // ─── Step badge ───────────────────────────────────────────────────────────────
 function StepBadge({ n, label, active, done }: { n: number; label: string; active: boolean; done: boolean }) {
@@ -276,10 +232,17 @@ export default function NewListing() {
   const subCats   = (allCategories ?? []).filter((c: any) => c.parent_id === Number(parentCatId));
   const brandCats = (allCategories ?? []).filter((c: any) => c.parent_id === Number(bodyCatId));
   const parentName = parentCats.find((c: any) => c.id === Number(parentCatId))?.name ?? "";
-  const parentSlug = parentCats.find((c: any) => c.id === Number(parentCatId))?.slug ?? "";
-  const isKerkojCategory = isKerkojTeBlejSlug(parentSlug);
-  const isDhurataCategory = isDhurataFalasSlug(parentSlug);
-  const maxPhotos = isKerkojCategory ? KERKOJ_MAX_PHOTOS : 10;
+  const catEngine = useMemo(
+    () => categoryEngine((allCategories ?? []) as { id: number; name: string; slug?: string | null; parent_id?: number | null }[]),
+    [allCategories],
+  );
+  const postFields = useMemo(
+    () => catEngine.getFields(Number(parentCatId) || effectiveCategoryId, market.code),
+    [catEngine, parentCatId, effectiveCategoryId, market.code],
+  );
+  const isKerkojCategory = postFields.isKerkoj;
+  const isDhurataCategory = postFields.isDhurata;
+  const maxPhotos = postFields.maxPhotos;
   const hasBrands = brandCats.length > 0;
 
   useEffect(() => {
@@ -433,141 +396,32 @@ export default function NewListing() {
 
   const removeImage = (i: number) => setImageUrls((prev) => prev.filter((_, idx) => idx !== i));
 
-  const buildExtraText = (data: FormData): string => {
-    const lines: string[] = [];
-    if (isAutoPjese(parentName)) {
-      const partCat = subCats.find((c: any) => c.id === Number(data.category_id));
-      if (partCat?.name) lines.push(`Lloji i pjesës: ${partCat.name}`);
-      if (data.xMarka) lines.push(`Marka: ${data.xMarka}`);
-      if (data.xModeli) lines.push(`Modeli: ${data.xModeli}`);
-      if (data.xViti) lines.push(`Viti: ${data.xViti}`);
-      const condKey = data.condition === "New" ? "new" : data.condition === "Used" ? "used_oem" : "scrap";
-      if (AP_PART_CONDITION_DESC[condKey]) lines.push(AP_PART_CONDITION_DESC[condKey]);
-    } else if (isVetura(parentName)) {
-      if (data.xMarka)        lines.push(`Marka: ${data.xMarka}`);
-      if (data.xModeli)       lines.push(`Modeli: ${data.xModeli}`);
-      if (data.xViti)         lines.push(`Viti: ${data.xViti}`);
-      if (data.xKm)           lines.push(`Kilometrazha: ${data.xKm} km`);
-      if (data.xKarburanti)   lines.push(`Karburanti: ${data.xKarburanti}`);
-      if (data.xTransmisioni) lines.push(`Transmisioni: ${data.xTransmisioni}`);
-      if (data.xTipi)         lines.push(`Tipi: ${data.xTipi}`);
-      if (data.xNgjyraV)      lines.push(`Ngjyra: ${data.xNgjyraV}`);
-      if (data.xMotori)       lines.push(`Motori: ${data.xMotori} L`);
-      if (data.xFuqia)        lines.push(`Fuqia: ${data.xFuqia} hp`);
-      if (data.xGjendjaT)     lines.push(`Gjendja teknike: ${data.xGjendjaT}`);
-      if (data.xKlima)        lines.push(`Klima: ${data.xKlima}`);
-      if (data.xPanorama)     lines.push(`Panorama: ${data.xPanorama}`);
-    } else if (isRealEstate(parentName)) {
-      if (data.xSiperfaqja) lines.push(`Sipërfaqja: ${data.xSiperfaqja} m²`);
-      if (data.xKati)       lines.push(`Kati: ${data.xKati}`);
-      if (data.xDhomat)     lines.push(`Numri dhomave: ${data.xDhomat}`);
-      if (data.xFurnished)  lines.push(`Mobilimi: ${data.xFurnished}`);
-    } else if (isPhone(parentName)) {
-      if (data.xTelMarka)   lines.push(`Marka: ${data.xTelMarka}`);
-      if (data.xTelModeli)  lines.push(`Modeli: ${data.xTelModeli}`);
-      if (data.xKapaciteti) lines.push(`Kapaciteti: ${data.xKapaciteti}`);
-      if (data.xNgjyra)     lines.push(`Ngjyra: ${data.xNgjyra}`);
-    }
-    if (data.xSellerEmail)   lines.push(`Email: ${data.xSellerEmail}`);
-    if (data.xSellerAddress) lines.push(`Adresa: ${data.xSellerAddress}`);
-    return lines.length ? lines.join(" · ") + "\n\n" : "";
-  };
-
-  const parseVehicleYear = (s: string | undefined): number | undefined => {
-    if (!s?.trim()) return undefined;
-    const m = s.trim().match(/\b(19\d{2}|20\d{2})\b/);
-    return m ? parseInt(m[1], 10) : undefined;
-  };
-
-  const parseVehicleKm = (s: string | undefined): number | undefined => {
-    if (!s?.trim()) return undefined;
-    const digits = s.replace(/\D/g, "");
-    if (!digits) return undefined;
-    const n = parseInt(digits, 10);
-    return Number.isFinite(n) ? n : undefined;
-  };
-
   const onSubmit = (data: FormData) => {
     if (freeQuota && !freeQuota.allowed) {
       setPackagesModalMessage("Ke arritur limitin falas. Mbush portofolin (€0.30 për shpallje).");
       setShowPackagesModal(true);
       return;
     }
-    if (imageUrls.length === 0) {
-      toast({ title: t.addAtLeastPhoto, variant: "destructive" });
+    const partCat = subCats.find((c: any) => c.id === Number(data.category_id));
+    const validation = catEngine.validateListing(data, Number(parentCatId) || effectiveCategoryId, {
+      imageCount: imageUrls.length,
+      subcategoryName: partCat?.name,
+      sellLangBlockedTemplate: tx.ui_sellLangBlocked,
+    });
+    if (!validation.ok) {
+      const issue = validation.issues[0]!;
+      const title =
+        issue.code === "NO_PHOTOS"
+          ? t.addAtLeastPhoto
+          : issue.code === "AP_PART_REQUIRED"
+            ? t.ap_post_err_part
+            : issue.code === "AP_COMPAT_REQUIRED"
+              ? t.ap_post_err_compat
+              : issue.message;
+      toast({ title, variant: "destructive" });
       return;
     }
-    if (isKerkojCategory && imageUrls.length > KERKOJ_MAX_PHOTOS) {
-      toast({
-        title: `Maksimumi ${KERKOJ_MAX_PHOTOS} foto për kërkesa.`,
-        variant: "destructive",
-      });
-      return;
-    }
-    if (isKerkojCategory) {
-      const blocked = findKerkojBlockedWord(`${data.title}\n${data.description}`);
-      if (blocked) {
-        toast({
-          title: (tx.ui_sellLangBlocked ?? 'Gjuha e shitjes nuk lejohet (fjalë e ndaluar: "{word}").').replace(
-            "{word}",
-            blocked,
-          ),
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-    if (isDhurataCategory) {
-      const blocked = findDhurataBlockedWord(`${data.title}\n${data.description}`);
-      if (blocked) {
-        toast({
-          title: (tx.ui_sellLangBlocked ?? 'Gjuha e shitjes nuk lejohet (fjalë e ndaluar: "{word}").').replace(
-            "{word}",
-            blocked,
-          ),
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-    if (isDhurataCategory && !data.price_agreement && data.price > 0) {
-      toast({ title: DHURATA_PRICE_ZERO_MESSAGE, variant: "destructive" });
-      return;
-    }
-    if (isAutoPjese(parentName)) {
-      if (!data.category_id || Number(data.category_id) < 1) {
-        toast({ title: t.ap_post_err_part, variant: "destructive" });
-        return;
-      }
-      if (!data.xMarka?.trim() || !data.xModeli?.trim() || !data.xViti?.trim()) {
-        toast({ title: t.ap_post_err_compat, variant: "destructive" });
-        return;
-      }
-    }
-    const extraText = buildExtraText(data);
-    const finalDescription = extraText + data.description;
-    const blockedWord = findBlockedWordClient(`${data.title} ${finalDescription}`);
-    if (blockedWord) {
-      toast({
-        title: `Përmbajtja përmban fjalë të ndaluara: "${blockedWord}".`,
-        variant: "destructive",
-      });
-      return;
-    }
-    if (hasPhoneInDescriptionClient(finalDescription)) {
-      toast({
-        title: "Numri i telefonit nuk lejohet në përshkrim. Vendoseni vetëm në fushën e telefonit.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (hasExternalLinkClient(finalDescription)) {
-      toast({
-        title: "Linqet e jashtme nuk lejohen në përshkrim.",
-        variant: "destructive",
-      });
-      return;
-    }
+    const finalDescription = validation.extraDescriptionPrefix + data.description;
     const contact =
       user && !userNeedsSellerProfile(user)
         ? sellerContactFromUser(user)
@@ -576,8 +430,8 @@ export default function NewListing() {
     const payload: Record<string, unknown> = {
       title: data.title,
       description: finalDescription,
-      price: isKerkojCategory || isDhurataCategory || data.price_agreement ? 0 : data.price,
-      price_agreement: isKerkojCategory || isDhurataCategory ? false : data.price_agreement,
+      price: validation.price,
+      price_agreement: validation.price_agreement,
       lang: market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq",
       category_id: data.brand_category_id || data.category_id || data.parent_category_id,
       location: data.location,
@@ -586,15 +440,7 @@ export default function NewListing() {
       condition: data.condition,
       image_url: joinListingImageUrls(imageUrls) ?? undefined,
       is_featured: false,
-      ...((isVetura(parentName) || isAutoPjese(parentName))
-        ? {
-            vehicle_year: parseVehicleYear(data.xViti) ?? null,
-            vehicle_mileage_km: isVetura(parentName) ? parseVehicleKm(data.xKm) ?? null : null,
-            vehicle_fuel: isVetura(parentName) ? data.xKarburanti || null : null,
-            vehicle_body_type: isVetura(parentName) ? data.xTipi || null : null,
-            vehicle_model: data.xModeli || null,
-          }
-        : {}),
+      ...validation.payloadExtras,
     };
 
     void fetchWithTimeout("/api/listings", {
@@ -881,9 +727,9 @@ export default function NewListing() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        {parentName === "Vetura"
+                        {postFields.subcategoryLabelMode === "vetura"
                           ? t.bodyTypeLabel
-                          : isAutoPjese(parentName)
+                          : postFields.subcategoryLabelMode === "autoPjese"
                             ? t.ap_sec_parts
                             : t.subcategory}{" "}
                         <span className="text-red-500">*</span>
@@ -906,7 +752,7 @@ export default function NewListing() {
                 />
               )}
 
-              {hasBrands && !isAutoPjese(parentName) && (
+              {hasBrands && !postFields.showAutoPjese && (
                 <FormField
                   control={form.control}
                   name="brand_category_id"
@@ -932,7 +778,7 @@ export default function NewListing() {
             </Section>
 
             {/* ── 3. Extra fields ── */}
-            {isAutoPjese(parentName) && (
+            {postFields.showAutoPjese && (
               <Section title={t.ap_sec_compat} icon={Car}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {[
@@ -971,7 +817,7 @@ export default function NewListing() {
               </Section>
             )}
 
-            {isVetura(parentName) && (
+            {postFields.showVetura && (
               <Section title={t.carDetails} icon={Car}>
                 {/* Row 1: Brand + Model */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1177,7 +1023,7 @@ export default function NewListing() {
               </Section>
             )}
 
-            {isRealEstate(parentName) && (
+            {postFields.showRealEstate && (
               <Section title={t.houseDetails} icon={HomeIcon}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {[
@@ -1217,7 +1063,7 @@ export default function NewListing() {
               </Section>
             )}
 
-            {isPhone(parentName) && (
+            {postFields.showPhone && (
               <Section title={t.phoneDetails} icon={Smartphone}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {[
@@ -1470,14 +1316,14 @@ export default function NewListing() {
 
             {/* ── 9. Condition ── */}
             {!isDhurataCategory && (
-            <Section title={isAutoPjese(parentName) ? t.ap_sec_condition : t.conditionField}>
+            <Section title={postFields.useAutoPjeseConditionLabels ? t.ap_sec_condition : t.conditionField}>
               <FormField
                 control={form.control}
                 name="condition"
                 render={({ field }) => (
                   <FormItem>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      {(isAutoPjese(parentName)
+                      {(postFields.useAutoPjeseConditionLabels
                         ? [
                             { value: "New", label: t.ap_cond_new, sub: "", color: "border-green-500 bg-green-50" },
                             { value: "Used", label: t.ap_cond_used, sub: "", color: "border-blue-500 bg-blue-50" },

@@ -146,6 +146,7 @@ import { getKafshetLeafCategoryIds } from "@/lib/kafshet-search-helpers";
 import { DhurataFalasHubIntro } from "@/components/dhurata-falas-hub-intro";
 import { DhurataFalasHeroSlideshow } from "@/components/dhurata-falas-hero-slideshow";
 import { isDhurataFalasSlug, isKerkojTeBlejSlug } from "@/lib/special-listing-categories";
+import { categoryEngine, type CategoryRow } from "@/services/CategoryEngine";
 import { TvElektronikeSearchPanel } from "@/components/tv-elektronike-search-panel";
 import { KompjuterLaptopHubPanel } from "@/components/kompjuter-laptop-hub-panel";
 import {
@@ -724,50 +725,52 @@ export default function CategoryPage() {
 
   const currentSlug = (currentCategory as { slug?: string | null })?.slug ?? "";
 
-  const isFemijeGroupPage =
-    !!(parentCategory as { slug?: string })?.slug &&
-    (parentCategory as { slug?: string }).slug === FEMIJE_HUB_SLUG &&
-    currentSlug.startsWith("femije-grp-");
+  const catEngine = useMemo(
+    () => categoryEngine((allCategories ?? []) as CategoryRow[]),
+    [allCategories],
+  );
+  const hub = useMemo(
+    () => catEngine.getPageProfile(Number(categoryId)),
+    [catEngine, categoryId],
+  );
+  const categoryFilters = useMemo(
+    () => catEngine.getFilters(Number(categoryId)),
+    [catEngine, categoryId],
+  );
 
-  const isFemijeLeafPage =
-    currentSlug.startsWith("femije-leaf-") ||
-    (currentSlug.startsWith("femije-type-") && children.length === 0);
-
-  const isVeturaHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === VETURA_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
-
-  const isKamioneFurgoneHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === KAMIONE_FURGONE_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
-
-  const isBanesaShtepiHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === BANESA_SHTEPI_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
+  const {
+    isFemijeGroupPage,
+    isFemijeLeafPage,
+    isVeturaHub,
+    isKamioneFurgoneHub,
+    isBanesaShtepiHub,
+    isMotorSkuterHub,
+    isAutoPjesHub,
+    isSportOutdoorHub,
+    isLokaleZyreHub,
+    isTelefonaHubPage,
+    isArsimKurseHub,
+    isMobiljeDekorimHub,
+    isRrobaKepuceHub,
+    isFemijeHub,
+    isPuneSherbimeHub,
+    isBujqesiBlegtoriHub,
+    isMuzikeHobbyHub,
+    isKafshetHub,
+    isTvElektronikeHub,
+    isKompjuterLaptopHub,
+    isKompjuterTypePage,
+    isDhurataFalasHub,
+    isKerkojTeBlejHub,
+    isParentCategoryHub,
+    isGiftOrRequestHeroHub,
+  } = hub;
 
   const banesaCardFromSearch = useMemo((): string | null => {
     const raw = new URLSearchParams(urlSearch).get("prop");
     return raw && raw.trim() ? raw : null;
   }, [urlSearch]);
   const isBanesaVirtualTypePage = isBanesaShtepiHub && banesaCardFromSearch != null;
-
-  const isMotorSkuterHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === MOTOR_SKUTER_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
-
-  const isAutoPjesHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === AUTO_PJESE_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
-
-  const isSportOutdoorHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === SPORT_OUTDOOR_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
 
   const isSportTypePage =
     !!(parentCategory as any) &&
@@ -792,16 +795,6 @@ export default function CategoryPage() {
     }
     return categoryId;
   }, [isSportOutdoorHub, categoryId, parentCategory]);
-
-  const isLokaleZyreHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === LOKALE_ZYRE_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
-
-  const isTelefonaHubPage =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === TELEFONA_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
 
   const telDeviceFromSearch = useMemo((): TelDeviceKey | null => {
     const raw = new URLSearchParams(urlSearch).get("device");
@@ -857,26 +850,6 @@ export default function CategoryPage() {
       ? telBrandFromSearch
       : null;
 
-  const isArsimKurseHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === ARSIM_KURSE_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
-
-  const isMobiljeDekorimHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === MOBILJE_DEKORIM_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
-
-  const isRrobaKepuceHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === RROBA_KEPUCE_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
-
-  const isFemijeHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === FEMIJE_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
-
   const femijeHubCategoryId = useMemo(() => {
     if (isFemijeHub) return categoryId;
     if ((parentCategory as { slug?: string })?.slug === FEMIJE_HUB_SLUG) {
@@ -887,41 +860,6 @@ export default function CategoryPage() {
     }
     return categoryId;
   }, [isFemijeHub, categoryId, parentCategory, grandparentCategory]);
-
-  const isPuneSherbimeHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === PUNE_SHERBIME_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
-
-  const isBujqesiBlegtoriHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === BUJQESI_BLEGTORI_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
-
-  const isMuzikeHobbyHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === MUZIKE_HOBBY_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
-
-  const isKafshetHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === KAFSHET_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
-
-  const isDhurataFalasHub =
-    !!(currentCategory as any) &&
-    isDhurataFalasSlug((currentCategory as any).slug) &&
-    !(currentCategory as any).parent_id;
-
-  const isKerkojTeBlejHub =
-    !!(currentCategory as any) &&
-    isKerkojTeBlejSlug((currentCategory as any).slug) &&
-    !(currentCategory as any).parent_id;
-
-  const isTvElektronikeHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === TV_ELEKTRONIKE_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
 
   const drillDownHubKey = useMemo((): HubDrillDownRegistryKey | null => {
     if (isKafshetHub) return "kafshet";
@@ -974,16 +912,6 @@ export default function CategoryPage() {
     return categoryId;
   }, [drillDownHubKey, drillDownTypeHubKey, categoryId, parentCategory]);
 
-  const isKompjuterLaptopHub =
-    !!(currentCategory as any) &&
-    (currentCategory as any).slug === KOMPJUTERE_LAPTOP_HUB_SLUG &&
-    !(currentCategory as any).parent_id;
-
-  const isKompjuterTypePage =
-    parentCategory != null &&
-    (parentCategory as { slug?: string }).slug === KOMPJUTERE_LAPTOP_HUB_SLUG &&
-    isKompjuterHubTypeName((currentCategory as { name?: string })?.name ?? "");
-
   const kompjuterHubCategoryId = useMemo(() => {
     if (isKompjuterLaptopHub) return categoryId;
     if (isKompjuterTypePage && parentCategory) {
@@ -999,127 +927,27 @@ export default function CategoryPage() {
     );
   }, [allCategories, kompjuterHubCategoryId]);
 
-  const isParentCategoryHub =
-    isVeturaHub ||
-    isKamioneFurgoneHub ||
-    isBanesaShtepiHub ||
-    isMotorSkuterHub ||
-    isAutoPjesHub ||
-    isSportOutdoorHub ||
-    isLokaleZyreHub ||
-    isTelefonaHubPage ||
-    isArsimKurseHub ||
-    isMobiljeDekorimHub ||
-    isRrobaKepuceHub ||
-    isFemijeHub ||
-    isPuneSherbimeHub ||
-    isBujqesiBlegtoriHub ||
-    isMuzikeHobbyHub ||
-    isKafshetHub ||
-    isTvElektronikeHub ||
-    isKompjuterLaptopHub;
+  const {
+    veturaBrand: veturaBrandLeafCsv,
+    kamioneBrand: kamioneBrandLeafCsv,
+    banesa: banesaLeafCsv,
+    motorBrand: motorBrandLeafCsv,
+    autoPjese: autoPjeseLeafCsv,
+    sportOutdoor: sportOutdoorLeafCsv,
+    lokaleZyre: lokaleZyreLeafCsv,
+    telefona: telefonaLeafCsv,
+    arsimKurse: arsimKurseLeafCsv,
+    mobiljeDekorim: mobiljeDekorimLeafCsv,
+    rrobaKepuce: rrobaKepuceLeafCsv,
+    femije: femijeLeafCsv,
+    puneSherbime: puneSherbimeLeafCsv,
+    bujqesiBlegtori: bujqesiBlegtoriLeafCsv,
+    muzikeHobby: muzikeHobbyLeafCsv,
+    kafshet: kafshetLeafCsv,
+    tvElektronike: tvElektronikeLeafCsv,
+  } = categoryFilters.leafCsv;
 
-  const autoPjeseLeafCsv = useMemo(() => {
-    if (!allCategories || !isAutoPjesHub) return "";
-    const ids = getAutoPiesePartTypeCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isAutoPjesHub]);
-
-  const sportOutdoorLeafCsv = useMemo(() => {
-    if (!allCategories || !isSportOutdoorHub) return "";
-    const ids = getSportOutdoorLeafCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isSportOutdoorHub]);
-
-  const lokaleZyreLeafCsv = useMemo(() => {
-    if (!allCategories || !isLokaleZyreHub) return "";
-    const ids = getLokaleZyreLeafCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isLokaleZyreHub]);
-
-  const telefonaLeafCsv = useMemo(() => {
-    if (!allCategories || !isTelefonaHubPage) return "";
-    const ids = getTelefonaHubChildCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isTelefonaHubPage]);
-
-  const arsimKurseLeafCsv = useMemo(() => {
-    if (!allCategories || !isArsimKurseHub) return "";
-    const ids = getArsimKurseLeafCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isArsimKurseHub]);
-
-  const mobiljeDekorimLeafCsv = useMemo(() => {
-    if (!allCategories || !isMobiljeDekorimHub) return "";
-    const ids = getMobiljeDekorimLeafCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isMobiljeDekorimHub]);
-
-  const rrobaKepuceLeafCsv = useMemo(() => {
-    if (!allCategories || !isRrobaKepuceHub) return "";
-    const ids = getRrobaKepuceLeafCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isRrobaKepuceHub]);
-
-  const femijeLeafCsv = useMemo(() => {
-    if (!allCategories || !isFemijeHub) return "";
-    const ids = getFemijeLeafCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isFemijeHub]);
-
-  const puneSherbimeLeafCsv = useMemo(() => {
-    if (!allCategories || !isPuneSherbimeHub) return "";
-    const ids = getPuneSherbimeLeafCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isPuneSherbimeHub]);
-
-  const bujqesiBlegtoriLeafCsv = useMemo(() => {
-    if (!allCategories || !isBujqesiBlegtoriHub) return "";
-    const ids = getBujqesiBlegtoriLeafCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isBujqesiBlegtoriHub]);
-
-  const muzikeHobbyLeafCsv = useMemo(() => {
-    if (!allCategories || !isMuzikeHobbyHub) return "";
-    const ids = getMuzikeHobbyLeafCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isMuzikeHobbyHub]);
-
-  const kafshetLeafCsv = useMemo(() => {
-    if (!allCategories || !isKafshetHub) return "";
-    const ids = getKafshetLeafCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isKafshetHub]);
-
-  const tvElektronikeLeafCsv = useMemo(() => {
-    if (!allCategories || !isTvElektronikeHub) return "";
-    const ids = getTvElektronikeLeafCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isTvElektronikeHub]);
-
-  const veturaBrandLeafCsv = useMemo(() => {
-    if (!allCategories || !isVeturaHub) return "";
-    const ids = getVeturaBrandLeafCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isVeturaHub]);
-
-  const kamioneBrandLeafCsv = useMemo(() => {
-    if (!allCategories || !isKamioneFurgoneHub) return "";
-    const ids = getKamioneBrandLeafCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isKamioneFurgoneHub]);
-
-  const banesaLeafCsv = useMemo(() => {
-    if (!allCategories || !isBanesaShtepiHub) return "";
-    const ids = getBanesaLeafCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isBanesaShtepiHub]);
-
-  const motorBrandLeafCsv = useMemo(() => {
-    if (!allCategories || !isMotorSkuterHub) return "";
-    const ids = getMotorBrandLeafCategoryIds(allCategories as any, categoryId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [allCategories, categoryId, isMotorSkuterHub]);
+  const hubResultsId = categoryFilters.hubResultsId;
 
   const [veturaListParams, setVeturaListParams] = useState<GetListingsParams | null>(null);
   const [kamioneListParams, setKamioneListParams] = useState<GetListingsParams | null>(null);
@@ -1497,64 +1325,40 @@ export default function CategoryPage() {
       : translateCategory(currentCategory?.name ?? "", locale);
   const Icon = getCatIcon(currentCategory?.icon ?? "Car");
 
-  const crumbItems: { label: string; href?: string }[] = [{ label: "KetuJemi", href: "/" }];
-  if (grandparentCategory) crumbItems.push({ label: translateCategory(grandparentCategory.name, locale), href: categoryPath(grandparentCategory.id) });
-  if (parentCategory) crumbItems.push({ label: translateCategory(parentCategory.name, locale), href: categoryPath(parentCategory.id) });
-  if (isSportTypePage && sportTypeKey) {
-    crumbItems.push({
-      label: translateCategory(currentCategory?.name ?? "", locale),
-      href: isSportDeviceLeafPage ? categoryPath(currentCategory as CategoryRef) : undefined,
-    });
-    if (isSportDeviceLeafPage && sportDeviceKey) {
-      crumbItems.push({ label: t[SPORT_DEVICE_LABEL_KEY[sportDeviceKey]] ?? sportDeviceKey });
+  const crumbItems = useMemo(() => {
+    const items = catEngine.getBreadcrumb(Number(categoryId), locale);
+    if (isSportTypePage && sportTypeKey) {
+      const last = items[items.length - 1];
+      if (last) {
+        last.href = isSportDeviceLeafPage ? categoryPath(currentCategory as CategoryRef) : undefined;
+      }
+      if (isSportDeviceLeafPage && sportDeviceKey) {
+        items.push({ label: t[SPORT_DEVICE_LABEL_KEY[sportDeviceKey]] ?? sportDeviceKey });
+      }
+      return items;
     }
-  } else {
-    crumbItems.push({ label: translateCategory(currentCategory?.name ?? "", locale) });
     if (isTelefonaVirtualTypePage && activeTelefonaTypeKey) {
-      crumbItems.push({ label: t[TEL_DEVICE_LABEL_KEY[activeTelefonaTypeKey]] });
+      items.push({ label: t[TEL_DEVICE_LABEL_KEY[activeTelefonaTypeKey]] });
     }
     if (isTelefonaVirtualBrandPage && telBrandFromSearch) {
-      crumbItems.push({ label: t[TEL_BRAND_GROUP_LABEL_KEY[telBrandFromSearch]] });
+      items.push({ label: t[TEL_BRAND_GROUP_LABEL_KEY[telBrandFromSearch]] });
     }
-  }
-
-  const hubResultsId = isVeturaHub
-    ? "vetura-results"
-    : isKamioneFurgoneHub
-      ? "kamione-results"
-      : isBanesaShtepiHub
-        ? "banesa-results"
-        : isMotorSkuterHub
-          ? "motorr-results"
-          : isAutoPjesHub
-            ? "auto-pjese-results"
-            : isSportOutdoorHub
-              ? "sport-outdoor-results"
-              : isLokaleZyreHub
-                ? "lokale-zyre-results"
-                : isTelefonaHubPage
-                  ? "telefona-results"
-                  : isArsimKurseHub
-                    ? "arsim-kurse-results"
-                    : isMobiljeDekorimHub
-                      ? "mobilje-dekorim-results"
-                      : isRrobaKepuceHub
-                        ? "rroba-kepuce-results"
-                        : isFemijeHub
-                          ? "femije-results"
-                          : isPuneSherbimeHub
-                            ? "pune-sherbime-results"
-                            : isBujqesiBlegtoriHub
-                              ? "bujqesi-blegtori-results"
-                              : isMuzikeHobbyHub
-                                ? "muzike-hobby-results"
-                                : isKafshetHub
-                                  ? "kafshet-results"
-                                  : isTvElektronikeHub
-                                    ? "tv-elektronike-results"
-                                    : isKompjuterLaptopHub || isKompjuterTypePage
-                                      ? "kompjuter-results"
-                                      : undefined;
+    return items;
+  }, [
+    catEngine,
+    categoryId,
+    locale,
+    isSportTypePage,
+    sportTypeKey,
+    isSportDeviceLeafPage,
+    sportDeviceKey,
+    currentCategory,
+    isTelefonaVirtualTypePage,
+    activeTelefonaTypeKey,
+    isTelefonaVirtualBrandPage,
+    telBrandFromSearch,
+    t,
+  ]);
 
   const renderListingsSection = () => (
     <div ref={resultsAnchorRef} id={hubResultsId} className="scroll-mt-28">
@@ -1638,8 +1442,6 @@ export default function CategoryPage() {
       ) : null}
     </div>
   );
-
-  const isGiftOrRequestHeroHub = isKerkojTeBlejHub || isDhurataFalasHub;
 
   return (
     <div className="min-h-screen bg-gray-50">
