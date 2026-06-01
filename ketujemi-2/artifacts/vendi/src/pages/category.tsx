@@ -823,16 +823,33 @@ export default function CategoryPage() {
     return null;
   }, [currentSlug]);
 
+  const telBrandFromCategorySlug = useMemo((): TelBrandGroupKey | null => {
+    for (const k of TEL_BRAND_GROUP_KEYS) {
+      const slug = TEL_BRAND_GROUP_SLUG[k];
+      if (slug === currentSlug) return k;
+    }
+    return null;
+  }, [currentSlug]);
+
   const isTelefonaVirtualTypePage = isTelefonaHubPage && telDeviceFromSearch != null;
   const isTelefonaVirtualBrandPage = isTelefonaHubPage && telBrandFromSearch != null;
   const isTelefonaTypePage =
     !!parentCategory &&
     (parentCategory as { slug?: string }).slug === TELEFONA_HUB_SLUG &&
     telefonaTypeBySlug != null;
+  const isTelefonaBrandCategoryPage =
+    !!parentCategory &&
+    (parentCategory as { slug?: string }).slug === TELEFONA_HUB_SLUG &&
+    telBrandFromCategorySlug != null;
   const activeTelefonaTypeKey: TelDeviceKey | null = isTelefonaTypePage
     ? telefonaTypeBySlug
     : isTelefonaVirtualTypePage
       ? telDeviceFromSearch
+      : null;
+  const activeTelefonaBrandKey: TelBrandGroupKey | null = isTelefonaBrandCategoryPage
+    ? telBrandFromCategorySlug
+    : isTelefonaVirtualBrandPage
+      ? telBrandFromSearch
       : null;
 
   const isArsimKurseHub =
@@ -1983,7 +2000,11 @@ export default function CategoryPage() {
           />
         ) : null}
 
-        {isTelefonaHubPage && !isTelefonaVirtualTypePage && !isTelefonaVirtualBrandPage && telefonaLeafCsv ? (
+        {isTelefonaHubPage &&
+        !isTelefonaVirtualTypePage &&
+        !isTelefonaVirtualBrandPage &&
+        !isTelefonaBrandCategoryPage &&
+        telefonaLeafCsv ? (
           <>
             <TelefonaSearchPanel
               hubId={categoryId}
@@ -2012,12 +2033,17 @@ export default function CategoryPage() {
 
         {(isTelefonaVirtualTypePage ||
           isTelefonaTypePage ||
-          isTelefonaVirtualBrandPage) ? (
+          isTelefonaVirtualBrandPage ||
+          isTelefonaBrandCategoryPage) ? (
           <TelefonaSearchPanel
             variant="type"
             fixedDeviceKey={activeTelefonaTypeKey ?? undefined}
-            fixedBrandGroup={isTelefonaVirtualBrandPage ? telBrandFromSearch ?? undefined : undefined}
-            hubId={isTelefonaTypePage && parentCategory ? (parentCategory as any).id : categoryId}
+            fixedBrandGroup={activeTelefonaBrandKey ?? undefined}
+            hubId={
+              (isTelefonaTypePage || isTelefonaBrandCategoryPage) && parentCategory
+                ? (parentCategory as any).id
+                : categoryId
+            }
             categories={allCategories as any}
             previewTotal={listingsData?.total ?? null}
             previewLoading={isLoading}
@@ -2191,12 +2217,16 @@ export default function CategoryPage() {
           <VipPartnersSection variant="hub" categoryId={categoryId} className="my-8" />
         ) : null}
 
-        {(!isTelefonaHubPage || isTelefonaVirtualTypePage || isTelefonaVirtualBrandPage) &&
+        {(!isTelefonaHubPage ||
+          isTelefonaVirtualTypePage ||
+          isTelefonaVirtualBrandPage ||
+          isTelefonaBrandCategoryPage) &&
           (isSportDeviceLeafPage ||
             (isDrillDownTypePage && !!drillDownTypeKey) ||
             isFemijeLeafPage ||
             isTelefonaVirtualTypePage ||
             isTelefonaVirtualBrandPage ||
+            isTelefonaBrandCategoryPage ||
             isKompjuterTypePage ||
             isDhurataFalasHub ||
             isKerkojTeBlejHub ||
