@@ -112,7 +112,7 @@ const KS: StaticPagesCopy = {
   about: {
     title: "Rreth KetuJemi — Bli & Shit",
     tagline:
-      "KetuJemi — Bli & Shit është platforma e shpalljeve falas në 11 tregje: Kosovë, Shqipëri, Maqedoni, Mal i Zi dhe diaspora shqiptare.",
+      "KetuJemi — Bli & Shit është platforma e shpalljeve falas në 4 tregje: Kosovë, Shqipëri, Maqedoni e Veriut dhe Mal i Zi.",
     sections: [
       {
         title: "Operatori i platformës",
@@ -125,21 +125,35 @@ const KS: StaticPagesCopy = {
         title: "Misioni ynë",
         paragraphs: [
           "Lidhim blerësit dhe shitësit shpejt, thjesht dhe në mënyrë të sigurt — pa komisione të fshehura për postimin bazë.",
-          "Platforma shërben si hapësirë ndërmjetëse; marrëveshja e çmimit dhe dorëzimit bëhet drejtpërdrejt mes palëve.",
+          "Platforma shërben si hapësirë ndërmjetëse; marrëveshja e çmimit dhe dorëzimit bëhet drejtpërdrejt mes palëve. KetuJemi.com nuk është palë në asnjë transaksion mes blerësve dhe shitësve.",
         ],
       },
       {
         title: "Ku operojmë",
-        bulletsIntro: "Tregjet zyrtare dhe diaspora:",
+        bulletsIntro: "Tregjet zyrtare:",
+        bullets: ["Kosovë, Shqipëri, Maqedoni e Veriut, Mal i Zi"],
+        paragraphsAfter: [
+          "Platforma është e disponueshme edhe për diasporën shqiptare kudo në botë — mund të postoni dhe shikoni njoftime pa kufizim gjeografik.",
+        ],
+      },
+      {
+        title: "Çfarë ofrojmë",
         bullets: [
-          "Kosovë, Shqipëri, Maqedoni e Veriut, Mal i Zi",
-          "Diaspora: Gjermani, Zvicër, Austri, Francë, Itali, Angli, SHBA",
+          "10 postime falas në muaj për çdo kategori kryesore — gjithmonë, për çdo përdorues privat",
+          "Deri 10 foto për njoftim (ruajtje përmes Cloudinary)",
+          "Verifikim SMS për siguri maksimale të përdoruesve",
+          "Sistem mesazhesh i integruar për komunikim të sigurt mes palëve",
+          "Njoftime aktive deri 3 muaj — fshihen automatikisht pas skadimit",
         ],
       },
       {
         title: "Kontakt",
-        paragraphs: [
-          "Për pyetje, partneritete ose mbështetje: info@ketujemi.com dhe support@ketujemi.com, ose përdorni formularin te «Na kontaktoni».",
+        paragraphs: ["Për pyetje, partneritete ose mbështetje:"],
+        bullets: [
+          "Email: info@ketujemi.com · support@ketujemi.com",
+          "Telefon: +383 43 555 294",
+          "Formular kontakti: www.ketujemi.com/kontakt",
+          "Orari i punës: E hënë – E premte, 09:00 – 17:00",
         ],
       },
     ],
@@ -403,17 +417,37 @@ const KS: StaticPagesCopy = {
     tagline: "Si përdorim cookie në KetuJemi.com.",
     sections: [
       {
-        title: "Llojet e cookie",
+        title: "Çfarë janë cookies",
+        paragraphs: [
+          "Cookies janë skedarë të vegjël teksti që ruhen në pajisjen tuaj kur vizitoni një faqe interneti. I përdorim për të siguruar funksionimin e duhur të platformës dhe për të përmirësuar përvojën tuaj.",
+        ],
+      },
+      {
+        title: "Llojet e cookies që përdorim",
         bullets: [
-          "Të nevojshme: kyçja në llogari dhe siguria e sesionit",
-          "Funksionale: preferenca (p.sh. tregu / gjuhë)",
-          "Analitike: **Google Analytics 4** — faqe të vizituara, numër vizitorësh, vend i përafërt (shtet/qytet); IP e anonimizuar",
+          "Të nevojshme — të detyrueshme për funksionimin bazë: kyçja në llogari, siguria e sesionit, mbajtja gjatë navigimit. Këto nuk mund të çaktivizohen.",
+          "Funksionale — ruajnë preferencat tuaja si tregu i zgjedhur (Kosovë / Shqipëri / etj.) dhe gjuha. Pa to, do t'ju duhet të zgjidhni çdo herë nga fillimi.",
+          "Analitike — Google Analytics 4: mbledhim të dhëna anonime si faqe të vizituara, numër vizitorësh dhe vendndodhja e përafërt (shtet/qytet). Adresat IP anonimizohen — nuk identifikojmë persona individualë.",
+        ],
+      },
+      {
+        title: "Çfarë NUK bëjmë me cookies",
+        bullets: [
+          "Nuk përdorim cookies reklamash ose tracking të palëve të treta",
+          "Nuk ndajmë të dhëna nga cookies me kompani reklamuese",
+          "Nuk ndërtojmë profil reklamues bazuar në sjelljen tuaj",
         ],
       },
       {
         title: "Kontrolli juaj",
         paragraphs: [
-          "Mund t'i fikni ose fshini cookie në cilësimet e shfletuesit. Disa funksione (si qëndrimi i kyçur) mund të mos punojnë pa to.",
+          'Mund t\'i fikni ose fshini cookies në cilësimet e shfletuesit tuaj në çdo kohë. Disa funksione (si qëndrimi i kyçur) mund të mos punojnë pa cookies të nevojshme. Për instruksione sipas shfletuesit: Chrome, Firefox, Safari, Edge — shikoni menunë "Cilësimet → Privatësia".',
+        ],
+      },
+      {
+        title: "Ndryshimet",
+        paragraphs: [
+          "Kjo politikë mund të përditësohet. Versioni aktual publikohet gjithmonë në këtë faqe.",
         ],
       },
     ],
