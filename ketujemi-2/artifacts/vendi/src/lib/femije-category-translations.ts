@@ -1,3 +1,5 @@
+import { CAT_EN_GENERATED } from "./category-translations-en.generated";
+
 /** Fëmijë extended subcategory names (sq base) → mk / mne. */
 export const FEMIJE_CAT_TRANSLATIONS: Record<string, { mk: string; mne: string }> = {
   "Karroca & Transport": { mk: "Колички & Транспорт", mne: "Kolica & Transport" },
@@ -108,7 +110,7 @@ export function translateFemijeCategory(
 ): string | undefined {
   const row = FEMIJE_CAT_TRANSLATIONS[name];
   if (!row) return undefined;
-  if (localeCode === "en") return row.mne;
+  if (localeCode === "en") return CAT_EN_GENERATED[name] ?? name;
   if (localeCode !== "mk" && localeCode !== "mne") return undefined;
   return row[localeCode];
 }

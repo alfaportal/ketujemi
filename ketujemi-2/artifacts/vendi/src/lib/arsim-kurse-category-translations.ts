@@ -1,3 +1,5 @@
+import { CAT_EN_GENERATED } from "./category-translations-en.generated";
+
 /** Arsim & Kurse taxonomy names (sq base from DB) → mk / mne. */
 
 export const ARSIM_CAT_TRANSLATIONS: Record<string, { mk: string; mne: string }> = {
@@ -97,7 +99,7 @@ export function translateArsimKurseCategory(
 ): string | undefined {
   const row = ARSIM_CAT_TRANSLATIONS[name];
   if (!row) return undefined;
-  if (localeCode === "en") return row.mne;
+  if (localeCode === "en") return CAT_EN_GENERATED[name] ?? name;
   if (localeCode !== "mk" && localeCode !== "mne") return undefined;
   return row[localeCode];
 }

@@ -66,6 +66,7 @@ const KS_EXTRA: Record<string, string> = {
   home_partnerStandardPlaceholder: "Partner",
   home_partnerEmptySignupVip: "Regjistrohu si VIP Partner",
   home_partnerEmptySignupStandard: "Regjistrohu si Partner",
+  home_categoriesLoadError: "Kategoritë nuk u ngarkuan. Rifreskoni faqen.",
   home_topListingsHeading: "TOP Njoftime",
   home_topListingsRowLabel: "TOP Njoftime",
   hub_partnerVipPlaceholder: "VIP Partner",

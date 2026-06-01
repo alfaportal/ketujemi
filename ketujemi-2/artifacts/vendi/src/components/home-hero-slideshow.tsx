@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useMarket } from "@/lib/market-context";
+import { translationKeyForUiLang } from "@/lib/ui-languages";
+import { translateCategory } from "@/lib/category-translations";
 
 const HOME_HERO_SLIDESHOW_MS = 10_000;
 
@@ -48,6 +51,8 @@ const HOME_HERO_SLIDES = [
 
 /** Full-bleed background slideshow for the homepage hero only. */
 export function HomeHeroSlideshow() {
+  const { uiLang } = useMarket();
+  const locale = translationKeyForUiLang(uiLang);
   const [currentIndex, setCurrentIndex] = useState(0);
   const count = HOME_HERO_SLIDES.length;
 
@@ -82,7 +87,7 @@ export function HomeHeroSlideshow() {
             i === currentIndex ? "opacity-100" : "opacity-0",
           )}
         >
-          {slide.label}
+          {translateCategory(slide.label, locale)}
         </p>
       ))}
     </div>

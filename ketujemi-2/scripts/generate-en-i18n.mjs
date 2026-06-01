@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { applyEnglishPhrases } from "./english-phrases.mjs";
+import { categoryEnglishFromKs } from "./category-en-from-ks.mjs";
 
 /** Fallback word-level Albanian → English for long static paragraphs. */
 const AL_WORDS = [
@@ -147,17 +148,35 @@ function extractObjectBlock(source, startMarker, endMarker) {
   throw new Error(`Unclosed block after ${startMarker}`);
 }
 
+function unescapeTsString(raw) {
+  return raw.replace(/\\n/g, "\n").replace(/\\"/g, '"').replace(/\\'/g, "'");
+}
+
 function parseRecordEntries(body) {
-  const entries = [];
-  const re = /^\s+(\w+):\s*(?:"((?:\\.|[^"\\])*)"|`([\s\S]*?)`),?\s*$/gm;
+  const byKey = new Map();
+  const add = (key, value) => {
+    if (key && value !== undefined) byKey.set(key, unescapeTsString(value));
+  };
+
+  // key:\n    "value" or 'value'
+  const multiRe =
+    /^\s+(\w+):\s*\n\s*(["'])((?:\\.|(?!\2)[\s\S])*?)\2,?\s*$/gm;
   let m;
-  while ((m = re.exec(body)) !== null) {
-    entries.push({
-      key: m[1],
-      value: (m[2] ?? m[3] ?? "").replace(/\\n/g, "\n").replace(/\\"/g, '"'),
-    });
+  while ((m = multiRe.exec(body)) !== null) add(m[1], m[3]);
+
+  // key: "value" (same line)
+  const singleRe = /^\s+(\w+):\s*(["'])((?:\\.|(?!\2)[^\\2])*)\2,?\s*$/gm;
+  while ((m = singleRe.exec(body)) !== null) {
+    if (!byKey.has(m[1])) add(m[1], m[3]);
   }
-  return entries;
+
+  // key: `template`
+  const backtickRe = /^\s+(\w+):\s*`([\s\S]*?)`,?\s*$/gm;
+  while ((m = backtickRe.exec(body)) !== null) {
+    if (!byKey.has(m[1])) add(m[1], m[2]);
+  }
+
+  return [...byKey.entries()].map(([key, value]) => ({ key, value }));
 }
 
 function parseConstObject(filePath, constName) {
@@ -228,6 +247,45 @@ const KEY_OVERRIDES = {
   ui_postRequestBtn: "Post request",
   ui_paymentMethodsAria: "Payment methods",
   ui_diasporaMarketsTitle: "Germany, Switzerland, Austria, France, Italy, UK, USA, Montenegro",
+  home_partnerHeading: "Our trusted partners",
+  home_partnerEmptySignupVip: "Register as VIP Partner",
+  home_partnerEmptySignupStandard: "Register as Partner",
+  home_categoriesLoadError: "Categories could not load. Please refresh the page.",
+  home_topListingsHeading: "TOP LISTINGS",
+  home_topListingsRowLabel: "TOP LISTINGS",
+  nav_menuAria: "Open menu",
+  nav_menuTitle: "Menu",
+  nav_home: "Home",
+  nav_postShort: "Post",
+  login_heading: "Log in",
+  login_heading_register: "Sign up",
+  login_mode_login: "Log in",
+  login_mode_register: "Sign up",
+  login_submit_login: "Log in",
+  login_submit_register: "Create account",
+  login_welcomeBack: "Welcome back!",
+  login_forgotPassword: "Forgot your password? Reset via email",
+  login_forgotHint: "Enter your email — we will send a code to set a new password.",
+  login_resetHint: "Enter the code from your email and your new password.",
+  login_forgotBtn: "Send code",
+  login_resetBtn: "Save new password",
+  login_backToSignin: "← Back to email + password",
+  login_passwordResetDone: "Password updated. You are signed in.",
+  login_sub_login: "Enter your email or phone and password.",
+  login_sub_register: "Email or phone + password only. Takes a few seconds.",
+  login_sub_email_only: "Sign up or log in with email and password.",
+  login_sub_login_email_verify:
+    "Enter email and password — you will receive a code by email, then sign in.",
+  login_sub_register_email_verify:
+    "Sign up with email. You will receive a confirmation code by email.",
+  login_sub_register_email_only:
+    "New account: code by email. Already registered? Email + password — sign in immediately.",
+  login_smsDisabledHint:
+    "Phone sign-in is not active. Sign up with email (existing accounts too — you will receive a code).",
+  login_stripeBody:
+    "Linking a bank card as a payment method will be available soon via Stripe. For now you can only sign in with email or SMS.",
+  login_sub:
+    "To post listings, use email + password or SMS verification (Vonage).",
   ui_giftPledgeBack: "Back",
   ui_giftPledgeWarnTitle: "⚠️ READ CAREFULLY BEFORE YOU CONTINUE",
   ui_giftPledgeIntro1:
@@ -283,18 +341,15 @@ const KEY_OVERRIDES = {
   lz_country_ph: "Select country",
 };
 
-function toEnglish(key, ks, mne) {
+/** Keys where word-by-word replacement produces broken hybrid text. */
+function usesPhraseOnlyTranslation(key) {
+  return /^(login_|nav_|toast_|reg_|nf_|home_ad)/.test(key);
+}
+
+function toEnglish(key, ks, _mne) {
   if (KEY_OVERRIDES[key]) return KEY_OVERRIDES[key];
-  let base = ks;
-  if (mne && !CYRILLIC.test(mne)) base = mne;
-  let s = wordTranslate(base);
-  if (ALBANIAN_CHARS.test(s) || CYRILLIC.test(s)) {
-    s = wordTranslate(ks);
-  }
-  if (CYRILLIC.test(s) && mne && !CYRILLIC.test(mne)) {
-    s = wordTranslate(mne);
-  }
-  return s;
+  if (usesPhraseOnlyTranslation(key)) return translateStaticStringValue(ks);
+  return translateStringValue(ks);
 }
 
 function translateStringValue(value) {
@@ -336,8 +391,10 @@ function translateTsStringLiterals(chunk, staticPages = false) {
 const extraPath = path.join(vendiLib, "app-extra-i18n.ts");
 const extraSrc = fs.readFileSync(extraPath, "utf8");
 const ksBody = extractObjectBlock(extraSrc, "const KS_EXTRA", "const AL_OVERRIDES");
+const alBody = extractObjectBlock(extraSrc, "const AL_OVERRIDES", "const MK_EXTRA");
 const mneBody = extractObjectBlock(extraSrc, "const MNE_EXTRA", "export const EXTRA_TRANSLATIONS");
 const ksEntries = parseRecordEntries(ksBody);
+const alEntries = parseRecordEntries(alBody);
 const mneMap = Object.fromEntries(parseRecordEntries(mneBody).map((e) => [e.key, e.value]));
 
 const akKs = parseConstObject(path.join(vendiLib, "arsim-kurse-form-i18n.ts"), "KS");
@@ -349,11 +406,11 @@ const soMne = Object.fromEntries(
   parseConstObject(path.join(vendiLib, "sport-outdoor-device-i18n.ts"), "MNE").map((e) => [e.key, e.value]),
 );
 
+/** AL_OVERRIDES wins over KS_EXTRA (same as `al` bundle). */
 const allKeys = new Map();
-for (const e of [...ksEntries, ...akKs, ...soKs]) allKeys.set(e.key, e.value);
-for (const [key, ks] of allKeys) {
-  allKeys.set(key, ks);
-}
+for (const e of ksEntries) allKeys.set(e.key, e.value);
+for (const e of alEntries) allKeys.set(e.key, e.value);
+for (const e of [...akKs, ...soKs]) allKeys.set(e.key, e.value);
 
 const enEntries = [...allKeys.entries()]
   .sort(([a], [b]) => a.localeCompare(b))
@@ -423,8 +480,17 @@ let cm;
 while ((cm = catRe.exec(catBody)) !== null) {
   const name = cm[1];
   const ks = cm[2];
-  const mne = cm[4];
-  catEn[name] = toEnglish(name, ks, mne);
+  catEn[name] = categoryEnglishFromKs(ks);
+}
+
+const extraCatKeyRe = /"((?:\\.|[^"\\])+)"\s*:\s*\{\s*mk:/g;
+for (const file of ["femije-category-translations.ts", "arsim-kurse-category-translations.ts"]) {
+  const src = fs.readFileSync(path.join(vendiLib, file), "utf8");
+  let km;
+  while ((km = extraCatKeyRe.exec(src)) !== null) {
+    const name = km[1];
+    if (!catEn[name]) catEn[name] = categoryEnglishFromKs(name);
+  }
 }
 
 const catEnPath = path.join(vendiLib, "category-translations-en.generated.ts");

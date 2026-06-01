@@ -299,7 +299,8 @@ export default function HomePage() {
             : null}
           {categoriesError && !categoriesLoading ? (
             <p className="col-span-full text-sm text-red-600 py-4">
-              Kategoritë nuk u ngarkuan. Rifreskoni faqen.
+              {(t as { home_categoriesLoadError?: string }).home_categoriesLoadError ??
+                "Categories could not load. Please refresh the page."}
             </p>
           ) : null}
           {!categoriesLoading && !categoriesError
