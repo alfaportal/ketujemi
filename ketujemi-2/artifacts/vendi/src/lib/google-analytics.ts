@@ -8,7 +8,11 @@ declare global {
 }
 
 
-const MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID?.trim() ?? "";
+/** KetuJemi GA4 property — override with VITE_GA_MEASUREMENT_ID if needed. */
+const DEFAULT_MEASUREMENT_ID = "G-A396094792";
+
+const MEASUREMENT_ID =
+  import.meta.env.VITE_GA_MEASUREMENT_ID?.trim() || DEFAULT_MEASUREMENT_ID;
 
 let initialized = false;
 
