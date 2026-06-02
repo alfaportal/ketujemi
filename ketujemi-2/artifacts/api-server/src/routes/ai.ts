@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { getSessionUser } from "../lib/session-user";
 import { getPostingSuggestions } from "../lib/listing-posting-assistant";
+import { polishListingDescription } from "../lib/listing-description-polish";
 import { suggestListingCategory } from "../lib/listing-category-suggest";
 import { getSimilarListingsForListing } from "../lib/listing-ai-recommendations";
 import { runSupportChat, supportChatFallbackReply, type ChatMessage } from "../lib/support-chatbot";
@@ -41,6 +42,29 @@ router.post("/ai/posting-suggestions", async (req, res) => {
   );
 
   res.json({ suggestions, ai_enabled: isClaudeConfigured() });
+});
+
+// ─── POST /ai/polish-listing-description ────────────────────────────────────────
+router.post("/ai/polish-listing-description", async (req, res) => {
+  const viewer = await getSessionUser(req);
+  if (!viewer) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+
+  const body = req.body as { title?: string; description?: string; lang?: string };
+  const description = typeof body.description === "string" ? body.description : "";
+  const polished = await polishListingDescription(
+    { title: typeof body.title === "string" ? body.title : "", description },
+    parseUiLang(body.lang),
+  );
+
+  if (!polished) {
+    res.status(400).json({ error: "DESCRIPTION_TOO_SHORT" });
+    return;
+  }
+
+  res.json({ description: polished, ai_enabled: isClaudeConfigured() });
 });
 
 // ─── POST /ai/suggest-listing-category ─────────────────────────────────────────

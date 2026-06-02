@@ -1095,13 +1095,6 @@ export default function NewListing() {
                       <ListingDescriptionHelper
                         title={watchTitle}
                         description={field.value ?? ""}
-                        price={Number(watchPrice) || 0}
-                        priceAgreement={!!priceAgreement}
-                        parentCategoryName={parentName}
-                        categoryName={
-                          subCats.find((c: { id: number }) => c.id === Number(bodyCatId))?.name
-                        }
-                        imageCount={imageUrls.length}
                         onApplyDescription={(next) => field.onChange(next)}
                       />
                     </div>
@@ -1323,52 +1316,6 @@ export default function NewListing() {
               </div>
             </Section>
             ) : null}
-
-            {/* ── 9. Condition ── */}
-            {!isDhurataCategory && (
-            <Section title={postFields.useAutoPjeseConditionLabels ? t.ap_sec_condition : t.conditionField}>
-              <FormField
-                control={form.control}
-                name="condition"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      {(postFields.useAutoPjeseConditionLabels
-                        ? [
-                            { value: "New", label: t.ap_cond_new, sub: "", color: "border-green-500 bg-green-50" },
-                            { value: "Used", label: t.ap_cond_used, sub: "", color: "border-blue-500 bg-blue-50" },
-                            { value: "Damaged", label: t.ap_cond_scrap, sub: "", color: "border-red-400 bg-red-50" },
-                          ]
-                        : [
-                            { value: "New", label: t.conditionNew, sub: t.conditionNewSub, color: "border-green-500 bg-green-50" },
-                            { value: "Used", label: t.conditionUsed, sub: t.conditionUsedSub, color: "border-blue-500 bg-blue-50" },
-                            { value: "Damaged", label: t.conditionDamaged, sub: t.conditionDamagedSub, color: "border-red-400 bg-red-50" },
-                          ]
-                      ).map(({ value, label, sub, color }) => (
-                        <button
-                          key={value}
-                          type="button"
-                          onClick={() => field.onChange(value)}
-                          data-testid={`condition-${value.toLowerCase()}`}
-                          className={`min-h-12 p-3 rounded-xl border-2 text-left transition-all touch-manipulation ${
-                            field.value === value ? color : "border-gray-200 hover:border-gray-300"
-                          }`}
-                        >
-                          <div className={`font-semibold text-sm ${
-                            field.value === value
-                              ? value === "New" ? "text-green-700" : value === "Damaged" ? "text-red-700" : "text-blue-700"
-                              : "text-gray-800"
-                          }`}>{label}</div>
-                          <div className="text-sm text-gray-400 mt-0.5">{sub}</div>
-                        </button>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </Section>
-            )}
 
             <PostingAssistantPanel
               title={watchTitle}
