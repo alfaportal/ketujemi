@@ -57,7 +57,7 @@ export default defineConfig(async ({ command }) => {
         name: "KetuJemi — Bli & Shit",
         short_name: "KetuJemi",
         description:
-          "KetuJemi — Bli & Shit. Kosovë, Shqipëri, Maqedoni, Mal i Zi dhe diaspora shqiptare.",
+          "KetuJemi — Bli & Shit. Kosovë, Shqipëri, Maqedoni e Veriut dhe 8 tregje të diasporës shqiptare.",
         theme_color: "#15488C",
         background_color: "#15488C",
         display: "standalone",
