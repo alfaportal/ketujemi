@@ -61,6 +61,15 @@ const inputClass = "min-h-12 h-12 w-full text-[16px] rounded-xl border-slate-200
 const compatSelectClass =
   "flex min-h-12 h-12 w-full appearance-none rounded-xl border border-input bg-transparent pl-3 pr-9 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring touch-manipulation";
 
+const AKUMULATOR_GROUP_PHOTOS: Record<string, string> = {
+  "Fuqia (Ah)":
+    "https://images.pexels.com/photos/2244746/pexels-photo-2244746.jpeg?auto=compress&cs=tinysrgb&w=900&q=85",
+  Teknologjia:
+    "https://images.pexels.com/photos/8090158/pexels-photo-8090158.jpeg?auto=compress&cs=tinysrgb&w=900&q=85",
+  "Aksesorë":
+    "https://images.pexels.com/photos/441731/pexels-photo-441731.jpeg?auto=compress&cs=tinysrgb&w=900&q=85",
+};
+
 export function AutoPjeseSearchPanel({
   hubId,
   categories,
@@ -175,6 +184,7 @@ export function AutoPjeseSearchPanel({
 
   const cityLabel = cityKey ? t[LOKALE_ZYRE_CITY_LABEL_KEY[cityKey]] : "";
   const typeTitle = partName ? translateCategory(partName, locale) : "";
+  const isAkumulatorPage = partName === "Akumulatorë";
 
   return (
     <div className="mb-8 space-y-6 rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm overflow-hidden max-w-full">
@@ -200,6 +210,41 @@ export function AutoPjeseSearchPanel({
       {partName && subcategoryGroups.length > 0 ? (
         <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
           <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
+          {isAkumulatorPage ? (
+            <div className="space-y-4 rounded-xl border border-blue-100 bg-blue-50/35 p-3 sm:p-4">
+              {subcategoryGroups.map((group) => {
+                const photo = AKUMULATOR_GROUP_PHOTOS[group.label] ?? AUTO_PJESE_PART_PHOTOS["Akumulatorë"];
+                return (
+                  <article
+                    key={`akumulator-page-${group.label}`}
+                    className="overflow-hidden rounded-xl border border-slate-200 bg-white"
+                  >
+                    <img
+                      src={photo}
+                      alt={`${typeTitle} - ${group.label}`}
+                      className="h-32 w-full object-cover sm:h-36"
+                      loading="lazy"
+                    />
+                    <div className="space-y-2 p-3 sm:p-4">
+                      <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                        {group.label}
+                      </p>
+                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                        {group.items.map((item) => (
+                          <li
+                            key={`akumulator-detail-${group.label}-${item}`}
+                            className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-sm font-medium text-slate-700"
+                          >
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : null}
           <div className="space-y-4">
             {subcategoryGroups.map((group) => (
               <div key={group.label} className="space-y-2">
