@@ -15,7 +15,7 @@ import {
   LegacyCategoryRouteRedirect,
   categoryHubRedirectComponent,
 } from "@/components/category-slug-redirect";
-import { withRouteErrorBoundary } from "@/components/route-error-boundary";
+import { RouteErrorBoundary, withRouteErrorBoundary } from "@/components/route-error-boundary";
 import {
   APP_ROUTES,
   CATCH_ALL_ROUTE,
@@ -28,9 +28,6 @@ const Listings = lazy(() => import("@/pages/listings"));
 const CategoryPage = lazy(() => import("@/pages/category"));
 const ListingDetail = lazy(() => import("@/pages/listing-detail"));
 
-const ListingsRoute = withRouteErrorBoundary(Listings);
-const CategoryPageRoute = withRouteErrorBoundary(CategoryPage);
-const ListingDetailRoute = withRouteErrorBoundary(ListingDetail);
 const NewListing = lazy(() => import("@/pages/new-listing"));
 const LoginPage = lazy(() => import("@/pages/login"));
 const ProfilePage = lazy(() => import("@/pages/profile"));
@@ -76,19 +73,23 @@ const ROUTE_COMPONENTS: Record<Exclude<RouteId, "category-hub-redirect">, Compon
   advertise: AdvertisePage,
   home: Home,
   "legacy-category-redirect": LegacyCategoryRouteRedirect,
-  category: CategoryPageRoute,
+  category: CategoryPage,
   "new-listing": NewListing,
   "edit-listing": EditListing,
-  "listing-detail": ListingDetailRoute,
-  listings: ListingsRoute,
+  "listing-detail": ListingDetail,
+  listings: Listings,
   "not-found": NotFound,
 };
 
+const SAFE_ROUTE_COMPONENTS = Object.fromEntries(
+  Object.entries(ROUTE_COMPONENTS).map(([id, Comp]) => [id, withRouteErrorBoundary(Comp)]),
+) as Record<Exclude<RouteId, "category-hub-redirect">, ComponentType>;
+
 function resolveRouteComponent(route: AppRouteDefinition): ComponentType {
   if (route.id === "category-hub-redirect" && route.hubSlug) {
-    return categoryHubRedirectComponent(route.hubSlug);
+    return withRouteErrorBoundary(categoryHubRedirectComponent(route.hubSlug));
   }
-  return ROUTE_COMPONENTS[route.id];
+  return SAFE_ROUTE_COMPONENTS[route.id];
 }
 
 const queryClient = new QueryClient({
@@ -136,7 +137,9 @@ function App() {
             <MarketProvider>
               <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
                 <GoogleAnalytics />
-                <Router />
+                <RouteErrorBoundary>
+                  <Router />
+                </RouteErrorBoundary>
               </WouterRouter>
             </MarketProvider>
           </AppProviders>

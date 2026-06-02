@@ -33,6 +33,40 @@ const SECTION_ERROR_COPY: Record<UiLang, SectionErrorCopy> = {
   },
 };
 
+const AUTO_RECOVER_KEY = "vendi_route_error_autorecover_path";
+
+function currentRouteKey(): string {
+  if (typeof window === "undefined") return "";
+  return `${window.location.pathname}${window.location.search}`;
+}
+
+function markAutoRecoveryAttempt(pathKey: string): void {
+  if (typeof window === "undefined" || !pathKey) return;
+  try {
+    sessionStorage.setItem(AUTO_RECOVER_KEY, pathKey);
+  } catch {
+    /* ignore */
+  }
+}
+
+function wasAutoRecoveryAttempted(pathKey: string): boolean {
+  if (typeof window === "undefined" || !pathKey) return false;
+  try {
+    return sessionStorage.getItem(AUTO_RECOVER_KEY) === pathKey;
+  } catch {
+    return false;
+  }
+}
+
+function clearAutoRecoveryAttempt(): void {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.removeItem(AUTO_RECOVER_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 function sectionErrorCopyForStoredLang(): SectionErrorCopy {
   if (typeof window === "undefined") return SECTION_ERROR_COPY[DEFAULT_UI_LANG];
   try {
@@ -48,12 +82,27 @@ function sectionErrorCopyForStoredLang(): SectionErrorCopy {
 export class RouteErrorBoundary extends Component<Props, State> {
   state: State = { error: null };
 
+  componentDidMount() {
+    if (!this.state.error) clearAutoRecoveryAttempt();
+  }
+
+  componentDidUpdate(_prevProps: Props, prevState: State) {
+    if (prevState.error && !this.state.error) {
+      clearAutoRecoveryAttempt();
+    }
+  }
+
   static getDerivedStateFromError(error: Error): State {
     return { error };
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[KetuJemi] Route section failed to render", error, info.componentStack);
+
+    const pathKey = currentRouteKey();
+    if (!pathKey || wasAutoRecoveryAttempted(pathKey)) return;
+    markAutoRecoveryAttempt(pathKey);
+    window.setTimeout(() => window.location.reload(), 120);
   }
 
   render() {
