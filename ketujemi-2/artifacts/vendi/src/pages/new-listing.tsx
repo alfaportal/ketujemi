@@ -1228,36 +1228,37 @@ export default function NewListing() {
               </div>
             </Section>
 
-            {/* ── 7. Location ── */}
-            <Section title={t.locationSection}>
-              <ListingCountryPicker
-                value={listingCountry}
-                onChange={setListingCountry}
-                className="mb-4"
-              />
-              <FormField
-                control={form.control}
-                name="location"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t.locationSection} <span className="text-red-500">*</span></FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-location">
-                          <SelectValue placeholder={t.chooseCity} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="max-h-[min(70vh,360px)]">
-                        {cityList.map((city) => (
-                          <SelectItem key={city} value={city}>{city}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </Section>
+            {/* ── 7. Location (city, then country) ── */}
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="p-5 space-y-4">
+                <FormField
+                  control={form.control}
+                  name="location"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.locationSection} <span className="text-red-500">*</span></FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-location">
+                            <SelectValue placeholder={t.chooseCity} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="max-h-[min(70vh,360px)]">
+                          {cityList.map((city) => (
+                            <SelectItem key={city} value={city}>{city}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <ListingCountryPicker
+                  value={listingCountry}
+                  onChange={setListingCountry}
+                />
+              </div>
+            </div>
 
             {/* ── 8. Contact (skipped when saved on profile) ── */}
             {!hideContactFields ? (
