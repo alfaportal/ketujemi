@@ -35,6 +35,7 @@ import { CardPaymentsPanel } from "@/components/card-payments-panel";
 import { notifyTopListingsRefresh } from "@/lib/top-listings-events";
 import { parseListingImageUrls } from "@/lib/listing-images";
 import { recordListingView } from "@/lib/record-listing-view";
+import { ListingShareButtons } from "@/components/listing-share-buttons";
 
 // ─── Spec parser ─────────────────────────────────────────────────────────────
 interface ParsedDesc { specs: Record<string, string>; body: string }
@@ -138,6 +139,14 @@ export default function ListingDetail() {
   }, [id, isLoading, listing?.id, queryClient]);
 
   useEffect(() => {
+    if (typeof window === "undefined" || !listing) return;
+    const clean = new URL(window.location.href);
+    clean.search = "";
+    clean.hash = "";
+    setListingShareUrl(clean.toString());
+  }, [listing?.id]);
+
+  useEffect(() => {
     if (typeof window === "undefined" || !user) return;
     const params = new URLSearchParams(window.location.search);
     if (params.get("top") !== "success") return;
@@ -173,6 +182,7 @@ export default function ListingDetail() {
     toast({ title: "Faleminderit! TOP do të shfaqet së shpejti." });
   }, [user, id, queryClient, toast]);
 
+  const [listingShareUrl, setListingShareUrl] = useState("");
   const [activePhoto, setActivePhoto] = useState(0);
   const [complaintBusy, setComplaintBusy] = useState(false);
   const [repostBusy, setRepostBusy] = useState(false);
@@ -488,6 +498,8 @@ export default function ListingDetail() {
                   ) : null}
                 </div>
               </div>
+
+              <ListingShareButtons title={listing.title} url={listingShareUrl} />
 
               <div className="text-3xl font-black text-blue-600 mb-4" data-testid="text-listing-price">
                 {isAgreement ? (
