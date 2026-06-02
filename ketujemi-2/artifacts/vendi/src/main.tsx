@@ -6,6 +6,27 @@ Sentry.init({
   sendDefaultPii: false,
 });
 
+if (typeof window !== "undefined") {
+  window.addEventListener("error", (event) => {
+    const err =
+      event.error instanceof Error
+        ? event.error
+        : new Error(event.message || "Unhandled window error");
+    Sentry.captureException(err, {
+      tags: { boundary: "window-error" },
+      extra: { filename: event.filename, lineno: event.lineno, colno: event.colno },
+    });
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    const reason = event.reason;
+    const err = reason instanceof Error ? reason : new Error(String(reason ?? "Unhandled rejection"));
+    Sentry.captureException(err, {
+      tags: { boundary: "unhandledrejection" },
+    });
+  });
+}
+
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { AppErrorBoundary } from "@/components/app-error-boundary";

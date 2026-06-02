@@ -10,6 +10,7 @@ import {
   pool,
 } from "@workspace/db";
 import { logger } from "./lib/logger";
+import { initServerSentry, isSentryEnabled, Sentry } from "./lib/sentry";
 import { logPaymentStackReadiness } from "./lib/payment-policy";
 import { vonageConfigSummary } from "./lib/vonage-auth";
 import { startExpiredListingsScheduler } from "./lib/expire-listings-job";
@@ -19,6 +20,18 @@ import { purgeInvalidListingImagesOnStartup } from "./lib/purge-invalid-listing-
 import { startSystemMonitor } from "./lib/system-monitor.js";
 
 const rawPort = process.env["API_PORT"] ?? process.env["PORT"];
+
+initServerSentry();
+
+process.on("unhandledRejection", (reason) => {
+  logger.error({ err: reason }, "Unhandled promise rejection");
+  if (isSentryEnabled()) Sentry.captureException(reason);
+});
+
+process.on("uncaughtException", (err) => {
+  logger.fatal({ err }, "Uncaught exception");
+  if (isSentryEnabled()) Sentry.captureException(err);
+});
 
 if (!rawPort) {
   throw new Error(
@@ -57,6 +70,7 @@ async function startServer(): Promise<void> {
     startJobQueueWorkers();
   } catch (err) {
     logger.error({ err }, "Database schema migration failed");
+    if (isSentryEnabled()) Sentry.captureException(err);
     if (process.env.NODE_ENV === "production") {
       logger.warn(
         "Continuing startup so Railway health check and static files can respond. Fix DATABASE_URL if API calls fail.",

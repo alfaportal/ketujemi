@@ -7,6 +7,7 @@ import googleOAuthPublicRouter from "./routes/google-oauth-public";
 import facebookOAuthPublicRouter from "./routes/facebook-oauth-public";
 import tiktokOAuthPublicRouter from "./routes/tiktok-oauth-public";
 import { logger } from "./lib/logger";
+import { isSentryEnabled, Sentry } from "./lib/sentry";
 import { attachStaticFrontend } from "./lib/serve-static";
 import { canonicalHostRedirect } from "./lib/canonical-host";
 
@@ -72,6 +73,19 @@ app.use(googleOAuthPublicRouter);
 app.use(facebookOAuthPublicRouter);
 app.use(tiktokOAuthPublicRouter);
 app.use("/api", router);
+app.use((err: unknown, req: express.Request, _res: express.Response, next: express.NextFunction) => {
+  if (isSentryEnabled()) {
+    Sentry.withScope((scope) => {
+      scope.setTag("layer", "express");
+      scope.setContext("request", {
+        method: req.method,
+        path: req.originalUrl?.split("?")[0] ?? req.path,
+      });
+      Sentry.captureException(err);
+    });
+  }
+  next(err);
+});
 attachStaticFrontend(app);
 
 export default app;
