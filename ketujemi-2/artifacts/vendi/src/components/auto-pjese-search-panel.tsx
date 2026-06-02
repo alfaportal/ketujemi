@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { GetListingsParams } from "@workspace/api-client-react";
-import { Check, ChevronsUpDown, Search, Wrench } from "lucide-react";
+import { ArrowLeft, Check, ChevronsUpDown, Search, Wrench } from "lucide-react";
+import { useLocation, useSearch } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -78,6 +79,8 @@ export function AutoPjeseSearchPanel({
   onListingParamsChange,
   onScrollToResults,
 }: Props) {
+  const [location, setLocation] = useLocation();
+  const urlSearch = useSearch();
   const { t, uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
   const partTypeIds = useMemo(
@@ -99,6 +102,12 @@ export function AutoPjeseSearchPanel({
   const [cityKey, setCityKey] = useState<LokaleCityKey | "">("");
   const [cityOpen, setCityOpen] = useState(false);
   const [areaZone, setAreaZone] = useState("");
+  const [akumulatorInfoGroup, setAkumulatorInfoGroup] = useState<string | null>(null);
+
+  const isAkumulatorPageView = useMemo(() => {
+    const qs = new URLSearchParams(urlSearch || "");
+    return qs.get("ap_page") === "akumulator";
+  }, [urlSearch]);
 
   const models = useMemo(() => getAutoPjeseModelsForBrand(brand), [brand]);
   const subcategoryGroups = useMemo(
@@ -168,13 +177,22 @@ export function AutoPjeseSearchPanel({
   };
 
   const selectPartType = (name: AutoPjesePartName) => {
+    if (name === "Akumulatorë") {
+      const qs = new URLSearchParams(urlSearch || "");
+      qs.set("ap_page", "akumulator");
+      const next = qs.toString();
+      setLocation(next ? `${location}?${next}` : location);
+      return;
+    }
     if (partName === name) {
       setPartName(null);
       setSubcategory(null);
+      setAkumulatorInfoGroup(null);
       return;
     }
     setPartName(name);
     setSubcategory(null);
+    setAkumulatorInfoGroup(null);
   };
 
   const countLabel =
@@ -186,8 +204,37 @@ export function AutoPjeseSearchPanel({
   const typeTitle = partName ? translateCategory(partName, locale) : "";
   const isAkumulatorPage = partName === "Akumulatorë";
 
+  useEffect(() => {
+    if (!isAkumulatorPageView) return;
+    if (partName !== "Akumulatorë") {
+      setPartName("Akumulatorë");
+      setSubcategory(null);
+      setAkumulatorInfoGroup(null);
+    }
+  }, [isAkumulatorPageView, partName]);
+
+  const closeAkumulatorPage = () => {
+    const qs = new URLSearchParams(urlSearch || "");
+    qs.delete("ap_page");
+    const next = qs.toString();
+    setLocation(next ? `${location}?${next}` : location);
+  };
+
   return (
     <div className="mb-8 space-y-6 rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm overflow-hidden max-w-full">
+      {isAkumulatorPageView ? (
+        <section className="space-y-3">
+          <button
+            type="button"
+            onClick={closeAkumulatorPage}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800"
+          >
+            <ArrowLeft size={16} aria-hidden />
+            Kthehu te llojet e pjesëve
+          </button>
+          <h2 className="text-lg font-black text-gray-900">{translateCategory("Akumulatorë", locale)}</h2>
+        </section>
+      ) : (
       <section className="space-y-3">
         <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
           <Wrench size={20} className="text-blue-600 shrink-0" aria-hidden />
@@ -206,43 +253,61 @@ export function AutoPjeseSearchPanel({
           ))}
         </CategoryPhotoPickerGrid>
       </section>
+      )}
 
       {partName && subcategoryGroups.length > 0 ? (
         <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
           <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
           {isAkumulatorPage ? (
             <div className="space-y-4 rounded-xl border border-blue-100 bg-blue-50/35 p-3 sm:p-4">
-              {subcategoryGroups.map((group) => {
-                const photo = AKUMULATOR_GROUP_PHOTOS[group.label] ?? AUTO_PJESE_PART_PHOTOS["Akumulatorë"];
-                return (
-                  <article
-                    key={`akumulator-page-${group.label}`}
-                    className="overflow-hidden rounded-xl border border-slate-200 bg-white"
-                  >
-                    <img
-                      src={photo}
-                      alt={`${typeTitle} - ${group.label}`}
-                      className="h-32 w-full object-cover sm:h-36"
-                      loading="lazy"
-                    />
-                    <div className="space-y-2 p-3 sm:p-4">
-                      <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {subcategoryGroups.map((group) => {
+                  const photo = AKUMULATOR_GROUP_PHOTOS[group.label] ?? AUTO_PJESE_PART_PHOTOS["Akumulatorë"];
+                  const selected = akumulatorInfoGroup === group.label;
+                  return (
+                    <button
+                      key={`akumulator-page-${group.label}`}
+                      type="button"
+                      onClick={() => setAkumulatorInfoGroup(selected ? null : group.label)}
+                      className={cn(
+                        "group relative overflow-hidden rounded-xl border bg-white text-left transition-all",
+                        selected
+                          ? "border-blue-600 ring-2 ring-blue-600/20"
+                          : "border-slate-200 hover:border-blue-300",
+                      )}
+                    >
+                      <img
+                        src={photo}
+                        alt={`${typeTitle} - ${group.label}`}
+                        className="h-24 w-full object-cover"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
+                      <p className="absolute bottom-2 left-3 right-3 text-sm font-black text-white truncate">
                         {group.label}
                       </p>
-                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                        {group.items.map((item) => (
-                          <li
-                            key={`akumulator-detail-${group.label}-${item}`}
-                            className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-sm font-medium text-slate-700"
-                          >
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </article>
-                );
-              })}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {akumulatorInfoGroup ? (
+                <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">
+                    {akumulatorInfoGroup}
+                  </p>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                    {(subcategoryGroups.find((g) => g.label === akumulatorInfoGroup)?.items ?? []).map((item) => (
+                      <li
+                        key={`akumulator-detail-${akumulatorInfoGroup}-${item}`}
+                        className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-sm font-medium text-slate-700"
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
             </div>
           ) : null}
           <div className="space-y-4">
