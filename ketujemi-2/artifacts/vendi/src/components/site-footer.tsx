@@ -130,7 +130,7 @@ function FooterLinkItem({ href, label }: FooterLink) {
 
 function FooterColumnBlock({ title, links }: { title: string; links: FooterLink[] }) {
   return (
-    <div className="py-4 px-4 sm:px-5">
+    <div className="py-3 px-4 sm:py-4 sm:px-5">
       <h3 className={COLUMN_TITLE_CLASS} style={{ color: BRAND_BLUE }}>
         {title}
       </h3>
@@ -278,10 +278,12 @@ export function SiteFooter() {
           <FooterWordmark />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 border-b border-gray-200/80">
+        <div className="grid grid-cols-3 max-[390px]:grid-cols-2 border-b border-gray-200/80">
           <FooterColumnBlock {...helpColumn} />
           <FooterColumnBlock {...infoColumn} />
-          <FooterColumnBlock {...businessColumn} />
+          <div className="max-[390px]:col-span-2">
+            <FooterColumnBlock {...businessColumn} />
+          </div>
         </div>
 
         <FooterMarketsStrip
