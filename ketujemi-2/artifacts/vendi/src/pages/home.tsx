@@ -261,7 +261,7 @@ export default function HomePage() {
                   </label>
                   <input
                     type="number"
-                    placeholder="8"
+                    placeholder="0"
                     value={filterMaxPrice}
                     onChange={(e) => setFilterMaxPrice(e.target.value)}
                     min="0"
