@@ -1,5 +1,4 @@
 import { Component, type ComponentType, type ErrorInfo, type ReactNode } from "react";
-import * as Sentry from "@sentry/react";
 import { DEFAULT_UI_LANG, isUiLang, type UiLang } from "@/lib/ui-languages";
 
 type Props = { children: ReactNode };
@@ -99,10 +98,6 @@ export class RouteErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[KetuJemi] Route section failed to render", error, info.componentStack);
-    Sentry.captureException(error, {
-      tags: { boundary: "route" },
-      extra: { componentStack: info.componentStack },
-    });
 
     const pathKey = currentRouteKey();
     if (!pathKey || wasAutoRecoveryAttempted(pathKey)) return;

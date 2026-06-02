@@ -1,5 +1,4 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import * as Sentry from "@sentry/react";
 import { errorPageCopyForStoredLang } from "@/lib/error-page-i18n";
 
 type Props = { children: ReactNode };
@@ -16,10 +15,6 @@ export class AppErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[KetuJemi] App failed to render", error, info.componentStack);
-    Sentry.captureException(error, {
-      tags: { boundary: "app" },
-      extra: { componentStack: info.componentStack },
-    });
 
     // Recover from stale SW/cache after deploy.
     const message = `${error?.name ?? ""} ${error?.message ?? ""}`.toLowerCase();

@@ -82,7 +82,6 @@
     "zod": "catalog:"
   },
   "dependencies": {
-    "@sentry/react": "^10.55.0",
     "@stripe/stripe-js": "^9.6.0",
     "workbox-window": "^7.4.1"
   }
