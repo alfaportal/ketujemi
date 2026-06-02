@@ -23,8 +23,7 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
       {
         title: "Where we operate",
         bullets: [
-          "Kosovo, Albania, North Macedonia, Montenegro",
-          "Diaspora: Germany, Switzerland, Austria, France, Italy, UK, USA",
+          "Kosovo, Albania, North Macedonia and 8 diaspora markets (Germany, Switzerland, Austria, France, Italy, UK, USA, Montenegro)",
         ],
       },
       {
@@ -569,7 +568,7 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
       {
         title: "About KetuJemi.com",
         paragraphs: [
-          "KetuJemi.com is the leading Albanian online classifieds platform, developed and operated by REVOLUTION INVEST Sh.p.k., based in Ferizaj, Kosovo. The platform operates in 4 markets: Kosovo, Albania, North Macedonia and Montenegro.",
+          "KetuJemi.com is the leading Albanian online classifieds platform, developed and operated by REVOLUTION INVEST Sh.p.k., based in Ferizaj, Kosovo. The platform operates in Kosovo, Albania, North Macedonia and 8 diaspora markets.",
         ],
       },
       {

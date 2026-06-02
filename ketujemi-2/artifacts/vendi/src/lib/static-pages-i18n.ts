@@ -117,7 +117,7 @@ const KS: StaticPagesCopy = {
   about: {
     title: "Rreth KetuJemi — Bli & Shit",
     tagline:
-      "KetuJemi — Bli & Shit është platforma e shpalljeve falas në 4 tregje: Kosovë, Shqipëri, Maqedoni e Veriut dhe Mal i Zi.",
+      "KetuJemi — Bli & Shit është platforma e shpalljeve falas në Kosovë, Shqipëri, Maqedoni e Veriut dhe 8 tregje të diasporës shqiptare.",
     sections: [
       {
         title: "Operatori i platformës",
@@ -136,7 +136,9 @@ const KS: StaticPagesCopy = {
       {
         title: "Ku operojmë",
         bulletsIntro: "Tregjet zyrtare:",
-        bullets: ["Kosovë, Shqipëri, Maqedoni e Veriut, Mal i Zi"],
+        bullets: [
+          "Kosovë, Shqipëri, Maqedoni e Veriut dhe 8 tregje të diasporës shqiptare (Gjermani, Zvicër, Austri, Francë, Itali, Angli, SHBA, Mal i Zi)",
+        ],
         paragraphsAfter: [
           "Platforma është e disponueshme edhe për diasporën shqiptare kudo në botë — mund të postoni dhe shikoni njoftime pa kufizim gjeografik.",
         ],
@@ -730,7 +732,7 @@ const KS: StaticPagesCopy = {
       {
         title: "Rreth KetuJemi.com",
         paragraphs: [
-          "KetuJemi.com është platforma kryesore shqiptare e shpalljeve online, e zhvilluar dhe operuar nga REVOLUTION INVEST Sh.p.k., me seli në Ferizaj, Kosovë. Platforma operon në 4 tregje: Kosovë, Shqipëri, Maqedoni e Veriut dhe Mal i Zi.",
+          "KetuJemi.com është platforma kryesore shqiptare e shpalljeve online, e zhvilluar dhe operuar nga REVOLUTION INVEST Sh.p.k., me seli në Ferizaj, Kosovë. Platforma operon në Kosovë, Shqipëri, Maqedoni e Veriut dhe 8 tregje të diasporës shqiptare.",
         ],
       },
       {
@@ -785,8 +787,7 @@ const MK: StaticPagesCopy = {
       {
         title: "Каде работиме",
         bullets: [
-          "Косово, Албанија, Северна Македонија, Црна Гора",
-          "Дијаспора: Германија, Швајцарија, Австрија, Франција, Италија, Англија, САД",
+          "Косово, Албанија, Северна Македонија и 8 пазари од дијаспората (Германија, Швајцарија, Австрија, Франција, Италија, Англија, САД, Црна Гора)",
         ],
       },
       {
@@ -1322,8 +1323,7 @@ const MNE: StaticPagesCopy = {
       {
         title: "Gdje radimo",
         bullets: [
-          "Kosovo, Albanija, Sjeverna Makedonija, Crna Gora",
-          "Dijaspora: Njemačka, Švicarska, Austrija, Francuska, Italija, Engleska, SAD",
+          "Kosovo, Albanija, Sjeverna Makedonija i 8 tržišta dijaspore (Njemačka, Švicarska, Austrija, Francuska, Italija, Engleska, SAD, Crna Gora)",
         ],
       },
       {
@@ -1792,7 +1792,7 @@ const MNE: StaticPagesCopy = {
           },
           {
             q: "Na kojim mjestima radi KetuJemi?",
-            a: "Kosovo, Albanija, Sjeverna Makedonija i Crna Gora. Plus dijaspora u 7 evropskih zemalja i SAD.",
+            a: "Kosovo, Albanija, Sjeverna Makedonija i 8 tržišta dijaspore (Njemačka, Švicarska, Austrija, Francuska, Italija, Engleska, SAD, Crna Gora).",
           },
         ],
       },

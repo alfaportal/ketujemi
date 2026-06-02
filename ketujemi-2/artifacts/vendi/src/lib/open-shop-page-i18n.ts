@@ -1,4 +1,5 @@
 import { useMarket } from "@/lib/market-context";
+import { platformMarketsForLocale } from "@/lib/platform-markets-i18n";
 import { translationKeyForUiLang, type UiTranslationLocale } from "@/lib/ui-languages";
 
 export type OpenShopStep = { title: string; body: string };
@@ -72,7 +73,7 @@ const KS: OpenShopPageCopy = {
     "Çdo njoftim aktiv 3 muaj (90 ditë)",
     "Deri 10 foto për çdo njoftim",
     "Sistemi i mesazheve i integruar",
-    "E disponueshme në Kosovë, Shqipëri, Maqedoni e Veriut dhe Mal i Zi",
+    platformMarketsForLocale("ks").availableIn,
   ],
   moreTitle: "KUR TI NEVOJITET MË SHUMË?",
   moreIntro: "Nëse biznesi yt ka nevojë për më shumë se 10 njoftime në muaj, kemi dy zgjidhje:",
@@ -125,6 +126,10 @@ const MK: OpenShopPageCopy = {
   whyTitle: "ЗОШТО KETUJEMI?",
   stepsTitle: "КАКО ФУНКЦИОНИРА — 3 ЧЕКОРИ",
   includesTitle: "ШТО ВКЛУЧУВА ТВОЈАТА ПРОДАВНИЦА",
+  includesBullets: [
+    ...KS.includesBullets.slice(0, -1),
+    platformMarketsForLocale("mk").availableIn,
+  ],
   moreTitle: "КОГА ТИ ТРЕБА ПОВЕЌЕ?",
   faqTitle: "ЧЕСТО ПОСТАВУВАНИ ПРАШАЊА",
   ctaTitle: "Подготвени да започнете?",
@@ -144,6 +149,10 @@ const MNE: OpenShopPageCopy = {
   whyTitle: "ZAŠTO KETUJEMI?",
   stepsTitle: "KAKO FUNKCIONIŠE — 3 KORAKA",
   includesTitle: "ŠTA UKLJUČUJE TVOJA PRODAVNICA",
+  includesBullets: [
+    ...KS.includesBullets.slice(0, -1),
+    platformMarketsForLocale("mne").availableIn,
+  ],
   moreTitle: "KADA TI TREBA VIŠE?",
   faqTitle: "ČESTO POSTAVLJANA PITANJA",
   ctaTitle: "Spremni da počnete?",
@@ -163,6 +172,10 @@ const EN: OpenShopPageCopy = {
   whyTitle: "WHY KETUJEMI?",
   stepsTitle: "HOW IT WORKS — 3 STEPS",
   includesTitle: "WHAT YOUR SHOP INCLUDES",
+  includesBullets: [
+    ...KS.includesBullets.slice(0, -1),
+    platformMarketsForLocale("en").availableIn,
+  ],
   moreTitle: "WHEN YOU NEED MORE?",
   faqTitle: "FREQUENTLY ASKED QUESTIONS",
   ctaTitle: "Ready to start?",

@@ -156,7 +156,7 @@ const DETAILED_FAQ: FaqEntry[] = [
   {
     keywords: /treg|market|diaspor|kosov|shqip|maqedon|mal\s+i\s+zi|gjermani|zvic|austri|shba|angli/i,
     reply: {
-      sq: "KetuJemi funksionon në **11 tregje**: Kosovë, Shqipëri, Maqedoni e Veriut, Mal i Zi + diaspora (Gjermani, Austri, Zvicër, Itali, Francë, Angli, SHBA). Zgjidhni tregun në footer — ndikon në monedhën e shfaqur. Diaspora regjistrohet kryesisht me **email**; Ballkan edhe me SMS.",
+      sq: "KetuJemi funksionon në **Kosovë, Shqipëri, Maqedoni e Veriut dhe 8 tregje të diasporës** (Gjermani, Zvicër, Austri, Francë, Itali, Angli, SHBA, Mal i Zi). Zgjidhni tregun në footer — ndikon në monedhën e shfaqur. Diaspora regjistrohet kryesisht me **email**; Ballkani edhe me SMS.",
       mk: "11 пазари: Косово, Албанија, МК, Црна Гора + дијаспора (DE, AT, CH, IT, FR, GB, US).",
       me: "11 tržišta: KS, AL, MK, ME + dijaspora (DE, AT, CH, IT, FR, GB, US).",
     },
