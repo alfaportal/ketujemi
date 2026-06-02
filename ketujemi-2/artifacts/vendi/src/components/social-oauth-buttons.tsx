@@ -13,16 +13,17 @@ type Props = {
   };
 };
 
-function oauthStartUrl(
-  provider: "facebook" | "instagram",
-  returnTo: string,
-): string {
+function instagramStartUrl(returnTo: string): string {
   const params = new URLSearchParams({ return: returnTo });
-  return `/api/auth/oauth/${provider}/start?${params}`;
+  return `/api/auth/oauth/instagram/start?${params}`;
 }
 
 function googleStartUrl(): string {
   return "/auth/google/start";
+}
+
+function facebookStartUrl(): string {
+  return "/auth/facebook/start";
 }
 
 export function SocialOAuthButtons({
@@ -50,7 +51,7 @@ export function SocialOAuthButtons({
 
       {facebookEnabled ? (
         <a
-          href={oauthStartUrl("facebook", returnTo)}
+          href={facebookStartUrl()}
           className="flex w-full min-h-12 items-center justify-center gap-2 rounded-md border border-[#1877F2]/30 bg-[#1877F2]/5 px-4 text-sm font-semibold text-[#1877F2] hover:bg-[#1877F2]/10 transition-colors"
         >
           <FaFacebook className="h-5 w-5 shrink-0" aria-hidden />
@@ -60,7 +61,7 @@ export function SocialOAuthButtons({
 
       {instagramEnabled ? (
         <a
-          href={oauthStartUrl("instagram", returnTo)}
+          href={instagramStartUrl(returnTo)}
           className="flex w-full min-h-12 items-center justify-center gap-2 rounded-md border border-pink-300/50 bg-gradient-to-r from-[#fdf497]/20 via-[#fd5949]/10 to-[#d6249f]/10 px-4 text-sm font-semibold text-[#C13584] hover:from-[#fdf497]/30 hover:via-[#fd5949]/15 hover:to-[#d6249f]/15 transition-colors"
         >
           <FaInstagram className="h-5 w-5 shrink-0" aria-hidden />

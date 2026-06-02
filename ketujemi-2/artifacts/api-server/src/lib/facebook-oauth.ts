@@ -1,12 +1,15 @@
 import {
   facebookAppId,
   facebookAppSecret,
+  facebookPublicOAuthCallbackUrl,
   isFacebookOAuthEnabled,
   metaGraphVersion,
   oauthCallbackUrl,
 } from "./meta-oauth-config";
 
 export { isFacebookOAuthEnabled };
+
+export type FacebookOAuthCallbackVariant = "api" | "public";
 
 export type FacebookProfile = {
   id: string;
@@ -15,11 +18,21 @@ export type FacebookProfile = {
   pictureUrl: string | null;
 };
 
-export function buildFacebookAuthorizeUrl(state: string, origin: string): string {
+function facebookRedirectUri(origin: string, variant: FacebookOAuthCallbackVariant): string {
+  return variant === "public"
+    ? facebookPublicOAuthCallbackUrl(origin)
+    : oauthCallbackUrl(origin, "facebook");
+}
+
+export function buildFacebookAuthorizeUrl(
+  state: string,
+  origin: string,
+  variant: FacebookOAuthCallbackVariant = "api",
+): string {
   const appId = facebookAppId();
   if (!appId) throw new Error("FACEBOOK_APP_ID not configured");
 
-  const redirectUri = oauthCallbackUrl(origin, "facebook");
+  const redirectUri = facebookRedirectUri(origin, variant);
   const params = new URLSearchParams({
     client_id: appId,
     redirect_uri: redirectUri,
@@ -34,12 +47,13 @@ export function buildFacebookAuthorizeUrl(state: string, origin: string): string
 export async function exchangeFacebookCode(
   code: string,
   origin: string,
+  variant: FacebookOAuthCallbackVariant = "api",
 ): Promise<string> {
   const appId = facebookAppId();
   const secret = facebookAppSecret();
   if (!appId || !secret) throw new Error("Facebook OAuth not configured");
 
-  const redirectUri = oauthCallbackUrl(origin, "facebook");
+  const redirectUri = facebookRedirectUri(origin, variant);
   const params = new URLSearchParams({
     client_id: appId,
     client_secret: secret,

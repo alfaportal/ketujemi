@@ -80,6 +80,12 @@ export function oauthCallbackUrl(
   return `${base}/api/auth/oauth/${provider}/callback`;
 }
 
+/** Matches Meta app redirect URI (no /api prefix) — Facebook login button. */
+export function facebookPublicOAuthCallbackUrl(origin: string): string {
+  const base = origin.replace(/\/$/, "");
+  return `${base}/auth/facebook/callback`;
+}
+
 export function appOriginFromRequest(req: {
   get: (name: string) => string | undefined;
 }): string {

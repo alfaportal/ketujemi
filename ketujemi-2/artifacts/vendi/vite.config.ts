@@ -208,6 +208,10 @@ export default defineConfig(async ({ command }) => {
           target: apiProxyTarget,
           changeOrigin: true,
         },
+        "/auth/facebook": {
+          target: apiProxyTarget,
+          changeOrigin: true,
+        },
       },
       fs: {
         strict: true,

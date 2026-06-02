@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import googleOAuthPublicRouter from "./routes/google-oauth-public";
+import facebookOAuthPublicRouter from "./routes/facebook-oauth-public";
 import { logger } from "./lib/logger";
 import { attachStaticFrontend } from "./lib/serve-static";
 import { canonicalHostRedirect } from "./lib/canonical-host";
@@ -67,6 +68,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(googleOAuthPublicRouter);
+app.use(facebookOAuthPublicRouter);
 app.use("/api", router);
 attachStaticFrontend(app);
 
