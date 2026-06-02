@@ -43,7 +43,6 @@ import {
 } from "@/lib/auth-context";
 import { AuthToolbar } from "@/components/auth-toolbar";
 import { SellerProfileGate } from "@/components/seller-profile-gate";
-import { PostingAssistantPanel } from "@/components/posting-assistant-panel";
 import { CardPaymentsPanel } from "@/components/card-payments-panel";
 import {
   ListingPackagesModal,
@@ -1093,7 +1092,6 @@ export default function NewListing() {
                         {t.descField} <span className="text-red-500">*</span>
                       </FormLabel>
                       <ListingDescriptionHelper
-                        title={watchTitle}
                         description={field.value ?? ""}
                         onApplyDescription={(next) => field.onChange(next)}
                       />
@@ -1317,16 +1315,6 @@ export default function NewListing() {
               </div>
             </Section>
             ) : null}
-
-            <PostingAssistantPanel
-              title={watchTitle}
-              description={watchDescription}
-              price={isKerkojCategory || isDhurataCategory || priceAgreement ? 0 : Number(watchPrice) || 0}
-              priceAgreement={isKerkojCategory || isDhurataCategory ? false : !!priceAgreement}
-              categoryName={brandCats.find((c: { id: number }) => c.id === Number(brandCatId))?.name ?? subCats.find((c: { id: number }) => c.id === Number(bodyCatId))?.name}
-              parentCategoryName={parentName}
-              imageCount={imageUrls.length}
-            />
 
             {/* ── Submit ── */}
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-20 sm:static sm:bg-transparent sm:border-none sm:p-0">

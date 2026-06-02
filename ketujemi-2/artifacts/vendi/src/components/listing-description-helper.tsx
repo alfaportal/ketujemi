@@ -4,13 +4,24 @@ import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMarket } from "@/lib/market-context";
 
+const ADVICE_MARKERS = [
+  /shtoni\s+më\s+shumë/i,
+  /shtoni\s+të\s+paktën/i,
+  /përshkrimi\s+(juaj\s+)?është\s+shumë/i,
+  /ngjyrën,\s*kapacitetin/i,
+  /gjendjen\s+e\s+baterisë/i,
+];
+
+function looksLikeAdvice(text: string): boolean {
+  return ADVICE_MARKERS.some((re) => re.test(text));
+}
+
 type Props = {
-  title: string;
   description: string;
   onApplyDescription: (next: string) => void;
 };
 
-export function ListingDescriptionHelper({ title, description, onApplyDescription }: Props) {
+export function ListingDescriptionHelper({ description, onApplyDescription }: Props) {
   const { market } = useMarket();
   const [loading, setLoading] = useState(false);
   const [polished, setPolished] = useState<string | null>(null);
@@ -21,24 +32,23 @@ export function ListingDescriptionHelper({ title, description, onApplyDescriptio
   const buttonUsed = usedRef.current;
 
   const handleClick = () => {
-    if (buttonUsed || loading) return;
+    if (buttonUsed || loading || desc.length < 3) return;
     usedRef.current = true;
     setPolished(null);
-
-    if (desc.length < 10) return;
-
     setLoading(true);
+
     void fetchWithTimeout("/api/ai/polish-listing-description", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ title, description, lang }),
+      body: JSON.stringify({ description: desc, lang }),
     })
       .then(async (r) => {
         if (!r.ok) throw new Error("polish_failed");
         const j = (await r.json()) as { description?: string };
         const next = j.description?.trim();
-        if (next && next.length >= 10) setPolished(next);
+        if (!next || next.length < 3 || looksLikeAdvice(next)) throw new Error("polish_invalid");
+        setPolished(next);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -52,7 +62,7 @@ export function ListingDescriptionHelper({ title, description, onApplyDescriptio
         size="sm"
         className="min-h-10 gap-1.5 border-violet-200 text-violet-800 hover:bg-violet-50 disabled:opacity-50"
         onClick={handleClick}
-        disabled={loading || buttonUsed || desc.length < 10}
+        disabled={loading || buttonUsed || desc.length < 3}
         data-testid="button-description-ai-helper"
       >
         {loading ? (

@@ -52,12 +52,9 @@ router.post("/ai/polish-listing-description", async (req, res) => {
     return;
   }
 
-  const body = req.body as { title?: string; description?: string; lang?: string };
+  const body = req.body as { description?: string; lang?: string };
   const description = typeof body.description === "string" ? body.description : "";
-  const polished = await polishListingDescription(
-    { title: typeof body.title === "string" ? body.title : "", description },
-    parseUiLang(body.lang),
-  );
+  const polished = await polishListingDescription({ description }, parseUiLang(body.lang));
 
   if (!polished) {
     res.status(400).json({ error: "DESCRIPTION_TOO_SHORT" });
