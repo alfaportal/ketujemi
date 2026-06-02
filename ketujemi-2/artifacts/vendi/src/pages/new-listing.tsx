@@ -54,6 +54,9 @@ import {
 import { DHURATA_FALAS_SLUG } from "@/lib/special-listing-categories";
 import { categoryEngine } from "@/services/CategoryEngine";
 
+const LISTING_POST_SUCCESS_MESSAGE =
+  "❤️ Faleminderit për postimin! Postimi juaj qëndron aktiv 90 ditë, pas kësaj kohe hiqet automatikisht.";
+
 // ─── Schema ───────────────────────────────────────────────────────────────────
 const schema = z.object({
   parent_category_id: z.coerce.number().min(1),
@@ -347,7 +350,7 @@ export default function NewListing() {
       onSuccess: (listing) => {
         queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetRecentListingsQueryKey() });
-        toast({ title: t.successPost });
+        toast({ title: LISTING_POST_SUCCESS_MESSAGE });
         setLocation(`/listings/${listing.id}`);
       },
       onError: (err: unknown) => {
@@ -531,12 +534,7 @@ export default function NewListing() {
         }
         queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetRecentListingsQueryKey() });
-        const wallet = (body as { wallet?: { balance_eur: string; listings_remaining: number } })
-          .wallet;
-        const msg = wallet
-          ? `Shpallja u postua. Balanca: €${wallet.balance_eur} — ${wallet.listings_remaining} shpallje të mbetura.`
-          : ((body as { message?: string }).message ?? t.successPost);
-        toast({ title: msg });
+        toast({ title: LISTING_POST_SUCCESS_MESSAGE });
         setLocation(`/listings/${(body as { id: number }).id}`);
       })
       .catch(() => toast({ title: t.postError, variant: "destructive" }));
@@ -618,46 +616,6 @@ export default function NewListing() {
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
         {user?.account_type === "business" ? <CardPaymentsPanel /> : null}
-        {freeQuotaError && effectiveCategoryId > 0 && !isDhurataCategory && !isDhurataPostRoute ? (
-          <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="alert">
-            {freeQuotaError}
-          </p>
-        ) : null}
-        {freeQuota != null && effectiveCategoryId > 0 && !isDhurataCategory && !isDhurataPostRoute ? (
-          <div
-            className={`rounded-xl border px-4 py-3 text-sm font-medium space-y-2 ${
-              freeQuota.allowed
-                ? "border-blue-100 bg-blue-50 text-blue-800"
-                : "border-amber-200 bg-amber-50 text-amber-900"
-            }`}
-          >
-            <p>
-              {freeQuota.allowed
-                ? `Postime falas këtë muaj në këtë kategori: ${freeQuota.monthly_remaining ?? freeQuota.remaining} / ${freeQuota.monthly_posts_limit ?? freeQuota.limit} (riniset çdo muaj)`
-                : (tx.ui_walletExtraPostCost ?? "Keni arritur limitin falas. Çdo shpallje shtesë kushton €{price} nga portofoli.").replace(
-                    "{price}",
-                    String(freeQuota.business?.listing_price_eur ?? 0.3),
-                  )}
-            </p>
-            <p className="text-xs font-normal opacity-90">
-              Çdo postim qëndron online{" "}
-              <strong>{freeQuota.listing_lifetime_days ?? 90} ditë (~3 muaj)</strong>, pastaj hiqet automatikisht.
-              Limiti <strong>10/muaj</strong> është për sa herë postoni — jo i njëjtë me skadimin 3-mujor.
-            </p>
-            {!freeQuota.allowed ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setPackagesModalMessage("Mbush portofolin për të vazhduar postimin.");
-                  setShowPackagesModal(true);
-                }}
-                className="w-full min-h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm"
-              >
-                Mbush portofolin (€5 / €10 / €20)
-              </button>
-            ) : null}
-          </div>
-        ) : null}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 
