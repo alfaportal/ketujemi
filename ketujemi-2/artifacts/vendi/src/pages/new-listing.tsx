@@ -32,6 +32,7 @@ import {
 } from "@/lib/market-context";
 import { ListingCountryPicker } from "@/components/listing-country-picker";
 import { ListingCategorySuggest } from "@/components/listing-category-suggest";
+import { ListingDescriptionHelper } from "@/components/listing-description-helper";
 import { joinListingImageUrls } from "@/lib/listing-images";
 import { useListingImageUpload } from "@/lib/listing-image-upload";
 import {
@@ -257,6 +258,64 @@ export default function NewListing() {
     form.setValue("brand_category_id", 0);
   }, [bodyCatId, form]);
 
+  const suggestLang = market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq";
+
+  useEffect(() => {
+    const parentId = Number(parentCatId);
+    if (!parentId) return;
+
+    const children = (allCategories ?? []).filter(
+      (c: { parent_id?: number | null }) => c.parent_id === parentId,
+    );
+    if (children.length === 0) {
+      form.setValue("category_id", parentId);
+      return;
+    }
+
+    const titleTrim = watchTitle.trim();
+    if (titleTrim.length < 3) return;
+
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      void fetchWithTimeout("/api/ai/suggest-listing-category", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          title: titleTrim,
+          description: watchDescription,
+          lang: suggestLang,
+        }),
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((j) => {
+          if (cancelled) return;
+          const s = (j as { suggestion?: { parent_category_id: number; category_id: number; brand_category_id?: number } | null })
+            ?.suggestion;
+          if (s && s.parent_category_id === parentId) {
+            form.setValue("category_id", s.category_id);
+            if (s.brand_category_id) {
+              form.setValue("brand_category_id", s.brand_category_id);
+            }
+            return;
+          }
+          if (children.length === 1) {
+            form.setValue("category_id", children[0].id);
+          }
+        })
+        .catch(() => {
+          if (!cancelled && children.length === 1) {
+            form.setValue("category_id", children[0].id);
+          }
+        });
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [parentCatId, watchTitle, watchDescription, suggestLang, allCategories, form]);
+
   useEffect(() => {
     if (isKerkojCategory || isDhurataCategory) {
       form.setValue("price", 0);
@@ -400,6 +459,15 @@ export default function NewListing() {
   const removeImage = (i: number) => setImageUrls((prev) => prev.filter((_, idx) => idx !== i));
 
   const onSubmit = (data: FormData) => {
+    const parentId = Number(data.parent_category_id);
+    const children = (allCategories ?? []).filter((c: { parent_id?: number | null }) => c.parent_id === parentId);
+    if (children.length > 0 && !data.category_id) {
+      toast({
+        title: "Plotësoni titullin që sistemi të caktojë nënkategorinë automatikisht.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (freeQuota && !freeQuota.allowed) {
       setPackagesModalMessage("Ke arritur limitin falas. Mbush portofolin (€0.30 për shpallje).");
       setShowPackagesModal(true);
@@ -677,38 +745,6 @@ export default function NewListing() {
                   </FormItem>
                 )}
               />
-
-              {subCats.length > 0 && (
-                <FormField
-                  control={form.control}
-                  name="category_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {postFields.subcategoryLabelMode === "vetura"
-                          ? t.bodyTypeLabel
-                          : postFields.subcategoryLabelMode === "autoPjese"
-                            ? t.ap_sec_parts
-                            : t.subcategory}{" "}
-                        <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <Select onValueChange={(v) => field.onChange(Number(v))} value={field.value ? String(field.value) : ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-category">
-                            <SelectValue placeholder={t.chooseType} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="max-h-[min(70vh,360px)]">
-                          {subCats.map((cat: any) => (
-                            <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
 
               {hasBrands && !postFields.showAutoPjese && (
                 <FormField
@@ -1052,7 +1088,23 @@ export default function NewListing() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t.descField} <span className="text-red-500">*</span></FormLabel>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <FormLabel className="mb-0">
+                        {t.descField} <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <ListingDescriptionHelper
+                        title={watchTitle}
+                        description={field.value ?? ""}
+                        price={Number(watchPrice) || 0}
+                        priceAgreement={!!priceAgreement}
+                        parentCategoryName={parentName}
+                        categoryName={
+                          subCats.find((c: { id: number }) => c.id === Number(bodyCatId))?.name
+                        }
+                        imageCount={imageUrls.length}
+                        onApplyDescription={(next) => field.onChange(next)}
+                      />
+                    </div>
                     <FormControl>
                       <Textarea
                         data-testid="input-description"
