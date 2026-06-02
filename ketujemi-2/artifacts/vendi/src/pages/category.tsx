@@ -1325,7 +1325,7 @@ export default function CategoryPage() {
       : translateCategory(currentCategory?.name ?? "", locale);
   const Icon = getCatIcon(currentCategory?.icon ?? "Car");
 
-  const crumbItems = useMemo(() => {
+  const crumbItems = (() => {
     const items = catEngine.getBreadcrumb(Number(categoryId), locale);
     if (isSportTypePage && sportTypeKey) {
       const last = items[items.length - 1];
@@ -1344,21 +1344,7 @@ export default function CategoryPage() {
       items.push({ label: t[TEL_BRAND_GROUP_LABEL_KEY[telBrandFromSearch]] });
     }
     return items;
-  }, [
-    catEngine,
-    categoryId,
-    locale,
-    isSportTypePage,
-    sportTypeKey,
-    isSportDeviceLeafPage,
-    sportDeviceKey,
-    currentCategory,
-    isTelefonaVirtualTypePage,
-    activeTelefonaTypeKey,
-    isTelefonaVirtualBrandPage,
-    telBrandFromSearch,
-    t,
-  ]);
+  })();
 
   const renderListingsSection = () => (
     <div ref={resultsAnchorRef} id={hubResultsId} className="scroll-mt-28">
