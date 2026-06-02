@@ -1,5 +1,5 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-export type OAuthProvider = "facebook" | "instagram" | "google";
+export type OAuthProvider = "facebook" | "instagram" | "google" | "tiktok";
 
 export type OAuthStatePayload = {
   provider: OAuthProvider;
@@ -43,7 +43,8 @@ export function verifyOAuthState(state: string): OAuthStatePayload | null {
     if (
       payload.provider !== "facebook" &&
       payload.provider !== "instagram" &&
-      payload.provider !== "google"
+      payload.provider !== "google" &&
+      payload.provider !== "tiktok"
     ) {
       return null;
     }

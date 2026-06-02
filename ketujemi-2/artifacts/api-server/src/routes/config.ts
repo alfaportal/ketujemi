@@ -4,6 +4,7 @@ import { hasEmailDeliveryConfigured, isEmailVerificationRequired } from "../lib/
 import { isSmsAuthEnabled } from "../lib/sms-auth";
 import { isFacebookOAuthEnabled, isInstagramOAuthEnabled, facebookPageUrl, instagramProfileUrl } from "../lib/meta-oauth-config";
 import { isGoogleOAuthEnabled } from "../lib/google-oauth-config";
+import { isTikTokOAuthEnabled } from "../lib/tiktok-oauth-config";
 import { isB2UploadConfigured } from "../lib/b2-upload-presign";
 import { paymentsConfigured, stripePublishableKey } from "../lib/payments";
 
@@ -54,6 +55,7 @@ router.get("/config/public", (_req, res) => {
     facebookOAuthEnabled: isFacebookOAuthEnabled(),
     instagramOAuthEnabled: isInstagramOAuthEnabled(),
     googleOAuthEnabled: isGoogleOAuthEnabled(),
+    tiktokOAuthEnabled: isTikTokOAuthEnabled(),
     facebookPageUrl: facebookPageUrl(),
     instagramProfileUrl: instagramProfileUrl(),
   });

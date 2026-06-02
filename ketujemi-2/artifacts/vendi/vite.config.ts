@@ -212,6 +212,10 @@ export default defineConfig(async ({ command }) => {
           target: apiProxyTarget,
           changeOrigin: true,
         },
+        "/auth/tiktok": {
+          target: apiProxyTarget,
+          changeOrigin: true,
+        },
       },
       fs: {
         strict: true,

@@ -4,6 +4,7 @@ import type { User } from "@workspace/db";
 import type { FacebookProfile } from "./facebook-oauth";
 import type { GoogleProfile } from "./google-oauth";
 import type { InstagramProfile } from "./instagram-oauth";
+import type { TikTokProfile } from "./tiktok-oauth";
 
 async function findUserByFacebookId(facebookUserId: string): Promise<User | undefined> {
   const [row] = await db
@@ -19,6 +20,15 @@ async function findUserByGoogleId(googleUserId: string): Promise<User | undefine
     .select()
     .from(usersTable)
     .where(eq(usersTable.google_user_id, googleUserId))
+    .limit(1);
+  return row;
+}
+
+async function findUserByTikTokId(tiktokUserId: string): Promise<User | undefined> {
+  const [row] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.tiktok_user_id, tiktokUserId))
     .limit(1);
   return row;
 }
@@ -48,6 +58,7 @@ function mergeProfileFields(
     google_user_id?: string | null;
     instagram_user_id?: string | null;
     instagram_username?: string | null;
+    tiktok_user_id?: string | null;
   },
 ): Partial<User> {
   const out: Record<string, unknown> = {};
@@ -70,6 +81,9 @@ function mergeProfileFields(
   }
   if (patch.instagram_username && !existing.instagram_username) {
     out.instagram_username = patch.instagram_username;
+  }
+  if (patch.tiktok_user_id && !existing.tiktok_user_id) {
+    out.tiktok_user_id = patch.tiktok_user_id;
   }
   return out as Partial<User>;
 }
@@ -142,6 +156,22 @@ export async function findOrCreateUserFromGoogle(profile: GoogleProfile): Promis
       google_user_id: profile.id,
       email: profile.email,
       email_verified_at: profile.email ? new Date() : null,
+      display_name: profile.name,
+      profile_photo_url: profile.pictureUrl,
+    })
+    .returning();
+
+  return created;
+}
+
+export async function findOrCreateUserFromTikTok(profile: TikTokProfile): Promise<User> {
+  const byTikTok = await findUserByTikTokId(profile.id);
+  if (byTikTok) return byTikTok;
+
+  const [created] = await db
+    .insert(usersTable)
+    .values({
+      tiktok_user_id: profile.id,
       display_name: profile.name,
       profile_photo_url: profile.pictureUrl,
     })

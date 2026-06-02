@@ -1,14 +1,16 @@
-import { FaFacebook, FaGoogle, FaInstagram } from "react-icons/fa";
+import { FaFacebook, FaGoogle, FaInstagram, FaTiktok } from "react-icons/fa";
 
 type Props = {
   returnTo: string;
   googleEnabled: boolean;
   facebookEnabled: boolean;
+  tiktokEnabled: boolean;
   instagramEnabled: boolean;
   labels: {
     or: string;
     google: string;
     facebook: string;
+    tiktok: string;
     instagram: string;
   };
 };
@@ -26,14 +28,19 @@ function facebookStartUrl(): string {
   return "/auth/facebook/start";
 }
 
+function tiktokStartUrl(): string {
+  return "/auth/tiktok/start";
+}
+
 export function SocialOAuthButtons({
   returnTo,
   googleEnabled,
   facebookEnabled,
+  tiktokEnabled,
   instagramEnabled,
   labels,
 }: Props) {
-  if (!googleEnabled && !facebookEnabled && !instagramEnabled) return null;
+  if (!googleEnabled && !facebookEnabled && !tiktokEnabled && !instagramEnabled) return null;
 
   return (
     <div className="space-y-3 pt-2">
@@ -56,6 +63,16 @@ export function SocialOAuthButtons({
         >
           <FaFacebook className="h-5 w-5 shrink-0" aria-hidden />
           {labels.facebook}
+        </a>
+      ) : null}
+
+      {tiktokEnabled ? (
+        <a
+          href={tiktokStartUrl()}
+          className="flex w-full min-h-12 items-center justify-center gap-2 rounded-md border border-black/20 bg-black px-4 text-sm font-semibold text-white hover:bg-gray-900 transition-colors"
+        >
+          <FaTiktok className="h-5 w-5 shrink-0" aria-hidden />
+          {labels.tiktok}
         </a>
       ) : null}
 

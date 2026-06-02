@@ -41,6 +41,8 @@ export const usersTable = pgTable("users", {
   google_user_id: text("google_user_id").unique(),
   /** Instagram API with Instagram Login user id. */
   instagram_user_id: text("instagram_user_id").unique(),
+  /** TikTok Login Kit open_id. */
+  tiktok_user_id: text("tiktok_user_id").unique(),
   /** e.g. jemi.ketu — KetuJemi.com brand account */
   instagram_username: text("instagram_username"),
   /** JSON string array — up to 5 banner image URLs for VIP carousel. */

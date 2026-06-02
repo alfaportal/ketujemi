@@ -39,7 +39,9 @@ async function startServer(): Promise<void> {
     await ensureFiscalSchema(pool);
     logger.info("Fiscal schema verified (fiscal_receipts)");
     await ensureOAuthSchema(pool);
-    logger.info("OAuth schema verified (facebook_user_id, google_user_id, instagram_user_id)");
+    logger.info(
+      "OAuth schema verified (facebook_user_id, google_user_id, instagram_user_id, tiktok_user_id)",
+    );
     await ensureListingUserSchema(pool);
     logger.info("Listing user_id + self-duplicate alerts schema verified");
     await ensureHomepagePartnersSchema(pool);

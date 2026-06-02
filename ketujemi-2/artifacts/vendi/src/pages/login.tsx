@@ -87,6 +87,7 @@ export default function LoginPage() {
   const [googleOAuthEnabled, setGoogleOAuthEnabled] = useState(false);
   const [facebookOAuthEnabled, setFacebookOAuthEnabled] = useState(false);
   const [instagramOAuthEnabled, setInstagramOAuthEnabled] = useState(false);
+  const [tiktokOAuthEnabled, setTiktokOAuthEnabled] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const recaptchaRef = useRef<RecaptchaV2Handle>(null);
   const { captchaRequired, siteKey: recaptchaSiteKey } = useRecaptchaSiteKey();
@@ -100,12 +101,14 @@ export default function LoginPage() {
         googleOAuthEnabled?: boolean;
         facebookOAuthEnabled?: boolean;
         instagramOAuthEnabled?: boolean;
+        tiktokOAuthEnabled?: boolean;
       }) => {
         if (cancelled) return;
         setSmsAuthEnabled(Boolean(data.smsAuthEnabled));
         setGoogleOAuthEnabled(Boolean(data.googleOAuthEnabled));
         setFacebookOAuthEnabled(Boolean(data.facebookOAuthEnabled));
         setInstagramOAuthEnabled(Boolean(data.instagramOAuthEnabled));
+        setTiktokOAuthEnabled(Boolean(data.tiktokOAuthEnabled));
       })
       .catch(() => {
         if (!cancelled) {
@@ -113,6 +116,7 @@ export default function LoginPage() {
           setGoogleOAuthEnabled(false);
           setFacebookOAuthEnabled(false);
           setInstagramOAuthEnabled(false);
+          setTiktokOAuthEnabled(false);
         }
       });
     return () => {
@@ -146,6 +150,10 @@ export default function LoginPage() {
       toast({ title: t.login_oauth_google_denied, variant: "destructive" });
     } else if (oauthErr === "google_failed") {
       toast({ title: t.login_oauth_google_failed, variant: "destructive" });
+    } else if (oauthErr === "tiktok_denied") {
+      toast({ title: t.login_oauth_tiktok_denied, variant: "destructive" });
+    } else if (oauthErr === "tiktok_failed") {
+      toast({ title: t.login_oauth_tiktok_failed, variant: "destructive" });
     } else if (
       oauthErr === "facebook_denied" ||
       oauthErr === "facebook_failed" ||
@@ -457,6 +465,7 @@ export default function LoginPage() {
     or: t.login_oauth_or,
     google: t.login_google_btn,
     facebook: t.login_oauth_facebook,
+    tiktok: t.login_tiktok_btn,
     instagram: t.login_oauth_instagram,
   };
 
@@ -465,6 +474,7 @@ export default function LoginPage() {
       returnTo={returnTo}
       googleEnabled={googleOAuthEnabled}
       facebookEnabled={facebookOAuthEnabled}
+      tiktokEnabled={tiktokOAuthEnabled}
       instagramEnabled={instagramOAuthEnabled}
       labels={oauthLabels}
     />
