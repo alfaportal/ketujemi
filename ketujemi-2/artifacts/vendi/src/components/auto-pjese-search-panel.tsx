@@ -62,12 +62,30 @@ const inputClass = "min-h-12 h-12 w-full text-[16px] rounded-xl border-slate-200
 const compatSelectClass =
   "flex min-h-12 h-12 w-full appearance-none rounded-xl border border-input bg-transparent pl-3 pr-9 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring touch-manipulation";
 
-const AKUMULATOR_GROUP_PHOTOS: Record<string, string> = {
-  "Fuqia (Ah)":
+const AUTO_PJESE_PAGE_KEY: Record<AutoPjesePartName, string> = {
+  "Akumulatorë": "akumulator",
+  "Fellne & Goma": "fellne-goma",
+  "Drita & LED": "drita-led",
+  "Amortizerë & Sustensioni": "amortizere-sustensioni",
+  "Motorrë & Pjesë Motorri": "motorr-pjese-motorri",
+  "Ftohja & Klima": "ftohja-klima",
+  "Pjesë Elektrike & Elektronike": "pjese-elektrike-elektronike",
+  "Sisteme Frenimi": "sisteme-frenimi",
+  "Pjesë Karoserie": "pjese-karoserie",
+  "Vajra & Filtra": "vajra-filtra",
+  "Të tjera Pjesë": "te-tjera-pjese",
+};
+
+const AUTO_PJESE_KEY_TO_PAGE = Object.fromEntries(
+  Object.entries(AUTO_PJESE_PAGE_KEY).map(([name, key]) => [key, name as AutoPjesePartName]),
+) as Record<string, AutoPjesePartName>;
+
+const AUTO_PJESE_GROUP_PHOTOS: Record<string, string> = {
+  "Akumulatorë|Fuqia (Ah)":
     "https://images.pexels.com/photos/2244746/pexels-photo-2244746.jpeg?auto=compress&cs=tinysrgb&w=900&q=85",
-  Teknologjia:
+  "Akumulatorë|Teknologjia":
     "https://images.pexels.com/photos/8090158/pexels-photo-8090158.jpeg?auto=compress&cs=tinysrgb&w=900&q=85",
-  "Aksesorë":
+  "Akumulatorë|Aksesorë":
     "https://images.pexels.com/photos/441731/pexels-photo-441731.jpeg?auto=compress&cs=tinysrgb&w=900&q=85",
 };
 
@@ -102,11 +120,12 @@ export function AutoPjeseSearchPanel({
   const [cityKey, setCityKey] = useState<LokaleCityKey | "">("");
   const [cityOpen, setCityOpen] = useState(false);
   const [areaZone, setAreaZone] = useState("");
-  const [akumulatorInfoGroup, setAkumulatorInfoGroup] = useState<string | null>(null);
+  const [partInfoGroup, setPartInfoGroup] = useState<string | null>(null);
 
-  const isAkumulatorPageView = useMemo(() => {
+  const partPageName = useMemo(() => {
     const qs = new URLSearchParams(urlSearch || "");
-    return qs.get("ap_page") === "akumulator";
+    const key = qs.get("ap_page") ?? "";
+    return AUTO_PJESE_KEY_TO_PAGE[key] ?? null;
   }, [urlSearch]);
 
   const models = useMemo(() => getAutoPjeseModelsForBrand(brand), [brand]);
@@ -177,22 +196,21 @@ export function AutoPjeseSearchPanel({
   };
 
   const selectPartType = (name: AutoPjesePartName) => {
-    if (name === "Akumulatorë") {
-      const qs = new URLSearchParams(urlSearch || "");
-      qs.set("ap_page", "akumulator");
-      const next = qs.toString();
-      setLocation(next ? `${location}?${next}` : location);
-      return;
-    }
+    const qs = new URLSearchParams(urlSearch || "");
+    qs.set("ap_page", AUTO_PJESE_PAGE_KEY[name]);
+    const next = qs.toString();
+    setLocation(next ? `${location}?${next}` : location);
+    setPartInfoGroup(null);
+    return;
     if (partName === name) {
       setPartName(null);
       setSubcategory(null);
-      setAkumulatorInfoGroup(null);
+      setPartInfoGroup(null);
       return;
     }
     setPartName(name);
     setSubcategory(null);
-    setAkumulatorInfoGroup(null);
+    setPartInfoGroup(null);
   };
 
   const countLabel =
@@ -202,37 +220,40 @@ export function AutoPjeseSearchPanel({
 
   const cityLabel = cityKey ? t[LOKALE_ZYRE_CITY_LABEL_KEY[cityKey]] : "";
   const typeTitle = partName ? translateCategory(partName, locale) : "";
-  const isAkumulatorPage = partName === "Akumulatorë";
+  const isPartPageView = partPageName != null;
 
   useEffect(() => {
-    if (!isAkumulatorPageView) return;
-    if (partName !== "Akumulatorë") {
-      setPartName("Akumulatorë");
+    if (!partPageName) return;
+    if (partName !== partPageName) {
+      setPartName(partPageName);
       setSubcategory(null);
-      setAkumulatorInfoGroup(null);
+      setPartInfoGroup(null);
     }
-  }, [isAkumulatorPageView, partName]);
+  }, [partPageName, partName]);
 
-  const closeAkumulatorPage = () => {
+  const closePartPage = () => {
     const qs = new URLSearchParams(urlSearch || "");
     qs.delete("ap_page");
     const next = qs.toString();
+    setPartInfoGroup(null);
     setLocation(next ? `${location}?${next}` : location);
   };
 
   return (
     <div className="mb-8 space-y-6 rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm overflow-hidden max-w-full">
-      {isAkumulatorPageView ? (
+      {isPartPageView ? (
         <section className="space-y-3">
           <button
             type="button"
-            onClick={closeAkumulatorPage}
+            onClick={closePartPage}
             className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800"
           >
             <ArrowLeft size={16} aria-hidden />
             Kthehu te llojet e pjesëve
           </button>
-          <h2 className="text-lg font-black text-gray-900">{translateCategory("Akumulatorë", locale)}</h2>
+          <h2 className="text-lg font-black text-gray-900">
+            {translateCategory(partPageName ?? "", locale)}
+          </h2>
         </section>
       ) : (
       <section className="space-y-3">
@@ -258,17 +279,18 @@ export function AutoPjeseSearchPanel({
       {partName && subcategoryGroups.length > 0 ? (
         <section className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
           <h3 className="text-base font-black text-gray-900">{typeTitle}</h3>
-          {isAkumulatorPage ? (
+          {isPartPageView ? (
             <div className="space-y-4 rounded-xl border border-blue-100 bg-blue-50/35 p-3 sm:p-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {subcategoryGroups.map((group) => {
-                  const photo = AKUMULATOR_GROUP_PHOTOS[group.label] ?? AUTO_PJESE_PART_PHOTOS["Akumulatorë"];
-                  const selected = akumulatorInfoGroup === group.label;
+                  const key = `${partName}|${group.label}`;
+                  const photo = AUTO_PJESE_GROUP_PHOTOS[key] ?? AUTO_PJESE_PART_PHOTOS[partName];
+                  const selected = partInfoGroup === group.label;
                   return (
                     <button
-                      key={`akumulator-page-${group.label}`}
+                      key={`part-page-${group.label}`}
                       type="button"
-                      onClick={() => setAkumulatorInfoGroup(selected ? null : group.label)}
+                      onClick={() => setPartInfoGroup(selected ? null : group.label)}
                       className={cn(
                         "group relative overflow-hidden rounded-xl border bg-white text-left transition-all",
                         selected
@@ -291,15 +313,15 @@ export function AutoPjeseSearchPanel({
                 })}
               </div>
 
-              {akumulatorInfoGroup ? (
+              {partInfoGroup ? (
                 <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
                   <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">
-                    {akumulatorInfoGroup}
+                    {partInfoGroup}
                   </p>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                    {(subcategoryGroups.find((g) => g.label === akumulatorInfoGroup)?.items ?? []).map((item) => (
+                    {(subcategoryGroups.find((g) => g.label === partInfoGroup)?.items ?? []).map((item) => (
                       <li
-                        key={`akumulator-detail-${akumulatorInfoGroup}-${item}`}
+                        key={`part-detail-${partInfoGroup}-${item}`}
                         className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-sm font-medium text-slate-700"
                       >
                         {item}
@@ -310,7 +332,7 @@ export function AutoPjeseSearchPanel({
               ) : null}
             </div>
           ) : null}
-          <div className="space-y-4">
+          <div className={cn("space-y-4", isPartPageView && "hidden")}>
             {subcategoryGroups.map((group) => (
               <div key={group.label} className="space-y-2">
                 <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
