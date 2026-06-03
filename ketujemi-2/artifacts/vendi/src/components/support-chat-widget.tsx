@@ -301,7 +301,7 @@ export function SupportChatWidget() {
             <div ref={bottomRef} />
           </div>
           <form
-            className="p-2 border-t border-gray-100 flex gap-2 bg-white"
+            className="p-2 border-t border-gray-100 flex flex-nowrap items-center gap-1.5 bg-white"
             onSubmit={(e) => {
               e.preventDefault();
               void sendMessage(input);
@@ -315,7 +315,7 @@ export function SupportChatWidget() {
                   ? (tx.ui_supportListeningPh ?? "Po dëgjohet zëri…")
                   : (tx.ui_supportInputPh ?? "Shkruani pyetjen…")
               }
-              className="flex-1 min-h-11 rounded-xl border border-gray-200 px-3 text-base sm:text-sm"
+              className="flex-1 min-w-0 w-0 min-h-10 sm:min-h-11 rounded-xl border border-gray-200 px-2.5 sm:px-3 text-sm"
               disabled={busy || listening}
               readOnly={listening}
             />
@@ -326,7 +326,7 @@ export function SupportChatWidget() {
                 disabled={busy}
                 data-testid="button-support-voice"
                 className={cn(
-                  "shrink-0 min-h-11 min-w-11 rounded-xl text-white flex items-center justify-center disabled:opacity-50 transition-colors",
+                  "flex-none shrink-0 min-h-10 min-w-10 sm:min-h-11 sm:min-w-11 rounded-xl text-white flex items-center justify-center disabled:opacity-50 transition-colors",
                   listening
                     ? "bg-red-600 animate-pulse ring-2 ring-red-400 ring-offset-1"
                     : "bg-[#1A56A0] hover:bg-[#164a8c]",
@@ -344,7 +344,7 @@ export function SupportChatWidget() {
             <button
               type="submit"
               disabled={busy || listening || !input.trim()}
-              className="shrink-0 min-h-11 min-w-11 rounded-xl bg-[#1A56A0] text-white flex items-center justify-center disabled:opacity-50"
+              className="flex-none shrink-0 min-h-10 min-w-10 sm:min-h-11 sm:min-w-11 rounded-xl bg-[#1A56A0] text-white flex items-center justify-center disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
             </button>
