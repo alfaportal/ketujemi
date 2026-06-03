@@ -28,11 +28,14 @@ export function AppLayout({ children }: AppLayoutProps) {
     pathname === "/admin" ||
     pathname.startsWith("/admin/") ||
     pathname.startsWith("/admin-secret-panel");
+  const isListingDetailPage = /^\/listings\/\d+$/.test(pathname);
+
   const hidePaymentsStrip =
     hideFooter ||
     isInfoStaticPage(pathname) ||
     pathname === "/login" ||
     pathname.startsWith("/listings/new") ||
+    isListingDetailPage ||
     loading ||
     !user;
 

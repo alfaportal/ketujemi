@@ -31,7 +31,7 @@ import { sellerFirstName } from "@/lib/seller-display";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { ReportListingDialog } from "@/components/report-listing-dialog";
 import { SimilarListingsSection } from "@/components/similar-listings-section";
-import { CardPaymentsPanel } from "@/components/card-payments-panel";
+import { ListingDetailTopPackages } from "@/components/listing-detail-top-packages";
 import { notifyTopListingsRefresh } from "@/lib/top-listings-events";
 import { parseListingImageUrls } from "@/lib/listing-images";
 import { recordListingView } from "@/lib/record-listing-view";
@@ -400,11 +400,6 @@ export default function ListingDetail() {
             Ky njoftim ka skaduar. Klikoni <strong>Rifillo njoftimin</strong> për ta shfaqur përsëri në listë.
           </div>
         ) : null}
-        {canManage && listing ? (
-          <div className="mb-4">
-            <CardPaymentsPanel listingId={listing.id} />
-          </div>
-        ) : null}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
           {/* ── Left: main content ── */}
@@ -681,6 +676,12 @@ export default function ListingDetail() {
           </div>
 
         </div>
+
+        {canManage && listing ? (
+          <div className="mt-8">
+            <ListingDetailTopPackages listingId={listing.id} />
+          </div>
+        ) : null}
 
         {listing ? <SimilarListingsSection listingId={listing.id} /> : null}
       </div>
