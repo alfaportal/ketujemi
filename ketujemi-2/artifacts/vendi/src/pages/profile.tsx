@@ -15,6 +15,7 @@ import { CardPaymentsPanel } from "@/components/card-payments-panel";
 import { WalletPanel } from "@/components/wallet-panel";
 import { PartnerLogoAnalyticsCard } from "@/components/partner-logo-analytics-card";
 import { PartnerProfilePanel } from "@/components/partner-profile-panel";
+import { MyListingsThisMonth } from "@/components/my-listings-this-month";
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
@@ -219,6 +220,8 @@ export default function ProfilePage() {
           <PartnerLogoAnalyticsCard user={user} />
 
           <WalletPanel />
+
+          <MyListingsThisMonth />
 
           <CardPaymentsPanel />
 

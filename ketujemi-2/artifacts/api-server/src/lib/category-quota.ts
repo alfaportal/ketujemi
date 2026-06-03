@@ -12,7 +12,12 @@ import {
 } from "../../../../lib/special-listing-categories.js";
 
 /** Free posts per calendar month (UTC) per parent category — subcategories share this pool. */
-export const DEFAULT_FREE_LISTING_LIMIT = 20;
+export const DEFAULT_FREE_LISTING_LIMIT = 10;
+
+export function nextQuotaResetUtcDate(): Date {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1, 0, 0, 0, 0));
+}
 
 export function countParentCategories(categories: Category[]): number {
   return categories.filter((c) => c.parent_id == null).length;
@@ -145,9 +150,7 @@ export function collectDescendantCategoryIds(
 
 export function freeLimitForRoot(root: Category | undefined): number {
   const n = root?.free_listing_limit;
-  if (typeof n === "number" && n >= 0) {
-    return Math.max(n, DEFAULT_FREE_LISTING_LIMIT);
-  }
+  if (typeof n === "number" && n >= 0) return n;
   return DEFAULT_FREE_LISTING_LIMIT;
 }
 

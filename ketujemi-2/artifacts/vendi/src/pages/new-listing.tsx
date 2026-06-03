@@ -48,6 +48,12 @@ import {
   ListingPackagesModal,
 } from "@/components/listing-packages-modal";
 import {
+  ListingLimitReachedModal,
+  formatQuotaResetLabel,
+  type ListingLimitReachedDetails,
+} from "@/components/listing-limit-reached-modal";
+import { translateCategory } from "@/lib/category-translations";
+import {
   DhurataGiftPledge,
   DHURATA_PLEDGE_STORAGE_KEY,
 } from "@/components/dhurata-gift-pledge";
@@ -169,6 +175,8 @@ export default function NewListing() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { market, t, uiLang } = useMarket();
+  const quotaLocale =
+    uiLang === "mk" ? "mk-MK" : uiLang === "mne" ? "sr-ME" : uiLang === "en" ? "en-GB" : "sq-AL";
   const tx = t as Record<string, string | undefined>;
   const [listingCountry, setListingCountry] = useState<ListingMarketCode>(() =>
     defaultListingMarketFromMarket(market.code),
@@ -232,6 +240,9 @@ export default function NewListing() {
     block_reason?: string | null;
     can_post_with_wallet?: boolean;
     will_charge_wallet?: boolean;
+    root_category_name?: string | null;
+    quota_resets_at?: string;
+    wallet_balance_cents?: number;
     active_used?: number;
     active_limit?: number;
     active_remaining?: number;
@@ -244,26 +255,66 @@ export default function NewListing() {
   const [freeQuotaError, setFreeQuotaError] = useState<string | null>(null);
   const [showPackagesModal, setShowPackagesModal] = useState(false);
   const [packagesModalMessage, setPackagesModalMessage] = useState<string | undefined>();
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [limitModalDetails, setLimitModalDetails] = useState<ListingLimitReachedDetails | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [postBlockMessage, setPostBlockMessage] = useState<string | null>(null);
   const postBlockRef = useRef<HTMLDivElement>(null);
   const postRefusedTitle =
     (t as { postRefusedTitle?: string }).postRefusedTitle ?? "Nuk u postua";
 
+  const buildLimitDetails = useCallback(
+    (
+      overrides?: Partial<{
+        categoryName: string;
+        quotaResetsAt: string;
+        walletBalanceCents: number;
+        used: number;
+        limit: number;
+      }>,
+    ): ListingLimitReachedDetails => {
+      const rawName = overrides?.categoryName ?? freeQuota?.root_category_name ?? parentName;
+      const categoryName = translateCategory(rawName, uiLang);
+      const resetsAt = overrides?.quotaResetsAt ?? freeQuota?.quota_resets_at ?? new Date().toISOString();
+      const cents = overrides?.walletBalanceCents ?? freeQuota?.wallet_balance_cents ?? 0;
+      return {
+        categoryName: categoryName || rawName || "—",
+        resetDateLabel: formatQuotaResetLabel(resetsAt, quotaLocale),
+        walletBalanceEur: (cents / 100).toFixed(2),
+        listingPriceEur: "0.30",
+        used: overrides?.used ?? freeQuota?.monthly_posts_used ?? 0,
+        limit: overrides?.limit ?? freeQuota?.monthly_posts_limit ?? 10,
+      };
+    },
+    [freeQuota, parentName, uiLang, quotaLocale],
+  );
+
   const refusePost = useCallback(
-    (message: string, opts?: { packagesMessage?: string }) => {
+    (
+      message: string,
+      opts?: {
+        openLimitModal?: boolean;
+        limitOverrides?: Partial<{
+          categoryName: string;
+          quotaResetsAt: string;
+          walletBalanceCents: number;
+          used: number;
+          limit: number;
+        }>;
+      },
+    ) => {
       setPostBlockMessage(message);
       toast({
         title: postRefusedTitle,
         description: message,
         variant: "destructive",
       });
-      if (opts?.packagesMessage) {
-        setPackagesModalMessage(opts.packagesMessage);
-        setShowPackagesModal(true);
+      if (opts?.openLimitModal) {
+        setLimitModalDetails(buildLimitDetails(opts.limitOverrides));
+        setShowLimitModal(true);
       }
     },
-    [toast, postRefusedTitle],
+    [toast, postRefusedTitle, buildLimitDetails],
   );
 
   useEffect(() => {
@@ -440,6 +491,9 @@ export default function NewListing() {
           block_reason: j.block_reason ?? null,
           can_post_with_wallet: j.can_post_with_wallet ?? false,
           will_charge_wallet: j.will_charge_wallet ?? false,
+          root_category_name: j.root_category_name ?? null,
+          quota_resets_at: j.quota_resets_at,
+          wallet_balance_cents: j.wallet_balance_cents ?? 0,
           active_used: j.active_used,
           active_limit: j.active_limit,
           active_remaining: j.active_remaining,
@@ -480,7 +534,7 @@ export default function NewListing() {
           status,
           t.postError,
         );
-        refusePost(message, openPackages ? { packagesMessage: message } : undefined);
+        refusePost(message, openPackages ? { openLimitModal: true } : undefined);
       },
     },
   });
@@ -625,7 +679,13 @@ export default function NewListing() {
       body: JSON.stringify(payload),
     })
       .then(async (res) => {
-        const body = (await res.json().catch(() => ({}))) as ListingPostApiBody & { id?: number };
+        const body = (await res.json().catch(() => ({}))) as ListingPostApiBody & {
+          id?: number;
+          show_packages?: boolean;
+          wallet_balance_cents?: number;
+          used?: number;
+          limit?: number;
+        };
         if (!res.ok) {
           const { message, openPackages } = resolveListingPostApiError(
             body,
@@ -634,7 +694,23 @@ export default function NewListing() {
               tx.ui_contentModerationFail?.trim() ||
               t.postError,
           );
-          refusePost(message, openPackages ? { packagesMessage: message } : undefined);
+          const showLimit =
+            openPackages ||
+            body.show_packages ||
+            body.error === "FREE_QUOTA_EXCEEDED" ||
+            body.error === "WALLET_INSUFFICIENT";
+          refusePost(message, showLimit ? {
+            openLimitModal: true,
+            limitOverrides: {
+              categoryName: body.root_category_name ?? undefined,
+              quotaResetsAt: body.quota_resets_at,
+              walletBalanceCents:
+                body.wallet_balance_cents ??
+                (body as { balance_cents?: number }).balance_cents,
+              used: body.used,
+              limit: body.limit,
+            },
+          } : undefined);
           return;
         }
         queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
@@ -671,6 +747,16 @@ export default function NewListing() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <ListingLimitReachedModal
+        open={showLimitModal}
+        onClose={() => setShowLimitModal(false)}
+        details={limitModalDetails}
+        onAddBalance={() => {
+          setShowLimitModal(false);
+          setPackagesModalMessage(undefined);
+          setShowPackagesModal(true);
+        }}
+      />
       <ListingPackagesModal
         open={showPackagesModal}
         onClose={() => {
@@ -688,6 +774,9 @@ export default function NewListing() {
                 block_reason: j.block_reason ?? null,
                 can_post_with_wallet: j.can_post_with_wallet ?? false,
                 will_charge_wallet: j.will_charge_wallet ?? false,
+                root_category_name: j.root_category_name ?? null,
+                quota_resets_at: j.quota_resets_at,
+                wallet_balance_cents: j.wallet_balance_cents ?? 0,
                 active_used: j.active_used,
                 active_limit: j.active_limit,
                 active_remaining: j.active_remaining,

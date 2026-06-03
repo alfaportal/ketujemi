@@ -6,6 +6,13 @@ export type ListingPostApiBody = {
   moderation_reason?: string;
   reason?: string;
   details?: Array<{ path?: (string | number)[]; message?: string }>;
+  show_packages?: boolean;
+  used?: number;
+  limit?: number;
+  wallet_balance_cents?: number;
+  balance_cents?: number;
+  root_category_name?: string | null;
+  quota_resets_at?: string;
 };
 
 const FIELD_LABELS_SQ: Record<string, string> = {

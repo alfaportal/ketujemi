@@ -19,7 +19,10 @@ import { formatZodIssuesMessage } from "../lib/listing-api-errors";
 import {
   assertFreeListingQuota,
   getCategoryPostingQuota,
+  loadAllCategories,
+  nextQuotaResetUtcDate,
 } from "../lib/category-quota";
+import { getUserMonthlyPostingHistory } from "../lib/listing-monthly-history";
 import { isBusinessAccount, isVipBusinessActive } from "../lib/business-rules";
 import { assertBusinessListingCreate } from "../lib/business-listing-guard";
 import { removeUserDuplicateListingsForPost } from "../lib/listing-duplicate-guard";
@@ -554,15 +557,23 @@ router.post("/listings", postListingLimiter, async (req, res) => {
           listings_remaining: number;
           publicMessage?: string;
         };
+        const qPay = await getCategoryPostingQuota(viewer, parsed.data.category_id);
+        const { byId: catById } = await loadAllCategories();
         res.status(402).json({
           error: "WALLET_INSUFFICIENT",
           message:
             e.publicMessage ??
             "Balanca juaj nuk mjafton. Mbushni portofolin nga profili juaj.",
           balance_cents: e.balance_cents,
+          wallet_balance_cents: e.balance_cents,
           required_cents: e.required_cents,
           listings_remaining: e.listings_remaining,
           listing_price_eur: "0.30",
+          used: qPay.monthly_posts_used,
+          limit: qPay.monthly_posts_limit,
+          root_category_name: catById.get(qPay.rootId)?.name ?? null,
+          quota_resets_at: nextQuotaResetUtcDate().toISOString(),
+          show_packages: true,
         });
         return;
       }
@@ -574,6 +585,9 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     } catch (err: unknown) {
       if (err instanceof Error && err.message === "FREE_QUOTA_EXCEEDED") {
         const e = err as Error & { used: number; limit: number };
+        const qFree = await getCategoryPostingQuota(viewer, parsed.data.category_id);
+        const { byId: catByIdFree } = await loadAllCategories();
+        const bal = await getWalletBalanceCents(viewer.id);
         res.status(403).json({
           error: "FREE_QUOTA_EXCEEDED",
           message:
@@ -581,6 +595,9 @@ router.post("/listings", postListingLimiter, async (req, res) => {
             "Ke arritur limitin falas për këtë kategori kryesore. Mbush portofolin (€0.30/shpallje) ose prit fillimin e muajit të ri.",
           used: e.used,
           limit: e.limit,
+          wallet_balance_cents: bal,
+          root_category_name: catByIdFree.get(qFree.rootId)?.name ?? null,
+          quota_resets_at: nextQuotaResetUtcDate().toISOString(),
           show_packages: (e as Error & { show_packages?: boolean }).show_packages ?? true,
         });
         return;
@@ -885,9 +902,12 @@ router.get("/listings/free-quota", async (req, res) => {
   }
 
   const q = await getCategoryPostingQuota(viewer, categoryId);
+  const { byId } = await loadAllCategories();
+  const rootCat = byId.get(q.rootId);
   const balanceCents = await getWalletBalanceCents(viewer.id);
   const willCharge = await listingWillChargeWallet(viewer, categoryId);
   const canPayFromWallet = balanceCents >= LISTING_PRICE_CENTS;
+  const quotaResetsAt = nextQuotaResetUtcDate().toISOString();
 
   const isBusiness = isBusinessAccount(viewer) && !isVipBusinessActive(viewer);
 
@@ -901,6 +921,8 @@ router.get("/listings/free-quota", async (req, res) => {
 
   res.json({
     root_category_id: q.rootId,
+    root_category_name: rootCat?.name ?? null,
+    quota_resets_at: quotaResetsAt,
     used: q.monthly_posts_used,
     limit: q.monthly_posts_limit,
     base_limit: q.base_limit,
@@ -929,6 +951,20 @@ router.get("/listings/free-quota", async (req, res) => {
         }
       : null,
   });
+});
+
+// ─── GET /listings/monthly-posting-history ────────────────────────────────────
+router.get("/listings/monthly-posting-history", async (req, res) => {
+  const viewer = await getSessionUser(req);
+  if (!viewer) {
+    res.status(401).json({
+      error: "Authentication required",
+      message: "Duhet të jeni i kyçur.",
+    });
+    return;
+  }
+  const history = await getUserMonthlyPostingHistory(viewer);
+  res.json(history);
 });
 
 // ─── POST /listings/:id/report ────────────────────────────────────────────────
