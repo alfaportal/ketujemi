@@ -211,7 +211,7 @@ export default function NewListing() {
       brand_category_id: 0,
       title: "",
       description: "",
-      price: 0,
+      price: undefined as unknown as number,
       price_agreement: false,
       image_url: "",
       location: "",
@@ -1330,12 +1330,24 @@ export default function NewListing() {
                             type="number"
                             min="0"
                             step="1"
-                            placeholder="0"
+                            placeholder="p.sh. 150"
                             className="pr-14"
-                            {...field}
+                            name={field.name}
+                            ref={field.ref}
+                            onBlur={field.onBlur}
                             readOnly={isDhurataCategory}
                             disabled={isDhurataCategory}
-                            value={isDhurataCategory ? 0 : field.value}
+                            value={
+                              isDhurataCategory
+                                ? 0
+                                : field.value === undefined || field.value === null
+                                  ? ""
+                                  : field.value
+                            }
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              field.onChange(raw === "" ? undefined : Number(raw));
+                            }}
                           />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-sm">EUR</span>
                         </div>
