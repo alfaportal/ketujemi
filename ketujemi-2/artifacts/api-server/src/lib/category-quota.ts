@@ -12,7 +12,7 @@ import {
 } from "../../../../lib/special-listing-categories.js";
 
 /** Free posts per calendar month (UTC) per parent category — subcategories share this pool. */
-export const DEFAULT_FREE_LISTING_LIMIT = 10;
+export const DEFAULT_FREE_LISTING_LIMIT = 20;
 
 export function countParentCategories(categories: Category[]): number {
   return categories.filter((c) => c.parent_id == null).length;
@@ -145,7 +145,9 @@ export function collectDescendantCategoryIds(
 
 export function freeLimitForRoot(root: Category | undefined): number {
   const n = root?.free_listing_limit;
-  if (typeof n === "number" && n >= 0) return n;
+  if (typeof n === "number" && n >= 0) {
+    return Math.max(n, DEFAULT_FREE_LISTING_LIMIT);
+  }
   return DEFAULT_FREE_LISTING_LIMIT;
 }
 
@@ -219,6 +221,6 @@ export async function assertFreeListingQuota(
   err.monthly_posts_used = q.monthly_posts_used;
   err.monthly_posts_limit = q.monthly_posts_limit;
   err.show_packages = true;
-  err.publicMessage = `Ke arritur ${q.monthly_posts_limit} postime falas këtë muaj për këtë kategori kryesore. Muaji riniset në fillim të muajit të ri. Pas skadimit (3 muaj) njoftimi hiqet, por limiti mujor është veçmas.`;
+  err.publicMessage = `Keni përdorur ${q.monthly_posts_used}/${q.monthly_posts_limit} postimet falas këtë muaj për këtë kategori. Mund të vazhdoni me €0.30/postim nga portofoli (Profili → Paketa) ose të prisni muajin e ri.`;
   throw err;
 }

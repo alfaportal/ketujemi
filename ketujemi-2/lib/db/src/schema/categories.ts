@@ -11,7 +11,7 @@ export const categoriesTable = pgTable("categories", {
   /** Optional hero/thumbnail URL for the category (e.g. Pexels JPEG). */
   image_url: text("image_url"),
   /** Free active listings per user for this category tree (root categories; subcats inherit via root). */
-  free_listing_limit: integer("free_listing_limit").notNull().default(5),
+  free_listing_limit: integer("free_listing_limit").notNull().default(20),
 });
 
 export const insertCategorySchema = createInsertSchema(categoriesTable).omit({ id: true });

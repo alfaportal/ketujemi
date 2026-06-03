@@ -75,7 +75,7 @@ const schema = z.object({
   category_id: z.coerce.number(),
   brand_category_id: z.coerce.number().optional(),
   title: z.string().min(5, "Titulli duhet të ketë të paktën 5 karaktere."),
-  description: z.string().min(20, "Përshkrimi duhet të ketë të paktën 20 karaktere."),
+  description: z.string().min(15, "Përshkrimi duhet të ketë të paktën 15 karaktere."),
   price: z.coerce.number().min(0),
   price_agreement: z.boolean().default(false),
   image_url: z.string().optional(),
@@ -230,6 +230,8 @@ export default function NewListing() {
     limit: number;
     allowed: boolean;
     block_reason?: string | null;
+    can_post_with_wallet?: boolean;
+    will_charge_wallet?: boolean;
     active_used?: number;
     active_limit?: number;
     active_remaining?: number;
@@ -436,6 +438,8 @@ export default function NewListing() {
           limit,
           allowed: j.allowed ?? true,
           block_reason: j.block_reason ?? null,
+          can_post_with_wallet: j.can_post_with_wallet ?? false,
+          will_charge_wallet: j.will_charge_wallet ?? false,
           active_used: j.active_used,
           active_limit: j.active_limit,
           active_remaining: j.active_remaining,
@@ -512,7 +516,7 @@ export default function NewListing() {
     refusePost(
       formatFormValidationSummary(
         messages,
-        "Plotësoni të gjitha fushat e detyrueshme (kategori, titull min. 5, përshkrim min. 20, foto, çmim, qytet).",
+        "Plotësoni të gjitha fushat e detyrueshme (kategori, titull min. 5, përshkrim min. 15, foto, çmim, qytet).",
       ),
     );
   };
@@ -682,6 +686,8 @@ export default function NewListing() {
                 limit: j.limit ?? 0,
                 allowed: j.allowed ?? true,
                 block_reason: j.block_reason ?? null,
+                can_post_with_wallet: j.can_post_with_wallet ?? false,
+                will_charge_wallet: j.will_charge_wallet ?? false,
                 active_used: j.active_used,
                 active_limit: j.active_limit,
                 active_remaining: j.active_remaining,
@@ -1414,13 +1420,23 @@ export default function NewListing() {
                     <p className="mt-1 leading-snug">{postBlockMessage}</p>
                   </div>
                 )}
-                {freeQuota && !freeQuota.allowed && (
-                  <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2" role="status">
+                {freeQuota && (freeQuota.block_reason || !freeQuota.allowed) && (
+                  <p
+                    className={`text-sm rounded-xl px-3 py-2 ${
+                      freeQuota.can_post_with_wallet
+                        ? "text-blue-900 bg-blue-50 border border-blue-200"
+                        : !freeQuota.allowed
+                          ? "text-amber-900 bg-amber-50 border border-amber-200"
+                          : "text-emerald-800 bg-emerald-50 border border-emerald-200"
+                    }`}
+                    role="status"
+                  >
                     {freeQuota.block_reason ??
                       formatFreeQuotaWarning(
                         freeQuota.monthly_posts_used ?? 0,
                         freeQuota.monthly_posts_limit ?? freeQuota.limit,
                         freeQuota.monthly_remaining ?? freeQuota.remaining,
+                        freeQuota.can_post_with_wallet,
                       )}
                   </p>
                 )}

@@ -41,7 +41,9 @@ import { effectiveListingSearchQuery } from "../../../../lib/listing-search-quer
 import {
   assertWalletCoversListing,
   debitWalletForListing,
+  getWalletBalanceCents,
   listingWillChargeWallet,
+  LISTING_PRICE_CENTS,
   walletSummary,
 } from "../lib/wallet";
 import { handleSellerComplaint } from "../lib/violation-escalation";
@@ -883,12 +885,19 @@ router.get("/listings/free-quota", async (req, res) => {
   }
 
   const q = await getCategoryPostingQuota(viewer, categoryId);
+  const balanceCents = await getWalletBalanceCents(viewer.id);
+  const willCharge = await listingWillChargeWallet(viewer, categoryId);
+  const canPayFromWallet = balanceCents >= LISTING_PRICE_CENTS;
 
   const isBusiness = isBusinessAccount(viewer) && !isVipBusinessActive(viewer);
 
   const blockReason = !q.allowed
-    ? `Ke përdorur ${q.monthly_posts_used} nga ${q.monthly_posts_limit} postimet falas këtë muaj për këtë kategori. Mund të paguani €0.30 nga portofoli ose të prisni muajin e ri.`
-    : null;
+    ? canPayFromWallet
+      ? `Postimet falas këtë muaj: ${q.monthly_posts_used}/${q.monthly_posts_limit} për këtë kategori. Postimi i radhës kushton €0.30 nga portofoli (keni balancë).`
+      : `Postimet falas këtë muaj: ${q.monthly_posts_used}/${q.monthly_posts_limit}. Postimi i radhës kushton €0.30 — mbushni portofolin nga Profili (Paketa S/M/L).`
+    : q.monthly_remaining <= 3 && q.monthly_remaining > 0
+      ? `Postime falas të mbetura këtë muaj: ${q.monthly_remaining}/${q.monthly_posts_limit} (kategoria kryesore).`
+      : null;
 
   res.json({
     root_category_id: q.rootId,
@@ -906,9 +915,13 @@ router.get("/listings/free-quota", async (req, res) => {
     listing_lifetime_days: q.listing_lifetime_days,
     allowed: q.allowed,
     block_reason: blockReason,
+    will_charge_wallet: willCharge,
+    can_post_with_wallet: !q.allowed && canPayFromWallet,
+    wallet_balance_cents: balanceCents,
+    listing_price_cents: LISTING_PRICE_CENTS,
     account_type: viewer.account_type ?? "private",
     quota_scope: "parent_category",
-    show_packages: !q.allowed,
+    show_packages: !q.allowed && !canPayFromWallet,
     business: isBusiness
       ? {
           listing_price_eur: 0.3,

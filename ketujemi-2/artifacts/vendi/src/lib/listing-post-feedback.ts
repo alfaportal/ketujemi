@@ -38,7 +38,7 @@ const ERROR_DEFAULTS_SQ: Record<string, string> = {
   LISTING_MODERATION_REJECTED:
     "Njoftimi nuk u miratua. Kontrolloni titullin, përshkrimin dhe çmimin.",
   FREE_QUOTA_EXCEEDED:
-    "Ke arritur limitin falas për këtë kategori. Mbush portofolin (€0.30/shpallje) ose prit muajin e ri.",
+    "Postimet falas këtë muaj për këtë kategori janë shpenzuar. Vazhdoni me €0.30/postim nga portofoli (Profili) ose prisni muajin e ri.",
   LISTING_MONTHLY_CAP:
     "Ke arritur limitin e njoftimeve aktive. Fshini një njoftim të vjetër ose blini paketë shtesë.",
   WALLET_INSUFFICIENT: "Balanca në portofol nuk mjafton. Mbushni portofolin nga profili.",

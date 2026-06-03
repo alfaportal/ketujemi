@@ -16,5 +16,6 @@
   "wallet-migration.sql",
   "fiscal-receipts-migration.sql",
   "phone-verify-challenges-migration.sql",
-  "email-verify-challenges-migration.sql"
+  "email-verify-challenges-migration.sql",
+  "bump-free-listing-limit-20.sql"
 ]

@@ -44,8 +44,8 @@ export function collectListingPostPreflightIssues(input: ListingPostPreflightInp
     issues.push("Titulli duhet të ketë të paktën 5 karaktere.");
   }
   const desc = input.description.trim();
-  if (desc.length < 20) {
-    issues.push("Përshkrimi duhet të ketë të paktën 20 karaktere.");
+  if (desc.length < 15) {
+    issues.push("Përshkrimi duhet të ketë të paktën 15 karaktere.");
   }
   if (!input.isKerkoj && !input.isDhurata && !input.priceAgreement && input.price <= 0) {
     issues.push("Vendosni çmimin në euro ose aktivizoni «Sipas marrëveshjes».");
@@ -76,9 +76,17 @@ export function formatPreflightSummary(issues: string[]): string {
   return issues.map((s, i) => `${i + 1}. ${s}`).join(" ");
 }
 
-export function formatFreeQuotaWarning(used: number, limit: number, remaining: number): string {
+export function formatFreeQuotaWarning(
+  used: number,
+  limit: number,
+  remaining: number,
+  canPostWithWallet?: boolean,
+): string {
   if (remaining > 0) {
-    return `Postime falas këtë muaj: ${used}/${limit} (mbeten ${remaining}).`;
+    return `Postime falas këtë muaj për këtë kategori: ${used}/${limit} (mbeten ${remaining}).`;
   }
-  return `Ke përdorur ${used} nga ${limit} postimet falas këtë muaj për këtë kategori. Mund të vazhdoni me portofolin (€0.30/shpallje) ose të prisni muajin e ri.`;
+  if (canPostWithWallet) {
+    return `Postimet falas (${used}/${limit}) për këtë muaj janë shpenzuar. Mund të postoni ende — €0.30/shpallje nga portofoli.`;
+  }
+  return `Postimet falas (${used}/${limit}) për këtë muaj janë shpenzuar. Postimi i radhës: €0.30 — mbushni portofolin nga Profili.`;
 }

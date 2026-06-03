@@ -121,7 +121,7 @@ export async function assertWalletCoversListing(
     err.required_cents = LISTING_PRICE_CENTS;
     err.listings_remaining = listingsRemainingFromBalance(balance);
     err.publicMessage =
-      "Balanca juaj nuk mjafton. Bli Paketën S, M ose L (€5 / €10 / €20) për të postuar.";
+      "Postimet falas këtë muaj për këtë kategori janë shpenzuar. Çdo postim i ri kushton vetëm €0.30 — mbushni portofolin nga Profili (Paketa S €5, M €10, L €20).";
     throw err;
   }
 }

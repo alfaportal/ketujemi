@@ -66,9 +66,9 @@ function ruleBasedModeration(input: {
   if (title.length > 120)
     return { approved: false, reason: "Titulli është shumë i gjatë (max 120 karaktere)." };
 
-  // Gjatësia e përshkrimit
-  if (desc.length < 20)
-    return { approved: false, reason: "Përshkrimi është shumë i shkurtër (min 20 karaktere)." };
+  // Gjatësia e përshkrimit (e thjeshtë — jo fjalë të gjata)
+  if (desc.length < 15)
+    return { approved: false, reason: "Përshkrimi është shumë i shkurtër (min 15 karaktere)." };
 
   // Titull vetëm me numra
   if (/^\d+$/.test(title))

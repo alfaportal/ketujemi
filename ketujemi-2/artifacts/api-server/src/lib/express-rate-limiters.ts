@@ -8,17 +8,17 @@ export const authLoginRegisterLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-/** POST /listings: 5 requests / hour per IP */
+/** POST /listings: generous cap (avoid blocking normal sellers testing the form). */
 export const postListingLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 5,
+  max: 40,
   standardHeaders: true,
   legacyHeaders: false,
   handler: (_req, res) => {
     res.status(429).json({
       error: "RATE_LIMIT_POST_LISTING",
       message:
-        "Shumë përpjekje për të postuar nga i njëjti rrjet. Prisni pak (maks. 5 postime në orë) dhe provoni përsëri.",
+        "Shumë përpjekje për të postuar shpejt. Prisni 10–15 minuta dhe provoni përsëri.",
     });
   },
 });
