@@ -93,7 +93,7 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
     ],
   },
   terms: {
-    title: "Terms and conditions",
+    title: "KetuJemi Terms of Service",
     tagline:
       "By using KetuJemi.com you accept the following terms and conditions of the platform's legal operator.",
     sections: [
@@ -202,7 +202,7 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
     ],
   },
   privacy: {
-    title: "Privacy policy",
+    title: "KetuJemi Privacy Policy",
     tagline: "How we handle your data — simply and transparently.",
     sections: [
       {
