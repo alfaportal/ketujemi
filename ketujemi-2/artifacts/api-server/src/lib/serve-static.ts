@@ -4,6 +4,17 @@ import type { Express } from "express";
 import express from "express";
 import { logger } from "./logger";
 
+/**
+ * Requests for built files (or other paths with a file extension) must not
+ * receive index.html when the file is missing — the browser would try to run
+ * HTML as JavaScript and the app shows "Diçka shkoi keq".
+ */
+function isStaticAssetRequest(urlPath: string): boolean {
+  if (urlPath.startsWith("/assets/") || urlPath.startsWith("/icons/")) return true;
+  const last = urlPath.split("/").pop() ?? "";
+  return /\.[a-z0-9]{1,8}$/i.test(last);
+}
+
 /** Serve Vite build output when STATIC_ROOT is set (production / single-port deploy). */
 export function attachStaticFrontend(app: Express): void {
   const staticRoot = process.env.STATIC_ROOT?.trim();
@@ -45,6 +56,10 @@ export function attachStaticFrontend(app: Express): void {
 
   app.get(/^(?!\/api\/).*/, (req, res, next) => {
     if (req.method !== "GET" && req.method !== "HEAD") return next();
+    if (isStaticAssetRequest(req.path)) {
+      res.status(404).type("text/plain").send("Not Found");
+      return;
+    }
     const indexPath = path.join(resolved, "index.html");
     if (!fs.existsSync(indexPath)) return next();
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
