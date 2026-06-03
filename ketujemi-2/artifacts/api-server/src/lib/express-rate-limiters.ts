@@ -14,6 +14,13 @@ export const postListingLimiter = rateLimit({
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
+  handler: (_req, res) => {
+    res.status(429).json({
+      error: "RATE_LIMIT_POST_LISTING",
+      message:
+        "Shumë përpjekje për të postuar nga i njëjti rrjet. Prisni pak (maks. 5 postime në orë) dhe provoni përsëri.",
+    });
+  },
 });
 
 /** GET /listings (search): 60 requests / minute per IP */

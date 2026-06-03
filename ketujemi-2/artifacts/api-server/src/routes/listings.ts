@@ -15,6 +15,7 @@ import { postListingLimiter, searchLimiter } from "../lib/express-rate-limiters"
 import { userOwnsListing } from "../lib/listing-ownership";
 import { sellerFirstName, maskEmailInListingDescription, maskSellerPhone } from "../lib/contact-mask";
 import { assertAccountActive } from "../lib/user-ban";
+import { formatZodIssuesMessage } from "../lib/listing-api-errors";
 import {
   assertFreeListingQuota,
   getCategoryPostingQuota,
@@ -435,13 +436,21 @@ router.get("/listings", searchLimiter, async (req, res) => {
 router.post("/listings", postListingLimiter, async (req, res) => {
   const viewer = await getSessionUser(req);
   if (!viewer) {
-    res.status(401).json({ error: "Authentication required" });
+    res.status(401).json({
+      error: "Authentication required",
+      message: "Duhet të jeni i kyçur për të postuar. Hyni në llogari dhe provoni përsëri.",
+    });
     return;
   }
 
   const parsed = CreateListingBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: "Invalid request body", details: parsed.error.issues });
+    const message = formatZodIssuesMessage(parsed.error.issues);
+    res.status(400).json({
+      error: "Invalid request body",
+      message,
+      details: parsed.error.issues,
+    });
     return;
   }
 
@@ -450,7 +459,11 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   try {
     await assertAccountActive(viewer, parsed.data.seller_phone);
   } catch {
-    res.status(403).json({ error: "Account suspended" });
+    res.status(403).json({
+      error: "Account suspended",
+      message:
+        "Llogaria ose numri i telefonit është i bllokuar. Nuk mund të postoni derisa të zgjidhet me mbështetjen.",
+    });
     return;
   }
 
@@ -873,6 +886,10 @@ router.get("/listings/free-quota", async (req, res) => {
 
   const isBusiness = isBusinessAccount(viewer) && !isVipBusinessActive(viewer);
 
+  const blockReason = !q.allowed
+    ? `Ke përdorur ${q.monthly_posts_used} nga ${q.monthly_posts_limit} postimet falas këtë muaj për këtë kategori. Mund të paguani €0.30 nga portofoli ose të prisni muajin e ri.`
+    : null;
+
   res.json({
     root_category_id: q.rootId,
     used: q.monthly_posts_used,
@@ -888,6 +905,7 @@ router.get("/listings/free-quota", async (req, res) => {
     monthly_remaining: q.monthly_remaining,
     listing_lifetime_days: q.listing_lifetime_days,
     allowed: q.allowed,
+    block_reason: blockReason,
     account_type: viewer.account_type ?? "private",
     quota_scope: "parent_category",
     show_packages: !q.allowed,

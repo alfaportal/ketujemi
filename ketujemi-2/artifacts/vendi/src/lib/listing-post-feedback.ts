@@ -61,6 +61,9 @@ const ERROR_DEFAULTS_SQ: Record<string, string> = {
   KERKOJ_SELLING_LANGUAGE: "Përshkrimi i kërkesës duhet në gjuhën e duhur.",
   KERKOJ_ONE_ACTIVE: "Keni tashmë një kërkesë aktive në këtë kategori.",
   KERKOJ_PHOTO_MISMATCH: "Fotot nuk përputhen me rregullat e kërkesës.",
+  RATE_LIMIT_POST_LISTING:
+    "Shumë përpjekje për të postuar. Prisni pak (maks. 5 postime në orë) dhe provoni përsëri.",
+  "Too many requests": "Shumë kërkesa në të njëjtën kohë. Prisni 1–2 minuta dhe provoni përsëri.",
 };
 
 const PACKAGE_ERRORS = new Set([
@@ -123,6 +126,14 @@ export function resolveListingPostApiError(
   if (status === 400) {
     return {
       message: fromDetails ?? "Plotësoni saktë të gjitha fushat e detyrueshme dhe provoni përsëri.",
+      openPackages: false,
+    };
+  }
+  if (status === 429) {
+    return {
+      message:
+        defaultForErrorCode(code) ??
+        "Shumë përpjekje. Prisni pak dhe provoni përsëri.",
       openPackages: false,
     };
   }

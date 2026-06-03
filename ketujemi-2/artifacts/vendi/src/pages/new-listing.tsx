@@ -59,6 +59,11 @@ import {
   resolveListingPostApiError,
   type ListingPostApiBody,
 } from "@/lib/listing-post-feedback";
+import {
+  collectListingPostPreflightIssues,
+  formatFreeQuotaWarning,
+  formatPreflightSummary,
+} from "@/lib/listing-post-preflight";
 
 const LISTING_POST_SUCCESS_MESSAGE =
   "❤️ Faleminderit për postimin! Postimi juaj qëndron aktiv 90 ditë, pas kësaj kohe hiqet automatikisht.";
@@ -224,6 +229,7 @@ export default function NewListing() {
     remaining: number;
     limit: number;
     allowed: boolean;
+    block_reason?: string | null;
     active_used?: number;
     active_limit?: number;
     active_remaining?: number;
@@ -409,19 +415,33 @@ export default function NewListing() {
     void fetchWithTimeout(`/api/listings/free-quota?category_id=${effectiveCategoryId}`, {
       credentials: "include",
     })
-      .then((r) => (r.ok ? r.json() : null))
+      .then(async (r) => {
+        if (cancelled) return;
+        if (!r.ok) {
+          const errBody = (await r.json().catch(() => ({}))) as ListingPostApiBody;
+          const { message } = resolveListingPostApiError(errBody, r.status, t.postError);
+          setFreeQuota(null);
+          setFreeQuotaError(message);
+          return;
+        }
+        return r.json();
+      })
       .then((j) => {
         if (cancelled || !j) return;
+        const used = j.monthly_posts_used ?? j.used ?? 0;
+        const limit = j.monthly_posts_limit ?? j.limit ?? 0;
+        const remaining = j.monthly_remaining ?? j.remaining ?? 0;
         setFreeQuota({
-          remaining: j.remaining ?? 0,
-          limit: j.limit ?? 0,
+          remaining,
+          limit,
           allowed: j.allowed ?? true,
+          block_reason: j.block_reason ?? null,
           active_used: j.active_used,
           active_limit: j.active_limit,
           active_remaining: j.active_remaining,
-          monthly_posts_used: j.monthly_posts_used,
-          monthly_posts_limit: j.monthly_posts_limit,
-          monthly_remaining: j.monthly_remaining,
+          monthly_posts_used: used,
+          monthly_posts_limit: limit,
+          monthly_remaining: remaining,
           listing_lifetime_days: j.listing_lifetime_days,
           business: j.business ?? null,
         });
@@ -501,6 +521,30 @@ export default function NewListing() {
     setPostBlockMessage(null);
     const parentId = Number(data.parent_category_id);
     const children = (allCategories ?? []).filter((c: { parent_id?: number | null }) => c.parent_id === parentId);
+    const preflight = collectListingPostPreflightIssues({
+      parentCategoryId: parentId,
+      categoryId: Number(data.category_id),
+      brandCategoryId: Number(data.brand_category_id) || 0,
+      hasBrands,
+      subcategoryCount: children.length,
+      title: data.title,
+      description: data.description,
+      price: Number(data.price),
+      priceAgreement: !!data.price_agreement,
+      location: data.location,
+      sellerName: data.seller_name,
+      sellerPhone: data.seller_phone,
+      imageCount: imageUrls.length,
+      needsSellerProfile: user != null && userNeedsSellerProfile(user),
+      isKerkoj: isKerkojCategory,
+      isDhurata: isDhurataCategory,
+      isUploading,
+    });
+    if (preflight.length > 0) {
+      refusePost(formatPreflightSummary(preflight));
+      return;
+    }
+
     let resolvedCategoryId = Number(data.category_id);
 
     if (children.length === 0) {
@@ -522,16 +566,6 @@ export default function NewListing() {
     const resolvedBrandId = Number(data.brand_category_id) || 0;
     if (hasBrands && resolvedBrandId < 1) {
       refusePost("Zgjidhni markën / modelin e produktit.");
-      return;
-    }
-    if (!data.price_agreement && (!data.price || data.price <= 0)) {
-      refusePost("Vendosni çmimin në euro ose aktivizoni «Sipas marrëveshjes».");
-      return;
-    }
-    if (freeQuota && !freeQuota.allowed) {
-      const quotaMsg =
-        "Ke arritur limitin falas për këtë kategori. Mbush portofolin (€0.30/shpallje) ose prit muajin e ri.";
-      refusePost(quotaMsg, { packagesMessage: quotaMsg });
       return;
     }
     const partCat = subCats.find((c: any) => c.id === resolvedCategoryId);
@@ -647,6 +681,7 @@ export default function NewListing() {
                 remaining: j.remaining ?? 0,
                 limit: j.limit ?? 0,
                 allowed: j.allowed ?? true,
+                block_reason: j.block_reason ?? null,
                 active_used: j.active_used,
                 active_limit: j.active_limit,
                 active_remaining: j.active_remaining,
@@ -1380,8 +1415,13 @@ export default function NewListing() {
                   </div>
                 )}
                 {freeQuota && !freeQuota.allowed && (
-                  <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-                    Ke arritur limitin falas për këtë kategori. Mbush portofolin (€0.30/shpallje) ose prit muajin e ri.
+                  <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2" role="status">
+                    {freeQuota.block_reason ??
+                      formatFreeQuotaWarning(
+                        freeQuota.monthly_posts_used ?? 0,
+                        freeQuota.monthly_posts_limit ?? freeQuota.limit,
+                        freeQuota.monthly_remaining ?? freeQuota.remaining,
+                      )}
                   </p>
                 )}
                 {freeQuotaError && (
