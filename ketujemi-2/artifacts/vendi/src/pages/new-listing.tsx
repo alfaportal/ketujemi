@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { fetchWithTimeout, getFetchErrorMessage } from "@/lib/fetch-with-timeout";
 import { useLocation } from "wouter";
 import { useForm, useWatch } from "react-hook-form";
@@ -53,6 +53,12 @@ import {
 } from "@/components/dhurata-gift-pledge";
 import { DHURATA_FALAS_SLUG } from "@/lib/special-listing-categories";
 import { categoryEngine } from "@/services/CategoryEngine";
+import {
+  collectFormValidationMessages,
+  formatFormValidationSummary,
+  resolveListingPostApiError,
+  type ListingPostApiBody,
+} from "@/lib/listing-post-feedback";
 
 const LISTING_POST_SUCCESS_MESSAGE =
   "❤️ Faleminderit për postimin! Postimi juaj qëndron aktiv 90 ditë, pas kësaj kohe hiqet automatikisht.";
@@ -68,9 +74,9 @@ const schema = z.object({
   price: z.coerce.number().min(0),
   price_agreement: z.boolean().default(false),
   image_url: z.string().optional(),
-  location: z.string().min(1),
-  seller_phone: z.string().min(5),
-  seller_name: z.string().min(2),
+  location: z.string().min(1, "Zgjidhni qytetin."),
+  seller_phone: z.string().min(5, "Telefoni duhet të ketë të paktën 5 shifra."),
+  seller_name: z.string().min(2, "Shkruani emrin e shitësit."),
   condition: z.enum(["New", "Used", "Damaged"]),
   xMarka: z.string().optional(),
   xModeli: z.string().optional(),
@@ -231,6 +237,32 @@ export default function NewListing() {
   const [showPackagesModal, setShowPackagesModal] = useState(false);
   const [packagesModalMessage, setPackagesModalMessage] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [postBlockMessage, setPostBlockMessage] = useState<string | null>(null);
+  const postBlockRef = useRef<HTMLDivElement>(null);
+  const postRefusedTitle =
+    (t as { postRefusedTitle?: string }).postRefusedTitle ?? "Nuk u postua";
+
+  const refusePost = useCallback(
+    (message: string, opts?: { packagesMessage?: string }) => {
+      setPostBlockMessage(message);
+      toast({
+        title: postRefusedTitle,
+        description: message,
+        variant: "destructive",
+      });
+      if (opts?.packagesMessage) {
+        setPackagesModalMessage(opts.packagesMessage);
+        setShowPackagesModal(true);
+      }
+    },
+    [toast, postRefusedTitle],
+  );
+
+  useEffect(() => {
+    if (postBlockMessage && postBlockRef.current) {
+      postBlockRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [postBlockMessage]);
   const effectiveCategoryId =
     Number(brandCatId) || Number(bodyCatId) || Number(parentCatId);
 
@@ -416,19 +448,15 @@ export default function NewListing() {
       onError: (err: unknown) => {
         const data =
           err instanceof ApiError
-            ? (err.data as { error?: string } | null)
+            ? (err.data as ListingPostApiBody | null)
             : null;
-        if (data?.error === "FREE_QUOTA_EXCEEDED") {
-          setPackagesModalMessage("Ke arritur limitin falas. Zgjero me një paketë shtesë.");
-          setShowPackagesModal(true);
-          return;
-        }
-        if (data?.error === "BUSINESS_QUOTA_EXCEEDED") {
-          setPackagesModalMessage(tx.ui_walletTopupLimit ?? "Keni arritur limitin falas. Mbushni portofolin (€0.30 për shpallje).");
-          setShowPackagesModal(true);
-          return;
-        }
-        toast({ title: t.postError, variant: "destructive" });
+        const status = err instanceof ApiError ? err.status : 500;
+        const { message, openPackages } = resolveListingPostApiError(
+          data ?? {},
+          status,
+          t.postError,
+        );
+        refusePost(message, openPackages ? { packagesMessage: message } : undefined);
       },
     },
   });
@@ -459,17 +487,18 @@ export default function NewListing() {
 
   const removeImage = (i: number) => setImageUrls((prev) => prev.filter((_, idx) => idx !== i));
 
-  const onInvalidSubmit = (errors: Record<string, { message?: string } | undefined>) => {
-    const first = Object.values(errors).find((e) => e?.message)?.message;
-    toast({
-      title:
-        first ??
+  const onInvalidSubmit = (errors: Record<string, unknown>) => {
+    const messages = collectFormValidationMessages(errors);
+    refusePost(
+      formatFormValidationSummary(
+        messages,
         "Plotësoni të gjitha fushat e detyrueshme (kategori, titull min. 5, përshkrim min. 20, foto, çmim, qytet).",
-      variant: "destructive",
-    });
+      ),
+    );
   };
 
   const onSubmit = (data: FormData) => {
+    setPostBlockMessage(null);
     const parentId = Number(data.parent_category_id);
     const children = (allCategories ?? []).filter((c: { parent_id?: number | null }) => c.parent_id === parentId);
     let resolvedCategoryId = Number(data.category_id);
@@ -481,28 +510,28 @@ export default function NewListing() {
         resolvedCategoryId = children[0]!.id;
         form.setValue("category_id", resolvedCategoryId);
       } else {
-        toast({
-          title:
-            watchTitle.trim().length < 5
-              ? "Shkruani titullin (të paktën 5 shkronja) që sistemi të caktojë nënkategorinë."
-              : "Nënkategoria nuk u caktua ende — prisni një sekondë pas titullit ose ndryshoni kategorinë kryesore.",
-          variant: "destructive",
-        });
+        refusePost(
+          watchTitle.trim().length < 5
+            ? "Shkruani titullin (të paktën 5 shkronja) që sistemi të caktojë nënkategorinë."
+            : "Zgjidhni nënkategorinë nga lista, ose prisni një sekondë pas titullit.",
+        );
         return;
       }
     }
 
     const resolvedBrandId = Number(data.brand_category_id) || 0;
     if (hasBrands && resolvedBrandId < 1) {
-      toast({
-        title: "Zgjidhni markën / modelin e produktit.",
-        variant: "destructive",
-      });
+      refusePost("Zgjidhni markën / modelin e produktit.");
+      return;
+    }
+    if (!data.price_agreement && (!data.price || data.price <= 0)) {
+      refusePost("Vendosni çmimin në euro ose aktivizoni «Sipas marrëveshjes».");
       return;
     }
     if (freeQuota && !freeQuota.allowed) {
-      setPackagesModalMessage("Ke arritur limitin falas. Mbush portofolin (€0.30 për shpallje).");
-      setShowPackagesModal(true);
+      const quotaMsg =
+        "Ke arritur limitin falas për këtë kategori. Mbush portofolin (€0.30/shpallje) ose prit muajin e ri.";
+      refusePost(quotaMsg, { packagesMessage: quotaMsg });
       return;
     }
     const partCat = subCats.find((c: any) => c.id === resolvedCategoryId);
@@ -524,7 +553,7 @@ export default function NewListing() {
             : issue.code === "AP_COMPAT_REQUIRED"
               ? t.ap_post_err_compat
               : issue.message;
-      toast({ title, variant: "destructive" });
+      refusePost(title);
       return;
     }
     const finalDescription = validation.extraDescriptionPrefix + data.description;
@@ -558,83 +587,16 @@ export default function NewListing() {
       body: JSON.stringify(payload),
     })
       .then(async (res) => {
-        const body = await res.json().catch(() => ({}));
+        const body = (await res.json().catch(() => ({}))) as ListingPostApiBody & { id?: number };
         if (!res.ok) {
-          const errData = body as { error?: string; message?: string };
-          if (errData.error === "DUPLICATE_LISTING" || errData.error === "DUPLICATE_LISTING_SELF") {
-            toast({
-              title: errData.message ?? "Keni një njoftim të ngjashëm aktiv.",
-              variant: "destructive",
-            });
-            return;
-          }
-          if (
-            errData.error === "BLACKLIST_WORD" ||
-            errData.error === "PHONE_IN_DESCRIPTION" ||
-            errData.error === "EXTERNAL_LINK_IN_DESCRIPTION"
-          ) {
-            toast({
-              title: errData.message ?? tx.ui_contentModerationFail ?? "Përmbajtja nuk kaloi kontrollin automatik.",
-              variant: "destructive",
-            });
-            return;
-          }
-          if (
-            errData.error === "LISTING_POST_COOLDOWN" ||
-            errData.error === "LISTING_POST_IP_COOLDOWN"
-          ) {
-            toast({
-              title:
-                errData.message ?? "Ki pak durim, prisni 30 sekonda për postimin tjetër.",
-              variant: "destructive",
-            });
-            return;
-          }
-          if (errData.error === "LISTING_MODERATION_REJECTED") {
-            toast({
-              title: errData.message ?? "Njoftimi u bllokua nga moderimi automatik.",
-              variant: "destructive",
-            });
-            return;
-          }
-          if (
-            errData.error === "DHURATA_PRICE_ZERO" ||
-            errData.error === "DHURATA_PHOTO_REQUIRED" ||
-            errData.error === "DHURATA_PHOTO_LIMIT" ||
-            errData.error === "DHURATA_SELLING_LANGUAGE" ||
-            errData.error === "DHURATA_PHOTO_MISMATCH" ||
-            errData.error === "KERKOJ_PHOTO_REQUIRED" ||
-            errData.error === "KERKOJ_PHOTO_LIMIT" ||
-            errData.error === "KERKOJ_SELLING_LANGUAGE" ||
-            errData.error === "KERKOJ_ONE_ACTIVE" ||
-            errData.error === "KERKOJ_PHOTO_MISMATCH"
-          ) {
-            toast({
-              title: errData.message ?? "Postimi u bllokua.",
-              variant: "destructive",
-            });
-            return;
-          }
-          if (errData.error === "LISTING_MONTHLY_CAP") {
-            setPackagesModalMessage(
-              errData.message ?? "Ke arritur limitin falas. Zgjero me një paketë shtesë.",
-            );
-            setShowPackagesModal(true);
-            return;
-          }
-          if (errData.error === "FREE_QUOTA_EXCEEDED") {
-            setPackagesModalMessage("Ke arritur limitin falas. Zgjero me një paketë shtesë.");
-            setShowPackagesModal(true);
-            return;
-          }
-          if (errData.error === "BUSINESS_QUOTA_EXCEEDED" || errData.error === "WALLET_INSUFFICIENT") {
-            setPackagesModalMessage(
-              errData.message ?? "Mbushni portofolin (€0.30 për shpallje).",
-            );
-            setShowPackagesModal(true);
-            return;
-          }
-          toast({ title: errData.message ?? t.postError, variant: "destructive" });
+          const { message, openPackages } = resolveListingPostApiError(
+            body,
+            res.status,
+            body.message?.trim() ||
+              tx.ui_contentModerationFail?.trim() ||
+              t.postError,
+          );
+          refusePost(message, openPackages ? { packagesMessage: message } : undefined);
           return;
         }
         queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
@@ -642,7 +604,7 @@ export default function NewListing() {
         toast({ title: LISTING_POST_SUCCESS_MESSAGE });
         setLocation(`/listings/${(body as { id: number }).id}`);
       })
-      .catch(() => toast({ title: t.postError, variant: "destructive" }))
+      .catch((e) => refusePost(getFetchErrorMessage(e)))
       .finally(() => setIsSubmitting(false));
   };
 
@@ -1406,6 +1368,17 @@ export default function NewListing() {
             {/* ── Submit ── */}
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-20 sm:static sm:bg-transparent sm:border-none sm:p-0">
               <div className="max-w-2xl mx-auto space-y-2">
+                {postBlockMessage && (
+                  <div
+                    ref={postBlockRef}
+                    role="alert"
+                    className="text-sm text-red-800 bg-red-50 border border-red-300 rounded-xl px-3 py-2.5"
+                    data-testid="listing-post-block-reason"
+                  >
+                    <p className="font-bold text-red-900">{postRefusedTitle}</p>
+                    <p className="mt-1 leading-snug">{postBlockMessage}</p>
+                  </div>
+                )}
                 {freeQuota && !freeQuota.allowed && (
                   <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
                     Ke arritur limitin falas për këtë kategori. Mbush portofolin (€0.30/shpallje) ose prit muajin e ri.
