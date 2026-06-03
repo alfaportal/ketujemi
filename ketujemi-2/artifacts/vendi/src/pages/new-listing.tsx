@@ -59,8 +59,9 @@ const LISTING_POST_SUCCESS_MESSAGE =
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 const schema = z.object({
-  parent_category_id: z.coerce.number().min(1),
-  category_id: z.coerce.number().min(1),
+  parent_category_id: z.coerce.number().min(1, "Zgjidhni kategorinë kryesore."),
+  /** Set automatically (AI / single child); not a visible dropdown — validated in onSubmit. */
+  category_id: z.coerce.number(),
   brand_category_id: z.coerce.number().optional(),
   title: z.string().min(3),
   description: z.string().min(10),
@@ -457,12 +458,40 @@ export default function NewListing() {
 
   const removeImage = (i: number) => setImageUrls((prev) => prev.filter((_, idx) => idx !== i));
 
+  const onInvalidSubmit = () => {
+    toast({
+      title: "Plotësoni të gjitha fushat e detyrueshme (kategori, titull, përshkrim, foto, çmim, qytet).",
+      variant: "destructive",
+    });
+  };
+
   const onSubmit = (data: FormData) => {
     const parentId = Number(data.parent_category_id);
     const children = (allCategories ?? []).filter((c: { parent_id?: number | null }) => c.parent_id === parentId);
-    if (children.length > 0 && !data.category_id) {
+    let resolvedCategoryId = Number(data.category_id);
+
+    if (children.length === 0) {
+      resolvedCategoryId = parentId;
+    } else if (!resolvedCategoryId || resolvedCategoryId < 1) {
+      if (children.length === 1) {
+        resolvedCategoryId = children[0]!.id;
+        form.setValue("category_id", resolvedCategoryId);
+      } else {
+        toast({
+          title:
+            watchTitle.trim().length < 3
+              ? "Shkruani titullin (të paktën 3 shkronja) që sistemi të caktojë nënkategorinë."
+              : "Nënkategoria nuk u caktua ende — prisni një sekondë pas titullit ose ndryshoni kategorinë kryesore.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    const resolvedBrandId = Number(data.brand_category_id) || 0;
+    if (hasBrands && resolvedBrandId < 1) {
       toast({
-        title: "Plotësoni titullin që sistemi të caktojë nënkategorinë automatikisht.",
+        title: "Zgjidhni markën / modelin e produktit.",
         variant: "destructive",
       });
       return;
@@ -472,8 +501,11 @@ export default function NewListing() {
       setShowPackagesModal(true);
       return;
     }
-    const partCat = subCats.find((c: any) => c.id === Number(data.category_id));
-    const validation = catEngine.validateListing(data, Number(parentCatId) || effectiveCategoryId, {
+    const partCat = subCats.find((c: any) => c.id === resolvedCategoryId);
+    const validation = catEngine.validateListing(
+      { ...data, category_id: resolvedCategoryId, brand_category_id: resolvedBrandId || data.brand_category_id },
+      Number(parentCatId) || effectiveCategoryId,
+      {
       imageCount: imageUrls.length,
       subcategoryName: partCat?.name,
       sellLangBlockedTemplate: tx.ui_sellLangBlocked,
@@ -503,7 +535,7 @@ export default function NewListing() {
       price: validation.price,
       price_agreement: validation.price_agreement,
       lang: market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq",
-      category_id: data.brand_category_id || data.category_id || data.parent_category_id,
+      category_id: resolvedBrandId || resolvedCategoryId || parentId,
       location: data.location,
       listing_country: listingCountry,
       seller_name: contact.seller_name,
@@ -685,7 +717,7 @@ export default function NewListing() {
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
         {user?.account_type === "business" ? <CardPaymentsPanel /> : null}
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)} className="space-y-4">
 
             {/* ── 1. Title (first — AI tip appears right below) ── */}
             <Section title={t.titleField} icon={Info}>
@@ -742,6 +774,23 @@ export default function NewListing() {
                       </SelectContent>
                     </Select>
                     <FormMessage />
+                    {subCats.length > 0 && (
+                      <p
+                        className={`text-sm mt-1 ${
+                          bodyCatId ? "text-green-700" : "text-amber-700"
+                        }`}
+                        role="status"
+                      >
+                        {bodyCatId
+                          ? `${t.subcategory}: ${
+                              subCats.find((c: { id: number }) => c.id === Number(bodyCatId))?.name ??
+                              "—"
+                            }`
+                          : watchTitle.trim().length < 3
+                            ? "Shkruani titullin — pastaj caktohet automatikisht nënkategoria."
+                            : "Duke caktuar nënkategorinë… (pas titullit)"}
+                      </p>
+                    )}
                   </FormItem>
                 )}
               />

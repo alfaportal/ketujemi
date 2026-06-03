@@ -53,6 +53,8 @@ async function startServer(): Promise<void> {
     await purgeInvalidListingImagesOnStartup();
     logPaymentStackReadiness(logger);
     logger.info(vonageConfigSummary(), "vonage sms config (masked)");
+    const { logFacebookAutoPostReadiness } = await import("./services/socialMedia.js");
+    logFacebookAutoPostReadiness();
     const { startJobQueueWorkers } = await import("./queues/jobQueue.js");
     startJobQueueWorkers();
   } catch (err) {

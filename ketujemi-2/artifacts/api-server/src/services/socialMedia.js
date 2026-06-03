@@ -189,17 +189,56 @@ export function buildFacebookCaption(market, input) {
  *   listing_country?: string | null;
  * }} listing
  */
-export function canPostListingToFacebook(listing) {
+function readPageId() {
+  return (
+    process.env.PAGE_ID?.trim() ||
+    process.env.FACEBOOK_PAGE_ID?.trim() ||
+    ""
+  );
+}
+
+function readPageAccessToken() {
+  return process.env.PAGE_ACCESS_TOKEN?.trim() || "";
+}
+
+/**
+ * @param {{
+ *   description: string;
+ *   price: number | string;
+ *   image_url: string | null | undefined;
+ * }} listing
+ * @returns {string | null} skip reason, or null if eligible
+ */
+export function facebookPostSkipReason(listing) {
+  if (!isFacebookAutoPostConfigured()) {
+    return "not_configured";
+  }
   const desc = String(listing.description ?? "").trim();
+  if (desc.length < 10) return "description_too_short";
   const price = Number(listing.price);
+  if (!Number.isFinite(price) || price <= 0) return "price_missing_or_zero";
   const urls = parseListingImageUrls(listing.image_url);
-  return desc.length >= 10 && Number.isFinite(price) && price > 0 && urls.length >= 1;
+  if (urls.length < 1) return "no_valid_photo_url";
+  return null;
+}
+
+export function canPostListingToFacebook(listing) {
+  return facebookPostSkipReason(listing) === null;
 }
 
 export function isFacebookAutoPostConfigured() {
-  const pageId = process.env.PAGE_ID?.trim();
-  const token = process.env.PAGE_ACCESS_TOKEN?.trim();
-  return !!(pageId && token);
+  return !!(readPageId() && readPageAccessToken());
+}
+
+/** Call once at API startup — visible in Railway logs. */
+export function logFacebookAutoPostReadiness() {
+  if (!isFacebookAutoPostConfigured()) {
+    logger.warn(
+      "facebook auto-post disabled: set PAGE_ID (or FACEBOOK_PAGE_ID) and PAGE_ACCESS_TOKEN on the server",
+    );
+    return;
+  }
+  logger.info({ pageId: readPageId() }, "facebook auto-post enabled");
 }
 
 /**
@@ -216,16 +255,14 @@ export function isFacebookAutoPostConfigured() {
  * @returns {Promise<string | null>} Facebook post/photo id
  */
 export async function postNewListingToFacebook(listing) {
-  if (!isFacebookAutoPostConfigured()) {
+  const skip = facebookPostSkipReason(listing);
+  if (skip) {
+    logger.info({ listingId: listing.id, skip }, "facebook auto-post skipped");
     return null;
   }
 
-  if (!canPostListingToFacebook(listing)) {
-    return null;
-  }
-
-  const pageId = process.env.PAGE_ID.trim();
-  const accessToken = process.env.PAGE_ACCESS_TOKEN.trim();
+  const pageId = readPageId();
+  const accessToken = readPageAccessToken();
   const photoUrl = parseListingImageUrls(listing.image_url)[0];
   const market = resolveListingMarketForSocial(listing.location, listing.listing_country);
   const slug = listingSlug(listing.id, listing.title);
