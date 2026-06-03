@@ -505,6 +505,7 @@ export default function NewListing() {
       lang: market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq",
       category_id: data.brand_category_id || data.category_id || data.parent_category_id,
       location: data.location,
+      listing_country: listingCountry,
       seller_name: contact.seller_name,
       seller_phone: contact.seller_phone,
       condition: data.condition,

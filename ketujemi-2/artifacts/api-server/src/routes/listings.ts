@@ -62,6 +62,8 @@ import {
   expiresAtForCategoryRootSlug,
   resolveCategorySlugMeta,
 } from "../lib/listing-special-categories.js";
+import { postNewListingToFacebook } from "../services/socialMedia.js";
+import { logger } from "../lib/logger";
 
 const reportRate = new Map<string, number[]>();
 
@@ -578,7 +580,11 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     .where(eq(categoriesTable.id, parsed.data.category_id))
     .limit(1);
 
-  const bodyExtra = req.body as { price_agreement?: boolean; lang?: string };
+  const bodyExtra = req.body as {
+    price_agreement?: boolean;
+    lang?: string;
+    listing_country?: string;
+  };
   const priceAgreement = !!bodyExtra.price_agreement;
   const moderation = await moderateListingContent(
     {
@@ -668,6 +674,19 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     .returning();
 
   recordListingPostSuccessForUser(viewer);
+
+  void postNewListingToFacebook({
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    price: listingPrice,
+    location: row.location,
+    image_url: safeImageUrl ?? row.image_url,
+    category_name: catRow?.name ?? null,
+    listing_country: bodyExtra.listing_country ?? null,
+  }).catch((err) => {
+    logger.error({ err, listingId: row.id }, "facebook auto-post background error");
+  });
 
   let walletAfterPost: ReturnType<typeof walletSummary> | null = null;
   if (willChargeWallet) {
