@@ -103,37 +103,23 @@ function ruleBasedModeration(input: {
   return { approved: true, reason: "" };
 }
 
-const MODERATION_SYSTEM = `You are the automatic content moderator for KetuJemi.com (classifieds: Kosovo, Albania, North Macedonia, Montenegro).
+/** @deprecated Quality gate moved to ruleBasedModeration only; AI must not reject for missing model/year/reason. */
+const MODERATION_SYSTEM_PROHIBITED_ONLY = `You check ONLY for prohibited or illegal content on KetuJemi.com classifieds.
 Reply with ONLY valid JSON: {"approved":boolean,"reason":"string"}
-- reason in the user's language (Albanian, Macedonian, or Montenegrin). Empty if approved.
+- reason in the user's language. Empty if approved.
 
-BLOCK (approved false):
-- Counterfeit / replica / fake branded goods
-- Weapons, drugs, alcohol, tobacco, e-cigarettes
-- Pyramid schemes / MLM recruitment
-- Erotic or dating ads
-- Crypto / gambling account sales
-- Empty, spam, or meaningless title/description
-- Price 0 or clearly unrealistic for the category (unless price_agreement is true)
-- Duplicate-looking spam or off-platform-only ads with no real product
-- Listings with 0 images
-- Titles under 3 words or descriptions under 10 words
-- Contact info (phone/email/WhatsApp) copied into title or description (phone belongs in the phone field only — platform masks it for non-logged visitors)
-- External links or social media handles in description
-- All-caps titles that look like spam
-- Misleading category only when the PRODUCT clearly belongs elsewhere (e.g. car under electronics, TV under baby toys) — not when city/country differs from category name
+BLOCK (approved false) ONLY for:
+- Weapons, drugs, alcohol, tobacco, e-cigarettes, counterfeit/replica goods
+- Pyramid schemes, erotic ads, crypto/gambling sales
+- Obvious scam or illegal content
 
-Do NOT block because:
-- Seller posts from another country/city than the category "sounds" regional
-- Category is correct for the product but location is Kosovo vs Albania vs MK vs MNE
+NEVER block because:
+- Title is short (e.g. "Tablet", "Telefon") or has fewer than 3 words
+- Description lacks model, year, size, specs, serial number, or "reason for selling"
+- Seller did not explain why they are selling
+- Listing is brief but honest (min length already checked server-side)
 
-APPROVE if:
-- Real product with honest title and description
-- Realistic price for category
-- At least 1 image
-- No prohibited content
-
-Be strict but fair. When in doubt, approve.`;
+When in doubt, approve.`;
 
 export async function moderateListingContent(
   input: {
@@ -151,39 +137,30 @@ export async function moderateListingContent(
   const rules = ruleBasedModeration(input);
   if (!rules.approved) return rules;
 
+  // Do not run AI "quality" moderation — it wrongly rejected simple ads (model/year/reason demands).
   if (!isClaudeConfigured()) {
     return rules;
   }
 
   try {
-    const imageCount = input.image_url
-      ? input.image_url.split(",").filter(Boolean).length
-      : 0;
-
     const parsed = await claudeJsonCompletion<{ approved: boolean; reason: string }>({
-      system: MODERATION_SYSTEM,
+      system: MODERATION_SYSTEM_PROHIBITED_ONLY,
       user: JSON.stringify({
         language: langLabel(lang),
         title: input.title,
         description: input.description.slice(0, 4000),
-        price_eur: input.price,
-        price_agreement: !!input.price_agreement,
-        category: input.category_name ?? "unknown",
-        category_root_slug: input.categoryRootSlug ?? null,
-        condition: input.condition ?? "unknown",
-        image_count: imageCount,
       }),
-      maxTokens: 512,
+      maxTokens: 256,
     });
 
-    if (!parsed || typeof parsed.approved !== "boolean") {
+    if (!parsed || typeof parsed.approved !== "boolean" || parsed.approved) {
       return rules;
     }
 
-    return {
-      approved: parsed.approved,
-      reason: typeof parsed.reason === "string" ? parsed.reason.trim() : "",
-    };
+    const reason = typeof parsed.reason === "string" ? parsed.reason.trim() : "";
+    if (!reason) return rules;
+
+    return { approved: false, reason };
   } catch {
     return rules;
   }

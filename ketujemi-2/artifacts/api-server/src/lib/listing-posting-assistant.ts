@@ -25,7 +25,6 @@ function ruleBasedSuggestions(input: {
   parent_category_name?: string | null;
 }): PostingSuggestion[] {
   const out: PostingSuggestion[] = [];
-  const parent = (input.parent_category_name ?? "").toLowerCase();
 
   if (input.description.trim().length < 40) {
     out.push({ text: "Përshkrimi është shumë i shkurtër — shtoni më shumë detaje." });
@@ -39,10 +38,6 @@ function ruleBasedSuggestions(input: {
   if (!input.price_agreement && input.price <= 0) {
     out.push({ text: "Vendosni një çmim real ose zgjidhni “me marrëveshje”." });
   }
-  if ((parent.includes("vetur") || parent.includes("motor")) && !/\b(19|20)\d{2}\b/.test(input.description)) {
-    out.push({ text: "Shtoni vitin e prodhimit (p.sh. 2018)." });
-  }
-
   return out.slice(0, 3);
 }
 
@@ -80,7 +75,7 @@ TECHNICAL OUTPUT:
 Reply ONLY with JSON: {"suggestions":["...","..."]}
 - Maximum 3 short suggestions (one sentence each).
 - Language = requested (sq / mk / me).
-- Also give practical tips when useful: photos (min 3), year/mileage for vehicles, realistic price, title length, richer description — but NEVER about contact info or geography.`;
+- Optional tips only: more photos, realistic price — NEVER require model/year/size/reason for selling, serial number, or long title. NEVER about contact info or geography.`;
 
 export async function getPostingSuggestions(
   input: {
