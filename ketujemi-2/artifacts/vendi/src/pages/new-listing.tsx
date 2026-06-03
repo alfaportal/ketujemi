@@ -63,8 +63,8 @@ const schema = z.object({
   /** Set automatically (AI / single child); not a visible dropdown — validated in onSubmit. */
   category_id: z.coerce.number(),
   brand_category_id: z.coerce.number().optional(),
-  title: z.string().min(3),
-  description: z.string().min(10),
+  title: z.string().min(5, "Titulli duhet të ketë të paktën 5 karaktere."),
+  description: z.string().min(20, "Përshkrimi duhet të ketë të paktën 20 karaktere."),
   price: z.coerce.number().min(0),
   price_agreement: z.boolean().default(false),
   image_url: z.string().optional(),
@@ -230,6 +230,7 @@ export default function NewListing() {
   const [freeQuotaError, setFreeQuotaError] = useState<string | null>(null);
   const [showPackagesModal, setShowPackagesModal] = useState(false);
   const [packagesModalMessage, setPackagesModalMessage] = useState<string | undefined>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const effectiveCategoryId =
     Number(brandCatId) || Number(bodyCatId) || Number(parentCatId);
 
@@ -273,7 +274,7 @@ export default function NewListing() {
     }
 
     const titleTrim = watchTitle.trim();
-    if (titleTrim.length < 3) return;
+    if (titleTrim.length < 5) return;
 
     let cancelled = false;
     const timer = setTimeout(() => {
@@ -458,9 +459,12 @@ export default function NewListing() {
 
   const removeImage = (i: number) => setImageUrls((prev) => prev.filter((_, idx) => idx !== i));
 
-  const onInvalidSubmit = () => {
+  const onInvalidSubmit = (errors: Record<string, { message?: string } | undefined>) => {
+    const first = Object.values(errors).find((e) => e?.message)?.message;
     toast({
-      title: "Plotësoni të gjitha fushat e detyrueshme (kategori, titull, përshkrim, foto, çmim, qytet).",
+      title:
+        first ??
+        "Plotësoni të gjitha fushat e detyrueshme (kategori, titull min. 5, përshkrim min. 20, foto, çmim, qytet).",
       variant: "destructive",
     });
   };
@@ -479,8 +483,8 @@ export default function NewListing() {
       } else {
         toast({
           title:
-            watchTitle.trim().length < 3
-              ? "Shkruani titullin (të paktën 3 shkronja) që sistemi të caktojë nënkategorinë."
+            watchTitle.trim().length < 5
+              ? "Shkruani titullin (të paktën 5 shkronja) që sistemi të caktojë nënkategorinë."
               : "Nënkategoria nuk u caktua ende — prisni një sekondë pas titullit ose ndryshoni kategorinë kryesore.",
           variant: "destructive",
         });
@@ -546,6 +550,7 @@ export default function NewListing() {
       ...validation.payloadExtras,
     };
 
+    setIsSubmitting(true);
     void fetchWithTimeout("/api/listings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -637,7 +642,8 @@ export default function NewListing() {
         toast({ title: LISTING_POST_SUCCESS_MESSAGE });
         setLocation(`/listings/${(body as { id: number }).id}`);
       })
-      .catch(() => toast({ title: t.postError, variant: "destructive" }));
+      .catch(() => toast({ title: t.postError, variant: "destructive" }))
+      .finally(() => setIsSubmitting(false));
   };
 
   const cityList = locationsForListingMarket(listingCountry);
@@ -774,21 +780,52 @@ export default function NewListing() {
                       </SelectContent>
                     </Select>
                     <FormMessage />
-                    {subCats.length > 0 && (
-                      <p
-                        className={`text-sm mt-1 ${
-                          bodyCatId ? "text-green-700" : "text-amber-700"
+                    {subCats.length > 0 && bodyCatId > 0 && (
+                      <p className="text-sm mt-1 text-green-700" role="status">
+                        {`${t.subcategory}: ${
+                          subCats.find((c: { id: number }) => c.id === Number(bodyCatId))?.name ?? "—"
                         }`}
-                        role="status"
-                      >
-                        {bodyCatId
-                          ? `${t.subcategory}: ${
-                              subCats.find((c: { id: number }) => c.id === Number(bodyCatId))?.name ??
-                              "—"
-                            }`
-                          : watchTitle.trim().length < 3
-                            ? "Shkruani titullin — pastaj caktohet automatikisht nënkategoria."
-                            : "Duke caktuar nënkategorinë… (pas titullit)"}
+                      </p>
+                    )}
+                    {subCats.length > 1 && !bodyCatId && watchTitle.trim().length >= 5 && (
+                      <FormField
+                        control={form.control}
+                        name="category_id"
+                        render={({ field }) => (
+                          <FormItem className="mt-3">
+                            <FormLabel>
+                              {t.subcategory} <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <Select
+                              onValueChange={(v) => field.onChange(Number(v))}
+                              value={field.value ? String(field.value) : ""}
+                            >
+                              <FormControl>
+                                <SelectTrigger data-testid="select-subcategory">
+                                  <SelectValue placeholder="Zgjidhni nënkategorinë..." />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="max-h-[min(70vh,360px)]">
+                                {subCats.map((cat: { id: number; name: string }) => (
+                                  <SelectItem key={cat.id} value={String(cat.id)}>
+                                    {cat.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                    {subCats.length > 1 && !bodyCatId && watchTitle.trim().length < 5 && (
+                      <p className="text-sm mt-1 text-amber-700" role="status">
+                        Shkruani titullin (min. 5 karaktere) — pastaj zgjidhni ose caktohet nënkategoria.
+                      </p>
+                    )}
+                    {subCats.length === 1 && !bodyCatId && (
+                      <p className="text-sm mt-1 text-amber-700" role="status">
+                        Duke caktuar nënkategorinë…
                       </p>
                     )}
                   </FormItem>
@@ -1368,7 +1405,17 @@ export default function NewListing() {
 
             {/* ── Submit ── */}
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-20 sm:static sm:bg-transparent sm:border-none sm:p-0">
-              <div className="max-w-2xl mx-auto">
+              <div className="max-w-2xl mx-auto space-y-2">
+                {freeQuota && !freeQuota.allowed && (
+                  <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                    Ke arritur limitin falas për këtë kategori. Mbush portofolin (€0.30/shpallje) ose prit muajin e ri.
+                  </p>
+                )}
+                {freeQuotaError && (
+                  <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+                    {freeQuotaError}
+                  </p>
+                )}
                 <Button
                   type="submit"
                   size="lg"
@@ -1377,10 +1424,10 @@ export default function NewListing() {
                       ? "bg-green-600 hover:bg-green-700"
                       : "bg-blue-600 hover:bg-blue-700"
                   }`}
-                  disabled={createMutation.isPending || (freeQuota != null && !freeQuota.allowed)}
+                  disabled={isSubmitting}
                   data-testid="button-submit-listing"
                 >
-                  {createMutation.isPending
+                  {isSubmitting
                     ? t.posting
                     : isDhurataCategory
                       ? (tx.ui_postGiftBtn ?? "🎁 Posto Dhuratën →")
