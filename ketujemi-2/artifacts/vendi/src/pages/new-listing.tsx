@@ -233,6 +233,7 @@ export default function NewListing() {
   const watchTitle = useWatch({ control: form.control, name: "title" }) ?? "";
   const watchDescription = useWatch({ control: form.control, name: "description" }) ?? "";
   const watchPrice = useWatch({ control: form.control, name: "price" }) ?? 0;
+  const parentName = parentCats.find((c: any) => c.id === Number(parentCatId))?.name ?? "";
   const [freeQuota, setFreeQuota] = useState<{
     remaining: number;
     limit: number;
@@ -327,7 +328,6 @@ export default function NewListing() {
 
   const subCats   = (allCategories ?? []).filter((c: any) => c.parent_id === Number(parentCatId));
   const brandCats = (allCategories ?? []).filter((c: any) => c.parent_id === Number(bodyCatId));
-  const parentName = parentCats.find((c: any) => c.id === Number(parentCatId))?.name ?? "";
   const catEngine = useMemo(
     () => categoryEngine((allCategories ?? []) as { id: number; name: string; slug?: string | null; parent_id?: number | null }[]),
     [allCategories],
