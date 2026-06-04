@@ -99,3 +99,37 @@ export async function uploadImageToCloudinary(
 
   return data.secure_url;
 }
+
+/** Listing video — same unsigned preset/folder as photos; uses Cloudinary video upload API. */
+export async function uploadVideoToCloudinary(
+  file: File,
+  config: Pick<CloudinaryConfig, "cloudName" | "uploadPreset">,
+): Promise<string> {
+  const { cloudName, uploadPreset } = config;
+  if (!cloudName || !uploadPreset) {
+    throw new Error("Cloudinary config missing");
+  }
+
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("upload_preset", uploadPreset);
+  fd.append("folder", CLOUDINARY_LISTINGS_FOLDER);
+  fd.append("tags", "listing,video,deletable");
+  fd.append("resource_type", "video");
+
+  const res = await fetchWithTimeout(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
+    method: "POST",
+    body: fd,
+  });
+
+  if (!res.ok) {
+    throw new Error("Video upload failed");
+  }
+
+  const data = (await res.json()) as { secure_url?: string };
+  if (!data.secure_url) {
+    throw new Error("Video upload failed");
+  }
+
+  return data.secure_url;
+}

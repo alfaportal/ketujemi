@@ -296,6 +296,7 @@ export default function ListingDetail() {
 
   const { specs, body } = parsed;
   const allImages = parseListingImageUrls(listing.image_url);
+  const listingVideoUrl = (listing.video_url ?? "").trim();
   const isVipSeller = !!(listing as { is_vip_seller?: boolean }).is_vip_seller;
   const postedAt = listing.listed_at ?? listing.created_at;
   const postedLabel = new Date(postedAt).toLocaleString("sq-AL", {
@@ -469,6 +470,18 @@ export default function ListingDetail() {
                 </div>
               )}
             </div>
+
+            {listingVideoUrl ? (
+              <div className="rounded-2xl overflow-hidden bg-black border border-gray-200">
+                <video
+                  src={listingVideoUrl}
+                  controls
+                  playsInline
+                  className="w-full aspect-video object-contain"
+                  data-testid="listing-video"
+                />
+              </div>
+            ) : null}
 
             {/* Title & price */}
             <div

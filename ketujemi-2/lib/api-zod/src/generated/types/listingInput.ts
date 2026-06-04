@@ -19,6 +19,7 @@ export interface ListingInput {
   seller_phone: string;
   condition: string;
   image_url?: string;
+  video_url?: string;
   is_featured?: boolean;
   vehicle_year?: number | null;
   vehicle_mileage_km?: number | null;

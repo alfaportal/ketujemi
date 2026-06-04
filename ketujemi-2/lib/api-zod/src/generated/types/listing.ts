@@ -22,6 +22,8 @@ export interface Listing {
   is_featured: boolean;
   /** @nullable */
   image_url?: string | null;
+  /** @nullable */
+  video_url?: string | null;
   created_at: string;
   vehicle_year?: number | null;
   vehicle_mileage_km?: number | null;

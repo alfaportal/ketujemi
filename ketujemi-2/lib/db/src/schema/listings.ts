@@ -26,6 +26,8 @@ export const listingsTable = pgTable("listings", {
   moderation_status: text("moderation_status").notNull().default("approved"),
   moderation_reason: text("moderation_reason"),
   image_url: text("image_url"),
+  /** Optional Cloudinary video URL (one per listing). */
+  video_url: text("video_url"),
   created_at: timestamp("created_at").notNull().defaultNow(),
   expires_at: timestamp("expires_at"),
   expiry_reminder_3d_sent_at: timestamp("expiry_reminder_3d_sent_at"),

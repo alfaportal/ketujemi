@@ -1,0 +1,2 @@
+-- Optional listing video (Cloudinary URL)
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS video_url TEXT;

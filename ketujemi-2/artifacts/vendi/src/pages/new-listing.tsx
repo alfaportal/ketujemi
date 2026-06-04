@@ -12,7 +12,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, Camera, X, CheckCircle2, ChevronRight,
-  Car, Home as HomeIcon, Smartphone, Info, Loader2, ImagePlus,
+  Car, Home as HomeIcon, Smartphone, Info, Loader2, ImagePlus, Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,11 @@ import { ListingCategorySuggest } from "@/components/listing-category-suggest";
 import { ListingDescriptionHelper } from "@/components/listing-description-helper";
 import { joinListingImageUrls } from "@/lib/listing-images";
 import { useListingImageUpload } from "@/lib/listing-image-upload";
+import {
+  isAllowedListingVideoFile,
+  LISTING_VIDEO_MAX_BYTES,
+  useListingVideoUpload,
+} from "@/lib/listing-video-upload";
 import {
   useAuth,
   loginUrlWithReturn,
@@ -186,6 +191,10 @@ export default function NewListing() {
   const [isUploading, setIsUploading] = useState(false);
   const uploadRef = useRef<HTMLInputElement>(null);
   const imageUpload = useListingImageUpload();
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [isVideoUploading, setIsVideoUploading] = useState(false);
+  const videoUploadRef = useRef<HTMLInputElement>(null);
+  const videoUpload = useListingVideoUpload();
   const [dhurataPledgeOk, setDhurataPledgeOk] = useState(() => {
     try {
       return sessionStorage.getItem(DHURATA_PLEDGE_STORAGE_KEY) === "1";
@@ -565,6 +574,41 @@ export default function NewListing() {
 
   const removeImage = (i: number) => setImageUrls((prev) => prev.filter((_, idx) => idx !== i));
 
+  const handleVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!videoUpload.ready) {
+      toast({ title: t.uploadFailed, variant: "destructive" });
+      return;
+    }
+    if (!isAllowedListingVideoFile(file)) {
+      toast({
+        title: "Format i pavlefshëm",
+        description: "Lejohen vetëm MP4, MOV dhe AVI.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (file.size > LISTING_VIDEO_MAX_BYTES) {
+      toast({
+        title: "Video shumë e madhe",
+        description: "Maksimumi 100 MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsVideoUploading(true);
+    try {
+      const url = await videoUpload.uploadFile(file);
+      setVideoUrl(url);
+    } catch {
+      toast({ title: t.uploadFailed, variant: "destructive" });
+    } finally {
+      setIsVideoUploading(false);
+      if (videoUploadRef.current) videoUploadRef.current.value = "";
+    }
+  };
+
   const onInvalidSubmit = (errors: Record<string, unknown>) => {
     const messages = collectFormValidationMessages(errors);
     refusePost(
@@ -667,6 +711,7 @@ export default function NewListing() {
       seller_phone: contact.seller_phone,
       condition: data.condition,
       image_url: joinListingImageUrls(imageUrls) ?? undefined,
+      video_url: videoUrl ?? undefined,
       is_featured: false,
       ...validation.payloadExtras,
     };
@@ -1414,6 +1459,66 @@ export default function NewListing() {
                     {t.firstPhotoMain}
                   </p>
                 )}
+              </div>
+            </Section>
+
+            {/* ── 6b. Video (optional) ── */}
+            <Section title={tx.ui_listingVideoSection ?? "Video (opsionale)"} icon={Video}>
+              <div>
+                <Label className="text-sm font-medium text-gray-700">
+                  {tx.ui_listingVideoLabel ?? "Një video për shpallje"}{" "}
+                  <span className="text-gray-400 font-normal">(MP4, MOV, AVI • max 100 MB)</span>
+                </Label>
+
+                <input
+                  ref={videoUploadRef}
+                  type="file"
+                  accept="video/mp4,video/quicktime,video/x-msvideo,.mp4,.mov,.avi"
+                  className="hidden"
+                  onChange={(e) => void handleVideoChange(e)}
+                />
+
+                {!videoUrl && !isVideoUploading ? (
+                  <button
+                    type="button"
+                    onClick={() => videoUploadRef.current?.click()}
+                    disabled={!videoUpload.ready}
+                    className="mt-2 w-full border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl py-8 px-4 text-center transition-colors disabled:opacity-60 disabled:cursor-not-allowed min-h-[6rem] touch-manipulation"
+                  >
+                    <div className="flex flex-col items-center gap-1.5 text-gray-500">
+                      <Video size={28} className="text-gray-400" />
+                      <p className="text-sm font-semibold text-gray-600">
+                        {tx.ui_listingVideoAdd ?? "Shto video"}
+                      </p>
+                    </div>
+                  </button>
+                ) : null}
+
+                {isVideoUploading ? (
+                  <div className="mt-2 flex flex-col items-center gap-2 py-8 text-blue-600">
+                    <Loader2 size={28} className="animate-spin" />
+                    <p className="text-sm font-semibold">{t.uploading}</p>
+                  </div>
+                ) : null}
+
+                {videoUrl ? (
+                  <div className="mt-2 relative rounded-xl overflow-hidden border border-gray-200 bg-black">
+                    <video
+                      src={videoUrl}
+                      controls
+                      playsInline
+                      className="w-full max-h-64 object-contain"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setVideoUrl(null)}
+                      className="absolute top-2 right-2 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors"
+                      aria-label={tx.ui_listingVideoRemove ?? "Hiq videon"}
+                    >
+                      <X size={14} className="text-white" />
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </Section>
 

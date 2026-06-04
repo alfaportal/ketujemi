@@ -63,6 +63,7 @@ import {
   primaryListingImageUrl,
   sanitizeListingImageUrlField,
 } from "../lib/listing-images";
+import { sanitizeListingVideoUrl } from "../lib/listing-video";
 import {
   assertSpecialCategoryListingRules,
   expiresAtForCategoryRootSlug,
@@ -157,10 +158,12 @@ function formatListing(
     : null;
 
   const image_url = sanitizeListingImageUrlField(l.image_url);
+  const video_url = sanitizeListingVideoUrl(l.video_url);
 
   return {
     ...l,
     image_url,
+    video_url,
     primary_image_url: primaryListingImageUrl(image_url),
     price: Number(l.price),
     category_name: categoryName,
@@ -460,6 +463,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   }
 
   const safeImageUrl = sanitizeListingImageUrlField(parsed.data.image_url) ?? undefined;
+  const safeVideoUrl = sanitizeListingVideoUrl(parsed.data.video_url) ?? undefined;
 
   try {
     await assertAccountActive(viewer, parsed.data.seller_phone);
@@ -678,6 +682,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
       seller_phone: parsed.data.seller_phone,
       condition: parsed.data.condition,
       image_url: safeImageUrl ?? null,
+      video_url: safeVideoUrl ?? null,
       is_featured: parsed.data.is_featured ?? false,
       listed_at: now,
       created_at: now,
