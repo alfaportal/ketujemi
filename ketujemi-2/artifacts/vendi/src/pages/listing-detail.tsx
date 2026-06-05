@@ -5,7 +5,7 @@ import { useGetListing, useDeleteListing, getGetListingsQueryKey, getGetRecentLi
 import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, MapPin, Phone, User, Eye, Star, Tag, Camera, Package, Clock, Pencil, Trash2, Crown,
-  Fuel, Gauge, Calendar, Cog, Palette, Maximize2, Mail, Car, ChevronLeft, ChevronRight, MessageCircle, MessageSquare,
+  Fuel, Gauge, Calendar, Cog, Palette, Maximize2, Mail, Car, ChevronLeft, ChevronRight, MessageCircle, MessageSquare, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -69,6 +69,19 @@ function parseDescription(description: string): ParsedDesc {
   return { specs: {}, body: description };
 }
 
+function listingEditLabel(uiLang: string): string {
+  switch (uiLang) {
+    case "mk":
+      return "Уреди";
+    case "mne":
+      return "Uredi";
+    case "en":
+      return "Edit";
+    default:
+      return "Ndrysho";
+  }
+}
+
 const SPEC_ICONS: Record<string, React.ElementType> = {
   "Marka":         Tag,
   "Modeli":        Tag,
@@ -123,7 +136,7 @@ export default function ListingDetail() {
   const id = Number(params?.id);
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { t, market } = useMarket();
+  const { t, market, uiLang } = useMarket();
   const { user } = useAuth();
 
   const { data: listing, isLoading } = useGetListing(id, {
@@ -183,7 +196,8 @@ export default function ListingDetail() {
   }, [user, id, queryClient, toast]);
 
   const [listingShareUrl, setListingShareUrl] = useState("");
-  const [activePhoto, setActivePhoto] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const [complaintBusy, setComplaintBusy] = useState(false);
   const [repostBusy, setRepostBusy] = useState(false);
   const parsed = useMemo(() => {
@@ -198,6 +212,28 @@ export default function ListingDetail() {
   );
   const canRepost = !!(listing && (listing as { can_repost?: boolean }).can_repost);
   const isExpired = !!(listing && (listing as { is_expired?: boolean }).is_expired);
+  const listingImageCount = listing ? parseListingImageUrls(listing.image_url).length : 0;
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxOpen(false);
+      if (listingImageCount < 2) return;
+      if (e.key === "ArrowLeft") {
+        setLightboxIndex((i) => (i - 1 + listingImageCount) % listingImageCount);
+      }
+      if (e.key === "ArrowRight") {
+        setLightboxIndex((i) => (i + 1) % listingImageCount);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [lightboxOpen, listingImageCount]);
 
   async function repostListing() {
     if (!listing) return;
@@ -333,6 +369,22 @@ export default function ListingDetail() {
   const cond = conditionMap[listing.condition] ?? conditionMap.Used;
 
   const isAgreement = listing.price === 0;
+  const editLabel = listingEditLabel(uiLang);
+
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const goLightboxPrev = () => {
+    if (allImages.length < 2) return;
+    setLightboxIndex((i) => (i - 1 + allImages.length) % allImages.length);
+  };
+
+  const goLightboxNext = () => {
+    if (allImages.length < 2) return;
+    setLightboxIndex((i) => (i + 1) % allImages.length);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -360,41 +412,6 @@ export default function ListingDetail() {
                 {repostBusy ? "…" : "🔄 Rifillo njoftimin"}
               </Button>
             ) : null}
-            {canManage ? (
-              <>
-                {!isExpired ? (
-                  <Button variant="outline" onClick={() => setLocation(`/listings/${listing.id}/edit`)}
-                    className="gap-1.5 min-h-12 px-3 text-sm shrink-0" data-testid="button-edit-listing">
-                    <Pencil className="h-3 w-3" /> {t.edit}
-                  </Button>
-                ) : null}
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline"
-                      className="gap-1.5 min-h-12 px-3 text-sm text-red-600 border-red-200 hover:bg-red-50 shrink-0"
-                      data-testid="button-delete-listing">
-                      <Trash2 className="h-3 w-3" /> {t.delete}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>{t.deleteTitle}</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {t.deleteDesc}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="bg-red-600 hover:bg-red-700"
-                        onClick={() => deleteMutation.mutate({ id: listing.id })}
-                        data-testid="button-confirm-delete"
-                      >{t.delete}</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </>
-            ) : null}
           </div>
         </div>
       </div>
@@ -417,55 +434,37 @@ export default function ListingDetail() {
               }`}
             >
               {allImages.length > 0 ? (
-                <div>
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    {isVipSeller ? (
-                      <div className="absolute top-3 left-3 z-10 bg-[#1A56A0] text-white text-xs sm:text-sm font-black px-2.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5">
-                        <Crown size={14} className="text-white" aria-hidden />
-                        VIP PARTNER
-                      </div>
-                    ) : null}
-                    <img
-                      src={allImages[activePhoto]}
-                      alt={listing.title}
-                      className="absolute inset-0 w-full h-full object-cover object-center"
-                      data-testid="img-listing"
-                    />
-                    {allImages.length > 1 && (
-                      <>
-                        <button
-                          onClick={() => setActivePhoto((p) => (p - 1 + allImages.length) % allImages.length)}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
-                        >
-                          <ChevronLeft size={18} />
-                        </button>
-                        <button
-                          onClick={() => setActivePhoto((p) => (p + 1) % allImages.length)}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
-                        >
-                          <ChevronRight size={18} />
-                        </button>
-                        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-sm font-medium px-2 py-1 rounded-full">
-                          {activePhoto + 1} / {allImages.length}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  {allImages.length > 1 && (
-                    <div className="flex gap-1.5 p-2 bg-gray-900 overflow-x-auto">
-                      {allImages.map((url, i) => (
-                        <button
-                          key={i}
-                          onClick={() => setActivePhoto(i)}
-                          className={`relative flex-shrink-0 w-20 aspect-[4/3] rounded-lg overflow-hidden border-2 transition-all ${
-                            i === activePhoto ? "border-blue-400 opacity-100" : "border-transparent opacity-50 hover:opacity-80"
-                          }`}
-                        >
-                          <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover object-center" />
-                        </button>
-                      ))}
+                <div className="p-2 sm:p-3">
+                  {isVipSeller ? (
+                    <div className="mb-2 inline-flex bg-[#1A56A0] text-white text-xs sm:text-sm font-black px-2.5 py-1.5 rounded-lg shadow-lg items-center gap-1.5">
+                      <Crown size={14} className="text-white" aria-hidden />
+                      VIP PARTNER
                     </div>
-                  )}
+                  ) : null}
+                  <div
+                    className={`grid gap-2 ${
+                      allImages.length === 1 ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"
+                    }`}
+                  >
+                    {allImages.map((url, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => openLightbox(i)}
+                        className="relative aspect-[4/3] overflow-hidden rounded-xl bg-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 touch-manipulation"
+                        aria-label={`${listing.title} — ${i + 1} / ${allImages.length}`}
+                        data-testid={i === 0 ? "img-listing" : undefined}
+                      >
+                        <img
+                          src={url}
+                          alt={`${listing.title} ${i + 1}`}
+                          className="absolute inset-0 w-full h-full object-cover object-center"
+                          loading={i < 3 ? "eager" : "lazy"}
+                          draggable={false}
+                        />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="aspect-[4/3] flex items-center justify-center bg-gray-200 text-gray-500 text-sm flex-col gap-2">
@@ -474,6 +473,51 @@ export default function ListingDetail() {
                 </div>
               )}
             </div>
+
+            {canManage ? (
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                {!isExpired ? (
+                  <Button
+                    type="button"
+                    className="flex-1 min-h-12 h-12 text-base font-bold gap-2"
+                    onClick={() => setLocation(`/listings/${listing.id}/edit`)}
+                    data-testid="button-edit-listing"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    {editLabel}
+                  </Button>
+                ) : null}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      className="flex-1 min-h-12 h-12 text-base font-bold gap-2 bg-red-600 hover:bg-red-700"
+                      data-testid="button-delete-listing"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {t.delete}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t.deleteTitle}</AlertDialogTitle>
+                      <AlertDialogDescription>{t.deleteDesc}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-red-600 hover:bg-red-700"
+                        onClick={() => deleteMutation.mutate({ id: listing.id })}
+                        data-testid="button-confirm-delete"
+                      >
+                        {t.delete}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            ) : null}
 
             {listingVideoUrl ? (
               <div className="rounded-2xl overflow-hidden bg-black border border-gray-200">
@@ -702,6 +746,68 @@ export default function ListingDetail() {
 
         {listing ? <SimilarListingsSection listingId={listing.id} /> : null}
       </div>
+
+      {lightboxOpen && allImages.length > 0 ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 touch-none select-none"
+          role="dialog"
+          aria-modal="true"
+          aria-label={listing.title}
+          onClick={() => setLightboxOpen(false)}
+          style={{ touchAction: "none" }}
+        >
+          <button
+            type="button"
+            className="absolute top-4 right-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightboxOpen(false);
+            }}
+            aria-label={t.cancel}
+          >
+            <X size={22} />
+          </button>
+
+          {allImages.length > 1 ? (
+            <>
+              <button
+                type="button"
+                className="absolute left-3 sm:left-6 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goLightboxPrev();
+                }}
+                aria-label="Previous"
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <button
+                type="button"
+                className="absolute right-3 sm:right-6 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goLightboxNext();
+                }}
+                aria-label="Next"
+              >
+                <ChevronRight size={24} />
+              </button>
+              <div className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-sm font-medium text-white">
+                {lightboxIndex + 1} / {allImages.length}
+              </div>
+            </>
+          ) : null}
+
+          <img
+            src={allImages[lightboxIndex]}
+            alt={`${listing.title} ${lightboxIndex + 1}`}
+            className="max-h-[90vh] max-w-[92vw] object-contain"
+            draggable={false}
+            onClick={(e) => e.stopPropagation()}
+            style={{ touchAction: "none", userSelect: "none" }}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
