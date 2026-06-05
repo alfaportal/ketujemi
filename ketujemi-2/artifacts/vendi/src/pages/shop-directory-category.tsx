@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { StaticPageBackLink } from "@/components/static-page-back-link";
 import { ShopDirectoryCard, type ShopDirectoryListItem } from "@/components/shop-directory-card";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { shopDirectoryCategoryImageUrl } from "@/lib/shop-directory-category-images";
 import { directoryCategoryBySlug } from "@/lib/shop-directory-taxonomy";
 import {
   translateDirectoryCategory,
@@ -45,6 +46,7 @@ export default function ShopDirectoryCategoryPage() {
   }, [slug, subFilter]);
 
   const title = cat ? translateDirectoryCategory(cat, locale) : d.docCategoryTitle;
+  const categoryImageUrl = cat ? shopDirectoryCategoryImageUrl(cat.slug) : undefined;
 
   if (!cat) {
     return (
@@ -67,10 +69,18 @@ export default function ShopDirectoryCategoryPage() {
         <StaticPageBackLink />
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        <div className="flex items-center gap-3">
-          <span className="text-4xl" aria-hidden>
-            {cat.emoji}
-          </span>
+        <div className="flex items-center gap-3 sm:gap-4">
+          {categoryImageUrl ? (
+            <img
+              src={categoryImageUrl}
+              alt=""
+              className="h-16 w-16 sm:h-20 sm:w-20 rounded-xl object-cover border border-gray-200 shrink-0"
+            />
+          ) : (
+            <span className="text-4xl shrink-0" aria-hidden>
+              {cat.emoji}
+            </span>
+          )}
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-gray-900">{title}</h1>
             <p className="text-sm text-gray-500 mt-0.5">
@@ -79,13 +89,13 @@ export default function ShopDirectoryCategoryPage() {
           </div>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-thin">
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => setSubFilter("")}
             className={cn(
-              "shrink-0 rounded-full px-4 py-2 text-sm font-semibold border transition-colors",
-              !subFilter ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 border-gray-200",
+              "rounded-full px-4 py-2 text-sm font-semibold border transition-colors",
+              !subFilter ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 border-gray-200 hover:border-blue-200",
             )}
           >
             {d.allSubcategories}
@@ -96,10 +106,10 @@ export default function ShopDirectoryCategoryPage() {
               type="button"
               onClick={() => setSubFilter(sub.slug)}
               className={cn(
-                "shrink-0 rounded-full px-4 py-2 text-sm font-semibold border transition-colors whitespace-nowrap",
+                "rounded-full px-4 py-2 text-sm font-semibold border transition-colors",
                 subFilter === sub.slug
                   ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white text-gray-700 border-gray-200",
+                  : "bg-white text-gray-700 border-gray-200 hover:border-blue-200",
               )}
             >
               {translateDirectorySubcategory(sub, locale)}

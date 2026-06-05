@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { Loader2, Search } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { shopDirectoryCategoryImageUrl } from "@/lib/shop-directory-category-images";
 import { SHOP_DIRECTORY_CATEGORIES } from "@/lib/shop-directory-taxonomy";
 import {
   translateDirectoryCategory,
@@ -131,21 +132,35 @@ export default function ShopDirectoryPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {SHOP_DIRECTORY_CATEGORIES.map((cat) => {
               const count = categoryCounts[cat.slug] ?? 0;
+              const imageUrl = shopDirectoryCategoryImageUrl(cat.slug);
               return (
                 <Link
                   key={cat.slug}
                   href={`/dyqanet/${cat.slug}`}
-                  className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex flex-col gap-2 min-h-[120px]"
+                  className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex flex-col"
                 >
-                  <span className="text-3xl" aria-hidden>
-                    {cat.emoji}
-                  </span>
-                  <p className="font-bold text-gray-900 text-sm sm:text-base leading-snug">
-                    {translateDirectoryCategory(cat, locale)}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-auto">
-                    {count} {d.shopsCount}
-                  </p>
+                  <div className="aspect-[4/3] relative bg-gray-100">
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt=""
+                        loading="lazy"
+                        className="absolute inset-0 w-full h-full object-cover object-center"
+                      />
+                    ) : (
+                      <span className="absolute inset-0 flex items-center justify-center text-4xl" aria-hidden>
+                        {cat.emoji}
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-3 sm:p-4 flex flex-col gap-1 flex-1">
+                    <p className="font-bold text-gray-900 text-sm sm:text-base leading-snug">
+                      {translateDirectoryCategory(cat, locale)}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-auto">
+                      {count} {d.shopsCount}
+                    </p>
+                  </div>
                 </Link>
               );
             })}
