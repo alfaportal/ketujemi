@@ -467,21 +467,28 @@ export default function NewListing() {
 
   const onSubmit = (data: FormData) => {
     setPostBlockMessage(null);
-    const parentId = Number(data.parent_category_id);
+    const rawPrice = Number.isFinite(Number(data.price)) ? Number(data.price) : 0;
+    const priceByAgreement = !!data.price_agreement || rawPrice <= 0;
+    const listingData: FormData = {
+      ...data,
+      price: priceByAgreement ? 0 : rawPrice,
+      price_agreement: priceByAgreement,
+    };
+    const parentId = Number(listingData.parent_category_id);
     const children = (allCategories ?? []).filter((c: { parent_id?: number | null }) => c.parent_id === parentId);
     const preflight = collectListingPostPreflightIssues({
       parentCategoryId: parentId,
-      categoryId: Number(data.category_id),
-      brandCategoryId: Number(data.brand_category_id) || 0,
+      categoryId: Number(listingData.category_id),
+      brandCategoryId: Number(listingData.brand_category_id) || 0,
       hasBrands,
       subcategoryCount: children.length,
-      title: data.title,
-      description: data.description,
-      price: Number(data.price),
-      priceAgreement: !!data.price_agreement,
-      location: data.location,
-      sellerName: data.seller_name,
-      sellerPhone: data.seller_phone,
+      title: listingData.title,
+      description: listingData.description,
+      price: listingData.price,
+      priceAgreement: listingData.price_agreement,
+      location: listingData.location,
+      sellerName: listingData.seller_name,
+      sellerPhone: listingData.seller_phone,
       imageCount: imageUrls.length,
       isKerkoj: isKerkojCategory,
       isDhurata: isDhurataCategory,
@@ -492,7 +499,7 @@ export default function NewListing() {
       return;
     }
 
-    let resolvedCategoryId = Number(data.category_id);
+    let resolvedCategoryId = Number(listingData.category_id);
 
     if (children.length === 0) {
       resolvedCategoryId = parentId;
@@ -510,14 +517,18 @@ export default function NewListing() {
       }
     }
 
-    const resolvedBrandId = Number(data.brand_category_id) || 0;
+    const resolvedBrandId = Number(listingData.brand_category_id) || 0;
     if (hasBrands && resolvedBrandId < 1) {
       refusePost("Zgjidhni markën / modelin e produktit.");
       return;
     }
     const partCat = subCats.find((c: any) => c.id === resolvedCategoryId);
     const validation = catEngine.validateListing(
-      { ...data, category_id: resolvedCategoryId, brand_category_id: resolvedBrandId || data.brand_category_id },
+      {
+        ...listingData,
+        category_id: resolvedCategoryId,
+        brand_category_id: resolvedBrandId || listingData.brand_category_id,
+      },
       Number(parentCatId) || effectiveCategoryId,
       {
       imageCount: imageUrls.length,
@@ -537,21 +548,21 @@ export default function NewListing() {
       refusePost(title);
       return;
     }
-    const finalDescription = validation.extraDescriptionPrefix + data.description;
-    const contact = { seller_name: data.seller_name, seller_phone: data.seller_phone };
+    const finalDescription = validation.extraDescriptionPrefix + listingData.description;
+    const contact = { seller_name: listingData.seller_name, seller_phone: listingData.seller_phone };
 
     const payload: Record<string, unknown> = {
-      title: data.title,
+      title: listingData.title,
       description: finalDescription,
       price: Number.isFinite(validation.price) ? validation.price : 0,
       price_agreement: validation.price_agreement,
       lang: market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq",
       category_id: resolvedBrandId || resolvedCategoryId || parentId,
-      location: data.location,
+      location: listingData.location,
       listing_country: listingCountry,
       seller_name: contact.seller_name,
       seller_phone: contact.seller_phone,
-      condition: data.condition,
+      condition: listingData.condition,
       image_url: joinListingImageUrls(imageUrls) ?? undefined,
       video_url: videoUrl ?? undefined,
       is_featured: false,

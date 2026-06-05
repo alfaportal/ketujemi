@@ -12,7 +12,7 @@ import {
 } from "@workspace/api-zod";
 import { getSessionUser } from "../lib/session-user";
 import { postListingLimiter, searchLimiter } from "../lib/express-rate-limiters";
-import { userOwnsListing } from "../lib/listing-ownership";
+import { listingBelongsToUser } from "../lib/listing-ownership";
 import { sellerFirstName, maskEmailInListingDescription, maskSellerPhone } from "../lib/contact-mask";
 import { assertAccountActive } from "../lib/user-ban";
 import { formatZodIssuesMessage } from "../lib/listing-api-errors";
@@ -859,6 +859,76 @@ router.get("/listings/monthly-posting-history", async (req, res) => {
   res.json(history);
 });
 
+// ─── GET /listings/mine ───────────────────────────────────────────────────────
+router.get("/listings/mine", async (req, res) => {
+  const viewer = await getSessionUser(req);
+  if (!viewer) {
+    res.status(401).json({
+      error: "Authentication required",
+      message: "Duhet të jeni i kyçur.",
+    });
+    return;
+  }
+
+  const selectFields = {
+    id: listingsTable.id,
+    title: listingsTable.title,
+    status: listingsTable.status,
+    expires_at: listingsTable.expires_at,
+    listed_at: listingsTable.listed_at,
+    created_at: listingsTable.created_at,
+    seller_phone: listingsTable.seller_phone,
+    description: listingsTable.description,
+    user_id: listingsTable.user_id,
+  };
+
+  const byUserId = await db
+    .select(selectFields)
+    .from(listingsTable)
+    .where(eq(listingsTable.user_id, viewer.id))
+    .orderBy(desc(listingsTable.listed_at))
+    .limit(100);
+
+  const legacyRows = await db
+    .select(selectFields)
+    .from(listingsTable)
+    .where(isNull(listingsTable.user_id))
+    .orderBy(desc(listingsTable.listed_at))
+    .limit(300);
+
+  const legacyMine = legacyRows.filter((row) =>
+    listingBelongsToUser(viewer.id, viewer, row),
+  );
+
+  const seen = new Set<number>();
+  const now = new Date();
+  const listings: Array<{
+    id: number;
+    title: string;
+    status: string;
+    is_expired: boolean;
+    expires_at: string | null;
+    listed_at: string;
+  }> = [];
+
+  for (const row of [...byUserId, ...legacyMine]) {
+    if (seen.has(row.id)) continue;
+    seen.add(row.id);
+    const expires = row.expires_at ? new Date(row.expires_at) : null;
+    listings.push({
+      id: row.id,
+      title: row.title,
+      status: row.status ?? "active",
+      is_expired: expires ? expires < now : false,
+      expires_at: row.expires_at ? row.expires_at.toISOString() : null,
+      listed_at: (row.listed_at ?? row.created_at).toISOString(),
+    });
+  }
+
+  listings.sort((a, b) => b.listed_at.localeCompare(a.listed_at));
+  res.json({ listings });
+});
+
 // ─── POST /listings/:id/report ────────────────────────────────────────────────
 router.post("/listings/:id/report", async (req, res) => {
   const listingId = Number(req.params.id);
@@ -938,7 +1008,7 @@ router.post("/listings/:id/complaint", async (req, res) => {
     return;
   }
 
-  if (userOwnsListing(viewer, listing)) {
+  if (listingBelongsToUser(viewer.id, viewer, listing)) {
     res.status(400).json({ error: "Cannot complain about your own listing" });
     return;
   }
@@ -1079,7 +1149,7 @@ router.get("/listings/:id", async (req, res) => {
   }
 
   const isExpired = !!(row.expires_at && new Date(row.expires_at) < new Date());
-  const isOwner = !!(viewer && userOwnsListing(viewer, row));
+  const isOwner = !!(viewer && listingBelongsToUser(viewer.id, viewer, row));
 
   if (isExpired && !isOwner) {
     await purgeExpiredListingById(parsed.data.id);
@@ -1095,7 +1165,7 @@ router.get("/listings/:id", async (req, res) => {
   };
   payload.can_repost = isOwner && isExpired;
   const [out] = await annotateListingsWithVipFlag([payload]);
-  res.json({ ...out, can_repost: payload.can_repost });
+  res.json({ ...out, can_repost: payload.can_repost, is_owner: isOwner });
 });
 
 // ─── PATCH /listings/:id ──────────────────────────────────────────────────────
@@ -1128,7 +1198,7 @@ router.patch("/listings/:id", async (req, res) => {
     return;
   }
 
-  if (!userOwnsListing(viewer, existing[0])) {
+  if (!listingBelongsToUser(viewer.id, viewer, existing[0])) {
     res.status(403).json({ error: "Forbidden" });
     return;
   }
@@ -1247,7 +1317,7 @@ router.delete("/listings/:id", async (req, res) => {
     return;
   }
 
-  if (!userOwnsListing(viewer, existing[0])) {
+  if (!listingBelongsToUser(viewer.id, viewer, existing[0])) {
     res.status(403).json({
       error: "Forbidden",
       message: "Nuk keni të drejtë ta fshini këtë njoftim.",

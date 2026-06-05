@@ -65,7 +65,9 @@ export default function EditListing() {
       setLocation(loginUrlWithReturn(`/listings/${id}/edit`));
       return;
     }
-    if (!userOwnsListing(user, listing)) {
+    const isOwner =
+      (listing as { is_owner?: boolean }).is_owner ?? userOwnsListing(user, listing);
+    if (!isOwner) {
       toast({ title: t.listingAccessDenied, variant: "destructive" });
       setLocation(`/listings/${id}`);
     }
@@ -149,7 +151,11 @@ export default function EditListing() {
     }
   }, [listingCountry, form]);
 
-  const canEdit = !!(user && listing && userOwnsListing(user, listing));
+  const canEdit = !!(
+    user &&
+    listing &&
+    ((listing as { is_owner?: boolean }).is_owner ?? userOwnsListing(user, listing))
+  );
 
   if (authLoading || isLoading) {
     return (

@@ -191,7 +191,11 @@ export default function ListingDetail() {
     return parseDescription(listing.description ?? "");
   }, [listing]);
 
-  const canManage = !!(user && listing && userOwnsListing(user, listing));
+  const canManage = !!(
+    user &&
+    listing &&
+    ((listing as { is_owner?: boolean }).is_owner ?? userOwnsListing(user, listing))
+  );
   const canRepost = !!(listing && (listing as { can_repost?: boolean }).can_repost);
   const isExpired = !!(listing && (listing as { is_expired?: boolean }).is_expired);
 

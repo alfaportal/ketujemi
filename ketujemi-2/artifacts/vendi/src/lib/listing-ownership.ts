@@ -51,8 +51,9 @@ function phonesMatch(a: string | null | undefined, b: string | null | undefined)
 
 export function userOwnsListing(
   user: AuthUser,
-  listing: { seller_phone: string; description: string },
+  listing: { user_id?: number | null; seller_phone: string; description: string },
 ): boolean {
+  if (listing.user_id != null && listing.user_id === user.id) return true;
   if (phonesMatch(user.phone_e164_digits, listing.seller_phone)) return true;
   if (phonesMatch(user.contact_phone, listing.seller_phone)) return true;
   const ue = user.email?.trim().toLowerCase() ?? "";

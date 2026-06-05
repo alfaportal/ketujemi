@@ -43,9 +43,6 @@ export function collectListingPostPreflightIssues(input: ListingPostPreflightInp
   if (desc.length < 15) {
     issues.push("Përshkrimi duhet të ketë të paktën 15 karaktere.");
   }
-  if (!input.isKerkoj && !input.isDhurata && !input.priceAgreement && input.price <= 0) {
-    issues.push("Vendosni çmimin në euro ose aktivizoni «Sipas marrëveshjes».");
-  }
   if (!input.location.trim()) {
     issues.push("Zgjidhni qytetin (vendndodhja).");
   }

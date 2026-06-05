@@ -13,6 +13,7 @@ import { AuthToolbar } from "@/components/auth-toolbar";
 import { BusinessAccountCard } from "@/components/business-account-card";
 import { PartnerLogoAnalyticsCard } from "@/components/partner-logo-analytics-card";
 import { PartnerProfilePanel } from "@/components/partner-profile-panel";
+import { ProfileMyListings } from "@/components/profile-my-listings";
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
@@ -199,6 +200,8 @@ export default function ProfilePage() {
           <PartnerProfilePanel user={user} />
 
           <PartnerLogoAnalyticsCard user={user} />
+
+          <ProfileMyListings />
 
           {user.email ? (
             <form
