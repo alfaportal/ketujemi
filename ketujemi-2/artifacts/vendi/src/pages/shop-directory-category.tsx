@@ -4,8 +4,13 @@ import { Loader2 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { StaticPageBackLink } from "@/components/static-page-back-link";
 import { ShopDirectoryCard, type ShopDirectoryListItem } from "@/components/shop-directory-card";
+import {
+  CategoryPhotoPickerCard,
+  CategoryPhotoPickerGrid,
+} from "@/components/category-photo-picker";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { shopDirectoryCategoryImageUrl } from "@/lib/shop-directory-category-images";
+import { shopDirectorySubcategoryImageUrl } from "@/lib/shop-directory-subcategory-images";
 import { directoryCategoryBySlug } from "@/lib/shop-directory-taxonomy";
 import {
   translateDirectoryCategory,
@@ -14,7 +19,6 @@ import {
 } from "@/lib/shop-directory-i18n";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
-import { cn } from "@/lib/utils";
 
 export default function ShopDirectoryCategoryPage() {
   const [, params] = useRoute("/dyqanet/:slug");
@@ -89,33 +93,25 @@ export default function ShopDirectoryCategoryPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
+        <CategoryPhotoPickerGrid>
+          <CategoryPhotoPickerCard
+            selected={!subFilter}
             onClick={() => setSubFilter("")}
-            className={cn(
-              "rounded-full px-4 py-2 text-sm font-semibold border transition-colors",
-              !subFilter ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 border-gray-200 hover:border-blue-200",
-            )}
-          >
-            {d.allSubcategories}
-          </button>
+            imageSrc={categoryImageUrl ?? ""}
+            fallbackImageSrc={categoryImageUrl}
+            label={d.allSubcategories}
+          />
           {cat.subcategories.map((sub) => (
-            <button
+            <CategoryPhotoPickerCard
               key={sub.slug}
-              type="button"
+              selected={subFilter === sub.slug}
               onClick={() => setSubFilter(sub.slug)}
-              className={cn(
-                "rounded-full px-4 py-2 text-sm font-semibold border transition-colors",
-                subFilter === sub.slug
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white text-gray-700 border-gray-200 hover:border-blue-200",
-              )}
-            >
-              {translateDirectorySubcategory(sub, locale)}
-            </button>
+              imageSrc={shopDirectorySubcategoryImageUrl(cat.slug, sub.slug) ?? categoryImageUrl ?? ""}
+              fallbackImageSrc={categoryImageUrl}
+              label={translateDirectorySubcategory(sub, locale)}
+            />
           ))}
-        </div>
+        </CategoryPhotoPickerGrid>
 
         {loading ? (
           <div className="flex justify-center py-16">
