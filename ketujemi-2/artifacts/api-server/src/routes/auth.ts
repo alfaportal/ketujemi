@@ -85,7 +85,10 @@ async function loginExistingEmailUser(
   res: Parameters<typeof setUserSessionCookie>[0],
   existing: User,
   password: string,
-): Promise<{ ok: true; user: User } | { ok: false; status: number; body: Record<string, string> }> {
+): Promise<
+  | { ok: true; user: User; isReturningUser: boolean }
+  | { ok: false; status: number; body: Record<string, string> }
+> {
   if (isUserBanned(existing)) {
     return { ok: false, status: 403, body: { error: "Account suspended" } };
   }
@@ -99,7 +102,7 @@ async function loginExistingEmailUser(
       };
     }
     setUserSessionCookie(res, existing.id);
-    return { ok: true, user: existing };
+    return { ok: true, user: existing, isReturningUser: true };
   }
   const hash = await bcrypt.hash(password, 10);
   const [updated] = await db
@@ -112,7 +115,7 @@ async function loginExistingEmailUser(
     .returning();
   const loggedIn = updated ?? existing;
   setUserSessionCookie(res, loggedIn.id);
-  return { ok: true, user: loggedIn };
+  return { ok: true, user: loggedIn, isReturningUser: false };
 }
 
 async function completeEmailChallengeLogin(
@@ -174,7 +177,8 @@ router.post("/auth/register/email", authLoginRegisterLimiter, async (req, res) =
       res.json({
         ok: true,
         needsVerification: false,
-        existingAccount: true,
+        welcome_new_user: !loginResult.isReturningUser,
+        ...(loginResult.isReturningUser ? { existingAccount: true } : {}),
         user: publicUser(loginResult.user, { self: true }),
       });
       return;
@@ -309,12 +313,16 @@ router.post("/auth/verify/email", async (req, res) => {
       .limit(1);
 
     if (existing) {
+      const hadPassword = Boolean(existing.password_hash);
       const result = await completeEmailChallengeLogin(res, challenge, existing);
       if (result.banned) {
         res.status(403).json({ error: "Account suspended" });
         return;
       }
-      res.json({ user: publicUser(result.user, { self: true }) });
+      res.json({
+        user: publicUser(result.user, { self: true }),
+        ...(hadPassword ? { existingAccount: true } : { welcome_new_user: true }),
+      });
       return;
     }
 

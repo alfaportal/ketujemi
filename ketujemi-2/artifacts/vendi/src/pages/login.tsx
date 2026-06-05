@@ -17,7 +17,15 @@ import {
 } from "@/components/recaptcha-v2";
 import { SocialOAuthButtons } from "@/components/social-oauth-buttons";
 import { showWelcomeToast } from "@/components/engagement-effects";
+import { welcomeDisplayName } from "@/lib/engagement-i18n";
 import type { AuthUser } from "@/lib/auth-context";
+
+type RegisterAuthPayload = {
+  needsVerification?: boolean;
+  existingAccount?: boolean;
+  welcome_new_user?: boolean;
+  user?: AuthUser;
+};
 
 /** Regjistrohu = email (hyrje menjëherë nëse ke llogari; kod vetëm për të reja). Kyçu = telefon. */
 type Flow = "register" | "login";
@@ -213,6 +221,31 @@ export default function LoginPage() {
     return false;
   }
 
+  async function clearAuthSessionBeforeRegister(): Promise<void> {
+    await fetchWithTimeout("/api/auth/logout", { method: "POST", credentials: "include" });
+    await refresh();
+  }
+
+  function showPostRegisterWelcome(payload: RegisterAuthPayload): void {
+    if (!payload.welcome_new_user) return;
+    const welcomeUser: Parameters<typeof welcomeDisplayName>[0] =
+      payload.user ?? {
+        email: email.trim() || null,
+        display_name: null,
+        phone_e164_digits: phone.trim() || null,
+      };
+    showWelcomeToast(toast, welcomeUser, uiLang);
+  }
+
+  function showPostRegisterReturning(payload: RegisterAuthPayload, onVerifyStep: boolean): void {
+    if (!payload.existingAccount || payload.welcome_new_user) return;
+    if (onVerifyStep) {
+      toast({ title: t.toast_emailSent });
+      return;
+    }
+    toast({ title: t.login_welcomeBack });
+  }
+
   async function onRegisterEmail(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -225,6 +258,7 @@ export default function LoginPage() {
 
   async function submitEmailSignin(): Promise<boolean> {
     if (!validateEmailPassword(email, password, toast)) return false;
+    await clearAuthSessionBeforeRegister();
     const res = await fetchWithTimeout("/api/auth/register/email", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -245,12 +279,7 @@ export default function LoginPage() {
       return false;
     }
     setPasswordFailCount(0);
-    const payload = data as {
-      needsVerification?: boolean;
-      existingAccount?: boolean;
-      welcome_new_user?: boolean;
-      user?: AuthUser;
-    };
+    const payload = data as RegisterAuthPayload;
     if (payload.needsVerification && !payload.existingAccount) {
       setEmailMode("verify");
       setStep("verify");
@@ -258,10 +287,11 @@ export default function LoginPage() {
       return true;
     }
     await refresh();
-    if (payload.welcome_new_user && payload.user) {
-      showWelcomeToast(toast, payload.user, uiLang);
+    const onVerifyStep = emailMode === "verify";
+    if (payload.welcome_new_user) {
+      showPostRegisterWelcome(payload);
     } else {
-      toast({ title: payload.existingAccount ? t.login_welcomeBack : t.toast_accountReady });
+      showPostRegisterReturning(payload, onVerifyStep);
     }
     setLocation(returnTo);
     return true;
@@ -355,6 +385,7 @@ export default function LoginPage() {
     }
     setBusy(true);
     try {
+      await clearAuthSessionBeforeRegister();
       const res = await fetchWithTimeout("/api/auth/verify/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -376,10 +407,12 @@ export default function LoginPage() {
         });
         return;
       }
-      const payload = data as { welcome_new_user?: boolean; user?: AuthUser };
+      const payload = data as RegisterAuthPayload;
       await refresh();
-      if (payload.welcome_new_user && payload.user) {
-        showWelcomeToast(toast, payload.user, uiLang);
+      if (payload.welcome_new_user) {
+        showPostRegisterWelcome(payload);
+      } else if (payload.existingAccount) {
+        toast({ title: t.login_welcomeBack });
       }
       setLocation(returnTo);
     } finally {
@@ -405,6 +438,7 @@ export default function LoginPage() {
     if (!requireCaptcha()) return;
     setBusy(true);
     try {
+      await clearAuthSessionBeforeRegister();
       const res = await fetchWithTimeout("/api/auth/sms/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -441,6 +475,7 @@ export default function LoginPage() {
     }
     setBusy(true);
     try {
+      await clearAuthSessionBeforeRegister();
       const res = await fetchWithTimeout("/api/auth/sms/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -455,10 +490,10 @@ export default function LoginPage() {
         });
         return;
       }
-      const payload = data as { welcome_new_user?: boolean; user?: AuthUser };
+      const payload = data as RegisterAuthPayload;
       await refresh();
-      if (payload.welcome_new_user && payload.user) {
-        showWelcomeToast(toast, payload.user, uiLang);
+      if (payload.welcome_new_user) {
+        showPostRegisterWelcome(payload);
       }
       setLocation(returnTo);
     } finally {
