@@ -1,5 +1,4 @@
 import { Router, type IRouter } from "express";
-import { z } from "zod/v4";
 import { getSessionUser } from "../lib/session-user";
 import {
   listUserNotifications,
@@ -20,9 +19,16 @@ router.get("/notifications", async (req, res) => {
   res.json(data);
 });
 
-const MarkReadBody = z.object({
-  ids: z.array(z.number().int().positive()).max(50),
-});
+function parsePositiveIntIds(value: unknown): number[] | null {
+  if (!Array.isArray(value) || value.length === 0 || value.length > 50) return null;
+  const ids: number[] = [];
+  for (const item of value) {
+    const n = Number(item);
+    if (!Number.isInteger(n) || n <= 0) return null;
+    ids.push(n);
+  }
+  return ids;
+}
 
 router.patch("/notifications/read", async (req, res) => {
   const user = await getSessionUser(req);
@@ -30,19 +36,14 @@ router.patch("/notifications/read", async (req, res) => {
     res.status(401).json({ error: "Authentication required" });
     return;
   }
-  const parsed = MarkReadBody.safeParse(req.body);
-  if (!parsed.success) {
+  const ids = parsePositiveIntIds(req.body?.ids);
+  if (!ids) {
     res.status(400).json({ error: "Invalid body" });
     return;
   }
-  await markNotificationsRead(user.id, parsed.data.ids);
+  await markNotificationsRead(user.id, ids);
   const data = await listUserNotifications(user.id);
   res.json(data);
-});
-
-const SocialPrefBody = z.object({
-  preference: z.enum(["opted_in", "opted_out"]),
-  notification_id: z.number().int().positive().optional(),
 });
 
 router.post("/notifications/social-follow-preference", async (req, res) => {
@@ -51,23 +52,18 @@ router.post("/notifications/social-follow-preference", async (req, res) => {
     res.status(401).json({ error: "Authentication required" });
     return;
   }
-  const parsed = SocialPrefBody.safeParse(req.body);
-  if (!parsed.success) {
+  const preference = req.body?.preference;
+  if (preference !== "opted_in" && preference !== "opted_out") {
     res.status(400).json({ error: "Invalid body" });
     return;
   }
-  await setSocialFollowPreference(user.id, parsed.data.preference);
+  await setSocialFollowPreference(user.id, preference);
   const data = await listUserNotifications(user.id);
   res.json({
     ok: true,
-    social_follow_notif_preference: parsed.data.preference,
+    social_follow_notif_preference: preference,
     ...data,
   });
-});
-
-const FcmTokenBody = z.object({
-  token: z.string().min(20).max(4096),
-  platform: z.string().max(32).optional(),
 });
 
 router.post("/fcm/register-token", async (req, res) => {
@@ -76,12 +72,14 @@ router.post("/fcm/register-token", async (req, res) => {
     res.status(401).json({ error: "Authentication required" });
     return;
   }
-  const parsed = FcmTokenBody.safeParse(req.body);
-  if (!parsed.success) {
+  const token = typeof req.body?.token === "string" ? req.body.token.trim() : "";
+  const platform =
+    typeof req.body?.platform === "string" ? req.body.platform.trim().slice(0, 32) : undefined;
+  if (token.length < 20 || token.length > 4096) {
     res.status(400).json({ error: "Invalid token" });
     return;
   }
-  await registerFcmToken(user.id, parsed.data.token, parsed.data.platform);
+  await registerFcmToken(user.id, token, platform);
   res.json({ ok: true });
 });
 
