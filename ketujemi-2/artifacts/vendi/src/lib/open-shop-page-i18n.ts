@@ -1,89 +1,78 @@
 import { useMarket } from "@/lib/market-context";
-import { platformMarketsForLocale } from "@/lib/platform-markets-i18n";
 import { translationKeyForUiLang, type UiTranslationLocale } from "@/lib/ui-languages";
 
-export type OpenShopStep = { title: string; body: string };
 export type OpenShopFaq = { q: string; a: string };
+export type OpenShopWhyCard = { emoji: string; title: string; description: string };
 
 export type OpenShopPageCopy = {
   docTitle: string;
-  heroBadge: string;
   heroTitle: string;
   heroSubtitle: string;
-  heroTagline: string;
-  heroCta: string;
   whyTitle: string;
-  whyBullets: string[];
-  stepsTitle: string;
-  steps: OpenShopStep[];
-  includesTitle: string;
-  includesBullets: string[];
-  moreTitle: string;
-  moreIntro: string;
-  morePackagesLabel: string;
-  morePackages: string[];
-  morePartnerBefore: string;
-  morePartnerLink: string;
-  morePartnerAfter: string;
+  whyCards: OpenShopWhyCard[];
   faqTitle: string;
   faq: OpenShopFaq[];
-  ctaTitle: string;
-  ctaSubtitle: string;
   ctaButton: string;
-  ctaFinePrint: string;
 };
 
 const KS: OpenShopPageCopy = {
   docTitle: "Hap dyqanin tënd — KetuJemi.com",
-  heroBadge: "HAP DYQANIN TËND",
-  heroTitle: "Shite Online — Falas, Shpejt, Thjesht",
-  heroSubtitle: "Krijo dyqanin tënd dixhital në KetuJemi.com dhe arrij mijëra blerës çdo ditë",
-  heroTagline: "pa komisione, pa tarifa të fshehura.",
-  heroCta: "Hap Dyqanin Tënd Falas",
+  heroTitle: "Hap Dyqanin Tënd Dixhital — Falas",
+  heroSubtitle:
+    "Krijo dyqanin tënd dixhital në KetuJemi.com dhe arrij mijëra blerës çdo ditë pa komisione, pa tarifa të fshehura.",
   whyTitle: "PSE KETUJEMI?",
-  whyBullets: [
-    "🆓 Plotësisht falas — njoftime të pakufizuara në çdo kategori",
-    "⚡ Shpejt — njoftimi bëhet aktiv brenda minutave",
-    "📱 Nga telefoni — posto nga kudo, në çdo kohë",
-    "🔒 I sigurt — kërkohet regjistrim dhe hyrje për të postuar",
-    "📸 Foto të pakufizuara — trego produktin nga të gjitha anët",
-    "👁️ Dukshmëri e lartë — njoftimet shfaqen në kërkime Google",
-  ],
-  stepsTitle: "SI FUNKSIONON — 3 HAPA",
-  steps: [
+  whyCards: [
     {
-      title: "Hapi 1 — Regjistrohu",
-      body: "Krijo llogarinë tënde falas me email, Google ose Facebook. Hyr në llogari për të postuar.",
+      emoji: "🆓",
+      title: "Plotësisht falas",
+      description: "Pa kartë bankare, pa tarifa të fshehura, pa komisione",
     },
     {
-      title: "Hapi 2 — Posto Njoftimin",
-      body: "Zgjidhni kategorinë, shto titullin, përshkrimin, çmimin, foto të pakufizuara dhe një video. Publiko me një klikim.",
+      emoji: "⚡",
+      title: "Aktiv brenda 24 orëve",
+      description: "Apliko sot, nesër dyqani yt është live",
     },
     {
-      title: "Hapi 3 — Merr Kontakte",
-      body: "Blerësit të kontaktojnë direkt përmes platformës. Ti vendos çmimin dhe kushtet — ne nuk marrim komision.",
+      emoji: "📱",
+      title: "Nga telefoni",
+      description: "Menaxho dyqanin tënd nga kudo, në çdo kohë",
+    },
+    {
+      emoji: "🔒",
+      title: "I sigurt",
+      description: "Kërkohet regjistrim dhe hyrje për të postuar",
+    },
+    {
+      emoji: "📸",
+      title: "Foto të pakufizuara + video",
+      description: "Trego produktin nga të gjitha anët",
+    },
+    {
+      emoji: "🌍",
+      title: "Arrihet nga e gjithë bota",
+      description: "Kosovë, Shqipëri, Maqedoni, Mal i Zi dhe Diaspora",
+    },
+    {
+      emoji: "🔍",
+      title: "Dukshmëri e lartë",
+      description: "Dyqani yt shfaqet në kërkim Google",
+    },
+    {
+      emoji: "🏪",
+      title: "Faqe e dedikuar",
+      description: "Dyqani yt ka adresë të veçantë në KetuJemi",
+    },
+    {
+      emoji: "📍",
+      title: "Hartë Google Maps",
+      description: "Klientët të gjejnë lehtë",
+    },
+    {
+      emoji: "📊",
+      title: "Pa algoritëm",
+      description: "Çdo shpallje shihet njësoj, pa pagesë shtesë",
     },
   ],
-  includesTitle: "ÇFARË PËRFSHIN DYQANI YT",
-  includesBullets: [
-    "Profil publik i biznesit me emër dhe logo",
-    "Të gjitha njoftimet e tua në një faqe të vetme",
-    "Lidhje direkte — klientët të gjejnë lehtë",
-    "Postim i pakufizuar dhe falas në çdo kategori",
-    "Çdo njoftim aktiv 3 muaj (90 ditë)",
-    "Foto të pakufizuara dhe video për çdo shpallje",
-    "Sistemi i mesazheve i integruar",
-    platformMarketsForLocale("ks").availableIn,
-  ],
-  moreTitle: "DUKSHMËRI SHTESË (OPSIONALE)",
-  moreIntro: "Postimi është falas. Nëse doni më shumë dukshmëri për një njoftim specifik:",
-  morePackagesLabel: "Promovim opsional:",
-  morePackages: [
-    "Boost TOP — shfaqje në kryefaqe (€2 / €5 / €8)",
-  ],
-  morePartnerBefore: "Ose bëhu ",
-  morePartnerLink: "Partner i Verifikuar",
-  morePartnerAfter: " për përfitime marketingu (logo, badge)",
   faqTitle: "PYETJET E SHPESHTA",
   faq: [
     {
@@ -99,7 +88,7 @@ const KS: OpenShopPageCopy = {
       a: "Postimi është falas. Opsioni i vetëm me pagesë është Boost TOP — promovim opsional për të shfaqur shpalljen në krye të kërkimeve.",
     },
     {
-      q: "Sa foto mund të ngarkojë për shpallje?",
+      q: "Sa foto mund të ngarkoj për shpallje?",
       a: "Mund të ngarkoni foto të pakufizuara dhe një video deri në 150MB për çdo shpallje.",
     },
     {
@@ -115,28 +104,68 @@ const KS: OpenShopPageCopy = {
       a: "Po — dyqani juaj është i dukshëm për të gjithë vizitorët e KetuJemi, pavarësisht nga ku janë. Një blerës nga Prishtina mund të gjejë dyqanin tuaj në Ferizaj, Tiranë, Shkup apo diaspora shqiptare në Gjermani, Zvicër, Itali dhe më gjerë. Kjo do të thotë që produktet tuaja arrijnë mijëra blerës të mundshëm çdo ditë — pa kosto reklamimi, pa komisione, pa kufij gjeografikë. Sa më shumë shpallje postoni → aq më shumë njerëz ju gjejnë → aq më shumë shitje keni.",
     },
   ],
-  ctaTitle: "Gati të fillosh?",
-  ctaSubtitle: "Mijëra blerës të presin — hap dyqanin tënd falas tani.",
-  ctaButton: "Hap Dyqanin Tënd Falas",
-  ctaFinePrint: "Nuk kërkohet kartë bankare. Aktivizim i menjëhershëm.",
+  ctaButton: "🏪 Hap Dyqanin Tënd Falas →",
 };
 
 const MK: OpenShopPageCopy = {
   ...KS,
   docTitle: "Отвори продавница — KetuJemi.com",
-  heroBadge: "ОТВОРИ ПРОДАВНИЦА",
-  heroTitle: "Продавајте онлајн — бесплатно, брзо, едноставно",
-  heroSubtitle: "Создајте дигитална продавница на KetuJemi.com и стигнете до илјадници купувачи секој ден",
-  heroTagline: "без провизии, без скриени трошоци.",
-  heroCta: "Отвори ја твојата продавница бесплатно",
+  heroTitle: "Отвори ја твојата дигитална продавница — бесплатно",
+  heroSubtitle:
+    "Создајте ја вашата дигитална продавница на KetuJemi.com и стигнете до илјадници купувачи секој ден без провизии и без скриени трошоци.",
   whyTitle: "ЗОШТО KETUJEMI?",
-  stepsTitle: "КАКО ФУНКЦИОНИРА — 3 ЧЕКОРИ",
-  includesTitle: "ШТО ВКЛУЧУВА ТВОЈАТА ПРОДАВНИЦА",
-  includesBullets: [
-    ...KS.includesBullets.slice(0, -1),
-    platformMarketsForLocale("mk").availableIn,
+  whyCards: [
+    {
+      emoji: "🆓",
+      title: "Целосно бесплатно",
+      description: "Без банкарска картичка, без скриени трошоци, без провизии",
+    },
+    {
+      emoji: "⚡",
+      title: "Активна за 24 часа",
+      description: "Аплицирајте денес, утре продавницата е live",
+    },
+    {
+      emoji: "📱",
+      title: "Од телефон",
+      description: "Управувајте ја продавницата од каде било, во секое време",
+    },
+    {
+      emoji: "🔒",
+      title: "Безбедно",
+      description: "Потребна е регистрација и најава за објавување",
+    },
+    {
+      emoji: "📸",
+      title: "Неограничени фотографии + видео",
+      description: "Прикажете го производот од сите страни",
+    },
+    {
+      emoji: "🌍",
+      title: "Достапно низ целиот свет",
+      description: "Косово, Албанија, Македонија, Црна Гора и дијаспора",
+    },
+    {
+      emoji: "🔍",
+      title: "Висока видливост",
+      description: "Вашата продавница се појавува во Google пребарување",
+    },
+    {
+      emoji: "🏪",
+      title: "Посветена страница",
+      description: "Вашата продавница има сопствена адреса на KetuJemi",
+    },
+    {
+      emoji: "📍",
+      title: "Google Maps",
+      description: "Клиентите ве наоѓаат лесно",
+    },
+    {
+      emoji: "📊",
+      title: "Без алгоритам",
+      description: "Секој оглас се гледа подеднакво, без дополнителни трошоци",
+    },
   ],
-  moreTitle: "ДОПОЛНИТЕЛНА ВИДЛИВОСТ (ОПЦИОНАЛНО)",
   faqTitle: "ЧЕСТО ПОСТАВУВАНИ ПРАШАЊА",
   faq: [
     {
@@ -168,28 +197,68 @@ const MK: OpenShopPageCopy = {
       a: "Да — вашата продавница е видлива за сите посетители на KetuJemi, без разлика од каде се. Купувач од Скопје може да ја најде вашата продавница во Прилеп, Тирана, Приштина или албанската дијаспора во Германија, Швајцарија, Италија и пошироко. Тоа значи дека вашите производи стигнуваат до илјадници потенцијални купувачи секој ден — без трошоци за рекламирање, без провизии, без географски ограничувања. Колку повеќе огласи објавувате → повеќе луѓе ве наоѓаат → повеќе продажби имате.",
     },
   ],
-  ctaTitle: "Подготвени да започнете?",
-  ctaSubtitle: "Илјадници купувачи ве чекаат — отворете ја продавницата бесплатно сега.",
-  ctaButton: "Отвори ја твојата продавница бесплатно",
-  ctaFinePrint: "Не се бара картичка. Веднаш активирање.",
+  ctaButton: "🏪 Отвори ја твојата продавница бесплатно →",
 };
 
 const MNE: OpenShopPageCopy = {
   ...KS,
   docTitle: "Otvori prodavnicu — KetuJemi.com",
-  heroBadge: "OTVORI PRODAVNICU",
-  heroTitle: "Prodaj online — besplatno, brzo, jednostavno",
-  heroSubtitle: "Kreiraj digitalnu prodavnicu na KetuJemi.com i dođi do hiljada kupaca svaki dan",
-  heroTagline: "bez provizija, bez skrivenih troškova.",
-  heroCta: "Otvori svoju prodavnicu besplatno",
+  heroTitle: "Otvori svoju digitalnu prodavnicu — besplatno",
+  heroSubtitle:
+    "Kreiraj svoju digitalnu prodavnicu na KetuJemi.com i dođi do hiljada kupaca svaki dan bez provizija i skrivenih troškova.",
   whyTitle: "ZAŠTO KETUJEMI?",
-  stepsTitle: "KAKO FUNKCIONIŠE — 3 KORAKA",
-  includesTitle: "ŠTA UKLJUČUJE TVOJA PRODAVNICA",
-  includesBullets: [
-    ...KS.includesBullets.slice(0, -1),
-    platformMarketsForLocale("mne").availableIn,
+  whyCards: [
+    {
+      emoji: "🆓",
+      title: "Potpuno besplatno",
+      description: "Bez bankovne kartice, bez skrivenih troškova, bez provizija",
+    },
+    {
+      emoji: "⚡",
+      title: "Aktivno za 24 sata",
+      description: "Prijavite se danas, sutra prodavnica je live",
+    },
+    {
+      emoji: "📱",
+      title: "Sa telefona",
+      description: "Upravljajte prodavnicom odakle god, u bilo koje vrijeme",
+    },
+    {
+      emoji: "🔒",
+      title: "Sigurno",
+      description: "Potrebna je registracija i prijava za objavljivanje",
+    },
+    {
+      emoji: "📸",
+      title: "Neograničene fotografije + video",
+      description: "Pokažite proizvod sa svih strana",
+    },
+    {
+      emoji: "🌍",
+      title: "Dostupno širom svijeta",
+      description: "Kosovo, Albanija, Makedonija, Crna Gora i dijaspora",
+    },
+    {
+      emoji: "🔍",
+      title: "Visoka vidljivost",
+      description: "Vaša prodavnica se pojavljuje u Google pretrazi",
+    },
+    {
+      emoji: "🏪",
+      title: "Posvećena stranica",
+      description: "Vaša prodavnica ima vlastitu adresu na KetuJemi",
+    },
+    {
+      emoji: "📍",
+      title: "Google Maps",
+      description: "Kupci vas lako pronalaze",
+    },
+    {
+      emoji: "📊",
+      title: "Bez algoritma",
+      description: "Svaki oglas se vidi jednako, bez dodatnih troškova",
+    },
   ],
-  moreTitle: "DODATNA VIDLJIVOST (OPCIONO)",
   faqTitle: "ČESTO POSTAVLJANA PITANJA",
   faq: [
     {
@@ -221,60 +290,69 @@ const MNE: OpenShopPageCopy = {
       a: "Da — vaša prodavnica je vidljiva svim posjetiocima KetuJemi, bez obzira odakle su. Kupac iz Podgorice može pronaći vašu prodavnicu u Tivtu, Tirani, Skoplju ili albanskoj diaspori u Njemačkoj, Švicarskoj, Italiji i šire. To znači da vaši proizvodi dnevno stižu do hiljada potencijalnih kupaca — bez troškova oglašavanja, bez provizija, bez geografskih ograničenja. Što više oglasa objavite → više ljudi vas pronalazi → više prodaje imate.",
     },
   ],
-  ctaTitle: "Spremni da počnete?",
-  ctaSubtitle: "Hiljade kupaca čeka — otvorite prodavnicu besplatno sada.",
-  ctaButton: "Otvori svoju prodavnicu besplatno",
-  ctaFinePrint: "Kartica nije potrebna. Trenutna aktivacija.",
+  ctaButton: "🏪 Otvori svoju prodavnicu besplatno →",
 };
 
 const EN: OpenShopPageCopy = {
   ...KS,
   docTitle: "Open your shop — KetuJemi.com",
-  heroBadge: "OPEN YOUR SHOP",
-  heroTitle: "Sell online — free, fast, simple",
-  heroSubtitle: "Create your digital shop on KetuJemi.com and reach thousands of buyers every day",
-  heroTagline: "no commissions, no hidden fees.",
-  heroCta: "Open your shop for free",
+  heroTitle: "Open Your Digital Shop — Free",
+  heroSubtitle:
+    "Create your digital shop on KetuJemi.com and reach thousands of buyers every day with no commissions and no hidden fees.",
   whyTitle: "WHY KETUJEMI?",
-  whyBullets: [
-    "🆓 Completely free — unlimited listings in any category",
-    "⚡ Fast — your listing goes live within minutes",
-    "📱 From your phone — post anytime, anywhere",
-    "🔒 Secure — registration and sign-in required to post",
-    "📸 Unlimited photos — show your product from every angle",
-    "👁️ High visibility — listings appear in Google search",
-  ],
-  stepsTitle: "HOW IT WORKS — 3 STEPS",
-  steps: [
+  whyCards: [
     {
-      title: "Step 1 — Register",
-      body: "Create your free account with email, Google or Facebook. Sign in to post.",
+      emoji: "🆓",
+      title: "Completely free",
+      description: "No bank card, no hidden fees, no commissions",
     },
     {
-      title: "Step 2 — Post a listing",
-      body: "Choose a category, add title, description, price, unlimited photos and a video. Publish in one click.",
+      emoji: "⚡",
+      title: "Active within 24 hours",
+      description: "Apply today, your shop is live tomorrow",
     },
     {
-      title: "Step 3 — Get contacts",
-      body: "Buyers contact you through the platform. You set price and terms — we take no commission.",
+      emoji: "📱",
+      title: "From your phone",
+      description: "Manage your shop anywhere, anytime",
+    },
+    {
+      emoji: "🔒",
+      title: "Secure",
+      description: "Registration and sign-in required to post",
+    },
+    {
+      emoji: "📸",
+      title: "Unlimited photos + video",
+      description: "Show your product from every angle",
+    },
+    {
+      emoji: "🌍",
+      title: "Reach worldwide",
+      description: "Kosovo, Albania, North Macedonia, Montenegro and the diaspora",
+    },
+    {
+      emoji: "🔍",
+      title: "High visibility",
+      description: "Your shop appears in Google search",
+    },
+    {
+      emoji: "🏪",
+      title: "Dedicated page",
+      description: "Your shop has its own address on KetuJemi",
+    },
+    {
+      emoji: "📍",
+      title: "Google Maps",
+      description: "Customers find you easily",
+    },
+    {
+      emoji: "📊",
+      title: "No algorithm",
+      description: "Every listing is shown equally, no extra fees",
     },
   ],
-  includesTitle: "WHAT YOUR SHOP INCLUDES",
-  includesBullets: [
-    "Public business profile with name and logo",
-    "All your listings on one page",
-    "Direct links — clients find you easily",
-    "Unlimited free posting in any category",
-    "Each listing active for 3 months (90 days)",
-    "Unlimited photos and video per listing",
-    "Integrated messaging system",
-    platformMarketsForLocale("en").availableIn,
-  ],
-  moreTitle: "EXTRA VISIBILITY (OPTIONAL)",
-  moreIntro: "Posting is free. If you want more visibility for a specific listing:",
-  morePackagesLabel: "Optional promotion:",
-  morePackages: ["Boost to Top — homepage placement (€2 / €5 / €8)"],
-  morePartnerAfter: " for marketing benefits (logo, badge)",
+  faqTitle: "FREQUENTLY ASKED QUESTIONS",
   faq: [
     {
       q: "Is it really free?",
@@ -305,11 +383,7 @@ const EN: OpenShopPageCopy = {
       a: "Yes — your shop is visible to all KetuJemi visitors, no matter where they are. A buyer in Pristina can find your shop in Ferizaj, Tirana, Skopje or the Albanian diaspora in Germany, Switzerland, Italy and beyond. That means your products reach thousands of potential buyers every day — no advertising costs, no commissions, no geographic limits. The more listings you post → the more people find you → the more sales you make.",
     },
   ],
-  faqTitle: "FREQUENTLY ASKED QUESTIONS",
-  ctaTitle: "Ready to start?",
-  ctaSubtitle: "Thousands of buyers are waiting — open your shop for free now.",
-  ctaButton: "Open your shop for free",
-  ctaFinePrint: "No bank card required. Instant activation.",
+  ctaButton: "🏪 Open your shop for free →",
 };
 
 const OPEN_SHOP_PAGES: Record<UiTranslationLocale, OpenShopPageCopy> = {

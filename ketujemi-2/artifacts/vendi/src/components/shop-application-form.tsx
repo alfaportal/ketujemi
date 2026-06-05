@@ -38,9 +38,9 @@ export function ShopApplicationForm() {
   const [tiktok, setTiktok] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [website, setWebsite] = useState("");
-  const [contactName, setContactName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [contactName, setContactName] = useState(c.defaultContactName);
+  const [phone, setPhone] = useState(c.defaultContactPhone);
+  const [email, setEmail] = useState(c.defaultContactEmail);
 
   const [logoBusy, setLogoBusy] = useState(false);
   const [submitBusy, setSubmitBusy] = useState(false);
@@ -55,11 +55,11 @@ export function ShopApplicationForm() {
 
   useEffect(() => {
     if (!user) return;
-    if (user.display_name) setContactName(user.display_name);
-    if (user.email) setEmail(user.email);
+    setContactName(user.display_name?.trim() || c.defaultContactName);
+    setEmail(user.email?.trim() || c.defaultContactEmail);
     const ph = user.contact_phone ?? user.phone_e164_digits;
-    if (ph) setPhone(ph.startsWith("+") ? ph : `+${ph}`);
-  }, [user]);
+    setPhone(ph ? (ph.startsWith("+") ? ph : `+${ph}`) : c.defaultContactPhone);
+  }, [user, c.defaultContactName, c.defaultContactEmail, c.defaultContactPhone]);
 
   useEffect(() => {
     setCity("");
@@ -83,7 +83,10 @@ export function ShopApplicationForm() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!user) return;
+    if (!user) {
+      window.location.href = loginUrlWithReturn("/hap-shitore");
+      return;
+    }
     setError(null);
 
     const cat = parentCategories.find((p: { id: number }) => String(p.id) === categoryId);
@@ -141,19 +144,8 @@ export function ShopApplicationForm() {
 
   if (authLoading) {
     return (
-      <div className="flex justify-center py-16">
+      <div className="flex justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center space-y-4">
-        <p className="text-sm text-amber-900">{c.loginRequired}</p>
-        <Button asChild style={{ backgroundColor: BRAND_BLUE }}>
-          <a href={loginUrlWithReturn("/hap-shitore")}>{c.loginBtn}</a>
-        </Button>
       </div>
     );
   }
@@ -167,27 +159,15 @@ export function ShopApplicationForm() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm space-y-4">
-        <h2 className="text-xl sm:text-2xl font-black text-gray-900">{c.formTitle}</h2>
-        <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{c.formIntro}</p>
-        <p className="text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
-          {c.formImportant}
-        </p>
-        <div>
-          <p className="font-bold text-gray-900 mb-2">{c.formBenefitsTitle}</p>
-          <ul className="space-y-1.5 text-sm text-gray-700">
-            {c.formBenefits.map((b) => (
-              <li key={b} className="flex gap-2">
-                <span className="text-green-600 shrink-0">✓</span>
-                <span>{b}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+    <div className="space-y-4">
+      <p className="text-xs sm:text-sm text-amber-800/90 border border-amber-200/70 bg-amber-50/60 rounded-lg px-3 py-2.5">
+        {c.formImportant}
+      </p>
 
-      <form onSubmit={(e) => void onSubmit(e)} className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm space-y-8">
+      <form
+        onSubmit={(e) => void onSubmit(e)}
+        className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm space-y-8"
+      >
         {error ? (
           <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">{error}</p>
         ) : null}
@@ -308,15 +288,35 @@ export function ShopApplicationForm() {
           <h3 className="text-lg font-bold text-gray-900">{c.section4Title}</h3>
           <div className="space-y-2">
             <Label>{c.contactName} *</Label>
-            <Input value={contactName} onChange={(e) => setContactName(e.target.value)} required className="min-h-12" />
+            <Input
+              value={contactName}
+              onChange={(e) => setContactName(e.target.value)}
+              required
+              className="min-h-12"
+              placeholder={c.defaultContactName}
+            />
           </div>
           <div className="space-y-2">
             <Label>{c.phone} *</Label>
-            <Input value={phone} onChange={(e) => setPhone(e.target.value)} required type="tel" className="min-h-12" />
+            <Input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+              type="tel"
+              className="min-h-12"
+              placeholder={c.defaultContactPhone}
+            />
           </div>
           <div className="space-y-2">
             <Label>{c.email} *</Label>
-            <Input value={email} onChange={(e) => setEmail(e.target.value)} required type="email" className="min-h-12" />
+            <Input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              type="email"
+              className="min-h-12"
+              placeholder={c.defaultContactEmail}
+            />
           </div>
         </section>
 

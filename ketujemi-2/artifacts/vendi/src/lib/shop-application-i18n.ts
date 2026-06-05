@@ -20,11 +20,10 @@ export type ShopCountryCode = (typeof SHOP_COUNTRY_CODES)[number];
 export type DiasporaCountryCode = Extract<ShopCountryCode, "DE" | "CH" | "AT" | "FR" | "IT" | "GB" | "US">;
 
 export type OpenShopFormCopy = {
-  formTitle: string;
-  formIntro: string;
   formImportant: string;
-  formBenefits: string[];
-  formBenefitsTitle: string;
+  defaultContactName: string;
+  defaultContactPhone: string;
+  defaultContactEmail: string;
   loginBtn: string;
   section1Title: string;
   shopName: string;
@@ -136,19 +135,10 @@ const DIASPORA_CITIES: Record<DiasporaCountryCode, string[]> = {
 };
 
 const KS: OpenShopFormCopy = {
-  formTitle: "🏪 Hap Dyqanin Tënd Dixhital — Falas",
-  formIntro:
-    "Për të krijuar dyqanin tënd në KetuJemi, duhet të plotësosh të gjitha fushat më poshtë. Këto të dhëna shfaqen publikisht dhe i ndihmojnë blerësit të të gjejnë lehtë.",
-  formImportant:
-    "⚠️ E rëndësishme: Dyqani aktivizohet vetëm pasi të shqyrtohet kërkesa juaj brenda 24 orëve. Të dhënat mund të ndryshohen më vonë nga profili juaj.",
-  formBenefits: [
-    "Faqe e dedikuar e dyqanit tuaj në KetuJemi",
-    "Logo dhe identitet i plotë dixhital",
-    "Shpallje të pakufizuara falas",
-    "Klientë nga e gjithë rajoni — Kosovë, Shqipëri, Maqedoni dhe Diaspora",
-    "Gjendeni lehtë në kërkim — sipas qytetit, rajonit dhe kategorisë",
-  ],
-  formBenefitsTitle: "Çfarë fitoni:",
+  formImportant: "⚠️ Dyqani aktivizohet brenda 24 orëve pasi të shqyrtohet kërkesa.",
+  defaultContactName: "Revolution Invest sh.p.k",
+  defaultContactPhone: "+38348707880",
+  defaultContactEmail: "info@ketujemi.com",
   loginBtn: "Kyçu / Regjistrohu",
   section1Title: "Identiteti i dyqanit",
   shopName: "Emri i dyqanit",
@@ -159,7 +149,7 @@ const KS: OpenShopFormCopy = {
   country: "Shteti",
   city: "Qyteti",
   region: "Rajoni/Lagja",
-  address: "Adresa e saktë — rruga dhe numri",
+  address: "Adresa e saktë",
   section3Title: "Rrjetet sociale",
   facebook: "Facebook URL",
   instagram: "Instagram URL",
@@ -193,19 +183,7 @@ const KS: OpenShopFormCopy = {
 
 const MK: OpenShopFormCopy = {
   ...KS,
-  formTitle: "🏪 Отвори ја твојата дигитална продавница — бесплатно",
-  formIntro:
-    "За да ја создадете продавницата на KetuJemi, пополнете ги сите полиња подолу. Овие податоци се јавно видливи и им помагаат на купувачите лесно да ве најдат.",
-  formImportant:
-    "⚠️ Важно: Продавницата се активира откако ќе ја разгледаме вашата барање во рок од 24 часа. Податоците може подоцна да ги промените од профилот.",
-  formBenefits: [
-    "Посветена страница на вашата продавница на KetuJemi",
-    "Лого и целосен дигитален идентитет",
-    "Неограничени бесплатни огласи",
-    "Клиенти од целиот регион — Косово, Албанија, Македонија и дијаспора",
-    "Лесно пронајдливи во пребарување — по град, регион и категорија",
-  ],
-  formBenefitsTitle: "Што добивате:",
+  formImportant: "⚠️ Продавницата се активира во рок од 24 часа по разгледување на барањето.",
   loginBtn: "Најави се / Регистрирај се",
   section1Title: "Идентитет на продавницата",
   shopName: "Име на продавницата",
@@ -216,7 +194,7 @@ const MK: OpenShopFormCopy = {
   country: "Држава",
   city: "Град",
   region: "Регион/Населба",
-  address: "Точна адреса — улица и број",
+  address: "Точна адреса",
   section3Title: "Социјални мрежи",
   facebook: "Facebook URL",
   instagram: "Instagram URL",
@@ -249,19 +227,7 @@ const MK: OpenShopFormCopy = {
 
 const MNE: OpenShopFormCopy = {
   ...KS,
-  formTitle: "🏪 Otvori svoju digitalnu prodavnicu — besplatno",
-  formIntro:
-    "Da biste kreirali prodavnicu na KetuJemi, popunite sva polja ispod. Ovi podaci su javno vidljivi i pomažu kupcima da vas lako pronađu.",
-  formImportant:
-    "⚠️ Važno: Prodavnica se aktivira tek nakon što pregledamo vaš zahtjev u roku od 24 sata. Podatke možete kasnije promijeniti iz profila.",
-  formBenefits: [
-    "Posvećena stranica vaše prodavnice na KetuJemi",
-    "Logo i kompletan digitalni identitet",
-    "Neograničeni besplatni oglasi",
-    "Kupci iz cijelog regiona — Kosovo, Albanija, Makedonija i dijaspora",
-    "Lako pronađeni u pretrazi — po gradu, regionu i kategoriji",
-  ],
-  formBenefitsTitle: "Šta dobijate:",
+  formImportant: "⚠️ Prodavnica se aktivira u roku od 24 sata nakon pregleda zahtjeva.",
   loginBtn: "Prijavi se / Registruj se",
   section1Title: "Identitet prodavnice",
   shopName: "Naziv prodavnice",
@@ -272,7 +238,7 @@ const MNE: OpenShopFormCopy = {
   country: "Država",
   city: "Grad",
   region: "Region/Kvart",
-  address: "Tačna adresa — ulica i broj",
+  address: "Tačna adresa",
   section3Title: "Društvene mreže",
   facebook: "Facebook URL",
   instagram: "Instagram URL",
@@ -305,19 +271,7 @@ const MNE: OpenShopFormCopy = {
 
 const EN: OpenShopFormCopy = {
   ...KS,
-  formTitle: "🏪 Open Your Digital Shop — Free",
-  formIntro:
-    "To create your shop on KetuJemi, fill in all the fields below. This information is shown publicly and helps buyers find you easily.",
-  formImportant:
-    "⚠️ Important: Your shop is activated only after we review your request within 24 hours. You can update the details later from your profile.",
-  formBenefits: [
-    "A dedicated shop page on KetuJemi",
-    "Logo and full digital identity",
-    "Unlimited free listings",
-    "Customers across the region — Kosovo, Albania, North Macedonia and the diaspora",
-    "Easy to find in search — by city, region and category",
-  ],
-  formBenefitsTitle: "What you get:",
+  formImportant: "⚠️ Your shop is activated within 24 hours after your request is reviewed.",
   loginBtn: "Sign in / Register",
   section1Title: "Shop identity",
   shopName: "Shop name",
@@ -328,7 +282,7 @@ const EN: OpenShopFormCopy = {
   country: "Country",
   city: "City",
   region: "Region/Neighbourhood",
-  address: "Full address — street and number",
+  address: "Full address",
   section3Title: "Social media",
   facebook: "Facebook URL",
   instagram: "Instagram URL",

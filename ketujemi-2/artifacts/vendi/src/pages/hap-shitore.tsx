@@ -1,17 +1,28 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { StaticPageBackLink } from "@/components/static-page-back-link";
 import { ShopApplicationForm } from "@/components/shop-application-form";
-import { BRAND_BLUE } from "@/lib/brand-colors";
+import { BRAND_BLUE, BRAND_ORANGE } from "@/lib/brand-colors";
 import { useOpenShopPage } from "@/lib/open-shop-page-i18n";
+import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 
 export default function HapShitorePage() {
   const c = useOpenShopPage();
+  const { user } = useAuth();
+  const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     document.title = c.docTitle;
   }, [c.docTitle]);
+
+  function handleCta() {
+    if (!user) {
+      window.location.href = loginUrlWithReturn("/hap-shitore");
+      return;
+    }
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <div className="min-h-screen bg-[#f0f4f9]">
@@ -22,27 +33,41 @@ export default function HapShitorePage() {
 
       <section
         className="relative overflow-hidden text-white px-4 py-14 sm:py-20"
-        style={{
-          background: `linear-gradient(135deg, ${BRAND_BLUE} 0%, #2563eb 50%, #1e40af 100%)`,
-        }}
+        style={{ backgroundColor: BRAND_BLUE }}
       >
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_30%_20%,white,transparent_50%)]" />
+        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(circle_at_30%_20%,white,transparent_55%)]" />
         <div className="relative max-w-4xl mx-auto text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-blue-100 mb-3">
-            {c.heroBadge}
-          </p>
           <h1 className="text-3xl sm:text-4xl md:text-[2.5rem] font-black leading-tight tracking-tight">
             {c.heroTitle}
           </h1>
-          <p className="mt-4 text-lg sm:text-xl text-blue-50 font-medium max-w-2xl mx-auto">
+          <p className="mt-4 text-base sm:text-lg text-blue-50 font-medium max-w-2xl mx-auto leading-relaxed">
             {c.heroSubtitle}
-            <span className="block sm:inline sm:ml-1">{c.heroTagline}</span>
           </p>
         </div>
       </section>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 pb-16 pt-8 space-y-10">
-        <ShopApplicationForm />
+        <section>
+          <h2 className="text-lg sm:text-xl font-black text-gray-900 mb-5 tracking-tight text-center sm:text-left">
+            {c.whyTitle}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            {c.whyCards.map((card) => (
+              <div
+                key={card.title}
+                className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-[0_4px_20px_rgba(26,86,160,0.05)] flex gap-3"
+              >
+                <span className="text-2xl shrink-0 leading-none" aria-hidden>
+                  {card.emoji}
+                </span>
+                <div className="min-w-0">
+                  <p className="font-bold text-gray-900 text-sm sm:text-base">{card.title}</p>
+                  <p className="mt-0.5 text-xs sm:text-sm text-gray-600 leading-relaxed">{card.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
         <SectionCard title={c.faqTitle}>
           <dl className="space-y-5">
@@ -54,6 +79,25 @@ export default function HapShitorePage() {
             ))}
           </dl>
         </SectionCard>
+
+        <div className="flex justify-center pt-2">
+          <button
+            type="button"
+            onClick={handleCta}
+            className={cn(
+              "inline-flex items-center justify-center min-h-14 px-8 py-4 rounded-2xl",
+              "text-base sm:text-lg font-black text-white shadow-lg",
+              "hover:opacity-95 active:scale-[0.98] transition-all",
+            )}
+            style={{ background: `linear-gradient(90deg, ${BRAND_BLUE}, ${BRAND_ORANGE})` }}
+          >
+            {c.ctaButton}
+          </button>
+        </div>
+
+        <div ref={formRef} id="shop-application-form" className="scroll-mt-6">
+          <ShopApplicationForm />
+        </div>
       </div>
     </div>
   );
