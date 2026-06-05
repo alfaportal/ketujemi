@@ -1,12 +1,21 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useGetCategories } from "@workspace/api-client-react";
 import {
   approveAdminShopApplication,
   getAdminShopApplications,
   rejectAdminShopApplication,
   type AdminShopApplication,
 } from "@/lib/admin-api";
+import {
+  SHOP_DIRECTORY_CATEGORIES,
+  defaultSubcategoryForCategory,
+  directoryCategoryBySlug,
+  guessDirectoryCategoryFromListingSlug,
+} from "@/lib/shop-directory-taxonomy";
 import { Loader2, RefreshCw, Store } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+type DirectoryDraft = { categorySlug: string; subcategorySlug: string };
 
 function statusBadge(status: string) {
   if (status === "approved") return "bg-green-100 text-green-800";
@@ -23,6 +32,27 @@ export default function AdminShops() {
   const [rejectId, setRejectId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [toast, setToast] = useState<string | null>(null);
+  const [directoryDrafts, setDirectoryDrafts] = useState<Record<number, DirectoryDraft>>({});
+  const { data: categories } = useGetCategories();
+
+  const categorySlugById = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const c of categories ?? []) {
+      if (c.id != null && c.slug) map.set(c.id, c.slug);
+    }
+    return map;
+  }, [categories]);
+
+  function defaultDirectoryDraft(row: AdminShopApplication): DirectoryDraft {
+    const listingSlug = row.category_id ? categorySlugById.get(row.category_id) : null;
+    const categorySlug =
+      row.directory_category_slug ??
+      guessDirectoryCategoryFromListingSlug(listingSlug) ??
+      "pune-sherbime";
+    const subcategorySlug =
+      row.directory_subcategory_slug ?? defaultSubcategoryForCategory(categorySlug) ?? "";
+    return { categorySlug, subcategorySlug };
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -30,10 +60,15 @@ export default function AdminShops() {
       const data = await getAdminShopApplications();
       setRows(data.applications);
       setStats(data.stats);
+      const drafts: Record<number, DirectoryDraft> = {};
+      for (const row of data.applications) {
+        if (row.status === "pending") drafts[row.id] = defaultDirectoryDraft(row);
+      }
+      setDirectoryDrafts(drafts);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [categorySlugById]);
 
   useEffect(() => {
     void load();
@@ -41,8 +76,12 @@ export default function AdminShops() {
 
   async function onApprove(id: number) {
     setBusyId(id);
+    const draft = directoryDrafts[id];
     try {
-      await approveAdminShopApplication(id);
+      await approveAdminShopApplication(id, {
+        directory_category_slug: draft?.categorySlug,
+        directory_subcategory_slug: draft?.subcategorySlug,
+      });
       setToast("Dyqani u aprovua.");
       await load();
     } catch {
@@ -122,7 +161,58 @@ export default function AdminShops() {
                 {row.website ? <span>Web: {row.website}</span> : null}
               </div>
               {row.status === "pending" ? (
-                <div className="flex flex-wrap gap-2 pt-2">
+                <div className="space-y-3 pt-2 border-t border-gray-100">
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    <label className="text-xs text-gray-600 space-y-1">
+                      <span>Kategoria e direktorisë</span>
+                      <select
+                        className="w-full border rounded-lg px-2 py-2 text-sm min-h-10"
+                        value={directoryDrafts[row.id]?.categorySlug ?? defaultDirectoryDraft(row).categorySlug}
+                        onChange={(e) => {
+                          const categorySlug = e.target.value;
+                          setDirectoryDrafts((prev) => ({
+                            ...prev,
+                            [row.id]: {
+                              categorySlug,
+                              subcategorySlug: defaultSubcategoryForCategory(categorySlug) ?? "",
+                            },
+                          }));
+                        }}
+                      >
+                        {SHOP_DIRECTORY_CATEGORIES.map((c) => (
+                          <option key={c.slug} value={c.slug}>
+                            {c.emoji} {c.nameSq}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="text-xs text-gray-600 space-y-1">
+                      <span>Nënkategoria</span>
+                      <select
+                        className="w-full border rounded-lg px-2 py-2 text-sm min-h-10"
+                        value={directoryDrafts[row.id]?.subcategorySlug ?? defaultDirectoryDraft(row).subcategorySlug}
+                        onChange={(e) => {
+                          const subcategorySlug = e.target.value;
+                          setDirectoryDrafts((prev) => ({
+                            ...prev,
+                            [row.id]: {
+                              categorySlug: prev[row.id]?.categorySlug ?? defaultDirectoryDraft(row).categorySlug,
+                              subcategorySlug,
+                            },
+                          }));
+                        }}
+                      >
+                        {(directoryCategoryBySlug(directoryDrafts[row.id]?.categorySlug ?? defaultDirectoryDraft(row).categorySlug)
+                          ?.subcategories ?? []
+                        ).map((s) => (
+                          <option key={s.slug} value={s.slug}>
+                            {s.nameSq}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     disabled={busyId === row.id}
@@ -139,6 +229,7 @@ export default function AdminShops() {
                   >
                     Refuzo
                   </button>
+                  </div>
                 </div>
               ) : null}
               {rejectId === row.id ? (

@@ -2,8 +2,11 @@ import { Link } from "wouter";
 import { SiteLogo } from "@/components/site-logo";
 import { LanguageSelector } from "@/components/language-selector";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
-import { useMarket } from "@/lib/market-context";
+import { useShopDirectoryCopy } from "@/lib/shop-directory-i18n";
 import { cn } from "@/lib/utils";
+
+const navLinkClass =
+  "inline-flex items-center rounded-xl px-3 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 min-h-11 whitespace-nowrap";
 
 type SiteHeaderProps = {
   className?: string;
@@ -17,9 +20,21 @@ type SiteHeaderProps = {
  * App header: on phone — row 1 logo, row 2 language + Hyr + Posto Falas;
  * on md+ — single row with logo, language, and actions.
  */
-export function SiteHeader({ className, children, showViewAllListings }: SiteHeaderProps) {
-  const { t } = useMarket();
+function MainNavLinks({ className }: { className?: string }) {
+  const d = useShopDirectoryCopy();
+  return (
+    <nav className={cn("flex items-center gap-1 sm:gap-2", className)} aria-label="Main">
+      <Link href="/listings" className={navLinkClass}>
+        {d.navBuySell}
+      </Link>
+      <Link href="/dyqanet" className={navLinkClass}>
+        {d.navShops}
+      </Link>
+    </nav>
+  );
+}
 
+export function SiteHeader({ className, children }: SiteHeaderProps) {
   return (
     <header
       className={cn(
@@ -33,6 +48,7 @@ export function SiteHeader({ className, children, showViewAllListings }: SiteHea
           <div className="flex justify-center w-full">
             <SiteLogo mobileWide />
           </div>
+          <MainNavLinks className="justify-center w-full" />
           <div className="grid grid-cols-3 items-stretch gap-2.5 w-full">
             <LanguageSelector compact />
             <SiteHeaderToolbar mobileBar />
@@ -41,16 +57,9 @@ export function SiteHeader({ className, children, showViewAllListings }: SiteHea
 
         {/* —— Desktop: 1 row —— */}
         <div className="hidden md:flex items-center justify-between gap-4 min-h-[4.25rem] py-1">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             <SiteLogo />
-            {showViewAllListings ? (
-              <Link
-                href="/listings"
-                className="inline-flex items-center rounded-xl px-3 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 min-h-11 whitespace-nowrap"
-              >
-                {t.viewAll}
-              </Link>
-            ) : null}
+            <MainNavLinks />
             <LanguageSelector />
           </div>
           <SiteHeaderToolbar />

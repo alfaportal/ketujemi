@@ -1285,6 +1285,23 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
     return;
   }
 
+  const body = req.body as Record<string, unknown>;
+  const { resolveDirectoryCategorySlug, resolveDirectorySubcategorySlug } = await import(
+    "../lib/shop-directory-resolve.js"
+  );
+  const directoryCategorySlug = resolveDirectoryCategorySlug({
+    directory_category_slug:
+      typeof body.directory_category_slug === "string" ? body.directory_category_slug : app.directory_category_slug,
+    category_id: app.category_id,
+    category: app.category,
+  });
+  const directorySubcategorySlug = resolveDirectorySubcategorySlug(
+    directoryCategorySlug,
+    typeof body.directory_subcategory_slug === "string"
+      ? body.directory_subcategory_slug
+      : app.directory_subcategory_slug,
+  );
+
   const [shop] = await db
     .insert(shopsTable)
     .values({
@@ -1295,6 +1312,8 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
       description: app.description,
       category: app.category,
       category_id: app.category_id,
+      directory_category_slug: directoryCategorySlug,
+      directory_subcategory_slug: directorySubcategorySlug,
       country: app.country,
       city: app.city,
       region: app.region,
@@ -1310,6 +1329,14 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
       is_active: true,
     })
     .returning();
+
+  await db
+    .update(shopApplicationsTable)
+    .set({
+      directory_category_slug: directoryCategorySlug,
+      directory_subcategory_slug: directorySubcategorySlug,
+    })
+    .where(eq(shopApplicationsTable.id, id));
 
   await db
     .update(shopApplicationsTable)

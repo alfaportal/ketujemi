@@ -18,6 +18,7 @@ import {
   HUB_THUMB_FALLBACK_BY_SLUG,
 } from "@/lib/category-hub-hero-images";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
+import { ShopDirectoryHomeBanner } from "@/components/shop-directory-home-banner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VipPartnersSection } from "@/components/vip-partners-section";
 import { cn } from "@/lib/utils";
@@ -153,6 +154,8 @@ export default function HomePage() {
       </section>
 
       <VipPartnersSection variant="home" />
+
+      <ShopDirectoryHomeBanner />
 
       {/* -- Filter bar -- */}
       <section className="bg-white border-b border-gray-100 shadow-sm">

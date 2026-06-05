@@ -43,6 +43,7 @@ export const INFO_STATIC_PATHS = new Set([
   "/business-rules",
   "/hap-shitore",
   "/hap-shitore/apliko",
+  "/dyqanet",
   "/otvori-prodavnica",
   "/otvori-prodavnica/apliko",
   "/otvori-prodavnicu",

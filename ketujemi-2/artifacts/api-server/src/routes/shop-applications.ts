@@ -1,8 +1,13 @@
 import { Router } from "express";
 import { db, shopApplicationsTable, shopsTable, listingsTable } from "@workspace/db";
-import { eq, and, desc, gt } from "drizzle-orm";
+import { eq, and, desc, gt, isNotNull, sql } from "drizzle-orm";
 import { getSessionUser } from "../lib/session-user";
 import { sendShopApplicationEmail } from "../lib/send-shop-application-email";
+import {
+  resolveDirectoryCategorySlug,
+  resolveDirectorySubcategorySlug,
+} from "../lib/shop-directory-resolve";
+import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxonomy.ts";
 
 const router = Router();
 
@@ -117,6 +122,69 @@ router.post("/shop-applications", async (req, res) => {
   }
 
   res.status(201).json({ ok: true, id: row.id });
+});
+
+function shopDirectoryRow(shop: typeof shopsTable.$inferSelect) {
+  return {
+    id: shop.id,
+    shop_name: shop.shop_name,
+    logo_url: shop.logo_url,
+    description: shop.description,
+    category: shop.category,
+    category_id: shop.category_id,
+    directory_category_slug: shop.directory_category_slug,
+    directory_subcategory_slug: shop.directory_subcategory_slug,
+    country: shop.country,
+    city: shop.city,
+    region: shop.region,
+    address: shop.address,
+    facebook: shop.facebook,
+    instagram: shop.instagram,
+    tiktok: shop.tiktok,
+    whatsapp: shop.whatsapp,
+    website: shop.website,
+  };
+}
+
+// ─── GET /shops/directory ─────────────────────────────────────────────────────
+router.get("/shops/directory", async (req, res) => {
+  const category = typeof req.query.category === "string" ? req.query.category.trim() : "";
+  const subcategory = typeof req.query.subcategory === "string" ? req.query.subcategory.trim() : "";
+  const city = typeof req.query.city === "string" ? req.query.city.trim() : "";
+  const country = typeof req.query.country === "string" ? req.query.country.trim() : "";
+
+  const conditions = [eq(shopsTable.is_active, true), isNotNull(shopsTable.directory_category_slug)];
+  if (category) conditions.push(eq(shopsTable.directory_category_slug, category));
+  if (subcategory) conditions.push(eq(shopsTable.directory_subcategory_slug, subcategory));
+  if (city) conditions.push(eq(shopsTable.city, city));
+  if (country) conditions.push(eq(shopsTable.country, country));
+
+  const rows = await db
+    .select()
+    .from(shopsTable)
+    .where(and(...conditions))
+    .orderBy(desc(shopsTable.created_at));
+
+  const countRows = await db
+    .select({
+      slug: shopsTable.directory_category_slug,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(shopsTable)
+    .where(and(eq(shopsTable.is_active, true), isNotNull(shopsTable.directory_category_slug)))
+    .groupBy(shopsTable.directory_category_slug);
+
+  const categoryCounts: Record<string, number> = {};
+  for (const c of SHOP_DIRECTORY_CATEGORIES) categoryCounts[c.slug] = 0;
+  for (const row of countRows) {
+    if (row.slug) categoryCounts[row.slug] = row.count;
+  }
+
+  res.json({
+    shops: rows.map(shopDirectoryRow),
+    categoryCounts,
+    total: rows.length,
+  });
 });
 
 // ─── GET /shops/:id ───────────────────────────────────────────────────────────

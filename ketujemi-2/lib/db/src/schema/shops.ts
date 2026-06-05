@@ -12,6 +12,8 @@ export const shopsTable = pgTable("shops", {
   description: text("description").notNull(),
   category: text("category").notNull(),
   category_id: integer("category_id"),
+  directory_category_slug: text("directory_category_slug"),
+  directory_subcategory_slug: text("directory_subcategory_slug"),
   country: text("country").notNull(),
   city: text("city").notNull(),
   region: text("region").notNull(),

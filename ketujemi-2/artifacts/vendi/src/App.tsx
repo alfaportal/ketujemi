@@ -51,6 +51,8 @@ const PartnerRegisterPage = lazy(() => import("@/pages/partner"));
 const OpenShopPage = lazy(() => import("@/pages/hap-shitore"));
 const OpenShopApplyPage = lazy(() => import("@/pages/hap-shitore-apliko"));
 const ShopDetailPage = lazy(() => import("@/pages/shop-detail"));
+const ShopDirectoryPage = lazy(() => import("@/pages/shop-directory"));
+const ShopDirectoryCategoryPage = lazy(() => import("@/pages/shop-directory-category"));
 const WalletBankPaymentPage = lazy(() => import("@/pages/wallet-bank-payment"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
@@ -82,6 +84,8 @@ const ROUTE_COMPONENTS: Record<Exclude<RouteId, "category-hub-redirect">, Compon
   "new-listing": NewListing,
   "edit-listing": EditListing,
   "shop-detail": ShopDetailPage,
+  "shop-directory": ShopDirectoryPage,
+  "shop-directory-category": ShopDirectoryCategoryPage,
   "listing-detail": ListingDetail,
   listings: Listings,
   "not-found": NotFound,
