@@ -111,6 +111,9 @@ Partneriteti me KetuJemi është bashkëpunim i ndërsjelltë — ju na ndihmoni
 - Të na ndiqni në Instagram @jemi.ketu, Facebook KetuJemi.com dhe TikTok @ketujemi7
 - Të na përmendni te ndjekësit tuaj herë pas here
 
+📢 Si funksionon promovimi:
+Ne i publikojmë dhe promovojmë shpalljet tuaja çdo ditë në rrjetet tona sociale — por vetëm nëse keni shpallje aktive në ketujemi.com. Një faqe bosh nuk kemi çfarë ta promovojmë — postoni produktet dhe ofertat tuaja, ne i çojmë te audienca. Sa më shumë postoni → aq më shumë ju promovojmë → aq më shumë klientë dhe shitje keni. 🚀
+
 💡 Një detaj i vogël, por i rëndësishëm:
 Bashkëpunimi ynë është si kafja — funksionon vetëm kur të dyja palët e hedhin sheqerin. 😄 Ne ju promovojmë çdo ditë te ndjekësit tanë — por edhe ju duhet të na ndiqni në rrjetet tona sociale. Shkurt: na ndiqni → ju bëjmë të njohur. Nuk na ndiqni → humbim të dyja palët. 🤝
 
@@ -170,8 +173,11 @@ const MK: PartnerPageCopy = {
 - Раст на следбеници и клиенти — бесплатно
 
 Што бараме од вас:
-- Да не следите на Instagram @jemi.ketu, Facebook KetuJemi.com и TikTok @ketujemi7
-- Повремено да не спомнете кај вашите следбеници
+- Следете не на Instagram @jemi.ketu, Facebook KetuJemi.com и TikTok @ketujemi7
+- Повремено споменете не кај вашите следбеници
+
+📢 Како функционира промоцијата:
+Ги објавуваме и промовираме вашите огласи секој ден на нашите социјални мрежи — но само ако имате активни огласи на ketujemi.com. Празна страница нема што да се промовира — објавете ги вашите производи и понуди, ние ги доставуваме до публиката. Колку повеќе објавувате → толку повеќе ве промовираме → толку повеќе клиенти и продажби имате. 🚀
 
 💡 Мала, но важна детал:
 Соработката е како кафе — функционира само кога двете страни ја ставаат шеќерот. 😄 Ние ве промовираме секој ден — но и вие треба да не следите. Кратко: следете не → станувате познати. Не следите → губиме и двете страни. 🤝
@@ -235,6 +241,9 @@ Partnerstvo sa KetuJemi je uzajamna saradnja — vi nam pomažete, mi vas činim
 - Da nas pratite na Instagram @jemi.ketu, Facebook KetuJemi.com i TikTok @ketujemi7
 - Povremeno da nas spomenete svojim pratiocima
 
+📢 Kako funkcioniše promocija:
+Objavljujemo i promovišemo vaše oglase svaki dan na našim društvenim mrežama — ali samo ako imate aktivne oglase na ketujemi.com. Prazna stranica nema šta da se promoviše — objavite svoje proizvode i ponude, mi ih prenosimo publici. Što više objavljujete → više vas promovišemo → više klijenata i prodaje imate. 🚀
+
 💡 Mali, ali važan detalj:
 Saradnja je kao kafa — funkcioniše samo kad obje strane stave šećer. 😄 Mi vas promovišemo svaki dan — ali i vi nas morate pratiti. Ukratko: pratite nas → postajete poznati. Ne pratite → gubimo oboje. 🤝
 
@@ -296,6 +305,9 @@ What you get:
 What we ask from you:
 - Follow us on Instagram @jemi.ketu, Facebook KetuJemi.com and TikTok @ketujemi7
 - Mention us to your followers from time to time
+
+📢 How promotion works:
+We publish and promote your listings every day on our social channels — but only if you have active listings on ketujemi.com. An empty page has nothing to promote — post your products and offers, and we bring them to our audience. The more you post → the more we promote you → the more customers and sales you get. 🚀
 
 💡 A small but important detail:
 Our cooperation is like coffee — it only works when both sides add sugar. 😄 We promote you daily — but you should follow us too. In short: follow us → we make you known. Don't follow → we both lose. 🤝
