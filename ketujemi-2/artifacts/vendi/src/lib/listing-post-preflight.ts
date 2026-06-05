@@ -14,7 +14,6 @@ export type ListingPostPreflightInput = {
   sellerName: string;
   sellerPhone: string;
   imageCount: number;
-  needsSellerProfile: boolean;
   isKerkoj: boolean;
   isDhurata: boolean;
   isUploading: boolean;
@@ -23,9 +22,6 @@ export type ListingPostPreflightInput = {
 export function collectListingPostPreflightIssues(input: ListingPostPreflightInput): string[] {
   const issues: string[] = [];
 
-  if (input.needsSellerProfile) {
-    issues.push("Plotësoni emrin dhe telefonin në dritaren e sipërme (profili i shitësit).");
-  }
   if (!input.parentCategoryId || input.parentCategoryId < 1) {
     issues.push("Zgjidhni kategorinë kryesore.");
   }
@@ -53,13 +49,11 @@ export function collectListingPostPreflightIssues(input: ListingPostPreflightInp
   if (!input.location.trim()) {
     issues.push("Zgjidhni qytetin (vendndodhja).");
   }
-  if (!input.needsSellerProfile) {
-    if (input.sellerName.trim().length < 2) {
-      issues.push("Shkruani emrin e shitësit.");
-    }
-    if (input.sellerPhone.replace(/\D/g, "").length < 5) {
-      issues.push("Telefoni duhet të ketë të paktën 5 shifra.");
-    }
+  if (input.sellerName.trim().length < 2) {
+    issues.push("Shkruani emrin e shitësit.");
+  }
+  if (input.sellerPhone.replace(/\D/g, "").length < 5) {
+    issues.push("Telefoni duhet të ketë të paktën 5 shifra.");
   }
   if (input.isUploading) {
     issues.push("Prisni derisa të përfundojë ngarkimi i fotove.");

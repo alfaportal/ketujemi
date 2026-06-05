@@ -3,7 +3,6 @@ import type { User } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { userOwnsListing } from "./listing-ownership";
 import { removeUserDuplicateListingsForPost } from "./listing-duplicate-guard";
-import { assertFreeListingQuota } from "./category-quota";
 import { expiresAtAfterListingLifetime } from "./listing-lifetime";
 
 /**
@@ -34,22 +33,6 @@ export async function repostListing(
       error: "NOT_EXPIRED",
       message: "Ky njoftim është ende aktiv.",
     };
-  }
-
-  try {
-    await assertFreeListingQuota(user, row.category_id);
-  } catch (err: unknown) {
-    if (err instanceof Error && err.message === "FREE_QUOTA_EXCEEDED") {
-      const e = err as Error & { publicMessage?: string };
-      return {
-        ok: false,
-        error: "FREE_QUOTA_EXCEEDED",
-        message:
-          e.publicMessage ??
-          "Nuk keni kuotë falas për rifreskim. Përdorni portofolin ose prisni muajin tjetër.",
-      };
-    }
-    throw err;
   }
 
   await removeUserDuplicateListingsForPost(user, row.title, row.description, listingId);

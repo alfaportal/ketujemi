@@ -5,9 +5,8 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
-  useCreateListing, useGetCategories,
+  useGetCategories,
   getGetListingsQueryKey, getGetRecentListingsQueryKey,
-  ApiError,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -43,20 +42,9 @@ import {
 import {
   useAuth,
   loginUrlWithReturn,
-  userNeedsSellerProfile,
   sellerContactFromUser,
 } from "@/lib/auth-context";
 import { AuthToolbar } from "@/components/auth-toolbar";
-import { SellerProfileGate } from "@/components/seller-profile-gate";
-import { CardPaymentsPanel } from "@/components/card-payments-panel";
-import {
-  ListingPackagesModal,
-} from "@/components/listing-packages-modal";
-import {
-  ListingLimitReachedModal,
-  formatQuotaResetLabel,
-  type ListingLimitReachedDetails,
-} from "@/components/listing-limit-reached-modal";
 import { translateCategory } from "@/lib/category-translations";
 import {
   DhurataGiftPledge,
@@ -72,7 +60,6 @@ import {
 } from "@/lib/listing-post-feedback";
 import {
   collectListingPostPreflightIssues,
-  formatFreeQuotaWarning,
   formatPreflightSummary,
 } from "@/lib/listing-post-preflight";
 
@@ -176,12 +163,10 @@ function ImagePreview({ urls, onRemove, mainLabel }: { urls: string[]; onRemove:
 export default function NewListing() {
   const [pathname, setLocation] = useLocation();
   const isDhurataPostRoute = pathname === "/listings/new/dhurata-falas";
-  const { user, loading: authLoading, refresh } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { market, t, uiLang } = useMarket();
-  const quotaLocale =
-    uiLang === "mk" ? "mk-MK" : uiLang === "mne" ? "sr-ME" : uiLang === "en" ? "en-GB" : "sq-AL";
   const tx = t as Record<string, string | undefined>;
   const [listingCountry, setListingCountry] = useState<ListingMarketCode>(() =>
     defaultListingMarketFromMarket(market.code),
@@ -242,89 +227,22 @@ export default function NewListing() {
   const watchTitle = useWatch({ control: form.control, name: "title" }) ?? "";
   const watchDescription = useWatch({ control: form.control, name: "description" }) ?? "";
   const watchPrice = useWatch({ control: form.control, name: "price" }) ?? 0;
-  const parentName = parentCats.find((c: any) => c.id === Number(parentCatId))?.name ?? "";
-  const [freeQuota, setFreeQuota] = useState<{
-    remaining: number;
-    limit: number;
-    allowed: boolean;
-    block_reason?: string | null;
-    can_post_with_wallet?: boolean;
-    will_charge_wallet?: boolean;
-    root_category_name?: string | null;
-    quota_resets_at?: string;
-    wallet_balance_cents?: number;
-    active_used?: number;
-    active_limit?: number;
-    active_remaining?: number;
-    monthly_posts_used?: number;
-    monthly_posts_limit?: number;
-    monthly_remaining?: number;
-    listing_lifetime_days?: number;
-    business?: { needs_wallet_topup?: boolean; listing_price_eur?: number } | null;
-  } | null>(null);
-  const [freeQuotaError, setFreeQuotaError] = useState<string | null>(null);
-  const [showPackagesModal, setShowPackagesModal] = useState(false);
-  const [packagesModalMessage, setPackagesModalMessage] = useState<string | undefined>();
-  const [showLimitModal, setShowLimitModal] = useState(false);
-  const [limitModalDetails, setLimitModalDetails] = useState<ListingLimitReachedDetails | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [postBlockMessage, setPostBlockMessage] = useState<string | null>(null);
   const postBlockRef = useRef<HTMLDivElement>(null);
   const postRefusedTitle =
     (t as { postRefusedTitle?: string }).postRefusedTitle ?? "Nuk u postua";
 
-  const buildLimitDetails = useCallback(
-    (
-      overrides?: Partial<{
-        categoryName: string;
-        quotaResetsAt: string;
-        walletBalanceCents: number;
-        used: number;
-        limit: number;
-      }>,
-    ): ListingLimitReachedDetails => {
-      const rawName = overrides?.categoryName ?? freeQuota?.root_category_name ?? parentName;
-      const categoryName = translateCategory(rawName, uiLang);
-      const resetsAt = overrides?.quotaResetsAt ?? freeQuota?.quota_resets_at ?? new Date().toISOString();
-      const cents = overrides?.walletBalanceCents ?? freeQuota?.wallet_balance_cents ?? 0;
-      return {
-        categoryName: categoryName || rawName || "—",
-        resetDateLabel: formatQuotaResetLabel(resetsAt, quotaLocale),
-        walletBalanceEur: (cents / 100).toFixed(2),
-        listingPriceEur: "0.30",
-        used: overrides?.used ?? freeQuota?.monthly_posts_used ?? 0,
-        limit: overrides?.limit ?? freeQuota?.monthly_posts_limit ?? 10,
-      };
-    },
-    [freeQuota, parentName, uiLang, quotaLocale],
-  );
-
   const refusePost = useCallback(
-    (
-      message: string,
-      opts?: {
-        openLimitModal?: boolean;
-        limitOverrides?: Partial<{
-          categoryName: string;
-          quotaResetsAt: string;
-          walletBalanceCents: number;
-          used: number;
-          limit: number;
-        }>;
-      },
-    ) => {
+    (message: string) => {
       setPostBlockMessage(message);
       toast({
         title: postRefusedTitle,
         description: message,
         variant: "destructive",
       });
-      if (opts?.openLimitModal) {
-        setLimitModalDetails(buildLimitDetails(opts.limitOverrides));
-        setShowLimitModal(true);
-      }
     },
-    [toast, postRefusedTitle, buildLimitDetails],
+    [toast, postRefusedTitle],
   );
 
   useEffect(() => {
@@ -460,93 +378,11 @@ export default function NewListing() {
   }, [allCategories, isDhurataPostRoute, form]);
 
   useEffect(() => {
-    if (!user || userNeedsSellerProfile(user)) return;
+    if (!user) return;
     const { seller_name, seller_phone } = sellerContactFromUser(user);
     if (seller_name) form.setValue("seller_name", seller_name);
     if (seller_phone) form.setValue("seller_phone", seller_phone);
   }, [user, form]);
-
-  useEffect(() => {
-    if (!user || effectiveCategoryId < 1 || isDhurataCategory || isDhurataPostRoute) {
-      setFreeQuota(null);
-      setFreeQuotaError(null);
-      return;
-    }
-    let cancelled = false;
-    setFreeQuotaError(null);
-    void fetchWithTimeout(`/api/listings/free-quota?category_id=${effectiveCategoryId}`, {
-      credentials: "include",
-    })
-      .then(async (r) => {
-        if (cancelled) return;
-        if (!r.ok) {
-          const errBody = (await r.json().catch(() => ({}))) as ListingPostApiBody;
-          const { message } = resolveListingPostApiError(errBody, r.status, t.postError);
-          setFreeQuota(null);
-          setFreeQuotaError(message);
-          return;
-        }
-        return r.json();
-      })
-      .then((j) => {
-        if (cancelled || !j) return;
-        const used = j.monthly_posts_used ?? j.used ?? 0;
-        const limit = j.monthly_posts_limit ?? j.limit ?? 0;
-        const remaining = j.monthly_remaining ?? j.remaining ?? 0;
-        setFreeQuota({
-          remaining,
-          limit,
-          allowed: j.allowed ?? true,
-          block_reason: j.block_reason ?? null,
-          can_post_with_wallet: j.can_post_with_wallet ?? false,
-          will_charge_wallet: j.will_charge_wallet ?? false,
-          root_category_name: j.root_category_name ?? null,
-          quota_resets_at: j.quota_resets_at,
-          wallet_balance_cents: j.wallet_balance_cents ?? 0,
-          active_used: j.active_used,
-          active_limit: j.active_limit,
-          active_remaining: j.active_remaining,
-          monthly_posts_used: used,
-          monthly_posts_limit: limit,
-          monthly_remaining: remaining,
-          listing_lifetime_days: j.listing_lifetime_days,
-          business: j.business ?? null,
-        });
-      })
-      .catch((e) => {
-        if (!cancelled) {
-          setFreeQuota(null);
-          setFreeQuotaError(getFetchErrorMessage(e));
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [user, effectiveCategoryId, isDhurataCategory, isDhurataPostRoute]);
-
-  const createMutation = useCreateListing({
-    mutation: {
-      onSuccess: (listing) => {
-        queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
-        queryClient.invalidateQueries({ queryKey: getGetRecentListingsQueryKey() });
-        toast({ title: LISTING_POST_SUCCESS_MESSAGE });
-        setLocation(`/listings/${listing.id}`);
-      },
-      onError: (err: unknown) => {
-        const data =
-          err instanceof ApiError
-            ? (err.data as ListingPostApiBody | null)
-            : null;
-        const status = err instanceof ApiError ? err.status : 500;
-        const { message, openPackages } = resolveListingPostApiError(
-          data ?? {},
-          status,
-          t.postError,
-        );
-        refusePost(message, openPackages ? { openLimitModal: true } : undefined);
-      },
-    },
-  });
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -637,7 +473,6 @@ export default function NewListing() {
       sellerName: data.seller_name,
       sellerPhone: data.seller_phone,
       imageCount: imageUrls.length,
-      needsSellerProfile: user != null && userNeedsSellerProfile(user),
       isKerkoj: isKerkojCategory,
       isDhurata: isDhurataCategory,
       isUploading,
@@ -693,10 +528,7 @@ export default function NewListing() {
       return;
     }
     const finalDescription = validation.extraDescriptionPrefix + data.description;
-    const contact =
-      user && !userNeedsSellerProfile(user)
-        ? sellerContactFromUser(user)
-        : { seller_name: data.seller_name, seller_phone: data.seller_phone };
+    const contact = { seller_name: data.seller_name, seller_phone: data.seller_phone };
 
     const payload: Record<string, unknown> = {
       title: data.title,
@@ -732,30 +564,14 @@ export default function NewListing() {
           limit?: number;
         };
         if (!res.ok) {
-          const { message, openPackages } = resolveListingPostApiError(
+          const { message } = resolveListingPostApiError(
             body,
             res.status,
             body.message?.trim() ||
               tx.ui_contentModerationFail?.trim() ||
               t.postError,
           );
-          const showLimit =
-            openPackages ||
-            body.show_packages ||
-            body.error === "FREE_QUOTA_EXCEEDED" ||
-            body.error === "WALLET_INSUFFICIENT";
-          refusePost(message, showLimit ? {
-            openLimitModal: true,
-            limitOverrides: {
-              categoryName: body.root_category_name ?? undefined,
-              quotaResetsAt: body.quota_resets_at,
-              walletBalanceCents:
-                body.wallet_balance_cents ??
-                (body as { balance_cents?: number }).balance_cents,
-              used: body.used,
-              limit: body.limit,
-            },
-          } : undefined);
+          refusePost(message);
           return;
         }
         queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
@@ -768,7 +584,6 @@ export default function NewListing() {
   };
 
   const cityList = locationsForListingMarket(listingCountry);
-  const hideContactFields = user != null && !userNeedsSellerProfile(user);
 
   if (authLoading || !user) {
     return (
@@ -792,53 +607,6 @@ export default function NewListing() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <ListingLimitReachedModal
-        open={showLimitModal}
-        onClose={() => setShowLimitModal(false)}
-        details={limitModalDetails}
-        onAddBalance={() => {
-          setShowLimitModal(false);
-          setPackagesModalMessage(undefined);
-          setShowPackagesModal(true);
-        }}
-      />
-      <ListingPackagesModal
-        open={showPackagesModal}
-        onClose={() => {
-          setShowPackagesModal(false);
-          void fetchWithTimeout(`/api/listings/free-quota?category_id=${effectiveCategoryId}`, {
-            credentials: "include",
-          })
-            .then((r) => (r.ok ? r.json() : null))
-            .then((j) => {
-              if (!j) return;
-              setFreeQuota({
-                remaining: j.remaining ?? 0,
-                limit: j.limit ?? 0,
-                allowed: j.allowed ?? true,
-                block_reason: j.block_reason ?? null,
-                can_post_with_wallet: j.can_post_with_wallet ?? false,
-                will_charge_wallet: j.will_charge_wallet ?? false,
-                root_category_name: j.root_category_name ?? null,
-                quota_resets_at: j.quota_resets_at,
-                wallet_balance_cents: j.wallet_balance_cents ?? 0,
-                active_used: j.active_used,
-                active_limit: j.active_limit,
-                active_remaining: j.active_remaining,
-                monthly_posts_used: j.monthly_posts_used,
-                monthly_posts_limit: j.monthly_posts_limit,
-                monthly_remaining: j.monthly_remaining,
-                listing_lifetime_days: j.listing_lifetime_days,
-                business: j.business ?? null,
-              });
-            })
-            .catch(() => undefined);
-        }}
-        message={packagesModalMessage}
-      />
-      {userNeedsSellerProfile(user) ? (
-        <SellerProfileGate onReady={() => void refresh()} />
-      ) : null}
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-2xl mx-auto px-4 min-h-[3.75rem] flex items-center gap-4 py-2">
@@ -858,7 +626,6 @@ export default function NewListing() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
-        {user?.account_type === "business" ? <CardPaymentsPanel /> : null}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)} className="space-y-4">
 
@@ -1554,8 +1321,7 @@ export default function NewListing() {
               </div>
             </div>
 
-            {/* ── 8. Contact (skipped when saved on profile) ── */}
-            {!hideContactFields ? (
+            {/* ── 8. Contact ── */}
             <Section title={t.contactSection}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <FormField
@@ -1610,7 +1376,6 @@ export default function NewListing() {
                 />
               </div>
             </Section>
-            ) : null}
 
             {/* ── Submit ── */}
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-20 sm:static sm:bg-transparent sm:border-none sm:p-0">
@@ -1625,31 +1390,6 @@ export default function NewListing() {
                     <p className="font-bold text-red-900">{postRefusedTitle}</p>
                     <p className="mt-1 leading-snug">{postBlockMessage}</p>
                   </div>
-                )}
-                {freeQuota && (freeQuota.block_reason || !freeQuota.allowed) && (
-                  <p
-                    className={`text-sm rounded-xl px-3 py-2 ${
-                      freeQuota.can_post_with_wallet
-                        ? "text-blue-900 bg-blue-50 border border-blue-200"
-                        : !freeQuota.allowed
-                          ? "text-amber-900 bg-amber-50 border border-amber-200"
-                          : "text-emerald-800 bg-emerald-50 border border-emerald-200"
-                    }`}
-                    role="status"
-                  >
-                    {freeQuota.block_reason ??
-                      formatFreeQuotaWarning(
-                        freeQuota.monthly_posts_used ?? 0,
-                        freeQuota.monthly_posts_limit ?? freeQuota.limit,
-                        freeQuota.monthly_remaining ?? freeQuota.remaining,
-                        freeQuota.can_post_with_wallet,
-                      )}
-                  </p>
-                )}
-                {freeQuotaError && (
-                  <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
-                    {freeQuotaError}
-                  </p>
                 )}
                 <Button
                   type="submit"

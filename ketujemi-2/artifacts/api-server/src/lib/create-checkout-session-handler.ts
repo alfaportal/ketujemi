@@ -4,7 +4,6 @@ import {
   createStripeCheckout,
   type PaymentPurpose,
 } from "./payments";
-import { isBusinessAccount } from "./business-rules";
 import { isPhase2Enabled, isTopListingPurpose } from "./listing-top";
 import { userOwnsListing } from "./listing-ownership";
 import { db, listingsTable } from "@workspace/db";
@@ -19,7 +18,6 @@ function appOrigin(req: Request): string {
 }
 
 const CARD_CHECKOUT_PURPOSES = new Set<PaymentPurpose>([
-  "vip_month",
   "top_listing_s",
   "top_listing_m",
   "top_listing_l",
@@ -86,26 +84,8 @@ export async function handleCreateCheckoutSession(req: Request, res: Response): 
     return;
   }
 
-  if (purpose === "vip_month" && !isBusinessAccount(user)) {
-    res.status(400).json({
-      error: "VIP_REQUIRES_BUSINESS",
-      message: "Aktivizoni llogarinë e biznesit para VIP.",
-    });
-    return;
-  }
-
-  try {
-    const { url, token, sessionId } = await createStripeCheckout(user, purpose, appOrigin(req));
-    res.json({ url, token, sessionId });
-  } catch (err) {
-    if (err instanceof Error && err.message === "PAYMENTS_NOT_CONFIGURED") {
-      res.status(503).json({
-        error: "PAYMENTS_NOT_CONFIGURED",
-        message: "Pagesa me kartë nuk është konfiguruar ende. Kontaktoni support@ketujemi.com.",
-      });
-      return;
-    }
-    req.log.error({ err }, "Checkout error");
-    res.status(500).json({ error: "Checkout failed", message: "Gabim gjatë hapjes së pagesës." });
-  }
+  res.status(400).json({
+    error: "Invalid purpose",
+    message: "Vetëm paketat TOP janë të disponueshme për pagesë.",
+  });
 }

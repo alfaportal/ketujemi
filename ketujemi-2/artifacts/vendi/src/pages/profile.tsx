@@ -11,11 +11,8 @@ import { useMarket } from "@/lib/market-context";
 import { useToast } from "@/hooks/use-toast";
 import { AuthToolbar } from "@/components/auth-toolbar";
 import { BusinessAccountCard } from "@/components/business-account-card";
-import { CardPaymentsPanel } from "@/components/card-payments-panel";
-import { WalletPanel } from "@/components/wallet-panel";
 import { PartnerLogoAnalyticsCard } from "@/components/partner-logo-analytics-card";
 import { PartnerProfilePanel } from "@/components/partner-profile-panel";
-import { MyListingsThisMonth } from "@/components/my-listings-this-month";
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
@@ -41,7 +38,6 @@ export default function ProfilePage() {
     if (params.get("payment") !== "success") return;
 
     const sessionId = params.get("session_id")?.trim();
-    const purpose = params.get("purpose");
 
     const finish = () => {
       const url = new URL(window.location.href);
@@ -56,24 +52,12 @@ export default function ProfilePage() {
         .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId))
         .then(async () => {
           await refresh();
-          if (purpose === "vip") {
-            toast({
-              title: "VIP Biznes u aktivizua!",
-              description: "Mund të postoni pa kufirin e zakonshëm të biznesit.",
-            });
-          } else if (purpose === "wallet") {
-            toast({
-              title: "Portofoli u mbush!",
-              description: "Balanca juaj është përditësuar. Mund të postoni shpallje.",
-            });
-          } else {
-            toast({ title: "Pagesa u konfirmua." });
-          }
+          toast({ title: "Pagesa u konfirmua." });
         })
         .catch(() => {
           toast({
             title: "Pagesa në proces",
-            description: "Nëse VIP nuk shfaqet, rifreskoni faqen pas pak sekondash.",
+            description: "Rifreskoni faqen pas pak sekondash nëse pagesa nuk shfaqet.",
           });
         })
         .finally(finish);
@@ -81,9 +65,6 @@ export default function ProfilePage() {
     }
 
     finish();
-    if (purpose === "vip") {
-      toast({ title: "Faleminderit për pagesën!" });
-    }
   }, [loading, user, refresh, toast]);
 
   useEffect(() => {
@@ -218,12 +199,6 @@ export default function ProfilePage() {
           <PartnerProfilePanel user={user} />
 
           <PartnerLogoAnalyticsCard user={user} />
-
-          <WalletPanel />
-
-          <MyListingsThisMonth />
-
-          <CardPaymentsPanel />
 
           {user.email ? (
             <form

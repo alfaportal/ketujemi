@@ -1,17 +1,8 @@
 import { useEffect, useState } from "react";
-import { CreditCard, Crown } from "lucide-react";
-import { useAuth, type AuthUser } from "@/lib/auth-context";
+import { CreditCard } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
 import { fetchPaymentsStatus, type PaymentsStatus } from "@/lib/stripe-checkout";
-import { PayWithCardButton } from "@/components/pay-with-card-button";
 import { TopListingPackages } from "@/components/top-listing-packages";
-
-function isVipActive(user: AuthUser): boolean {
-  return (
-    user.business_tier === "vip" &&
-    !!user.vip_expires_at &&
-    new Date(user.vip_expires_at) > new Date()
-  );
-}
 
 export type CardPaymentsPanelProps = {
   /** When set, show TOP boost for this listing (owner pages). */
@@ -23,7 +14,7 @@ export type CardPaymentsPanelProps = {
   requireAuth?: boolean;
 };
 
-/** Card payments: VIP Biznes and TOP packages (pricing on owner listing page only). */
+/** Card payments: TOP boost packages only. */
 export function CardPaymentsPanel({
   listingId,
   compact = false,
@@ -58,71 +49,24 @@ export function CardPaymentsPanel({
   if (requireAuth && (loading || !user)) return null;
   if (!user) return null;
 
-  const isBusiness = user.account_type === "business";
-  const vip = isVipActive(user);
-
-  const showVip = isBusiness && !vip;
   const showTop = listingId != null && listingId > 0;
-
-  if (!showVip && !showTop) {
-    if (!compact) {
-      return (
-        <div
-          className={`rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-3 text-sm text-gray-600 ${className}`}
-        >
-          <p>
-            Aktivizoni{" "}
-            <a href="/profile" className="font-semibold text-blue-600 hover:underline">
-              llogarinë e biznesit
-            </a>{" "}
-            për VIP ose mbushni portofolin për njoftime shtesë (€0.30/shpallje).
-          </p>
-        </div>
-      );
-    }
-    return null;
-  }
+  if (!showTop) return null;
 
   const paymentsReady = status?.cardPaymentsAvailable ?? false;
 
-  const businessButtons = showVip ? (
-    <PayWithCardButton
-      purpose="vip_month"
-      hideWhenUnavailable={false}
-      variant={compact ? "outline" : "default"}
-      size={compact ? "sm" : "default"}
-      className={
-        compact
-          ? "min-h-10 border-[#1A56A0]/40 text-[#1A56A0] bg-white"
-          : "min-h-11 flex-1 border-[#1A56A0]/40 bg-blue-50 text-[#1A56A0] hover:bg-blue-100"
-      }
-      title={!paymentsReady ? "Konfiguroni Stripe në server" : undefined}
-    >
-      {compact ? "VIP €50" : "VIP Biznes — €50/muaj"}
-    </PayWithCardButton>
-  ) : null;
-
-  const topPackages = showTop ? (
+  const topPackages = (
     <TopListingPackages
       listingId={listingId!}
       compact={compact}
       phase2Enabled={status?.phase2 ?? false}
       paymentsReady={paymentsReady}
     />
-  ) : null;
+  );
 
   const inner = compact ? (
-    <div className="flex flex-wrap items-center gap-2">
-      {businessButtons}
-      {topPackages}
-    </div>
+    <div className="flex flex-wrap items-center gap-2">{topPackages}</div>
   ) : (
-    <div className="space-y-3">
-      {showVip ? (
-        <div className="flex flex-col sm:flex-row flex-wrap gap-2">{businessButtons}</div>
-      ) : null}
-      {topPackages}
-    </div>
+    <div className="space-y-3">{topPackages}</div>
   );
 
   if (compact) {
@@ -167,16 +111,9 @@ export function CardPaymentsPanel({
         <p className="text-xs text-gray-500">(Modalitet test — pa Stripe real)</p>
       ) : null}
       <ul className="text-xs text-gray-500 flex flex-wrap gap-x-4 gap-y-1">
-        {showVip ? (
-          <li className="flex items-center gap-1">
-            <Crown className="h-3 w-3 text-[#1A56A0]" /> VIP — €50/muaj, njoftime të pakufizuara
-          </li>
-        ) : null}
-        {showTop ? (
-          <li className="flex items-center gap-1">
-            TOP — shfaqje në kryefaqe (çmimet kur zgjidhni paketën)
-          </li>
-        ) : null}
+        <li className="flex items-center gap-1">
+          TOP — shfaqje në kryefaqe (çmimet kur zgjidhni paketën)
+        </li>
       </ul>
       {inner}
     </section>

@@ -16,14 +16,7 @@ import { userOwnsListing } from "../lib/listing-ownership";
 import { sellerFirstName, maskEmailInListingDescription, maskSellerPhone } from "../lib/contact-mask";
 import { assertAccountActive } from "../lib/user-ban";
 import { formatZodIssuesMessage } from "../lib/listing-api-errors";
-import {
-  assertFreeListingQuota,
-  getCategoryPostingQuota,
-  loadAllCategories,
-  nextQuotaResetUtcDate,
-} from "../lib/category-quota";
 import { getUserMonthlyPostingHistory } from "../lib/listing-monthly-history";
-import { isBusinessAccount, isVipBusinessActive } from "../lib/business-rules";
 import { assertBusinessListingCreate } from "../lib/business-listing-guard";
 import { removeUserDuplicateListingsForPost } from "../lib/listing-duplicate-guard";
 import {
@@ -41,14 +34,6 @@ import { moderateListingContent } from "../lib/listing-ai-moderation";
 import { logListingModerationRejection } from "../lib/listing-moderation-rejection-log";
 import { parseUiLang } from "../lib/claude-client";
 import { effectiveListingSearchQuery } from "../../../../lib/listing-search-query.js";
-import {
-  assertWalletCoversListing,
-  debitWalletForListing,
-  getWalletBalanceCents,
-  listingWillChargeWallet,
-  LISTING_PRICE_CENTS,
-  walletSummary,
-} from "../lib/wallet";
 import { handleSellerComplaint } from "../lib/violation-escalation";
 import { deleteListingCascade } from "../lib/delete-listing-cascade";
 import type { User } from "@workspace/db";
@@ -548,68 +533,6 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     throw err;
   }
 
-  const willChargeWallet = await listingWillChargeWallet(viewer, parsed.data.category_id);
-
-  if (willChargeWallet) {
-    try {
-      await assertWalletCoversListing(viewer, parsed.data.category_id);
-    } catch (err: unknown) {
-      if (err instanceof Error && err.message === "WALLET_INSUFFICIENT") {
-        const e = err as Error & {
-          balance_cents: number;
-          required_cents: number;
-          listings_remaining: number;
-          publicMessage?: string;
-        };
-        const qPay = await getCategoryPostingQuota(viewer, parsed.data.category_id);
-        const { byId: catById } = await loadAllCategories();
-        res.status(402).json({
-          error: "WALLET_INSUFFICIENT",
-          message:
-            e.publicMessage ??
-            "Balanca juaj nuk mjafton. Mbushni portofolin nga profili juaj.",
-          balance_cents: e.balance_cents,
-          wallet_balance_cents: e.balance_cents,
-          required_cents: e.required_cents,
-          listings_remaining: e.listings_remaining,
-          listing_price_eur: "0.30",
-          used: qPay.monthly_posts_used,
-          limit: qPay.monthly_posts_limit,
-          root_category_name: catById.get(qPay.rootId)?.name ?? null,
-          quota_resets_at: nextQuotaResetUtcDate().toISOString(),
-          show_packages: true,
-        });
-        return;
-      }
-      throw err;
-    }
-  } else if (!isBusinessAccount(viewer)) {
-    try {
-      await assertFreeListingQuota(viewer, parsed.data.category_id);
-    } catch (err: unknown) {
-      if (err instanceof Error && err.message === "FREE_QUOTA_EXCEEDED") {
-        const e = err as Error & { used: number; limit: number };
-        const qFree = await getCategoryPostingQuota(viewer, parsed.data.category_id);
-        const { byId: catByIdFree } = await loadAllCategories();
-        const bal = await getWalletBalanceCents(viewer.id);
-        res.status(403).json({
-          error: "FREE_QUOTA_EXCEEDED",
-          message:
-            (err as Error & { publicMessage?: string }).publicMessage ??
-            "Ke arritur limitin falas për këtë kategori kryesore. Mbush portofolin (€0.30/shpallje) ose prit fillimin e muajit të ri.",
-          used: e.used,
-          limit: e.limit,
-          wallet_balance_cents: bal,
-          root_category_name: catByIdFree.get(qFree.rootId)?.name ?? null,
-          quota_resets_at: nextQuotaResetUtcDate().toISOString(),
-          show_packages: (e as Error & { show_packages?: boolean }).show_packages ?? true,
-        });
-        return;
-      }
-      throw err;
-    }
-  }
-
   const [catRow] = await db
     .select({ name: categoriesTable.name })
     .from(categoriesTable)
@@ -725,12 +648,6 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     logger.error({ err, listingId: row.id }, "facebook auto-post background error");
   });
 
-  let walletAfterPost: ReturnType<typeof walletSummary> | null = null;
-  if (willChargeWallet) {
-    const debited = await debitWalletForListing(viewer.id, row.id);
-    walletAfterPost = walletSummary(debited.balance_cents);
-  }
-
   const cat = await db
     .select({ name: categoriesTable.name })
     .from(categoriesTable)
@@ -743,10 +660,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
       viewer,
     ),
   ]);
-  res.status(201).json({
-    ...created,
-    wallet: walletAfterPost,
-  });
+  res.status(201).json(created);
 });
 
 // ─── GET /listings/top — all active paid TOP listings (homepage carousel) ─────
@@ -906,55 +820,21 @@ router.get("/listings/free-quota", async (req, res) => {
     return;
   }
 
-  const q = await getCategoryPostingQuota(viewer, categoryId);
-  const { byId } = await loadAllCategories();
-  const rootCat = byId.get(q.rootId);
-  const balanceCents = await getWalletBalanceCents(viewer.id);
-  const willCharge = await listingWillChargeWallet(viewer, categoryId);
-  const canPayFromWallet = balanceCents >= LISTING_PRICE_CENTS;
-  const quotaResetsAt = nextQuotaResetUtcDate().toISOString();
-
-  const isBusiness = isBusinessAccount(viewer) && !isVipBusinessActive(viewer);
-
-  const blockReason = !q.allowed
-    ? canPayFromWallet
-      ? `Postimet falas këtë muaj: ${q.monthly_posts_used}/${q.monthly_posts_limit} për këtë kategori. Postimi i radhës kushton €0.30 nga portofoli (keni balancë).`
-      : `Postimet falas këtë muaj: ${q.monthly_posts_used}/${q.monthly_posts_limit}. Postimi i radhës kushton €0.30 — mbushni portofolin nga Profili (Paketa S/M/L).`
-    : q.monthly_remaining <= 3 && q.monthly_remaining > 0
-      ? `Postime falas të mbetura këtë muaj: ${q.monthly_remaining}/${q.monthly_posts_limit} (kategoria kryesore).`
-      : null;
-
   res.json({
-    root_category_id: q.rootId,
-    root_category_name: rootCat?.name ?? null,
-    quota_resets_at: quotaResetsAt,
-    used: q.monthly_posts_used,
-    limit: q.monthly_posts_limit,
-    base_limit: q.base_limit,
-    extra_slots: q.extra_slots,
-    remaining: q.monthly_remaining,
-    active_used: q.active_used,
-    active_limit: q.active_limit,
-    active_remaining: q.active_remaining,
-    monthly_posts_used: q.monthly_posts_used,
-    monthly_posts_limit: q.monthly_posts_limit,
-    monthly_remaining: q.monthly_remaining,
-    listing_lifetime_days: q.listing_lifetime_days,
-    allowed: q.allowed,
-    block_reason: blockReason,
-    will_charge_wallet: willCharge,
-    can_post_with_wallet: !q.allowed && canPayFromWallet,
-    wallet_balance_cents: balanceCents,
-    listing_price_cents: LISTING_PRICE_CENTS,
+    allowed: true,
+    remaining: Number.POSITIVE_INFINITY,
+    limit: Number.POSITIVE_INFINITY,
+    monthly_posts_used: 0,
+    monthly_posts_limit: Number.POSITIVE_INFINITY,
+    monthly_remaining: Number.POSITIVE_INFINITY,
+    block_reason: null,
+    will_charge_wallet: false,
+    can_post_with_wallet: false,
+    wallet_balance_cents: 0,
+    show_packages: false,
+    business: null,
     account_type: viewer.account_type ?? "private",
-    quota_scope: "parent_category",
-    show_packages: !q.allowed && !canPayFromWallet,
-    business: isBusiness
-      ? {
-          listing_price_eur: 0.3,
-          needs_wallet_topup: !q.allowed,
-        }
-      : null,
+    quota_scope: "unlimited",
   });
 });
 
