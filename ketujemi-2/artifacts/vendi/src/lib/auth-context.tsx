@@ -36,6 +36,9 @@ export type AuthUser = {
     listings_remaining: number;
     after_one_listing_remaining?: number;
   };
+  first_listing_posted?: boolean;
+  social_follow_notif_sent?: boolean;
+  social_follow_notif_preference?: "pending" | "opted_in" | "opted_out";
 };
 
 type AuthContextValue = {

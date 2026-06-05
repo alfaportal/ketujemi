@@ -14,7 +14,7 @@ import {
   isInstagramOAuthEnabled,
 } from "../lib/instagram-oauth";
 import { findOrCreateUserFromFacebook, findOrCreateUserFromInstagram } from "../lib/oauth-user";
-import { setUserSessionCookie } from "../lib/user-session";
+import { isNewlyRegisteredUser, setUserSessionCookie } from "../lib/user-session";
 import { assertAccountActive } from "../lib/user-ban";
 
 const router = Router();
@@ -24,10 +24,16 @@ function redirectLogin(res: import("express").Response, origin: string, error: s
   res.redirect(302, url);
 }
 
-function redirectSuccess(res: import("express").Response, origin: string, returnTo: string): void {
+function redirectSuccess(
+  res: import("express").Response,
+  origin: string,
+  returnTo: string,
+  extra?: Record<string, string>,
+): void {
   const path = sanitizeOAuthReturnTo(returnTo);
+  const params = new URLSearchParams({ verified: "1", ...extra });
   const sep = path.includes("?") ? "&" : "?";
-  const url = `${origin.replace(/\/$/, "")}${path}${sep}verified=1`;
+  const url = `${origin.replace(/\/$/, "")}${path}${sep}${params.toString()}`;
   res.redirect(302, url);
 }
 
@@ -77,7 +83,12 @@ router.get("/auth/oauth/facebook/callback", async (req, res) => {
     const user = await findOrCreateUserFromFacebook(profile);
     await assertAccountActive(user, user.phone_e164_digits ?? undefined);
     setUserSessionCookie(res, user.id);
-    redirectSuccess(res, origin, state.returnTo);
+    redirectSuccess(
+      res,
+      origin,
+      state.returnTo,
+      isNewlyRegisteredUser(user) ? { welcome: "1" } : undefined,
+    );
   } catch (err) {
     req.log?.error({ err }, "facebook oauth callback");
     redirectLogin(res, origin, "facebook_failed");
@@ -130,7 +141,12 @@ router.get("/auth/oauth/instagram/callback", async (req, res) => {
     const user = await findOrCreateUserFromInstagram(profile);
     await assertAccountActive(user, user.phone_e164_digits ?? undefined);
     setUserSessionCookie(res, user.id);
-    redirectSuccess(res, origin, state.returnTo);
+    redirectSuccess(
+      res,
+      origin,
+      state.returnTo,
+      isNewlyRegisteredUser(user) ? { welcome: "1" } : undefined,
+    );
   } catch (err) {
     req.log?.error({ err }, "instagram oauth callback");
     redirectLogin(res, origin, "instagram_failed");

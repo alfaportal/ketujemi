@@ -4,6 +4,7 @@ import {
   ensureHomepagePartnersSchema,
   ensureListingUserSchema,
   ensureOAuthSchema,
+  ensureEngagementNotificationsSchema,
   ensureFemijeCategoryImages,
   ensureSportOutdoorTypeCategories,
   ensureWalletSchema,
@@ -43,6 +44,8 @@ async function startServer(): Promise<void> {
     );
     await ensureListingUserSchema(pool);
     logger.info("Listing user_id + self-duplicate alerts schema verified");
+    await ensureEngagementNotificationsSchema(pool);
+    logger.info("Engagement notifications schema verified (user_notifications, FCM tokens)");
     await ensureHomepagePartnersSchema(pool);
     logger.info("Homepage partners schema verified (homepage_partners)");
     await ensureSportOutdoorTypeCategories(pool);

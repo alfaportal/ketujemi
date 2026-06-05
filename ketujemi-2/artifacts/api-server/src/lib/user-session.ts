@@ -68,5 +68,14 @@ export function publicUser(u: User, opts?: { self?: boolean }) {
     has_password: Boolean(u.password_hash),
     strike_count: u.strike_count ?? 0,
     wallet: walletSummary(u.wallet_balance_cents ?? 0),
+    first_listing_posted: u.first_listing_posted ?? false,
+    social_follow_notif_sent: u.social_follow_notif_sent ?? false,
+    social_follow_notif_preference: u.social_follow_notif_preference ?? "pending",
   };
+}
+
+/** True when account was created within the last few seconds (OAuth / redirect flows). */
+export function isNewlyRegisteredUser(u: User): boolean {
+  const ageMs = Date.now() - new Date(u.created_at).getTime();
+  return ageMs >= 0 && ageMs < 8000;
 }

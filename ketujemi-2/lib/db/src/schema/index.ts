@@ -20,3 +20,5 @@ export * from "./fiscal_receipts";
 export * from "./moderation_log";
 export * from "./listing_self_duplicate_alerts";
 export * from "./listing_scan_duplicate_alerts";
+export * from "./user_notifications";
+export * from "./user_fcm_tokens";

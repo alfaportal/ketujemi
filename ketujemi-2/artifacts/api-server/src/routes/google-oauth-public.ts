@@ -8,7 +8,7 @@ import {
 } from "../lib/google-oauth";
 import { findOrCreateUserFromGoogle } from "../lib/oauth-user";
 import { createOAuthState, verifyOAuthState } from "../lib/oauth-state";
-import { setUserSessionCookie } from "../lib/user-session";
+import { isNewlyRegisteredUser, setUserSessionCookie } from "../lib/user-session";
 import { assertAccountActive } from "../lib/user-ban";
 
 const router = Router();
@@ -18,8 +18,13 @@ function redirectLogin(res: import("express").Response, origin: string, error: s
   res.redirect(302, url);
 }
 
-function redirectHome(res: import("express").Response, origin: string): void {
-  const url = `${origin.replace(/\/$/, "")}/?verified=1`;
+function redirectHome(
+  res: import("express").Response,
+  origin: string,
+  extra?: Record<string, string>,
+): void {
+  const params = new URLSearchParams({ verified: "1", ...extra });
+  const url = `${origin.replace(/\/$/, "")}/?${params.toString()}`;
   res.redirect(302, url);
 }
 
@@ -66,7 +71,7 @@ router.get("/auth/google/callback", async (req, res) => {
     const user = await findOrCreateUserFromGoogle(profile);
     await assertAccountActive(user, user.phone_e164_digits ?? undefined);
     setUserSessionCookie(res, user.id);
-    redirectHome(res, origin);
+    redirectHome(res, origin, isNewlyRegisteredUser(user) ? { welcome: "1" } : undefined);
   } catch (err) {
     req.log?.error({ err }, "google oauth callback");
     redirectLogin(res, origin, "google_failed");

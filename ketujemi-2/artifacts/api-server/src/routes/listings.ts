@@ -25,6 +25,7 @@ import {
 } from "../lib/listing-post-user-cooldown";
 import { repostListing } from "../lib/listing-repost";
 import { incrementListingView } from "../lib/listing-view";
+import { markFirstListingPosted, userListingCount } from "../lib/engagement-notifications";
 import { listingFeedOrderBy, isTopActive } from "../lib/listing-top";
 import {
   isListingMarketCode,
@@ -591,6 +592,9 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     throw err;
   }
 
+  const listingCountBefore = await userListingCount(viewer.id);
+  const is_first_listing = listingCountBefore === 0;
+
   const now = new Date();
   const [row] = await db
     .insert(listingsTable)
@@ -634,6 +638,9 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     .returning();
 
   recordListingPostSuccessForUser(viewer);
+  if (is_first_listing) {
+    await markFirstListingPosted(viewer.id);
+  }
 
   void postNewListingToFacebook({
     id: row.id,
@@ -660,7 +667,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
       viewer,
     ),
   ]);
-  res.status(201).json(created);
+  res.status(201).json({ ...created, is_first_listing });
 });
 
 // ─── GET /listings/top — all active paid TOP listings (homepage carousel) ─────
@@ -1043,7 +1050,8 @@ router.post("/listings/:id/repost", async (req, res) => {
 // ─── POST /listings/:id/view ──────────────────────────────────────────────────
 router.post("/listings/:id/view", async (req, res) => {
   const id = Number(req.params.id);
-  const result = await incrementListingView(id);
+  const viewer = await getSessionUser(req);
+  const result = await incrementListingView(id, viewer);
   if (!result.ok) {
     res.status(result.status).json({ error: result.status === 404 ? "Not found" : "Invalid id" });
     return;

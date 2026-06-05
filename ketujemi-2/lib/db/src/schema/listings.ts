@@ -15,6 +15,8 @@ export const listingsTable = pgTable("listings", {
   seller_phone: text("seller_phone").notNull(),
   condition: text("condition").notNull(),
   views: integer("views").notNull().default(0),
+  /** Owner notified when this listing received its first external view. */
+  first_external_view_notified: boolean("first_external_view_notified").notNull().default(false),
   is_featured: boolean("is_featured").notNull().default(false),
   /** Paid TOP boost — always sorted above normal listings while top_until > now. */
   is_top: boolean("is_top").notNull().default(false),

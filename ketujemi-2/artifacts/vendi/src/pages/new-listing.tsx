@@ -62,9 +62,8 @@ import {
   collectListingPostPreflightIssues,
   formatPreflightSummary,
 } from "@/lib/listing-post-preflight";
-
-const LISTING_POST_SUCCESS_MESSAGE =
-  "❤️ Faleminderit për postimin! Postimi juaj qëndron aktiv 90 ditë, pas kësaj kohe hiqet automatikisht.";
+import { engagementCopyForUiLang } from "@/lib/engagement-i18n";
+import { queueFirstListingCelebration } from "@/components/engagement-effects";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 const schema = z.object({
@@ -558,6 +557,7 @@ export default function NewListing() {
       .then(async (res) => {
         const body = (await res.json().catch(() => ({}))) as ListingPostApiBody & {
           id?: number;
+          is_first_listing?: boolean;
           show_packages?: boolean;
           wallet_balance_cents?: number;
           used?: number;
@@ -576,7 +576,12 @@ export default function NewListing() {
         }
         queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetRecentListingsQueryKey() });
-        toast({ title: LISTING_POST_SUCCESS_MESSAGE });
+        const engagement = engagementCopyForUiLang(uiLang);
+        if (body.is_first_listing) {
+          queueFirstListingCelebration();
+        } else {
+          toast({ title: engagement.subsequentListingToast });
+        }
         setLocation(`/listings/${(body as { id: number }).id}`);
       })
       .catch((e) => refusePost(getFetchErrorMessage(e)))

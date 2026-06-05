@@ -15,6 +15,7 @@ import uploadsRouter from "./uploads";
 import partnersRouter from "./partners";
 import listingPackagesRouter from "./listing-packages";
 import walletRouter from "./wallet";
+import notificationsRouter from "./notifications";
 
 const router: IRouter = Router();
 
@@ -23,6 +24,7 @@ router.use(uploadsRouter);
 router.use(partnersRouter);
 router.use(listingPackagesRouter);
 router.use(walletRouter);
+router.use(notificationsRouter);
 router.use(authRouter);
 router.use(oauthRouter);
 router.use(paymentsRouter);

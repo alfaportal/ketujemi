@@ -1,9 +1,11 @@
-import { db, listingsTable } from "@workspace/db";
+import { db, listingsTable, type User } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { handleListingExternalView } from "./engagement-notifications";
 
 /** Increment view counter for an active, non-expired listing. */
 export async function incrementListingView(
   listingId: number,
+  viewer: User | null = null,
 ): Promise<{ ok: true; views: number } | { ok: false; status: 404 | 400 }> {
   if (!Number.isFinite(listingId) || listingId <= 0) {
     return { ok: false, status: 400 };
@@ -22,11 +24,19 @@ export async function incrementListingView(
     return { ok: false, status: 404 };
   }
 
+  const wasFirstExternal =
+    !row.first_external_view_notified &&
+    (viewer == null || viewer.id !== row.user_id);
+
   const [updated] = await db
     .update(listingsTable)
     .set({ views: row.views + 1 })
     .where(eq(listingsTable.id, listingId))
     .returning({ views: listingsTable.views });
+
+  if (wasFirstExternal) {
+    void handleListingExternalView({ listingId, viewer }).catch(() => undefined);
+  }
 
   return { ok: true, views: updated?.views ?? row.views + 1 };
 }

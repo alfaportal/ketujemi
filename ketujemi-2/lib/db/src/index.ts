@@ -26,5 +26,6 @@ export { ensureListingUserSchema } from "./ensure-listing-user-schema.js";
 export { ensureHomepagePartnersSchema } from "./ensure-homepage-partners-schema.js";
 export { ensureSportOutdoorTypeCategories } from "./ensure-sport-outdoor-types.js";
 export { ensureFemijeCategoryImages } from "./ensure-femije-category-images.js";
+export { ensureEngagementNotificationsSchema } from "./ensure-engagement-notifications-schema.js";
 
 export * from "./schema";

@@ -4,6 +4,7 @@ import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { useMarket } from "@/lib/market-context";
 import { Button } from "@/components/ui/button";
 import { cnPrimaryBlue } from "@/lib/primary-button-classes";
+import { NotificationBell } from "@/components/notification-bell";
 
 type Props = {
   variant?: "default" | "compact";
@@ -62,6 +63,7 @@ export function AuthToolbar({ variant = "default", className }: Props) {
 
   return (
     <div className={`flex items-center gap-2 ${className ?? ""}`}>
+      <NotificationBell btnCls={btnCls} />
       <Button
         type="button"
         variant="ghost"

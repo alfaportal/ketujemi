@@ -83,6 +83,7 @@
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.6.0",
+    "firebase": "^12.14.0",
     "workbox-window": "^7.4.1"
   }
 }

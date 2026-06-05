@@ -1,4 +1,4 @@
-import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 
 /** `private` = individual seller; `business` = registered company account. */
 export type AccountType = "private" | "business";
@@ -64,6 +64,12 @@ export const usersTable = pgTable("users", {
   ban_reason: text("ban_reason"),
   /** Prepaid balance for paid listings (€0.30 per post). */
   wallet_balance_cents: integer("wallet_balance_cents").notNull().default(0),
+  /** True after the user has posted at least one listing. */
+  first_listing_posted: boolean("first_listing_posted").notNull().default(false),
+  /** One-time social follow prompt already delivered. */
+  social_follow_notif_sent: boolean("social_follow_notif_sent").notNull().default(false),
+  /** pending | opted_in | opted_out — promotional follow-up preference. */
+  social_follow_notif_preference: text("social_follow_notif_preference").notNull().default("pending"),
   created_at: timestamp("created_at").notNull().defaultNow(),
 });
 

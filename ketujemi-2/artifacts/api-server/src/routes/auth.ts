@@ -200,6 +200,7 @@ router.post("/auth/register/email", authLoginRegisterLimiter, async (req, res) =
       res.status(201).json({
         ok: true,
         needsVerification: false,
+        welcome_new_user: true,
         user: publicUser(row, { self: true }),
       });
       return;
@@ -331,7 +332,7 @@ router.post("/auth/verify/email", async (req, res) => {
       .where(eq(emailVerifyChallengesTable.id, challenge.id));
 
     setUserSessionCookie(res, row.id);
-    res.json({ user: publicUser(row, { self: true }) });
+    res.json({ welcome_new_user: true, user: publicUser(row, { self: true }) });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     if (msg.includes("unique") || msg.includes("duplicate")) {
@@ -406,7 +407,8 @@ router.get("/auth/verify/email/link", async (req, res) => {
       .where(eq(emailVerifyChallengesTable.id, challenge.id));
 
     setUserSessionCookie(res, user.id);
-    res.redirect(302, `${appOrigin(req)}${returnTo}`);
+    const welcomeSep = returnTo.includes("?") ? "&" : "?";
+    res.redirect(302, `${appOrigin(req)}${returnTo}${welcomeSep}welcome=1`);
   } catch (err) {
     req.log?.error({ err }, "verify email link");
     res.redirect(302, `${appOrigin(req)}/login?error=verify`);
@@ -1025,6 +1027,7 @@ router.post("/auth/sms/verify", authLoginRegisterLimiter, async (req, res) => {
       .where(eq(usersTable.phone_e164_digits, phone))
       .limit(1);
 
+    let welcomeNewUser = false;
     if (!user) {
       const [created] = await db
         .insert(usersTable)
@@ -1035,6 +1038,7 @@ router.post("/auth/sms/verify", authLoginRegisterLimiter, async (req, res) => {
         })
         .returning();
       user = created;
+      welcomeNewUser = true;
     } else if (challenge.password_hash && !user.password_hash) {
       const [updated] = await db
         .update(usersTable)
@@ -1050,7 +1054,10 @@ router.post("/auth/sms/verify", authLoginRegisterLimiter, async (req, res) => {
     }
 
     setUserSessionCookie(res, user.id);
-    res.json({ user: publicUser(user, { self: true }) });
+    res.json({
+      user: publicUser(user, { self: true }),
+      ...(welcomeNewUser ? { welcome_new_user: true } : {}),
+    });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Verification failed";
     req.log?.error({ err }, "sms verify");

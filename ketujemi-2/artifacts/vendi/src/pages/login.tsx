@@ -16,6 +16,8 @@ import {
   type RecaptchaV2Handle,
 } from "@/components/recaptcha-v2";
 import { SocialOAuthButtons } from "@/components/social-oauth-buttons";
+import { showWelcomeToast } from "@/components/engagement-effects";
+import type { AuthUser } from "@/lib/auth-context";
 
 /** Regjistrohu = email (hyrje menjëherë nëse ke llogari; kod vetëm për të reja). Kyçu = telefon. */
 type Flow = "register" | "login";
@@ -64,7 +66,7 @@ export default function LoginPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user, loading: authLoading, refresh } = useAuth();
-  const { t, market } = useMarket();
+  const { t, market, uiLang } = useMarket();
   const phoneDefaultDial = defaultDialForMarket(market.prefix);
 
   const returnTo =
@@ -246,6 +248,8 @@ export default function LoginPage() {
     const payload = data as {
       needsVerification?: boolean;
       existingAccount?: boolean;
+      welcome_new_user?: boolean;
+      user?: AuthUser;
     };
     if (payload.needsVerification && !payload.existingAccount) {
       setEmailMode("verify");
@@ -254,7 +258,11 @@ export default function LoginPage() {
       return true;
     }
     await refresh();
-    toast({ title: payload.existingAccount ? t.login_welcomeBack : t.toast_accountReady });
+    if (payload.welcome_new_user && payload.user) {
+      showWelcomeToast(toast, payload.user, uiLang);
+    } else {
+      toast({ title: payload.existingAccount ? t.login_welcomeBack : t.toast_accountReady });
+    }
     setLocation(returnTo);
     return true;
   }
@@ -368,7 +376,11 @@ export default function LoginPage() {
         });
         return;
       }
+      const payload = data as { welcome_new_user?: boolean; user?: AuthUser };
       await refresh();
+      if (payload.welcome_new_user && payload.user) {
+        showWelcomeToast(toast, payload.user, uiLang);
+      }
       setLocation(returnTo);
     } finally {
       setBusy(false);
@@ -443,7 +455,11 @@ export default function LoginPage() {
         });
         return;
       }
+      const payload = data as { welcome_new_user?: boolean; user?: AuthUser };
       await refresh();
+      if (payload.welcome_new_user && payload.user) {
+        showWelcomeToast(toast, payload.user, uiLang);
+      }
       setLocation(returnTo);
     } finally {
       setBusy(false);
