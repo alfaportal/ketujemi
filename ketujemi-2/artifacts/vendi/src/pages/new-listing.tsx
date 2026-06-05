@@ -37,6 +37,8 @@ import { useListingImageUpload } from "@/lib/listing-image-upload";
 import {
   isAllowedListingVideoFile,
   LISTING_VIDEO_MAX_BYTES,
+  listingVideoFormatsHint,
+  listingVideoTooLargeMessage,
   useListingVideoUpload,
 } from "@/lib/listing-video-upload";
 import {
@@ -436,9 +438,10 @@ export default function NewListing() {
       return;
     }
     if (file.size > LISTING_VIDEO_MAX_BYTES) {
+      const msg = listingVideoTooLargeMessage(uiLang);
       toast({
-        title: "Video shumë e madhe",
-        description: "Maksimumi 100 MB.",
+        title: msg.title,
+        description: msg.description,
         variant: "destructive",
       });
       return;
@@ -447,8 +450,13 @@ export default function NewListing() {
     try {
       const url = await videoUpload.uploadFile(file);
       setVideoUrl(url);
-    } catch {
-      toast({ title: t.uploadFailed, variant: "destructive" });
+    } catch (err) {
+      if (err instanceof Error && err.message === "video_too_large") {
+        const msg = listingVideoTooLargeMessage(uiLang);
+        toast({ title: msg.title, description: msg.description, variant: "destructive" });
+      } else {
+        toast({ title: t.uploadFailed, variant: "destructive" });
+      }
     } finally {
       setIsVideoUploading(false);
       if (videoUploadRef.current) videoUploadRef.current.value = "";
@@ -1266,7 +1274,7 @@ export default function NewListing() {
               <div>
                 <Label className="text-sm font-medium text-gray-700">
                   {tx.ui_listingVideoLabel ?? "Një video për shpallje"}{" "}
-                  <span className="text-gray-400 font-normal">(MP4, MOV, AVI • max 100 MB)</span>
+                  <span className="text-gray-400 font-normal">{listingVideoFormatsHint(uiLang)}</span>
                 </Label>
 
                 <input
