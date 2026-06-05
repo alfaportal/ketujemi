@@ -1,16 +1,18 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { StaticPageBackLink } from "@/components/static-page-back-link";
-import { ShopApplicationForm } from "@/components/shop-application-form";
 import { BRAND_BLUE, BRAND_ORANGE } from "@/lib/brand-colors";
 import { useOpenShopPage } from "@/lib/open-shop-page-i18n";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
+import { useMarket } from "@/lib/market-context";
+import { openShopApplyPath } from "@/lib/static-page-paths";
 import { cn } from "@/lib/utils";
 
 export default function HapShitorePage() {
   const c = useOpenShopPage();
   const { user } = useAuth();
-  const formRef = useRef<HTMLDivElement>(null);
+  const { uiLang } = useMarket();
+  const applyPath = openShopApplyPath(uiLang);
 
   useEffect(() => {
     document.title = c.docTitle;
@@ -18,10 +20,10 @@ export default function HapShitorePage() {
 
   function handleCta() {
     if (!user) {
-      window.location.href = loginUrlWithReturn("/hap-shitore");
+      window.location.href = loginUrlWithReturn(applyPath);
       return;
     }
-    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.location.href = applyPath;
   }
 
   return (
@@ -93,10 +95,6 @@ export default function HapShitorePage() {
           >
             {c.ctaButton}
           </button>
-        </div>
-
-        <div ref={formRef} id="shop-application-form" className="scroll-mt-6">
-          <ShopApplicationForm />
         </div>
       </div>
     </div>

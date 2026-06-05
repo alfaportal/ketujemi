@@ -42,8 +42,11 @@ export const INFO_STATIC_PATHS = new Set([
   "/privacy",
   "/business-rules",
   "/hap-shitore",
+  "/hap-shitore/apliko",
   "/otvori-prodavnica",
+  "/otvori-prodavnica/apliko",
   "/otvori-prodavnicu",
+  "/otvori-prodavnicu/apliko",
   "/vip",
   "/paketa-vip",
   "/reklamoni",
@@ -61,6 +64,11 @@ export const INFO_STATIC_PATHS = new Set([
 
 export function isInfoStaticPage(pathname: string): boolean {
   return INFO_STATIC_PATHS.has(pathname);
+}
+
+/** Shop application form — localized under open-shop landing path. */
+export function openShopApplyPath(uiLang: UiLang): string {
+  return `${staticPagePaths(uiLang).openShop}/apliko`;
 }
 
 export type StaticPagePaths = {

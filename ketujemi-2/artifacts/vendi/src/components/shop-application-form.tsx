@@ -14,13 +14,14 @@ import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
+import { openShopApplyPath } from "@/lib/static-page-paths";
 import { BRAND_BLUE, BRAND_ORANGE } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
 
 export function ShopApplicationForm() {
   const c = useShopFormCopy();
   const { uiLang } = useMarket();
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const cloudinary = useCloudinaryConfig();
   const { data: categories } = useGetCategories();
   const logoRef = useRef<HTMLInputElement>(null);
@@ -84,7 +85,7 @@ export function ShopApplicationForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user) {
-      window.location.href = loginUrlWithReturn("/hap-shitore");
+      window.location.href = loginUrlWithReturn(openShopApplyPath(uiLang));
       return;
     }
     setError(null);
@@ -142,14 +143,6 @@ export function ShopApplicationForm() {
     }
   }
 
-  if (authLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
-
   if (success) {
     return (
       <div className="rounded-2xl border border-green-200 bg-green-50 p-8 text-center">
@@ -160,7 +153,7 @@ export function ShopApplicationForm() {
 
   return (
     <div className="space-y-4">
-      <p className="text-xs sm:text-sm text-amber-800/90 border border-amber-200/70 bg-amber-50/60 rounded-lg px-3 py-2.5">
+      <p className="text-sm text-amber-900 border border-amber-200 bg-amber-50 rounded-xl px-4 py-3 leading-relaxed">
         {c.formImportant}
       </p>
 

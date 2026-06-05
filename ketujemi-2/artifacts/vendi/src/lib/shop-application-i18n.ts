@@ -20,6 +20,7 @@ export type ShopCountryCode = (typeof SHOP_COUNTRY_CODES)[number];
 export type DiasporaCountryCode = Extract<ShopCountryCode, "DE" | "CH" | "AT" | "FR" | "IT" | "GB" | "US">;
 
 export type OpenShopFormCopy = {
+  applyDocTitle: string;
   formImportant: string;
   defaultContactName: string;
   defaultContactPhone: string;
@@ -135,9 +136,11 @@ const DIASPORA_CITIES: Record<DiasporaCountryCode, string[]> = {
 };
 
 const KS: OpenShopFormCopy = {
-  formImportant: "⚠️ Dyqani aktivizohet brenda 24 orëve pasi të shqyrtohet kërkesa.",
-  defaultContactName: "Revolution Invest sh.p.k",
-  defaultContactPhone: "+38348707880",
+  applyDocTitle: "Apliko për dyqan — KetuJemi.com",
+  formImportant:
+    "⚠️ E rëndësishme: Dyqani aktivizohet vetëm pasi të shqyrtohet kërkesa juaj brenda 24 orëve. Të dhënat mund të ndryshohen më vonë nga profili juaj.",
+  defaultContactName: "REVOLUTION INVEST SH.P.K.",
+  defaultContactPhone: "+38343555294",
   defaultContactEmail: "info@ketujemi.com",
   loginBtn: "Kyçu / Regjistrohu",
   section1Title: "Identiteti i dyqanit",
@@ -183,7 +186,9 @@ const KS: OpenShopFormCopy = {
 
 const MK: OpenShopFormCopy = {
   ...KS,
-  formImportant: "⚠️ Продавницата се активира во рок од 24 часа по разгледување на барањето.",
+  applyDocTitle: "Аплицирај за продавница — KetuJemi.com",
+  formImportant:
+    "⚠️ Важно: Продавницата се активира откако ќе ја разгледаме вашата барање во рок од 24 часа. Податоците може подоцна да ги промените од профилот.",
   loginBtn: "Најави се / Регистрирај се",
   section1Title: "Идентитет на продавницата",
   shopName: "Име на продавницата",
@@ -227,7 +232,9 @@ const MK: OpenShopFormCopy = {
 
 const MNE: OpenShopFormCopy = {
   ...KS,
-  formImportant: "⚠️ Prodavnica se aktivira u roku od 24 sata nakon pregleda zahtjeva.",
+  applyDocTitle: "Prijavi se za prodavnicu — KetuJemi.com",
+  formImportant:
+    "⚠️ Važno: Prodavnica se aktivira tek nakon što pregledamo vaš zahtjev u roku od 24 sata. Podatke možete kasnije promijeniti iz profila.",
   loginBtn: "Prijavi se / Registruj se",
   section1Title: "Identitet prodavnice",
   shopName: "Naziv prodavnice",
@@ -271,7 +278,9 @@ const MNE: OpenShopFormCopy = {
 
 const EN: OpenShopFormCopy = {
   ...KS,
-  formImportant: "⚠️ Your shop is activated within 24 hours after your request is reviewed.",
+  applyDocTitle: "Apply for a shop — KetuJemi.com",
+  formImportant:
+    "⚠️ Important: Your shop is activated only after we review your request within 24 hours. You can update the details later from your profile.",
   loginBtn: "Sign in / Register",
   section1Title: "Shop identity",
   shopName: "Shop name",
