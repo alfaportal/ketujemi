@@ -1,22 +1,8 @@
-import { useState } from "react";
-import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
-import { Building2, Crown, Loader2, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth, type AuthUser } from "@/lib/auth-context";
+import { Building2, Crown } from "lucide-react";
+import { type AuthUser } from "@/lib/auth-context";
 import { Link } from "wouter";
-import { cn } from "@/lib/utils";
-
-type PackageChoice = "partner" | "vip";
 
 export function BusinessAccountCard({ user }: { user: AuthUser }) {
-  const { refresh } = useAuth();
-  const { toast } = useToast();
-  const [businessName, setBusinessName] = useState(user.business_name ?? "");
-  const [selectedPackage, setSelectedPackage] = useState<PackageChoice>("partner");
-  const [busy, setBusy] = useState(false);
   const isBusiness = user.account_type === "business";
   const isPending = user.business_status === "pending";
   const isBlocked = user.business_status === "blocked";
@@ -25,39 +11,6 @@ export function BusinessAccountCard({ user }: { user: AuthUser }) {
     user.business_tier === "vip" &&
     !!user.vip_expires_at &&
     new Date(user.vip_expires_at) > new Date();
-
-  async function applyForBusiness() {
-    if (businessName.trim().length < 2) {
-      toast({ title: "Shkruani emrin e biznesit", variant: "destructive" });
-      return;
-    }
-    setBusy(true);
-    try {
-      const res = await fetchWithTimeout("/api/auth/account/business", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          business_name: businessName.trim(),
-          package: selectedPackage,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        toast({
-          title: (data as { message?: string }).message ?? (data as { error?: string }).error ?? "Gabim",
-          variant: "destructive",
-        });
-        return;
-      }
-      await refresh();
-      toast({
-        title: (data as { message?: string }).message ?? "Aplikimi u dërgua!",
-      });
-    } finally {
-      setBusy(false);
-    }
-  }
 
   return (
     <div className="rounded-2xl border border-blue-100 bg-blue-50/40 p-5 space-y-4">
@@ -69,63 +22,15 @@ export function BusinessAccountCard({ user }: { user: AuthUser }) {
       {!isBusiness ? (
         <>
           <p className="text-sm text-gray-600">
-            Zgjidhni paketën Partner (€30) ose VIP Partner (€50). Llogaria aktivizohet nga
-            administratori pas pagesës. Kërkohet email dhe telefon i verifikuar.
+            Dëshironi të bëheni Partner ose VIP Partner? Plotësoni formularin e aplikimit — ekipi
+            ynë do t&apos;ju kontaktojë pas shqyrtimit.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setSelectedPackage("partner")}
-              className={cn(
-                "rounded-xl border-2 p-4 text-left transition-all",
-                selectedPackage === "partner"
-                  ? "border-[#1A56A0] bg-white shadow-md"
-                  : "border-gray-200 bg-white/60 hover:border-blue-300",
-              )}
-            >
-              <p className="font-black text-[#1A56A0]">Partner</p>
-              <p className="text-2xl font-black text-gray-900 mt-1">€30</p>
-              <p className="text-xs text-gray-500 mt-2">Logo në faqe, link i vetëm</p>
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedPackage("vip")}
-              className={cn(
-                "rounded-xl border-2 p-4 text-left transition-all",
-                selectedPackage === "vip"
-                  ? "border-amber-500 bg-gradient-to-br from-amber-50 to-yellow-50 shadow-md"
-                  : "border-gray-200 bg-white/60 hover:border-amber-300",
-              )}
-            >
-              <p className="font-black text-amber-700 flex items-center gap-1">
-                <Star className="h-4 w-4 fill-amber-500" /> VIP Partner
-              </p>
-              <p className="text-2xl font-black text-gray-900 mt-1">€50</p>
-              <p className="text-xs text-gray-500 mt-2">Banner lëvizës deri në 5 foto</p>
-            </button>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="business-name">Emri i biznesit</Label>
-            <Input
-              id="business-name"
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              placeholder="p.sh. Auto Sh.p.k."
-              className="min-h-12 bg-white"
-            />
-          </div>
-          <Button
-            type="button"
-            className="w-full min-h-12 bg-blue-600 hover:bg-blue-700"
-            disabled={busy}
-            onClick={() => void applyForBusiness()}
+          <Link
+            href="/partner?step=partner#regjistrohu"
+            className="inline-flex items-center justify-center w-full min-h-12 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
           >
-            {busy ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              `Apliko si ${selectedPackage === "vip" ? "VIP Partner" : "Partner"}`
-            )}
-          </Button>
+            Apliko si Partner / VIP Partner
+          </Link>
         </>
       ) : (
         <>

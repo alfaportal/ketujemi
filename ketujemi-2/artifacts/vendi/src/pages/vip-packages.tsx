@@ -50,16 +50,12 @@ export default function VipPackagesPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <PackageCard
               title={c.standardTitle}
-              price={c.standardPrice}
-              period={c.periodPerMonth}
               features={c.standardFeatures}
               ctaLabel={c.standardCta}
               href={partnerSignupHref("standard")}
             />
             <PackageCard
               title={c.vipTitle}
-              price={c.vipPrice}
-              period={c.periodPerMonth}
               features={c.vipFeatures}
               ctaLabel={c.vipCta}
               href={partnerSignupHref("vip")}
@@ -141,8 +137,6 @@ export default function VipPackagesPage() {
 
 function PackageCard({
   title,
-  price,
-  period,
   features,
   ctaLabel,
   href,
@@ -150,8 +144,6 @@ function PackageCard({
   recommendedLabel,
 }: {
   title: string;
-  price: string;
-  period: string;
   features: string[];
   ctaLabel: string;
   href: string;
@@ -168,23 +160,15 @@ function PackageCard({
       )}
     >
       <div className="flex items-start justify-between gap-2 mb-4">
-        <div>
-          <h3 className="font-black text-gray-900 text-sm sm:text-base tracking-tight flex items-center gap-1.5 flex-wrap">
-            {title}
-            {highlight && recommendedLabel ? (
-              <span className="inline-flex items-center gap-0.5 text-amber-600 text-xs font-bold">
-                <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" aria-hidden />
-                ({recommendedLabel})
-              </span>
-            ) : null}
-          </h3>
-        </div>
-        <p className="text-right shrink-0">
-          <span className="text-2xl font-black" style={{ color: BRAND_BLUE }}>
-            {price}
-          </span>
-          <span className="text-sm text-gray-500">{period}</span>
-        </p>
+        <h3 className="font-black text-gray-900 text-sm sm:text-base tracking-tight flex items-center gap-1.5 flex-wrap">
+          {title}
+          {highlight && recommendedLabel ? (
+            <span className="inline-flex items-center gap-0.5 text-amber-600 text-xs font-bold">
+              <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" aria-hidden />
+              ({recommendedLabel})
+            </span>
+          ) : null}
+        </h3>
       </div>
       <ul className="space-y-2 text-sm text-gray-700 flex-1 mb-5">
         {features.map((f) => (

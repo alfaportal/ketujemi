@@ -539,7 +539,7 @@ export default function AdminPartners() {
                   ).then(() => setPackageRow(null))
                 }
               >
-                Standard €30
+                Partner
               </button>
               <button
                 type="button"
@@ -558,7 +558,7 @@ export default function AdminPartners() {
                   ).then(() => setPackageRow(null))
                 }
               >
-                VIP €50
+                VIP Partner
               </button>
             </div>
             <button

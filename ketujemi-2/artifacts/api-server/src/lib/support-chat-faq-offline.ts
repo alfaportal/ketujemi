@@ -69,9 +69,9 @@ const COMPOSITE_INTENTS: { test: (t: string) => boolean; reply: Record<UiLang, s
   {
     test: (t) => /partner|biznes|dyqan|shitore|vip\s+partner/i.test(t),
     reply: {
-      sq: "Partner biznesi: footer **BIZNESE** → «Hap shitore» ose «Partneritet» → faqja **/partner** (përfitimet, paketat Standard €30 / VIP €50, formulari i regjistrimit). Aktivizimi pas pagesës online.",
-      mk: "Бизнис партнер: **/partner** — Standard €30 / VIP €50, формулар.",
-      me: "Biznis partner: **/partner** — Standard €30 / VIP €50, formular.",
+      sq: "Partner biznesi: footer **BIZNESE** → «Hap shitore» ose «Partneritet» → faqja **/partner** (përfitimet, formulari i aplikimit Partner / VIP Partner). Pa pagesë online — ekipi kontakton pas shqyrtimit.",
+      mk: "Бизнис партнер: **/partner** — формулар за Partner / VIP Partner, без онлајн плаќање.",
+      me: "Biznis partner: **/partner** — formular Partner / VIP Partner, bez online plaćanja.",
     },
   },
 ];
@@ -131,9 +131,9 @@ const DETAILED_FAQ: FaqEntry[] = [
   {
     keywords: /biznes|business|10\s+njoft|paket|listing\s+package|s\s*€|m\s*€|l\s*€/i,
     reply: {
-      sq: "Postimi është **falas dhe i pakufizuar** për privat dhe biznes. Opsioni i vetëm me pagesë për njoftime: **Boost TOP**. Partner dyqani (/partner): **Standard €30/muaj**, **VIP €50/muaj** (marketing — logo, badge).",
-      mk: "Објавувањето е бесплатно и неограничено. Единствена платена опција за огласи: Boost TOP. Partner: Standard €30 / VIP €50 месечно.",
-      me: "Objavljivanje je besplatno i neograničeno. Jedina plaćena opcija za oglase: Boost TOP. Partner: Standard €30 / VIP €50 mjesečno.",
+      sq: "Postimi është **falas dhe i pakufizuar** për privat dhe biznes. Opsioni i vetëm me pagesë për njoftime: **Boost TOP**. Partner dyqani (/partner): aplikim falas — logo, badge, profil biznesi (aktivizim manual).",
+      mk: "Објавувањето е бесплатно и неограничено. Единствена платена опција: Boost TOP. Partner (/partner): бесплатна апликација.",
+      me: "Objavljivanje je besplatno i neograničeno. Jedina plaćena opcija: Boost TOP. Partner (/partner): besplatna prijava.",
     },
   },
   {
@@ -164,9 +164,9 @@ const DETAILED_FAQ: FaqEntry[] = [
   {
     keywords: /stripe|kart|card|pages|pay|checkout|bler pages/i,
     reply: {
-      sq: "Pagesat online në KetuJemi bëhen me **Stripe** (kartë bankare): **Boost TOP** për njoftim (€2/€5/€8), partner **/partner** (Standard **€30/muaj** / VIP **€50/muaj** — marketing). Postimi **nuk** kushton. Blerja e produktit te shitësi **nuk** paguhet përmes KetuJemi — kontakt direkt me shitësin.",
-      mk: "Stripe за partner, TOP, пакети. Купување од продавач — директно, не преку платформата.",
-      me: "Stripe za partner, TOP, pakete. Kupovina od prodavača — direktno.",
+      sq: "Pagesat online në KetuJemi bëhen me **Stripe** (kartë bankare) vetëm për **Boost TOP** (€2/€5/€8). Partner **/partner** — aplikim falas, pa pagesë online. Postimi **nuk** kushton. Blerja te shitësi **nuk** paguhet përmes KetuJemi.",
+      mk: "Stripe само за Boost TOP. Partner (/partner) — бесплатна апликација. Купување од продавач — директно.",
+      me: "Stripe samo za Boost TOP. Partner (/partner) — besplatna prijava. Kupovina od prodavača — direktno.",
     },
   },
   {

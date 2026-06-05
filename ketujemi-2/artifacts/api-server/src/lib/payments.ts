@@ -215,14 +215,6 @@ export async function markPaymentPaidByToken(token: string): Promise<void> {
   if (topDays != null && row.listing_id) {
     await applyTopBoostToListing(row.listing_id, topDays);
   }
-  if (
-    (row.purpose === "partner_standard" || row.purpose === "partner_vip") &&
-    row.partner_id
-  ) {
-    const { activatePartnerFromPayment } = await import("./partner-activate");
-    await activatePartnerFromPayment(row.partner_id);
-  }
-
   const { parseWalletTopupPurpose } = await import("./wallet");
   if (parseWalletTopupPurpose(row.purpose)) {
     const { fulfillWalletTopupFromPayment } = await import("./wallet-stripe");

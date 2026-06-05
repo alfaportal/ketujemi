@@ -16,12 +16,9 @@ export type VipPackagesPageCopy = {
   heroSubtitle: string;
   packagesTitle: string;
   standardTitle: string;
-  standardPrice: string;
-  periodPerMonth: string;
   standardFeatures: string[];
   standardCta: string;
   vipTitle: string;
-  vipPrice: string;
   vipRecommended: string;
   vipFeatures: string[];
   vipCta: string;
@@ -46,9 +43,7 @@ const KS: VipPackagesPageCopy = {
   heroSubtitle:
     "Rrit dukshmërinë, merr më shumë klientë dhe menaxho biznesin tënd profesionalisht.",
   packagesTitle: "PAKETAT — KRAHASO",
-  standardTitle: "PARTNER STANDARD",
-  standardPrice: "€30",
-  periodPerMonth: "/muaj",
+  standardTitle: "PARTNER",
   standardFeatures: [
     "Dyqan i personalizuar në KetuJemi.com",
     "Deri 50 njoftime aktive njëkohësisht",
@@ -58,9 +53,8 @@ const KS: VipPackagesPageCopy = {
     "Suport me email brenda 24 orëve",
     "Prioritet ndaj njoftimeve të rregullta",
   ],
-  standardCta: "Zgjidhni Standard",
+  standardCta: "Apliko si Partner",
   vipTitle: "VIP PARTNER",
-  vipPrice: "€50",
   vipRecommended: "E rekomanduar",
   vipFeatures: [
     "Gjithçka nga Standard +",
@@ -72,12 +66,12 @@ const KS: VipPackagesPageCopy = {
     "Suport prioritar me telefon dhe email brenda 4 orëve",
     'Shfaqje e logos në faqen kryesore te "Partnerët tanë të besuar"',
   ],
-  vipCta: "Zgjidhni VIP",
+  vipCta: "Apliko si VIP Partner",
   compareTitle: "KRAHASIMI I PLOTË",
   compareColFeature: "Veçoria",
   compareColFree: "Falas",
-  compareColStandard: "Standard €30",
-  compareColVip: "VIP €50",
+  compareColStandard: "Partner",
+  compareColVip: "VIP Partner",
   compareRows: [
     { feature: "Njoftime aktive", free: "Pa limit", standard: "Pa limit", vip: "Pa limit" },
     { feature: "Badge i verifikuar", free: "❌", standard: "✅", vip: "✅ VIP" },
@@ -90,30 +84,26 @@ const KS: VipPackagesPageCopy = {
   faqTitle: "PYETJET E SHPESHTA",
   faq: [
     {
+      q: "Si aplikoj për Partner ose VIP Partner?",
+      a: "Plotësoni formularin në faqen /partner me të dhënat e biznesit. Ekipi ynë do t'ju kontaktojë pas shqyrtimit.",
+    },
+    {
+      q: "A ka pagesë për të aplikuar?",
+      a: "Jo. Aplikimi është falas — pa pagesë online. Aktivizimi bëhet manualisht nga administratori pas miratimit.",
+    },
+    {
       q: "A mund të ndryshoj paketën më vonë?",
-      a: "Po. Mund të kaloni nga Standard në VIP ose anasjelltas në çdo kohë — ndryshimi bëhet nga paneli juaj.",
-    },
-    {
-      q: "Si bëhet pagesa?",
-      a: "Me kartë bankare përmes Stripe — e sigurt dhe automatike çdo muaj.",
-    },
-    {
-      q: "A mund ta anuloj kur të dua?",
-      a: "Po. Anuloni në çdo kohë me 30 ditë njoftim paraprak me email.",
-    },
-    {
-      q: "A rimbursohen pagesat?",
-      a: "Pagesat e bëra nuk rimbursohen sipas kushteve të kontratës.",
+      a: "Po. Kontaktoni info@ketujemi.com për të kaluar nga Partner në VIP Partner ose anasjelltas.",
     },
     {
       q: "Cila paketë është më e mirë për fillim?",
-      a: "Postimi është falas për të gjithë. Standard shton profil biznesi dhe badge partner; VIP shton logo në kryefaqe dhe maksimum dukshmëri.",
+      a: "Postimi është falas për të gjithë. Partner shton profil biznesi dhe badge; VIP shton logo në kryefaqe dhe maksimum dukshmëri.",
     },
   ],
   ctaTitle: "Gati të rritësh biznesin tënd?",
   ctaSubtitle: "Bashkohu me partnerët tanë të verifikuar dhe arrij mijëra klientë çdo ditë.",
-  ctaButton: "Regjistrohu si Partner",
-  ctaFinePrint: "Aktivizim i menjëhershëm pas pagesës së parë.",
+  ctaButton: "Apliko si Partner",
+  ctaFinePrint: "Pa pagesë online — do t'ju kontaktojmë pas shqyrtimit.",
 };
 
 const MK: VipPackagesPageCopy = {
@@ -123,18 +113,18 @@ const MK: VipPackagesPageCopy = {
   heroTitle: "Изберете пакет што одговара на вашиот бизнис",
   heroSubtitle: "Зголемете ја видливоста, добијте повеќе клиенти и управувајте професионално.",
   packagesTitle: "ПАКЕТИ — СПОРЕДБА",
-  standardCta: "Изберете Standard",
-  vipCta: "Изберете VIP",
+  standardCta: "Аплицирај како Partner",
+  vipCta: "Аплицирај како VIP Partner",
   compareTitle: "ЦЕЛОСНА СПОРЕДБА",
   compareColFeature: "Карактеристика",
   compareColFree: "Бесплатно",
-  compareColStandard: "Standard €30",
-  compareColVip: "VIP €50",
+  compareColStandard: "Partner",
+  compareColVip: "VIP Partner",
   faqTitle: "ЧЕСТО ПОСТАВУВАНИ ПРАШАЊА",
   ctaTitle: "Подготвени да го развиете бизнисот?",
   ctaSubtitle: "Придружете се на нашите верификувани партнери.",
-  ctaButton: "Регистрирајте се како партнер",
-  ctaFinePrint: "Веднаш активирање по првата уплата.",
+  ctaButton: "Аплицирај како партнер",
+  ctaFinePrint: "Без онлајн плаќање — ќе ве контактираме по преглед.",
 };
 
 const MNE: VipPackagesPageCopy = {
@@ -144,18 +134,18 @@ const MNE: VipPackagesPageCopy = {
   heroTitle: "Izaberite paket koji odgovara vašem biznisu",
   heroSubtitle: "Povećajte vidljivost, dobijte više klijenata i upravljajte profesionalno.",
   packagesTitle: "PAKETI — UPOREDBA",
-  standardCta: "Izaberite Standard",
-  vipCta: "Izaberite VIP",
+  standardCta: "Prijavi se kao Partner",
+  vipCta: "Prijavi se kao VIP Partner",
   compareTitle: "POTPUNA UPOREDBA",
   compareColFeature: "Karakteristika",
   compareColFree: "Besplatno",
-  compareColStandard: "Standard €30",
-  compareColVip: "VIP €50",
+  compareColStandard: "Partner",
+  compareColVip: "VIP Partner",
   faqTitle: "ČESTO POSTAVLJANA PITANJA",
   ctaTitle: "Spremni da razvijete biznis?",
   ctaSubtitle: "Pridružite se našim verifikovanim partnerima.",
-  ctaButton: "Registrujte se kao partner",
-  ctaFinePrint: "Trenutna aktivacija nakon prve uplate.",
+  ctaButton: "Prijavi se kao partner",
+  ctaFinePrint: "Bez online plaćanja — kontaktiraćemo vas nakon pregleda.",
 };
 
 const EN: VipPackagesPageCopy = {
@@ -165,18 +155,18 @@ const EN: VipPackagesPageCopy = {
   heroTitle: "Choose the package that fits your business",
   heroSubtitle: "Grow visibility, reach more customers, and manage your business professionally.",
   packagesTitle: "PACKAGES — COMPARE",
-  standardCta: "Choose Standard",
-  vipCta: "Choose VIP",
+  standardCta: "Apply as Partner",
+  vipCta: "Apply as VIP Partner",
   compareTitle: "FULL COMPARISON",
   compareColFeature: "Feature",
   compareColFree: "Free",
-  compareColStandard: "Standard €30",
-  compareColVip: "VIP €50",
+  compareColStandard: "Partner",
+  compareColVip: "VIP Partner",
   faqTitle: "FREQUENTLY ASKED QUESTIONS",
   ctaTitle: "Ready to grow your business?",
   ctaSubtitle: "Join our verified partners and reach thousands of customers every day.",
-  ctaButton: "Register as a partner",
-  ctaFinePrint: "Instant activation after your first payment.",
+  ctaButton: "Apply as partner",
+  ctaFinePrint: "No online payment — we will contact you after review.",
 };
 
 const VIP_PACKAGES_PAGES: Record<UiTranslationLocale, VipPackagesPageCopy> = {

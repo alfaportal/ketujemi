@@ -14,7 +14,6 @@ import { logPaymentStackReadiness } from "./lib/payment-policy";
 import { vonageConfigSummary } from "./lib/vonage-auth";
 import { startExpiredListingsScheduler } from "./lib/expire-listings-job";
 import { startExpiryReminderScheduler } from "./lib/listing-expiry-reminders";
-import { startPartnerUnpaidReminderScheduler } from "./lib/partner-unpaid-reminders";
 import { purgeInvalidListingImagesOnStartup } from "./lib/purge-invalid-listing-images.js";
 import { startSystemMonitor } from "./lib/system-monitor.js";
 
@@ -77,7 +76,6 @@ async function startServer(): Promise<void> {
     logger.info({ port }, "Server listening");
     startExpiredListingsScheduler();
     startExpiryReminderScheduler();
-    startPartnerUnpaidReminderScheduler();
     startSystemMonitor();
   });
 }

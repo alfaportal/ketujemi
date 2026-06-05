@@ -33,16 +33,7 @@ export async function fulfillPaidCheckoutSession(session: Stripe.Checkout.Sessio
 
   const purpose = session.metadata?.purpose;
   const userId = Number(session.metadata?.user_id);
-  const partnerId = Number(session.metadata?.partner_id);
   const packagePurchaseId = Number(session.metadata?.listing_package_purchase_id);
-
-  if (
-    (purpose === "partner_standard" || purpose === "partner_vip") &&
-    Number.isFinite(partnerId)
-  ) {
-    const { activatePartnerFromPayment } = await import("./partner-activate");
-    await activatePartnerFromPayment(partnerId);
-  }
 
   if (
     (purpose === "listing_package_s" ||

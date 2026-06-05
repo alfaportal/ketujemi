@@ -302,8 +302,8 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
     title: "Business & VIP packages",
     tagline: "Choose the package that fits your business:",
     bullets: [
-      "Standard shop (€30/month): Unlimited listings, public business profile, 24/7 support.",
-      "VIP Partner (€50/month): Everything in Standard + logo on the homepage, VIP badge on listings and logo view statistics.",
+      "Partner: Unlimited listings, public business profile, verified badge, email support.",
+      "VIP Partner: Everything in Partner + logo on the homepage, VIP badge on listings and logo view statistics.",
     ],
     ctaLabel: "Choose your package",
   },

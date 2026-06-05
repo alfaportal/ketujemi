@@ -463,8 +463,8 @@ const KS: StaticPagesCopy = {
     title: "Paketat e Biznesit & VIP",
     tagline: "Zgjidhni paketën që i përshtatet biznesit tuaj:",
     bullets: [
-      "Dyqan Standard (€30/muaj): Shpallje të pakufizuara, profil publik i biznesit, suport 24/7.",
-      "VIP Partner (€50/muaj): Çdo gjë nga Standard + shfaqje me logo në faqen kryesore (random), badge VIP në njoftime dhe statistika të shikimeve të logos.",
+      "Partner: Shpallje të pakufizuara, profil publik i biznesit, badge i verifikuar, suport me email.",
+      "VIP Partner: Çdo gjë nga Partner + shfaqje me logo në faqen kryesore, badge VIP në njoftime dhe statistika të shikimeve të logos.",
     ],
     ctaLabel: "Zgjidh Paketën Tënde",
   },
@@ -1006,8 +1006,8 @@ const MK: StaticPagesCopy = {
     title: "Бизнис и VIP пакети",
     tagline: "Изберете пакет:",
     bullets: [
-      "Стандарден дуќан (€30/месец): Неограничени огласи, јавен бизнис профил, поддршка 24/7.",
-      "VIP Partner (€50/месец): Сè од Standard + лого на почетна, VIP badge и статистика.",
+      "Partner: Неограничени огласи, јавен бизнис профил, верификувана значка, email поддршка.",
+      "VIP Partner: Сè од Partner + лого на почетна, VIP badge и статистика.",
     ],
     ctaLabel: "Избери пакет",
   },
@@ -1529,8 +1529,8 @@ const MNE: StaticPagesCopy = {
     title: "Biznis i VIP paketi",
     tagline: "Izaberite paket:",
     bullets: [
-      "Standard prodavnica (€30/mjesec): Neograničeni oglasi, javni profil, podrška 24/7.",
-      "VIP Partner (€50/mjesec): Sve iz Standard + logo na početnoj, VIP bedž i statistika.",
+      "Partner: Neograničeni oglasi, javni profil, verifikovani bedž, email podrška.",
+      "VIP Partner: Sve iz Partner + logo na početnoj, VIP bedž i statistika.",
     ],
     ctaLabel: "Izaberi paket",
   },

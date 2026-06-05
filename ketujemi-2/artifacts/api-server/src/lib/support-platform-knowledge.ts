@@ -111,15 +111,14 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 
 === PARTNER DYQANI (/partner) — ndryshe nga llogaria biznesi e thjeshtë ===
 • Footer **BIZNESE** → «Hap shitore» ose «Partneritet» → **/partner**.
-• **Partner Standard €30/muaj:** profil partneri, njoftime, përmbledhje përfitimesh.
-• **VIP Partner €50/muaj:** gjithçka Standard + logo në faqen kryesore (rotacion), badge VIP në njoftime.
-• Regjistrim: formular (emër biznesi, kontakt, paketë) → **pagesë online Stripe** (kartë) → aktivizim pas pagesës.
+• **Partner:** profil partneri, badge i verifikuar, përmbledhje përfitimesh.
+• **VIP Partner:** gjithçka Partner + logo në faqen kryesore (rotacion), badge VIP në njoftime.
+• Aplikim: formular (emër biznesi, kontakt, telefon, email, logo, përshkrim, paketë) → email te info@ketujemi.com — **pa pagesë online**, aktivizim manual nga admin.
 
 === PAGESAT (Stripe) ===
 • Platforma përdor **Stripe Checkout** për pagesa me **kartë bankare** (Visa, Mastercard, etj.).
-• Stripe përdoret për: **Partner** (/partner — Standard €30 / VIP €50 **për muaj**), **TOP njoftimi** (€2 / €5 / €8), **portofol** (€5 / €10 / €20), **VIP biznes €50/muaj**.
+• Stripe përdoret vetëm për: **TOP njoftimi** (€2 / €5 / €8). Partner (/partner) **nuk** paguhet online.
 • KetuJemi **NUK** mbledh pagesa për blerjen e produktit te shitësi — blerësi dhe shitësi bien dakord direkt.
-• Pas pagesës Stripe për partner/paketë, aktivizimi automatik në llogari.
 
 === SI BLERËS ===
 1) Gjeni kategorinë e saktë (tabela 20 kategorive) ose «Njoftimet» + kërkim.
@@ -144,7 +143,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 
 === FAQ — PYETJET MË TË SHPESHTA ===
 **Si të postoj?** → «Posto Falas», kategori, të dhëna, foto, publiko (deri 3 muaj).
-**Sa kushton postimi?** → Falas (10/muaj për kategori); pas limitit **portofol €0.30/shpallje**; TOP opsional €2/€5/€8; VIP biznes €50/muaj; partner dyqani Standard €30 / VIP €50 për muaj.
+**Sa kushton postimi?** → Falas dhe i pakufizuar; TOP opsional €2/€5/€8; partner dyqani (/partner) — aplikim falas.
 **Sa foto?** → Deri në 10 për njoftim.
 **Si ta fshij/ndryshoj?** → Profili → njoftimet e mia.
 **Si kontaktoj shitësin?** → Telefono / WhatsApp në faqen e njoftimit.
@@ -152,7 +151,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 **Si funksionon çmimi i artikullit?** → Çdo njoftim ka çmimin e vet; krahaso disa njoftime në të njëjtën kategori.
 **Muzikë ku?** → Kategoria **Muzikë & Hobby** (Instrumente, Libra, Studio…), jo Sport & Outdoor.
 **Regjistrim për muzikë?** → Llogari: Hyr→Regjistrohu; shitje: Posto Falas→Muzikë & Hobby; blerje: Muzikë & Hobby→shfletoni.
-**Partner dyqani?** → /partner, Standard €30, VIP €50, pagesë Stripe.
+**Partner dyqani?** → /partner, formular aplikimi Partner / VIP Partner, pa pagesë online.
 **Skadimi?** → deri 3 muaj; rifillo nga njoftimi juaj.
 **Verifikimi?** → Email + SMS (Ballkan) para postimit të plotë.
 

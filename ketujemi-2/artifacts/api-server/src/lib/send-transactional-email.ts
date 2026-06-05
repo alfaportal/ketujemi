@@ -8,12 +8,19 @@ export type TransactionalEmail = {
   html: string;
 };
 
+export type EmailAttachment = {
+  filename: string;
+  content: Buffer | string;
+  contentType?: string;
+};
+
 export type DeliverEmailOptions = {
   to: string | string[];
   subject: string;
   text: string;
   html: string;
   replyTo?: string;
+  attachments?: EmailAttachment[];
   /** Enables detailed console.log (e.g. contact form debugging). */
   debugSource?: string;
 };
@@ -78,6 +85,11 @@ async function sendViaSmtp(mail: DeliverEmailOptions, toList: string[]): Promise
     subject: mail.subject,
     text: mail.text,
     html: mail.html,
+    attachments: mail.attachments?.map((a) => ({
+      filename: a.filename,
+      content: a.content,
+      contentType: a.contentType,
+    })),
   });
 
   debugLog(mail.debugSource, "SMTP success");
@@ -116,6 +128,17 @@ async function sendViaResend(mail: DeliverEmailOptions, toList: string[]): Promi
       subject: mail.subject,
       text: mail.text,
       html: mail.html,
+      ...(mail.attachments?.length
+        ? {
+            attachments: mail.attachments.map((a) => ({
+              filename: a.filename,
+              content:
+                typeof a.content === "string"
+                  ? a.content
+                  : a.content.toString("base64"),
+            })),
+          }
+        : {}),
     }),
   });
 

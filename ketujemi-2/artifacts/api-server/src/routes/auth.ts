@@ -846,61 +846,12 @@ router.patch("/auth/profile", async (req, res) => {
   res.json({ user: publicUser(row!, { self: true }) });
 });
 
-// ─── POST /auth/account/business — upgrade private → business (SMS + email required)
-router.post("/auth/account/business", async (req, res) => {
-  const id = await sessionUserId(req);
-  if (id == null) {
-    res.status(401).json({ error: "Not logged in" });
-    return;
-  }
-
-  const businessName =
-    typeof req.body?.business_name === "string" ? req.body.business_name.trim() : "";
-  if (businessName.length < 2) {
-    res.status(400).json({ error: "business_name required" });
-    return;
-  }
-
-  const pkgRaw = String(req.body?.package ?? "partner").toLowerCase();
-  const packageTier = pkgRaw === "vip" ? "vip" : "standard";
-
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
-  if (!user) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
-
-  if (!user.email_verified_at || !user.phone_e164_digits) {
-    res.status(400).json({
-      error: "BUSINESS_VERIFICATION_REQUIRED",
-      message:
-        "Llogaria e biznesit kërkon email të verifikuar dhe numër telefoni të verifikuar me SMS.",
-    });
-    return;
-  }
-
-  if (isBusinessAccount(user)) {
-    res.status(400).json({ error: "ALREADY_BUSINESS", message: "Llogaria është tashmë biznes." });
-    return;
-  }
-
-  const [row] = await db
-    .update(usersTable)
-    .set({
-      account_type: "business",
-      business_name: businessName.slice(0, 200),
-      business_tier: packageTier,
-      business_status: "pending",
-      vip_expires_at: null,
-    })
-    .where(eq(usersTable.id, id))
-    .returning();
-
-  res.json({
-    user: publicUser(row!, { self: true }),
-    package: packageTier === "vip" ? "vip" : "partner",
+// ─── POST /auth/account/business — disabled; use /partner application form
+router.post("/auth/account/business", async (_req, res) => {
+  res.status(410).json({
+    error: "PARTNER_APPLY_ON_WEB",
     message:
-      "Aplikimi u pranua. Llogaria do të aktivizohet nga administratori pas verifikimit të pagesës.",
+      "Aplikimet për Partner/VIP Partner bëhen vetëm në faqen /partner — pa pagesë online.",
   });
 });
 

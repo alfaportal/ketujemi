@@ -3,11 +3,10 @@ import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { useLocation } from "wouter";
 import { SiteHeader } from "@/components/site-header";
 import { StaticPageBackLink } from "@/components/static-page-back-link";
-import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -15,16 +14,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { usePartnerPage } from "@/lib/partner-page-i18n";
-import { uploadImageToCloudinary, useCloudinaryConfig } from "@/lib/cloudinary-config";
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown, Loader2, Mail, CreditCard, KeyRound, Upload } from "lucide-react";
+import { Check, Loader2, Upload } from "lucide-react";
 
 const CARD_COLORS = [
   "from-blue-600 to-blue-500",
@@ -39,6 +32,7 @@ const CARD_COLORS = [
 type PartnerPhase = "landing" | "register" | "success";
 
 const PARTNER_FORM_STEP = "partner";
+const LOGO_MAX_BYTES = 5 * 1024 * 1024;
 
 function partnerFormReturnPath(): string {
   return `/partner?step=${PARTNER_FORM_STEP}#regjistrohu`;
@@ -54,11 +48,17 @@ function wantsPartnerFormFromUrl(): boolean {
   );
 }
 
+async function fileToBase64(file: File): Promise<string> {
+  const buf = await file.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]!);
+  return btoa(binary);
+}
+
 export default function PartnerPage() {
   const c = usePartnerPage();
   const [, setLocation] = useLocation();
-  const { user, loading: authLoading } = useAuth();
-  const cloudinary = useCloudinaryConfig();
   const fileRef = useRef<HTMLInputElement>(null);
   const registerRef = useRef<HTMLDivElement>(null);
 
@@ -68,54 +68,15 @@ export default function PartnerPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [pkg, setPkg] = useState("");
-  const [logoUrl, setLogoUrl] = useState("");
-  const [link, setLink] = useState("");
-  const [terms, setTerms] = useState(false);
-  const [contractOpen, setContractOpen] = useState(false);
+  const [description, setDescription] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [paymentPending, setPaymentPending] = useState(false);
 
   useEffect(() => {
     document.title = c.docTitle;
   }, [c.docTitle]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("payment") === "success") {
-      const sessionId = params.get("session_id")?.trim();
-      if (sessionId?.startsWith("cs_")) {
-        setPaymentPending(true);
-        setPhase("success");
-        void import("@/lib/stripe-checkout")
-          .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId))
-          .then((r) => setPaymentPending(!r.paid))
-          .catch(() => setPaymentPending(true))
-          .finally(() => window.history.replaceState({}, "", "/partner"));
-        return;
-      }
-      setPaymentPending(false);
-      setPhase("success");
-      window.history.replaceState({}, "", "/partner");
-      return;
-    }
-    const resumeId = params.get("resume");
-    if (resumeId) {
-      if (!authLoading && !user) {
-        setLocation(loginUrlWithReturn(`${partnerFormReturnPath()}&resume=${resumeId}`, "register"));
-        return;
-      }
-      setPhase("register");
-      void fetchWithTimeout(`/api/partners/${resumeId}/checkout`, { method: "POST" })
-        .then((r) => r.json())
-        .then((data: { checkout_url?: string; error?: string }) => {
-          if (data.checkout_url) window.location.href = data.checkout_url;
-          else setError(data.error ?? c.errPaymentOpen);
-        })
-        .catch(() => setError(c.errServer));
-    }
-  }, [authLoading, user, setLocation, c.errPaymentOpen, c.errServer]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -127,22 +88,8 @@ export default function PartnerPage() {
 
   useEffect(() => {
     if (!wantsPartnerFormFromUrl()) return;
-    if (authLoading) return;
-    if (!user) {
-      const params = new URLSearchParams(window.location.search);
-      const pkgParam = params.get("package");
-      const returnPath =
-        pkgParam === "vip" || pkgParam === "standard"
-          ? `${partnerFormReturnPath()}&package=${pkgParam}`
-          : partnerFormReturnPath();
-      setLocation(loginUrlWithReturn(returnPath, "register"));
-      return;
-    }
     setPhase("register");
-    if (user.email?.trim()) setEmail(user.email.trim());
-    const phoneDigits = user.contact_phone?.trim() || user.phone_e164_digits?.trim() || "";
-    if (phoneDigits) setPhone(phoneDigits.startsWith("+") ? phoneDigits : `+${phoneDigits}`);
-  }, [authLoading, user, setLocation]);
+  }, []);
 
   const scrollToPartnerForm = useCallback(() => {
     const run = () => {
@@ -161,29 +108,22 @@ export default function PartnerPage() {
   }, [phase, scrollToPartnerForm]);
 
   function goToRegister() {
-    if (user) {
-      setPhase("register");
-      window.history.replaceState({}, "", partnerFormReturnPath());
-      return;
-    }
-    setLocation(loginUrlWithReturn(partnerFormReturnPath(), "register"));
+    setPhase("register");
+    window.history.replaceState({}, "", partnerFormReturnPath());
   }
 
-  async function onLogoFile(file: File) {
-    if (!cloudinary.ready) {
-      setError(c.errLogoUnavailable);
+  function onLogoFile(file: File) {
+    setError(null);
+    if (!file.type.startsWith("image/")) {
+      setError(c.errLogoInvalid);
       return;
     }
-    setUploading(true);
-    setError(null);
-    try {
-      const url = await uploadImageToCloudinary(file, cloudinary, "partner");
-      setLogoUrl(url);
-    } catch {
-      setError(c.errUploadFailed);
-    } finally {
-      setUploading(false);
+    if (file.size > LOGO_MAX_BYTES) {
+      setError(c.errLogoTooLarge);
+      return;
     }
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -196,19 +136,24 @@ export default function PartnerPage() {
       !email.trim() ||
       !phone.trim() ||
       !pkg ||
-      !link.trim()
+      !description.trim()
     ) {
       setError(c.errRequired);
-      return;
-    }
-    if (!terms) {
-      setError(c.errTerms);
       return;
     }
 
     setBusy(true);
     try {
-      const res = await fetchWithTimeout("/api/partners/register", {
+      let logo_base64: string | null = null;
+      let logo_filename: string | null = null;
+      let logo_mime: string | null = null;
+      if (logoFile) {
+        logo_base64 = await fileToBase64(logoFile);
+        logo_filename = logoFile.name;
+        logo_mime = logoFile.type || "application/octet-stream";
+      }
+
+      const res = await fetchWithTimeout("/api/partners/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -216,26 +161,18 @@ export default function PartnerPage() {
           contact_name: contactName.trim(),
           email: email.trim(),
           phone: phone.trim(),
-          iban: "",
           package: pkg,
-          logo_url: logoUrl.trim() || null,
-          link: link.trim(),
-          accepted_terms: true,
+          description: description.trim(),
+          logo_base64,
+          logo_filename,
+          logo_mime,
         }),
       });
-      const data = (await res.json().catch(() => ({}))) as {
-        error?: string;
-        checkout_url?: string;
-      };
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? c.errRegisterFailed);
+        setError(data.error ?? c.errSubmitFailed);
         return;
       }
-      if (data.checkout_url) {
-        window.location.href = data.checkout_url;
-        return;
-      }
-      setPaymentPending(true);
       setPhase("success");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
@@ -259,15 +196,7 @@ export default function PartnerPage() {
               <Check className="h-8 w-8" aria-hidden />
             </div>
             <h1 className="text-2xl font-black text-gray-900 mb-3">{c.successTitle}</h1>
-            <p className="text-lg text-gray-700 leading-relaxed">
-              {paymentPending ? c.successPending : c.successPaid}
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <SuccessNotice icon={Mail} title={c.successNoticeEmail} />
-            <SuccessNotice icon={CreditCard} title={c.successNoticePayment} />
-            <SuccessNotice icon={KeyRound} title={c.successNoticeActivate} />
+            <p className="text-lg text-gray-700 leading-relaxed">{c.successMessage}</p>
           </div>
 
           <Button
@@ -384,27 +313,7 @@ export default function PartnerPage() {
         ) : null}
 
         {phase === "register" ? (
-          <div ref={registerRef} id="regjistrohu" className="space-y-10 scroll-mt-24">
-            <section>
-              <h2 className="text-xl font-bold text-gray-900 mb-5 text-center">{c.packagesTitle}</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <PricingCard
-                  title={c.standardTitle}
-                  price={c.standardPrice}
-                  period={c.periodPerMonth}
-                  highlight={false}
-                  features={c.standardFeatures}
-                />
-                <PricingCard
-                  title={c.vipTitle}
-                  price={c.vipPrice}
-                  period={c.periodPerMonth}
-                  highlight
-                  features={c.vipFeatures}
-                />
-              </div>
-            </section>
-
+          <div ref={registerRef} id="regjistrohu" className="scroll-mt-24">
             <section className="rounded-2xl border border-gray-200 bg-white shadow-[0_12px_40px_rgba(26,86,160,0.08)] p-5 sm:p-8">
               <form onSubmit={onSubmit} className="space-y-4">
                 <Field label={c.labelBusinessName} required>
@@ -453,13 +362,7 @@ export default function PartnerPage() {
                   </Select>
                 </Field>
                 <Field label={c.labelLogo}>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Input
-                      value={logoUrl}
-                      onChange={(e) => setLogoUrl(e.target.value)}
-                      placeholder={c.logoUrlPlaceholder}
-                      className="flex-1"
-                    />
+                  <div className="flex flex-col sm:flex-row gap-3 items-start">
                     <input
                       ref={fileRef}
                       type="file"
@@ -467,7 +370,7 @@ export default function PartnerPage() {
                       className="hidden"
                       onChange={(e) => {
                         const f = e.target.files?.[0];
-                        if (f) void onLogoFile(f);
+                        if (f) onLogoFile(f);
                         e.target.value = "";
                       }}
                     />
@@ -475,43 +378,31 @@ export default function PartnerPage() {
                       type="button"
                       variant="outline"
                       className="shrink-0"
-                      disabled={uploading}
                       onClick={() => fileRef.current?.click()}
                     >
-                      {uploading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Upload className="h-4 w-4 mr-2" />
-                      )}
+                      <Upload className="h-4 w-4 mr-2" />
                       {c.uploadLogo}
                     </Button>
+                    {logoPreview ? (
+                      <img
+                        src={logoPreview}
+                        alt=""
+                        className="h-14 w-14 rounded-lg border border-gray-200 object-contain bg-white"
+                      />
+                    ) : (
+                      <p className="text-sm text-gray-500 pt-2">{c.logoHint}</p>
+                    )}
                   </div>
                 </Field>
-                <Field label={c.labelLink} required>
-                  <Input
-                    value={link}
-                    onChange={(e) => setLink(e.target.value)}
-                    placeholder={c.linkPlaceholder}
+                <Field label={c.labelDescription} required>
+                  <Textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder={c.descriptionPlaceholder}
+                    maxLength={2000}
+                    rows={4}
                   />
                 </Field>
-
-                <div className="flex items-start gap-3 pt-2">
-                  <Checkbox
-                    id="partner-terms"
-                    checked={terms}
-                    onCheckedChange={(v) => setTerms(v === true)}
-                  />
-                  <label htmlFor="partner-terms" className="text-sm text-gray-700 leading-snug cursor-pointer">
-                    {c.termsLabel}{" "}
-                    <button
-                      type="button"
-                      className="text-blue-600 font-medium underline underline-offset-2 hover:text-blue-800"
-                      onClick={() => setContractOpen(true)}
-                    >
-                      ({c.termsOpenHint})
-                    </button>
-                  </label>
-                </div>
 
                 {error ? (
                   <p className="text-sm text-red-600 font-medium" role="alert">
@@ -529,51 +420,9 @@ export default function PartnerPage() {
                 </Button>
               </form>
             </section>
-
-            <Collapsible open={contractOpen} onOpenChange={setContractOpen}>
-              <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
-                <CollapsibleTrigger className="flex w-full items-center justify-between px-5 py-4 text-left font-bold text-gray-900 hover:bg-gray-50 transition-colors">
-                  {c.contractTitle}
-                  <ChevronDown
-                    className={cn(
-                      "h-5 w-5 text-gray-500 transition-transform",
-                      contractOpen && "rotate-180",
-                    )}
-                  />
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <pre
-                    className="px-5 pb-5 whitespace-pre-wrap font-sans leading-relaxed border-t border-gray-100 pt-4 max-h-[min(50vh,320px)] overflow-y-auto"
-                    style={{ fontSize: "11px", color: "#999" }}
-                  >
-                    {c.contractText}
-                  </pre>
-                </CollapsibleContent>
-              </section>
-            </Collapsible>
           </div>
         ) : null}
       </div>
-    </div>
-  );
-}
-
-function SuccessNotice({
-  icon: Icon,
-  title,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-}) {
-  return (
-    <div className="flex gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-      <div
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white"
-        style={{ backgroundColor: BRAND_BLUE }}
-      >
-        <Icon className="h-5 w-5" aria-hidden />
-      </div>
-      <p className="text-sm text-gray-700 leading-relaxed pt-1.5">{title}</p>
     </div>
   );
 }
@@ -594,49 +443,6 @@ function Field({
         {required ? <span className="text-red-500 ml-0.5">*</span> : null}
       </Label>
       {children}
-    </div>
-  );
-}
-
-function PricingCard({
-  title,
-  price,
-  period,
-  highlight,
-  features,
-}: {
-  title: string;
-  price: string;
-  period: string;
-  highlight?: boolean;
-  features: string[];
-}) {
-  return (
-    <div
-      className={cn(
-        "rounded-2xl border p-5 sm:p-6 flex flex-col",
-        highlight
-          ? "border-amber-300 bg-gradient-to-b from-amber-50 to-white shadow-lg ring-2 ring-amber-200/80"
-          : "border-gray-200 bg-white shadow-md",
-      )}
-    >
-      <div className="flex items-baseline justify-between gap-2 mb-4">
-        <h3 className="font-black text-gray-900 text-sm sm:text-base tracking-tight">{title}</h3>
-        <p className="text-right shrink-0">
-          <span className="text-2xl font-black" style={{ color: BRAND_BLUE }}>
-            {price}
-          </span>
-          <span className="text-sm text-gray-500">{period}</span>
-        </p>
-      </div>
-      <ul className="space-y-2 text-sm text-gray-700 flex-1">
-        {features.map((f) => (
-          <li key={f} className="flex gap-2">
-            <Check className="h-4 w-4 shrink-0 mt-0.5" style={{ color: BRAND_BLUE }} />
-            <span>{f}</span>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
