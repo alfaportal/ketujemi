@@ -32,7 +32,7 @@ export function ListingCardImage({ imageUrl, primaryImageUrl, alt, className }: 
     <img
       src={src}
       alt={alt}
-      className={cn("w-full h-full object-cover", className)}
+      className={cn("w-full h-full object-cover object-center", className)}
       loading="lazy"
       decoding="async"
       onError={() => setFailed(true)}

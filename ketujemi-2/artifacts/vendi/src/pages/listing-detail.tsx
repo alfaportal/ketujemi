@@ -418,7 +418,7 @@ export default function ListingDetail() {
             >
               {allImages.length > 0 ? (
                 <div>
-                  <div className="relative aspect-video">
+                  <div className="relative aspect-[4/3] overflow-hidden">
                     {isVipSeller ? (
                       <div className="absolute top-3 left-3 z-10 bg-[#1A56A0] text-white text-xs sm:text-sm font-black px-2.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5">
                         <Crown size={14} className="text-white" aria-hidden />
@@ -428,7 +428,7 @@ export default function ListingDetail() {
                     <img
                       src={allImages[activePhoto]}
                       alt={listing.title}
-                      className="w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover object-center"
                       data-testid="img-listing"
                     />
                     {allImages.length > 1 && (
@@ -457,18 +457,18 @@ export default function ListingDetail() {
                         <button
                           key={i}
                           onClick={() => setActivePhoto(i)}
-                          className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                          className={`relative flex-shrink-0 w-20 aspect-[4/3] rounded-lg overflow-hidden border-2 transition-all ${
                             i === activePhoto ? "border-blue-400 opacity-100" : "border-transparent opacity-50 hover:opacity-80"
                           }`}
                         >
-                          <img src={url} alt="" className="w-full h-full object-cover" />
+                          <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover object-center" />
                         </button>
                       ))}
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="aspect-video flex items-center justify-center bg-gray-200 text-gray-500 text-sm flex-col gap-2">
+                <div className="aspect-[4/3] flex items-center justify-center bg-gray-200 text-gray-500 text-sm flex-col gap-2">
                   <Camera size={40} className="text-gray-400 stroke-[1.5]" aria-hidden />
                   <span>{t.noPhoto}</span>
                 </div>
