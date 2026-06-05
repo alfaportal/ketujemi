@@ -70,8 +70,23 @@ CREATE INDEX IF NOT EXISTS shops_directory_category_idx ON shops (directory_cate
 CREATE INDEX IF NOT EXISTS shops_directory_city_idx ON shops (city, country);
 `;
 
+const SHOP_RATINGS_SQL = `
+CREATE TABLE IF NOT EXISTS shop_ratings (
+  id serial PRIMARY KEY,
+  shop_id integer NOT NULL REFERENCES shops(id) ON DELETE CASCADE,
+  user_id integer NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  comment text,
+  created_at timestamp NOT NULL DEFAULT now()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS shop_ratings_shop_user_idx ON shop_ratings (shop_id, user_id);
+CREATE INDEX IF NOT EXISTS shop_ratings_shop_idx ON shop_ratings (shop_id, created_at DESC);
+`;
+
 export async function ensureShopSchema(pool: pg.Pool): Promise<void> {
   await pool.query(SHOP_APPLICATIONS_SQL);
   await pool.query(SHOPS_SQL);
   await pool.query(DIRECTORY_COLUMNS_SQL);
+  await pool.query(SHOP_RATINGS_SQL);
 }

@@ -9,10 +9,12 @@ import {
   CategoryPhotoPickerGrid,
 } from "@/components/category-photo-picker";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { applyPageMeta } from "@/lib/page-meta";
 import { shopDirectoryCategoryImageUrl } from "@/lib/shop-directory-category-images";
 import { shopDirectorySubcategoryImageUrl } from "@/lib/shop-directory-subcategory-images";
 import { directoryCategoryBySlug } from "@/lib/shop-directory-taxonomy";
 import {
+  seoCategoryDescriptionFor,
   translateDirectoryCategory,
   translateDirectorySubcategory,
   useShopDirectoryCopy,
@@ -34,8 +36,11 @@ export default function ShopDirectoryCategoryPage() {
 
   useEffect(() => {
     if (!cat) return;
-    document.title = `${translateDirectoryCategory(cat, locale)} — ${d.docCategoryTitle}`;
-  }, [cat, d.docCategoryTitle, locale]);
+    const categoryName = translateDirectoryCategory(cat, locale);
+    const title = `${categoryName} — ${d.seoCategoryTitleSuffix}`;
+    const description = seoCategoryDescriptionFor(d, categoryName);
+    applyPageMeta({ title, description, ogTitle: title, ogDescription: description });
+  }, [cat, d, locale]);
 
   useEffect(() => {
     if (!slug) return;

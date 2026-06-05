@@ -4,6 +4,11 @@ import type { ShopDirectoryCategory, ShopDirectorySubcategory } from "@/lib/shop
 
 export type ShopDirectoryCopy = {
   docTitle: string;
+  seoTitle: string;
+  seoDescription: string;
+  seoCategoryTitleSuffix: string;
+  seoCategoryDescription: string;
+  fuseNoResults: string;
   docCategoryTitle: string;
   navShops: string;
   navBuySell: string;
@@ -76,6 +81,13 @@ const CATEGORY_EN: Record<string, string> = {
 
 const KS: ShopDirectoryCopy = {
   docTitle: "Dyqanet — KetuJemi.com",
+  seoTitle: "Dyqanet Online | KetuJemi.com — Gjej çdo dyqan në një vend",
+  seoDescription:
+    "Gjej dyqane lokale në Kosovë, Shqipëri, Maqedoni dhe Diasporë. 14 kategori, qindra dyqane dixhitale.",
+  seoCategoryTitleSuffix: "Dyqane në KetuJemi.com",
+  seoCategoryDescription:
+    "Gjej dyqane {category} në Kosovë, Shqipëri dhe Maqedoni. Shiko ofertat dhe kontakto direkt.",
+  fuseNoResults: "Nuk u gjet asnjë dyqan për «{term}»",
   docCategoryTitle: "Dyqanet",
   navShops: "Dyqanet",
   navBuySell: "Bli & Shit",
@@ -98,6 +110,13 @@ const KS: ShopDirectoryCopy = {
 const MK: ShopDirectoryCopy = {
   ...KS,
   docTitle: "Продавници — KetuJemi.com",
+  seoTitle: "Онлајн продавници | KetuJemi.com — Најдете ја секоја продавница на едно место",
+  seoDescription:
+    "Најдете локални продавници во Косово, Албанија, Македонија и дијаспора. 14 категории, стотици дигитални продавници.",
+  seoCategoryTitleSuffix: "Продавници на KetuJemi.com",
+  seoCategoryDescription:
+    "Најдете продавници за {category} во Косово, Албанија и Македонија. Погледнете понуди и контактирајте директно.",
+  fuseNoResults: "Не е пронајдена продавница за «{term}»",
   docCategoryTitle: "Продавници",
   navShops: "Продавници",
   navBuySell: "Купи и продавај",
@@ -120,6 +139,13 @@ const MK: ShopDirectoryCopy = {
 const MNE: ShopDirectoryCopy = {
   ...KS,
   docTitle: "Prodavnice — KetuJemi.com",
+  seoTitle: "Online prodavnice | KetuJemi.com — Pronađite svaku prodavnicu na jednom mjestu",
+  seoDescription:
+    "Pronađite lokalne prodavnice na Kosovu, u Albaniji, Makedoniji i dijaspori. 14 kategorija, stotine digitalnih prodavnica.",
+  seoCategoryTitleSuffix: "Prodavnice na KetuJemi.com",
+  seoCategoryDescription:
+    "Pronađite prodavnice za {category} na Kosovu, u Albaniji i Makedoniji. Pogledajte ponude i kontaktirajte direktno.",
+  fuseNoResults: "Nije pronađena prodavnica za «{term}»",
   docCategoryTitle: "Prodavnice",
   navShops: "Prodavnice",
   navBuySell: "Kupi i prodaj",
@@ -142,6 +168,13 @@ const MNE: ShopDirectoryCopy = {
 const EN: ShopDirectoryCopy = {
   ...KS,
   docTitle: "Shops — KetuJemi.com",
+  seoTitle: "Online Shops | KetuJemi.com — Find every store in one place",
+  seoDescription:
+    "Find local shops in Kosovo, Albania, North Macedonia and the diaspora. 14 categories, hundreds of digital stores.",
+  seoCategoryTitleSuffix: "Shops on KetuJemi.com",
+  seoCategoryDescription:
+    "Find {category} shops in Kosovo, Albania and North Macedonia. Browse offers and contact directly.",
+  fuseNoResults: "No shop found for «{term}»",
   docCategoryTitle: "Shops",
   navShops: "Shops",
   navBuySell: "Buy & Sell",
@@ -192,4 +225,15 @@ export function translateDirectorySubcategory(
 ): string {
   if (locale === "ks") return sub.nameSq;
   return sub.nameSq;
+}
+
+export function seoCategoryDescriptionFor(
+  copy: ShopDirectoryCopy,
+  categoryName: string,
+): string {
+  return copy.seoCategoryDescription.replace("{category}", categoryName);
+}
+
+export function fuseNoResultsMessage(copy: ShopDirectoryCopy, term: string): string {
+  return copy.fuseNoResults.replace("{term}", term);
 }

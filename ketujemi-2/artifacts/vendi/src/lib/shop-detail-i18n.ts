@@ -9,7 +9,12 @@ export type ShopDetailCopy = {
   listingsTitle: string;
   noListings: string;
   negotiable: string;
+  seoTitleInCity: string;
 };
+
+function seoTitle(shopName: string, category: string, city: string, suffix: string): string {
+  return `${shopName} — ${category} ${suffix.replace("{city}", city)}`;
+}
 
 const KS: ShopDetailCopy = {
   notFound: "Dyqani nuk u gjet",
@@ -19,6 +24,7 @@ const KS: ShopDetailCopy = {
   listingsTitle: "Shpalljet e dyqanit",
   noListings: "Nuk ka shpallje aktive për momentin.",
   negotiable: "Me marrëveshje",
+  seoTitleInCity: "në {city} | KetuJemi.com",
 };
 
 const MK: ShopDetailCopy = {
@@ -29,6 +35,7 @@ const MK: ShopDetailCopy = {
   listingsTitle: "Огласи на продавницата",
   noListings: "Моментално нема активни огласи.",
   negotiable: "По договор",
+  seoTitleInCity: "во {city} | KetuJemi.com",
 };
 
 const MNE: ShopDetailCopy = {
@@ -39,6 +46,7 @@ const MNE: ShopDetailCopy = {
   listingsTitle: "Oglasi prodavnice",
   noListings: "Trenutno nema aktivnih oglasa.",
   negotiable: "Po dogovoru",
+  seoTitleInCity: "u {city} | KetuJemi.com",
 };
 
 const EN: ShopDetailCopy = {
@@ -49,6 +57,7 @@ const EN: ShopDetailCopy = {
   listingsTitle: "Shop listings",
   noListings: "No active listings at the moment.",
   negotiable: "Negotiable",
+  seoTitleInCity: "in {city} | KetuJemi.com",
 };
 
 const PAGES: Record<UiTranslationLocale, ShopDetailCopy> = {
@@ -61,4 +70,13 @@ const PAGES: Record<UiTranslationLocale, ShopDetailCopy> = {
 export function useShopDetailCopy(): ShopDetailCopy {
   const { uiLang } = useMarket();
   return PAGES[translationKeyForUiLang(uiLang)];
+}
+
+export function shopDetailSeoTitle(
+  copy: ShopDetailCopy,
+  shopName: string,
+  categoryLabel: string,
+  city: string,
+): string {
+  return seoTitle(shopName, categoryLabel, city, copy.seoTitleInCity);
 }

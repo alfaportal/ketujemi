@@ -1,6 +1,13 @@
 import { Router } from "express";
-import { db, shopApplicationsTable, shopsTable, listingsTable } from "@workspace/db";
-import { eq, and, desc, gt, isNotNull, sql } from "drizzle-orm";
+import {
+  db,
+  shopApplicationsTable,
+  shopRatingsTable,
+  shopsTable,
+  listingsTable,
+  usersTable,
+} from "@workspace/db";
+import { eq, and, desc, gt, isNotNull, sql, inArray } from "drizzle-orm";
 import { getSessionUser } from "../lib/session-user";
 import { sendShopApplicationEmail } from "../lib/send-shop-application-email";
 import {
@@ -124,7 +131,34 @@ router.post("/shop-applications", async (req, res) => {
   res.status(201).json({ ok: true, id: row.id });
 });
 
-function shopDirectoryRow(shop: typeof shopsTable.$inferSelect) {
+type RatingSummary = { average_rating: number | null; rating_count: number };
+
+async function ratingSummariesForShops(shopIds: number[]): Promise<Record<number, RatingSummary>> {
+  if (!shopIds.length) return {};
+  const rows = await db
+    .select({
+      shop_id: shopRatingsTable.shop_id,
+      average_rating: sql<number>`round(avg(${shopRatingsTable.rating})::numeric, 1)`,
+      rating_count: sql<number>`count(*)::int`,
+    })
+    .from(shopRatingsTable)
+    .where(inArray(shopRatingsTable.shop_id, shopIds))
+    .groupBy(shopRatingsTable.shop_id);
+
+  const out: Record<number, RatingSummary> = {};
+  for (const row of rows) {
+    out[row.shop_id] = {
+      average_rating: Number(row.average_rating),
+      rating_count: row.rating_count,
+    };
+  }
+  return out;
+}
+
+function shopDirectoryRow(
+  shop: typeof shopsTable.$inferSelect,
+  ratings?: RatingSummary,
+) {
   return {
     id: shop.id,
     shop_name: shop.shop_name,
@@ -143,7 +177,15 @@ function shopDirectoryRow(shop: typeof shopsTable.$inferSelect) {
     tiktok: shop.tiktok,
     whatsapp: shop.whatsapp,
     website: shop.website,
+    average_rating: ratings?.average_rating ?? null,
+    rating_count: ratings?.rating_count ?? 0,
   };
+}
+
+function parseShopId(raw: string): number | null {
+  const id = Number(raw);
+  if (!Number.isFinite(id) || id < 1) return null;
+  return id;
 }
 
 // ─── GET /shops/directory ─────────────────────────────────────────────────────
@@ -180,17 +222,153 @@ router.get("/shops/directory", async (req, res) => {
     if (row.slug) categoryCounts[row.slug] = row.count;
   }
 
+  const ratingMap = await ratingSummariesForShops(rows.map((r) => r.id));
+
   res.json({
-    shops: rows.map(shopDirectoryRow),
+    shops: rows.map((row) => shopDirectoryRow(row, ratingMap[row.id])),
     categoryCounts,
     total: rows.length,
   });
 });
 
+// ─── GET /shops/:id/ratings ─────────────────────────────────────────────────
+router.get("/shops/:id/ratings", async (req, res) => {
+  const id = parseShopId(req.params.id);
+  if (!id) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const [shop] = await db.select({ id: shopsTable.id }).from(shopsTable).where(eq(shopsTable.id, id)).limit(1);
+  if (!shop) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+
+  const viewer = await getSessionUser(req);
+  const reviewRows = await db
+    .select({
+      id: shopRatingsTable.id,
+      rating: shopRatingsTable.rating,
+      comment: shopRatingsTable.comment,
+      created_at: shopRatingsTable.created_at,
+      user_id: shopRatingsTable.user_id,
+      display_name: usersTable.display_name,
+      business_name: usersTable.business_name,
+    })
+    .from(shopRatingsTable)
+    .innerJoin(usersTable, eq(shopRatingsTable.user_id, usersTable.id))
+    .where(eq(shopRatingsTable.shop_id, id))
+    .orderBy(desc(shopRatingsTable.created_at));
+
+  const [summary] = await db
+    .select({
+      average_rating: sql<number>`round(avg(${shopRatingsTable.rating})::numeric, 1)`,
+      rating_count: sql<number>`count(*)::int`,
+    })
+    .from(shopRatingsTable)
+    .where(eq(shopRatingsTable.shop_id, id));
+
+  let userRating: { rating: number; comment: string | null } | null = null;
+  if (viewer) {
+    const [mine] = await db
+      .select({
+        rating: shopRatingsTable.rating,
+        comment: shopRatingsTable.comment,
+      })
+      .from(shopRatingsTable)
+      .where(and(eq(shopRatingsTable.shop_id, id), eq(shopRatingsTable.user_id, viewer.id)))
+      .limit(1);
+    if (mine) userRating = { rating: mine.rating, comment: mine.comment };
+  }
+
+  res.json({
+    average_rating: summary?.rating_count ? Number(summary.average_rating) : null,
+    rating_count: summary?.rating_count ?? 0,
+    user_rating: userRating,
+    reviews: reviewRows.map((r) => ({
+      id: r.id,
+      rating: r.rating,
+      comment: r.comment,
+      created_at: r.created_at.toISOString(),
+      author_name: r.business_name?.trim() || r.display_name?.trim() || null,
+      is_mine: viewer?.id === r.user_id,
+    })),
+  });
+});
+
+// ─── POST /shops/:id/ratings ────────────────────────────────────────────────
+router.post("/shops/:id/ratings", async (req, res) => {
+  const viewer = await getSessionUser(req);
+  if (!viewer) {
+    res.status(401).json({ error: "Authentication required", message: "Duhet të jeni i kyçur." });
+    return;
+  }
+
+  const id = parseShopId(req.params.id);
+  if (!id) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const [shop] = await db
+    .select({ id: shopsTable.id, is_active: shopsTable.is_active })
+    .from(shopsTable)
+    .where(eq(shopsTable.id, id))
+    .limit(1);
+  if (!shop?.is_active) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+
+  const body = req.body as Record<string, unknown>;
+  const rating = Number(body.rating);
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    res.status(400).json({ error: "VALIDATION", message: "Vlerësimi duhet të jetë 1–5." });
+    return;
+  }
+  const comment = trimOrNull(body.comment);
+
+  const [existing] = await db
+    .select({ id: shopRatingsTable.id })
+    .from(shopRatingsTable)
+    .where(and(eq(shopRatingsTable.shop_id, id), eq(shopRatingsTable.user_id, viewer.id)))
+    .limit(1);
+
+  if (existing) {
+    await db
+      .update(shopRatingsTable)
+      .set({ rating, comment })
+      .where(eq(shopRatingsTable.id, existing.id));
+  } else {
+    await db.insert(shopRatingsTable).values({
+      shop_id: id,
+      user_id: viewer.id,
+      rating,
+      comment,
+    });
+  }
+
+  const [summary] = await db
+    .select({
+      average_rating: sql<number>`round(avg(${shopRatingsTable.rating})::numeric, 1)`,
+      rating_count: sql<number>`count(*)::int`,
+    })
+    .from(shopRatingsTable)
+    .where(eq(shopRatingsTable.shop_id, id));
+
+  res.json({
+    ok: true,
+    average_rating: summary?.rating_count ? Number(summary.average_rating) : null,
+    rating_count: summary?.rating_count ?? 0,
+    user_rating: { rating, comment },
+  });
+});
+
 // ─── GET /shops/:id ───────────────────────────────────────────────────────────
 router.get("/shops/:id", async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isFinite(id) || id < 1) {
+  const id = parseShopId(req.params.id);
+  if (!id) {
     res.status(400).json({ error: "Invalid id" });
     return;
   }
@@ -215,6 +393,9 @@ router.get("/shops/:id", async (req, res) => {
     .orderBy(desc(listingsTable.listed_at))
     .limit(100);
 
+  const ratingMap = await ratingSummariesForShops([shop.id]);
+  const ratings = ratingMap[shop.id];
+
   res.json({
     shop: {
       id: shop.id,
@@ -223,6 +404,8 @@ router.get("/shops/:id", async (req, res) => {
       description: shop.description,
       category: shop.category,
       category_id: shop.category_id,
+      directory_category_slug: shop.directory_category_slug,
+      directory_subcategory_slug: shop.directory_subcategory_slug,
       country: shop.country,
       city: shop.city,
       region: shop.region,
@@ -235,6 +418,8 @@ router.get("/shops/:id", async (req, res) => {
       contact_name: shop.contact_name,
       phone: shop.phone,
       email: shop.email,
+      average_rating: ratings?.average_rating ?? null,
+      rating_count: ratings?.rating_count ?? 0,
     },
     listings: listingRows.map((l) => ({
       id: l.id,

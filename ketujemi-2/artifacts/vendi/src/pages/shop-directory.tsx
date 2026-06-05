@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
+import Fuse from "fuse.js";
 import { Loader2, Search } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { applyPageMeta } from "@/lib/page-meta";
 import { shopDirectoryCategoryImageUrl } from "@/lib/shop-directory-category-images";
 import { SHOP_DIRECTORY_CATEGORIES } from "@/lib/shop-directory-taxonomy";
 import {
+  fuseNoResultsMessage,
   translateDirectoryCategory,
+  translateDirectorySubcategory,
   useShopDirectoryCopy,
 } from "@/lib/shop-directory-i18n";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
@@ -18,6 +22,11 @@ import type { ShopDirectoryListItem } from "@/components/shop-directory-card";
 type DirectoryResponse = {
   shops: ShopDirectoryListItem[];
   categoryCounts: Record<string, number>;
+};
+
+type FuseShopDoc = ShopDirectoryListItem & {
+  categoryLabel: string;
+  subcategoryLabel: string;
 };
 
 export default function ShopDirectoryPage() {
@@ -34,8 +43,13 @@ export default function ShopDirectoryPage() {
   const [country, setCountry] = useState("");
 
   useEffect(() => {
-    document.title = d.docTitle;
-  }, [d.docTitle]);
+    applyPageMeta({
+      title: d.seoTitle,
+      description: d.seoDescription,
+      ogTitle: d.seoTitle,
+      ogDescription: d.seoDescription,
+    });
+  }, [d.seoTitle, d.seoDescription]);
 
   useEffect(() => {
     setLoading(true);
@@ -57,28 +71,37 @@ export default function ShopDirectoryPage() {
 
   const cityOptions = country ? citiesForShopCountry(country) : [];
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return shops;
-    return shops.filter((s) => {
+  const fuseDocs = useMemo<FuseShopDoc[]>(() => {
+    return shops.map((s) => {
       const cat = s.directory_category_slug
         ? SHOP_DIRECTORY_CATEGORIES.find((c) => c.slug === s.directory_category_slug)
         : null;
       const sub = cat?.subcategories.find((x) => x.slug === s.directory_subcategory_slug);
-      const hay = [
-        s.shop_name,
-        s.city,
-        s.country,
-        cat?.nameSq,
-        sub?.nameSq,
-        cat ? translateDirectoryCategory(cat, locale) : "",
-        sub ? sub.nameSq : "",
-      ]
-        .join(" ")
-        .toLowerCase();
-      return hay.includes(q);
+      return {
+        ...s,
+        categoryLabel: cat ? translateDirectoryCategory(cat, locale) : "",
+        subcategoryLabel: sub ? translateDirectorySubcategory(sub, locale) : "",
+      };
     });
-  }, [shops, query, locale]);
+  }, [shops, locale]);
+
+  const fuse = useMemo(
+    () =>
+      new Fuse(fuseDocs, {
+        keys: ["shop_name", "categoryLabel", "subcategoryLabel", "city", "country", "description"],
+        threshold: 0.3,
+        ignoreLocation: true,
+      }),
+    [fuseDocs],
+  );
+
+  const filtered = useMemo(() => {
+    const q = query.trim();
+    if (!q) return [];
+    return fuse.search(q).map((r) => r.item);
+  }, [fuse, query]);
+
+  const searchTerm = query.trim();
 
   return (
     <div className="min-h-screen bg-[#f0f4f9]">
@@ -167,17 +190,17 @@ export default function ShopDirectoryPage() {
           </div>
         )}
 
-        {query && !loading ? (
+        {searchTerm && !loading ? (
           <div className="rounded-2xl border border-gray-200 bg-white p-4">
             <p className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
               <Search size={16} />
               {filtered.length} {d.shopsCount}
             </p>
             {filtered.length === 0 ? (
-              <p className="text-sm text-gray-500">{d.noResults}</p>
+              <p className="text-sm text-gray-500">{fuseNoResultsMessage(d, searchTerm)}</p>
             ) : (
               <ul className="space-y-2">
-                {filtered.slice(0, 8).map((s) => (
+                {filtered.slice(0, 12).map((s) => (
                   <li key={s.id}>
                     <Link href={`/dyqani/${s.id}`} className="text-sm font-semibold text-blue-700 hover:underline">
                       {s.shop_name} — {s.city}

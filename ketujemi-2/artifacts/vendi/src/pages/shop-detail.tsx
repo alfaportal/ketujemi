@@ -3,11 +3,14 @@ import { useEffect, useState } from "react";
 import { Loader2, MapPin, Facebook, Instagram, Globe, ExternalLink } from "lucide-react";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { SiteHeader } from "@/components/site-header";
+import { ShopRatingBadge } from "@/components/shop-rating-badge";
+import { ShopRatingsPanel } from "@/components/shop-ratings-panel";
 import { BRAND_BLUE, BRAND_ORANGE } from "@/lib/brand-colors";
+import { applyPageMeta, truncateMetaDescription } from "@/lib/page-meta";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
-import { useShopDetailCopy } from "@/lib/shop-detail-i18n";
+import { shopDetailSeoTitle, useShopDetailCopy } from "@/lib/shop-detail-i18n";
 import { parseListingImageUrls } from "@/lib/listing-images";
 
 type ShopData = {
@@ -20,6 +23,8 @@ type ShopData = {
   city: string;
   region: string;
   address: string;
+  average_rating?: number | null;
+  rating_count?: number;
   facebook?: string | null;
   instagram?: string | null;
   tiktok?: string | null;
@@ -47,6 +52,7 @@ export default function ShopDetailPage() {
   const [, params] = useRoute("/dyqani/:id");
   const id = Number(params?.id);
   const { uiLang } = useMarket();
+  const locale = translationKeyForUiLang(uiLang);
   const d = useShopDetailCopy();
   const [loading, setLoading] = useState(true);
   const [shop, setShop] = useState<ShopData | null>(null);
@@ -63,14 +69,23 @@ export default function ShopDetailPage() {
       .then((data) => {
         setShop(data.shop);
         setListings(data.listings);
-        document.title = `${data.shop.shop_name} — KetuJemi`;
+        const categoryLabel = translateCategory(data.shop.category, locale);
+        const title = shopDetailSeoTitle(d, data.shop.shop_name, categoryLabel, data.shop.city);
+        const description = truncateMetaDescription(data.shop.description, 150);
+        applyPageMeta({
+          title,
+          description,
+          ogTitle: title,
+          ogDescription: description,
+          ogImage: data.shop.logo_url,
+        });
       })
       .catch(() => {
         setShop(null);
         setListings([]);
       })
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, d, locale]);
 
   if (loading) {
     return (
@@ -121,12 +136,20 @@ export default function ShopDetailPage() {
           <div className="text-center sm:text-left">
             <h1 className="text-2xl sm:text-3xl font-black">{shop.shop_name}</h1>
             <p className="mt-1 text-white/90 font-medium">
-              {translateCategory(shop.category, translationKeyForUiLang(uiLang))}
+              {translateCategory(shop.category, locale)}
             </p>
             <p className="mt-2 text-sm text-white/80 flex items-center justify-center sm:justify-start gap-1">
               <MapPin size={14} />
               {shop.city}, {shop.region} — {shop.country}
             </p>
+            <div className="mt-2 flex justify-center sm:justify-start">
+              <ShopRatingBadge
+                averageRating={shop.average_rating}
+                ratingCount={shop.rating_count}
+                size="md"
+                tone="onDark"
+              />
+            </div>
           </div>
         </div>
       </header>
@@ -136,6 +159,8 @@ export default function ShopDetailPage() {
           <h2 className="text-lg font-bold text-gray-900 mb-3">{d.aboutTitle}</h2>
           <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{shop.description}</p>
         </section>
+
+        <ShopRatingsPanel shopId={shop.id} />
 
         {socials.length > 0 ? (
           <section className="flex flex-wrap gap-3">

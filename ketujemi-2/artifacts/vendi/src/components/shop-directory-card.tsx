@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { Facebook, Globe, Instagram, ExternalLink } from "lucide-react";
+import { ShopRatingBadge } from "@/components/shop-rating-badge";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { translateDirectorySubcategory } from "@/lib/shop-directory-i18n";
 import { directoryCategoryBySlug, directorySubcategoryBySlug } from "@/lib/shop-directory-taxonomy";
@@ -20,6 +21,8 @@ export type ShopDirectoryListItem = {
   tiktok?: string | null;
   whatsapp?: string | null;
   website?: string | null;
+  average_rating?: number | null;
+  rating_count?: number;
 };
 
 type Props = {
@@ -76,6 +79,9 @@ export function ShopDirectoryCard({ shop, viewLabel }: Props) {
           <p className="text-xs text-gray-500 mt-1">
             {shop.city} · {countryLabel}
           </p>
+          <div className="mt-1.5">
+            <ShopRatingBadge averageRating={shop.average_rating} ratingCount={shop.rating_count} />
+          </div>
         </div>
       </div>
       {socials.length > 0 ? (
