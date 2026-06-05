@@ -248,11 +248,6 @@ export async function assertSpecialCategoryListingRules(input: {
       });
       return { ok: false, error: "DHURATA_PHOTO_REQUIRED", message: reason, reason };
     }
-    if (imageCount > DHURATA_MAX_PHOTOS) {
-      const reason = `Maksimumi ${DHURATA_MAX_PHOTOS} foto për dhurata.`;
-      return { ok: false, error: "DHURATA_PHOTO_LIMIT", message: reason, reason };
-    }
-
     const blocked = findDhurataBlockedWord(`${input.title}\n${input.description}`);
     if (blocked) {
       const reason = `Gjuha e shitjes nuk lejohet në "Dhurata & Falas" (fjalë e ndaluar: "${blocked}").`;
@@ -318,11 +313,6 @@ export async function assertSpecialCategoryListingRules(input: {
     });
     return { ok: false, error: "KERKOJ_PHOTO_REQUIRED", message: reason, reason };
   }
-  if (imageCount > KERKOJ_MAX_PHOTOS) {
-    const reason = `Maksimumi ${KERKOJ_MAX_PHOTOS} foto për kërkesa.`;
-    return { ok: false, error: "KERKOJ_PHOTO_LIMIT", message: reason, reason };
-  }
-
   const blocked = findKerkojBlockedWord(`${input.title}\n${input.description}`);
   if (blocked) {
     const reason = `Gjuha e shitjes nuk lejohet në "Kërkoj të Blej" (fjalë e ndaluar: "${blocked}").`;

@@ -277,7 +277,6 @@ export default function NewListing() {
   );
   const isKerkojCategory = postFields.isKerkoj;
   const isDhurataCategory = postFields.isDhurata;
-  const maxPhotos = postFields.maxPhotos;
   const hasBrands = brandCats.length > 0;
 
   useEffect(() => {
@@ -355,12 +354,6 @@ export default function NewListing() {
   }, [isKerkojCategory, isDhurataCategory, form]);
 
   useEffect(() => {
-    if (isKerkojCategory && imageUrls.length > KERKOJ_MAX_PHOTOS) {
-      setImageUrls((prev) => prev.slice(0, KERKOJ_MAX_PHOTOS));
-    }
-  }, [isKerkojCategory, imageUrls.length]);
-
-  useEffect(() => {
     if (isListingMarketCode(market.code)) {
       setListingCountry(market.code);
     }
@@ -403,14 +396,9 @@ export default function NewListing() {
       toast({ title: t.uploadFailed, variant: "destructive" });
       return;
     }
-    const remaining = maxPhotos - imageUrls.length;
-    const toUpload = files.slice(0, remaining);
-    if (files.length > remaining) {
-      toast({ title: `${t.tooManyPhotos} ${remaining} ${t.photosSuffix}`, variant: "destructive" });
-    }
     setIsUploading(true);
     try {
-      const urls = await Promise.all(toUpload.map((file) => imageUpload.uploadFile(file)));
+      const urls = await Promise.all(files.map((file) => imageUpload.uploadFile(file)));
       setImageUrls((prev) => [...prev, ...urls]);
     } catch {
       toast({ title: t.uploadFailed, variant: "destructive" });
@@ -1221,9 +1209,9 @@ export default function NewListing() {
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm font-medium">
                     {t.listingPhotos} <span className="text-red-500">*</span>
-                    <span className="text-gray-400 font-normal ml-1">(min 1, max {maxPhotos})</span>
+                    <span className="text-gray-400 font-normal ml-1">(min 1)</span>
                   </Label>
-                  <span className="text-sm text-gray-400">{imageUrls.length}/{maxPhotos}</span>
+                  <span className="text-sm text-gray-400">{imageUrls.length}</span>
                 </div>
 
                 <input
@@ -1235,8 +1223,7 @@ export default function NewListing() {
                   onChange={handleFileChange}
                 />
 
-                {imageUrls.length < maxPhotos && (
-                  <button
+                <button
                     type="button"
                     onClick={() => uploadRef.current?.click()}
                     disabled={isUploading || !imageUpload.ready}
@@ -1253,11 +1240,10 @@ export default function NewListing() {
                         <ImagePlus size={30} />
                         <p className="text-sm font-semibold text-gray-600">{t.addPhoto}</p>
                         <p className="text-sm">{t.clickToSelect}</p>
-                        <p className="text-sm text-gray-300">JPG, PNG, WEBP • max {maxPhotos}</p>
+                        <p className="text-sm text-gray-300">JPG, PNG, WEBP</p>
                       </div>
                     )}
                   </button>
-                )}
 
                 <ImagePreview urls={imageUrls} onRemove={isUploading ? () => {} : removeImage} mainLabel={t.mainPhotoLabel} />
 

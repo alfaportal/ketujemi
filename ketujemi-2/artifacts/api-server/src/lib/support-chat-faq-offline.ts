@@ -99,7 +99,7 @@ const DETAILED_FAQ: FaqEntry[] = [
     keywords:
       /posto|postim|si\s+(te|të)\s+post|si\s+postoj|how\s+to\s+post|објав|objav|kako\s+da\s+post|shitës|shites|shese|shes\b/i,
     reply: {
-      sq: "Postimi (hap pas hapi): 1) **Regjistrohu dhe hyr** në llogari. 2) **«Posto Njoftim»**. 3) Kategori + nënkategori e saktë. 4) Titull, përshkrim, çmim €, deri **10 foto**. 5) Publiko (moderim AI) — aktiv deri **3 muaj**. Postimi është **falas dhe i pakufizuar**. Boost TOP opsional (€2/€5/€8). Rifillo pas skadimit nga njoftimi juaj.",
+      sq: "Postimi (hap pas hapi): 1) **Regjistrohu dhe hyr** në llogari. 2) **«Posto Njoftim»**. 3) Kategori + nënkategori e saktë. 4) Titull, përshkrim, çmim €, foto **të pakufizuara** (opsionalisht video deri **150MB**). 5) Publiko (moderim AI) — aktiv deri **3 muaj**. Postimi është **falas dhe i pakufizuar**. Boost TOP opsional (€2/€5/€8). Rifillo pas skadimit nga njoftimi juaj.",
       mk: "Продавач: регистрација, верификација, **Posto Falas**, точна категорија, детали — 30 дена.",
       me: "Prodavač: registracija, verifikacija, **Posto Falas**, tačna kategorija, detalji — 30 dana.",
     },

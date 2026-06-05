@@ -4,12 +4,16 @@ export const CLOUDINARY_LISTINGS_FOLDER = "listings";
 /** Partner logos/banners — never auto-deleted. */
 export const CLOUDINARY_PARTNERS_FOLDER = "partners";
 
+/** Shop logos from /hap-shitore applications — permanent. */
+export const CLOUDINARY_SHOPS_FOLDER = "shops";
+
 /** Static site UI (banners, categories, icons) — never auto-deleted. */
 export const CLOUDINARY_SITE_ASSETS_FOLDER = "site-assets";
 
 /** Folders excluded from listing cleanup / Cloudinary destroy. */
 export const CLOUDINARY_PROTECTED_FOLDERS = [
   CLOUDINARY_PARTNERS_FOLDER,
+  CLOUDINARY_SHOPS_FOLDER,
   CLOUDINARY_SITE_ASSETS_FOLDER,
 ] as const;
 

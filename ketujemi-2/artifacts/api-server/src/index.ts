@@ -5,6 +5,7 @@ import {
   ensureListingUserSchema,
   ensureOAuthSchema,
   ensureEngagementNotificationsSchema,
+  ensureShopSchema,
   ensureFemijeCategoryImages,
   ensureSportOutdoorTypeCategories,
   ensureWalletSchema,
@@ -48,6 +49,8 @@ async function startServer(): Promise<void> {
     logger.info("Engagement notifications schema verified (user_notifications, FCM tokens)");
     await ensureHomepagePartnersSchema(pool);
     logger.info("Homepage partners schema verified (homepage_partners)");
+    await ensureShopSchema(pool);
+    logger.info("Shop schema verified (shop_applications, shops)");
     await ensureSportOutdoorTypeCategories(pool);
     logger.info("Sport & Outdoor type subcategories verified (sport-type-*)");
     await ensureFemijeCategoryImages(pool);

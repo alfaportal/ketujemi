@@ -147,7 +147,7 @@ const KS: StaticPagesCopy = {
         title: "Çfarë ofrojmë",
         bullets: [
           "Postim i pakufizuar dhe falas për të gjithë përdoruesit — privat dhe biznes",
-          "Deri 10 foto për njoftim (ruajtje përmes Cloudinary)",
+          "Foto të pakufizuara për njoftim dhe video opsionale deri në 150MB (ruajtje përmes Cloudinary)",
           "Hyrje / regjistrim i detyrueshëm për të krijuar njoftim",
           "Sistem mesazhesh i integruar për komunikim të sigurt mes palëve",
           "Njoftime aktive deri 3 muaj — fshihen automatikisht pas skadimit",
@@ -209,7 +209,7 @@ const KS: StaticPagesCopy = {
         ],
         bullets: [
           "Opsioni i vetëm me pagesë është **Boost TOP** (opsional) — për të promovuar një njoftim në kryefaqe",
-          "Çdo njoftim lejon deri 10 fotografi të vërteta (Cloudinary)",
+          "Çdo njoftim lejon foto të pakufizuara dhe video opsionale deri në 150MB (Cloudinary)",
         ],
       },
       {
@@ -597,7 +597,7 @@ const KS: StaticPagesCopy = {
     featured: [
       {
         q: "Si të postoj njoftim?",
-        a: "Kliko butonin «Posto Njoftim» në krye të faqes, zgjidhni kategorinë e duhur, plotësoni titullin, përshkrimin dhe çmimin, ngarko deri 10 foto dhe publiko. Njoftimi bëhet aktiv menjëherë pas moderimit automatik.",
+        a: "Kliko butonin «Posto Njoftim» në krye të faqes, zgjidhni kategorinë e duhur, plotësoni titullin, përshkrimin dhe çmimin, ngarko foto të pakufizuara (dhe opsionalisht një video deri në 150MB) dhe publiko. Njoftimi bëhet aktiv menjëherë pas moderimit automatik.",
       },
       {
         q: "Sa kushton postimi?",
@@ -621,7 +621,7 @@ const KS: StaticPagesCopy = {
       },
       {
         q: "Sa foto mund të ngarkoj për njoftim?",
-        a: "Deri 10 foto për njoftim. Rekomandojmë foto të vërteta të produktit tuaj — jo foto nga interneti ose katalogë.",
+        a: "Mund të ngarkoni foto të pakufizuara dhe një video deri në 150MB për çdo njoftim. Rekomandojmë foto të vërteta të produktit tuaj — jo foto nga interneti ose katalogë.",
       },
       {
         q: "Njoftimi im u refuzua — pse?",
@@ -818,7 +818,7 @@ const MK: StaticPagesCopy = {
         ],
         bullets: [
           "Единствената платена опција е **Boost TOP** (опционално) — за промоција на оглас на почетната страница",
-          "До 10 вистински фотографии по оглас",
+          "Неограничени вистински фотографии по оглас и опционално видео до 150MB",
         ],
       },
       {
@@ -1172,7 +1172,7 @@ const MK: StaticPagesCopy = {
           },
           {
             q: "Колку фотографии можам да прикачам за еден оглас?",
-            a: "До 10 фотографии по оглас.",
+            a: "Неограничен број фотографии и едно видео до 150MB по оглас.",
           },
         ],
       },
@@ -1341,7 +1341,7 @@ const MNE: StaticPagesCopy = {
         ],
         bullets: [
           "Jedina plaćena opcija je **Boost TOP** (opciono) — za promociju oglasa na početnoj stranici",
-          "Do 10 stvarnih fotografija po oglasu",
+          "Neograničen broj stvarnih fotografija po oglasu i opcionalni video do 150MB",
         ],
       },
       {
@@ -1695,7 +1695,7 @@ const MNE: StaticPagesCopy = {
           },
           {
             q: "Koliko fotografija mogu učitati po oglasu?",
-            a: "Do 10 fotografija po oglasu.",
+            a: "Neograničen broj fotografija i jedan video do 150MB po oglasu.",
           },
         ],
       },

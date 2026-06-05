@@ -16,6 +16,7 @@ import partnersRouter from "./partners";
 import listingPackagesRouter from "./listing-packages";
 import walletRouter from "./wallet";
 import notificationsRouter from "./notifications";
+import shopApplicationsRouter from "./shop-applications";
 
 const router: IRouter = Router();
 
@@ -25,6 +26,7 @@ router.use(partnersRouter);
 router.use(listingPackagesRouter);
 router.use(walletRouter);
 router.use(notificationsRouter);
+router.use(shopApplicationsRouter);
 router.use(authRouter);
 router.use(oauthRouter);
 router.use(paymentsRouter);

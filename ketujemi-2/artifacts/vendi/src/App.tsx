@@ -49,6 +49,7 @@ const VipPackagesPage = lazy(() => import("@/pages/vip-packages"));
 const AdvertisePage = lazy(() => import("@/pages/advertise"));
 const PartnerRegisterPage = lazy(() => import("@/pages/partner"));
 const OpenShopPage = lazy(() => import("@/pages/hap-shitore"));
+const ShopDetailPage = lazy(() => import("@/pages/shop-detail"));
 const WalletBankPaymentPage = lazy(() => import("@/pages/wallet-bank-payment"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
@@ -78,6 +79,7 @@ const ROUTE_COMPONENTS: Record<Exclude<RouteId, "category-hub-redirect">, Compon
   category: CategoryPage,
   "new-listing": NewListing,
   "edit-listing": EditListing,
+  "shop-detail": ShopDetailPage,
   "listing-detail": ListingDetail,
   listings: Listings,
   "not-found": NotFound,

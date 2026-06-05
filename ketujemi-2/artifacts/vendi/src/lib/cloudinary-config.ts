@@ -3,6 +3,7 @@ import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import {
   CLOUDINARY_LISTINGS_FOLDER,
   CLOUDINARY_PARTNERS_FOLDER,
+  CLOUDINARY_SHOPS_FOLDER,
   CLOUDINARY_SITE_ASSETS_FOLDER,
 } from "../../../../lib/cloudinary-asset.ts";
 
@@ -54,7 +55,7 @@ export function useCloudinaryConfig(): CloudinaryConfig {
  * partner — logo/banner partnerësh (ruhen gjithmonë → partners/)
  * site-asset — banera, kategori, UI (ruhen gjithmonë → site-assets/)
  */
-export type CloudinaryUploadTarget = "listing" | "partner" | "site-asset";
+export type CloudinaryUploadTarget = "listing" | "partner" | "shop" | "site-asset";
 
 export async function uploadImageToCloudinary(
   file: File,
@@ -74,6 +75,10 @@ export async function uploadImageToCloudinary(
     fd.append("folder", CLOUDINARY_PARTNERS_FOLDER);
     fd.append("tags", "partner,permanent");
     fd.append("context", "permanent=true|asset_type=partner");
+  } else if (target === "shop") {
+    fd.append("folder", CLOUDINARY_SHOPS_FOLDER);
+    fd.append("tags", "shop,permanent");
+    fd.append("context", "permanent=true|asset_type=shop");
   } else if (target === "site-asset") {
     fd.append("folder", CLOUDINARY_SITE_ASSETS_FOLDER);
     fd.append("tags", "site,permanent");

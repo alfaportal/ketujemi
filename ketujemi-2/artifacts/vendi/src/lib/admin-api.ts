@@ -483,3 +483,49 @@ export interface AdminReport {
   status: string;
   created_at: string;
 }
+
+export interface AdminShopApplication {
+  id: number;
+  user_id: number;
+  shop_name: string;
+  logo_url: string;
+  description: string;
+  category: string;
+  category_id: number | null;
+  country: string;
+  city: string;
+  region: string;
+  address: string;
+  facebook: string | null;
+  instagram: string | null;
+  tiktok: string | null;
+  whatsapp: string | null;
+  website: string | null;
+  contact_name: string;
+  phone: string;
+  email: string;
+  status: string;
+  shop_id: number | null;
+  rejected_reason: string | null;
+  created_at: string;
+}
+
+export function getAdminShopApplications() {
+  return request<{
+    applications: AdminShopApplication[];
+    stats: { pending: number; approved: number; rejected: number };
+  }>("/shop-applications");
+}
+
+export function approveAdminShopApplication(id: number) {
+  return request<{ ok: boolean; shop_id: number }>(`/shop-applications/${id}/approve`, {
+    method: "POST",
+  });
+}
+
+export function rejectAdminShopApplication(id: number, reason?: string) {
+  return request<{ ok: boolean }>(`/shop-applications/${id}/reject`, {
+    method: "POST",
+    body: JSON.stringify({ reason: reason ?? "" }),
+  });
+}

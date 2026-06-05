@@ -8,6 +8,8 @@ import {
   usersTable,
   partnersTable,
   listingPackagePurchasesTable,
+  shopApplicationsTable,
+  shopsTable,
 } from "@workspace/db";
 import { eq, desc, sql, count, gte, and } from "drizzle-orm";
 import { isVipBusinessActive } from "../lib/business-rules";
@@ -1250,6 +1252,108 @@ router.post("/admin/moderation/command", requireAdmin, async (req, res) => {
     req.log.error({ err }, "Admin moderation command error");
     res.status(msg.includes("not configured") ? 503 : 400).json({ error: msg });
   }
+});
+
+// ─── Shop applications (Dyqanet) ────────────────────────────────────────────────
+router.get("/admin/shop-applications", requireAdmin, async (_req, res) => {
+  const rows = await db
+    .select()
+    .from(shopApplicationsTable)
+    .orderBy(desc(shopApplicationsTable.created_at));
+  const stats = {
+    pending: rows.filter((r) => r.status === "pending").length,
+    approved: rows.filter((r) => r.status === "approved").length,
+    rejected: rows.filter((r) => r.status === "rejected").length,
+  };
+  res.json({ applications: rows, stats });
+});
+
+router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id) || id < 1) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const [app] = await db.select().from(shopApplicationsTable).where(eq(shopApplicationsTable.id, id)).limit(1);
+  if (!app) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  if (app.status === "approved" && app.shop_id) {
+    res.json({ ok: true, shop_id: app.shop_id });
+    return;
+  }
+
+  const [shop] = await db
+    .insert(shopsTable)
+    .values({
+      user_id: app.user_id,
+      application_id: app.id,
+      shop_name: app.shop_name,
+      logo_url: app.logo_url,
+      description: app.description,
+      category: app.category,
+      category_id: app.category_id,
+      country: app.country,
+      city: app.city,
+      region: app.region,
+      address: app.address,
+      facebook: app.facebook,
+      instagram: app.instagram,
+      tiktok: app.tiktok,
+      whatsapp: app.whatsapp,
+      website: app.website,
+      contact_name: app.contact_name,
+      phone: app.phone,
+      email: app.email,
+      is_active: true,
+    })
+    .returning();
+
+  await db
+    .update(shopApplicationsTable)
+    .set({ status: "approved", shop_id: shop.id, rejected_reason: null })
+    .where(eq(shopApplicationsTable.id, id));
+
+  const { sendShopApprovedEmail } = await import("../lib/send-shop-application-email");
+  const shopUrl = `https://ketujemi.com/dyqani/${shop.id}`;
+  try {
+    await sendShopApprovedEmail(app.email, app.shop_name, shopUrl);
+  } catch (err) {
+    req.log?.error({ err, shopId: shop.id }, "shop approved email failed");
+  }
+
+  res.json({ ok: true, shop_id: shop.id });
+});
+
+router.post("/admin/shop-applications/:id/reject", requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id) || id < 1) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+  const [app] = await db.select().from(shopApplicationsTable).where(eq(shopApplicationsTable.id, id)).limit(1);
+  if (!app) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+
+  await db
+    .update(shopApplicationsTable)
+    .set({ status: "rejected", rejected_reason: reason || null, shop_id: null })
+    .where(eq(shopApplicationsTable.id, id));
+
+  const { sendShopRejectedEmail } = await import("../lib/send-shop-application-email");
+  try {
+    await sendShopRejectedEmail(app.email, app.shop_name, reason);
+  } catch (err) {
+    req.log?.error({ err, applicationId: id }, "shop rejected email failed");
+  }
+
+  res.json({ ok: true });
 });
 
 export default router;

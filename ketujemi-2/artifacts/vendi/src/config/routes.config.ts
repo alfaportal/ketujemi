@@ -30,6 +30,7 @@ export type RouteId =
   | "new-listing"
   | "edit-listing"
   | "listing-detail"
+  | "shop-detail"
   | "listings"
   | "not-found";
 
@@ -256,6 +257,14 @@ export const APP_ROUTES: AppRouteDefinition[] = [
     requiresAuth: true,
     marketPrefix: null,
     fallbackPath: LOGIN_FALLBACK,
+  },
+  {
+    id: "shop-detail",
+    path: "/dyqani/:id",
+    requiresAuth: false,
+    marketPrefix: null,
+    fallbackPath: HOME_FALLBACK,
+    errorBoundary: true,
   },
   {
     id: "listing-detail",

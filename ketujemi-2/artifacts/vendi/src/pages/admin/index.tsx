@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard, FileText, Users, Tag, AlertTriangle, Settings,
-  LogOut, Menu, X, Lock, Eye, EyeOff, ShieldCheck, Building2, CreditCard,
+  LogOut, Menu, X, Lock, Eye, EyeOff, ShieldCheck, Building2, CreditCard, Store,
 } from "lucide-react";
 import { adminLogin, adminLogout, isAdminLoggedIn } from "@/lib/admin-api";
 import { useMarket } from "@/lib/market-context";
@@ -14,6 +14,7 @@ import AdminSettings from "./settings";
 import AdminModeration from "./moderation";
 import AdminPartners from "./partners";
 import AdminPayments from "./payments";
+import AdminShops from "./shops";
 
 type Section =
   | "dashboard"
@@ -24,11 +25,13 @@ type Section =
   | "categories"
   | "reports"
   | "moderation"
-  | "settings";
+  | "settings"
+  | "shops";
 
 const NAV: { id: Section; icon: React.ElementType }[] = [
   { id: "dashboard", icon: LayoutDashboard },
   { id: "partners", icon: Building2 },
+  { id: "shops", icon: Store },
   { id: "payments", icon: CreditCard },
   { id: "listings", icon: FileText },
   { id: "users", icon: Users },
@@ -48,6 +51,7 @@ const NAV_TITLE_KEY: Record<Section, string> = {
   reports: "adm_nav_reports",
   moderation: "adm_nav_mod",
   settings: "adm_nav_settings",
+  shops: "adm_nav_shops",
 };
 
 // ─── Login page ───────────────────────────────────────────────────────────────
@@ -243,6 +247,7 @@ export default function AdminPanel() {
     reports:    AdminReports,
     moderation: AdminModeration,
     settings:   AdminSettings,
+    shops:      AdminShops,
   }[section];
 
   return (

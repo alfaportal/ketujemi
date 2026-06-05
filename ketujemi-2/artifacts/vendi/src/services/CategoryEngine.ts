@@ -24,13 +24,12 @@ import { getVeturaBrandLeafCategoryIds } from "@/lib/vetura-search-helpers";
 import { isKompjuterHubTypeName } from "@/lib/kompjuter-laptop-search-helpers";
 import {
   DHURATA_FALAS_SLUG,
-  DHURATA_MAX_PHOTOS,
+  LISTING_MAX_PHOTOS,
   DHURATA_PRICE_ZERO_MESSAGE,
   findDhurataBlockedWord,
   findKerkojBlockedWord,
   isDhurataFalasSlug,
   isKerkojTeBlejSlug,
-  KERKOJ_MAX_PHOTOS,
   KERKOJ_TE_BLEJ_SLUG,
 } from "@/lib/special-listing-categories";
 export const CATEGORY_HUB_SLUGS = {
@@ -292,7 +291,7 @@ export class CategoryEngine {
       showCondition: !isDhurata,
       useAutoPjeseConditionLabels: showAutoPjese,
       showBrandPicker: true,
-      maxPhotos: isKerkoj ? KERKOJ_MAX_PHOTOS : isDhurata ? DHURATA_MAX_PHOTOS : 10,
+      maxPhotos: LISTING_MAX_PHOTOS,
       isKerkoj,
       isDhurata,
       forcePriceZero: isKerkoj || isDhurata,
@@ -582,12 +581,6 @@ export class CategoryEngine {
 
     if (imageCount === 0) {
       issues.push({ code: "NO_PHOTOS", message: "addAtLeastPhoto" });
-    }
-    if (fields.isKerkoj && imageCount > KERKOJ_MAX_PHOTOS) {
-      issues.push({
-        code: "KERKOJ_MAX_PHOTOS",
-        message: `Maksimumi ${KERKOJ_MAX_PHOTOS} foto për kërkesa.`,
-      });
     }
     if (fields.isKerkoj) {
       const blocked = findKerkojBlockedWord(`${data.title}\n${data.description}`);

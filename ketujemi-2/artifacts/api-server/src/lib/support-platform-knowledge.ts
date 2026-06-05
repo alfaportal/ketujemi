@@ -14,7 +14,7 @@ KetuJemi.com është platformë njoftimesh (shpallje) për blerje/shitje në Bal
 • Faqja kryesore (/): 20 kategori + njoftime të fundit + TOP.
 • «Njoftimet» (/listings): të gjitha njoftimet + kërkim me fjalë kyçe.
 • Kategori (/category/…): klik kategori → nën-kategori (nëse ka) → markë/lloj (Vetura, Telefona…) → lista → hap njoftimin.
-• Njoftim (/listings/:id): foto (deri 10), titull, përshkrim, çmim €, sy/shikime, «Telefono», WhatsApp, «Raporto».
+• Njoftim (/listings/:id): foto të pakufizuara (+ video opsionale deri 150MB), titull, përshkrim, çmim €, sy/shikime, «Telefono», WhatsApp, «Raporto».
 • «Posto Falas» (/listings/new): krijon njoftim të ri.
 • «Hyr» (/login): hyrje dhe regjistrim.
 • Profili (/profile): «Njoftimet e mia» — edito, fshi, rifillo.
@@ -89,7 +89,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 2) Klikoni **«Posto Falas»** (/listings/new).
 3) Zgjidhni **kategorinë kryesore** dhe **nënkategorinë** e saktë (e rëndësishme për blerësit).
 4) Plotësoni: titull i qartë, përshkrim, çmim në **€** (ose «Me marrëveshje» për privatë).
-5) Ngarkoni foto (**deri në 10**); rekomandohen min. 3 foto reale të produktit.
+5) Ngarkoni foto **të pakufizuara** (opsionalisht një video deri **150MB**); rekomandohen min. 3 foto reale të produktit.
 6) Vendndodhja/qyteti, emri, telefon kontakti.
 7) Publikoni — **moderim AI** → njoftim aktiv deri **3 muaj**.
 8) Menaxhim: **Profili** → njoftimet e mia → ndrysho / fshi / **«Rifillo njoftimin»** pas skadimit (+3 muaj).
@@ -144,7 +144,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 === FAQ — PYETJET MË TË SHPESHTA ===
 **Si të postoj?** → «Posto Falas», kategori, të dhëna, foto, publiko (deri 3 muaj).
 **Sa kushton postimi?** → Falas dhe i pakufizuar; TOP opsional €2/€5/€8; partner dyqani (/partner) — aplikim falas.
-**Sa foto?** → Deri në 10 për njoftim.
+**Sa foto?** → Pa limit — foto të pakufizuara dhe video opsionale deri në 150MB për njoftim.
 **Si ta fshij/ndryshoj?** → Profili → njoftimet e mia.
 **Si kontaktoj shitësin?** → Telefono / WhatsApp në faqen e njoftimit.
 **A funksionon jashtë vendit?** → Po, 11 tregje përfshirë diasporën.

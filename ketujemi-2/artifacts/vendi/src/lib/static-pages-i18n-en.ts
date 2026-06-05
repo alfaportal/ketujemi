@@ -61,7 +61,7 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
         ],
         bullets: [
           "The only paid option is **Boost to Top** (optional) — to promote a listing on the homepage",
-          "Up to 10 real photos per listing (Cloudinary)",
+          "Unlimited real photos per listing and optional video up to 150MB (Cloudinary)",
         ],
       },
       {
@@ -434,7 +434,7 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
     featured: [
       {
         q: "How do I post a listing?",
-        a: "Click «Post listing» at the top of the page, choose the right category, fill in title, description and price, upload up to 10 photos and publish. The listing goes live right after automatic moderation.",
+        a: "Click «Post listing» at the top of the page, choose the right category, fill in title, description and price, upload unlimited photos (and optionally one video up to 150MB) and publish. The listing goes live right after automatic moderation.",
       },
       {
         q: "How much does posting cost?",
@@ -458,7 +458,7 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
       },
       {
         q: "How many photos can I upload per listing?",
-        a: "Up to 10 photos per listing. We recommend real photos of your product — not images from the internet or catalogues.",
+        a: "Unlimited photos per listing and one optional video up to 150MB. We recommend real photos of your product — not images from the internet or catalogues.",
       },
       {
         q: "My listing was rejected — why?",

@@ -1,0 +1,182 @@
+import { Router } from "express";
+import { db, shopApplicationsTable, shopsTable, listingsTable } from "@workspace/db";
+import { eq, and, desc, gt } from "drizzle-orm";
+import { getSessionUser } from "../lib/session-user";
+import { sendShopApplicationEmail } from "../lib/send-shop-application-email";
+
+const router = Router();
+
+function trimOrNull(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const t = v.trim();
+  return t || null;
+}
+
+function requiredString(v: unknown, field: string): string | null {
+  const t = trimOrNull(v);
+  if (!t) return `Fusha «${field}» është e detyrueshme.`;
+  return null;
+}
+
+// ─── POST /shop-applications ──────────────────────────────────────────────────
+router.post("/shop-applications", async (req, res) => {
+  const viewer = await getSessionUser(req);
+  if (!viewer) {
+    res.status(401).json({ error: "Authentication required", message: "Duhet të jeni i kyçur." });
+    return;
+  }
+
+  const body = req.body as Record<string, unknown>;
+  const errors: string[] = [];
+  const shopNameErr = requiredString(body.shop_name, "Emri i dyqanit");
+  if (shopNameErr) errors.push(shopNameErr);
+  const logoErr = requiredString(body.logo_url, "Logo");
+  if (logoErr) errors.push(logoErr);
+  const descErr = requiredString(body.description, "Përshkrimi");
+  if (descErr) errors.push(descErr);
+  const catErr = requiredString(body.category, "Kategoria");
+  if (catErr) errors.push(catErr);
+  const countryErr = requiredString(body.country, "Shteti");
+  if (countryErr) errors.push(countryErr);
+  const cityErr = requiredString(body.city, "Qyteti");
+  if (cityErr) errors.push(cityErr);
+  const regionErr = requiredString(body.region, "Rajoni/Lagja");
+  if (regionErr) errors.push(regionErr);
+  const addressErr = requiredString(body.address, "Adresa");
+  if (addressErr) errors.push(addressErr);
+  const contactErr = requiredString(body.contact_name, "Emri i kontaktit");
+  if (contactErr) errors.push(contactErr);
+  const phoneErr = requiredString(body.phone, "Telefoni");
+  if (phoneErr) errors.push(phoneErr);
+  const emailErr = requiredString(body.email, "Email");
+  if (emailErr) errors.push(emailErr);
+
+  const facebook = trimOrNull(body.facebook);
+  const instagram = trimOrNull(body.instagram);
+  const tiktok = trimOrNull(body.tiktok);
+  const whatsapp = trimOrNull(body.whatsapp);
+  const website = trimOrNull(body.website);
+  if (!facebook && !instagram && !tiktok && !whatsapp && !website) {
+    errors.push("Plotësoni të paktën një rrjet social.");
+  }
+
+  if (errors.length) {
+    res.status(400).json({ error: "VALIDATION", message: errors[0], details: errors });
+    return;
+  }
+
+  const categoryId = Number(body.category_id);
+  const [row] = await db
+    .insert(shopApplicationsTable)
+    .values({
+      user_id: viewer.id,
+      shop_name: String(body.shop_name).trim(),
+      logo_url: String(body.logo_url).trim(),
+      description: String(body.description).trim(),
+      category: String(body.category).trim(),
+      category_id: Number.isFinite(categoryId) && categoryId > 0 ? categoryId : null,
+      country: String(body.country).trim(),
+      city: String(body.city).trim(),
+      region: String(body.region).trim(),
+      address: String(body.address).trim(),
+      facebook,
+      instagram,
+      tiktok,
+      whatsapp,
+      website,
+      contact_name: String(body.contact_name).trim(),
+      phone: String(body.phone).trim(),
+      email: String(body.email).trim(),
+      status: "pending",
+    })
+    .returning();
+
+  try {
+    await sendShopApplicationEmail({
+      applicationId: row.id,
+      userId: viewer.id,
+      shopName: row.shop_name,
+      logoUrl: row.logo_url,
+      description: row.description,
+      category: row.category,
+      country: row.country,
+      city: row.city,
+      region: row.region,
+      address: row.address,
+      facebook: row.facebook,
+      instagram: row.instagram,
+      tiktok: row.tiktok,
+      whatsapp: row.whatsapp,
+      website: row.website,
+      contactName: row.contact_name,
+      phone: row.phone,
+      email: row.email,
+    });
+  } catch (err) {
+    req.log?.error({ err, applicationId: row.id }, "shop application email failed");
+  }
+
+  res.status(201).json({ ok: true, id: row.id });
+});
+
+// ─── GET /shops/:id ───────────────────────────────────────────────────────────
+router.get("/shops/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id) || id < 1) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const [shop] = await db.select().from(shopsTable).where(eq(shopsTable.id, id)).limit(1);
+  if (!shop || !shop.is_active) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+
+  const now = new Date();
+  const listingRows = await db
+    .select()
+    .from(listingsTable)
+    .where(
+      and(
+        eq(listingsTable.user_id, shop.user_id),
+        eq(listingsTable.status, "active"),
+        gt(listingsTable.expires_at, now),
+      ),
+    )
+    .orderBy(desc(listingsTable.listed_at))
+    .limit(100);
+
+  res.json({
+    shop: {
+      id: shop.id,
+      shop_name: shop.shop_name,
+      logo_url: shop.logo_url,
+      description: shop.description,
+      category: shop.category,
+      category_id: shop.category_id,
+      country: shop.country,
+      city: shop.city,
+      region: shop.region,
+      address: shop.address,
+      facebook: shop.facebook,
+      instagram: shop.instagram,
+      tiktok: shop.tiktok,
+      whatsapp: shop.whatsapp,
+      website: shop.website,
+      contact_name: shop.contact_name,
+      phone: shop.phone,
+      email: shop.email,
+    },
+    listings: listingRows.map((l) => ({
+      id: l.id,
+      title: l.title,
+      price: Number(l.price),
+      location: l.location,
+      image_url: l.image_url,
+      listed_at: (l.listed_at ?? l.created_at).toISOString(),
+    })),
+  });
+});
+
+export default router;
