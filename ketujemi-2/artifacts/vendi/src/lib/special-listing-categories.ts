@@ -7,5 +7,6 @@ export {
   isKerkojTeBlejSlug,
   KERKOJ_MAX_PHOTOS,
   KERKOJ_TE_BLEJ_SLUG,
+  LISTING_MAX_PHOTOS,
   findKerkojBlockedWord,
 } from "../../../../lib/special-listing-categories.ts";
