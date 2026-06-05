@@ -66,14 +66,25 @@ import { engagementCopyForUiLang } from "@/lib/engagement-i18n";
 import { queueFirstListingCelebration } from "@/components/engagement-effects";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
+/** Avoid Zod "Expected number, received nan" when optional/hidden numeric fields are empty. */
+function finiteFormNumber(fallback = 0) {
+  return z.preprocess((val) => {
+    if (val === undefined || val === null || val === "") return fallback;
+    const n = typeof val === "number" ? val : Number(val);
+    return Number.isFinite(n) ? n : fallback;
+  }, z.number());
+}
+
 const schema = z.object({
-  parent_category_id: z.coerce.number().min(1, "Zgjidhni kategorinë kryesore."),
+  parent_category_id: finiteFormNumber(0).pipe(
+    z.number().min(1, "Zgjidhni kategorinë kryesore."),
+  ),
   /** Set automatically (AI / single child); not a visible dropdown — validated in onSubmit. */
-  category_id: z.coerce.number(),
-  brand_category_id: z.coerce.number().optional(),
+  category_id: finiteFormNumber(0),
+  brand_category_id: finiteFormNumber(0).optional(),
   title: z.string().min(5, "Titulli duhet të ketë të paktën 5 karaktere."),
   description: z.string().min(15, "Përshkrimi duhet të ketë të paktën 15 karaktere."),
-  price: z.coerce.number().min(0),
+  price: finiteFormNumber(0).pipe(z.number().min(0)),
   price_agreement: z.boolean().default(false),
   image_url: z.string().optional(),
   location: z.string().min(1, "Zgjidhni qytetin."),
@@ -532,7 +543,7 @@ export default function NewListing() {
     const payload: Record<string, unknown> = {
       title: data.title,
       description: finalDescription,
-      price: validation.price,
+      price: Number.isFinite(validation.price) ? validation.price : 0,
       price_agreement: validation.price_agreement,
       lang: market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq",
       category_id: resolvedBrandId || resolvedCategoryId || parentId,
@@ -1163,7 +1174,12 @@ export default function NewListing() {
                             }
                             onChange={(e) => {
                               const raw = e.target.value;
-                              field.onChange(raw === "" ? undefined : Number(raw));
+                              if (raw === "") {
+                                field.onChange(undefined);
+                                return;
+                              }
+                              const n = Number(raw);
+                              field.onChange(Number.isFinite(n) ? n : undefined);
                             }}
                           />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-sm">EUR</span>
