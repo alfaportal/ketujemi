@@ -8,6 +8,8 @@ import {
 } from "@workspace/db";
 import { and, count, desc, eq, inArray, isNull } from "drizzle-orm";
 import { sendFcmToUser } from "./fcm-push";
+import { defaultEngagementLocale, engagementEmailCopy } from "./engagement-email-i18n";
+import { sendListingFirstViewEmail, sendSocialFollowPromptEmail } from "./send-engagement-email";
 
 export type NotificationPayload = {
   listingId?: number;
@@ -103,26 +105,29 @@ export async function handleListingExternalView(opts: {
 
   if (!updated) return;
 
-  const title = listing.title.trim();
-  await insertUserNotification({
-    userId: listing.user_id,
-    type: "listing_first_external_view",
-    payload: { listingId: listing.id, listingTitle: title },
-    pushTitle: "KetuJemi",
-    pushBody: `👀 Dikush e shikoi shpalljen tuaj për ${title} — je në rrugë të mirë!`,
-  });
-
   const [owner] = await db
     .select()
     .from(usersTable)
     .where(eq(usersTable.id, listing.user_id))
     .limit(1);
 
-  if (
-    !owner ||
-    owner.social_follow_notif_sent ||
-    owner.social_follow_notif_preference === "opted_out"
-  ) {
+  if (!owner) return;
+
+  const locale = defaultEngagementLocale();
+  const emailCopy = engagementEmailCopy(locale);
+  const title = listing.title.trim();
+
+  await insertUserNotification({
+    userId: listing.user_id,
+    type: "listing_first_external_view",
+    payload: { listingId: listing.id, listingTitle: title },
+    pushTitle: "KetuJemi",
+    pushBody: emailCopy.listingFirstView(title),
+  });
+
+  void sendListingFirstViewEmail(owner, title, locale);
+
+  if (owner.social_follow_notif_sent || owner.social_follow_notif_preference === "opted_out") {
     return;
   }
 
@@ -139,6 +144,8 @@ export async function handleListingExternalView(opts: {
     pushBody:
       "🔥 Shpallja juaj po tërheq vëmendjen! Na ndiqni për të na ndihmuar të promovojmë shpalljet tuaja edhe më shumë.",
   });
+
+  void sendSocialFollowPromptEmail(owner, locale);
 }
 
 export async function listUserNotifications(userId: number) {
