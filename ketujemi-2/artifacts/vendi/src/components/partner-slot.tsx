@@ -4,11 +4,6 @@ import { Link } from "wouter";
 import { Star } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import { cn } from "@/lib/utils";
-import {
-  isExternalHref,
-  isInternalAppHref,
-  normalizeBareDomainHref,
-} from "@/lib/href-utils";
 
 export type PartnerSlotData = {
   id: number;
@@ -40,6 +35,12 @@ function recordPartnerClick(partnerId: number) {
     credentials: "include",
     body: JSON.stringify({ partner_id: partnerId }),
   }).catch(() => {});
+}
+
+function partnerHref(partner: PartnerSlotData): string {
+  const path = partner.profile_path?.trim();
+  if (path && path.startsWith("/")) return path;
+  return `/partners/${partner.id}`;
 }
 
 /** Logo mbush 100% të zonës së bardhë — VIP dhe Partner. */
@@ -92,51 +93,36 @@ function VipBannerCarousel({
     return () => clearInterval(timer);
   }, [emblaApi, slides.length]);
 
-  const href = normalizeBareDomainHref(partner.click_url ?? partner.profile_path);
-  const external = isExternalHref(href) || !isInternalAppHref(href);
-
-  const inner = (
-    <div className={cn(frameClass, "relative block")} title={partner.business_name}>
-      <PartnerBadge tier="vip" />
-      <div ref={emblaRef} className="overflow-hidden h-full w-full">
-        <div className="flex h-full">
-          {slides.map((src, i) => (
-            <div
-              key={`${partner.id}-${i}`}
-              className="relative h-full min-w-0 shrink-0 grow-0 basis-full overflow-hidden bg-white"
-            >
-              <img
-                src={src}
-                alt={`${partner.business_name} ${i + 1}`}
-                className="absolute inset-0 h-full w-full object-cover object-center"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  if (external) {
-    return (
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={onClick}
-        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 rounded-xl"
-        data-testid={`trusted-partner-vip-${partner.id}`}
-      >
-        {inner}
-      </a>
-    );
-  }
+  const href = partnerHref(partner);
 
   return (
-    <Link href={href} onClick={onClick} className="block rounded-xl">
-      {inner}
+    <Link
+      href={href}
+      onClick={onClick}
+      className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 rounded-xl"
+      data-testid={`trusted-partner-vip-${partner.id}`}
+    >
+      <div className={cn(frameClass, "relative block")} title={partner.business_name}>
+        <PartnerBadge tier="vip" />
+        <div ref={emblaRef} className="overflow-hidden h-full w-full">
+          <div className="flex h-full">
+            {slides.map((src, i) => (
+              <div
+                key={`${partner.id}-${i}`}
+                className="relative h-full min-w-0 shrink-0 grow-0 basis-full overflow-hidden bg-white"
+              >
+                <img
+                  src={src}
+                  alt={`${partner.business_name} ${i + 1}`}
+                  className="absolute inset-0 h-full w-full object-cover object-center"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </Link>
   );
 }
@@ -159,8 +145,7 @@ export function PartnerSlot({ partner, frameClass, variant = "grid" }: PartnerSl
   }
 
   const img = partnerImageUrl(partner);
-  const href = normalizeBareDomainHref(partner.click_url ?? partner.profile_path);
-  const external = isExternalHref(href) || !isInternalAppHref(href);
+  const href = partnerHref(partner);
 
   const content = (
     <div className="grid h-full w-full min-h-0 grid-rows-[minmax(0,1fr)_auto]">
@@ -201,28 +186,9 @@ export function PartnerSlot({ partner, frameClass, variant = "grid" }: PartnerSl
 
   const className = cn(
     frameClass,
-    "relative group",
-    variant === "grid"
-      ? "block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-      : "",
+    "relative group block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
     isVip ? "focus-visible:ring-amber-500" : "focus-visible:ring-[#1A56A0]",
   );
-
-  if (external) {
-    return (
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={onClick}
-        className={className}
-        title={partner.business_name}
-        data-testid={`trusted-partner-${partner.tier}-${partner.id}`}
-      >
-        {content}
-      </a>
-    );
-  }
 
   return (
     <Link

@@ -27,8 +27,23 @@ import {
   sanitizeListingImageUrlField,
 } from "../lib/listing-images.js";
 import { requestPurgeExpiredListings } from "../lib/expire-listings-job";
+import { getPartnerPublicProfile } from "../lib/partner-public-profile";
 
 const router = Router();
+
+router.get("/partners/profile/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id) || id === 0) {
+    res.status(400).json({ error: "Invalid partner id" });
+    return;
+  }
+  const profile = await getPartnerPublicProfile(id);
+  if (!profile) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  res.json({ profile });
+});
 
 router.post("/partners/apply", async (req, res) => {
   try {

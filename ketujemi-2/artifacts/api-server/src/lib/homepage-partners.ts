@@ -6,12 +6,22 @@ import {
 import type { HomepagePartner } from "@workspace/db";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { getCategoryTreeIds } from "./category-tree";
+import { partnerProfilePath } from "./partner-public-profile";
 import type { PartnerTier, TrustedPartnerDto } from "./trusted-partners";
 
-export type HomepagePartnerInput = {
+export type HomepagePartnerProfileFields = {
+  address?: string | null;
+  facebook_url?: string | null;
+  instagram_url?: string | null;
+  whatsapp_number?: string | null;
+  tiktok_url?: string | null;
+  website_url?: string | null;
+};
+
+export type HomepagePartnerInput = HomepagePartnerProfileFields & {
   business_name: string;
   logo_url: string;
-  link_url: string;
+  link_url?: string;
   tier: PartnerTier;
   sort_order?: number;
   category_ids?: number[];
@@ -49,16 +59,47 @@ export function homepagePartnerPublicId(rowId: number): number {
   return -Math.abs(rowId);
 }
 
+function normalizeOptionalText(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const s = v.trim();
+  return s || null;
+}
+
+function profileFieldsFromInput(
+  input: HomepagePartnerProfileFields & { link_url?: string },
+): Pick<
+  typeof homepagePartnersTable.$inferInsert,
+  | "address"
+  | "facebook_url"
+  | "instagram_url"
+  | "whatsapp_number"
+  | "tiktok_url"
+  | "website_url"
+  | "link_url"
+> {
+  const website = normalizeOptionalText(input.website_url);
+  const legacyLink = input.link_url?.trim() ? normalizeUrl(input.link_url) : "";
+  return {
+    address: normalizeOptionalText(input.address),
+    facebook_url: normalizeOptionalText(input.facebook_url),
+    instagram_url: normalizeOptionalText(input.instagram_url),
+    whatsapp_number: normalizeOptionalText(input.whatsapp_number),
+    tiktok_url: normalizeOptionalText(input.tiktok_url),
+    website_url: website,
+    link_url: website ?? legacyLink ?? "",
+  };
+}
+
 export function toHomepagePartnerDto(row: HomepagePartner): TrustedPartnerDto {
   const tier = normalizeTier(row.tier) ?? "standard";
-  const link = normalizeUrl(row.link_url);
+  const publicId = homepagePartnerPublicId(row.id);
   return {
-    id: homepagePartnerPublicId(row.id),
+    id: publicId,
     business_name: row.business_name.trim(),
     partner_logo_url: row.logo_url.trim(),
     profile_photo_url: null,
-    profile_path: "/",
-    click_url: link,
+    profile_path: partnerProfilePath(publicId),
+    click_url: null,
     tier,
     banner_urls: [],
   };
@@ -173,20 +214,21 @@ export async function createHomepagePartner(
 
   const business_name = input.business_name.trim();
   const logo_url = input.logo_url.trim();
-  const link_url = normalizeUrl(input.link_url);
-  if (!business_name || !logo_url || !link_url) {
+  if (!business_name || !logo_url) {
     throw new Error("MISSING_FIELDS");
   }
+
+  const profileFields = profileFieldsFromInput(input);
 
   const [row] = await db
     .insert(homepagePartnersTable)
     .values({
       business_name,
       logo_url,
-      link_url,
       tier,
       sort_order: input.sort_order ?? 0,
       is_active: true,
+      ...profileFields,
     })
     .returning();
 
@@ -224,9 +266,21 @@ export async function updateHomepagePartner(
     updates.logo_url = logo;
   }
   if (input.link_url !== undefined) {
-    const link = normalizeUrl(input.link_url);
-    if (!link) throw new Error("MISSING_FIELDS");
-    updates.link_url = link;
+    updates.link_url = input.link_url.trim() ? normalizeUrl(input.link_url) : "";
+  }
+  if (input.address !== undefined) updates.address = normalizeOptionalText(input.address);
+  if (input.facebook_url !== undefined) {
+    updates.facebook_url = normalizeOptionalText(input.facebook_url);
+  }
+  if (input.instagram_url !== undefined) {
+    updates.instagram_url = normalizeOptionalText(input.instagram_url);
+  }
+  if (input.whatsapp_number !== undefined) {
+    updates.whatsapp_number = normalizeOptionalText(input.whatsapp_number);
+  }
+  if (input.tiktok_url !== undefined) updates.tiktok_url = normalizeOptionalText(input.tiktok_url);
+  if (input.website_url !== undefined) {
+    updates.website_url = normalizeOptionalText(input.website_url);
   }
   if (input.tier !== undefined) {
     const tier = normalizeTier(input.tier);

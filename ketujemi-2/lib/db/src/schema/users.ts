@@ -35,6 +35,12 @@ export const usersTable = pgTable("users", {
   /** Single outbound link (website / Instagram / Facebook) after activation. */
   partner_link_url: text("partner_link_url"),
   partner_link_type: text("partner_link_type"),
+  partner_address: text("partner_address"),
+  partner_facebook_url: text("partner_facebook_url"),
+  partner_instagram_url: text("partner_instagram_url"),
+  partner_whatsapp_number: text("partner_whatsapp_number"),
+  partner_tiktok_url: text("partner_tiktok_url"),
+  partner_website_url: text("partner_website_url"),
   /** Meta Facebook Login user id (app-scoped). */
   facebook_user_id: text("facebook_user_id").unique(),
   /** Google Sign-In subject id. */

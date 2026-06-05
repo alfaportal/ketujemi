@@ -38,10 +38,27 @@ CREATE INDEX IF NOT EXISTS business_partner_categories_category_idx
   ON business_partner_categories (category_id);
 `;
 
+const PARTNER_PROFILE_FIELDS_SQL = `
+ALTER TABLE homepage_partners ADD COLUMN IF NOT EXISTS address text;
+ALTER TABLE homepage_partners ADD COLUMN IF NOT EXISTS facebook_url text;
+ALTER TABLE homepage_partners ADD COLUMN IF NOT EXISTS instagram_url text;
+ALTER TABLE homepage_partners ADD COLUMN IF NOT EXISTS whatsapp_number text;
+ALTER TABLE homepage_partners ADD COLUMN IF NOT EXISTS tiktok_url text;
+ALTER TABLE homepage_partners ADD COLUMN IF NOT EXISTS website_url text;
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS partner_address text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS partner_facebook_url text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS partner_instagram_url text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS partner_whatsapp_number text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS partner_tiktok_url text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS partner_website_url text;
+`;
+
 export async function ensureHomepagePartnersSchema(pool: pg.Pool): Promise<void> {
   await pool.query(HOMEPAGE_PARTNERS_SQL);
   await pool.query(HOMEPAGE_PARTNER_CATEGORIES_SQL);
   await pool.query(BUSINESS_PARTNER_CATEGORIES_SQL);
+  await pool.query(PARTNER_PROFILE_FIELDS_SQL);
 
   const { rows } = await pool.query<{ ok: boolean }>(`
     SELECT EXISTS (

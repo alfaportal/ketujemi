@@ -636,16 +636,23 @@ router.post("/admin/homepage-partners", requireAdmin, async (req, res) => {
     const row = await createHomepagePartner({
       business_name: String(req.body?.business_name ?? ""),
       logo_url: String(req.body?.logo_url ?? ""),
-      link_url: String(req.body?.link_url ?? ""),
+      link_url: req.body?.link_url != null ? String(req.body.link_url) : undefined,
       tier: String(req.body?.tier ?? "standard"),
       sort_order: Number(req.body?.sort_order ?? 0),
       category_ids: Array.isArray(req.body?.category_ids) ? req.body.category_ids : [],
+      address: req.body?.address != null ? String(req.body.address) : undefined,
+      facebook_url: req.body?.facebook_url != null ? String(req.body.facebook_url) : undefined,
+      instagram_url: req.body?.instagram_url != null ? String(req.body.instagram_url) : undefined,
+      whatsapp_number:
+        req.body?.whatsapp_number != null ? String(req.body.whatsapp_number) : undefined,
+      tiktok_url: req.body?.tiktok_url != null ? String(req.body.tiktok_url) : undefined,
+      website_url: req.body?.website_url != null ? String(req.body.website_url) : undefined,
     });
     res.status(201).json({ partner: row });
   } catch (err) {
     if (err instanceof Error) {
       if (err.message === "MISSING_FIELDS") {
-        res.status(400).json({ error: "MISSING_FIELDS", message: "Plotësoni emrin, logon dhe linkun." });
+        res.status(400).json({ error: "MISSING_FIELDS", message: "Plotësoni emrin dhe logon." });
         return;
       }
       if (err.message === "INVALID_TIER") {
@@ -683,6 +690,14 @@ router.patch("/admin/homepage-partners/:id", requireAdmin, async (req, res) => {
         : {}),
       ...(body.logo_url !== undefined ? { logo_url: String(body.logo_url) } : {}),
       ...(body.link_url !== undefined ? { link_url: String(body.link_url) } : {}),
+      ...(body.address !== undefined ? { address: String(body.address) } : {}),
+      ...(body.facebook_url !== undefined ? { facebook_url: String(body.facebook_url) } : {}),
+      ...(body.instagram_url !== undefined ? { instagram_url: String(body.instagram_url) } : {}),
+      ...(body.whatsapp_number !== undefined
+        ? { whatsapp_number: String(body.whatsapp_number) }
+        : {}),
+      ...(body.tiktok_url !== undefined ? { tiktok_url: String(body.tiktok_url) } : {}),
+      ...(body.website_url !== undefined ? { website_url: String(body.website_url) } : {}),
       ...(body.tier !== undefined ? { tier: String(body.tier) } : {}),
       ...(body.sort_order !== undefined ? { sort_order: Number(body.sort_order) } : {}),
       ...(body.is_active !== undefined ? { is_active: Boolean(body.is_active) } : {}),

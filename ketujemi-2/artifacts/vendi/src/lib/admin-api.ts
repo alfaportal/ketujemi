@@ -233,7 +233,16 @@ export function updateAdminPartnerCategories(id: number, category_ids: number[])
   );
 }
 
-export interface AdminHomepagePartner {
+export type AdminPartnerProfileFields = {
+  address?: string;
+  facebook_url?: string;
+  instagram_url?: string;
+  whatsapp_number?: string;
+  tiktok_url?: string;
+  website_url?: string;
+};
+
+export interface AdminHomepagePartner extends AdminPartnerProfileFields {
   id: number;
   business_name: string;
   logo_url: string;
@@ -249,14 +258,16 @@ export function getAdminHomepagePartners() {
   return request<{ partners: AdminHomepagePartner[] }>("/homepage-partners");
 }
 
-export function createAdminHomepagePartner(data: {
-  business_name: string;
-  logo_url: string;
-  link_url: string;
-  tier: "vip" | "standard";
-  sort_order?: number;
-  category_ids?: number[];
-}) {
+export function createAdminHomepagePartner(
+  data: AdminPartnerProfileFields & {
+    business_name: string;
+    logo_url: string;
+    link_url?: string;
+    tier: "vip" | "standard";
+    sort_order?: number;
+    category_ids?: number[];
+  },
+) {
   return request<{ partner: AdminHomepagePartner }>("/homepage-partners", {
     method: "POST",
     body: JSON.stringify(data),
@@ -265,7 +276,7 @@ export function createAdminHomepagePartner(data: {
 
 export function updateAdminHomepagePartner(
   id: number,
-  data: {
+  data: AdminPartnerProfileFields & {
     business_name?: string;
     logo_url?: string;
     link_url?: string;

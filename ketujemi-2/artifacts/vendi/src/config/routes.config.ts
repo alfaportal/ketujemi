@@ -8,6 +8,7 @@ export type RouteId =
   | "profile"
   | "wallet-bank-payment"
   | "business-profile"
+  | "partner-profile"
   | "about"
   | "rules"
   | "privacy"
@@ -101,6 +102,13 @@ export const APP_ROUTES: AppRouteDefinition[] = [
   {
     id: "business-profile",
     path: "/biznes/:id",
+    requiresAuth: false,
+    marketPrefix: null,
+    fallbackPath: HOME_FALLBACK,
+  },
+  {
+    id: "partner-profile",
+    path: "/partners/:id",
     requiresAuth: false,
     marketPrefix: null,
     fallbackPath: HOME_FALLBACK,

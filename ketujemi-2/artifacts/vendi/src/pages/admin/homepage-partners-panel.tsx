@@ -26,7 +26,12 @@ export function AdminHomepagePartnersPanel() {
 
   const [businessName, setBusinessName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
-  const [linkUrl, setLinkUrl] = useState("");
+  const [address, setAddress] = useState("");
+  const [facebookUrl, setFacebookUrl] = useState("");
+  const [instagramUrl, setInstagramUrl] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [tiktokUrl, setTiktokUrl] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
   const [tier, setTier] = useState<"vip" | "standard">("standard");
   const [categoryIds, setCategoryIds] = useState<number[]>([]);
   const [categories, setCategories] = useState<AdminCategory[]>([]);
@@ -34,7 +39,12 @@ export function AdminHomepagePartnersPanel() {
   const [editRow, setEditRow] = useState<AdminHomepagePartner | null>(null);
   const [editName, setEditName] = useState("");
   const [editLogo, setEditLogo] = useState("");
-  const [editLink, setEditLink] = useState("");
+  const [editAddress, setEditAddress] = useState("");
+  const [editFacebookUrl, setEditFacebookUrl] = useState("");
+  const [editInstagramUrl, setEditInstagramUrl] = useState("");
+  const [editWhatsappNumber, setEditWhatsappNumber] = useState("");
+  const [editTiktokUrl, setEditTiktokUrl] = useState("");
+  const [editWebsiteUrl, setEditWebsiteUrl] = useState("");
   const [editTier, setEditTier] = useState<"vip" | "standard">("standard");
   const [editCategoryIds, setEditCategoryIds] = useState<number[]>([]);
   const [categoryRow, setCategoryRow] = useState<AdminHomepagePartner | null>(null);
@@ -99,7 +109,12 @@ export function AdminHomepagePartnersPanel() {
     setEditRow(p);
     setEditName(p.business_name);
     setEditLogo(p.logo_url);
-    setEditLink(p.link_url);
+    setEditAddress(p.address ?? "");
+    setEditFacebookUrl(p.facebook_url ?? "");
+    setEditInstagramUrl(p.instagram_url ?? "");
+    setEditWhatsappNumber(p.whatsapp_number ?? "");
+    setEditTiktokUrl(p.tiktok_url ?? "");
+    setEditWebsiteUrl(p.website_url ?? p.link_url ?? "");
     setEditTier(p.tier === "vip" ? "vip" : "standard");
     setEditCategoryIds(p.category_ids ?? []);
   }
@@ -111,13 +126,23 @@ export function AdminHomepagePartnersPanel() {
       await createAdminHomepagePartner({
         business_name: businessName.trim(),
         logo_url: logoUrl.trim(),
-        link_url: linkUrl.trim(),
         tier,
         category_ids: categoryIds,
+        address: address.trim() || undefined,
+        facebook_url: facebookUrl.trim() || undefined,
+        instagram_url: instagramUrl.trim() || undefined,
+        whatsapp_number: whatsappNumber.trim() || undefined,
+        tiktok_url: tiktokUrl.trim() || undefined,
+        website_url: websiteUrl.trim() || undefined,
       });
       setBusinessName("");
       setLogoUrl("");
-      setLinkUrl("");
+      setAddress("");
+      setFacebookUrl("");
+      setInstagramUrl("");
+      setWhatsappNumber("");
+      setTiktokUrl("");
+      setWebsiteUrl("");
       setTier("standard");
       setCategoryIds([]);
       setToast({ type: "ok", text: "Partneri u shtua në homepage." });
@@ -140,9 +165,14 @@ export function AdminHomepagePartnersPanel() {
       await updateAdminHomepagePartner(editRow.id, {
         business_name: editName.trim(),
         logo_url: editLogo.trim(),
-        link_url: editLink.trim(),
         tier: editTier,
         category_ids: editCategoryIds,
+        address: editAddress.trim(),
+        facebook_url: editFacebookUrl.trim(),
+        instagram_url: editInstagramUrl.trim(),
+        whatsapp_number: editWhatsappNumber.trim(),
+        tiktok_url: editTiktokUrl.trim(),
+        website_url: editWebsiteUrl.trim(),
       });
       setToast({ type: "ok", text: "Partneri u përditësua." });
       setEditRow(null);
@@ -202,7 +232,7 @@ export function AdminHomepagePartnersPanel() {
       <div>
         <h3 className="text-base font-black text-gray-900">Partnerë në homepage</h3>
         <p className="text-xs text-gray-600 mt-1">
-          Logo, emër, link dhe kategoritë ku shfaqet partneri (kryefaqe + faqe hub).
+          Logo, emër, profil (adresë, sociale) dhe kategoritë ku shfaqet partneri (kryefaqe + faqe hub).
           VIP = logo më e madhe, border i artë; Partner = border blu.
         </p>
       </div>
@@ -255,13 +285,19 @@ export function AdminHomepagePartnersPanel() {
         {logoUrl ? (
           <img src={logoUrl} alt="" className="h-16 w-auto max-w-full rounded-lg border object-contain bg-white" />
         ) : null}
-        <input
-          type="url"
-          required
-          value={linkUrl}
-          onChange={(e) => setLinkUrl(e.target.value)}
-          placeholder="Linku i firmës (https://…)"
-          className="w-full min-h-11 rounded-xl border border-gray-200 px-3 text-base"
+        <PartnerProfileFieldInputs
+          address={address}
+          facebookUrl={facebookUrl}
+          instagramUrl={instagramUrl}
+          whatsappNumber={whatsappNumber}
+          tiktokUrl={tiktokUrl}
+          websiteUrl={websiteUrl}
+          onAddressChange={setAddress}
+          onFacebookUrlChange={setFacebookUrl}
+          onInstagramUrlChange={setInstagramUrl}
+          onWhatsappNumberChange={setWhatsappNumber}
+          onTiktokUrlChange={setTiktokUrl}
+          onWebsiteUrlChange={setWebsiteUrl}
         />
         <div className="grid grid-cols-2 gap-2">
           <button
@@ -338,7 +374,7 @@ export function AdminHomepagePartnersPanel() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <form
             onSubmit={(e) => void handleEditSave(e)}
-            className="bg-white rounded-2xl w-full max-w-md p-5 space-y-4 shadow-xl"
+            className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-5 space-y-4 shadow-xl"
           >
             <div className="flex items-center justify-between gap-2">
               <h3 className="font-bold text-gray-900">Ndrysho partnerin</h3>
@@ -385,13 +421,19 @@ export function AdminHomepagePartnersPanel() {
             {editLogo ? (
               <img src={editLogo} alt="" className="h-16 w-auto max-w-full rounded-lg border object-contain bg-white" />
             ) : null}
-            <input
-              type="url"
-              required
-              value={editLink}
-              onChange={(e) => setEditLink(e.target.value)}
-              placeholder="Linku i firmës"
-              className="w-full min-h-11 rounded-xl border border-gray-200 px-3 text-base"
+            <PartnerProfileFieldInputs
+              address={editAddress}
+              facebookUrl={editFacebookUrl}
+              instagramUrl={editInstagramUrl}
+              whatsappNumber={editWhatsappNumber}
+              tiktokUrl={editTiktokUrl}
+              websiteUrl={editWebsiteUrl}
+              onAddressChange={setEditAddress}
+              onFacebookUrlChange={setEditFacebookUrl}
+              onInstagramUrlChange={setEditInstagramUrl}
+              onWhatsappNumberChange={setEditWhatsappNumber}
+              onTiktokUrlChange={setEditTiktokUrl}
+              onWebsiteUrlChange={setEditWebsiteUrl}
             />
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -451,6 +493,83 @@ export function AdminHomepagePartnersPanel() {
         />
       ) : null}
     </section>
+  );
+}
+
+function PartnerProfileFieldInputs({
+  address,
+  facebookUrl,
+  instagramUrl,
+  whatsappNumber,
+  tiktokUrl,
+  websiteUrl,
+  onAddressChange,
+  onFacebookUrlChange,
+  onInstagramUrlChange,
+  onWhatsappNumberChange,
+  onTiktokUrlChange,
+  onWebsiteUrlChange,
+}: {
+  address: string;
+  facebookUrl: string;
+  instagramUrl: string;
+  whatsappNumber: string;
+  tiktokUrl: string;
+  websiteUrl: string;
+  onAddressChange: (v: string) => void;
+  onFacebookUrlChange: (v: string) => void;
+  onInstagramUrlChange: (v: string) => void;
+  onWhatsappNumberChange: (v: string) => void;
+  onTiktokUrlChange: (v: string) => void;
+  onWebsiteUrlChange: (v: string) => void;
+}) {
+  const inputClass = "w-full min-h-11 rounded-xl border border-gray-200 px-3 text-base";
+  return (
+    <div className="space-y-2 rounded-xl border border-dashed border-gray-200 bg-gray-50/80 p-3">
+      <p className="text-xs font-bold text-gray-700">Profili publik (opsional)</p>
+      <input
+        type="text"
+        value={address}
+        onChange={(e) => onAddressChange(e.target.value)}
+        placeholder="Adresa (për Google Maps)"
+        className={inputClass}
+      />
+      <input
+        type="url"
+        value={facebookUrl}
+        onChange={(e) => onFacebookUrlChange(e.target.value)}
+        placeholder="Facebook URL"
+        className={inputClass}
+      />
+      <input
+        type="url"
+        value={instagramUrl}
+        onChange={(e) => onInstagramUrlChange(e.target.value)}
+        placeholder="Instagram URL"
+        className={inputClass}
+      />
+      <input
+        type="tel"
+        value={whatsappNumber}
+        onChange={(e) => onWhatsappNumberChange(e.target.value)}
+        placeholder="WhatsApp (numër telefoni)"
+        className={inputClass}
+      />
+      <input
+        type="url"
+        value={tiktokUrl}
+        onChange={(e) => onTiktokUrlChange(e.target.value)}
+        placeholder="TikTok URL"
+        className={inputClass}
+      />
+      <input
+        type="url"
+        value={websiteUrl}
+        onChange={(e) => onWebsiteUrlChange(e.target.value)}
+        placeholder="Website URL"
+        className={inputClass}
+      />
+    </div>
   );
 }
 

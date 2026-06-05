@@ -19,16 +19,6 @@ import { usePartnerPage } from "@/lib/partner-page-i18n";
 import { cn } from "@/lib/utils";
 import { Check, Loader2, Upload } from "lucide-react";
 
-const CARD_COLORS = [
-  "from-blue-600 to-blue-500",
-  "from-indigo-600 to-violet-500",
-  "from-sky-600 to-cyan-500",
-  "from-blue-700 to-indigo-600",
-  "from-amber-500 to-orange-500",
-  "from-teal-600 to-emerald-500",
-  "from-blue-800 to-blue-600",
-];
-
 type PartnerPhase = "landing" | "register" | "success";
 
 const PARTNER_FORM_STEP = "partner";
@@ -275,27 +265,10 @@ export default function PartnerPage() {
       >
         {phase === "landing" ? (
           <section className="pt-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-5 text-center">{c.benefitsTitle}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {c.benefits.map((b, i) => (
-                <div
-                  key={b.title}
-                  className={cn(
-                    "rounded-2xl p-4 text-white shadow-lg bg-gradient-to-br",
-                    CARD_COLORS[i % CARD_COLORS.length],
-                  )}
-                >
-                  <span className="text-2xl" aria-hidden>
-                    {b.icon}
-                  </span>
-                  <p className="mt-2 font-bold text-[15px] leading-snug">
-                    {b.title}
-                    {b.desc ? (
-                      <span className="font-normal opacity-90"> — {b.desc}</span>
-                    ) : null}
-                  </p>
-                </div>
-              ))}
+            <div className="rounded-2xl border border-gray-200 bg-white shadow-[0_12px_40px_rgba(26,86,160,0.08)] p-5 sm:p-8">
+              <p className="text-sm sm:text-base text-gray-700 leading-relaxed whitespace-pre-line">
+                {c.applicationIntro}
+              </p>
             </div>
 
             <div className="mt-10 text-center">

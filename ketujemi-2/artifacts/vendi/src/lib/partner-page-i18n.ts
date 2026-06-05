@@ -36,6 +36,7 @@ export type PartnerPageCopy = {
   successHome: string;
   landingCta: string;
   landingCtaHint: string;
+  applicationIntro: string;
 };
 
 const SQ: PartnerPageCopy = {
@@ -95,6 +96,25 @@ const SQ: PartnerPageCopy = {
   successHome: "Kthehu në faqen kryesore",
   landingCta: "Apliko si Partner",
   landingCtaHint: "Plotësoni formularin më poshtë — pa pagesë online.",
+  applicationIntro: `🤝 Bëhu VIP Partner i KetuJemi
+
+Partneriteti me KetuJemi është bashkëpunim i ndërsjelltë — ju na ndihmoni neve, ne ju bëjmë të famshëm.
+
+Çfarë merrni ju:
+- Logo juaj në faqen kryesore të ketujemi.com — e parë nga mijëra vizitorë çdo ditë
+- Shpalljet dhe ofertat tuaja të publikuara çdo ditë në Instagram @jemi.ketu, Facebook KetuJemi.com dhe TikTok @ketujemi7
+- Profil i dedikuar me adresë, hartë dhe të gjitha kontaktet tuaja
+- Promovim i vazhdueshëm — njerëzit mësojnë për biznesin tuaj çdo ditë
+- Rritje e ndjekësve dhe klientëve tuaj — falas
+
+Çfarë kërkojmë nga ju:
+- Të na ndiqni në Instagram @jemi.ketu, Facebook KetuJemi.com dhe TikTok @ketujemi7
+- Të na përmendni te ndjekësit tuaj herë pas here
+
+💡 Një detaj i vogël, por i rëndësishëm:
+Bashkëpunimi ynë është si kafja — funksionon vetëm kur të dyja palët e hedhin sheqerin. 😄 Ne ju promovojmë çdo ditë te ndjekësit tanë — por edhe ju duhet të na ndiqni në rrjetet tona sociale. Shkurt: na ndiqni → ju bëjmë të njohur. Nuk na ndiqni → humbim të dyja palët. 🤝
+
+Plotësoni formularin dhe ne ju kontaktojmë brenda 24 orëve. 📩`,
 };
 
 const MK: PartnerPageCopy = {
@@ -138,6 +158,25 @@ const MK: PartnerPageCopy = {
   successHome: "Назад на почетна",
   landingCta: "Аплицирај како партнер",
   landingCtaHint: "Пополнете го формуларот подолу — без онлајн плаќање.",
+  applicationIntro: `🤝 Станете VIP партнер на KetuJemi
+
+Партнерството со KetuJemi е взаемна соработка — вие ни помагате, ние ве правиме познати.
+
+Што добивате:
+- Вашето лого на почетната страница ketujemi.com — видливо од илјадници посетители секој ден
+- Вашите огласи и понуди секој ден на Instagram @jemi.ketu, Facebook KetuJemi.com и TikTok @ketujemi7
+- Посебен профил со адреса, мапа и сите ваши контакти
+- Континуирана промоција — луѓето секој ден дознаваат за вашиот бизнис
+- Раст на следбеници и клиенти — бесплатно
+
+Што бараме од вас:
+- Да не следите на Instagram @jemi.ketu, Facebook KetuJemi.com и TikTok @ketujemi7
+- Повремено да не спомнете кај вашите следбеници
+
+💡 Мала, но важна детал:
+Соработката е како кафе — функционира само кога двете страни ја ставаат шеќерот. 😄 Ние ве промовираме секој ден — но и вие треба да не следите. Кратко: следете не → станувате познати. Не следите → губиме и двете страни. 🤝
+
+Пополнете го формуларот и ќе ве контактираме во рок од 24 часа. 📩`,
 };
 
 const MNE: PartnerPageCopy = {
@@ -181,6 +220,25 @@ const MNE: PartnerPageCopy = {
   successHome: "Nazad na početnu",
   landingCta: "Prijavi se kao partner",
   landingCtaHint: "Popunite formular ispod — bez online plaćanja.",
+  applicationIntro: `🤝 Postanite VIP partner KetuJemi
+
+Partnerstvo sa KetuJemi je uzajamna saradnja — vi nam pomažete, mi vas činimo poznatima.
+
+Šta dobijate:
+- Vaš logo na početnoj stranici ketujemi.com — viđen od hiljada posjetilaca svaki dan
+- Vaši oglasi i ponude svaki dan na Instagram @jemi.ketu, Facebook KetuJemi.com i TikTok @ketujemi7
+- Posvećeni profil sa adresom, mapom i svim kontaktima
+- Kontinuirana promocija — ljudi svaki dan saznaju za vaš biznis
+- Rast pratilaca i klijenata — besplatno
+
+Šta tražimo od vas:
+- Da nas pratite na Instagram @jemi.ketu, Facebook KetuJemi.com i TikTok @ketujemi7
+- Povremeno da nas spomenete svojim pratiocima
+
+💡 Mali, ali važan detalj:
+Saradnja je kao kafa — funkcioniše samo kad obje strane stave šećer. 😄 Mi vas promovišemo svaki dan — ali i vi nas morate pratiti. Ukratko: pratite nas → postajete poznati. Ne pratite → gubimo oboje. 🤝
+
+Popunite formular i kontaktiraćemo vas u roku od 24 sata. 📩`,
 };
 
 const EN: PartnerPageCopy = {
@@ -224,6 +282,25 @@ const EN: PartnerPageCopy = {
   successHome: "Back to home",
   landingCta: "Apply as partner",
   landingCtaHint: "Complete the form below — no online payment.",
+  applicationIntro: `🤝 Become a KetuJemi VIP Partner
+
+Partnering with KetuJemi is mutual cooperation — you help us, we make you visible.
+
+What you get:
+- Your logo on the ketujemi.com homepage — seen by thousands of visitors every day
+- Your listings and offers posted daily on Instagram @jemi.ketu, Facebook KetuJemi.com and TikTok @ketujemi7
+- A dedicated profile with address, map and all your contacts
+- Ongoing promotion — people learn about your business every day
+- Growth in followers and customers — free
+
+What we ask from you:
+- Follow us on Instagram @jemi.ketu, Facebook KetuJemi.com and TikTok @ketujemi7
+- Mention us to your followers from time to time
+
+💡 A small but important detail:
+Our cooperation is like coffee — it only works when both sides add sugar. 😄 We promote you daily — but you should follow us too. In short: follow us → we make you known. Don't follow → we both lose. 🤝
+
+Fill in the form and we will contact you within 24 hours. 📩`,
 };
 
 const BY_LOCALE: Record<PartnerPageLocaleKey, PartnerPageCopy> = {

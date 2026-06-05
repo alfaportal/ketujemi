@@ -2,11 +2,8 @@ import { db, listingsTable, usersTable } from "@workspace/db";
 import type { User } from "@workspace/db";
 import { and, eq, gt, inArray, isNull, or, sql } from "drizzle-orm";
 import { isVipBusinessActive } from "./business-rules";
-import {
-  isBusinessPartnerActive,
-  parsePartnerBannerUrls,
-  resolvePartnerClickUrl,
-} from "./business-partner";
+import { isBusinessPartnerActive, parsePartnerBannerUrls } from "./business-partner";
+import { partnerProfilePath } from "./partner-public-profile";
 import { getCategoryTreeIds } from "./category-tree";
 import { userOwnsListing } from "./listing-ownership";
 import {
@@ -222,8 +219,8 @@ export function toTrustedPartnerDto(user: User, tier: PartnerTier): TrustedPartn
     business_name: partnerDisplayName(user),
     partner_logo_url: user.partner_logo_url?.trim() || null,
     profile_photo_url: user.profile_photo_url?.trim() || null,
-    profile_path: `/biznes/${user.id}`,
-    click_url: resolvePartnerClickUrl(user),
+    profile_path: partnerProfilePath(user.id),
+    click_url: null,
     tier,
     banner_urls:
       tier === "vip" ? parsePartnerBannerUrls(user.partner_banner_urls) : [],
