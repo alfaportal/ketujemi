@@ -146,9 +146,9 @@ const KS: StaticPagesCopy = {
       {
         title: "Çfarë ofrojmë",
         bullets: [
-          "10 postime falas në muaj për çdo kategori kryesore — gjithmonë, për çdo përdorues privat",
+          "Postim i pakufizuar dhe falas për të gjithë përdoruesit — privat dhe biznes",
           "Deri 10 foto për njoftim (ruajtje përmes Cloudinary)",
-          "Verifikim SMS për siguri maksimale të përdoruesve",
+          "Hyrje / regjistrim i detyrueshëm për të krijuar njoftim",
           "Sistem mesazhesh i integruar për komunikim të sigurt mes palëve",
           "Njoftime aktive deri 3 muaj — fshihen automatikisht pas skadimit",
         ],
@@ -202,25 +202,20 @@ const KS: StaticPagesCopy = {
         ],
       },
       {
-        title: "Limitet e postimeve (10 në muaj për kategori kryesore)",
+        title: "Postimi është falas dhe i pakufizuar",
         paragraphs: [
-          "Çdo përdorues ka të drejtë 10 postime falas në muaj për çdo kategori kryesore (Vetura, Telefona, Banesa & Shtëpi, etj.). Nënkategoritë (p.sh. BMW, Sedan, Skuter) numërohen brenda kategorisë kryesore — jo veç e veç.",
-          "Numri riniset çdo muaj kalendarik (p.sh. 1–31 maj, pastaj 1–30 qershor). Kur arrini 10 postime në muaj për një kategori kryesore, mund të blini kredi në portofol (Paketa S / M / L):",
+          "Të gjithë përdoruesit (privat dhe biznes) mund të postojnë **njoftime të pakufizuara, falas** në çdo kategori — pa pagesë për publikim.",
+          "Duhet të **hyni në llogari / të regjistroheni** për të krijuar një njoftim.",
         ],
         bullets: [
-          "Paketa S — €5 (~16 postime të paguara, €0.30 për shpallje nga portofoli)",
-          "Paketa M — €10 (~33 postime)",
-          "Paketa L — €20 (~66 postime)",
-        ],
-        paragraphsAfter: [
-          "Krediti në portofol nuk skadon derisa të harxhohet. Çdo njoftim lejon deri 10 fotografi të vërteta (Cloudinary).",
+          "Opsioni i vetëm me pagesë është **Boost TOP** (opsional) — për të promovuar një njoftim në kryefaqe",
+          "Çdo njoftim lejon deri 10 fotografi të vërteta (Cloudinary)",
         ],
       },
       {
-        title: "Kohëzgjatja e njoftimit (3 muaj) — ndryshe nga limiti 10",
+        title: "Kohëzgjatja e njoftimit (3 muaj)",
         paragraphs: [
           "Çdo njoftim i ri **aktivizohet** dhe qëndron online **deri 3 muaj (90 ditë)** nga data e postimit. Pas kësaj **hiqet automatikisht** nëse nuk e fshini vetë më parë.",
-          "Kjo **nuk është** e njëjta me limitin «10 në muaj»: limiti mujor është sa herë mund të **postoni**; skadimi 3-mujor është sa **kohë** qëndron online çdo njoftim (pastaj hiqet automatikisht).",
           "Në faqen e njoftimit shfaqen **data e postimit** dhe **data e skadimit**.",
         ],
       },
@@ -262,7 +257,7 @@ const KS: StaticPagesCopy = {
         title: "Subjekti ligjor dhe platforma",
         paragraphs: [
           "Platforma KetuJemi.com (Bli & Shit) operohet dhe ofrohet nga REVOLUTION INVEST Sh.p.k., me seli në Ferizaj, Republika e Kosovës.",
-          "Pagesat për shërbime të platformës (portofol, paketa VIP/TOP, reklama dhe të ngjashme) kryhen në emër të këtij subjekti. KetuJemi.com është emri tregtar; marrëdhënia ligjore me përdoruesin lidhet me REVOLUTION INVEST Sh.p.k.",
+          "Pagesat për shërbime opsionale të platformës (Boost TOP, reklama dhe të ngjashme) kryhen në emër të këtij subjekti. KetuJemi.com është emri tregtar; marrëdhënia ligjore me përdoruesin lidhet me REVOLUTION INVEST Sh.p.k.",
         ],
         bulletsIntro: "Të dhënat zyrtare të operatorit:",
         bullets: [
@@ -291,23 +286,22 @@ const KS: StaticPagesCopy = {
         ],
       },
       {
-        title: "Politika e rimbursimit dhe portofoli",
+        title: "Politika e rimbursimit dhe shërbimeve me pagesë",
         paragraphs: [
-          "Paratë e ngarkuara në portofolin tuaj në KetuJemi.com përdoren për tarifa platforme (p.sh. publikim shtesë njoftimesh) dhe nuk kthehen në para të gatshme pasi janë kredituar në llogari.",
-          "Bilanci i portofolit nuk transferohet te një llogari tjetër dhe nuk kompensohet për transaksione mes blerësve dhe shitësve.",
-          "Pagesat për paketa VIP/TOP, reklama ose shërbime të tjera të platformës janë, për rregull, të pakthyeshme, përveç kur ligji zbatues e kërkon ndryshe ose kur ne e konfirmojmë me shkrim një gabim teknik të verifikuar nga ana jonë.",
+          "Postimi i njoftimeve është falas dhe i pakufizuar për të gjithë përdoruesit.",
+          "Opsioni i vetëm me pagesë për njoftime është **Boost TOP** (promovim opsional në kryefaqe).",
+          "Pagesat për Boost TOP, reklama ose shërbime të tjera të platformës janë, për rregull, të pakthyeshme, përveç kur ligji zbatues e kërkon ndryshe ose kur ne e konfirmojmë me shkrim një gabim teknik të verifikuar nga ana jonë.",
         ],
         bullets: [
-          "Kërkesat për rimbursim të portofolit refuzohen, përveç rasteve të detyrueshme me ligj",
           "Për mosmarrëveshje rreth një blerjeje mes përdoruesish, kontaktoni palën tjetër; ne mund të ndërmjetësojmë vetëm në masën e moderimit të përmbajtjes",
         ],
       },
       {
         title: "Llogaria dhe postimi",
         bullets: [
-          "Duhet të keni llogari të verifikuar (email dhe/ose telefon, sipas rregullave aktuale) për të postuar",
+          "Duhet të jeni të regjistruar dhe të kyçur në llogari për të postuar njoftime",
           "Jeni përgjegjës për ruajtjen e të dhënave të llogarisë suaj",
-          "Respektoni limitet e postimeve dhe rregullat e kategorive",
+          "Respektoni rregullat e kategorive dhe udhëzimet e platformës",
           "Llogaria nuk mund të transferohet te një person tjetër",
         ],
       },
@@ -370,7 +364,7 @@ const KS: StaticPagesCopy = {
         title: "Çfarë mbledhim",
         bullets: [
           "Emri dhe email-i (për llogari dhe komunikim)",
-          "Numri i telefonit (verifikim SMS — i detyrueshëm para postimit të parë)",
+          "Numri i telefonit (opsional — për kontakt në njoftim ose hyrje me SMS, nëse e zgjidhni)",
           "Adresa IP (siguri dhe parandalim mashtrimi)",
           "Të dhënat e njoftimeve që postoni (tekst, foto, çmim, kategori)",
           "Të dhënat e sesionit dhe cookies teknike (shih seksionin Cookies më poshtë)",
@@ -495,10 +489,10 @@ const KS: StaticPagesCopy = {
     sanctionsTableHeaders: { violation: "Shkelja", consequence: "Veprim" },
     sections: [
       {
-        title: "Regjistrimi & verifikimi",
+        title: "Regjistrimi",
         bullets: [
           "Llogaria business është e ndarë nga llogaria private.",
-          "Për të kaluar në biznes: email i verifikuar + telefon SMS i verifikuar.",
+          "Për të postuar si biznes: regjistrohuni dhe hyni në llogari — pa pagesë për publikim.",
         ],
       },
       {
@@ -522,12 +516,11 @@ const KS: StaticPagesCopy = {
         ],
       },
       {
-        title: "Limitet e postimeve",
+        title: "Postimi",
         bullets: [
-          "Biznes Standard: 10 njoftime falas për çdo kategori + verifikim",
-          "Pas 10 njoftimeve në të njëjtën kategori: €0.30/shpallje nga portofoli",
-          "VIP Biznes ☆: njoftime të pakufizuara për €50/muaj",
-          "Kuota kontrollohet automatikisht në llogarinë tuaj",
+          "Bizneset mund të postojnë njoftime të pakufizuara dhe falas",
+          "Kërkohet hyrje / regjistrim për të krijuar njoftim",
+          "Opsioni i vetëm me pagesë është Boost TOP (promovim opsional)",
         ],
       },
       {
@@ -550,7 +543,7 @@ const KS: StaticPagesCopy = {
       {
         title: "Llogaritë private",
         paragraphs: [
-          "Përdoruesit privatë kanë rregulla të ndryshme (10 njoftime falas për kategori, etj.). Shihni Kushtet e Përdorimit në footer.",
+          "Përdoruesit privatë dhe bizneset ndjekin të njëjtën politikë: postim falas dhe i pakufizuar. Shihni Kushtet e Përdorimit në footer.",
         ],
       },
     ],
@@ -608,7 +601,7 @@ const KS: StaticPagesCopy = {
       },
       {
         q: "Sa kushton postimi?",
-        a: "Postimi bazë është plotësisht falas — 10 njoftime falas në muaj për çdo kategori kryesore. Kur arrini limitin, mund të blini kredi shtesë nga portofoli (Paketa S €5 / M €10 / L €20).",
+        a: "Postimi është plotësisht falas dhe i pakufizuar për të gjithë përdoruesit. Opsioni i vetëm me pagesë është Boost TOP — promovim opsional i njoftimit në kryefaqe.",
       },
       {
         q: "Si ta fshij njoftimin?",
@@ -620,11 +613,11 @@ const KS: StaticPagesCopy = {
       },
       {
         q: "Pse duhet numri i telefonit?",
-        a: "Numri i telefonit kërkohet për verifikim SMS para postimit të parë. Kjo na ndihmon të mbajmë platformën të sigurt dhe pa llogari false.",
+        a: "Numri i telefonit shfaqet te njoftimi juaj që blerësit t'ju kontaktojnë. Nuk kërkohet verifikim SMS para postimit — mjafton të jeni të regjistruar dhe të kyçur.",
       },
       {
         q: "A mund të hyj me Google ose Facebook?",
-        a: "Po. Mund të regjistroheni dhe të hyni me llogarinë tuaj Google ose Facebook me 1 klikim. Numri i telefonit do të kërkohet gjithsesi para postimit të parë.",
+        a: "Po. Mund të regjistroheni dhe të hyni me llogarinë tuaj Google ose Facebook me 1 klikim. Për të postuar, duhet të jeni të kyçur — telefoni plotësohet në formularin e njoftimit.",
       },
       {
         q: "Sa foto mund të ngarkoj për njoftim?",
@@ -639,8 +632,8 @@ const KS: StaticPagesCopy = {
         a: "Klikoni butonin «Raporto» drejtpërdrejt në faqen e njoftimit ose na shkruani në support@ketujemi.com. Veprojmë brenda 24 orëve.",
       },
       {
-        q: "Si funksionon portofoli?",
-        a: "Portofoli është bilanci juaj i krediteve në platformë. Mund ta ngarkoni me Paketa S/M/L dhe të përdorni kreditet për postime shtesë kur kaloni limitin mujor falas. Krediti nuk skadon dhe nuk kthehet në para të gatshme.",
+        q: "Si funksionon Boost TOP?",
+        a: "Boost TOP është opsional — paguani për ta shfaqur njoftimin në kryefaqe për disa ditë. Postimi normal mbetet falas dhe i pakufizuar për të gjithë.",
       },
       {
         q: "A mund të ndryshoj njoftimin pasi e kam postuar?",
@@ -702,7 +695,7 @@ const KS: StaticPagesCopy = {
       {
         title: "Çfarë bëjmë ne për sigurinë tuaj",
         bullets: [
-          "Verifikim SMS i detyrueshëm para postimit të parë",
+          "Kërkohet regjistrim dhe hyrje për të postuar njoftime",
           "Sistem raportimi 24/7 — veprojmë brenda 24 orëve",
           "Moderim automatik i njoftimeve të dyshimta",
           "Bllokimi i llogarive mashtruese pas raportimit të verifikuar",
@@ -818,27 +811,20 @@ const MK: StaticPagesCopy = {
         ],
       },
       {
-        title: "Лимити на објави (10 месечно по главна категорија)",
+        title: "Објавувањето е бесплатно и неограничено",
         paragraphs: [
-          "Секој корисник има **10 бесплатни објави месечно** за **секоја главна категорија** (18). Подкатегориите се бројат во главната — не посебно.",
-          "Бројот се ресетира секој календарски месец. Нема посебен лимит «10 активни истовремено».",
+          "Сите корисници (приватни и бизнис) можат да објавуваат **неограничено, бесплатно** во секоја категорија — без надомест за објава.",
+          "Мора да сте **најавени / регистрирани** за да креирате оглас.",
         ],
-        bulletsIntro:
-          "Кога го надминете месечниот лимит, купете кредит (Пакет S / M / L) — Stripe:",
         bullets: [
-          "Пакет S — €5 (~16 платени објави, €0.30 по објава од портфелот)",
-          "Пакет M — €10 (~33 објави)",
-          "Пакет L — €20 (~66 објави)",
-        ],
-        paragraphsAfter: [
-          "Кредитот не истекува додека не се потроши. До 10 вистински фотографии по оглас.",
+          "Единствената платена опција е **Boost TOP** (опционално) — за промоција на оглас на почетната страница",
+          "До 10 вистински фотографии по оглас",
         ],
       },
       {
-        title: "Траење на огласот (3 месеци) — различно од лимитот 10",
+        title: "Траење на огласот (3 месеци)",
         paragraphs: [
           "Секој оглас е активен **до 3 месеци (90 дена)** од објавувањето, потоа се **отстранува автоматски** ако не го избришете порано.",
-          "Ова **не е** истото како лимитот 10/месец: месечниот лимит е колку пати **објавувате**; 3-месечниот рок е колку **долго** стои секој оглас.",
         ],
       },
       {
@@ -866,7 +852,7 @@ const MK: StaticPagesCopy = {
         title: "Правен субјект и платформа",
         paragraphs: [
           "Платформата KetuJemi.com (Bli & Shit) ја управува и ја нуди REVOLUTION INVEST Sh.p.k., со седиште во Ferizaj, Република Косово.",
-          "Плаќањата за услуги на платформата (паричник, VIP/TOP, реклами и слично) се вршат во име на овој субјект. KetuJemi.com е трговско име; правниот однос е со REVOLUTION INVEST Sh.p.k.",
+          "Плаќањата за опционални услуги на платформата (Boost TOP, реклами и слично) се вршат во име на овој субјект. KetuJemi.com е трговско име; правниот однос е со REVOLUTION INVEST Sh.p.k.",
         ],
         bulletsIntro: "Службени податоци за операторот:",
         bullets: [
@@ -895,23 +881,22 @@ const MK: StaticPagesCopy = {
         ],
       },
       {
-        title: "Политика за рефундирање и паричник",
+        title: "Политика за рефундирање и платени услуги",
         paragraphs: [
-          "Средствата полнети во вашиот паричник на KetuJemi.com се за трошоци на платформата (на пр. дополнителни огласи) и не се враќаат во готовина откако се зачитани.",
-          "Салдото не се пренесува на друга сметка и не компензира трансакции меѓу купувачи и продавачи.",
-          "Плаќања за VIP/TOP, реклами или други услуги на платформата се, по правило, неповратни, освен кога применливиот закон бара поинаку или кога ние писмено потврдиме верификувана техничка грешка од наша страна.",
+          "Објавувањето огласи е бесплатно и неограничено за сите корисници.",
+          "Единствената платена опција за огласи е **Boost TOP** (опционална промоција на почетната страница).",
+          "Плаќања за Boost TOP, реклами или други услуги на платформата се, по правило, неповратни, освен кога применливиот закон бара поинаку или кога ние писмено потврдиме верификувана техничка грешка од наша страна.",
         ],
         bullets: [
-          "Барања за рефундирање на паричникот се одбиваат, освен кога законот го бара.",
           "За спорови околу купување меѓу корисници, контактирајте ја другата страна; ние посредуваме само преку модерација на содржина.",
         ],
       },
       {
         title: "Сметка и објавување",
         bullets: [
-          "Потребна е верификувана сметка (email и/или телефон, според актуелните правила) за објавување",
+          "Мора да сте регистрирани и најавени за да објавувате огласи",
           "Вие сте одговорни за безбедноста на сметката",
-          "Почитувајте лимити и правила на категориите",
+          "Почитувајте правилата на категориите и упатствата на платформата",
         ],
       },
       {
@@ -948,7 +933,7 @@ const MK: StaticPagesCopy = {
         title: "Што собираме",
         bullets: [
           "Име и email (сметка и комуникација)",
-          "Телефон (SMS верификација)",
+          "Телефон (опционално — за контакт на оглас или најава со SMS, ако изберете)",
           "IP адреса (безбедност и спречување измами)",
         ],
       },
@@ -1045,10 +1030,10 @@ const MK: StaticPagesCopy = {
     sanctionsTableHeaders: { violation: "Прекршување", consequence: "Мерка" },
     sections: [
       {
-        title: "Регистрација и верификација",
+        title: "Регистрација",
         bullets: [
           "Бизнис сметката е одделена од приватната сметка.",
-          "За преминување на бизнис: верифициран email + SMS телефон.",
+          "За објавување како бизнис: регистрирајте се и најавете се — без надомест за објава.",
         ],
       },
       {
@@ -1072,12 +1057,11 @@ const MK: StaticPagesCopy = {
         ],
       },
       {
-        title: "Лимити на објавување",
+        title: "Објавување",
         bullets: [
-          "Стандарден бизнис: 10 бесплатни огласи по категорија + верификација",
-          "По 10 огласи во истата категорија: €0.30/оглас од портфел",
-          "VIP Бизнис ☆: неограничени огласи за €50/месечно",
-          "Квотата се проверува автоматски на вашата сметка",
+          "Бизнисите можат да објавуваат неограничено и бесплатно",
+          "Потребна е најава / регистрација за креирање оглас",
+          "Единствената платена опција е Boost TOP (опционална промоција)",
         ],
       },
       {
@@ -1100,7 +1084,7 @@ const MK: StaticPagesCopy = {
       {
         title: "Приватни сметки",
         paragraphs: [
-          "Приватните корисници имаат различни правила (10 бесплатни огласи по категорија, итн.). Погледнете Услови за користење во footer.",
+          "Приватните и бизнис корисниците имаат иста политика: бесплатно и неограничено објавување. Погледнете Услови за користење во footer.",
         ],
       },
     ],
@@ -1180,7 +1164,7 @@ const MK: StaticPagesCopy = {
           },
           {
             q: "Колку бесплатни огласи можам да објавам?",
-            a: "Корисниците имаат 10 бесплатни огласи по категорија + верификација.",
+            a: "Неограничено — објавувањето е целосно бесплатно за сите корисници. Единствената платена опција е Boost TOP (опционално).",
           },
           {
             q: "Дали можам да објавувам од странство?",
@@ -1197,7 +1181,7 @@ const MK: StaticPagesCopy = {
         items: [
           {
             q: "Како да креирам сметка?",
-            a: "Со телефонски број (SMS) или Google. Телефонскиот број е задолжителен пред првото објавување.",
+            a: "Со телефонски број (SMS), Google или Facebook. За објавување мора да сте најавени — телефонот се внесува во формуларот за оглас.",
           },
           {
             q: "Како да ја верификувам сметката?",
@@ -1235,15 +1219,11 @@ const MK: StaticPagesCopy = {
         ],
       },
       {
-        title: "VIP пакети",
+        title: "Boost TOP",
         items: [
           {
-            q: "Што е VIP пакетот?",
-            a: 'VIP пакетот нуди неограничени огласи, висока позиција во пребарување и badge "VIP" за 30€ месечно.',
-          },
-          {
-            q: "Кога се активира VIP пакетот?",
-            a: "VIP пакетот се активира за некои корисници!",
+            q: "Што е Boost TOP?",
+            a: "Boost TOP е опционална платена промоција — вашиот оглас се прикажува на почетната страница за одреден број дена. Обичното објавување останува бесплатно и неограничено.",
           },
         ],
       },
@@ -1354,27 +1334,20 @@ const MNE: StaticPagesCopy = {
         ],
       },
       {
-        title: "Limiti objava (10 mjesečno po glavnoj kategoriji)",
+        title: "Objavljivanje je besplatno i neograničeno",
         paragraphs: [
-          "Svaki korisnik ima **10 besplatnih objava mjesečno** po **glavnoj kategoriji** (20). Potkategorije se broje unutar glavne — ne zasebno.",
-          "Broj se resetuje svakog kalendarskog mjeseca. Nema posebnog limita «10 aktivnih odjednom».",
+          "Svi korisnici (privatni i biznis) mogu objavljivati **neograničeno, besplatno** u bilo kojoj kategoriji — bez naknade za objavu.",
+          "Morate biti **prijavljeni / registrovani** da biste kreirali oglas.",
         ],
-        bulletsIntro:
-          "Kada premašite mjesečni limit, kupite kredit (Paket S / M / L) — Stripe:",
         bullets: [
-          "Paket S — €5 (~16 plaćenih objava, €0.30 po objavi iz novčanika)",
-          "Paket M — €10 (~33 objave)",
-          "Paket L — €20 (~66 objava)",
-        ],
-        paragraphsAfter: [
-          "Kredit ne ističe dok se ne potroši. Do 10 stvarnih fotografija po oglasu.",
+          "Jedina plaćena opcija je **Boost TOP** (opciono) — za promociju oglasa na početnoj stranici",
+          "Do 10 stvarnih fotografija po oglasu",
         ],
       },
       {
-        title: "Trajanje oglasa (3 mjeseca) — različito od limita 10",
+        title: "Trajanje oglasa (3 mjeseca)",
         paragraphs: [
           "Svaki oglas je aktivan **do 3 mjeseca (90 dana)** od objave, zatim se **automatski uklanja** ako ga sami ne obrišete.",
-          "Ovo **nije** isto što i limit 10/mjesečno: mjesečni limit je koliko puta **objavite**; rok od 3 mjeseca je koliko **dugo** oglas stoji online.",
         ],
       },
       {
@@ -1402,7 +1375,7 @@ const MNE: StaticPagesCopy = {
         title: "Pravni subjekt i platforma",
         paragraphs: [
           "Platformu KetuJemi.com (Bli & Shit) upravlja i nudi REVOLUTION INVEST Sh.p.k., sa sjedištem u Ferizaju, Republika Kosovo.",
-          "Plaćanja za usluge platforme (novčanik, VIP/TOP, reklame i slično) vrše se u ime ovog subjekta. KetuJemi.com je trgovački naziv; pravni odnos je sa REVOLUTION INVEST Sh.p.k.",
+          "Plaćanja za opcione usluge platforme (Boost TOP, reklame i slično) vrše se u ime ovog subjekta. KetuJemi.com je trgovački naziv; pravni odnos je sa REVOLUTION INVEST Sh.p.k.",
         ],
         bulletsIntro: "Službeni podaci operatera:",
         bullets: [
@@ -1431,23 +1404,22 @@ const MNE: StaticPagesCopy = {
         ],
       },
       {
-        title: "Politika povrata i novčanik",
+        title: "Politika povrata i plaćenih usluga",
         paragraphs: [
-          "Sredstva uplaćena u vaš novčanik na KetuJemi.com koriste se za troškove platforme (npr. dodatni oglasi) i ne vraćaju se u gotovini nakon što su zadužena na račun.",
-          "Stanje novčanika ne prenosi se na drugi račun i ne kompenzuje transakcije između kupaca i prodavaca.",
-          "Plaćanja za VIP/TOP, reklame ili druge usluge platforme su, po pravilu, nepovratna, osim kada primjenjivi zakon zahtijeva drugačije ili kada mi pisano potvrdimo verifikovanu tehničku grešku sa naše strane.",
+          "Objavljivanje oglasa je besplatno i neograničeno za sve korisnike.",
+          "Jedina plaćena opcija za oglase je **Boost TOP** (opciona promocija na početnoj stranici).",
+          "Plaćanja za Boost TOP, reklame ili druge usluge platforme su, po pravilu, nepovratna, osim kada primjenjivi zakon zahtijeva drugačije ili kada mi pisano potvrdimo verifikovanu tehničku grešku sa naše strane.",
         ],
         bullets: [
-          "Zahtjevi za povrat sredstava iz novčanika se odbijaju, osim kada to zakon zahtijeva.",
           "Za sporove oko kupovine među korisnicima kontaktirajte drugu stranu; mi posredujemo samo kroz moderaciju sadržaja.",
         ],
       },
       {
         title: "Nalog i objavljivanje",
         bullets: [
-          "Potreban je verifikovan nalog (email i/ili telefon, prema aktuelnim pravilima) za objavljivanje",
+          "Morate biti registrovani i prijavljeni da biste objavljivali oglase",
           "Vi ste odgovorni za sigurnost naloga",
-          "Poštujte limite i pravila kategorija",
+          "Poštujte pravila kategorija i upute platforme",
         ],
       },
       {
@@ -1581,10 +1553,10 @@ const MNE: StaticPagesCopy = {
     sanctionsTableHeaders: { violation: "Kršenje", consequence: "Mjera" },
     sections: [
       {
-        title: "Registracija i verifikacija",
+        title: "Registracija",
         bullets: [
           "Biznis nalog je odvojen od privatnog naloga.",
-          "Za prelazak na biznis: verifikovan email + SMS telefon.",
+          "Za objavljivanje kao biznis: registrujte se i prijavite se — bez naknade za objavu.",
         ],
       },
       {
@@ -1608,12 +1580,11 @@ const MNE: StaticPagesCopy = {
         ],
       },
       {
-        title: "Limiti objavljivanja",
+        title: "Objavljivanje",
         bullets: [
-          "Standardni biznis: 10 besplatnih oglasa po kategoriji + verifikacija",
-          "Nakon 10 oglasa u istoj kategoriji: €0.30/oglas iz novčanika",
-          "VIP Biznis ☆: neograničeni oglasi za €50/mjesec",
-          "Kvota se provjerava automatski na vašem nalogu",
+          "Biznisi mogu objavljivati neograničeno i besplatno",
+          "Potrebna je prijava / registracija za kreiranje oglasa",
+          "Jedina plaćena opcija je Boost TOP (opciona promocija)",
         ],
       },
       {
@@ -1636,7 +1607,7 @@ const MNE: StaticPagesCopy = {
       {
         title: "Privatni nalozi",
         paragraphs: [
-          "Privatni korisnici imaju drugačija pravila (10 besplatnih oglasa po kategoriji, itd.). Pogledajte Uslove korišćenja u footeru.",
+          "Privatni i biznis korisnici imaju istu politiku: besplatno i neograničeno objavljivanje. Pogledajte Uslove korišćenja u footeru.",
         ],
       },
     ],
@@ -1716,7 +1687,7 @@ const MNE: StaticPagesCopy = {
           },
           {
             q: "Koliko besplatnih oglasa mogu objaviti?",
-            a: "Korisnici imaju 10 besplatnih oglasa po kategoriji + verifikacija.",
+            a: "Neograničeno — objavljivanje je potpuno besplatno za sve korisnike. Jedina plaćena opcija je Boost TOP (opciono).",
           },
           {
             q: "Mogu li da objavljujem iz inostranstva?",
@@ -1733,7 +1704,7 @@ const MNE: StaticPagesCopy = {
         items: [
           {
             q: "Kako da kreiram nalog?",
-            a: "Putem broja telefona (SMS) ili Google. Broj telefona je obavezan prije prvog objavljivanja.",
+            a: "Putem broja telefona (SMS), Google ili Facebook. Za objavljivanje morate biti prijavljeni — telefon se unosi u formular oglasa.",
           },
           {
             q: "Kako da verifikujem nalog?",
@@ -1771,15 +1742,11 @@ const MNE: StaticPagesCopy = {
         ],
       },
       {
-        title: "VIP paketi",
+        title: "Boost TOP",
         items: [
           {
-            q: "Šta je VIP paket?",
-            a: 'VIP paket nudi neograničene oglase, visoku poziciju u pretrazi i badge "VIP" za 30€ mjesečno.',
-          },
-          {
-            q: "Kada se aktivira VIP paket?",
-            a: "VIP paket se aktivira za neke korisnike!",
+            q: "Šta je Boost TOP?",
+            a: "Boost TOP je opcionalna plaćena promocija — vaš oglas se prikazuje na početnoj stranici određeni broj dana. Obično objavljivanje ostaje besplatno i neograničeno.",
           },
         ],
       },

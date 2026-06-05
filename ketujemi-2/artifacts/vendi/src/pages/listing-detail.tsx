@@ -547,7 +547,7 @@ export default function ListingDetail() {
               </div>
               <p className="text-xs text-gray-500 mt-3 leading-relaxed">
                 Çdo njoftim qëndron online deri <strong>3 muaj</strong> nga data e postimit, pastaj hiqet automatikisht
-                (nëse nuk e fshini vetë). Limiti <strong>10 postime në muaj</strong> për kategori kryesore është veçmas nga ky skadim.
+                (nëse nuk e fshini vetë). Postimi është falas dhe i pakufizuar — opsioni i vetëm me pagesë është Boost TOP.
               </p>
             </div>
 

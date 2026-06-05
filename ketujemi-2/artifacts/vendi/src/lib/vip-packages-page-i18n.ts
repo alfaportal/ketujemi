@@ -79,7 +79,7 @@ const KS: VipPackagesPageCopy = {
   compareColStandard: "Standard €30",
   compareColVip: "VIP €50",
   compareRows: [
-    { feature: "Njoftime aktive", free: "10/muaj/kategori", standard: "50", vip: "100" },
+    { feature: "Njoftime aktive", free: "Pa limit", standard: "Pa limit", vip: "Pa limit" },
     { feature: "Badge i verifikuar", free: "❌", standard: "✅", vip: "✅ VIP" },
     { feature: "Logo në faqen kryesore", free: "❌", standard: "✅ e vogël", vip: "✅ e madhe" },
     { feature: "Pozicion në kërkim", free: "Normal", standard: "Prioritar", vip: "I pari" },
@@ -107,7 +107,7 @@ const KS: VipPackagesPageCopy = {
     },
     {
       q: "Cila paketë është më e mirë për fillim?",
-      a: "Nëse keni deri 50 njoftime, Standard është i mjaftueshëm. Nëse doni maksimum dukshmëri dhe del i pari në kërkim — VIP është investimi i duhur.",
+      a: "Postimi është falas për të gjithë. Standard shton profil biznesi dhe badge partner; VIP shton logo në kryefaqe dhe maksimum dukshmëri.",
     },
   ],
   ctaTitle: "Gati të rritësh biznesin tënd?",

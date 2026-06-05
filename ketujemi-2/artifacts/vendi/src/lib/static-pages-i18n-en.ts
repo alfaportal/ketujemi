@@ -54,26 +54,21 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
         ],
       },
       {
-        title: "Posting limits (10 per month per main category)",
+        title: "Posting is free and unlimited",
         paragraphs: [
-          "Each user has **10 free posts per month** per **main category** (20 categories). Subcategories count within the main category — not separately.",
-          "The count resets every calendar month. There is no separate «10 active at once» limit.",
+          "All users (private and business) may post **unlimited listings for free** in any category — no fee to publish.",
+          "You must **sign in / register** to create a listing.",
         ],
-        bulletsIntro: "When you exceed the monthly limit, buy wallet credit (Package S / M / L) — Stripe:",
         bullets: [
-          "Package S — €5 (~16 paid posts, €0.30 per post from wallet)",
-          "Package M — €10 (~33 posts)",
-          "Package L — €20 (~66 posts)",
-        ],
-        paragraphsAfter: [
-          "Credit does not expire until used. Up to 10 real photos per listing.",
+          "The only paid option is **Boost to Top** (optional) — to promote a listing on the homepage",
+          "Up to 10 real photos per listing (Cloudinary)",
         ],
       },
       {
-        title: "Listing duration (3 months) — separate from the limit of 10",
+        title: "Listing duration (3 months)",
         paragraphs: [
           "Each listing stays active **for up to 3 months (90 days)** from posting, then is **removed automatically** unless you delete it sooner.",
-          "This is **not** the same as the 10/month limit: the monthly limit is how often you **post**; the 3-month period is how **long** a listing stays online.",
+          "The posting date and expiry date are shown on the listing page.",
         ],
       },
       {
@@ -101,7 +96,7 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
         title: "Legal entity and platform",
         paragraphs: [
           "KetuJemi.com (Buy & Sell) is operated and offered by REVOLUTION INVEST Sh.p.k., based in Ferizaj, Republic of Kosovo.",
-          "Payments for platform services (wallet, VIP/TOP packages, advertising, etc.) are made on behalf of this entity. KetuJemi.com is a trade name; the legal relationship with users is with REVOLUTION INVEST Sh.p.k.",
+          "Payments for optional platform services (Boost to Top, advertising, etc.) are made on behalf of this entity. KetuJemi.com is a trade name; the legal relationship with users is with REVOLUTION INVEST Sh.p.k.",
         ],
         bulletsIntro: "Official operator details:",
         bullets: [
@@ -130,23 +125,22 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
         ],
       },
       {
-        title: "Refunds and wallet policy",
+        title: "Refunds and paid services",
         paragraphs: [
-          "Funds credited to your KetuJemi.com wallet are used for platform fees (e.g. additional listings) and are not refunded in cash once credited to the account.",
-          "Wallet balance cannot be transferred to another account and does not compensate for transactions between buyers and sellers.",
-          "Payments for VIP/TOP packages, advertising or other platform services are, as a rule, non-refundable, except where applicable law requires otherwise or we confirm in writing a verified technical error on our side.",
+          "Posting listings is free and unlimited for all users.",
+          "The only optional paid service for listings is **Boost to Top** (featured homepage placement).",
+          "Payments for Boost to Top, advertising or other platform services are, as a rule, non-refundable, except where applicable law requires otherwise or we confirm in writing a verified technical error on our side.",
         ],
         bullets: [
-          "Requests to refund wallet funds are declined except where legally required.",
           "For disputes about a purchase between users, contact the other party; we can only help through content moderation.",
         ],
       },
       {
         title: "Account and posting",
         bullets: [
-          "You need a verified account (email and/or phone, per current rules) to post listings",
+          "You must be registered and signed in to post listings",
           "You are responsible for keeping your account credentials secure",
-          "Respect posting limits and category rules",
+          "Respect category rules and platform guidelines",
           "Accounts cannot be transferred to another person",
         ],
       },
@@ -209,7 +203,7 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
         title: "What we collect",
         bullets: [
           "Name and email (account and communication)",
-          "Phone number (SMS verification — required before your first listing)",
+          "Phone number (optional — for contact on listings or SMS sign-in, if you choose)",
           "IP address (security and fraud prevention)",
           "Listing data you post (text, photos, price, category)",
           "Session data and technical cookies (see Cookies section below)",
@@ -332,10 +326,10 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
     sanctionsTableHeaders: { violation: "Violation", consequence: "Action" },
     sections: [
       {
-        title: "Registration & verification",
+        title: "Registration",
         bullets: [
           "Business accounts are separate from private accounts.",
-          "To switch to business: verified email + SMS-verified phone.",
+          "To post as a business: register and sign in — no fee to publish.",
         ],
       },
       {
@@ -359,12 +353,11 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
         ],
       },
       {
-        title: "Posting limits",
+        title: "Posting",
         bullets: [
-          "Standard business: 10 free listings per category + verification",
-          "After 10 listings in the same category: €0.30/listing from wallet",
-          "VIP Business ☆: unlimited listings for €50/month",
-          "Quota is checked automatically on your account",
+          "Businesses may post unlimited listings for free",
+          "Sign-in / registration is required to create a listing",
+          "The only paid option is Boost to Top (optional promotion)",
         ],
       },
       {
@@ -387,7 +380,7 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
       {
         title: "Private accounts",
         paragraphs: [
-          "Private users have different rules (10 free listings per category, etc.). See Terms of use in the footer.",
+          "Private and business users follow the same free, unlimited posting policy. See Terms of use in the footer.",
         ],
       },
     ],
@@ -445,7 +438,7 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
       },
       {
         q: "How much does posting cost?",
-        a: "Basic posting is completely free — 10 free listings per month for each main category. When you reach the limit, you can buy extra credit from your wallet (Package S €5 / M €10 / L €20).",
+        a: "Posting is completely free and unlimited for all users. The only paid option is Boost to Top — optional promotion of your listing on the homepage.",
       },
       {
         q: "How do I delete a listing?",
@@ -457,11 +450,11 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
       },
       {
         q: "Why is a phone number required?",
-        a: "A phone number is required for SMS verification before your first listing. This helps keep the platform safe and free of fake accounts.",
+        a: "Your phone number is shown on your listing so buyers can contact you. SMS verification is not required before posting — you only need to be registered and signed in.",
       },
       {
         q: "Can I sign in with Google or Facebook?",
-        a: "Yes. You can register and sign in with Google or Facebook in one click. A phone number is still required before your first listing.",
+        a: "Yes. You can register and sign in with Google or Facebook in one click. To post, you must be signed in — enter your phone in the listing form.",
       },
       {
         q: "How many photos can I upload per listing?",
@@ -476,8 +469,8 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
         a: "Click «Report» on the listing page or email support@ketujemi.com. We act within 24 hours.",
       },
       {
-        q: "How does the wallet work?",
-        a: "The wallet is your credit balance on the platform. You can top it up with Packages S/M/L and use credits for extra posts when you exceed the monthly free limit. Credit does not expire and is not refunded in cash.",
+        q: "How does Boost to Top work?",
+        a: "Boost to Top is optional — you pay to feature your listing on the homepage for a set number of days. Normal posting remains free and unlimited for everyone.",
       },
       {
         q: "Can I edit a listing after posting?",
@@ -539,7 +532,7 @@ export const EN_STATIC_PAGES: StaticPagesCopy = {
       {
         title: "What we do for your safety",
         bullets: [
-          "Mandatory SMS verification before the first listing",
+          "Registration and sign-in required to post listings",
           "24/7 reporting system — we act within 24 hours",
           "Automatic moderation of suspicious listings",
           "Blocking of fraudulent accounts after verified reports",

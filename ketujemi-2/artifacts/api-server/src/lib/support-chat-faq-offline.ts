@@ -99,7 +99,7 @@ const DETAILED_FAQ: FaqEntry[] = [
     keywords:
       /posto|postim|si\s+(te|të)\s+post|si\s+postoj|how\s+to\s+post|објав|objav|kako\s+da\s+post|shitës|shites|shese|shes\b/i,
     reply: {
-      sq: "Postimi (hap pas hapi): 1) Hyr + verifikim email/SMS. 2) **«Posto Falas»**. 3) Kategori + nënkategori e saktë. 4) Titull, përshkrim, çmim €, deri **10 foto**. 5) Publiko (moderim AI) — aktiv deri **3 muaj**. Limit: **10 postime falas në muaj** për kategori kryesore (riniset çdo muaj). TOP opsional (€2/€5/€8). Rifillo pas skadimit nga njoftimi juaj.",
+      sq: "Postimi (hap pas hapi): 1) **Regjistrohu dhe hyr** në llogari. 2) **«Posto Njoftim»**. 3) Kategori + nënkategori e saktë. 4) Titull, përshkrim, çmim €, deri **10 foto**. 5) Publiko (moderim AI) — aktiv deri **3 muaj**. Postimi është **falas dhe i pakufizuar**. Boost TOP opsional (€2/€5/€8). Rifillo pas skadimit nga njoftimi juaj.",
       mk: "Продавач: регистрација, верификација, **Posto Falas**, точна категорија, детали — 30 дена.",
       me: "Prodavač: registracija, verifikacija, **Posto Falas**, tačna kategorija, detalji — 30 dana.",
     },
@@ -131,15 +131,15 @@ const DETAILED_FAQ: FaqEntry[] = [
   {
     keywords: /biznes|business|10\s+njoft|paket|listing\s+package|s\s*€|m\s*€|l\s*€/i,
     reply: {
-      sq: "Biznes: **10** falas/kategori, pastaj **€0.30/shpallje** nga portofoli. **VIP biznes €50/muaj** — postime të pakufizuara. Partner dyqani (/partner): **Standard €30/muaj**, **VIP €50/muaj** (pagesë fillestare me Stripe).",
-      mk: "Бизнис 10 бесплатно, €0.30 од портфел, VIP €50. Partner: Standard €30 / VIP €50 месечно.",
-      me: "Biznis 10 besplatno, €0.30 iz novčanika, VIP €50. Partner: Standard €30 / VIP €50 mjesečno.",
+      sq: "Postimi është **falas dhe i pakufizuar** për privat dhe biznes. Opsioni i vetëm me pagesë për njoftime: **Boost TOP**. Partner dyqani (/partner): **Standard €30/muaj**, **VIP €50/muaj** (marketing — logo, badge).",
+      mk: "Објавувањето е бесплатно и неограничено. Единствена платена опција за огласи: Boost TOP. Partner: Standard €30 / VIP €50 месечно.",
+      me: "Objavljivanje je besplatno i neograničeno. Jedina plaćena opcija za oglase: Boost TOP. Partner: Standard €30 / VIP €50 mjesečno.",
     },
   },
   {
     keywords: /verifik|sms|email|kod|confirm/i,
     reply: {
-      sq: "Verifikoni **email** dhe **SMS** (+383, +355, +389, +382). Pa verifikim, postimi mund të mos funksionojë plotësisht.",
+      sq: "Për të postuar duhet të **hyni në llogari**. Email ose SMS (+383, +355, +389, +382) përdoren për regjistrim — verifikimi SMS **nuk** është i detyrueshëm para postimit.",
       mk: "Верификација email + SMS.",
       me: "Verifikacija email + SMS.",
     },
@@ -164,7 +164,7 @@ const DETAILED_FAQ: FaqEntry[] = [
   {
     keywords: /stripe|kart|card|pages|pay|checkout|bler pages/i,
     reply: {
-      sq: "Pagesat online në KetuJemi bëhen me **Stripe** (kartë bankare): partner **/partner** (Standard **€30/muaj** / VIP **€50/muaj**), **TOP** njoftimi (€2/€5/€8), **portofol** (€5/€10/€20), **VIP biznes €50/muaj**. Blerja e produktit te shitësi **nuk** paguhet përmes KetuJemi — kontakt direkt me shitësin.",
+      sq: "Pagesat online në KetuJemi bëhen me **Stripe** (kartë bankare): **Boost TOP** për njoftim (€2/€5/€8), partner **/partner** (Standard **€30/muaj** / VIP **€50/muaj** — marketing). Postimi **nuk** kushton. Blerja e produktit te shitësi **nuk** paguhet përmes KetuJemi — kontakt direkt me shitësin.",
       mk: "Stripe за partner, TOP, пакети. Купување од продавач — директно, не преку платформата.",
       me: "Stripe za partner, TOP, pakete. Kupovina od prodavača — direktno.",
     },
