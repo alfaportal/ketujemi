@@ -51,6 +51,12 @@ export type OpenShopFormCopy = {
   successMsg: string;
   loginRequired: string;
   uploadingLogo: string;
+  aiHelpBtn: string;
+  aiBusinessTypePrompt: string;
+  aiBusinessTypePlaceholder: string;
+  aiGenerateBtn: string;
+  aiGenerating: string;
+  aiCancelBtn: string;
   countryLabels: Record<ShopCountryCode, string>;
   diasporaCities: Record<DiasporaCountryCode, string[]>;
 };
@@ -168,6 +174,13 @@ const KS: OpenShopFormCopy = {
   successMsg: "✅ Kërkesa juaj u dërgua! Do të kontaktoheni brenda 24 orëve.",
   loginRequired: "Për të dërguar kërkesën, duhet të jeni i regjistruar dhe i kyçur në llogarinë tuaj.",
   uploadingLogo: "Duke ngarkuar logon...",
+  aiHelpBtn: "✨ Ndihmë AI",
+  aiBusinessTypePrompt:
+    "Çfarë lloj biznesi keni? (p.sh. dyqan rrobash, agjenci patundshmërie, servis makine...)",
+  aiBusinessTypePlaceholder: "p.sh. dyqan rrobash",
+  aiGenerateBtn: "Gjenero",
+  aiGenerating: "Duke gjeneruar...",
+  aiCancelBtn: "Anulo",
   countryLabels: {
     XK: "Kosovë",
     AL: "Shqipëri",
@@ -215,6 +228,13 @@ const MK: OpenShopFormCopy = {
   successMsg: "✅ Вашето барање е испратено! Ќе бидете контактирани во рок од 24 часа.",
   loginRequired: "За да го испратите барањето, мора да сте регистрирани и најавени.",
   uploadingLogo: "Се прикачува логото...",
+  aiHelpBtn: "✨ AI помош",
+  aiBusinessTypePrompt:
+    "Каков вид на бизнис имате? (на пр. продавница за облека, агенција за недвижности, сервис за автомобили...)",
+  aiBusinessTypePlaceholder: "на пр. продавница за облека",
+  aiGenerateBtn: "Генерирај",
+  aiGenerating: "Се генерира...",
+  aiCancelBtn: "Откажи",
   countryLabels: {
     XK: "Косово",
     AL: "Албанија",
@@ -261,6 +281,13 @@ const MNE: OpenShopFormCopy = {
   successMsg: "✅ Vaš zahtjev je poslan! Bićete kontaktirani u roku od 24 sata.",
   loginRequired: "Da biste poslali zahtjev, morate biti registrovani i prijavljeni.",
   uploadingLogo: "Otpremanje loga...",
+  aiHelpBtn: "✨ AI pomoć",
+  aiBusinessTypePrompt:
+    "Kakav tip poslovanja imate? (npr. prodavnica odjeće, agencija za nekretnine, servis automobila...)",
+  aiBusinessTypePlaceholder: "npr. prodavnica odjeće",
+  aiGenerateBtn: "Generiši",
+  aiGenerating: "Generisanje...",
+  aiCancelBtn: "Otkaži",
   countryLabels: {
     XK: "Kosovo",
     AL: "Albanija",
@@ -307,6 +334,13 @@ const EN: OpenShopFormCopy = {
   successMsg: "✅ Your request was sent! We will contact you within 24 hours.",
   loginRequired: "You must be registered and signed in to submit a shop request.",
   uploadingLogo: "Uploading logo...",
+  aiHelpBtn: "✨ AI help",
+  aiBusinessTypePrompt:
+    "What type of business do you have? (e.g. clothing shop, real estate agency, car service...)",
+  aiBusinessTypePlaceholder: "e.g. clothing shop",
+  aiGenerateBtn: "Generate",
+  aiGenerating: "Generating...",
+  aiCancelBtn: "Cancel",
   countryLabels: {
     XK: "Kosovo",
     AL: "Albania",

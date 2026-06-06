@@ -17,6 +17,7 @@ import { useMarket } from "@/lib/market-context";
 import { openShopApplyPath } from "@/lib/static-page-paths";
 import { BRAND_BLUE, BRAND_ORANGE } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
+import { ShopDescriptionHelper } from "@/components/shop-description-helper";
 
 export function ShopApplicationForm() {
   const c = useShopFormCopy();
@@ -53,6 +54,11 @@ export function ShopApplicationForm() {
   );
 
   const cityOptions = citiesForShopCountry(country);
+
+  const selectedCategory = parentCategories.find((p: { id: number }) => String(p.id) === categoryId);
+  const selectedCategoryName = selectedCategory
+    ? translateCategory((selectedCategory as { name: string }).name, translationKeyForUiLang(uiLang))
+    : "";
 
   useEffect(() => {
     setCity("");
@@ -180,7 +186,14 @@ export function ShopApplicationForm() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label>{c.description} *</Label>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Label className="mb-0">{c.description} *</Label>
+              <ShopDescriptionHelper
+                shopName={shopName}
+                category={selectedCategoryName}
+                onApplyDescription={setDescription}
+              />
+            </div>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} required rows={5} className="min-h-[120px]" />
           </div>
           <div className="space-y-2">

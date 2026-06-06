@@ -2,6 +2,7 @@ import { Router } from "express";
 import { getSessionUser } from "../lib/session-user";
 import { getPostingSuggestions } from "../lib/listing-posting-assistant";
 import { polishListingDescription } from "../lib/listing-description-polish";
+import { generateShopDescription } from "../lib/shop-description-generate";
 import { suggestListingCategory } from "../lib/listing-category-suggest";
 import { getSimilarListingsForListing } from "../lib/listing-ai-recommendations";
 import { runSupportChat, supportChatFallbackReply, type ChatMessage } from "../lib/support-chatbot";
@@ -62,6 +63,38 @@ router.post("/ai/polish-listing-description", async (req, res) => {
   }
 
   res.json({ description: polished, ai_enabled: isClaudeConfigured() });
+});
+
+// ─── POST /ai/generate-shop-description ─────────────────────────────────────────
+router.post("/ai/generate-shop-description", async (req, res) => {
+  const viewer = await getSessionUser(req);
+  if (!viewer) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+
+  const body = req.body as {
+    business_type?: string;
+    shop_name?: string;
+    category?: string;
+    lang?: string;
+  };
+  const businessType = typeof body.business_type === "string" ? body.business_type : "";
+  const description = await generateShopDescription(
+    {
+      business_type: businessType,
+      shop_name: typeof body.shop_name === "string" ? body.shop_name : undefined,
+      category: typeof body.category === "string" ? body.category : undefined,
+    },
+    parseUiLang(body.lang),
+  );
+
+  if (!description) {
+    res.status(400).json({ error: "GENERATION_FAILED" });
+    return;
+  }
+
+  res.json({ description, ai_enabled: isClaudeConfigured() });
 });
 
 // ─── POST /ai/suggest-listing-category ─────────────────────────────────────────
