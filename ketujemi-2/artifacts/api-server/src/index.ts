@@ -16,6 +16,7 @@ import {
 } from "@workspace/db";
 import { logger } from "./lib/logger";
 import { logPaymentStackReadiness } from "./lib/payment-policy";
+import { logInstagramOAuthReadiness } from "./lib/instagram-oauth-readiness";
 import { vonageConfigSummary } from "./lib/vonage-auth";
 import { startExpiredListingsScheduler } from "./lib/expire-listings-job";
 import { startExpiryReminderScheduler } from "./lib/listing-expiry-reminders";
@@ -79,6 +80,7 @@ async function startServer(): Promise<void> {
     logger.info("Fëmijë category thumbnails synced (groups + leaves)");
     await purgeInvalidListingImagesOnStartup();
     logPaymentStackReadiness(logger);
+    logInstagramOAuthReadiness(logger);
     logger.info(vonageConfigSummary(), "vonage sms config (masked)");
     const { initializeFacebookPageAccessToken } = await import("./services/socialMedia.js");
     await initializeFacebookPageAccessToken();

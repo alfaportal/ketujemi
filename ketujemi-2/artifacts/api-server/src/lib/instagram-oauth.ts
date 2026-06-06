@@ -26,6 +26,7 @@ export function buildInstagramAuthorizeUrl(state: string, origin: string): strin
     state,
     response_type: "code",
     scope: INSTAGRAM_SCOPES,
+    enable_fb_login: "false",
   });
 
   return `https://www.instagram.com/oauth/authorize?${params}`;
@@ -34,8 +35,27 @@ export function buildInstagramAuthorizeUrl(state: string, origin: string): strin
 type InstagramShortLivedToken = {
   access_token?: string;
   user_id?: string | number;
+  error_type?: string;
   error_message?: string;
+  data?: Array<{
+    access_token?: string;
+    user_id?: string | number;
+  }>;
 };
+
+function parseInstagramTokenResponse(data: InstagramShortLivedToken): {
+  accessToken: string;
+  userId: string;
+} | null {
+  if (data.access_token && data.user_id != null) {
+    return { accessToken: data.access_token, userId: String(data.user_id) };
+  }
+  const row = data.data?.[0];
+  if (row?.access_token && row.user_id != null) {
+    return { accessToken: row.access_token, userId: String(row.user_id) };
+  }
+  return null;
+}
 
 export async function exchangeInstagramCode(
   code: string,
@@ -61,14 +81,18 @@ export async function exchangeInstagramCode(
   });
 
   const data = (await res.json()) as InstagramShortLivedToken;
-  if (!res.ok || !data.access_token || data.user_id == null) {
-    throw new Error(data.error_message ?? "Instagram token exchange failed");
+  const parsed = parseInstagramTokenResponse(data);
+  if (!res.ok || !parsed) {
+    const msg = data.error_message ?? "Instagram token exchange failed";
+    if (msg.toLowerCase().includes("invalid platform app")) {
+      throw new Error(
+        "Instagram OAuth misconfigured: use INSTAGRAM_APP_ID and INSTAGRAM_APP_SECRET from Meta Dashboard → Instagram → Business login settings (not FACEBOOK_APP_ID)",
+      );
+    }
+    throw new Error(msg);
   }
 
-  return {
-    accessToken: data.access_token,
-    userId: String(data.user_id),
-  };
+  return parsed;
 }
 
 export async function fetchInstagramProfile(accessToken: string): Promise<InstagramProfile> {
