@@ -52,7 +52,7 @@ export default function ShopDirectoryPage() {
     const params = new URLSearchParams();
     if (city) params.set("city", city);
     if (country) params.set("country", country);
-    void fetchWithTimeout(`/api/shops/directory?${params}`)
+    void fetchWithTimeout(`/api/shops/directory?${params}`, { cache: "no-store" })
       .then((r) => r.json() as Promise<DirectoryResponse>)
       .then((data) => {
         setShops(data.shops ?? []);

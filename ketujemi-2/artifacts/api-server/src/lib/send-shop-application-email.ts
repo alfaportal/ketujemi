@@ -91,22 +91,29 @@ export async function sendShopApplicationEmail(payload: ShopApplicationEmailPayl
 }
 
 export async function sendShopApprovedEmail(to: string, shopName: string, _shopUrl: string): Promise<void> {
-  const subject = `🎉 Dyqani juaj '${shopName}' u aprovua në KetuJemi!`;
+  const subject = "🎉 Dyqani juaj u aprovua në KetuJemi!";
   const text = [
-    `🎉 Dyqani juaj '${shopName}' u aprovua në KetuJemi!`,
-    "",
-    "Tani mund të postoni shpalljet tuaja falas. Çdo shpallje që postoni do të shfaqet automatikisht në faqen e dyqanit tuaj dhe në faqen kryesore të KetuJemi.",
-    "",
-    "Na ndiqni në rrjetet sociale për të përfituar nga promovimi ynë:",
-    "📘 Facebook — KetuJemi.com",
-    "📸 Instagram — @jemi.ketu",
-    "🎵 TikTok — @ketujemi7",
-    "",
-    "Filloni tani → ketujemi.com/listings/new 🚀",
+    `Mirë se erdhe në familjen KetuJemi! Dyqani juaj '${shopName}' është aktivizuar dhe tani mund të postoni shpalljet tuaja falas. Klientët tuaj po ju presin! 🚀 Filloni tani: ketujemi.com/listings/new`,
   ].join("\n");
-  const html = text.split("\n").map((l) => `<p>${esc(l)}</p>`).join("");
+  const html = `<p>${esc(text)}</p>`;
 
   await deliverEmail({ to, subject, text, html, debugSource: "shop-approved" });
+}
+
+export async function sendShopRatingEmail(
+  to: string,
+  shopName: string,
+  shopId: number,
+  rating: number,
+  comment: string | null,
+): Promise<void> {
+  const subject = "⭐ Vlerësim i ri për dyqanin tuaj!";
+  const commentText = comment?.trim() ? comment.trim() : "—";
+  const profileUrl = `https://ketujemi.com/dyqani/${shopId}`;
+  const text = `Dyqani juaj '${shopName}' mori një vlerësim të ri: ${rating} yje. Koment: '${commentText}'. Shikoni profilin tuaj: ${profileUrl}`;
+  const html = `<p>${esc(text)}</p>`;
+
+  await deliverEmail({ to, subject, text, html, debugSource: "shop-rating" });
 }
 
 export async function sendShopRejectedEmail(to: string, shopName: string, reason?: string): Promise<void> {

@@ -12,6 +12,12 @@ export type ShopDetailCopy = {
   seoTitleInCity: string;
   activeListingsCount: string;
   filterAll: string;
+  postNewListing: string;
+  editListing: string;
+  deleteListing: string;
+  deleteListingTitle: string;
+  deleteListingDesc: string;
+  cancel: string;
 };
 
 function seoTitle(shopName: string, category: string, city: string, suffix: string): string {
@@ -29,6 +35,12 @@ const KS: ShopDetailCopy = {
   seoTitleInCity: "në {city} | KetuJemi.com",
   activeListingsCount: "{count} shpallje aktive",
   filterAll: "Të gjitha",
+  postNewListing: "➕ Posto Shpallje të Re",
+  editListing: "Edito",
+  deleteListing: "Fshi",
+  deleteListingTitle: "Fshi shpalljen?",
+  deleteListingDesc: "Kjo veprim nuk mund të zhbehet. Shpallja do të fshihet përgjithmonë.",
+  cancel: "Anulo",
 };
 
 const MK: ShopDetailCopy = {
@@ -42,6 +54,12 @@ const MK: ShopDetailCopy = {
   seoTitleInCity: "во {city} | KetuJemi.com",
   activeListingsCount: "{count} активни огласи",
   filterAll: "Сите",
+  postNewListing: "➕ Објави нов оглас",
+  editListing: "Уреди",
+  deleteListing: "Избриши",
+  deleteListingTitle: "Избриши го огласот?",
+  deleteListingDesc: "Оваа акција не може да се врати. Огласот ќе биде трајно избришан.",
+  cancel: "Откажи",
 };
 
 const MNE: ShopDetailCopy = {
@@ -55,6 +73,12 @@ const MNE: ShopDetailCopy = {
   seoTitleInCity: "u {city} | KetuJemi.com",
   activeListingsCount: "{count} aktivnih oglasa",
   filterAll: "Sve",
+  postNewListing: "➕ Objavi novi oglas",
+  editListing: "Uredi",
+  deleteListing: "Obriši",
+  deleteListingTitle: "Obrisati oglas?",
+  deleteListingDesc: "Ova radnja se ne može poništiti. Oglas će biti trajno uklonjen.",
+  cancel: "Otkaži",
 };
 
 const EN: ShopDetailCopy = {
@@ -68,6 +92,12 @@ const EN: ShopDetailCopy = {
   seoTitleInCity: "in {city} | KetuJemi.com",
   activeListingsCount: "{count} active listings",
   filterAll: "All",
+  postNewListing: "➕ Post New Listing",
+  editListing: "Edit",
+  deleteListing: "Delete",
+  deleteListingTitle: "Delete listing?",
+  deleteListingDesc: "This cannot be undone. The listing will be permanently removed.",
+  cancel: "Cancel",
 };
 
 const PAGES: Record<UiTranslationLocale, ShopDetailCopy> = {

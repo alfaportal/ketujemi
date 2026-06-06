@@ -12,6 +12,7 @@ export type ShopDirectoryListItem = {
   id: number;
   shop_name: string;
   logo_url: string;
+  category?: string | null;
   directory_category_slug?: string | null;
   directory_subcategory_slug?: string | null;
   country: string;

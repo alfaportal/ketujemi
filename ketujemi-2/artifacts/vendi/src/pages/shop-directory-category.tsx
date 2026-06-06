@@ -60,7 +60,7 @@ export default function ShopDirectoryCategoryPage() {
     if (subFilter) params.set("subcategory", subFilter);
     if (city) params.set("city", city);
     if (country) params.set("country", country);
-    void fetchWithTimeout(`/api/shops/directory?${params}`)
+    void fetchWithTimeout(`/api/shops/directory?${params}`, { cache: "no-store" })
       .then((r) => r.json() as Promise<{ shops: ShopDirectoryListItem[] }>)
       .then((data) => setShops(data.shops ?? []))
       .catch(() => setShops([]))

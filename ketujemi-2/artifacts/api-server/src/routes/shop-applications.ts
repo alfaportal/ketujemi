@@ -12,7 +12,7 @@ import {
 } from "@workspace/db";
 import { eq, and, asc, desc, gt, isNotNull, sql, inArray, or, isNull } from "drizzle-orm";
 import { getSessionUser } from "../lib/session-user";
-import { sendShopApplicationEmail } from "../lib/send-shop-application-email";
+import { sendShopApplicationEmail, sendShopRatingEmail } from "../lib/send-shop-application-email";
 import { formatListingsBatch } from "../lib/format-listings-batch";
 import {
   resolveDirectoryCategorySlug,
@@ -280,6 +280,8 @@ router.get("/shops/directory", async (req, res) => {
 
   const ratingMap = await ratingSummariesForShops(rows.map((r) => r.id));
 
+  res.setHeader("Cache-Control", "no-store");
+
   res.json({
     shops: rows.map((row) => shopDirectoryRow(row, ratingMap[row.id])),
     categoryCounts,
@@ -529,12 +531,23 @@ router.post("/shops/:id/ratings", async (req, res) => {
   }
 
   const [shop] = await db
-    .select({ id: shopsTable.id, is_active: shopsTable.is_active })
+    .select({
+      id: shopsTable.id,
+      is_active: shopsTable.is_active,
+      user_id: shopsTable.user_id,
+      shop_name: shopsTable.shop_name,
+      email: shopsTable.email,
+    })
     .from(shopsTable)
     .where(eq(shopsTable.id, id))
     .limit(1);
   if (!shop?.is_active) {
     res.status(404).json({ error: "Not found" });
+    return;
+  }
+
+  if (shop.user_id === viewer.id) {
+    res.status(400).json({ error: "VALIDATION", message: "Nuk mund të vlerësoni dyqanin tuaj." });
     return;
   }
 
@@ -573,6 +586,12 @@ router.post("/shops/:id/ratings", async (req, res) => {
     })
     .from(shopRatingsTable)
     .where(eq(shopRatingsTable.shop_id, id));
+
+  try {
+    await sendShopRatingEmail(shop.email, shop.shop_name, shop.id, rating, comment);
+  } catch (err) {
+    req.log?.error({ err, shopId: shop.id }, "shop rating email failed");
+  }
 
   res.json({
     ok: true,
@@ -653,6 +672,7 @@ router.get("/shops/:id", async (req, res) => {
     listings,
     active_count: listings.length,
     subcategories,
+    is_owner: viewer ? viewer.id === shop.user_id : false,
   });
 });
 

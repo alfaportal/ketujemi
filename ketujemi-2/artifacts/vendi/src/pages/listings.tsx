@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useLocation, Link } from "wouter";
 import { useGetListings, useGetCategories } from "@workspace/api-client-react";
 import {
@@ -16,6 +16,11 @@ import {
   filterToggleButtonBaseClass,
 } from "@/lib/primary-button-classes";
 import { effectiveListingSearchQuery } from "@/lib/listing-search-query";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { filterShopsByQuery } from "@/lib/shop-directory-fuse";
+import { ShopDirectoryCard, type ShopDirectoryListItem } from "@/components/shop-directory-card";
+import { useShopDirectoryCopy } from "@/lib/shop-directory-i18n";
+import { translationKeyForUiLang } from "@/lib/ui-languages";
 
 // --- Skeleton Card ---
 function SkeletonCard() {
@@ -37,7 +42,9 @@ const PAGE_SIZE = 16;
 export default function Listings() {
   const [, setLocation] = useLocation();
   const goToPostListing = useGoToPostListing();
-  const { market, t } = useMarket();
+  const { market, t, uiLang } = useMarket();
+  const locale = translationKeyForUiLang(uiLang);
+  const shopCopy = useShopDirectoryCopy();
   const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
   const initialSearchRaw = searchParams.get("search") ?? "";
   const initialSearch = effectiveListingSearchQuery(initialSearchRaw);
@@ -49,6 +56,8 @@ export default function Listings() {
   const [maxPrice, setMaxPrice] = useState(searchParams.get("max_price") ?? "");
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [directoryShops, setDirectoryShops] = useState<ShopDirectoryListItem[]>([]);
+  const [shopsLoading, setShopsLoading] = useState(false);
 
   const [appliedSearch, setAppliedSearch] = useState(initialSearch);
   const [appliedCategory, setAppliedCategory] = useState(categoryId);
@@ -91,6 +100,24 @@ export default function Listings() {
   );
 
   const selectedCategory = categories?.find((c) => String(c.id) === appliedCategory);
+
+  useEffect(() => {
+    if (!appliedSearch) {
+      setDirectoryShops([]);
+      return;
+    }
+    setShopsLoading(true);
+    void fetchWithTimeout("/api/shops/directory", { cache: "no-store" })
+      .then((r) => r.json() as Promise<{ shops?: ShopDirectoryListItem[] }>)
+      .then((data) => setDirectoryShops(data.shops ?? []))
+      .catch(() => setDirectoryShops([]))
+      .finally(() => setShopsLoading(false));
+  }, [appliedSearch]);
+
+  const matchedShops = useMemo(
+    () => (appliedSearch ? filterShopsByQuery(directoryShops, appliedSearch, locale) : []),
+    [directoryShops, appliedSearch, locale],
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -262,6 +289,27 @@ export default function Listings() {
             )}
           </div>
         )}
+
+        {appliedSearch ? (
+          <section className="mb-6">
+            <h2 className="text-lg font-black text-gray-900 mb-3">{t.searchShopsSection}</h2>
+            {shopsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <div key={i} className="rounded-2xl border border-gray-100 bg-white p-4">
+                    <Skeleton className="h-20 w-full" />
+                  </div>
+                ))}
+              </div>
+            ) : matchedShops.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {matchedShops.map((shop) => (
+                  <ShopDirectoryCard key={shop.id} shop={shop} viewLabel={shopCopy.viewShop} />
+                ))}
+              </div>
+            ) : null}
+          </section>
+        ) : null}
 
         {/* Grid */}
         {isLoading ? (

@@ -1,7 +1,27 @@
-import { useRoute, Link } from "wouter";
+import { useRoute, Link, useLocation } from "wouter";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, MapPin, Facebook, Instagram, Globe, ExternalLink } from "lucide-react";
+import { Loader2, MapPin, Facebook, Instagram, Globe, ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useDeleteListing,
+  getGetListingsQueryKey,
+  getGetRecentListingsQueryKey,
+  getGetFeaturedListingsQueryKey,
+} from "@workspace/api-client-react";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 import { SiteHeader } from "@/components/site-header";
 import { ShopRatingBadge } from "@/components/shop-rating-badge";
 import { ShopRatingsPanel } from "@/components/shop-ratings-panel";
@@ -44,7 +64,7 @@ type ListingRow = Parameters<typeof ListingCard>[0]["listing"];
 export default function ShopDetailPage() {
   const [, params] = useRoute("/dyqani/:id");
   const id = Number(params?.id);
-  const { uiLang } = useMarket();
+  const { uiLang, t } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
   const d = useShopDetailCopy();
   const [loading, setLoading] = useState(true);
@@ -53,11 +73,15 @@ export default function ShopDetailPage() {
   const [subcategories, setSubcategories] = useState<SubcategoryFilter[]>([]);
   const [activeCount, setActiveCount] = useState(0);
   const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
+  function loadShop() {
     if (!id) return;
     setLoading(true);
-    void fetchWithTimeout(`/api/shops/${id}`)
+    void fetchWithTimeout(`/api/shops/${id}`, { credentials: "include" })
       .then(async (r) => {
         if (!r.ok) throw new Error("not found");
         return r.json() as Promise<{
@@ -65,6 +89,7 @@ export default function ShopDetailPage() {
           listings: ListingRow[];
           active_count?: number;
           subcategories?: SubcategoryFilter[];
+          is_owner?: boolean;
         }>;
       })
       .then((data) => {
@@ -72,6 +97,7 @@ export default function ShopDetailPage() {
         setListings(data.listings);
         setActiveCount(data.active_count ?? data.listings.length);
         setSubcategories(data.subcategories ?? []);
+        setIsOwner(!!data.is_owner);
         setCategoryFilter(null);
         const categoryLabel = translateCategory(data.shop.category, locale);
         const title = shopDetailSeoTitle(d, data.shop.shop_name, categoryLabel, data.shop.city);
@@ -89,9 +115,29 @@ export default function ShopDetailPage() {
         setListings([]);
         setSubcategories([]);
         setActiveCount(0);
+        setIsOwner(false);
       })
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    loadShop();
   }, [id, d, locale]);
+
+  const deleteMutation = useDeleteListing({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetRecentListingsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetFeaturedListingsQueryKey() });
+        toast({ title: t.deleteSuccess });
+        loadShop();
+      },
+      onError: () => {
+        toast({ title: t.deleteError, variant: "destructive" });
+      },
+    },
+  });
 
   const filteredListings = useMemo(() => {
     if (!categoryFilter) return listings;
@@ -204,9 +250,22 @@ export default function ShopDetailPage() {
         <section>
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <h2 className="text-xl font-black text-gray-900">{d.listingsTitle}</h2>
-            <p className="text-sm font-semibold text-blue-700">
-              {d.activeListingsCount.replace("{count}", String(activeCount))}
-            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-sm font-semibold text-blue-700">
+                {d.activeListingsCount.replace("{count}", String(activeCount))}
+              </p>
+              {isOwner ? (
+                <Link href="/listings/new">
+                  <Button
+                    type="button"
+                    className="min-h-11 font-bold text-white"
+                    style={{ background: `linear-gradient(90deg, ${BRAND_BLUE}, ${BRAND_ORANGE})` }}
+                  >
+                    {d.postNewListing}
+                  </Button>
+                </Link>
+              ) : null}
+            </div>
           </div>
 
           {subcategories.length > 1 ? (
@@ -246,7 +305,51 @@ export default function ShopDetailPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {filteredListings.map((l) => (
-                <ListingCard key={l.id} listing={l} />
+                <div key={l.id} className="space-y-2">
+                  <ListingCard listing={l} />
+                  {isOwner ? (
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="min-h-10 gap-1.5"
+                        onClick={() => setLocation(`/listings/${l.id}/edit`)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                        ✏️ {d.editListing}
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            className="min-h-10 gap-1.5 bg-red-600 hover:bg-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            🗑️ {d.deleteListing}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{d.deleteListingTitle}</AlertDialogTitle>
+                            <AlertDialogDescription>{d.deleteListingDesc}</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{d.cancel}</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-red-600 hover:bg-red-700"
+                              onClick={() => deleteMutation.mutate({ id: l.id })}
+                            >
+                              {d.deleteListing}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  ) : null}
+                </div>
               ))}
             </div>
           )}

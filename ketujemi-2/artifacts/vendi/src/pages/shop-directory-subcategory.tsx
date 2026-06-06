@@ -57,7 +57,7 @@ export default function ShopDirectorySubcategoryPage() {
     const qs = new URLSearchParams({ category: categorySlug, subcategory: subcategorySlug });
     if (city) qs.set("city", city);
     if (country) qs.set("country", country);
-    void fetchWithTimeout(`/api/shops/directory?${qs}`)
+    void fetchWithTimeout(`/api/shops/directory?${qs}`, { cache: "no-store" })
       .then((r) => r.json() as Promise<{ shops: ShopDirectoryListItem[] }>)
       .then((data) => setShops(data.shops ?? []))
       .catch(() => setShops([]))
