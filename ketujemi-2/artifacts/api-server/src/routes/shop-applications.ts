@@ -8,10 +8,12 @@ import {
   shopsTable,
   listingsTable,
   usersTable,
+  categoriesTable,
 } from "@workspace/db";
-import { eq, and, asc, desc, gt, isNotNull, sql, inArray } from "drizzle-orm";
+import { eq, and, asc, desc, gt, isNotNull, sql, inArray, or, isNull } from "drizzle-orm";
 import { getSessionUser } from "../lib/session-user";
 import { sendShopApplicationEmail } from "../lib/send-shop-application-email";
+import { formatListingsBatch } from "../lib/format-listings-batch";
 import {
   resolveDirectoryCategorySlug,
   resolveDirectorySubcategorySlug,
@@ -285,6 +287,167 @@ router.get("/shops/directory", async (req, res) => {
   });
 });
 
+function activeListingCondition() {
+  const now = new Date();
+  return and(
+    eq(listingsTable.status, "active"),
+    or(gt(listingsTable.expires_at, now), isNull(listingsTable.expires_at)),
+  );
+}
+
+// ─── GET /shops/me ────────────────────────────────────────────────────────────
+router.get("/shops/me", async (req, res) => {
+  const viewer = await getSessionUser(req);
+  if (!viewer) {
+    res.status(401).json({ error: "Authentication required", message: "Duhet të jeni i kyçur." });
+    return;
+  }
+
+  const [shop] = await db
+    .select()
+    .from(shopsTable)
+    .where(and(eq(shopsTable.user_id, viewer.id), eq(shopsTable.is_active, true)))
+    .limit(1);
+
+  const [application] = await db
+    .select({
+      id: shopApplicationsTable.id,
+      status: shopApplicationsTable.status,
+      rejected_reason: shopApplicationsTable.rejected_reason,
+      shop_name: shopApplicationsTable.shop_name,
+      logo_url: shopApplicationsTable.logo_url,
+    })
+    .from(shopApplicationsTable)
+    .where(eq(shopApplicationsTable.user_id, viewer.id))
+    .orderBy(desc(shopApplicationsTable.created_at))
+    .limit(1);
+
+  let listing_count = 0;
+  let total_views = 0;
+  if (shop) {
+    const [stats] = await db
+      .select({
+        listing_count: sql<number>`count(*)::int`,
+        total_views: sql<number>`coalesce(sum(${listingsTable.views}), 0)::int`,
+      })
+      .from(listingsTable)
+      .where(eq(listingsTable.shop_id, shop.id));
+    listing_count = stats?.listing_count ?? 0;
+    total_views = stats?.total_views ?? 0;
+  }
+
+  res.json({
+    shop: shop
+      ? {
+          id: shop.id,
+          shop_name: shop.shop_name,
+          logo_url: shop.logo_url,
+          description: shop.description,
+          category: shop.category,
+          category_id: shop.category_id,
+          country: shop.country,
+          city: shop.city,
+          region: shop.region,
+          address: shop.address,
+          facebook: shop.facebook,
+          instagram: shop.instagram,
+          tiktok: shop.tiktok,
+          whatsapp: shop.whatsapp,
+          website: shop.website,
+          contact_name: shop.contact_name,
+          phone: shop.phone,
+          email: shop.email,
+        }
+      : null,
+    application: application ?? null,
+    listing_count,
+    total_views,
+  });
+});
+
+// ─── GET /shops/me/listings ───────────────────────────────────────────────────
+router.get("/shops/me/listings", async (req, res) => {
+  const viewer = await getSessionUser(req);
+  if (!viewer) {
+    res.status(401).json({ error: "Authentication required", message: "Duhet të jeni i kyçur." });
+    return;
+  }
+
+  const [shop] = await db
+    .select({ id: shopsTable.id })
+    .from(shopsTable)
+    .where(and(eq(shopsTable.user_id, viewer.id), eq(shopsTable.is_active, true)))
+    .limit(1);
+  if (!shop) {
+    res.status(404).json({ error: "Not found", message: "Nuk keni dyqan të aprovuar." });
+    return;
+  }
+
+  const rows = await db
+    .select()
+    .from(listingsTable)
+    .where(and(eq(listingsTable.shop_id, shop.id), activeListingCondition()))
+    .orderBy(desc(listingsTable.listed_at))
+    .limit(200);
+
+  const listings = await formatListingsBatch(rows, viewer);
+  res.json({ listings });
+});
+
+// ─── PATCH /shops/:id ─────────────────────────────────────────────────────────
+router.patch("/shops/:id", async (req, res) => {
+  const viewer = await getSessionUser(req);
+  if (!viewer) {
+    res.status(401).json({ error: "Authentication required", message: "Duhet të jeni i kyçur." });
+    return;
+  }
+
+  const id = parseShopId(req.params.id);
+  if (!id) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const [shop] = await db
+    .select()
+    .from(shopsTable)
+    .where(and(eq(shopsTable.id, id), eq(shopsTable.user_id, viewer.id), eq(shopsTable.is_active, true)))
+    .limit(1);
+  if (!shop) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+
+  const body = req.body as Record<string, unknown>;
+  const patch: Partial<typeof shopsTable.$inferInsert> = {};
+
+  const shopName = trimOrNull(body.shop_name);
+  if (shopName) patch.shop_name = shopName;
+  const logoUrl = trimOrNull(body.logo_url);
+  if (logoUrl) patch.logo_url = logoUrl;
+  const description = trimOrNull(body.description);
+  if (description) patch.description = description;
+  const address = trimOrNull(body.address);
+  if (address) patch.address = address;
+  const city = trimOrNull(body.city);
+  if (city) patch.city = city;
+  const region = trimOrNull(body.region);
+  if (region) patch.region = region;
+  if ("facebook" in body) patch.facebook = trimOrNull(body.facebook);
+  if ("instagram" in body) patch.instagram = trimOrNull(body.instagram);
+  if ("tiktok" in body) patch.tiktok = trimOrNull(body.tiktok);
+  if ("whatsapp" in body) patch.whatsapp = trimOrNull(body.whatsapp);
+  if ("website" in body) patch.website = trimOrNull(body.website);
+
+  if (!Object.keys(patch).length) {
+    res.status(400).json({ error: "VALIDATION", message: "Nuk ka fusha për përditësim." });
+    return;
+  }
+
+  const [updated] = await db.update(shopsTable).set(patch).where(eq(shopsTable.id, id)).returning();
+  res.json({ ok: true, shop: updated });
+});
+
 // ─── GET /shops/:id/ratings ─────────────────────────────────────────────────
 router.get("/shops/:id/ratings", async (req, res) => {
   const id = parseShopId(req.params.id);
@@ -433,19 +596,31 @@ router.get("/shops/:id", async (req, res) => {
     return;
   }
 
-  const now = new Date();
+  const viewer = await getSessionUser(req);
+
   const listingRows = await db
     .select()
     .from(listingsTable)
-    .where(
-      and(
-        eq(listingsTable.user_id, shop.user_id),
-        eq(listingsTable.status, "active"),
-        gt(listingsTable.expires_at, now),
-      ),
-    )
+    .where(and(eq(listingsTable.shop_id, shop.id), activeListingCondition()))
     .orderBy(desc(listingsTable.listed_at))
-    .limit(100);
+    .limit(200);
+
+  const listings = await formatListingsBatch(listingRows, viewer);
+
+  const categoryIds = [...new Set(listingRows.map((l) => l.category_id))];
+  const categoryRows =
+    categoryIds.length > 0
+      ? await db
+          .select({ id: categoriesTable.id, name: categoriesTable.name })
+          .from(categoriesTable)
+          .where(inArray(categoriesTable.id, categoryIds))
+      : [];
+
+  const subcategories = categoryRows.map((cat) => ({
+    id: cat.id,
+    name: cat.name,
+    count: listingRows.filter((l) => l.category_id === cat.id).length,
+  }));
 
   const ratingMap = await ratingSummariesForShops([shop.id]);
   const ratings = ratingMap[shop.id];
@@ -475,14 +650,9 @@ router.get("/shops/:id", async (req, res) => {
       average_rating: ratings?.average_rating ?? null,
       rating_count: ratings?.rating_count ?? 0,
     },
-    listings: listingRows.map((l) => ({
-      id: l.id,
-      title: l.title,
-      price: Number(l.price),
-      location: l.location,
-      image_url: l.image_url,
-      listed_at: (l.listed_at ?? l.created_at).toISOString(),
-    })),
+    listings,
+    active_count: listings.length,
+    subcategories,
   });
 });
 

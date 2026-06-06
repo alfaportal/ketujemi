@@ -187,6 +187,7 @@ export default function AdminShops() {
                     </div>
                     <p className="text-sm text-gray-600">
                       {row.category} · {row.city}, {row.country}
+                      {row.shop_id ? ` · ${row.listing_count ?? 0} shpallje` : null}
                     </p>
                     <p className="text-sm text-gray-500 mt-1 line-clamp-2">{row.description}</p>
                   </div>

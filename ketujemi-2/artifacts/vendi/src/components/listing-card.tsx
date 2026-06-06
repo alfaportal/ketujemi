@@ -10,6 +10,7 @@ import { ListingCardImage } from "@/components/listing-card-image";
 import { DHURATA_FALAS_SLUG, isDhurataFalasSlug } from "@/lib/special-listing-categories";
 import { maskSellerPhone } from "@/lib/mask-seller-phone";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
+import { useShopDashboardCopy } from "@/lib/shop-dashboard-i18n";
 
 // ─── Formatted timestamp ──────────────────────────────────────────────────────
 function formatDate(isoString: string): string {
@@ -57,6 +58,9 @@ interface ListingCardProps {
     category_root_slug?: string | null;
     seller_phone?: string | null;
     seller_phone_masked?: string | null;
+    shop_id?: number | null;
+    shop_logo_url?: string | null;
+    shop_verified?: boolean;
   };
 }
 
@@ -150,6 +154,7 @@ function DhurataGiftListingCard({ listing }: ListingCardProps) {
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function ListingCard({ listing }: ListingCardProps) {
   const { market, rates, t, uiLang } = useMarket();
+  const shopCopy = useShopDashboardCopy();
   const [, navigate] = useLocation();
   const isDhurata =
     isDhurataFalasSlug(listing.category_root_slug) ||
@@ -163,6 +168,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
   const daysLeft = getDaysLeft(listing.expires_at, market.code);
   const catName = translateCategory(listing.category_name ?? "", translationKeyForUiLang(uiLang));
   const isVipSeller = !!listing.is_vip_seller;
+  const isShopVerified = !!listing.shop_verified && !!listing.shop_id;
 
   return (
     <Link
@@ -214,10 +220,22 @@ export default function ListingCard({ listing }: ListingCardProps) {
             {daysLeft.text}
           </div>
         )}
+        {isShopVerified && listing.shop_logo_url ? (
+          <img
+            src={listing.shop_logo_url}
+            alt=""
+            className="absolute bottom-2 right-2 h-9 w-9 rounded-lg object-cover border-2 border-white shadow-md z-[1]"
+          />
+        ) : null}
       </div>
 
       {/* Content */}
       <div className="p-3">
+        {isShopVerified ? (
+          <div className="mb-2 inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md">
+            {shopCopy.verifiedBadge}
+          </div>
+        ) : null}
         <h3
           data-testid={`text-title-${listing.id}`}
           className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 mb-1.5 group-hover:text-blue-600 transition-colors"

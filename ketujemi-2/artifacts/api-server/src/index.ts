@@ -3,6 +3,7 @@ import {
   ensureFiscalSchema,
   ensureHomepagePartnersSchema,
   ensureListingUserSchema,
+  ensureListingShopSchema,
   ensureOAuthSchema,
   ensureEngagementNotificationsSchema,
   ensureShopSchema,
@@ -47,6 +48,8 @@ async function startServer(): Promise<void> {
     );
     await ensureListingUserSchema(pool);
     logger.info("Listing user_id + self-duplicate alerts schema verified");
+    await ensureListingShopSchema(pool);
+    logger.info("Listing shop_id schema verified");
     await ensureEngagementNotificationsSchema(pool);
     logger.info("Engagement notifications schema verified (user_notifications, FCM tokens)");
     await ensureHomepagePartnersSchema(pool);

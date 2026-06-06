@@ -10,6 +10,8 @@ export type ShopDetailCopy = {
   noListings: string;
   negotiable: string;
   seoTitleInCity: string;
+  activeListingsCount: string;
+  filterAll: string;
 };
 
 function seoTitle(shopName: string, category: string, city: string, suffix: string): string {
@@ -25,6 +27,8 @@ const KS: ShopDetailCopy = {
   noListings: "Nuk ka shpallje aktive për momentin.",
   negotiable: "Me marrëveshje",
   seoTitleInCity: "në {city} | KetuJemi.com",
+  activeListingsCount: "{count} shpallje aktive",
+  filterAll: "Të gjitha",
 };
 
 const MK: ShopDetailCopy = {
@@ -36,6 +40,8 @@ const MK: ShopDetailCopy = {
   noListings: "Моментално нема активни огласи.",
   negotiable: "По договор",
   seoTitleInCity: "во {city} | KetuJemi.com",
+  activeListingsCount: "{count} активни огласи",
+  filterAll: "Сите",
 };
 
 const MNE: ShopDetailCopy = {
@@ -47,6 +53,8 @@ const MNE: ShopDetailCopy = {
   noListings: "Trenutno nema aktivnih oglasa.",
   negotiable: "Po dogovoru",
   seoTitleInCity: "u {city} | KetuJemi.com",
+  activeListingsCount: "{count} aktivnih oglasa",
+  filterAll: "Sve",
 };
 
 const EN: ShopDetailCopy = {
@@ -58,6 +66,8 @@ const EN: ShopDetailCopy = {
   noListings: "No active listings at the moment.",
   negotiable: "Negotiable",
   seoTitleInCity: "in {city} | KetuJemi.com",
+  activeListingsCount: "{count} active listings",
+  filterAll: "All",
 };
 
 const PAGES: Record<UiTranslationLocale, ShopDetailCopy> = {

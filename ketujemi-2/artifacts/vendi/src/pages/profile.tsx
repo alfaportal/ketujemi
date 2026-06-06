@@ -14,6 +14,7 @@ import { BusinessAccountCard } from "@/components/business-account-card";
 import { PartnerLogoAnalyticsCard } from "@/components/partner-logo-analytics-card";
 import { PartnerProfilePanel } from "@/components/partner-profile-panel";
 import { ProfileMyListings } from "@/components/profile-my-listings";
+import { ProfileShopDashboard } from "@/components/profile-shop-dashboard";
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
@@ -200,6 +201,8 @@ export default function ProfilePage() {
           <PartnerProfilePanel user={user} />
 
           <PartnerLogoAnalyticsCard user={user} />
+
+          <ProfileShopDashboard />
 
           <ProfileMyListings />
 

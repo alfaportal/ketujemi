@@ -13,7 +13,7 @@ import {
   shopDirectorySubcategoriesTable,
   shopsTable,
 } from "@workspace/db";
-import { eq, desc, sql, count, gte, and } from "drizzle-orm";
+import { eq, desc, sql, count, gte, and, inArray } from "drizzle-orm";
 import { isVipBusinessActive } from "../lib/business-rules";
 import {
   generatePartnerActivationCode,
@@ -1262,12 +1262,35 @@ router.get("/admin/shop-applications", requireAdmin, async (_req, res) => {
     .select()
     .from(shopApplicationsTable)
     .orderBy(desc(shopApplicationsTable.created_at));
+
+  const shopIds = rows.map((r) => r.shop_id).filter((id): id is number => typeof id === "number" && id > 0);
+  const listingCountByShop = new Map<number, number>();
+  if (shopIds.length) {
+    const countRows = await db
+      .select({
+        shop_id: listingsTable.shop_id,
+        listing_count: sql<number>`count(*)::int`,
+      })
+      .from(listingsTable)
+      .where(inArray(listingsTable.shop_id, shopIds))
+      .groupBy(listingsTable.shop_id);
+    for (const row of countRows) {
+      if (row.shop_id) listingCountByShop.set(row.shop_id, row.listing_count);
+    }
+  }
+
   const stats = {
     pending: rows.filter((r) => r.status === "pending").length,
     approved: rows.filter((r) => r.status === "approved").length,
     rejected: rows.filter((r) => r.status === "rejected").length,
   };
-  res.json({ applications: rows, stats });
+  res.json({
+    applications: rows.map((row) => ({
+      ...row,
+      listing_count: row.shop_id ? (listingCountByShop.get(row.shop_id) ?? 0) : 0,
+    })),
+    stats,
+  });
 });
 
 router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, res) => {
@@ -1418,6 +1441,11 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
     .update(shopApplicationsTable)
     .set({ status: "approved", shop_id: shop.id, rejected_reason: null })
     .where(eq(shopApplicationsTable.id, id));
+
+  await db
+    .update(listingsTable)
+    .set({ shop_id: shop.id })
+    .where(and(eq(listingsTable.user_id, app.user_id), sql`${listingsTable.shop_id} IS NULL`));
 
   const { sendShopApprovedEmail } = await import("../lib/send-shop-application-email");
   const shopUrl = `https://ketujemi.com/dyqani/${shop.id}`;

@@ -36,6 +36,7 @@ import { notifyTopListingsRefresh } from "@/lib/top-listings-events";
 import { parseListingImageUrls } from "@/lib/listing-images";
 import { recordListingView } from "@/lib/record-listing-view";
 import { ListingShareButtons } from "@/components/listing-share-buttons";
+import { ListingShopCard, type ListingShopInfo } from "@/components/listing-shop-card";
 
 // ─── Spec parser ─────────────────────────────────────────────────────────────
 interface ParsedDesc { specs: Record<string, string>; body: string }
@@ -707,6 +708,10 @@ export default function ListingDetail() {
                 ) : null}
               </div>
             </div>
+
+            {(listing as ListingShopInfo).shop_verified && (listing as ListingShopInfo).shop_id ? (
+              <ListingShopCard shop={listing as ListingShopInfo} />
+            ) : null}
 
             {!canManage ? (
               <div className="space-y-2">

@@ -13,7 +13,7 @@ import {
 import { getSessionUser } from "../lib/session-user";
 import { postListingLimiter, searchLimiter } from "../lib/express-rate-limiters";
 import { listingBelongsToUser } from "../lib/listing-ownership";
-import { sellerFirstName, maskEmailInListingDescription, maskSellerPhone } from "../lib/contact-mask";
+import { maskSellerPhone } from "../lib/contact-mask";
 import { assertAccountActive } from "../lib/user-ban";
 import { formatZodIssuesMessage } from "../lib/listing-api-errors";
 import { getUserMonthlyPostingHistory } from "../lib/listing-monthly-history";
@@ -26,7 +26,7 @@ import {
 import { repostListing } from "../lib/listing-repost";
 import { incrementListingView } from "../lib/listing-view";
 import { markFirstListingPosted, userListingCount } from "../lib/engagement-notifications";
-import { listingFeedOrderBy, isTopActive } from "../lib/listing-top";
+import { listingFeedOrderBy } from "../lib/listing-top";
 import {
   isListingMarketCode,
   LISTING_LOCATIONS_BY_COUNTRY,
@@ -38,17 +38,15 @@ import { effectiveListingSearchQuery } from "../../../../lib/listing-search-quer
 import { handleSellerComplaint } from "../lib/violation-escalation";
 import { deleteListingCascade } from "../lib/delete-listing-cascade";
 import type { User } from "@workspace/db";
-import { annotateListingsWithVipFlag } from "../lib/vip-seller-lookup";
+import { getApprovedShopIdForUser, finalizeListingsForApi } from "../lib/shop-listing-lookup";
+import { applyViewerContact, buildCategoryRootSlugMap, formatListing } from "./listings-format";
 import {
   purgeExpiredListingById,
   requestPurgeExpiredListings,
 } from "../lib/expire-listings-job";
 import { runTwoLayerModeration } from "../lib/listing-two-layer-moderation";
 import { blockSelfDuplicateListingIfNeeded } from "../lib/listing-self-duplicate";
-import {
-  primaryListingImageUrl,
-  sanitizeListingImageUrlField,
-} from "../lib/listing-images";
+import { sanitizeListingImageUrlField } from "../lib/listing-images";
 import { sanitizeListingVideoUrl } from "../lib/listing-video";
 import {
   assertSpecialCategoryListingRules,
@@ -78,112 +76,6 @@ function rateLimitReport(ip: string): boolean {
 }
 
 const router = Router();
-
-function withSellerContactForViewer<
-  T extends { seller_phone: string; seller_name: string; description: string },
->(listing: T, viewer: User | null): T {
-  const description = viewer
-    ? listing.description
-    : maskEmailInListingDescription(listing.description);
-
-  return {
-    ...listing,
-    seller_name: viewer ? listing.seller_name : sellerFirstName(listing.seller_name),
-    seller_phone: viewer ? listing.seller_phone : "",
-    description,
-  };
-}
-
-function applyViewerContact<
-  T extends { seller_phone: string; seller_name: string; description: string },
->(listing: T, viewer: User | null): T {
-  return withSellerContactForViewer(listing, viewer);
-}
-
-// ─── Helper: format listing with all fields ───────────────────────────────────
-function buildCategoryRootSlugMap(
-  cats: { id: number; slug: string | null; parent_id: number | null }[],
-): Map<number, string | null> {
-  const byId = new Map(cats.map((c) => [c.id, c]));
-  const memo = new Map<number, string | null>();
-
-  function rootSlugFor(id: number): string | null {
-    if (memo.has(id)) return memo.get(id)!;
-    const cat = byId.get(id);
-    if (!cat) return null;
-    let slug: string | null = null;
-    if (!cat.parent_id) {
-      slug = cat.slug?.trim() ?? null;
-    } else {
-      const parent = byId.get(cat.parent_id);
-      if (parent && !parent.parent_id) {
-        slug = parent.slug?.trim() ?? cat.slug?.trim() ?? null;
-      } else if (parent?.parent_id) {
-        const grand = byId.get(parent.parent_id);
-        slug = grand?.slug?.trim() ?? parent.slug?.trim() ?? cat.slug?.trim() ?? null;
-      } else {
-        slug = parent?.slug?.trim() ?? cat.slug?.trim() ?? null;
-      }
-    }
-    memo.set(id, slug);
-    return slug;
-  }
-
-  return new Map(cats.map((c) => [c.id, rootSlugFor(c.id)]));
-}
-
-function formatListing(
-  l: typeof listingsTable.$inferSelect,
-  categoryName: string | null,
-  categoryRootSlug: string | null = null,
-) {
-  const now = new Date();
-  const expires = l.expires_at ? new Date(l.expires_at) : null;
-  const daysLeft = expires
-    ? Math.max(0, Math.ceil((expires.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
-    : null;
-
-  const image_url = sanitizeListingImageUrlField(l.image_url);
-  const video_url = sanitizeListingVideoUrl(l.video_url);
-
-  return {
-    ...l,
-    image_url,
-    video_url,
-    primary_image_url: primaryListingImageUrl(image_url),
-    price: Number(l.price),
-    category_name: categoryName,
-    category_root_slug: categoryRootSlug,
-    seller_phone_masked: maskSellerPhone(l.seller_phone),
-    created_at: l.created_at.toISOString(),
-    expires_at: l.expires_at ? l.expires_at.toISOString() : null,
-    days_left: daysLeft,
-    is_expired: expires ? expires < now : false,
-    is_top: isTopActive(l),
-    top_until: l.top_until ? l.top_until.toISOString() : null,
-    top_count: l.top_count ?? 0,
-    listed_at: l.listed_at ? l.listed_at.toISOString() : l.created_at.toISOString(),
-    status: l.status ?? "active",
-    moderation_status: l.moderation_status ?? "approved",
-    vehicle_year: l.vehicle_year ?? null,
-    vehicle_mileage_km: l.vehicle_mileage_km ?? null,
-    vehicle_fuel: l.vehicle_fuel ?? null,
-    vehicle_body_type: l.vehicle_body_type ?? null,
-    vehicle_model: l.vehicle_model ?? null,
-    truck_type_slug: l.truck_type_slug ?? null,
-    truck_axle_config: l.truck_axle_config ?? null,
-    truck_gvw_band: l.truck_gvw_band ?? null,
-    truck_euro_standard: l.truck_euro_standard ?? null,
-    property_txn: l.property_txn ?? null,
-    property_subtype: l.property_subtype ?? null,
-    property_sqm: l.property_sqm ?? null,
-    property_floor: l.property_floor ?? null,
-    motor_type_slug: l.motor_type_slug ?? null,
-    motor_cc_band: l.motor_cc_band ?? null,
-    motor_power_kw: l.motor_power_kw ?? null,
-    motor_transmission: l.motor_transmission ?? null,
-  };
-}
 
 // ─── Filter: only active (non-expired) listings ───────────────────────────────
 function activeCondition() {
@@ -415,7 +307,7 @@ router.get("/listings", searchLimiter, async (req, res) => {
   const catMap = new Map(cats.map((c) => [c.id, c.name]));
   const catRootSlugMap = buildCategoryRootSlugMap(cats);
 
-  const listings = await annotateListingsWithVipFlag(
+  const listings = await finalizeListingsForApi(
     rows.map((l) =>
       applyViewerContact(
         formatListing(l, catMap.get(l.category_id) ?? null, catRootSlugMap.get(l.category_id) ?? null),
@@ -594,12 +486,14 @@ router.post("/listings", postListingLimiter, async (req, res) => {
 
   const listingCountBefore = await userListingCount(viewer.id);
   const is_first_listing = listingCountBefore === 0;
+  const shopId = await getApprovedShopIdForUser(viewer.id);
 
   const now = new Date();
   const [row] = await db
     .insert(listingsTable)
     .values({
       user_id: viewer.id,
+      shop_id: shopId,
       title: parsed.data.title,
       description: parsed.data.description,
       price: String(listingPrice),
@@ -661,7 +555,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     .where(eq(categoriesTable.id, row.category_id))
     .limit(1);
 
-  const [created] = await annotateListingsWithVipFlag([
+  const [created] = await finalizeListingsForApi([
     applyViewerContact(
       formatListing(row, cat[0]?.name ?? null, categoryMeta?.rootSlug ?? null),
       viewer,
@@ -699,7 +593,7 @@ router.get("/listings/top", async (req, res) => {
   const catMap = new Map(cats.map((c) => [c.id, c.name]));
   const catRootSlugMap = buildCategoryRootSlugMap(cats);
   res.json(
-    await annotateListingsWithVipFlag(
+    await finalizeListingsForApi(
       rows.map((l) =>
         applyViewerContact(
           formatListing(l, catMap.get(l.category_id) ?? null, catRootSlugMap.get(l.category_id) ?? null),
@@ -732,7 +626,7 @@ router.get("/listings/featured", async (req, res) => {
   const catMap = new Map(cats.map((c) => [c.id, c.name]));
   const catRootSlugMap = buildCategoryRootSlugMap(cats);
   res.json(
-    await annotateListingsWithVipFlag(
+    await finalizeListingsForApi(
       rows.map((l) =>
         applyViewerContact(
           formatListing(l, catMap.get(l.category_id) ?? null, catRootSlugMap.get(l.category_id) ?? null),
@@ -765,7 +659,7 @@ router.get("/listings/recent", async (req, res) => {
   const catMap = new Map(cats.map((c) => [c.id, c.name]));
   const catRootSlugMap = buildCategoryRootSlugMap(cats);
   res.json(
-    await annotateListingsWithVipFlag(
+    await finalizeListingsForApi(
       rows.map((l) =>
         applyViewerContact(
           formatListing(l, catMap.get(l.category_id) ?? null, catRootSlugMap.get(l.category_id) ?? null),
@@ -1108,7 +1002,7 @@ router.post("/listings/:id/repost", async (req, res) => {
       )
     : null;
   const [listingAnnotated] = listingOut
-    ? await annotateListingsWithVipFlag([listingOut])
+    ? await finalizeListingsForApi([listingOut])
     : [null];
   res.json({
     ok: true,
@@ -1164,7 +1058,7 @@ router.get("/listings/:id", async (req, res) => {
     can_repost: boolean;
   };
   payload.can_repost = isOwner && isExpired;
-  const [out] = await annotateListingsWithVipFlag([payload]);
+  const [out] = await finalizeListingsForApi([payload]);
   res.json({ ...out, can_repost: payload.can_repost, is_owner: isOwner });
 });
 
@@ -1284,7 +1178,7 @@ router.patch("/listings/:id", async (req, res) => {
 
   const catMeta = await resolveCategorySlugMeta(updated.category_id);
 
-  const [patched] = await annotateListingsWithVipFlag([
+  const [patched] = await finalizeListingsForApi([
     applyViewerContact(
       formatListing(updated, catMeta?.name ?? null, catMeta?.rootSlug ?? null),
       viewer,

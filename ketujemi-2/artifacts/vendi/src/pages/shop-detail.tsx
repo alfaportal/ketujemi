@@ -1,17 +1,18 @@
 import { useRoute, Link } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Loader2, MapPin, Facebook, Instagram, Globe, ExternalLink } from "lucide-react";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { SiteHeader } from "@/components/site-header";
 import { ShopRatingBadge } from "@/components/shop-rating-badge";
 import { ShopRatingsPanel } from "@/components/shop-ratings-panel";
+import ListingCard from "@/components/listing-card";
 import { BRAND_BLUE, BRAND_ORANGE } from "@/lib/brand-colors";
 import { applyPageMeta, truncateMetaDescription } from "@/lib/page-meta";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 import { shopDetailSeoTitle, useShopDetailCopy } from "@/lib/shop-detail-i18n";
-import { parseListingImageUrls } from "@/lib/listing-images";
+import { cn } from "@/lib/utils";
 
 type ShopData = {
   id: number;
@@ -32,21 +33,13 @@ type ShopData = {
   website?: string | null;
 };
 
-type ListingRow = {
+type SubcategoryFilter = {
   id: number;
-  title: string;
-  price: number;
-  location: string;
-  image_url?: string | null;
-  primary_image_url?: string | null;
-  listed_at: string;
-  created_at?: string;
-  category_name?: string | null;
-  seller_phone?: string;
-  description?: string;
-  condition?: string;
-  expires_at?: string | null;
+  name: string;
+  count: number;
 };
+
+type ListingRow = Parameters<typeof ListingCard>[0]["listing"];
 
 export default function ShopDetailPage() {
   const [, params] = useRoute("/dyqani/:id");
@@ -57,6 +50,9 @@ export default function ShopDetailPage() {
   const [loading, setLoading] = useState(true);
   const [shop, setShop] = useState<ShopData | null>(null);
   const [listings, setListings] = useState<ListingRow[]>([]);
+  const [subcategories, setSubcategories] = useState<SubcategoryFilter[]>([]);
+  const [activeCount, setActiveCount] = useState(0);
+  const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -64,11 +60,19 @@ export default function ShopDetailPage() {
     void fetchWithTimeout(`/api/shops/${id}`)
       .then(async (r) => {
         if (!r.ok) throw new Error("not found");
-        return r.json() as Promise<{ shop: ShopData; listings: ListingRow[] }>;
+        return r.json() as Promise<{
+          shop: ShopData;
+          listings: ListingRow[];
+          active_count?: number;
+          subcategories?: SubcategoryFilter[];
+        }>;
       })
       .then((data) => {
         setShop(data.shop);
         setListings(data.listings);
+        setActiveCount(data.active_count ?? data.listings.length);
+        setSubcategories(data.subcategories ?? []);
+        setCategoryFilter(null);
         const categoryLabel = translateCategory(data.shop.category, locale);
         const title = shopDetailSeoTitle(d, data.shop.shop_name, categoryLabel, data.shop.city);
         const description = truncateMetaDescription(data.shop.description, 150);
@@ -83,9 +87,16 @@ export default function ShopDetailPage() {
       .catch(() => {
         setShop(null);
         setListings([]);
+        setSubcategories([]);
+        setActiveCount(0);
       })
       .finally(() => setLoading(false));
   }, [id, d, locale]);
+
+  const filteredListings = useMemo(() => {
+    if (!categoryFilter) return listings;
+    return listings.filter((l) => l.category_id === categoryFilter);
+  }, [listings, categoryFilter]);
 
   if (loading) {
     return (
@@ -191,34 +202,52 @@ export default function ShopDetailPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-black text-gray-900 mb-4">{d.listingsTitle}</h2>
-          {listings.length === 0 ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h2 className="text-xl font-black text-gray-900">{d.listingsTitle}</h2>
+            <p className="text-sm font-semibold text-blue-700">
+              {d.activeListingsCount.replace("{count}", String(activeCount))}
+            </p>
+          </div>
+
+          {subcategories.length > 1 ? (
+            <div className="flex flex-wrap gap-2 mb-4">
+              <button
+                type="button"
+                onClick={() => setCategoryFilter(null)}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-sm font-semibold border transition-colors",
+                  categoryFilter === null
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-gray-700 border-gray-200 hover:border-blue-300",
+                )}
+              >
+                {d.filterAll}
+              </button>
+              {subcategories.map((sub) => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setCategoryFilter(sub.id)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-sm font-semibold border transition-colors",
+                    categoryFilter === sub.id
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 border-gray-200 hover:border-blue-300",
+                  )}
+                >
+                  {translateCategory(sub.name, locale)} ({sub.count})
+                </button>
+              ))}
+            </div>
+          ) : null}
+
+          {filteredListings.length === 0 ? (
             <p className="text-gray-500 text-sm">{d.noListings}</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {listings.map((l) => {
-                const img = parseListingImageUrls(l.image_url)[0];
-                return (
-                  <Link
-                    key={l.id}
-                    href={`/listings/${l.id}`}
-                    className="block rounded-xl border border-gray-100 bg-white overflow-hidden hover:shadow-md transition-shadow"
-                  >
-                    <div className="aspect-[4/3] bg-gray-100 relative">
-                      {img ? (
-                        <img src={img} alt="" className="absolute inset-0 w-full h-full object-cover object-center" />
-                      ) : null}
-                    </div>
-                    <div className="p-3">
-                      <p className="font-semibold text-sm text-gray-900 line-clamp-2">{l.title}</p>
-                      <p className="text-blue-600 font-bold text-sm mt-1">
-                        {l.price > 0 ? `${l.price.toLocaleString()} EUR` : d.negotiable}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-0.5">{l.location}</p>
-                    </div>
-                  </Link>
-                );
-              })}
+              {filteredListings.map((l) => (
+                <ListingCard key={l.id} listing={l} />
+              ))}
             </div>
           )}
         </section>

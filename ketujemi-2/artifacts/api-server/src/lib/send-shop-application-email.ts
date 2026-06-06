@@ -90,18 +90,19 @@ export async function sendShopApplicationEmail(payload: ShopApplicationEmailPayl
   });
 }
 
-export async function sendShopApprovedEmail(to: string, shopName: string, shopUrl: string): Promise<void> {
-  const subject = "🎉 Dyqani juaj u aktivizua në KetuJemi!";
+export async function sendShopApprovedEmail(to: string, shopName: string, _shopUrl: string): Promise<void> {
+  const subject = `🎉 Dyqani juaj '${shopName}' u aprovua në KetuJemi!`;
   const text = [
-    `Përshëndetje ${shopName},`,
+    `🎉 Dyqani juaj '${shopName}' u aprovua në KetuJemi!`,
     "",
-    "Tani jeni pjesë e një platforme që i shërben mijëra blerësve çdo ditë.",
+    "Tani mund të postoni shpalljet tuaja falas. Çdo shpallje që postoni do të shfaqet automatikisht në faqen e dyqanit tuaj dhe në faqen kryesore të KetuJemi.",
     "",
-    "⚠️ Kujtesë e rëndësishme: KetuJemi është platformë e ndershme — postoni vetëm produkte reale me çmime të drejta. Klientët tuaj ju besojnë — mos i zhgënjeni.",
+    "Na ndiqni në rrjetet sociale për të përfituar nga promovimi ynë:",
+    "📘 Facebook — KetuJemi.com",
+    "📸 Instagram — @jemi.ketu",
+    "🎵 TikTok — @ketujemi7",
     "",
-    "Sa më shumë postoni → aq më shumë klientë merrni. Filloni tani! 🚀",
-    "",
-    `Shiko dyqanin: ${shopUrl}`,
+    "Filloni tani → ketujemi.com/listings/new 🚀",
   ].join("\n");
   const html = text.split("\n").map((l) => `<p>${esc(l)}</p>`).join("");
 

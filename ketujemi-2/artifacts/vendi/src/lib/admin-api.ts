@@ -510,6 +510,7 @@ export interface AdminShopApplication {
   email: string;
   status: string;
   shop_id: number | null;
+  listing_count?: number;
   rejected_reason: string | null;
   created_at: string;
 }
