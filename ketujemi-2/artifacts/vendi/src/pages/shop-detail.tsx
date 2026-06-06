@@ -301,7 +301,20 @@ export default function ShopDetailPage() {
             </div>
           ) : null}
 
-          {filteredListings.length === 0 ? (
+          {isOwner && activeCount === 0 ? (
+            <div className="rounded-2xl border border-blue-100 bg-blue-50 px-5 py-6 text-center space-y-4">
+              <p className="text-sm sm:text-base text-gray-800 leading-relaxed">{d.ownerWelcomeEmpty}</p>
+              <Link href="/listings/new">
+                <Button
+                  type="button"
+                  className="min-h-11 font-bold text-white"
+                  style={{ background: `linear-gradient(90deg, ${BRAND_BLUE}, ${BRAND_ORANGE})` }}
+                >
+                  {d.postFirstListing}
+                </Button>
+              </Link>
+            </div>
+          ) : filteredListings.length === 0 ? (
             <p className="text-gray-500 text-sm">{d.noListings}</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

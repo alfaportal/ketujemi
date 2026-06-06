@@ -3,6 +3,12 @@ import { translationKeyForUiLang, type UiTranslationLocale } from "@/lib/ui-lang
 
 export type OpenShopFaq = { q: string; a: string };
 export type OpenShopWhyCard = { emoji: string; title: string; description: string };
+export type OpenShopHowStep = {
+  emoji: string;
+  stepLabel: string;
+  title: string;
+  description: string;
+};
 
 export type OpenShopPartnershipCopy = {
   title: string;
@@ -22,6 +28,8 @@ export type OpenShopPageCopy = {
   docTitle: string;
   heroTitle: string;
   heroSubtitle: string;
+  howItWorksTitle: string;
+  howItWorksSteps: OpenShopHowStep[];
   whyTitle: string;
   whyCards: OpenShopWhyCard[];
   partnership: OpenShopPartnershipCopy;
@@ -35,6 +43,35 @@ const KS: OpenShopPageCopy = {
   heroTitle: "Hap Dyqanin Tënd Dixhital — Falas",
   heroSubtitle:
     "Krijo dyqanin tënd dixhital në KetuJemi.com dhe arrij mijëra blerës çdo ditë pa komisione, pa tarifa të fshehura.",
+  howItWorksTitle: "Si funksionon?",
+  howItWorksSteps: [
+    {
+      emoji: "📝",
+      stepLabel: "Hapi 1",
+      title: "Regjistrohu",
+      description: "Krijo llogarinë tënde falas në KetuJemi.com — vetëm 1 minutë",
+    },
+    {
+      emoji: "🏪",
+      stepLabel: "Hapi 2",
+      title: "Hap Dyqanin",
+      description:
+        "Plotëso formularin e dyqanit me logon, adresën dhe rrjetet sociale. Ne e aprovojmë brenda 24 orëve.",
+    },
+    {
+      emoji: "📸",
+      stepLabel: "Hapi 3",
+      title: "Posto Shpalljet",
+      description: "Ngarko foto të produkteve ose shërbimeve tuaja. Pa limite, pa pagesa — falas gjithmonë.",
+    },
+    {
+      emoji: "🚀",
+      stepLabel: "Hapi 4",
+      title: "Shpërndaje & Shit",
+      description:
+        "Shpërndaje shpalljet në Facebook, Instagram dhe TikTok me një klikim. Klientët të gjejnë lehtë!",
+    },
+  ],
   whyTitle: "PSE KETUJEMI?",
   whyCards: [
     {
@@ -178,6 +215,35 @@ const MK: OpenShopPageCopy = {
   heroTitle: "Отвори ја твојата дигитална продавница — бесплатно",
   heroSubtitle:
     "Создајте ја вашата дигитална продавница на KetuJemi.com и стигнете до илјадници купувачи секој ден без провизии и без скриени трошоци.",
+  howItWorksTitle: "Како функционира?",
+  howItWorksSteps: [
+    {
+      emoji: "📝",
+      stepLabel: "Чекор 1",
+      title: "Регистрирај се",
+      description: "Создајте бесплатна сметка на KetuJemi.com — само 1 минута",
+    },
+    {
+      emoji: "🏪",
+      stepLabel: "Чекор 2",
+      title: "Отвори продавница",
+      description:
+        "Пополнете го формуларот со лого, адреса и социјални мрежи. Ние го одобруваме за 24 часа.",
+    },
+    {
+      emoji: "📸",
+      stepLabel: "Чекор 3",
+      title: "Објави огласи",
+      description: "Прикачете фотографии од производите или услугите. Без лимит, без плаќање — секогаш бесплатно.",
+    },
+    {
+      emoji: "🚀",
+      stepLabel: "Чекор 4",
+      title: "Сподели и продавај",
+      description:
+        "Споделете ги огласите на Facebook, Instagram и TikTok со еден клик. Клиентите ве наоѓаат лесно!",
+    },
+  ],
   whyTitle: "ЗОШТО KETUJEMI?",
   whyCards: [
     {
@@ -296,6 +362,35 @@ const MNE: OpenShopPageCopy = {
   heroTitle: "Otvori svoju digitalnu prodavnicu — besplatno",
   heroSubtitle:
     "Kreiraj svoju digitalnu prodavnicu na KetuJemi.com i dođi do hiljada kupaca svaki dan bez provizija i skrivenih troškova.",
+  howItWorksTitle: "Kako funkcioniše?",
+  howItWorksSteps: [
+    {
+      emoji: "📝",
+      stepLabel: "Korak 1",
+      title: "Registruj se",
+      description: "Kreiraj besplatni nalog na KetuJemi.com — samo 1 minut",
+    },
+    {
+      emoji: "🏪",
+      stepLabel: "Korak 2",
+      title: "Otvori prodavnicu",
+      description:
+        "Popuni formular prodavnice sa logom, adresom i društvenim mrežama. Odobravamo za 24 sata.",
+    },
+    {
+      emoji: "📸",
+      stepLabel: "Korak 3",
+      title: "Objavi oglase",
+      description: "Učitaj fotografije proizvoda ili usluga. Bez limita, bez plaćanja — uvijek besplatno.",
+    },
+    {
+      emoji: "🚀",
+      stepLabel: "Korak 4",
+      title: "Podijeli i prodaj",
+      description:
+        "Podijeli oglase na Facebooku, Instagramu i TikToku jednim klikom. Kupci te lako pronalaze!",
+    },
+  ],
   whyTitle: "ZAŠTO KETUJEMI?",
   whyCards: [
     {
@@ -414,6 +509,35 @@ const EN: OpenShopPageCopy = {
   heroTitle: "Open Your Digital Shop — Free",
   heroSubtitle:
     "Create your digital shop on KetuJemi.com and reach thousands of buyers every day with no commissions and no hidden fees.",
+  howItWorksTitle: "How it works",
+  howItWorksSteps: [
+    {
+      emoji: "📝",
+      stepLabel: "Step 1",
+      title: "Sign up",
+      description: "Create your free account on KetuJemi.com — just 1 minute",
+    },
+    {
+      emoji: "🏪",
+      stepLabel: "Step 2",
+      title: "Open your shop",
+      description:
+        "Fill in the shop form with your logo, address and social links. We approve within 24 hours.",
+    },
+    {
+      emoji: "📸",
+      stepLabel: "Step 3",
+      title: "Post listings",
+      description: "Upload photos of your products or services. No limits, no fees — always free.",
+    },
+    {
+      emoji: "🚀",
+      stepLabel: "Step 4",
+      title: "Share & sell",
+      description:
+        "Share listings on Facebook, Instagram and TikTok with one click. Customers find you easily!",
+    },
+  ],
   whyTitle: "WHY KETUJEMI?",
   whyCards: [
     {

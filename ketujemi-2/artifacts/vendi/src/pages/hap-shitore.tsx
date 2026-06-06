@@ -51,6 +51,29 @@ export default function HapShitorePage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 pb-16 pt-8 space-y-10">
         <section>
           <h2 className="text-lg sm:text-xl font-black text-gray-900 mb-5 tracking-tight text-center sm:text-left">
+            {c.howItWorksTitle}
+          </h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {c.howItWorksSteps.map((step) => (
+              <div
+                key={step.title}
+                className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-[0_4px_20px_rgba(26,86,160,0.05)] flex flex-col items-center text-center gap-2"
+              >
+                <span className="text-3xl sm:text-4xl leading-none" aria-hidden>
+                  {step.emoji}
+                </span>
+                <span className="text-xs font-bold uppercase tracking-wide text-blue-600">
+                  {step.stepLabel}
+                </span>
+                <p className="font-bold text-gray-900 text-sm sm:text-base">{step.title}</p>
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-lg sm:text-xl font-black text-gray-900 mb-5 tracking-tight text-center sm:text-left">
             {c.whyTitle}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">

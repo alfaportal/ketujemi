@@ -18,6 +18,8 @@ export type ShopDetailCopy = {
   deleteListingTitle: string;
   deleteListingDesc: string;
   cancel: string;
+  ownerWelcomeEmpty: string;
+  postFirstListing: string;
 };
 
 function seoTitle(shopName: string, category: string, city: string, suffix: string): string {
@@ -41,6 +43,9 @@ const KS: ShopDetailCopy = {
   deleteListingTitle: "Fshi shpalljen?",
   deleteListingDesc: "Kjo veprim nuk mund të zhbehet. Shpallja do të fshihet përgjithmonë.",
   cancel: "Anulo",
+  ownerWelcomeEmpty:
+    "👋 Mirë se erdhe! Dyqani yt është gati — posto shpalljen e parë tani dhe fillo të shesësh!",
+  postFirstListing: "➕ Posto Shpalljen e Parë →",
 };
 
 const MK: ShopDetailCopy = {
@@ -60,6 +65,9 @@ const MK: ShopDetailCopy = {
   deleteListingTitle: "Избриши го огласот?",
   deleteListingDesc: "Оваа акција не може да се врати. Огласот ќе биде трајно избришан.",
   cancel: "Откажи",
+  ownerWelcomeEmpty:
+    "👋 Добредојдовте! Вашата продавница е подготвена — објавете го првиот оглас сега и започнете со продажба!",
+  postFirstListing: "➕ Објави го првиот оглас →",
 };
 
 const MNE: ShopDetailCopy = {
@@ -79,6 +87,9 @@ const MNE: ShopDetailCopy = {
   deleteListingTitle: "Obrisati oglas?",
   deleteListingDesc: "Ova radnja se ne može poništiti. Oglas će biti trajno uklonjen.",
   cancel: "Otkaži",
+  ownerWelcomeEmpty:
+    "👋 Dobrodošli! Vaša prodavnica je spremna — objavite prvi oglas sada i počnite prodavati!",
+  postFirstListing: "➕ Objavi prvi oglas →",
 };
 
 const EN: ShopDetailCopy = {
@@ -98,6 +109,9 @@ const EN: ShopDetailCopy = {
   deleteListingTitle: "Delete listing?",
   deleteListingDesc: "This cannot be undone. The listing will be permanently removed.",
   cancel: "Cancel",
+  ownerWelcomeEmpty:
+    "👋 Welcome! Your shop is ready — post your first listing now and start selling!",
+  postFirstListing: "➕ Post Your First Listing →",
 };
 
 const PAGES: Record<UiTranslationLocale, ShopDetailCopy> = {

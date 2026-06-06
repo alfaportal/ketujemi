@@ -1448,9 +1448,8 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
     .where(and(eq(listingsTable.user_id, app.user_id), sql`${listingsTable.shop_id} IS NULL`));
 
   const { sendShopApprovedEmail } = await import("../lib/send-shop-application-email");
-  const shopUrl = `https://ketujemi.com/dyqani/${shop.id}`;
   try {
-    await sendShopApprovedEmail(app.email, app.shop_name, shopUrl);
+    await sendShopApprovedEmail(app.email, app.shop_name, shop.id);
   } catch (err) {
     req.log?.error({ err, shopId: shop.id }, "shop approved email failed");
   }
