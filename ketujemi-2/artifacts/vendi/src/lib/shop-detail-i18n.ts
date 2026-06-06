@@ -59,7 +59,7 @@ const KS: ShopDetailCopy = {
   deleteShop: "🗑️ Fshi Dyqanin",
   deleteShopTitle: "Fshi dyqanin?",
   deleteShopDesc:
-    "A jeni i sigurt që dëshironi ta fshini këtë dyqan? Të gjitha shpalljet e lidhura do të fshihen përgjithmonë.",
+    "A jeni i sigurt? Ky veprim do të fshijë dyqanin dhe të gjitha shpalljet tuaja.",
   saveShop: "Ruaj",
   shopSaved: "Dyqani u përditësua.",
   shopSaveError: "Gabim gjatë ruajtjes së dyqanit.",
@@ -91,7 +91,7 @@ const MK: ShopDetailCopy = {
   deleteShop: "🗑️ Избриши ја продавницата",
   deleteShopTitle: "Избриши ја продавницата?",
   deleteShopDesc:
-    "Дали сте сигурни дека сакате да ја избришете оваа продавница? Сите поврзани огласи ќе бидат трајно избришани.",
+    "Дали сте сигурни? Оваа акција ќе ја избрише продавницата и сите ваши огласи.",
   saveShop: "Зачувај",
   shopSaved: "Продавницата е ажурирана.",
   shopSaveError: "Грешка при зачувување на продавницата.",
@@ -123,7 +123,7 @@ const MNE: ShopDetailCopy = {
   deleteShop: "🗑️ Obriši prodavnicu",
   deleteShopTitle: "Obrisati prodavnicu?",
   deleteShopDesc:
-    "Jeste li sigurni da želite obrisati ovu prodavnicu? Svi povezani oglasi biće trajno uklonjeni.",
+    "Jeste li sigurni? Ova radnja će obrisati prodavnicu i sve vaše oglase.",
   saveShop: "Sačuvaj",
   shopSaved: "Prodavnica je ažurirana.",
   shopSaveError: "Greška pri čuvanju prodavnice.",
@@ -155,7 +155,7 @@ const EN: ShopDetailCopy = {
   deleteShop: "🗑️ Delete Shop",
   deleteShopTitle: "Delete shop?",
   deleteShopDesc:
-    "Are you sure you want to delete this shop? All linked listings will be permanently removed.",
+    "Are you sure? This will delete your shop and all your listings.",
   saveShop: "Save",
   shopSaved: "Shop updated.",
   shopSaveError: "Error saving shop.",

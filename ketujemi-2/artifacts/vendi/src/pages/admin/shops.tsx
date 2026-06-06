@@ -152,8 +152,9 @@ export default function AdminShops() {
     try {
       if (editRow.shop_id) {
         await updateAdminShop(editRow.shop_id, values);
+      } else {
+        await updateAdminShopApplication(editRow.id, values);
       }
-      await updateAdminShopApplication(editRow.id, values);
       setEditRow(null);
       setToast("Dyqani u përditësua.");
       await load();

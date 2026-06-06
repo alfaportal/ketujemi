@@ -62,7 +62,7 @@ function expiresAt3Months(): Date {
 
 function requireAdmin(req: { headers: { authorization?: string } }, res: any, next: () => void) {
   if (verifyAdminBearer(req.headers.authorization)) return next();
-  res.status(401).json({ error: "Unauthorized" });
+  res.status(403).json({ error: "Forbidden" });
 }
 
 // ─── POST /admin/login (owner password only) ─────────────────────────────────
@@ -1268,6 +1268,7 @@ router.get("/admin/shop-applications", requireAdmin, async (_req, res) => {
 
   const shopIds = rows.map((r) => r.shop_id).filter((id): id is number => typeof id === "number" && id > 0);
   const listingCountByShop = new Map<number, number>();
+  const adminNotesByShop = new Map<number, string | null>();
   if (shopIds.length) {
     const countRows = await db
       .select({
@@ -1280,6 +1281,14 @@ router.get("/admin/shop-applications", requireAdmin, async (_req, res) => {
     for (const row of countRows) {
       if (row.shop_id) listingCountByShop.set(row.shop_id, row.listing_count);
     }
+
+    const shopRows = await db
+      .select({ id: shopsTable.id, admin_notes: shopsTable.admin_notes })
+      .from(shopsTable)
+      .where(inArray(shopsTable.id, shopIds));
+    for (const row of shopRows) {
+      adminNotesByShop.set(row.id, row.admin_notes);
+    }
   }
 
   const stats = {
@@ -1291,6 +1300,9 @@ router.get("/admin/shop-applications", requireAdmin, async (_req, res) => {
     applications: rows.map((row) => ({
       ...row,
       listing_count: row.shop_id ? (listingCountByShop.get(row.shop_id) ?? 0) : 0,
+      admin_notes: row.shop_id
+        ? (adminNotesByShop.get(row.shop_id) ?? row.admin_notes)
+        : row.admin_notes,
     })),
     stats,
   });
@@ -1427,6 +1439,7 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
       phone: app.phone,
       email: app.email,
       is_active: true,
+      admin_notes: app.admin_notes,
     })
     .returning();
 
@@ -1507,18 +1520,36 @@ router.patch("/admin/shops/:id", requireAdmin, async (req, res) => {
   const directory = await resolveDirectoryFields(body, shop);
   Object.assign(patch, directory);
 
-  if (!Object.keys(patch).length) {
+  const appPatch: Record<string, unknown> = { ...patch };
+  if ("status" in body) {
+    const status =
+      typeof body.status === "string" && ["pending", "approved", "rejected"].includes(body.status.trim())
+        ? body.status.trim()
+        : null;
+    if (status) {
+      appPatch.status = status;
+      if (status === "approved") patch.is_active = true;
+      if (status === "rejected") patch.is_active = false;
+    }
+  }
+
+  if (!Object.keys(patch).length && !("status" in appPatch)) {
     res.status(400).json({ error: "VALIDATION", message: "Nuk ka fusha për përditësim." });
     return;
   }
 
   const [updated] = await db.update(shopsTable).set(patch).where(eq(shopsTable.id, id)).returning();
 
-  const appPatch = { ...patch };
   if (shop.application_id) {
-    await db.update(shopApplicationsTable).set(appPatch).where(eq(shopApplicationsTable.id, shop.application_id));
+    await db
+      .update(shopApplicationsTable)
+      .set(appPatch as Partial<typeof shopApplicationsTable.$inferInsert>)
+      .where(eq(shopApplicationsTable.id, shop.application_id));
   } else {
-    await db.update(shopApplicationsTable).set(appPatch).where(eq(shopApplicationsTable.shop_id, id));
+    await db
+      .update(shopApplicationsTable)
+      .set(appPatch as Partial<typeof shopApplicationsTable.$inferInsert>)
+      .where(eq(shopApplicationsTable.shop_id, id));
   }
 
   res.json({ ok: true, shop: updated });

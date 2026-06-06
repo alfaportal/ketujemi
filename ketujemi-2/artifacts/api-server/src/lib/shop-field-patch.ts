@@ -43,8 +43,16 @@ export function buildShopFieldPatch(body: Record<string, unknown>): Partial<Shop
   if (phone) patch.phone = phone;
   const email = trimOrNull(body.email);
   if (email) patch.email = email;
+  if ("admin_notes" in body) patch.admin_notes = trimOrNull(body.admin_notes);
 
   return patch;
+}
+
+export function ownerShopFieldPatch(body: Record<string, unknown>): Partial<ShopInsert> {
+  const safe = { ...body };
+  delete safe.admin_notes;
+  delete safe.status;
+  return buildShopFieldPatch(safe);
 }
 
 export function buildApplicationFieldPatch(body: Record<string, unknown>): Partial<AppInsert> {

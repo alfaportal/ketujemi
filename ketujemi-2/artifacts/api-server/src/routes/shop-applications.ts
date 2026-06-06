@@ -15,7 +15,7 @@ import { getSessionUser } from "../lib/session-user";
 import { sendShopApplicationEmail, sendShopRatingEmail } from "../lib/send-shop-application-email";
 import { formatListingsBatch } from "../lib/format-listings-batch";
 import { resolveDirectoryFields } from "../lib/shop-directory-patch";
-import { buildShopFieldPatch } from "../lib/shop-field-patch";
+import { ownerShopFieldPatch } from "../lib/shop-field-patch";
 import { deleteShopCascade } from "../lib/delete-shop-cascade";
 import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxonomy.ts";
 
@@ -409,18 +409,22 @@ router.patch("/shops/:id", async (req, res) => {
     return;
   }
 
-  const [shop] = await db
-    .select()
-    .from(shopsTable)
-    .where(and(eq(shopsTable.id, id), eq(shopsTable.user_id, viewer.id), eq(shopsTable.is_active, true)))
-    .limit(1);
+  const [shop] = await db.select().from(shopsTable).where(eq(shopsTable.id, id)).limit(1);
   if (!shop) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  if (shop.user_id !== viewer.id) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+  if (!shop.is_active) {
     res.status(404).json({ error: "Not found" });
     return;
   }
 
   const body = req.body as Record<string, unknown>;
-  const patch = buildShopFieldPatch(body);
+  const patch = ownerShopFieldPatch(body);
   const directory = await resolveDirectoryFields(body, shop);
   Object.assign(patch, directory);
 
@@ -454,10 +458,14 @@ router.delete("/shops/:id", async (req, res) => {
   const [shop] = await db
     .select({ id: shopsTable.id, user_id: shopsTable.user_id })
     .from(shopsTable)
-    .where(and(eq(shopsTable.id, id), eq(shopsTable.user_id, viewer.id)))
+    .where(eq(shopsTable.id, id))
     .limit(1);
   if (!shop) {
     res.status(404).json({ error: "Not found" });
+    return;
+  }
+  if (shop.user_id !== viewer.id) {
+    res.status(403).json({ error: "Forbidden" });
     return;
   }
 

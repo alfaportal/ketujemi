@@ -33,6 +33,7 @@ export const shopsTable = pgTable("shops", {
   phone: text("phone").notNull(),
   email: text("email").notNull(),
   is_active: boolean("is_active").notNull().default(true),
+  admin_notes: text("admin_notes"),
   created_at: timestamp("created_at").notNull().defaultNow(),
 });
 
