@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
-import Fuse from "fuse.js";
 import { Loader2, Search } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import { ShopDirectorySearchBar } from "@/components/shop-directory-search-bar";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { applyPageMeta } from "@/lib/page-meta";
 import { shopDirectoryCategoryImageUrl } from "@/lib/shop-directory-category-images";
 import { SHOP_DIRECTORY_CATEGORIES } from "@/lib/shop-directory-taxonomy";
+import { filterShopsByQuery } from "@/lib/shop-directory-fuse";
 import {
   fuseNoResultsMessage,
   translateDirectoryCategory,
-  translateDirectorySubcategory,
   useShopDirectoryCopy,
 } from "@/lib/shop-directory-i18n";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
@@ -24,11 +24,6 @@ type DirectoryResponse = {
   categoryCounts: Record<string, number>;
 };
 
-type FuseShopDoc = ShopDirectoryListItem & {
-  categoryLabel: string;
-  subcategoryLabel: string;
-};
-
 export default function ShopDirectoryPage() {
   const d = useShopDirectoryCopy();
   const formCopy = useShopFormCopy();
@@ -39,6 +34,7 @@ export default function ShopDirectoryPage() {
   const [shops, setShops] = useState<ShopDirectoryListItem[]>([]);
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
   const [query, setQuery] = useState("");
+  const [submittedQuery, setSubmittedQuery] = useState("");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
 
@@ -71,49 +67,32 @@ export default function ShopDirectoryPage() {
 
   const cityOptions = country ? citiesForShopCountry(country) : [];
 
-  const fuseDocs = useMemo<FuseShopDoc[]>(() => {
-    return shops.map((s) => {
-      const cat = s.directory_category_slug
-        ? SHOP_DIRECTORY_CATEGORIES.find((c) => c.slug === s.directory_category_slug)
-        : null;
-      const sub = cat?.subcategories.find((x) => x.slug === s.directory_subcategory_slug);
-      return {
-        ...s,
-        categoryLabel: cat ? translateDirectoryCategory(cat, locale) : "",
-        subcategoryLabel: sub ? translateDirectorySubcategory(sub, locale) : "",
-      };
-    });
-  }, [shops, locale]);
-
-  const fuse = useMemo(
-    () =>
-      new Fuse(fuseDocs, {
-        keys: ["shop_name", "categoryLabel", "subcategoryLabel", "city", "country", "description"],
-        threshold: 0.3,
-        ignoreLocation: true,
-      }),
-    [fuseDocs],
+  const filtered = useMemo(
+    () => filterShopsByQuery(shops, submittedQuery, locale),
+    [shops, submittedQuery, locale],
   );
 
-  const filtered = useMemo(() => {
-    const q = query.trim();
-    if (!q) return [];
-    return fuse.search(q).map((r) => r.item);
-  }, [fuse, query]);
+  const searchTerm = submittedQuery.trim();
+  const showSearchResults = searchTerm.length > 0;
 
-  const searchTerm = query.trim();
+  function submitSearch() {
+    setSubmittedQuery(query.trim());
+  }
 
   return (
     <div className="min-h-screen bg-[#f0f4f9]">
       <SiteHeader />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         <div className="space-y-3">
-          <input
-            type="search"
+          <ShopDirectorySearchBar
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(v) => {
+              setQuery(v);
+              if (!v.trim()) setSubmittedQuery("");
+            }}
             placeholder={d.searchPlaceholder}
-            className="w-full min-h-12 rounded-xl border border-gray-200 bg-white px-4 text-base sm:text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            searchLabel={d.searchBtn}
+            onSubmit={submitSearch}
           />
           <div className="flex flex-col sm:flex-row gap-2">
             <select
@@ -150,6 +129,26 @@ export default function ShopDirectoryPage() {
         {loading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+          </div>
+        ) : showSearchResults ? (
+          <div className="rounded-2xl border border-gray-200 bg-white p-4">
+            <p className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <Search size={16} />
+              {filtered.length} {d.shopsCount}
+            </p>
+            {filtered.length === 0 ? (
+              <p className="text-sm text-gray-500">{fuseNoResultsMessage(d, searchTerm)}</p>
+            ) : (
+              <ul className="space-y-2">
+                {filtered.slice(0, 24).map((s) => (
+                  <li key={s.id}>
+                    <Link href={`/dyqani/${s.id}`} className="text-sm font-semibold text-blue-700 hover:underline">
+                      {s.shop_name} — {s.city}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
@@ -192,28 +191,6 @@ export default function ShopDirectoryPage() {
             })}
           </div>
         )}
-
-        {searchTerm && !loading ? (
-          <div className="rounded-2xl border border-gray-200 bg-white p-4">
-            <p className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-              <Search size={16} />
-              {filtered.length} {d.shopsCount}
-            </p>
-            {filtered.length === 0 ? (
-              <p className="text-sm text-gray-500">{fuseNoResultsMessage(d, searchTerm)}</p>
-            ) : (
-              <ul className="space-y-2">
-                {filtered.slice(0, 12).map((s) => (
-                  <li key={s.id}>
-                    <Link href={`/dyqani/${s.id}`} className="text-sm font-semibold text-blue-700 hover:underline">
-                      {s.shop_name} — {s.city}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        ) : null}
       </div>
     </div>
   );

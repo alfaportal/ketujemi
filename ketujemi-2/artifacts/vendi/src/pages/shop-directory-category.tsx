@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRoute, Link } from "wouter";
 import { Loader2 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { StaticPageBackLink } from "@/components/static-page-back-link";
 import { ShopDirectoryCard, type ShopDirectoryListItem } from "@/components/shop-directory-card";
+import { ShopDirectorySearchBar } from "@/components/shop-directory-search-bar";
 import {
   CategoryPhotoPickerCard,
   CategoryPhotoPickerGrid,
@@ -13,7 +14,9 @@ import { applyPageMeta } from "@/lib/page-meta";
 import { shopDirectoryCategoryImageUrl } from "@/lib/shop-directory-category-images";
 import { shopDirectorySubcategoryImageUrl } from "@/lib/shop-directory-subcategory-images";
 import { directoryCategoryBySlug } from "@/lib/shop-directory-taxonomy";
+import { filterShopsByQuery } from "@/lib/shop-directory-fuse";
 import {
+  fuseNoResultsMessage,
   seoCategoryDescriptionFor,
   translateDirectoryCategory,
   translateDirectorySubcategory,
@@ -33,6 +36,7 @@ export default function ShopDirectoryCategoryPage() {
   const [loading, setLoading] = useState(true);
   const [shops, setShops] = useState<ShopDirectoryListItem[]>([]);
   const [subFilter, setSubFilter] = useState("");
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     if (!cat) return;
@@ -54,6 +58,13 @@ export default function ShopDirectoryCategoryPage() {
       .finally(() => setLoading(false));
   }, [slug, subFilter]);
 
+  const filteredShops = useMemo(
+    () => filterShopsByQuery(shops, query, locale),
+    [shops, query, locale],
+  );
+
+  const searchTerm = query.trim();
+  const displayShops = searchTerm ? filteredShops : shops;
   const title = cat ? translateDirectoryCategory(cat, locale) : d.docCategoryTitle;
   const categoryImageUrl = cat ? shopDirectoryCategoryImageUrl(cat.slug) : undefined;
 
@@ -93,10 +104,17 @@ export default function ShopDirectoryCategoryPage() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-gray-900">{title}</h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              {shops.length} {d.shopsCount}
+              {displayShops.length} {d.shopsCount}
             </p>
           </div>
         </div>
+
+        <ShopDirectorySearchBar
+          value={query}
+          onChange={setQuery}
+          placeholder={d.searchPlaceholder}
+          searchLabel={d.searchBtn}
+        />
 
         <CategoryPhotoPickerGrid>
           <CategoryPhotoPickerCard
@@ -105,6 +123,7 @@ export default function ShopDirectoryCategoryPage() {
             imageSrc={categoryImageUrl ?? ""}
             fallbackImageSrc={categoryImageUrl}
             label={d.allSubcategories}
+            size="compact"
           />
           {cat.subcategories.map((sub) => (
             <CategoryPhotoPickerCard
@@ -114,6 +133,7 @@ export default function ShopDirectoryCategoryPage() {
               imageSrc={shopDirectorySubcategoryImageUrl(cat.slug, sub.slug) ?? categoryImageUrl ?? ""}
               fallbackImageSrc={categoryImageUrl}
               label={translateDirectorySubcategory(sub, locale)}
+              size="compact"
             />
           ))}
         </CategoryPhotoPickerGrid>
@@ -122,11 +142,13 @@ export default function ShopDirectoryCategoryPage() {
           <div className="flex justify-center py-16">
             <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
           </div>
-        ) : shops.length === 0 ? (
-          <p className="text-center text-gray-500 py-12">{d.noShops}</p>
+        ) : displayShops.length === 0 ? (
+          <p className="text-center text-gray-500 py-12">
+            {searchTerm ? fuseNoResultsMessage(d, searchTerm) : d.noShops}
+          </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {shops.map((shop) => (
+            {displayShops.map((shop) => (
               <ShopDirectoryCard key={shop.id} shop={shop} viewLabel={d.viewShop} />
             ))}
           </div>

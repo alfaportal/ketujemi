@@ -17,6 +17,7 @@ export type ShopDirectoryCopy = {
   homeBannerSubtitle: string;
   homeBannerBtn: string;
   searchPlaceholder: string;
+  searchBtn: string;
   filterCity: string;
   filterCountry: string;
   filterAll: string;
@@ -100,6 +101,7 @@ const KS: ShopDirectoryCopy = {
   homeBannerSubtitle: "15 kategori • Qindra dyqane lokale • Ferizaj, Prishtinë, Tiranë dhe më gjerë",
   homeBannerBtn: "Shiko të gjitha dyqanet →",
   searchPlaceholder: "🔍 Kërko dyqan... p.sh. mobilje, telefon, këpucë",
+  searchBtn: "Kërko",
   filterCity: "Qyteti",
   filterCountry: "Shteti",
   filterAll: "Të gjitha",
@@ -130,6 +132,7 @@ const MK: ShopDirectoryCopy = {
   homeBannerSubtitle: "15 категории • Стотици локални продавници • Ferizaj, Prishtinë, Tirana и пошироко",
   homeBannerBtn: "Види ги сите продавници →",
   searchPlaceholder: "🔍 Пребарај продавница... нпр. мебел, телефон, обувки",
+  searchBtn: "Пребарај",
   filterCity: "Град",
   filterCountry: "Држава",
   filterAll: "Сите",
@@ -160,6 +163,7 @@ const MNE: ShopDirectoryCopy = {
   homeBannerSubtitle: "15 kategorija • Stotine lokalnih prodavnica • Ferizaj, Priština, Tirana i šire",
   homeBannerBtn: "Pogledaj sve prodavnice →",
   searchPlaceholder: "🔍 Pretraži prodavnicu... npr. namještaj, telefon, cipele",
+  searchBtn: "Pretraži",
   filterCity: "Grad",
   filterCountry: "Država",
   filterAll: "Sve",
@@ -190,6 +194,7 @@ const EN: ShopDirectoryCopy = {
   homeBannerSubtitle: "15 categories • Hundreds of local shops • Ferizaj, Pristina, Tirana and beyond",
   homeBannerBtn: "View all shops →",
   searchPlaceholder: "🔍 Search shops... e.g. furniture, phone, shoes",
+  searchBtn: "Search",
   filterCity: "City",
   filterCountry: "Country",
   filterAll: "All",

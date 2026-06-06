@@ -23,6 +23,7 @@ export type ShopDirectoryListItem = {
   website?: string | null;
   average_rating?: number | null;
   rating_count?: number;
+  description?: string | null;
 };
 
 type Props = {
