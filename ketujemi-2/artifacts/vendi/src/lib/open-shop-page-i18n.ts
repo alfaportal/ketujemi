@@ -4,12 +4,27 @@ import { translationKeyForUiLang, type UiTranslationLocale } from "@/lib/ui-lang
 export type OpenShopFaq = { q: string; a: string };
 export type OpenShopWhyCard = { emoji: string; title: string; description: string };
 
+export type OpenShopPartnershipCopy = {
+  title: string;
+  intro: string;
+  youGetTitle: string;
+  youGetItems: string[];
+  weAskTitle: string;
+  weAskItems: string[];
+  promoTitle: string;
+  promoText: string;
+  coffeeTitle: string;
+  coffeeText: string;
+  closing: string;
+};
+
 export type OpenShopPageCopy = {
   docTitle: string;
   heroTitle: string;
   heroSubtitle: string;
   whyTitle: string;
   whyCards: OpenShopWhyCard[];
+  partnership: OpenShopPartnershipCopy;
   faqTitle: string;
   faq: OpenShopFaq[];
   ctaButton: string;
@@ -73,6 +88,31 @@ const KS: OpenShopPageCopy = {
       description: "Çdo shpallje shihet njësoj, pa pagesë shtesë",
     },
   ],
+  partnership: {
+    title: "🤝 Bëhu VIP Partner i KetuJemi",
+    intro:
+      "Partneriteti me KetuJemi është bashkëpunim i ndërsjelltë — ju na ndihmoni neve, ne ju bëjmë të famshëm.",
+    youGetTitle: "Çfarë merrni ju:",
+    youGetItems: [
+      "Logo juaj në faqen kryesore të ketujemi.com — e parë nga mijëra vizitorë çdo ditë",
+      "Shpalljet dhe ofertat tuaja të publikuara çdo ditë në Instagram @jemi.ketu, Facebook KetuJemi.com dhe TikTok @ketujemi7",
+      "Profil i dedikuar me adresë, hartë dhe të gjitha kontaktet tuaja",
+      "Promovim i vazhdueshëm — njerëzit mësojnë për biznesin tuaj çdo ditë",
+      "Rritje e ndjekësve dhe klientëve tuaj — falas",
+    ],
+    weAskTitle: "Çfarë kërkojmë nga ju:",
+    weAskItems: [
+      "Të na ndiqni në Instagram @jemi.ketu, Facebook KetuJemi.com dhe TikTok @ketujemi7",
+      "Të na përmendni te ndjekësit tuaj herë pas here",
+    ],
+    promoTitle: "📢 Si funksionon promovimi:",
+    promoText:
+      "Ne i publikojmë dhe promovojmë shpalljet tuaja çdo ditë në rrjetet tona sociale — por vetëm nëse keni shpallje aktive në ketujemi.com. Një faqe bosh nuk kemi çfarë ta promovojmë — postoni produktet dhe ofertat tuaja, ne i çojmë te audienca. Sa më shumë postoni → aq më shumë ju promovojmë → aq më shumë klientë dhe shitje keni. 🚀",
+    coffeeTitle: "💡 Një detaj i vogël, por i rëndësishëm:",
+    coffeeText:
+      "Bashkëpunimi ynë është si kafja — funksionon vetëm kur të dyja palët e hedhin sheqerin. 😄 Ne ju promovojmë çdo ditë te ndjekësit tanë — por edhe ju duhet të na ndiqni në rrjetet tona sociale. Shkurt: na ndiqni → ju bëjmë të njohur. Nuk na ndiqni → humbim të dyja palët. 🤝",
+    closing: "Plotësoni formularin dhe ne ju kontaktojmë brenda 24 orëve. 📩",
+  },
   faqTitle: "PYETJET E SHPESHTA",
   faq: [
     {
@@ -109,6 +149,31 @@ const KS: OpenShopPageCopy = {
 
 const MK: OpenShopPageCopy = {
   ...KS,
+  partnership: {
+    title: "🤝 Станете VIP партнер на KetuJemi",
+    intro:
+      "Партнерството со KetuJemi е взаемна соработка — вие ни помагате, ние ве правиме познати.",
+    youGetTitle: "Што добивате вие:",
+    youGetItems: [
+      "Вашето лого на главната страница ketujemi.com — видено од илјадници посетители секој ден",
+      "Вашите огласи и понуди објавувани секој ден на Instagram @jemi.ketu, Facebook KetuJemi.com и TikTok @ketujemi7",
+      "Посветен профил со адреса, мапа и сите ваши контакти",
+      "Континуирана промоција — луѓето секој ден дознаваат за вашиот бизнис",
+      "Раст на вашите следбеници и клиенти — бесплатно",
+    ],
+    weAskTitle: "Што бараме од вас:",
+    weAskItems: [
+      "Да нè следите на Instagram @jemi.ketu, Facebook KetuJemi.com и TikTok @ketujemi7",
+      "Повремено да нè спомнете кај вашите следбеници",
+    ],
+    promoTitle: "📢 Како функционира промоцијата:",
+    promoText:
+      "Ги објавуваме и промовираме вашите огласи секој ден на нашите социјални мрежи — но само ако имате активни огласи на ketujemi.com. Празна страница нема што да се промовира — објавувајте производи и понуди, ние ги доставуваме до публиката. Колку повеќе објавувате → повеќе ве промовираме → повеќе клиенти и продажби имате. 🚀",
+    coffeeTitle: "💡 Мал, но важен детаљ:",
+    coffeeText:
+      "Нашата соработка е како кафе — функционира само кога двете страни ќе стават шеќер. 😄 Ние ве промовираме секој ден кај нашите следбеници — но и вие треба да нè следите на нашите социјални мрежи. Накратко: следете нè → ве правиме познати. Не нè следите → губиме и двете страни. 🤝",
+    closing: "Пополнете го формуларот и ќе ве контактираме во рок од 24 часа. 📩",
+  },
   docTitle: "Отвори продавница — KetuJemi.com",
   heroTitle: "Отвори ја твојата дигитална продавница — бесплатно",
   heroSubtitle:
@@ -202,6 +267,31 @@ const MK: OpenShopPageCopy = {
 
 const MNE: OpenShopPageCopy = {
   ...KS,
+  partnership: {
+    title: "🤝 Postanite VIP partner KetuJemi",
+    intro:
+      "Partnerstvo sa KetuJemi je uzajamna saradnja — vi nam pomažete, mi vas činimo poznatim.",
+    youGetTitle: "Šta dobijate:",
+    youGetItems: [
+      "Vaš logo na početnoj stranici ketujemi.com — viđen od hiljada posjetilaca svaki dan",
+      "Vaši oglasi i ponude objavljivani svaki dan na Instagram @jemi.ketu, Facebook KetuJemi.com i TikTok @ketujemi7",
+      "Posvećen profil sa adresom, mapom i svim vašim kontaktima",
+      "Kontinuirana promocija — ljudi svaki dan saznaju za vaš biznis",
+      "Rast vaših pratilaca i klijenata — besplatno",
+    ],
+    weAskTitle: "Šta tražimo od vas:",
+    weAskItems: [
+      "Da nas pratite na Instagram @jemi.ketu, Facebook KetuJemi.com i TikTok @ketujemi7",
+      "Da nas povremeno spomenete svojim pratiocima",
+    ],
+    promoTitle: "📢 Kako funkcioniše promocija:",
+    promoText:
+      "Objavljujemo i promovišemo vaše oglase svaki dan na našim društvenim mrežama — ali samo ako imate aktivne oglase na ketujemi.com. Prazna stranica nema šta da se promoviše — objavite proizvode i ponude, mi ih dostavljamo publici. Što više objavljujete → više vas promovišemo → više klijenata i prodaje imate. 🚀",
+    coffeeTitle: "💡 Mali, ali važan detalj:",
+    coffeeText:
+      "Naša saradnja je kao kafa — funkcioniše samo kada obje strane stave šećer. 😄 Mi vas promovišemo svaki dan našim pratiocima — ali i vi nas morate pratiti na našim mrežama. Ukratko: pratite nas → činimo vas poznatim. Ne pratite nas → gubimo obje strane. 🤝",
+    closing: "Popunite formular i kontaktiraćemo vas u roku od 24 sata. 📩",
+  },
   docTitle: "Otvori prodavnicu — KetuJemi.com",
   heroTitle: "Otvori svoju digitalnu prodavnicu — besplatno",
   heroSubtitle:
@@ -295,6 +385,31 @@ const MNE: OpenShopPageCopy = {
 
 const EN: OpenShopPageCopy = {
   ...KS,
+  partnership: {
+    title: "🤝 Become a KetuJemi VIP Partner",
+    intro:
+      "Partnering with KetuJemi is mutual cooperation — you help us, we make you famous.",
+    youGetTitle: "What you get:",
+    youGetItems: [
+      "Your logo on the ketujemi.com homepage — seen by thousands of visitors every day",
+      "Your listings and offers published daily on Instagram @jemi.ketu, Facebook KetuJemi.com and TikTok @ketujemi7",
+      "A dedicated profile with address, map and all your contact details",
+      "Ongoing promotion — people learn about your business every day",
+      "Growth in your followers and customers — free",
+    ],
+    weAskTitle: "What we ask from you:",
+    weAskItems: [
+      "Follow us on Instagram @jemi.ketu, Facebook KetuJemi.com and TikTok @ketujemi7",
+      "Mention us to your followers from time to time",
+    ],
+    promoTitle: "📢 How promotion works:",
+    promoText:
+      "We publish and promote your listings every day on our social channels — but only if you have active listings on ketujemi.com. An empty page has nothing to promote — post your products and offers, we deliver them to the audience. The more you post → the more we promote you → the more customers and sales you get. 🚀",
+    coffeeTitle: "💡 A small but important detail:",
+    coffeeText:
+      "Our cooperation is like coffee — it only works when both sides add sugar. 😄 We promote you every day to our followers — but you also need to follow us on our social channels. In short: follow us → we make you known. Don't follow us → we both lose. 🤝",
+    closing: "Fill in the form and we will contact you within 24 hours. 📩",
+  },
   docTitle: "Open your shop — KetuJemi.com",
   heroTitle: "Open Your Digital Shop — Free",
   heroSubtitle:

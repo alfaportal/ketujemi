@@ -71,6 +71,37 @@ export default function HapShitorePage() {
           </div>
         </section>
 
+        <SectionCard title={c.partnership.title}>
+          <div className="space-y-4 text-sm sm:text-base text-gray-700 leading-relaxed">
+            <p>{c.partnership.intro}</p>
+            <div>
+              <p className="font-bold text-gray-900">{c.partnership.youGetTitle}</p>
+              <ul className="mt-2 list-disc pl-5 space-y-1.5">
+                {c.partnership.youGetItems.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="font-bold text-gray-900">{c.partnership.weAskTitle}</p>
+              <ul className="mt-2 list-disc pl-5 space-y-1.5">
+                {c.partnership.weAskItems.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="font-bold text-gray-900">{c.partnership.promoTitle}</p>
+              <p className="mt-2">{c.partnership.promoText}</p>
+            </div>
+            <div>
+              <p className="font-bold text-gray-900">{c.partnership.coffeeTitle}</p>
+              <p className="mt-2">{c.partnership.coffeeText}</p>
+            </div>
+            <p className="font-semibold text-gray-900">{c.partnership.closing}</p>
+          </div>
+        </SectionCard>
+
         <SectionCard title={c.faqTitle}>
           <dl className="space-y-5">
             {c.faq.map((item) => (

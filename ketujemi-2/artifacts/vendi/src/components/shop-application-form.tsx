@@ -55,14 +55,6 @@ export function ShopApplicationForm() {
   const cityOptions = citiesForShopCountry(country);
 
   useEffect(() => {
-    if (!user) return;
-    setContactName(user.display_name?.trim() || c.defaultContactName);
-    setEmail(user.email?.trim() || c.defaultContactEmail);
-    const ph = user.contact_phone ?? user.phone_e164_digits;
-    setPhone(ph ? (ph.startsWith("+") ? ph : `+${ph}`) : c.defaultContactPhone);
-  }, [user, c.defaultContactName, c.defaultContactEmail, c.defaultContactPhone]);
-
-  useEffect(() => {
     setCity("");
   }, [country]);
 
