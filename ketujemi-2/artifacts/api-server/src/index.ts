@@ -6,6 +6,7 @@ import {
   ensureOAuthSchema,
   ensureEngagementNotificationsSchema,
   ensureShopSchema,
+  ensureShopDirectoryTaxonomy,
   ensureFemijeCategoryImages,
   ensureSportOutdoorTypeCategories,
   ensureWalletSchema,
@@ -51,6 +52,21 @@ async function startServer(): Promise<void> {
     logger.info("Homepage partners schema verified (homepage_partners)");
     await ensureShopSchema(pool);
     logger.info("Shop schema verified (shop_applications, shops)");
+    const { SHOP_DIRECTORY_CATEGORIES } = await import("../../../lib/shop-directory-taxonomy.ts");
+    const { SHOP_DIRECTORY_CATEGORY_IMAGE_URLS } = await import(
+      "../../../lib/shop-directory-category-images.ts"
+    );
+    await ensureShopDirectoryTaxonomy(
+      pool,
+      SHOP_DIRECTORY_CATEGORIES.map((cat) => ({
+        slug: cat.slug,
+        emoji: cat.emoji,
+        nameSq: cat.nameSq,
+        imageUrl: SHOP_DIRECTORY_CATEGORY_IMAGE_URLS[cat.slug],
+        subcategories: cat.subcategories,
+      })),
+    );
+    logger.info("Shop directory taxonomy seeded (15 categories + subcategories)");
     await ensureSportOutdoorTypeCategories(pool);
     logger.info("Sport & Outdoor type subcategories verified (sport-type-*)");
     await ensureFemijeCategoryImages(pool);

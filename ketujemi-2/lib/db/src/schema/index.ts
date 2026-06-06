@@ -25,3 +25,5 @@ export * from "./user_fcm_tokens";
 export * from "./shop_applications";
 export * from "./shops";
 export * from "./shop_ratings";
+export * from "./shop_directory_categories";
+export * from "./shop_directory_subcategories";

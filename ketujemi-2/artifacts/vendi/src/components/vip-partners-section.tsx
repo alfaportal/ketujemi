@@ -8,6 +8,7 @@ import { partnerSignupHref } from "@/lib/static-page-paths";
 import { cn } from "@/lib/utils";
 import { PartnerSlot, type PartnerSlotData } from "@/components/partner-slot";
 import { TopListingsHomeRow } from "@/components/top-listings-section";
+import { ShopDirectoryHomeBanner } from "@/components/shop-directory-home-banner";
 
 export type VipPartnersSectionVariant = "home" | "hub";
 
@@ -61,9 +62,9 @@ const STANDARD_SLOT_FRAME = cn(
 
 const VIP_SLOT_FRAME = cn(
   "h-28 sm:h-32 md:h-36 w-full rounded-xl overflow-hidden transition-all duration-200 flex flex-col",
-  "border-[3px] border-amber-400 bg-gradient-to-br from-amber-50 via-yellow-50/90 to-amber-100/50",
-  "shadow-[0_3px_14px_rgba(217,119,6,0.28)]",
-  "hover:border-amber-500 hover:shadow-[0_5px_20px_rgba(217,119,6,0.38)]",
+  "border-[3px] border-[#D97706] ring-1 ring-amber-300/60 bg-gradient-to-br from-amber-50 via-yellow-50/90 to-amber-100/50",
+  "shadow-[0_3px_14px_rgba(217,119,6,0.32)]",
+  "hover:border-amber-600 hover:ring-amber-400/70 hover:shadow-[0_5px_20px_rgba(217,119,6,0.42)]",
 );
 
 function EmptyPartnerSlot({
@@ -367,6 +368,7 @@ export function VipPartnersSection({
               rowLabel={t.home_partnerVipRowLabel}
             />
             <TopListingsHomeRow className="mt-5 sm:mt-6 pt-4 sm:pt-5 border-t border-gray-100" />
+            <ShopDirectoryHomeBanner />
           </>
         ) : (
           <div className="space-y-8 sm:space-y-10">

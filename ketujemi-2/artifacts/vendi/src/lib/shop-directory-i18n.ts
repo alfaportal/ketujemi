@@ -8,6 +8,7 @@ export type ShopDirectoryCopy = {
   seoDescription: string;
   seoCategoryTitleSuffix: string;
   seoCategoryDescription: string;
+  seoSubcategoryTitle: string;
   fuseNoResults: string;
   docCategoryTitle: string;
   navShops: string;
@@ -90,6 +91,7 @@ const KS: ShopDirectoryCopy = {
   seoCategoryTitleSuffix: "Dyqane në KetuJemi.com",
   seoCategoryDescription:
     "Gjej dyqane {category} në Kosovë, Shqipëri dhe Maqedoni. Shiko ofertat dhe kontakto direkt.",
+  seoSubcategoryTitle: "{subcategory} në {category} — KetuJemi.com",
   fuseNoResults: "Nuk u gjet asnjë dyqan për «{term}»",
   docCategoryTitle: "Dyqanet",
   navShops: "Dyqanet",
@@ -119,6 +121,7 @@ const MK: ShopDirectoryCopy = {
   seoCategoryTitleSuffix: "Продавници на KetuJemi.com",
   seoCategoryDescription:
     "Најдете продавници за {category} во Косово, Албанија и Македонија. Погледнете понуди и контактирајте директно.",
+  seoSubcategoryTitle: "{subcategory} во {category} — KetuJemi.com",
   fuseNoResults: "Не е пронајдена продавница за «{term}»",
   docCategoryTitle: "Продавници",
   navShops: "Продавници",
@@ -148,6 +151,7 @@ const MNE: ShopDirectoryCopy = {
   seoCategoryTitleSuffix: "Prodavnice na KetuJemi.com",
   seoCategoryDescription:
     "Pronađite prodavnice za {category} na Kosovu, u Albaniji i Makedoniji. Pogledajte ponude i kontaktirajte direktno.",
+  seoSubcategoryTitle: "{subcategory} u {category} — KetuJemi.com",
   fuseNoResults: "Nije pronađena prodavnica za «{term}»",
   docCategoryTitle: "Prodavnice",
   navShops: "Prodavnice",
@@ -177,6 +181,7 @@ const EN: ShopDirectoryCopy = {
   seoCategoryTitleSuffix: "Shops on KetuJemi.com",
   seoCategoryDescription:
     "Find {category} shops in Kosovo, Albania and North Macedonia. Browse offers and contact directly.",
+  seoSubcategoryTitle: "{subcategory} in {category} — KetuJemi.com",
   fuseNoResults: "No shop found for «{term}»",
   docCategoryTitle: "Shops",
   navShops: "Shops",
@@ -235,6 +240,16 @@ export function seoCategoryDescriptionFor(
   categoryName: string,
 ): string {
   return copy.seoCategoryDescription.replace("{category}", categoryName);
+}
+
+export function seoSubcategoryTitleFor(
+  copy: ShopDirectoryCopy,
+  subcategoryName: string,
+  categoryName: string,
+): string {
+  return copy.seoSubcategoryTitle
+    .replace("{subcategory}", subcategoryName)
+    .replace("{category}", categoryName);
 }
 
 export function fuseNoResultsMessage(copy: ShopDirectoryCopy, term: string): string {

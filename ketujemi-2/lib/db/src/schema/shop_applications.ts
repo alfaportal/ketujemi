@@ -1,4 +1,6 @@
 import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { shopDirectoryCategoriesTable } from "./shop_directory_categories";
+import { shopDirectorySubcategoriesTable } from "./shop_directory_subcategories";
 import { usersTable } from "./users";
 
 export type ShopApplicationStatus = "pending" | "approved" | "rejected";
@@ -15,6 +17,10 @@ export const shopApplicationsTable = pgTable("shop_applications", {
   category_id: integer("category_id"),
   directory_category_slug: text("directory_category_slug"),
   directory_subcategory_slug: text("directory_subcategory_slug"),
+  directory_category_id: integer("directory_category_id").references(() => shopDirectoryCategoriesTable.id),
+  directory_subcategory_id: integer("directory_subcategory_id").references(
+    () => shopDirectorySubcategoriesTable.id,
+  ),
   country: text("country").notNull(),
   city: text("city").notNull(),
   region: text("region").notNull(),

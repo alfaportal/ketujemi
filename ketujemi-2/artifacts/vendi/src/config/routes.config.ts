@@ -33,6 +33,7 @@ export type RouteId =
   | "listing-detail"
   | "shop-detail"
   | "shop-directory"
+  | "shop-directory-subcategory"
   | "shop-directory-category"
   | "listings"
   | "not-found";
@@ -277,6 +278,13 @@ export const APP_ROUTES: AppRouteDefinition[] = [
   {
     id: "shop-directory",
     path: "/dyqanet",
+    requiresAuth: false,
+    marketPrefix: null,
+    fallbackPath: HOME_FALLBACK,
+  },
+  {
+    id: "shop-directory-subcategory",
+    path: "/dyqanet/:categorySlug/:subcategorySlug",
     requiresAuth: false,
     marketPrefix: null,
     fallbackPath: HOME_FALLBACK,

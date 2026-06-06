@@ -152,7 +152,7 @@ export default function ShopDirectoryPage() {
             <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
             {SHOP_DIRECTORY_CATEGORIES.map((cat) => {
               const count = categoryCounts[cat.slug] ?? 0;
               const imageUrl = shopDirectoryCategoryImageUrl(cat.slug);
@@ -176,11 +176,14 @@ export default function ShopDirectoryPage() {
                       </span>
                     )}
                   </div>
-                  <div className="p-3 sm:p-4 flex flex-col gap-1 flex-1">
+                  <div className="p-3 sm:p-4 flex flex-col gap-1 flex-1 text-center">
                     <p className="font-bold text-gray-900 text-sm sm:text-base leading-snug">
+                      <span className="mr-1" aria-hidden>
+                        {cat.emoji}
+                      </span>
                       {translateDirectoryCategory(cat, locale)}
                     </p>
-                    <p className="text-xs text-gray-500 mt-auto">
+                    <p className="text-xs sm:text-sm font-bold text-orange-500 mt-auto">
                       {count} {d.shopsCount}
                     </p>
                   </div>

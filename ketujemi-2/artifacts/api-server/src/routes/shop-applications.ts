@@ -2,12 +2,14 @@ import { Router } from "express";
 import {
   db,
   shopApplicationsTable,
+  shopDirectoryCategoriesTable,
+  shopDirectorySubcategoriesTable,
   shopRatingsTable,
   shopsTable,
   listingsTable,
   usersTable,
 } from "@workspace/db";
-import { eq, and, desc, gt, isNotNull, sql, inArray } from "drizzle-orm";
+import { eq, and, asc, desc, gt, isNotNull, sql, inArray } from "drizzle-orm";
 import { getSessionUser } from "../lib/session-user";
 import { sendShopApplicationEmail } from "../lib/send-shop-application-email";
 import {
@@ -168,6 +170,8 @@ function shopDirectoryRow(
     category_id: shop.category_id,
     directory_category_slug: shop.directory_category_slug,
     directory_subcategory_slug: shop.directory_subcategory_slug,
+    directory_category_id: shop.directory_category_id,
+    directory_subcategory_id: shop.directory_subcategory_id,
     country: shop.country,
     city: shop.city,
     region: shop.region,
@@ -188,16 +192,66 @@ function parseShopId(raw: string): number | null {
   return id;
 }
 
+// ─── GET /shops/directory/taxonomy ────────────────────────────────────────────
+router.get("/shops/directory/taxonomy", async (_req, res) => {
+  const categories = await db
+    .select()
+    .from(shopDirectoryCategoriesTable)
+    .orderBy(asc(shopDirectoryCategoriesTable.sort_order), asc(shopDirectoryCategoriesTable.id));
+
+  const subcategories = await db
+    .select()
+    .from(shopDirectorySubcategoriesTable)
+    .orderBy(asc(shopDirectorySubcategoriesTable.id));
+
+  const subsByCategory = new Map<number, typeof subcategories>();
+  for (const sub of subcategories) {
+    const list = subsByCategory.get(sub.category_id) ?? [];
+    list.push(sub);
+    subsByCategory.set(sub.category_id, list);
+  }
+
+  res.json({
+    categories: categories.map((cat) => ({
+      id: cat.id,
+      name: cat.name,
+      emoji: cat.emoji,
+      slug: cat.slug,
+      image_url: cat.image_url,
+      sort_order: cat.sort_order,
+      subcategories: (subsByCategory.get(cat.id) ?? []).map((sub) => ({
+        id: sub.id,
+        category_id: sub.category_id,
+        name: sub.name,
+        slug: sub.slug,
+      })),
+    })),
+  });
+});
+
 // ─── GET /shops/directory ─────────────────────────────────────────────────────
 router.get("/shops/directory", async (req, res) => {
   const category = typeof req.query.category === "string" ? req.query.category.trim() : "";
   const subcategory = typeof req.query.subcategory === "string" ? req.query.subcategory.trim() : "";
+  const categoryId = Number(req.query.category_id);
+  const subcategoryId = Number(req.query.subcategory_id);
   const city = typeof req.query.city === "string" ? req.query.city.trim() : "";
   const country = typeof req.query.country === "string" ? req.query.country.trim() : "";
 
-  const conditions = [eq(shopsTable.is_active, true), isNotNull(shopsTable.directory_category_slug)];
-  if (category) conditions.push(eq(shopsTable.directory_category_slug, category));
-  if (subcategory) conditions.push(eq(shopsTable.directory_subcategory_slug, subcategory));
+  const conditions = [
+    eq(shopsTable.is_active, true),
+    sql`(${shopsTable.directory_category_slug} IS NOT NULL OR ${shopsTable.directory_category_id} IS NOT NULL)`,
+  ];
+  if (Number.isFinite(categoryId) && categoryId > 0) {
+    conditions.push(eq(shopsTable.directory_category_id, categoryId));
+  } else if (category) {
+    conditions.push(eq(shopsTable.directory_category_slug, category));
+  }
+  if (Number.isFinite(subcategoryId) && subcategoryId > 0) {
+    conditions.push(eq(shopsTable.directory_subcategory_id, subcategoryId));
+  } else if (subcategory) {
+    conditions.push(eq(shopsTable.directory_subcategory_slug, subcategory));
+  }
   if (city) conditions.push(eq(shopsTable.city, city));
   if (country) conditions.push(eq(shopsTable.country, country));
 

@@ -18,7 +18,6 @@ import {
   HUB_THUMB_FALLBACK_BY_SLUG,
 } from "@/lib/category-hub-hero-images";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
-import { ShopDirectoryHomeBanner } from "@/components/shop-directory-home-banner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VipPartnersSection } from "@/components/vip-partners-section";
 import { cn } from "@/lib/utils";
@@ -155,22 +154,27 @@ export default function HomePage() {
 
       <VipPartnersSection variant="home" />
 
-      <ShopDirectoryHomeBanner />
-
       {/* -- Filter bar -- */}
       <section className="bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
 
           {/* Search row ? always visible at top */}
-          <form onSubmit={(e) => { e.preventDefault(); applyFilters(); }} className="flex flex-col gap-2 mb-3 sm:flex-row sm:flex-nowrap sm:gap-2">
-            <div className="relative flex-1 min-w-0">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              applyFilters();
+            }}
+            className="flex w-full max-w-full flex-col gap-2 mb-3 sm:flex-row sm:flex-nowrap sm:gap-2"
+          >
+            <div className="relative flex-1 min-w-0 w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
               <input
                 type="search"
+                enterKeyHint="search"
                 placeholder={t.search}
                 value={filterSearch}
                 onChange={(e) => setFilterSearch(e.target.value)}
-                className="w-full min-h-12 pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-base sm:text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all bg-gray-50 focus:bg-white touch-manipulation"
+                className="w-full min-h-12 pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-base sm:text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all bg-gray-50 focus:bg-white touch-manipulation appearance-none"
               />
             </div>
             <button type="submit" className={cnPrimaryBlue("w-full md:w-auto")}>

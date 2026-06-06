@@ -6,7 +6,7 @@ export function ShopDirectoryHomeBanner() {
   const d = useShopDirectoryCopy();
 
   return (
-    <section className="w-full px-4 sm:px-6 py-6 sm:py-8">
+    <section className="w-full px-0 pt-5 sm:pt-6 pb-0">
       <div
         className="max-w-7xl mx-auto rounded-2xl sm:rounded-3xl overflow-hidden text-white p-6 sm:p-10 shadow-lg"
         style={{ background: `linear-gradient(135deg, ${BRAND_BLUE} 0%, ${BRAND_ORANGE} 100%)` }}

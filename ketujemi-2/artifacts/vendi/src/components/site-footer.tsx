@@ -115,16 +115,16 @@ function FooterLinkItem({ href, label }: FooterLink) {
 
   if (isInternal) {
     return (
-      <a href={href} className={LINK_CLASS}>
+      <Link href={href} className={LINK_CLASS}>
         {label}
-      </a>
+      </Link>
     );
   }
 
   return (
-    <Link href={href} className={LINK_CLASS}>
+    <a href={href} className={LINK_CLASS} target="_blank" rel="noopener noreferrer">
       {label}
-    </Link>
+    </a>
   );
 }
 

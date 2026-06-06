@@ -494,6 +494,8 @@ export interface AdminShopApplication {
   category_id: number | null;
   directory_category_slug: string | null;
   directory_subcategory_slug: string | null;
+  directory_category_id: number | null;
+  directory_subcategory_id: number | null;
   country: string;
   city: string;
   region: string;
@@ -521,7 +523,12 @@ export function getAdminShopApplications() {
 
 export function approveAdminShopApplication(
   id: number,
-  payload?: { directory_category_slug?: string; directory_subcategory_slug?: string },
+  payload?: {
+    directory_category_slug?: string;
+    directory_subcategory_slug?: string;
+    directory_category_id?: number;
+    directory_subcategory_id?: number;
+  },
 ) {
   return request<{ ok: boolean; shop_id: number }>(`/shop-applications/${id}/approve`, {
     method: "POST",

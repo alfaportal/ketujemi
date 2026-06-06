@@ -9,6 +9,8 @@ import {
   partnersTable,
   listingPackagePurchasesTable,
   shopApplicationsTable,
+  shopDirectoryCategoriesTable,
+  shopDirectorySubcategoriesTable,
   shopsTable,
 } from "@workspace/db";
 import { eq, desc, sql, count, gte, and } from "drizzle-orm";
@@ -1289,18 +1291,88 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
   const { resolveDirectoryCategorySlug, resolveDirectorySubcategorySlug } = await import(
     "../lib/shop-directory-resolve.js"
   );
-  const directoryCategorySlug = resolveDirectoryCategorySlug({
-    directory_category_slug:
-      typeof body.directory_category_slug === "string" ? body.directory_category_slug : app.directory_category_slug,
-    category_id: app.category_id,
-    category: app.category,
-  });
-  const directorySubcategorySlug = resolveDirectorySubcategorySlug(
-    directoryCategorySlug,
-    typeof body.directory_subcategory_slug === "string"
-      ? body.directory_subcategory_slug
-      : app.directory_subcategory_slug,
-  );
+
+  const bodyCategoryId = Number(body.directory_category_id);
+  const bodySubcategoryId = Number(body.directory_subcategory_id);
+
+  let directoryCategoryId: number | null =
+    Number.isFinite(bodyCategoryId) && bodyCategoryId > 0 ? bodyCategoryId : app.directory_category_id;
+  let directorySubcategoryId: number | null =
+    Number.isFinite(bodySubcategoryId) && bodySubcategoryId > 0
+      ? bodySubcategoryId
+      : app.directory_subcategory_id;
+
+  let directoryCategorySlug =
+    typeof body.directory_category_slug === "string" ? body.directory_category_slug.trim() : null;
+  let directorySubcategorySlug =
+    typeof body.directory_subcategory_slug === "string" ? body.directory_subcategory_slug.trim() : null;
+
+  if (directoryCategoryId) {
+    const [catRow] = await db
+      .select()
+      .from(shopDirectoryCategoriesTable)
+      .where(eq(shopDirectoryCategoriesTable.id, directoryCategoryId))
+      .limit(1);
+    if (catRow) directoryCategorySlug = catRow.slug;
+  }
+
+  if (!directoryCategorySlug) {
+    directoryCategorySlug = resolveDirectoryCategorySlug({
+      directory_category_slug: app.directory_category_slug,
+      category_id: app.category_id,
+      category: app.category,
+    });
+  }
+
+  if (directorySubcategoryId) {
+    const [subRow] = await db
+      .select()
+      .from(shopDirectorySubcategoriesTable)
+      .where(eq(shopDirectorySubcategoriesTable.id, directorySubcategoryId))
+      .limit(1);
+    if (subRow) {
+      directorySubcategorySlug = subRow.slug;
+      if (!directoryCategoryId) {
+        directoryCategoryId = subRow.category_id;
+        const [catRow] = await db
+          .select({ slug: shopDirectoryCategoriesTable.slug })
+          .from(shopDirectoryCategoriesTable)
+          .where(eq(shopDirectoryCategoriesTable.id, subRow.category_id))
+          .limit(1);
+        if (catRow) directoryCategorySlug = catRow.slug;
+      }
+    }
+  }
+
+  if (!directorySubcategorySlug) {
+    directorySubcategorySlug = resolveDirectorySubcategorySlug(
+      directoryCategorySlug,
+      app.directory_subcategory_slug,
+    );
+  }
+
+  if (!directoryCategoryId && directoryCategorySlug) {
+    const [catRow] = await db
+      .select({ id: shopDirectoryCategoriesTable.id })
+      .from(shopDirectoryCategoriesTable)
+      .where(eq(shopDirectoryCategoriesTable.slug, directoryCategorySlug))
+      .limit(1);
+    if (catRow) directoryCategoryId = catRow.id;
+  }
+
+  if (!directorySubcategoryId && directoryCategoryId && directorySubcategorySlug) {
+    const [subRow] = await db
+      .select({ id: shopDirectorySubcategoriesTable.id })
+      .from(shopDirectorySubcategoriesTable)
+      .where(
+        and(
+          eq(shopDirectorySubcategoriesTable.category_id, directoryCategoryId),
+          eq(shopDirectorySubcategoriesTable.slug, directorySubcategorySlug),
+        ),
+      )
+      .limit(1);
+    if (subRow) directorySubcategoryId = subRow.id;
+  }
 
   const [shop] = await db
     .insert(shopsTable)
@@ -1314,6 +1386,8 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
       category_id: app.category_id,
       directory_category_slug: directoryCategorySlug,
       directory_subcategory_slug: directorySubcategorySlug,
+      directory_category_id: directoryCategoryId,
+      directory_subcategory_id: directorySubcategoryId,
       country: app.country,
       city: app.city,
       region: app.region,
@@ -1335,6 +1409,8 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
     .set({
       directory_category_slug: directoryCategorySlug,
       directory_subcategory_slug: directorySubcategorySlug,
+      directory_category_id: directoryCategoryId,
+      directory_subcategory_id: directorySubcategoryId,
     })
     .where(eq(shopApplicationsTable.id, id));
 

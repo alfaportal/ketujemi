@@ -28,5 +28,11 @@ export { ensureSportOutdoorTypeCategories } from "./ensure-sport-outdoor-types.j
 export { ensureFemijeCategoryImages } from "./ensure-femije-category-images.js";
 export { ensureEngagementNotificationsSchema } from "./ensure-engagement-notifications-schema.js";
 export { ensureShopSchema } from "./ensure-shop-schema.js";
+export {
+  ensureShopDirectoryTaxonomy,
+  ensureShopDirectoryTaxonomyTables,
+  seedShopDirectoryTaxonomy,
+  type ShopDirectorySeedCategory,
+} from "./ensure-shop-directory-taxonomy.js";
 
 export * from "./schema";

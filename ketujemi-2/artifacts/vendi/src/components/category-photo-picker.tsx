@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { FEMIJE_HERO_PHOTO } from "@/lib/femije-search-helpers";
 
@@ -10,7 +11,8 @@ export const categoryPhotoCardGridClass = "w-full min-h-[108px] h-[108px]";
 
 type CategoryPhotoPickerCardProps = {
   selected?: boolean;
-  onClick: () => void;
+  onClick?: () => void;
+  href?: string;
   imageSrc: string;
   label: string;
   imageAlt?: string;
@@ -23,6 +25,7 @@ type CategoryPhotoPickerCardProps = {
 export function CategoryPhotoPickerCard({
   selected = false,
   onClick,
+  href,
   imageSrc,
   label,
   imageAlt = "",
@@ -31,20 +34,18 @@ export function CategoryPhotoPickerCard({
 }: CategoryPhotoPickerCardProps) {
   const [imgSrc, setImgSrc] = useState(imageSrc);
 
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "relative overflow-hidden border text-left transition-all touch-manipulation",
-        layout === "grid" || layout === "row"
-          ? cn("rounded-xl", categoryPhotoCardGridClass)
-          : cn("shrink-0 snap-start rounded-2xl", categoryPhotoCardWidthClass),
-        selected
-          ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
-          : "border-gray-100 hover:border-blue-200 hover:shadow-md",
-      )}
-    >
+  const className = cn(
+    "relative block overflow-hidden border text-left transition-all touch-manipulation",
+    layout === "grid" || layout === "row"
+      ? cn("rounded-xl", categoryPhotoCardGridClass)
+      : cn("shrink-0 snap-start rounded-2xl", categoryPhotoCardWidthClass),
+    selected
+      ? "border-blue-600 ring-2 ring-blue-600/30 shadow-md"
+      : "border-gray-100 hover:border-blue-200 hover:shadow-md",
+  );
+
+  const content = (
+    <>
       <img
         src={imgSrc}
         alt={imageAlt}
@@ -62,6 +63,20 @@ export function CategoryPhotoPickerCard({
       >
         {label}
       </span>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={className}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button type="button" onClick={onClick} className={className}>
+      {content}
     </button>
   );
 }
