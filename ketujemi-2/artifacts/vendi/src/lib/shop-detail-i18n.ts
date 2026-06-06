@@ -20,6 +20,15 @@ export type ShopDetailCopy = {
   cancel: string;
   ownerWelcomeEmpty: string;
   postFirstListing: string;
+  editShop: string;
+  deleteShop: string;
+  deleteShopTitle: string;
+  deleteShopDesc: string;
+  saveShop: string;
+  shopSaved: string;
+  shopSaveError: string;
+  shopDeleted: string;
+  shopDeleteError: string;
 };
 
 function seoTitle(shopName: string, category: string, city: string, suffix: string): string {
@@ -46,6 +55,16 @@ const KS: ShopDetailCopy = {
   ownerWelcomeEmpty:
     "👋 Mirë se erdhe! Dyqani yt është gati — posto shpalljen e parë tani dhe fillo të shesësh!",
   postFirstListing: "➕ Posto Shpalljen e Parë →",
+  editShop: "⚙️ Edito Dyqanin",
+  deleteShop: "🗑️ Fshi Dyqanin",
+  deleteShopTitle: "Fshi dyqanin?",
+  deleteShopDesc:
+    "A jeni i sigurt që dëshironi ta fshini këtë dyqan? Të gjitha shpalljet e lidhura do të fshihen përgjithmonë.",
+  saveShop: "Ruaj",
+  shopSaved: "Dyqani u përditësua.",
+  shopSaveError: "Gabim gjatë ruajtjes së dyqanit.",
+  shopDeleted: "Dyqani u fshi.",
+  shopDeleteError: "Gabim gjatë fshirjes së dyqanit.",
 };
 
 const MK: ShopDetailCopy = {
@@ -68,6 +87,16 @@ const MK: ShopDetailCopy = {
   ownerWelcomeEmpty:
     "👋 Добредојдовте! Вашата продавница е подготвена — објавете го првиот оглас сега и започнете со продажба!",
   postFirstListing: "➕ Објави го првиот оглас →",
+  editShop: "⚙️ Уреди ја продавницата",
+  deleteShop: "🗑️ Избриши ја продавницата",
+  deleteShopTitle: "Избриши ја продавницата?",
+  deleteShopDesc:
+    "Дали сте сигурни дека сакате да ја избришете оваа продавница? Сите поврзани огласи ќе бидат трајно избришани.",
+  saveShop: "Зачувај",
+  shopSaved: "Продавницата е ажурирана.",
+  shopSaveError: "Грешка при зачувување на продавницата.",
+  shopDeleted: "Продавницата е избришана.",
+  shopDeleteError: "Грешка при бришење на продавницата.",
 };
 
 const MNE: ShopDetailCopy = {
@@ -90,6 +119,16 @@ const MNE: ShopDetailCopy = {
   ownerWelcomeEmpty:
     "👋 Dobrodošli! Vaša prodavnica je spremna — objavite prvi oglas sada i počnite prodavati!",
   postFirstListing: "➕ Objavi prvi oglas →",
+  editShop: "⚙️ Uredi prodavnicu",
+  deleteShop: "🗑️ Obriši prodavnicu",
+  deleteShopTitle: "Obrisati prodavnicu?",
+  deleteShopDesc:
+    "Jeste li sigurni da želite obrisati ovu prodavnicu? Svi povezani oglasi biće trajno uklonjeni.",
+  saveShop: "Sačuvaj",
+  shopSaved: "Prodavnica je ažurirana.",
+  shopSaveError: "Greška pri čuvanju prodavnice.",
+  shopDeleted: "Prodavnica je obrisana.",
+  shopDeleteError: "Greška pri brisanju prodavnice.",
 };
 
 const EN: ShopDetailCopy = {
@@ -112,6 +151,16 @@ const EN: ShopDetailCopy = {
   ownerWelcomeEmpty:
     "👋 Welcome! Your shop is ready — post your first listing now and start selling!",
   postFirstListing: "➕ Post Your First Listing →",
+  editShop: "⚙️ Edit Shop",
+  deleteShop: "🗑️ Delete Shop",
+  deleteShopTitle: "Delete shop?",
+  deleteShopDesc:
+    "Are you sure you want to delete this shop? All linked listings will be permanently removed.",
+  saveShop: "Save",
+  shopSaved: "Shop updated.",
+  shopSaveError: "Error saving shop.",
+  shopDeleted: "Shop deleted.",
+  shopDeleteError: "Error deleting shop.",
 };
 
 const PAGES: Record<UiTranslationLocale, ShopDetailCopy> = {

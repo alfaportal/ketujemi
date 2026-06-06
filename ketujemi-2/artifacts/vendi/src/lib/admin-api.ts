@@ -512,6 +512,7 @@ export interface AdminShopApplication {
   shop_id: number | null;
   listing_count?: number;
   rejected_reason: string | null;
+  admin_notes: string | null;
   created_at: string;
 }
 
@@ -542,4 +543,22 @@ export function rejectAdminShopApplication(id: number, reason?: string) {
     method: "POST",
     body: JSON.stringify({ reason: reason ?? "" }),
   });
+}
+
+export function updateAdminShop(id: number, data: Record<string, unknown>) {
+  return request<{ ok: boolean }>(`/shops/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateAdminShopApplication(id: number, data: Record<string, unknown>) {
+  return request<{ ok: boolean }>(`/shop-applications/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteAdminShop(id: number) {
+  return request<{ ok: boolean }>(`/shops/${id}`, { method: "DELETE" });
 }

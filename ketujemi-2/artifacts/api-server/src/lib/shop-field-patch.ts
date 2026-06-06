@@ -1,0 +1,61 @@
+import type { shopApplicationsTable, shopsTable } from "@workspace/db";
+
+function trimOrNull(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const t = v.trim();
+  return t || null;
+}
+
+type ShopInsert = typeof shopsTable.$inferInsert;
+type AppInsert = typeof shopApplicationsTable.$inferInsert;
+
+export function buildShopFieldPatch(body: Record<string, unknown>): Partial<ShopInsert> {
+  const patch: Partial<ShopInsert> = {};
+
+  const shopName = trimOrNull(body.shop_name);
+  if (shopName) patch.shop_name = shopName;
+  const logoUrl = trimOrNull(body.logo_url);
+  if (logoUrl) patch.logo_url = logoUrl;
+  const description = trimOrNull(body.description);
+  if (description) patch.description = description;
+  const category = trimOrNull(body.category);
+  if (category) patch.category = category;
+  if ("category_id" in body) {
+    const categoryId = Number(body.category_id);
+    patch.category_id = Number.isFinite(categoryId) && categoryId > 0 ? categoryId : null;
+  }
+  const country = trimOrNull(body.country);
+  if (country) patch.country = country;
+  const city = trimOrNull(body.city);
+  if (city) patch.city = city;
+  const region = trimOrNull(body.region);
+  if (region) patch.region = region;
+  const address = trimOrNull(body.address);
+  if (address) patch.address = address;
+  if ("facebook" in body) patch.facebook = trimOrNull(body.facebook);
+  if ("instagram" in body) patch.instagram = trimOrNull(body.instagram);
+  if ("tiktok" in body) patch.tiktok = trimOrNull(body.tiktok);
+  if ("whatsapp" in body) patch.whatsapp = trimOrNull(body.whatsapp);
+  if ("website" in body) patch.website = trimOrNull(body.website);
+  const contactName = trimOrNull(body.contact_name);
+  if (contactName) patch.contact_name = contactName;
+  const phone = trimOrNull(body.phone);
+  if (phone) patch.phone = phone;
+  const email = trimOrNull(body.email);
+  if (email) patch.email = email;
+
+  return patch;
+}
+
+export function buildApplicationFieldPatch(body: Record<string, unknown>): Partial<AppInsert> {
+  const patch = buildShopFieldPatch(body) as Partial<AppInsert>;
+  if ("status" in body) {
+    const status = trimOrNull(body.status);
+    if (status === "pending" || status === "approved" || status === "rejected") {
+      patch.status = status;
+    }
+  }
+  if ("admin_notes" in body) patch.admin_notes = trimOrNull(body.admin_notes);
+  if ("rejected_reason" in body) patch.rejected_reason = trimOrNull(body.rejected_reason);
+  return patch;
+}

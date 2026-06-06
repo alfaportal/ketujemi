@@ -36,6 +36,7 @@ export const shopApplicationsTable = pgTable("shop_applications", {
   status: text("status").notNull().default("pending"),
   shop_id: integer("shop_id"),
   rejected_reason: text("rejected_reason"),
+  admin_notes: text("admin_notes"),
   created_at: timestamp("created_at").notNull().defaultNow(),
 });
 

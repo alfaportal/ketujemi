@@ -34,6 +34,17 @@ import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 import { shopDetailSeoTitle, useShopDetailCopy } from "@/lib/shop-detail-i18n";
 import { cn } from "@/lib/utils";
+import {
+  ShopEditForm,
+  adminRowToFormValues,
+  type ShopEditFormValues,
+} from "@/components/shop-edit-form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type ShopData = {
   id: number;
@@ -41,10 +52,16 @@ type ShopData = {
   logo_url: string;
   description: string;
   category: string;
+  category_id?: number | null;
+  directory_category_id?: number | null;
+  directory_subcategory_id?: number | null;
   country: string;
   city: string;
   region: string;
   address: string;
+  contact_name?: string;
+  phone?: string;
+  email?: string;
   average_rating?: number | null;
   rating_count?: number;
   facebook?: string | null;
@@ -75,6 +92,10 @@ export default function ShopDetailPage() {
   const [activeCount, setActiveCount] = useState(0);
   const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
   const [isOwner, setIsOwner] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editSaving, setEditSaving] = useState(false);
+  const [deleteShopOpen, setDeleteShopOpen] = useState(false);
+  const [deleteShopBusy, setDeleteShopBusy] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -124,6 +145,46 @@ export default function ShopDetailPage() {
   useEffect(() => {
     loadShop();
   }, [id, d, locale]);
+
+  async function onSaveShopEdit(values: ShopEditFormValues) {
+    if (!shop) return;
+    setEditSaving(true);
+    try {
+      const res = await fetchWithTimeout(`/api/shops/${shop.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(values),
+      });
+      if (!res.ok) throw new Error("fail");
+      toast({ title: d.shopSaved });
+      setEditOpen(false);
+      loadShop();
+    } catch {
+      toast({ title: d.shopSaveError, variant: "destructive" });
+    } finally {
+      setEditSaving(false);
+    }
+  }
+
+  async function onDeleteShop() {
+    if (!shop) return;
+    setDeleteShopBusy(true);
+    try {
+      const res = await fetchWithTimeout(`/api/shops/${shop.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("fail");
+      toast({ title: d.shopDeleted });
+      setLocation("/profile");
+    } catch {
+      toast({ title: d.shopDeleteError, variant: "destructive" });
+    } finally {
+      setDeleteShopBusy(false);
+      setDeleteShopOpen(false);
+    }
+  }
 
   const deleteMutation = useDeleteListing({
     mutation: {
@@ -213,6 +274,46 @@ export default function ShopDetailPage() {
       </header>
 
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+        {isOwner ? (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11 font-semibold"
+              onClick={() => setEditOpen(true)}
+            >
+              {d.editShop}
+            </Button>
+            <AlertDialog open={deleteShopOpen} onOpenChange={setDeleteShopOpen}>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="min-h-11 font-semibold bg-red-600 hover:bg-red-700"
+                >
+                  {d.deleteShop}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{d.deleteShopTitle}</AlertDialogTitle>
+                  <AlertDialogDescription>{d.deleteShopDesc}</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={deleteShopBusy}>{d.cancel}</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-red-600 hover:bg-red-700"
+                    disabled={deleteShopBusy}
+                    onClick={() => void onDeleteShop()}
+                  >
+                    {d.deleteShop}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        ) : null}
+
         <section className="rounded-2xl bg-white border border-gray-100 p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900 mb-3">{d.aboutTitle}</h2>
           <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{shop.description}</p>
@@ -370,6 +471,32 @@ export default function ShopDetailPage() {
           )}
         </section>
       </div>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>{d.editShop}</DialogTitle>
+          </DialogHeader>
+          {shop ? (
+            <ShopEditForm
+              initial={adminRowToFormValues({
+                ...shop,
+                category_id: shop.category_id ?? null,
+                directory_category_id: shop.directory_category_id ?? null,
+                directory_subcategory_id: shop.directory_subcategory_id ?? null,
+                contact_name: shop.contact_name ?? "",
+                phone: shop.phone ?? "",
+                email: shop.email ?? "",
+                status: "approved",
+              })}
+              onSubmit={onSaveShopEdit}
+              onCancel={() => setEditOpen(false)}
+              saving={editSaving}
+              labels={{ save: d.saveShop, cancel: d.cancel }}
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

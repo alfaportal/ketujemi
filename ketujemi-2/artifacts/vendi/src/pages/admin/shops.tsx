@@ -2,10 +2,34 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useGetCategories } from "@workspace/api-client-react";
 import {
   approveAdminShopApplication,
+  deleteAdminShop,
   getAdminShopApplications,
   rejectAdminShopApplication,
+  updateAdminShop,
+  updateAdminShopApplication,
   type AdminShopApplication,
 } from "@/lib/admin-api";
+import {
+  ShopEditForm,
+  adminRowToFormValues,
+  type ShopEditFormValues,
+} from "@/components/shop-edit-form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   defaultSubcategoryForCategory,
   guessDirectoryCategoryFromListingSlug,
@@ -36,6 +60,9 @@ export default function AdminShops() {
   const [toast, setToast] = useState<string | null>(null);
   const [directoryDrafts, setDirectoryDrafts] = useState<Record<number, DirectoryDraft>>({});
   const [taxonomy, setTaxonomy] = useState<ShopDirectoryTaxonomyCategory[]>([]);
+  const [editRow, setEditRow] = useState<AdminShopApplication | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
+  const [deleteShopId, setDeleteShopId] = useState<number | null>(null);
   const { data: categories } = useGetCategories();
 
   const categorySlugById = useMemo(() => {
@@ -114,6 +141,38 @@ export default function AdminShops() {
       await load();
     } catch {
       setToast("Gabim gjatë aprovimit.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function onSaveEdit(values: ShopEditFormValues) {
+    if (!editRow) return;
+    setEditSaving(true);
+    try {
+      if (editRow.shop_id) {
+        await updateAdminShop(editRow.shop_id, values);
+      }
+      await updateAdminShopApplication(editRow.id, values);
+      setEditRow(null);
+      setToast("Dyqani u përditësua.");
+      await load();
+    } catch {
+      setToast("Gabim gjatë përditësimit.");
+    } finally {
+      setEditSaving(false);
+    }
+  }
+
+  async function onConfirmDelete(shopId: number) {
+    setBusyId(shopId);
+    try {
+      await deleteAdminShop(shopId);
+      setDeleteShopId(null);
+      setToast("Dyqani u fshi.");
+      await load();
+    } catch {
+      setToast("Gabim gjatë fshirjes.");
     } finally {
       setBusyId(null);
     }
@@ -204,6 +263,30 @@ export default function AdminShops() {
                   {row.instagram ? <span>IG: {row.instagram}</span> : null}
                   {row.website ? <span>Web: {row.website}</span> : null}
                 </div>
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setEditRow(row)}
+                    className="px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold min-h-10"
+                  >
+                    ✏️ Edito
+                  </button>
+                  {row.shop_id ? (
+                    <button
+                      type="button"
+                      disabled={busyId === row.shop_id}
+                      onClick={() => setDeleteShopId(row.shop_id!)}
+                      className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold min-h-10"
+                    >
+                      🗑️ Fshi
+                    </button>
+                  ) : null}
+                </div>
+                {row.admin_notes ? (
+                  <p className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
+                    <span className="font-semibold">Shënime admin:</span> {row.admin_notes}
+                  </p>
+                ) : null}
                 {row.status === "pending" ? (
                   <div className="space-y-3 pt-2 border-t border-gray-100">
                     <div className="grid sm:grid-cols-2 gap-2">
@@ -307,6 +390,52 @@ export default function AdminShops() {
           })}
         </div>
       )}
+
+      <Dialog open={!!editRow} onOpenChange={(open) => !open && setEditRow(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Edito dyqanin — {editRow?.shop_name}</DialogTitle>
+          </DialogHeader>
+          {editRow ? (
+            <ShopEditForm
+              initial={adminRowToFormValues(editRow)}
+              onSubmit={onSaveEdit}
+              onCancel={() => setEditRow(null)}
+              saving={editSaving}
+              showStatus
+              showAdminNotes
+              labels={{
+                save: "Ruaj",
+                cancel: "Anulo",
+                status: "Statusi",
+                adminNotes: "Shënime të brendshme (admin)",
+                directoryCategory: "Kategoria e direktorisë",
+                directorySubcategory: "Nënkategoria",
+              }}
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={deleteShopId != null} onOpenChange={(open) => !open && setDeleteShopId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Fshi dyqanin?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A jeni i sigurt që dëshironi ta fshini këtë dyqan?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anulo</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => deleteShopId && void onConfirmDelete(deleteShopId)}
+            >
+              Fshi
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

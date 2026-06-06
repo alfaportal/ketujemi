@@ -14,10 +14,9 @@ import { eq, and, asc, desc, gt, isNotNull, sql, inArray, or, isNull } from "dri
 import { getSessionUser } from "../lib/session-user";
 import { sendShopApplicationEmail, sendShopRatingEmail } from "../lib/send-shop-application-email";
 import { formatListingsBatch } from "../lib/format-listings-batch";
-import {
-  resolveDirectoryCategorySlug,
-  resolveDirectorySubcategorySlug,
-} from "../lib/shop-directory-resolve";
+import { resolveDirectoryFields } from "../lib/shop-directory-patch";
+import { buildShopFieldPatch } from "../lib/shop-field-patch";
+import { deleteShopCascade } from "../lib/delete-shop-cascade";
 import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxonomy.ts";
 
 const router = Router();
@@ -421,25 +420,9 @@ router.patch("/shops/:id", async (req, res) => {
   }
 
   const body = req.body as Record<string, unknown>;
-  const patch: Partial<typeof shopsTable.$inferInsert> = {};
-
-  const shopName = trimOrNull(body.shop_name);
-  if (shopName) patch.shop_name = shopName;
-  const logoUrl = trimOrNull(body.logo_url);
-  if (logoUrl) patch.logo_url = logoUrl;
-  const description = trimOrNull(body.description);
-  if (description) patch.description = description;
-  const address = trimOrNull(body.address);
-  if (address) patch.address = address;
-  const city = trimOrNull(body.city);
-  if (city) patch.city = city;
-  const region = trimOrNull(body.region);
-  if (region) patch.region = region;
-  if ("facebook" in body) patch.facebook = trimOrNull(body.facebook);
-  if ("instagram" in body) patch.instagram = trimOrNull(body.instagram);
-  if ("tiktok" in body) patch.tiktok = trimOrNull(body.tiktok);
-  if ("whatsapp" in body) patch.whatsapp = trimOrNull(body.whatsapp);
-  if ("website" in body) patch.website = trimOrNull(body.website);
+  const patch = buildShopFieldPatch(body);
+  const directory = await resolveDirectoryFields(body, shop);
+  Object.assign(patch, directory);
 
   if (!Object.keys(patch).length) {
     res.status(400).json({ error: "VALIDATION", message: "Nuk ka fusha për përditësim." });
@@ -447,7 +430,39 @@ router.patch("/shops/:id", async (req, res) => {
   }
 
   const [updated] = await db.update(shopsTable).set(patch).where(eq(shopsTable.id, id)).returning();
+
+  if (shop.application_id) {
+    await db.update(shopApplicationsTable).set(patch).where(eq(shopApplicationsTable.id, shop.application_id));
+  }
+
   res.json({ ok: true, shop: updated });
+});
+
+router.delete("/shops/:id", async (req, res) => {
+  const viewer = await getSessionUser(req);
+  if (!viewer) {
+    res.status(401).json({ error: "Authentication required", message: "Duhet të jeni i kyçur." });
+    return;
+  }
+
+  const id = parseShopId(req.params.id);
+  if (!id) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const [shop] = await db
+    .select({ id: shopsTable.id, user_id: shopsTable.user_id })
+    .from(shopsTable)
+    .where(and(eq(shopsTable.id, id), eq(shopsTable.user_id, viewer.id)))
+    .limit(1);
+  if (!shop) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+
+  await deleteShopCascade(id, "owner");
+  res.json({ ok: true });
 });
 
 // ─── GET /shops/:id/ratings ─────────────────────────────────────────────────
@@ -654,6 +669,8 @@ router.get("/shops/:id", async (req, res) => {
       category_id: shop.category_id,
       directory_category_slug: shop.directory_category_slug,
       directory_subcategory_slug: shop.directory_subcategory_slug,
+      directory_category_id: shop.directory_category_id,
+      directory_subcategory_id: shop.directory_subcategory_id,
       country: shop.country,
       city: shop.city,
       region: shop.region,

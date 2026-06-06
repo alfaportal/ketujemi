@@ -48,6 +48,9 @@ import { generateAdminAiDailyReport } from "../lib/admin-ai-daily-report";
 import { loadBannedPhoneSet, saveBannedPhoneSet } from "../lib/user-ban";
 import { primaryListingImageUrl, sanitizeListingImageUrlField } from "../lib/listing-images";
 import { purgeInvalidListingImages } from "../lib/purge-invalid-listing-images.js";
+import { deleteShopCascade } from "../lib/delete-shop-cascade";
+import { resolveDirectoryFields } from "../lib/shop-directory-patch";
+import { buildApplicationFieldPatch, buildShopFieldPatch } from "../lib/shop-field-patch";
 
 const router = Router();
 
@@ -1481,6 +1484,99 @@ router.post("/admin/shop-applications/:id/reject", requireAdmin, async (req, res
     await sendShopRejectedEmail(app.email, app.shop_name, reason);
   } catch (err) {
     req.log?.error({ err, applicationId: id }, "shop rejected email failed");
+  }
+
+  res.json({ ok: true });
+});
+
+router.patch("/admin/shops/:id", requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id) || id < 1) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const [shop] = await db.select().from(shopsTable).where(eq(shopsTable.id, id)).limit(1);
+  if (!shop) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+
+  const body = req.body as Record<string, unknown>;
+  const patch = buildShopFieldPatch(body);
+  const directory = await resolveDirectoryFields(body, shop);
+  Object.assign(patch, directory);
+
+  if (!Object.keys(patch).length) {
+    res.status(400).json({ error: "VALIDATION", message: "Nuk ka fusha për përditësim." });
+    return;
+  }
+
+  const [updated] = await db.update(shopsTable).set(patch).where(eq(shopsTable.id, id)).returning();
+
+  const appPatch = { ...patch };
+  if (shop.application_id) {
+    await db.update(shopApplicationsTable).set(appPatch).where(eq(shopApplicationsTable.id, shop.application_id));
+  } else {
+    await db.update(shopApplicationsTable).set(appPatch).where(eq(shopApplicationsTable.shop_id, id));
+  }
+
+  res.json({ ok: true, shop: updated });
+});
+
+router.patch("/admin/shop-applications/:id", requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id) || id < 1) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const [app] = await db.select().from(shopApplicationsTable).where(eq(shopApplicationsTable.id, id)).limit(1);
+  if (!app) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+
+  const body = req.body as Record<string, unknown>;
+  const patch = buildApplicationFieldPatch(body);
+  const directory = await resolveDirectoryFields(body, app);
+  Object.assign(patch, directory);
+
+  if (!Object.keys(patch).length) {
+    res.status(400).json({ error: "VALIDATION", message: "Nuk ka fusha për përditësim." });
+    return;
+  }
+
+  const [updatedApp] = await db
+    .update(shopApplicationsTable)
+    .set(patch)
+    .where(eq(shopApplicationsTable.id, id))
+    .returning();
+
+  if (app.shop_id) {
+    const shopPatch = buildShopFieldPatch(body);
+    Object.assign(shopPatch, directory);
+    if (patch.status === "approved") shopPatch.is_active = true;
+    if (patch.status === "rejected") shopPatch.is_active = false;
+    if (Object.keys(shopPatch).length) {
+      await db.update(shopsTable).set(shopPatch).where(eq(shopsTable.id, app.shop_id));
+    }
+  }
+
+  res.json({ ok: true, application: updatedApp });
+});
+
+router.delete("/admin/shops/:id", requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id) || id < 1) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const ok = await deleteShopCascade(id, "admin");
+  if (!ok) {
+    res.status(404).json({ error: "Not found" });
+    return;
   }
 
   res.json({ ok: true });

@@ -1,0 +1,362 @@
+import { useEffect, useMemo, useState } from "react";
+import { useGetCategories } from "@workspace/api-client-react";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useShopFormCopy } from "@/lib/shop-application-i18n";
+import { citiesForShopCountry } from "@/lib/shop-application-locations";
+import { fetchShopDirectoryTaxonomy, type ShopDirectoryTaxonomyCategory } from "@/lib/shop-directory-api";
+import { translateCategory } from "@/lib/category-translations";
+import { translationKeyForUiLang } from "@/lib/ui-languages";
+import { useMarket } from "@/lib/market-context";
+
+export type ShopEditFormValues = {
+  shop_name: string;
+  logo_url: string;
+  description: string;
+  category: string;
+  category_id: number | null;
+  directory_category_id: number | null;
+  directory_subcategory_id: number | null;
+  country: string;
+  city: string;
+  region: string;
+  address: string;
+  facebook: string;
+  instagram: string;
+  tiktok: string;
+  whatsapp: string;
+  website: string;
+  contact_name: string;
+  phone: string;
+  email: string;
+  status?: string;
+  admin_notes?: string;
+};
+
+type ShopEditFormProps = {
+  initial: ShopEditFormValues;
+  onSubmit: (values: ShopEditFormValues) => Promise<void>;
+  onCancel: () => void;
+  saving?: boolean;
+  showStatus?: boolean;
+  showAdminNotes?: boolean;
+  labels?: {
+    save: string;
+    cancel: string;
+    status?: string;
+    adminNotes?: string;
+    directoryCategory?: string;
+    directorySubcategory?: string;
+  };
+};
+
+export function ShopEditForm({
+  initial,
+  onSubmit,
+  onCancel,
+  saving = false,
+  showStatus = false,
+  showAdminNotes = false,
+  labels,
+}: ShopEditFormProps) {
+  const c = useShopFormCopy();
+  const { uiLang } = useMarket();
+  const locale = translationKeyForUiLang(uiLang);
+  const { data: categories } = useGetCategories();
+  const [taxonomy, setTaxonomy] = useState<ShopDirectoryTaxonomyCategory[]>([]);
+  const [taxonomyLoading, setTaxonomyLoading] = useState(true);
+
+  const [values, setValues] = useState(initial);
+
+  useEffect(() => {
+    setValues(initial);
+  }, [initial]);
+
+  useEffect(() => {
+    void fetchShopDirectoryTaxonomy()
+      .then(setTaxonomy)
+      .finally(() => setTaxonomyLoading(false));
+  }, []);
+
+  const parentCategories = (categories ?? []).filter(
+    (cat: { parent_id?: number | null }) => cat.parent_id == null,
+  );
+
+  const cityOptions = citiesForShopCountry(values.country);
+
+  const subcategories = useMemo(() => {
+    return taxonomy.find((t) => t.id === values.directory_category_id)?.subcategories ?? [];
+  }, [taxonomy, values.directory_category_id]);
+
+  function setField<K extends keyof ShopEditFormValues>(key: K, value: ShopEditFormValues[K]) {
+    setValues((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const cat = parentCategories.find((p: { id: number }) => p.id === values.category_id);
+    const categoryName = cat
+      ? (cat as { name: string }).name
+      : values.category;
+    await onSubmit({ ...values, category: categoryName });
+  }
+
+  const saveLabel = labels?.save ?? c.submitBtn;
+  const cancelLabel = labels?.cancel ?? "Anulo";
+
+  return (
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label>{c.shopName}</Label>
+          <Input value={values.shop_name} onChange={(e) => setField("shop_name", e.target.value)} required />
+        </div>
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label>{c.logo}</Label>
+          <Input value={values.logo_url} onChange={(e) => setField("logo_url", e.target.value)} required />
+        </div>
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label>{c.description}</Label>
+          <Textarea
+            value={values.description}
+            onChange={(e) => setField("description", e.target.value)}
+            className="min-h-[100px]"
+            required
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label>{c.category}</Label>
+          <Select
+            value={values.category_id ? String(values.category_id) : ""}
+            onValueChange={(v) => setField("category_id", Number(v) || null)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={c.category} />
+            </SelectTrigger>
+            <SelectContent>
+              {parentCategories.map((cat: { id: number; name: string }) => (
+                <SelectItem key={cat.id} value={String(cat.id)}>
+                  {translateCategory(cat.name, locale)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label>{c.country}</Label>
+          <Select value={values.country} onValueChange={(v) => setField("country", v)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(c.countryLabels).map(([code, label]) => (
+                <SelectItem key={code} value={code}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label>{c.city}</Label>
+          {cityOptions.length > 0 ? (
+            <Select value={values.city} onValueChange={(v) => setField("city", v)}>
+              <SelectTrigger>
+                <SelectValue placeholder={c.city} />
+              </SelectTrigger>
+              <SelectContent>
+                {cityOptions.map((city) => (
+                  <SelectItem key={city} value={city}>
+                    {city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input value={values.city} onChange={(e) => setField("city", e.target.value)} required />
+          )}
+        </div>
+        <div className="space-y-1.5">
+          <Label>{c.region}</Label>
+          <Input value={values.region} onChange={(e) => setField("region", e.target.value)} required />
+        </div>
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label>{c.address}</Label>
+          <Input value={values.address} onChange={(e) => setField("address", e.target.value)} required />
+        </div>
+      </div>
+
+      {taxonomyLoading ? (
+        <div className="flex justify-center py-4">
+          <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label>{labels?.directoryCategory ?? "Kategoria e direktorisë"}</Label>
+            <select
+              className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
+              value={values.directory_category_id ?? ""}
+              onChange={(e) => {
+                const directory_category_id = Number(e.target.value) || null;
+                const cat = taxonomy.find((t) => t.id === directory_category_id);
+                const firstSub = cat?.subcategories[0];
+                setValues((prev) => ({
+                  ...prev,
+                  directory_category_id,
+                  directory_subcategory_id: firstSub?.id ?? null,
+                }));
+              }}
+            >
+              {taxonomy.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.emoji} {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>{labels?.directorySubcategory ?? "Nënkategoria"}</Label>
+            <select
+              className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
+              value={values.directory_subcategory_id ?? ""}
+              onChange={(e) => setField("directory_subcategory_id", Number(e.target.value) || null)}
+            >
+              {subcategories.map((sub) => (
+                <option key={sub.id} value={sub.id}>
+                  {sub.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label>{c.facebook}</Label>
+          <Input value={values.facebook} onChange={(e) => setField("facebook", e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>{c.instagram}</Label>
+          <Input value={values.instagram} onChange={(e) => setField("instagram", e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>{c.tiktok}</Label>
+          <Input value={values.tiktok} onChange={(e) => setField("tiktok", e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>{c.whatsapp}</Label>
+          <Input value={values.whatsapp} onChange={(e) => setField("whatsapp", e.target.value)} />
+        </div>
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label>{c.website}</Label>
+          <Input value={values.website} onChange={(e) => setField("website", e.target.value)} />
+        </div>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label>{c.contactName}</Label>
+          <Input value={values.contact_name} onChange={(e) => setField("contact_name", e.target.value)} required />
+        </div>
+        <div className="space-y-1.5">
+          <Label>{c.phone}</Label>
+          <Input value={values.phone} onChange={(e) => setField("phone", e.target.value)} required />
+        </div>
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label>{c.email}</Label>
+          <Input type="email" value={values.email} onChange={(e) => setField("email", e.target.value)} required />
+        </div>
+      </div>
+
+      {showStatus ? (
+        <div className="space-y-1.5">
+          <Label>{labels?.status ?? "Statusi"}</Label>
+          <select
+            className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
+            value={values.status ?? "pending"}
+            onChange={(e) => setField("status", e.target.value)}
+          >
+            <option value="pending">pending</option>
+            <option value="approved">approved</option>
+            <option value="rejected">rejected</option>
+          </select>
+        </div>
+      ) : null}
+
+      {showAdminNotes ? (
+        <div className="space-y-1.5">
+          <Label>{labels?.adminNotes ?? "Shënime të brendshme (admin)"}</Label>
+          <Textarea
+            value={values.admin_notes ?? ""}
+            onChange={(e) => setField("admin_notes", e.target.value)}
+            className="min-h-[80px]"
+            placeholder="Shënime vetëm për ekipin e moderimit…"
+          />
+        </div>
+      ) : null}
+
+      <div className="flex flex-wrap gap-2 pt-2 sticky bottom-0 bg-white border-t border-gray-100 py-3">
+        <Button type="submit" disabled={saving} className="min-h-10">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saveLabel}
+        </Button>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={saving} className="min-h-10">
+          {cancelLabel}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+export function adminRowToFormValues(row: {
+  shop_name: string;
+  logo_url: string;
+  description: string;
+  category: string;
+  category_id: number | null;
+  directory_category_id: number | null;
+  directory_subcategory_id: number | null;
+  country: string;
+  city: string;
+  region: string;
+  address: string;
+  facebook: string | null;
+  instagram: string | null;
+  tiktok: string | null;
+  whatsapp: string | null;
+  website: string | null;
+  contact_name: string;
+  phone: string;
+  email: string;
+  status: string;
+  admin_notes?: string | null;
+}): ShopEditFormValues {
+  return {
+    shop_name: row.shop_name,
+    logo_url: row.logo_url,
+    description: row.description,
+    category: row.category,
+    category_id: row.category_id,
+    directory_category_id: row.directory_category_id,
+    directory_subcategory_id: row.directory_subcategory_id,
+    country: row.country,
+    city: row.city,
+    region: row.region,
+    address: row.address,
+    facebook: row.facebook ?? "",
+    instagram: row.instagram ?? "",
+    tiktok: row.tiktok ?? "",
+    whatsapp: row.whatsapp ?? "",
+    website: row.website ?? "",
+    contact_name: row.contact_name,
+    phone: row.phone,
+    email: row.email,
+    status: row.status,
+    admin_notes: row.admin_notes ?? "",
+  };
+}
