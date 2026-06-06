@@ -6,12 +6,6 @@ export type AdvertiseAdType = {
   bullets: string[];
 };
 
-export type AdvertisePriceRow = {
-  type: string;
-  duration: string;
-  price: string;
-};
-
 export type AdvertiseStep = { title: string; body: string };
 
 export type AdvertisePageCopy = {
@@ -21,12 +15,6 @@ export type AdvertisePageCopy = {
   heroSubtitle: string;
   adTypesTitle: string;
   adTypes: AdvertiseAdType[];
-  pricesTitle: string;
-  pricesNote: string;
-  priceColType: string;
-  priceColDuration: string;
-  priceColPrice: string;
-  priceRows: AdvertisePriceRow[];
   whyTitle: string;
   whyBullets: string[];
   stepsTitle: string;
@@ -89,20 +77,6 @@ const KS: AdvertisePageCopy = {
       ],
     },
   ],
-  pricesTitle: "ÇMIMET",
-  pricesNote:
-    "Çmimet vendosen sipas kategorisë dhe periudhës. Na kontaktoni për ofertë të personalizuar.",
-  priceColType: "Lloji",
-  priceColDuration: "Kohëzgjatja",
-  priceColPrice: "Çmimi",
-  priceRows: [
-    { type: "Banner Kryesor", duration: "7 ditë", price: "Me kërkesë" },
-    { type: "Banner Kryesor", duration: "30 ditë", price: "Me kërkesë" },
-    { type: "Njoftim i Sponsorizuar", duration: "7 ditë", price: "Me kërkesë" },
-    { type: "Njoftim i Sponsorizuar", duration: "30 ditë", price: "Me kërkesë" },
-    { type: "Banner Anësor", duration: "30 ditë", price: "Me kërkesë" },
-    { type: "Paketa e Personalizuar", duration: "Sipas marrëveshjes", price: "Me kërkesë" },
-  ],
   whyTitle: "PSE REKLAMONI TE NE?",
   whyBullets: [
     "👥 50,000+ vizitorë aktivë çdo muaj — audiencë e targetuar",
@@ -110,7 +84,7 @@ const KS: AdvertisePageCopy = {
     "📱 Desktop dhe mobile — reklamat shfaqen në të gjitha pajisjet",
     "📊 Raporte të detajuara — shikoni saktësisht performancën e reklamës",
     "🔒 Audiencë e verifikuar — çdo përdorues me numër telefoni të verifikuar",
-    "⚡ Aktivizim i shpejtë — reklamat live brenda 24 orëve nga pagesa",
+    "⚡ Aktivizim i shpejtë — reklamat live brenda 24 orëve",
   ],
   stepsTitle: "SI FUNKSIONON",
   steps: [
@@ -128,7 +102,7 @@ const KS: AdvertisePageCopy = {
     },
     {
       title: "Hapi 4 — Live",
-      body: "Reklamat aktivizohen brenda 24 orëve nga konfirmimi i pagesës.",
+      body: "Reklamat aktivizohen brenda 24 orëve.",
     },
   ],
   contactTitle: "NA KONTAKTONI",
@@ -189,19 +163,6 @@ const MK: AdvertisePageCopy = {
       ],
     },
   ],
-  pricesTitle: "ЦЕНИ",
-  pricesNote: "Цените зависат од категоријата и периодот. Контактирајте не за персонализирана понуда.",
-  priceColType: "Вид",
-  priceColDuration: "Траење",
-  priceColPrice: "Цена",
-  priceRows: [
-    { type: "Главен банер", duration: "7 дена", price: "По барање" },
-    { type: "Главен банер", duration: "30 дена", price: "По барање" },
-    { type: "Спонзориран оглас", duration: "7 дена", price: "По барање" },
-    { type: "Спонзориран оглас", duration: "30 дена", price: "По барање" },
-    { type: "Страничен банер", duration: "30 дена", price: "По барање" },
-    { type: "Персонализиран пакет", duration: "Според договор", price: "По барање" },
-  ],
   whyTitle: "ЗОШТО КАЈ НАС?",
   whyBullets: [
     "👥 50.000+ активни посетители месечно — таргетирана публика",
@@ -209,7 +170,7 @@ const MK: AdvertisePageCopy = {
     "📱 Desktop и mobile — рекламите се прикажуваат на сите уреди",
     "📊 Детални извештаи — видете ја точната перформанса на рекламата",
     "🔒 Верификувана публика — секој корисник со верификуван телефонски број",
-    "⚡ Брза активација — рекламите live во рок од 24 часа по уплатата",
+    "⚡ Брза активација — рекламите live во рок од 24 часа",
   ],
   stepsTitle: "КАКО ФУНКЦИОНИРА",
   steps: [
@@ -227,7 +188,7 @@ const MK: AdvertisePageCopy = {
     },
     {
       title: "Чекор 4 — Live",
-      body: "Рекламите се активираат во рок од 24 часа од потврдата на уплатата.",
+      body: "Рекламите се активираат во рок од 24 часа.",
     },
   ],
   contactTitle: "КОНТАКТ",
@@ -288,19 +249,6 @@ const MNE: AdvertisePageCopy = {
       ],
     },
   ],
-  pricesTitle: "CIJENE",
-  pricesNote: "Cijene zavise od kategorije i perioda. Kontaktirajte nas za personalizovanu ponudu.",
-  priceColType: "Vrsta",
-  priceColDuration: "Trajanje",
-  priceColPrice: "Cijena",
-  priceRows: [
-    { type: "Glavni baner", duration: "7 dana", price: "Na upit" },
-    { type: "Glavni baner", duration: "30 dana", price: "Na upit" },
-    { type: "Sponsorizovani oglas", duration: "7 dana", price: "Na upit" },
-    { type: "Sponsorizovani oglas", duration: "30 dana", price: "Na upit" },
-    { type: "Bočni baner", duration: "30 dana", price: "Na upit" },
-    { type: "Personalizovani paket", duration: "Po dogovoru", price: "Na upit" },
-  ],
   whyTitle: "ZAŠTO KOD NAS?",
   whyBullets: [
     "👥 50.000+ aktivnih posjetilaca mjesečno — ciljana publika",
@@ -308,7 +256,7 @@ const MNE: AdvertisePageCopy = {
     "📱 Desktop i mobile — reklame se prikazuju na svim uređajima",
     "📊 Detaljni izvještaji — vidite tačnu performansu reklame",
     "🔒 Verifikovana publika — svaki korisnik sa verifikovanim brojem telefona",
-    "⚡ Brza aktivacija — reklame live u roku od 24 sata od uplate",
+    "⚡ Brza aktivacija — reklame live u roku od 24 sata",
   ],
   stepsTitle: "KAKO FUNKCIONIŠE",
   steps: [
@@ -326,7 +274,7 @@ const MNE: AdvertisePageCopy = {
     },
     {
       title: "Korak 4 — Live",
-      body: "Reklame se aktiviraju u roku od 24 sata od potvrde uplate.",
+      body: "Reklame se aktiviraju u roku od 24 sata.",
     },
   ],
   contactTitle: "KONTAKT",
@@ -387,19 +335,6 @@ const EN: AdvertisePageCopy = {
       ],
     },
   ],
-  pricesTitle: "PRICING",
-  pricesNote: "Prices depend on category and period. Contact us for a custom quote.",
-  priceColType: "Type",
-  priceColDuration: "Duration",
-  priceColPrice: "Price",
-  priceRows: [
-    { type: "Main banner", duration: "7 days", price: "On request" },
-    { type: "Main banner", duration: "30 days", price: "On request" },
-    { type: "Sponsored listing", duration: "7 days", price: "On request" },
-    { type: "Sponsored listing", duration: "30 days", price: "On request" },
-    { type: "Sidebar banner", duration: "30 days", price: "On request" },
-    { type: "Custom package", duration: "As agreed", price: "On request" },
-  ],
   whyTitle: "WHY ADVERTISE WITH US?",
   whyBullets: [
     "👥 50,000+ active visitors every month — a targeted audience",
@@ -407,7 +342,7 @@ const EN: AdvertisePageCopy = {
     "📱 Desktop and mobile — ads shown on all devices",
     "📊 Detailed reports — see exactly how your ad performs",
     "🔒 Verified audience — every user with a verified phone number",
-    "⚡ Fast activation — ads go live within 24 hours of payment",
+    "⚡ Fast activation — ads go live within 24 hours",
   ],
   stepsTitle: "HOW IT WORKS",
   steps: [
@@ -425,7 +360,7 @@ const EN: AdvertisePageCopy = {
     },
     {
       title: "Step 4 — Live",
-      body: "Ads go live within 24 hours of payment confirmation.",
+      body: "Ads go live within 24 hours.",
     },
   ],
   contactTitle: "CONTACT US",

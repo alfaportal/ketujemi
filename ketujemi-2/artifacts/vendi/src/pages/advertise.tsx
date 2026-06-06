@@ -61,47 +61,6 @@ export default function AdvertisePage() {
           </div>
         </SectionCard>
 
-        <section className="rounded-2xl border border-gray-200 bg-white shadow-[0_8px_30px_rgba(26,86,160,0.06)] p-4 sm:p-6 overflow-hidden">
-          <h2 className="text-lg sm:text-xl font-black text-gray-900 mb-4 tracking-tight">
-            {c.pricesTitle}
-          </h2>
-          <div className="overflow-x-auto -mx-1 px-1">
-            <table className="w-full min-w-[28rem] text-sm border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 pr-3 font-bold text-gray-900">{c.priceColType}</th>
-                  <th className="text-center py-3 px-2 font-bold text-gray-700 whitespace-nowrap">
-                    {c.priceColDuration}
-                  </th>
-                  <th
-                    className="text-right py-3 pl-2 font-bold whitespace-nowrap"
-                    style={{ color: BRAND_BLUE }}
-                  >
-                    {c.priceColPrice}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {c.priceRows.map((row) => (
-                  <tr
-                    key={`${row.type}-${row.duration}`}
-                    className="border-b border-gray-100 last:border-0"
-                  >
-                    <td className="py-3 pr-3 font-medium text-gray-800">{row.type}</td>
-                    <td className="py-3 px-2 text-center text-gray-600 whitespace-nowrap">
-                      {row.duration}
-                    </td>
-                    <td className="py-3 pl-2 text-right font-medium text-gray-900 whitespace-nowrap">
-                      {row.price}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="mt-4 text-sm text-gray-600 leading-relaxed">{c.pricesNote}</p>
-        </section>
-
         <SectionCard title={c.whyTitle}>
           <InfoBulletList items={c.whyBullets} />
         </SectionCard>
