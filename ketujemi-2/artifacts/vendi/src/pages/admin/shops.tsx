@@ -48,7 +48,7 @@ export default function AdminShops() {
     const categorySlug =
       row.directory_category_slug ??
       guessDirectoryCategoryFromListingSlug(listingSlug) ??
-      "pune-sherbime";
+      "biznes-sherbime";
     const subcategorySlug =
       row.directory_subcategory_slug ?? defaultSubcategoryForCategory(categorySlug) ?? "";
     return { categorySlug, subcategorySlug };

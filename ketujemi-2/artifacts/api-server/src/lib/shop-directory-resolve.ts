@@ -18,10 +18,17 @@ const NAME_TO_DIRECTORY: Record<string, string> = {
   rroba: "moda-veshje",
   këpuc: "moda-veshje",
   kepuce: "moda-veshje",
-  punë: "pune-sherbime",
-  pune: "pune-sherbime",
-  shërbim: "pune-sherbime",
-  sherbim: "pune-sherbime",
+  ndërtim: "ndertim-instalime",
+  ndertim: "ndertim-instalime",
+  instalim: "ndertim-instalime",
+  muratur: "ndertim-instalime",
+  punë: "biznes-sherbime",
+  pune: "biznes-sherbime",
+  shërbim: "biznes-sherbime",
+  sherbim: "biznes-sherbime",
+  biznes: "biznes-sherbime",
+  juridik: "biznes-sherbime",
+  kontabilitet: "biznes-sherbime",
   fëmij: "femije-nena",
   femij: "femije-nena",
   sport: "sport-rekreacion",
@@ -49,7 +56,7 @@ export function resolveDirectoryCategorySlug(input: {
   for (const [needle, slug] of Object.entries(NAME_TO_DIRECTORY)) {
     if (cat.includes(needle)) return slug;
   }
-  return "pune-sherbime";
+  return "biznes-sherbime";
 }
 
 export function resolveDirectorySubcategorySlug(

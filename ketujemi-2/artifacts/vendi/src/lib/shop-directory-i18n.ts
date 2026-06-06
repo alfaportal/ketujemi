@@ -34,14 +34,15 @@ const CATEGORY_MK: Record<string, string> = {
   "elektronike-teknologji": "Електроника и технологија",
   "shtepi-mobilje": "Дом и мебел",
   "moda-veshje": "Мода и облека",
-  "pune-sherbime": "Работа и услуги",
+  "ndertim-instalime": "Градежништво и инсталации",
+  "biznes-sherbime": "Бизнис и професионални услуги",
   "femije-nena": "Деца и мајки",
   "sport-rekreacion": "Спорт и рекреација",
   "bujqesi-blegtori": "Земјоделство и сточарство",
   "kafshe-shtepiake": "Домашни миленици",
   "arsim-kurse": "Образование и курсеви",
   "evente-dasma": "Настани и свадби",
-  "turizem-udhetime": "Туризам и патувања",
+  "turizem-udhetimet": "Туризам и патувања",
   "shendetesi-bukuri": "Здравје и убавина",
 };
 
@@ -51,14 +52,15 @@ const CATEGORY_MNE: Record<string, string> = {
   "elektronike-teknologji": "Elektronika i tehnologija",
   "shtepi-mobilje": "Dom i namještaj",
   "moda-veshje": "Moda i odjeća",
-  "pune-sherbime": "Posao i usluge",
+  "ndertim-instalime": "Građevina i instalacije",
+  "biznes-sherbime": "Biznis i profesionalne usluge",
   "femije-nena": "Djeca i majke",
   "sport-rekreacion": "Sport i rekreacija",
   "bujqesi-blegtori": "Poljoprivreda i stočarstvo",
   "kafshe-shtepiake": "Kućni ljubimci",
   "arsim-kurse": "Obrazovanje i kursevi",
   "evente-dasma": "Događaji i vjenčanja",
-  "turizem-udhetime": "Turizam i putovanja",
+  "turizem-udhetimet": "Turizam i putovanja",
   "shendetesi-bukuri": "Zdravlje i ljepota",
 };
 
@@ -68,14 +70,15 @@ const CATEGORY_EN: Record<string, string> = {
   "elektronike-teknologji": "Electronics & Technology",
   "shtepi-mobilje": "Home & Furniture",
   "moda-veshje": "Fashion & Clothing",
-  "pune-sherbime": "Jobs & Services",
+  "ndertim-instalime": "Construction & Installations",
+  "biznes-sherbime": "Business & Professional Services",
   "femije-nena": "Children & Mothers",
   "sport-rekreacion": "Sports & Recreation",
   "bujqesi-blegtori": "Agriculture & Livestock",
   "kafshe-shtepiake": "Pets",
   "arsim-kurse": "Education & Courses",
   "evente-dasma": "Events & Weddings",
-  "turizem-udhetime": "Tourism & Travel",
+  "turizem-udhetimet": "Tourism & Travel",
   "shendetesi-bukuri": "Health & Beauty",
 };
 
@@ -83,7 +86,7 @@ const KS: ShopDirectoryCopy = {
   docTitle: "Dyqanet — KetuJemi.com",
   seoTitle: "Dyqanet Online | KetuJemi.com — Gjej çdo dyqan në një vend",
   seoDescription:
-    "Gjej dyqane lokale në Kosovë, Shqipëri, Maqedoni dhe Diasporë. 14 kategori, qindra dyqane dixhitale.",
+    "Gjej dyqane lokale në Kosovë, Shqipëri, Maqedoni dhe Diasporë. 15 kategori, qindra dyqane dixhitale.",
   seoCategoryTitleSuffix: "Dyqane në KetuJemi.com",
   seoCategoryDescription:
     "Gjej dyqane {category} në Kosovë, Shqipëri dhe Maqedoni. Shiko ofertat dhe kontakto direkt.",
@@ -92,7 +95,7 @@ const KS: ShopDirectoryCopy = {
   navShops: "Dyqanet",
   navBuySell: "Bli & Shit",
   homeBannerTitle: "🏪 Dyqanet — Gjej çdo dyqan në një vend",
-  homeBannerSubtitle: "14 kategori • Qindra dyqane lokale • Ferizaj, Prishtinë, Tiranë dhe më gjerë",
+  homeBannerSubtitle: "15 kategori • Qindra dyqane lokale • Ferizaj, Prishtinë, Tiranë dhe më gjerë",
   homeBannerBtn: "Shiko të gjitha dyqanet →",
   searchPlaceholder: "🔍 Kërko dyqan... p.sh. mobilje, telefon, këpucë",
   filterCity: "Qyteti",
@@ -112,7 +115,7 @@ const MK: ShopDirectoryCopy = {
   docTitle: "Продавници — KetuJemi.com",
   seoTitle: "Онлајн продавници | KetuJemi.com — Најдете ја секоја продавница на едно место",
   seoDescription:
-    "Најдете локални продавници во Косово, Албанија, Македонија и дијаспора. 14 категории, стотици дигитални продавници.",
+    "Најдете локални продавници во Косово, Албанија, Македонија и дијаспора. 15 категории, стотици дигитални продавници.",
   seoCategoryTitleSuffix: "Продавници на KetuJemi.com",
   seoCategoryDescription:
     "Најдете продавници за {category} во Косово, Албанија и Македонија. Погледнете понуди и контактирајте директно.",
@@ -121,7 +124,7 @@ const MK: ShopDirectoryCopy = {
   navShops: "Продавници",
   navBuySell: "Купи и продавај",
   homeBannerTitle: "🏪 Продавници — Најдете ја секоја продавница на едно место",
-  homeBannerSubtitle: "14 категории • Стотици локални продавници • Ferizaj, Prishtinë, Tirana и пошироко",
+  homeBannerSubtitle: "15 категории • Стотици локални продавници • Ferizaj, Prishtinë, Tirana и пошироко",
   homeBannerBtn: "Види ги сите продавници →",
   searchPlaceholder: "🔍 Пребарај продавница... нпр. мебел, телефон, обувки",
   filterCity: "Град",
@@ -141,7 +144,7 @@ const MNE: ShopDirectoryCopy = {
   docTitle: "Prodavnice — KetuJemi.com",
   seoTitle: "Online prodavnice | KetuJemi.com — Pronađite svaku prodavnicu na jednom mjestu",
   seoDescription:
-    "Pronađite lokalne prodavnice na Kosovu, u Albaniji, Makedoniji i dijaspori. 14 kategorija, stotine digitalnih prodavnica.",
+    "Pronađite lokalne prodavnice na Kosovu, u Albaniji, Makedoniji i dijaspori. 15 kategorija, stotine digitalnih prodavnica.",
   seoCategoryTitleSuffix: "Prodavnice na KetuJemi.com",
   seoCategoryDescription:
     "Pronađite prodavnice za {category} na Kosovu, u Albaniji i Makedoniji. Pogledajte ponude i kontaktirajte direktno.",
@@ -150,7 +153,7 @@ const MNE: ShopDirectoryCopy = {
   navShops: "Prodavnice",
   navBuySell: "Kupi i prodaj",
   homeBannerTitle: "🏪 Prodavnice — Pronađite svaku prodavnicu na jednom mjestu",
-  homeBannerSubtitle: "14 kategorija • Stotine lokalnih prodavnica • Ferizaj, Priština, Tirana i šire",
+  homeBannerSubtitle: "15 kategorija • Stotine lokalnih prodavnica • Ferizaj, Priština, Tirana i šire",
   homeBannerBtn: "Pogledaj sve prodavnice →",
   searchPlaceholder: "🔍 Pretraži prodavnicu... npr. namještaj, telefon, cipele",
   filterCity: "Grad",
@@ -170,7 +173,7 @@ const EN: ShopDirectoryCopy = {
   docTitle: "Shops — KetuJemi.com",
   seoTitle: "Online Shops | KetuJemi.com — Find every store in one place",
   seoDescription:
-    "Find local shops in Kosovo, Albania, North Macedonia and the diaspora. 14 categories, hundreds of digital stores.",
+    "Find local shops in Kosovo, Albania, North Macedonia and the diaspora. 15 categories, hundreds of digital stores.",
   seoCategoryTitleSuffix: "Shops on KetuJemi.com",
   seoCategoryDescription:
     "Find {category} shops in Kosovo, Albania and North Macedonia. Browse offers and contact directly.",
@@ -179,7 +182,7 @@ const EN: ShopDirectoryCopy = {
   navShops: "Shops",
   navBuySell: "Buy & Sell",
   homeBannerTitle: "🏪 Shops — Find every store in one place",
-  homeBannerSubtitle: "14 categories • Hundreds of local shops • Ferizaj, Pristina, Tirana and beyond",
+  homeBannerSubtitle: "15 categories • Hundreds of local shops • Ferizaj, Pristina, Tirana and beyond",
   homeBannerBtn: "View all shops →",
   searchPlaceholder: "🔍 Search shops... e.g. furniture, phone, shoes",
   filterCity: "City",

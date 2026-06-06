@@ -26,16 +26,16 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Motorr & Skuter"
       },
       {
-        "slug": "bicikleta-trotineta",
-        "nameSq": "Biçikleta & Trotineta"
+        "slug": "bicikleta-trotineta-elektrike",
+        "nameSq": "Biçikleta & Trotineta elektrike"
       },
       {
         "slug": "autobuse-minibuse",
         "nameSq": "Autobusë & Minibusë"
       },
       {
-        "slug": "traktore-makineri",
-        "nameSq": "Traktorë & Makineri"
+        "slug": "traktore-makineri-bujqesore",
+        "nameSq": "Traktorë & Makineri bujqësore"
       },
       {
         "slug": "ekskavatore-makineri-ndertimi",
@@ -58,8 +58,12 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Makina me qera"
       },
       {
-        "slug": "pjese-kembimi",
-        "nameSq": "Pjesë këmbimi"
+        "slug": "servisim-riparime-auto",
+        "nameSq": "Servisim & Riparime auto"
+      },
+      {
+        "slug": "pjese-kembimi-aksesore",
+        "nameSq": "Pjesë këmbimi & Aksesorë"
       },
       {
         "slug": "goma-rrota",
@@ -74,12 +78,8 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Audio & Elektronikë makine"
       },
       {
-        "slug": "vajra-kimikate",
-        "nameSq": "Vajra & Kimikate"
-      },
-      {
-        "slug": "servisim-riparime",
-        "nameSq": "Servisim & Riparime"
+        "slug": "vajra-kimikate-auto",
+        "nameSq": "Vajra & Kimikate auto"
       }
     ]
   },
@@ -137,12 +137,8 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Magazina & Depoja"
       },
       {
-        "slug": "ndertesa-industriale",
-        "nameSq": "Ndërtesa industriale"
-      },
-      {
-        "slug": "objekte-hotelerie",
-        "nameSq": "Objekte hotelerie"
+        "slug": "ndertesa-industriale-fabrika",
+        "nameSq": "Ndërtesa industriale & Fabrika"
       },
       {
         "slug": "investime-projekte",
@@ -164,8 +160,8 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Laptopë"
       },
       {
-        "slug": "kompjutere-pc",
-        "nameSq": "Kompjuterë & PC"
+        "slug": "kompjutere-pc-desktop",
+        "nameSq": "Kompjuterë & PC Desktop"
       },
       {
         "slug": "tablete-ipad",
@@ -188,44 +184,32 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Gaming & Konzol"
       },
       {
-        "slug": "playstation-xbox-nintendo",
-        "nameSq": "PlayStation & Xbox & Nintendo"
-      },
-      {
         "slug": "smartwatch-wearables",
         "nameSq": "Smartwatch & Wearables"
       },
       {
-        "slug": "drone",
-        "nameSq": "Drone"
+        "slug": "drone-aksesore",
+        "nameSq": "Drone & Aksesorë"
       },
       {
         "slug": "printere-skaner",
         "nameSq": "Printerë & Skaner"
       },
       {
-        "slug": "projektor",
-        "nameSq": "Projektor"
-      },
-      {
         "slug": "komponente-pc",
         "nameSq": "Komponentë PC"
       },
       {
-        "slug": "hard-disk-ssd",
-        "nameSq": "Hard disk & SSD"
+        "slug": "hard-disk-ssd-usb",
+        "nameSq": "Hard disk & SSD & USB"
       },
       {
         "slug": "router-networking",
         "nameSq": "Router & Networking"
       },
       {
-        "slug": "aksesore-telefoni",
-        "nameSq": "Aksesorë telefoni"
-      },
-      {
-        "slug": "aksesore-laptop",
-        "nameSq": "Aksesorë laptop"
+        "slug": "aksesore-telefoni-laptop",
+        "nameSq": "Aksesorë telefoni & laptop"
       },
       {
         "slug": "bateri-karikues",
@@ -236,12 +220,12 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Kufje & Altoparlantë"
       },
       {
-        "slug": "mikrofon-studio",
-        "nameSq": "Mikrofon & Studio"
+        "slug": "smart-home-automatizim",
+        "nameSq": "Smart Home & Automatizim"
       },
       {
-        "slug": "smart-home",
-        "nameSq": "Smart Home"
+        "slug": "riparim-elektronike-telefona",
+        "nameSq": "Riparim elektronike & Telefona"
       }
     ]
   },
@@ -251,8 +235,8 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
     "nameSq": "Shtëpi & Mobilje",
     "subcategories": [
       {
-        "slug": "mobilje-sallon",
-        "nameSq": "Mobilje sallon"
+        "slug": "mobilje-sallon-dhome-ndeje",
+        "nameSq": "Mobilje sallon & Dhome ndeje"
       },
       {
         "slug": "mobilje-dhome-gjumi",
@@ -273,10 +257,6 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
       {
         "slug": "mobilje-ballkoni-kopshti",
         "nameSq": "Mobilje ballkoni & Kopshti"
-      },
-      {
-        "slug": "mobilje-femijesh",
-        "nameSq": "Mobilje fëmijësh"
       },
       {
         "slug": "krevat-dysheke",
@@ -303,16 +283,16 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Kuzhinë & Sobë"
       },
       {
-        "slug": "ene-kuzhine",
-        "nameSq": "Enë kuzhine"
+        "slug": "ene-kuzhine-aksesore",
+        "nameSq": "Enë kuzhine & Aksesorë"
       },
       {
-        "slug": "mikser-kafemakina",
-        "nameSq": "Mikser & Kafemakina"
+        "slug": "mikser-blender-kafemakina",
+        "nameSq": "Mikser & Blender & Kafemakina"
       },
       {
-        "slug": "aspirator-fshesa",
-        "nameSq": "Aspirator & Fshesa"
+        "slug": "aspirator-fshesa-elektrike",
+        "nameSq": "Aspirator & Fshesa elektrike"
       },
       {
         "slug": "ngrohes-radiator",
@@ -331,32 +311,32 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Ndriçim & Llamba"
       },
       {
-        "slug": "perde-tapete",
-        "nameSq": "Perde & Tapete"
+        "slug": "perde-tapete-dysheke-dyshemeje",
+        "nameSq": "Perde & Tapete & Dyshekë dyshemeje"
       },
       {
-        "slug": "dekorime-tabllo",
-        "nameSq": "Dekorime & Tabllo"
+        "slug": "dekorime-tabllo-pasqyra",
+        "nameSq": "Dekorime & Tabllo & Pasqyra"
       },
       {
-        "slug": "bime-lule",
-        "nameSq": "Bimë & Lule"
+        "slug": "bime-lule-vazo",
+        "nameSq": "Bimë & Lule & Vazo"
       },
       {
-        "slug": "banja-sanitari",
-        "nameSq": "Banja & Sanitari"
+        "slug": "banja-sanitari-vaske",
+        "nameSq": "Banja & Sanitari & Vaskë"
       },
       {
-        "slug": "pllaka-mozaik",
-        "nameSq": "Pllaka & Mozaik"
+        "slug": "pllaka-mozaik-parket",
+        "nameSq": "Pllaka & Mozaik & Parket"
       },
       {
-        "slug": "dritare-dyer",
-        "nameSq": "Dritare & Dyer"
+        "slug": "dritare-dyer-korniza",
+        "nameSq": "Dritare & Dyer & Korniza"
       },
       {
-        "slug": "gardhe-porta",
-        "nameSq": "Gardhe & Porta"
+        "slug": "gardhe-porta-hekurishte",
+        "nameSq": "Gardhe & Porta & Hekurishtë"
       },
       {
         "slug": "catia-izolimi",
@@ -367,24 +347,24 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Materiale ndërtimi"
       },
       {
-        "slug": "ngjyra-suva",
-        "nameSq": "Ngjyra & Suva"
+        "slug": "ngjyra-llaq-suva",
+        "nameSq": "Ngjyra & Llaq & Suva"
       },
       {
-        "slug": "sisteme-ujesjellesi",
-        "nameSq": "Sisteme ujësjellësi"
+        "slug": "sisteme-ujesjellesi-kanalizimi",
+        "nameSq": "Sisteme ujësjellësi & Kanalizimi"
       },
       {
-        "slug": "sisteme-elektrike",
-        "nameSq": "Sisteme elektrike"
+        "slug": "sisteme-elektrike-kabllo",
+        "nameSq": "Sisteme elektrike & Kabllo"
       },
       {
-        "slug": "sisteme-alarmi",
-        "nameSq": "Sisteme alarmi"
+        "slug": "sisteme-alarmi-kamera-sigurie",
+        "nameSq": "Sisteme alarmi & Kamera sigurie"
       },
       {
-        "slug": "mjete-pune",
-        "nameSq": "Mjete pune"
+        "slug": "mjete-pune-makina",
+        "nameSq": "Mjete pune & Makina"
       },
       {
         "slug": "skeleri-pajisje-ndertimi",
@@ -406,12 +386,8 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Rroba meshkuj"
       },
       {
-        "slug": "rroba-femije",
-        "nameSq": "Rroba fëmijë"
-      },
-      {
-        "slug": "rroba-bebesh",
-        "nameSq": "Rroba bebësh"
+        "slug": "rroba-femije-bebe",
+        "nameSq": "Rroba fëmijë & Bebë"
       },
       {
         "slug": "xhinse-pantallona",
@@ -426,20 +402,20 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Fustane & Fund"
       },
       {
-        "slug": "xhaketa-pallto",
-        "nameSq": "Xhaketa & Pallto"
+        "slug": "xhaketa-pallto-kapele",
+        "nameSq": "Xhaketa & Pallto & Kapele"
       },
       {
         "slug": "kostume-smokingje",
         "nameSq": "Kostume & Smokingje"
       },
       {
-        "slug": "rroba-sportive",
-        "nameSq": "Rroba sportive"
+        "slug": "rroba-sportive-vrapimi",
+        "nameSq": "Rroba sportive & Vrapimi"
       },
       {
-        "slug": "rroba-plazhi",
-        "nameSq": "Rroba plazhi"
+        "slug": "rroba-plazhi-noti",
+        "nameSq": "Rroba plazhi & Noti"
       },
       {
         "slug": "rroba-nate-brendeshme",
@@ -450,8 +426,8 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Rroba pune & Uniforma"
       },
       {
-        "slug": "veshje-tradicionale",
-        "nameSq": "Veshje tradicionale"
+        "slug": "veshje-tradicionale-kombetare",
+        "nameSq": "Veshje tradicionale & Kombëtare"
       },
       {
         "slug": "kepuce-femra",
@@ -478,120 +454,60 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Sandale & Shapka"
       },
       {
-        "slug": "canta-femra",
-        "nameSq": "Çanta femra"
+        "slug": "canta-femra-meshkuj",
+        "nameSq": "Çanta femra & meshkuj"
       },
       {
-        "slug": "canta-meshkuj",
-        "nameSq": "Çanta meshkuj"
+        "slug": "canta-shpine-udhetimi",
+        "nameSq": "Çanta shpine & Udhëtimi"
       },
       {
-        "slug": "canta-shpine",
-        "nameSq": "Çanta shpine"
-      },
-      {
-        "slug": "portofola",
-        "nameSq": "Portofola"
+        "slug": "portofola-aksesore",
+        "nameSq": "Portofola & Aksesorë"
       },
       {
         "slug": "bizhuteri-ari-argjendi",
         "nameSq": "Bizhuteri ari & argjendi"
       },
       {
-        "slug": "bizhuteri-fashion",
-        "nameSq": "Bizhuteri fashion"
+        "slug": "bizhuteri-fashion-costume",
+        "nameSq": "Bizhuteri fashion & Costume"
       },
       {
-        "slug": "ore-femra",
-        "nameSq": "Orë femra"
+        "slug": "ore-femra-meshkuj",
+        "nameSq": "Orë femra & meshkuj"
       },
       {
-        "slug": "ore-meshkuj",
-        "nameSq": "Orë meshkuj"
+        "slug": "syze-dielli-optike",
+        "nameSq": "Syze dielli & optike"
       },
       {
-        "slug": "syze-dielli",
-        "nameSq": "Syze dielli"
-      },
-      {
-        "slug": "syze-optike",
-        "nameSq": "Syze optike"
-      },
-      {
-        "slug": "parfume-femra",
-        "nameSq": "Parfume femra"
-      },
-      {
-        "slug": "parfume-meshkuj",
-        "nameSq": "Parfume meshkuj"
+        "slug": "parfume-femra-meshkuj",
+        "nameSq": "Parfume femra & meshkuj"
       },
       {
         "slug": "kozmetike-makeup",
         "nameSq": "Kozmetikë & Makeup"
       },
       {
-        "slug": "kujdes-lekure",
-        "nameSq": "Kujdes lëkure"
+        "slug": "kujdes-lekure-serume",
+        "nameSq": "Kujdes lëkure & Serume"
       },
       {
-        "slug": "kujdes-flokesh",
-        "nameSq": "Kujdes flokësh"
+        "slug": "kujdes-flokesh-ngjyra",
+        "nameSq": "Kujdes flokësh & Ngjyra"
       },
       {
-        "slug": "produkte-hijenie",
-        "nameSq": "Produkte hijenie"
+        "slug": "produkte-hijenie-parfumeri",
+        "nameSq": "Produkte hijenie & Parfumeri"
       }
     ]
   },
   {
-    "slug": "pune-sherbime",
-    "emoji": "💼",
-    "nameSq": "Punë & Shërbime",
+    "slug": "ndertim-instalime",
+    "emoji": "🔧",
+    "nameSq": "Ndërtim & Instalime",
     "subcategories": [
-      {
-        "slug": "oferta-pune-kohe-te-plote",
-        "nameSq": "Oferta pune (kohë të plotë)"
-      },
-      {
-        "slug": "oferta-pune-kohe-te-pjesshme",
-        "nameSq": "Oferta pune (kohë të pjesshme)"
-      },
-      {
-        "slug": "kerkoj-pune",
-        "nameSq": "Kërkoj punë"
-      },
-      {
-        "slug": "pune-sezonale",
-        "nameSq": "Punë sezonale"
-      },
-      {
-        "slug": "pune-jashte-vendit",
-        "nameSq": "Punë jashtë vendit"
-      },
-      {
-        "slug": "instalime-elektrike",
-        "nameSq": "Instalime elektrike"
-      },
-      {
-        "slug": "instalime-hidraulike-ujesjelles",
-        "nameSq": "Instalime hidraulike & Ujësjellës"
-      },
-      {
-        "slug": "instalime-ngrohje-klima",
-        "nameSq": "Instalime ngrohje & Klima"
-      },
-      {
-        "slug": "instalime-kamera-alarme",
-        "nameSq": "Instalime kamera & Alarme"
-      },
-      {
-        "slug": "instalime-rrjeta-internet",
-        "nameSq": "Instalime rrjeta & Internet"
-      },
-      {
-        "slug": "instalime-solar-panele-diellore",
-        "nameSq": "Instalime solar & Panele diellore"
-      },
       {
         "slug": "ndertim-murature",
         "nameSq": "Ndërtim & Muraturë"
@@ -621,56 +537,79 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Riparim dritaresh & dyerve"
       },
       {
-        "slug": "riparim-makine-servisim",
-        "nameSq": "Riparim makine & Servisim"
+        "slug": "instalime-elektrike",
+        "nameSq": "Instalime elektrike"
       },
       {
-        "slug": "riparim-elektronike-telefona",
-        "nameSq": "Riparim elektronike & Telefona"
+        "slug": "instalime-hidraulike-ujesjelles",
+        "nameSq": "Instalime hidraulike & Ujësjellës"
       },
       {
-        "slug": "riparim-pajisje-shtepie",
-        "nameSq": "Riparim pajisje shtëpie"
+        "slug": "instalime-ngrohje-klima",
+        "nameSq": "Instalime ngrohje & Klima"
+      },
+      {
+        "slug": "instalime-kamera-alarme",
+        "nameSq": "Instalime kamera & Alarme"
+      },
+      {
+        "slug": "instalime-rrjeta-internet",
+        "nameSq": "Instalime rrjeta & Internet"
+      },
+      {
+        "slug": "instalime-solar-panele-diellore",
+        "nameSq": "Instalime solar & Panele diellore"
+      },
+      {
+        "slug": "levizje-furniture-transport",
+        "nameSq": "Lëvizje furniture & Transport"
       },
       {
         "slug": "pastrim-shtepish-zyrave",
         "nameSq": "Pastrim shtëpish & Zyrave"
       },
       {
-        "slug": "pastrim-industrial",
-        "nameSq": "Pastrim industrial"
+        "slug": "pastrim-industrial-dezinfektim",
+        "nameSq": "Pastrim industrial & Dezinfektim"
       },
       {
-        "slug": "dezinfektim-deratizim",
-        "nameSq": "Dezinfektim & Deratizim"
+        "slug": "mirembajtje-riparime-te-pergjithshme",
+        "nameSq": "Mirëmbajtje & Riparime të përgjithshme"
+      }
+    ]
+  },
+  {
+    "slug": "biznes-sherbime",
+    "emoji": "💼",
+    "nameSq": "Biznes & Shërbime Profesionale",
+    "subcategories": [
+      {
+        "slug": "oferta-pune-kohe-te-plote",
+        "nameSq": "Oferta pune (kohë të plotë)"
       },
       {
-        "slug": "transport-mallrash",
-        "nameSq": "Transport mallrash"
+        "slug": "oferta-pune-kohe-te-pjesshme-sezonale",
+        "nameSq": "Oferta pune (kohë të pjesshme & Sezonale)"
       },
       {
-        "slug": "transport-njerezish",
-        "nameSq": "Transport njerëzish"
+        "slug": "kerkoj-pune",
+        "nameSq": "Kërkoj punë"
       },
       {
-        "slug": "shperndarje-korrieri",
-        "nameSq": "Shpërndarje & Korrieri"
-      },
-      {
-        "slug": "levizje-furniture",
-        "nameSq": "Lëvizje furniture"
+        "slug": "pune-jashte-vendit",
+        "nameSq": "Punë jashtë vendit"
       },
       {
         "slug": "fotografi-videografi",
         "nameSq": "Fotografi & Videografi"
       },
       {
-        "slug": "dizajn-grafik-logo",
-        "nameSq": "Dizajn grafik & Logo"
+        "slug": "dizajn-grafik-logo-branding",
+        "nameSq": "Dizajn grafik & Logo & Branding"
       },
       {
-        "slug": "web-dizajn-zhvillim",
-        "nameSq": "Web dizajn & Zhvillim"
+        "slug": "web-dizajn-zhvillim-app",
+        "nameSq": "Web dizajn & Zhvillim & App"
       },
       {
         "slug": "marketing-social-media",
@@ -681,12 +620,12 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Përkthim & Interpretim"
       },
       {
-        "slug": "kontabilitet-tatim",
-        "nameSq": "Kontabilitet & Tatim"
+        "slug": "kontabilitet-tatim-auditim",
+        "nameSq": "Kontabilitet & Tatim & Auditim"
       },
       {
-        "slug": "avokate-juridik",
-        "nameSq": "Avokatë & Juridik"
+        "slug": "avokate-sherbime-juridike",
+        "nameSq": "Avokatë & Shërbime juridike"
       },
       {
         "slug": "notere-kadaster",
@@ -701,32 +640,28 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Konsulencë biznesi"
       },
       {
-        "slug": "catering-gatim",
-        "nameSq": "Catering & Gatim"
+        "slug": "shitja-me-shumice-importim",
+        "nameSq": "Shitja me shumicë & Importim"
+      },
+      {
+        "slug": "franchise-partneritet",
+        "nameSq": "Franchise & Partneritet"
+      },
+      {
+        "slug": "catering-gatim-banket",
+        "nameSq": "Catering & Gatim & Banket"
       },
       {
         "slug": "kujdes-pleqsh-femijesh",
         "nameSq": "Kujdes pleqsh & Fëmijësh"
       },
       {
-        "slug": "mesimdhenie-private",
-        "nameSq": "Mësimdhënie private"
+        "slug": "sherbime-varrezash-ceremoniale",
+        "nameSq": "Shërbime varrezash & Ceremoniale"
       },
       {
-        "slug": "sherbime-varrezash",
-        "nameSq": "Shërbime varrezash"
-      },
-      {
-        "slug": "shitja-me-shumice",
-        "nameSq": "Shitja me shumicë"
-      },
-      {
-        "slug": "importim-eksportim",
-        "nameSq": "Importim & Eksportim"
-      },
-      {
-        "slug": "franchise-partneritet",
-        "nameSq": "Franchise & Partneritet"
+        "slug": "dezinfektim-deratizim",
+        "nameSq": "Dezinfektim & Deratizim"
       }
     ]
   },
@@ -744,8 +679,8 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Rroba fëmijësh 4-12 vjeç"
       },
       {
-        "slug": "rroba-bebesh",
-        "nameSq": "Rroba bebësh"
+        "slug": "rroba-bebesh-newborn",
+        "nameSq": "Rroba bebësh & Newborn"
       },
       {
         "slug": "kepuce-femijesh",
@@ -776,20 +711,16 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Lodra për fëmijë"
       },
       {
-        "slug": "lego-konstruktive",
-        "nameSq": "Lego & Konstruktivë"
+        "slug": "lego-konstruktive-puzzle",
+        "nameSq": "Lego & Konstruktivë & Puzzle"
       },
       {
         "slug": "kukulla-figura-aksioni",
         "nameSq": "Kukulla & Figura aksioni"
       },
       {
-        "slug": "bicikleta-femijesh",
-        "nameSq": "Biçikleta fëmijësh"
-      },
-      {
-        "slug": "trotineta-femijesh",
-        "nameSq": "Trotineta fëmijësh"
+        "slug": "bicikleta-trotineta-femijesh",
+        "nameSq": "Biçikleta & Trotineta fëmijësh"
       },
       {
         "slug": "trampoline-rreshqitese",
@@ -800,36 +731,28 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Gaming fëmijësh"
       },
       {
-        "slug": "libra-femijesh",
-        "nameSq": "Libra fëmijësh"
+        "slug": "libra-femijesh-edukative",
+        "nameSq": "Libra fëmijësh & Edukative"
       },
       {
-        "slug": "libra-shkollor-fillor",
-        "nameSq": "Libra shkollor fillor"
-      },
-      {
-        "slug": "libra-shkollor-mesem",
-        "nameSq": "Libra shkollor mesëm"
+        "slug": "libra-shkollor",
+        "nameSq": "Libra shkollor"
       },
       {
         "slug": "materiale-shkollore",
         "nameSq": "Materiale shkollore"
       },
       {
-        "slug": "produkte-nena",
-        "nameSq": "Produkte nëna"
+        "slug": "produkte-nena-shtatzenie",
+        "nameSq": "Produkte nëna & Shtatzënie"
       },
       {
-        "slug": "ushqime-bebeje",
-        "nameSq": "Ushqime bebeje"
+        "slug": "ushqime-bebeje-suplementa",
+        "nameSq": "Ushqime bebeje & Suplementa"
       },
       {
-        "slug": "produkte-shtatzenie",
-        "nameSq": "Produkte shtatzënie"
-      },
-      {
-        "slug": "cerdhe-kopsht",
-        "nameSq": "Çerdhe & Kopsht"
+        "slug": "cerdhe-kopsht-sherbime",
+        "nameSq": "Çerdhe & Kopsht (shërbime)"
       },
       {
         "slug": "animacion-festa-femijesh",
@@ -847,32 +770,32 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Futboll & Aksesorë"
       },
       {
-        "slug": "basketboll-volejboll",
-        "nameSq": "Basketboll & Volejboll"
+        "slug": "basketboll-volejboll-handball",
+        "nameSq": "Basketboll & Volejboll & Handball"
       },
       {
-        "slug": "tenis-ping-pong",
-        "nameSq": "Tenis & Ping-pong"
+        "slug": "tenis-ping-pong-badminton",
+        "nameSq": "Tenis & Ping-pong & Badminton"
       },
       {
-        "slug": "palester-fitness",
-        "nameSq": "Palestër & Fitness"
+        "slug": "palester-fitness-bodybuilding",
+        "nameSq": "Palestër & Fitness & Bodybuilding"
       },
       {
-        "slug": "bicikleta-sport",
-        "nameSq": "Biçikleta sport"
+        "slug": "bicikleta-sport-mtb",
+        "nameSq": "Biçikleta sport & MTB"
       },
       {
         "slug": "vrapim-atletizem",
         "nameSq": "Vrapim & Atletizëm"
       },
       {
-        "slug": "noti-plazh",
-        "nameSq": "Noti & Plazh"
+        "slug": "noti-plazh-sporte-ujore",
+        "nameSq": "Noti & Plazh & Sporte ujore"
       },
       {
-        "slug": "ski-sportet-dimerore",
-        "nameSq": "Ski & Sportet dimërore"
+        "slug": "ski-snowboard-sportet-dimerore",
+        "nameSq": "Ski & Snowboard & Sportet dimërore"
       },
       {
         "slug": "gjueti-arme-sportive",
@@ -883,48 +806,40 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Peshkim & Aksesorë"
       },
       {
-        "slug": "kampim-hiking",
-        "nameSq": "Kampim & Hiking"
+        "slug": "kampim-hiking-trekking",
+        "nameSq": "Kampim & Hiking & Trekking"
       },
       {
         "slug": "alpinizem-skalim",
         "nameSq": "Alpinizëm & Skalim"
       },
       {
-        "slug": "kajak-sportet-ujore",
-        "nameSq": "Kajak & Sportet ujore"
+        "slug": "arte-marciale-boks-karate",
+        "nameSq": "Arte marciale & Boks & Karate"
       },
       {
-        "slug": "arte-marciale-boks",
-        "nameSq": "Arte marciale & Boks"
-      },
-      {
-        "slug": "yoga-pilates",
-        "nameSq": "Yoga & Pilates"
+        "slug": "yoga-pilates-meditim",
+        "nameSq": "Yoga & Pilates & Meditim"
       },
       {
         "slug": "instrumente-muzikore",
         "nameSq": "Instrumente muzikore"
       },
       {
-        "slug": "muzike-elektronike-dj",
-        "nameSq": "Muzikë elektronike & DJ"
+        "slug": "muzike-elektronike-dj-studio",
+        "nameSq": "Muzikë elektronike & DJ & Studio"
       },
       {
-        "slug": "libra-revista",
-        "nameSq": "Libra & Revista"
+        "slug": "koleksione-antika-vintage",
+        "nameSq": "Koleksione & Antika & Vintage"
       },
       {
-        "slug": "koleksione-antika",
-        "nameSq": "Koleksione & Antika"
+        "slug": "bileta-evente-koncerte-sport",
+        "nameSq": "Bileta evente & Koncerte & Sport"
       },
       {
-        "slug": "bileta-evente-koncerte",
-        "nameSq": "Bileta evente & Koncerte"
-      },
-      {
-        "slug": "pajisje-fotografie-video",
-        "nameSq": "Pajisje fotografie & Video"
+        "slug": "pajisje-fotografie-video-hobist",
+        "nameSq": "Pajisje fotografie & Video hobist"
       }
     ]
   },
@@ -942,72 +857,72 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Delet & Dhitë"
       },
       {
-        "slug": "derrat",
-        "nameSq": "Derrat"
+        "slug": "derrat-lepujt",
+        "nameSq": "Derrat & Lepujt"
       },
       {
-        "slug": "shpende-pula-rosa",
-        "nameSq": "Shpendë (pula, rosa)"
+        "slug": "shpende-pula-rosa-gjelat-pata",
+        "nameSq": "Shpendë (pula, rosa, gjelat, pata)"
       },
       {
-        "slug": "blete-produkte-bletarie",
-        "nameSq": "Bletë & Produkte bletarie"
+        "slug": "blete-produkte-bletarie-mjalte",
+        "nameSq": "Bletë & Produkte bletarie & Mjaltë"
       },
       {
-        "slug": "kuaj",
-        "nameSq": "Kuaj"
+        "slug": "kuaj-mushka",
+        "nameSq": "Kuaj & Mushka"
       },
       {
         "slug": "kafshe-te-tjera-bujqesore",
         "nameSq": "Kafshë të tjera bujqësore"
       },
       {
-        "slug": "traktore",
-        "nameSq": "Traktorë"
+        "slug": "traktore-kombajne",
+        "nameSq": "Traktorë & Kombajne"
       },
       {
-        "slug": "kombajne-makineri-te-renda",
-        "nameSq": "Kombajne & Makineri të rënda"
+        "slug": "makineri-bujqesore-te-renda",
+        "nameSq": "Makineri bujqësore të rënda"
       },
       {
-        "slug": "plugje-freze",
-        "nameSq": "Plugje & Frezë"
+        "slug": "plugje-freze-kultivatore",
+        "nameSq": "Plugje & Frezë & Kultivatorë"
       },
       {
-        "slug": "sisteme-ujitjeje",
-        "nameSq": "Sisteme ujitjeje"
+        "slug": "sisteme-ujitjeje-pika",
+        "nameSq": "Sisteme ujitjeje & Pika"
       },
       {
-        "slug": "sera-pajisje-sere",
-        "nameSq": "Sera & Pajisje sere"
+        "slug": "sera-tunele-pajisje-sere",
+        "nameSq": "Sera & Tunele & Pajisje sere"
       },
       {
-        "slug": "fara-fidane",
-        "nameSq": "Fara & Fidane"
+        "slug": "fara-fidane-bulbe",
+        "nameSq": "Fara & Fidane & Bulbe"
       },
       {
         "slug": "plehra-organike-kimike",
         "nameSq": "Plehra organike & Kimike"
       },
       {
-        "slug": "pesticide-herbicide",
-        "nameSq": "Pesticide & Herbicide"
+        "slug": "pesticide-herbicide-fungicide",
+        "nameSq": "Pesticide & Herbicide & Fungicide"
       },
       {
-        "slug": "perime-fruta",
-        "nameSq": "Perime & Fruta"
+        "slug": "perime-fruta-produkte-sezonale",
+        "nameSq": "Perime & Fruta & Produkte sezonale"
       },
       {
-        "slug": "produkte-blegtorale",
-        "nameSq": "Produkte blegtorale"
+        "slug": "produkte-blegtorale-qumesht-djathe-mish",
+        "nameSq": "Produkte blegtorale (qumësht, djathë, mish)"
       },
       {
-        "slug": "drure-frutore-bime",
-        "nameSq": "Drurë frutorë & Bimë"
+        "slug": "drure-frutore-bime-dekorative",
+        "nameSq": "Drurë frutorë & Bimë dekorative"
       },
       {
-        "slug": "pylltari-dru-zjarri",
-        "nameSq": "Pylltari & Dru zjarri"
+        "slug": "pylltari-dru-zjarri-biomase",
+        "nameSq": "Pylltari & Dru zjarri & Biomasë"
       }
     ]
   },
@@ -1025,56 +940,56 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Mace (shitje & adoptim)"
       },
       {
-        "slug": "shpende-papagaj-kanarina",
-        "nameSq": "Shpendë (papagaj, kanarina)"
+        "slug": "shpende-papagaj-kanarina-zogu",
+        "nameSq": "Shpendë (papagaj, kanarina, zogu)"
       },
       {
-        "slug": "peshq-akuariume",
-        "nameSq": "Peshq & Akuariume"
+        "slug": "peshq-akuariume-terrariume",
+        "nameSq": "Peshq & Akuariume & Terrariume"
       },
       {
-        "slug": "brejtes-lepuj-hamster",
-        "nameSq": "Brejtës (lepuj, hamster)"
+        "slug": "brejtes-lepuj-hamster-guinea-pig",
+        "nameSq": "Brejtës (lepuj, hamster, guinea pig)"
       },
       {
         "slug": "reptile-egzotike",
         "nameSq": "Reptile & Egzotike"
       },
       {
-        "slug": "ushqim-qensh",
-        "nameSq": "Ushqim qensh"
+        "slug": "ushqim-qensh-macesh",
+        "nameSq": "Ushqim qensh & macesh"
       },
       {
-        "slug": "ushqim-macesh",
-        "nameSq": "Ushqim macesh"
+        "slug": "ushqim-kafshesh-te-tjera",
+        "nameSq": "Ushqim kafshësh të tjera"
       },
       {
-        "slug": "aksesore-kafshesh",
-        "nameSq": "Aksesorë kafshësh"
+        "slug": "aksesore-lodra-kafshesh",
+        "nameSq": "Aksesorë & Lodra kafshësh"
       },
       {
-        "slug": "shtreter-kafaze",
-        "nameSq": "Shtretër & Kafaze"
+        "slug": "shtreter-kafaze-shtepiza",
+        "nameSq": "Shtretër & Kafaze & Shtëpiza"
       },
       {
-        "slug": "veshje-kafshesh",
-        "nameSq": "Veshje kafshësh"
+        "slug": "veshje-aksesore-mode-kafshesh",
+        "nameSq": "Veshje & Aksesorë mode kafshësh"
       },
       {
-        "slug": "kozmetike-kafshesh",
-        "nameSq": "Kozmetikë kafshësh"
+        "slug": "kozmetike-tualetim-kafshesh",
+        "nameSq": "Kozmetikë & Tualetim kafshësh"
       },
       {
-        "slug": "veteriner-sherbime",
-        "nameSq": "Veteriner & Shërbime"
+        "slug": "veteriner-sherbime-mjekesore",
+        "nameSq": "Veteriner & Shërbime mjekësore"
       },
       {
         "slug": "strehim-pension-kafshesh",
         "nameSq": "Strehim & Pension kafshësh"
       },
       {
-        "slug": "trajnim-kafshesh",
-        "nameSq": "Trajnim kafshësh"
+        "slug": "trajnim-edukim-kafshesh",
+        "nameSq": "Trajnim & Edukim kafshësh"
       }
     ]
   },
@@ -1084,16 +999,20 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
     "nameSq": "Arsim & Kurse",
     "subcategories": [
       {
-        "slug": "mesimdhenie-private-matematike",
-        "nameSq": "Mësimdhënie private matematikë"
+        "slug": "mesimdhenie-private-matematike-fizike-kimi",
+        "nameSq": "Mësimdhënie private (matematikë, fizikë, kimi)"
       },
       {
-        "slug": "mesimdhenie-private-gjuhe-shqipe",
-        "nameSq": "Mësimdhënie private gjuhë shqipe"
+        "slug": "mesimdhenie-private-gjuhe-shqipe-letersi",
+        "nameSq": "Mësimdhënie private (gjuhë shqipe & letërsi)"
       },
       {
-        "slug": "kurse-anglisht",
-        "nameSq": "Kurse anglisht"
+        "slug": "mesimdhenie-private-histori-gjeografi",
+        "nameSq": "Mësimdhënie private (histori, gjeografi)"
+      },
+      {
+        "slug": "kurse-anglisht-te-gjitha-nivelet",
+        "nameSq": "Kurse anglisht (të gjitha nivelet)"
       },
       {
         "slug": "kurse-gjermanisht",
@@ -1108,56 +1027,60 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Kurse turqishte & arabe"
       },
       {
-        "slug": "kurse-it-programim",
-        "nameSq": "Kurse IT & Programim"
+        "slug": "kurse-it-programim-web",
+        "nameSq": "Kurse IT & Programim & Web"
       },
       {
-        "slug": "kurse-dizajn-grafik",
-        "nameSq": "Kurse dizajn grafik"
+        "slug": "kurse-dizajn-grafik-ui-ux",
+        "nameSq": "Kurse dizajn grafik & UI/UX"
       },
       {
-        "slug": "kurse-marketing-dixhital",
-        "nameSq": "Kurse marketing dixhital"
+        "slug": "kurse-marketing-dixhital-seo",
+        "nameSq": "Kurse marketing dixhital & SEO"
       },
       {
-        "slug": "kurse-kontabiliteti",
-        "nameSq": "Kurse kontabiliteti"
+        "slug": "kurse-kontabiliteti-finance",
+        "nameSq": "Kurse kontabiliteti & financë"
       },
       {
-        "slug": "kurse-shoferesh",
-        "nameSq": "Kurse shoferësh"
+        "slug": "kurse-shoferesh-a-b-c-d-e",
+        "nameSq": "Kurse shoferësh (A, B, C, D, E)"
       },
       {
-        "slug": "kurse-profesionale",
-        "nameSq": "Kurse profesionale"
+        "slug": "kurse-elektricist-hidraulik",
+        "nameSq": "Kurse elektricist & hidraulik"
       },
       {
-        "slug": "kurse-gatimi-pasticeri",
-        "nameSq": "Kurse gatimi & pastiçeri"
+        "slug": "kurse-gatimi-pasticeri-bukepjekje",
+        "nameSq": "Kurse gatimi & pastiçeri & bukëpjekje"
       },
       {
-        "slug": "kurse-kozmetike-bukurie",
-        "nameSq": "Kurse kozmetike & bukurie"
+        "slug": "kurse-kozmetike-estetike",
+        "nameSq": "Kurse kozmetike & estetikë"
       },
       {
-        "slug": "kurse-fotografie-video",
-        "nameSq": "Kurse fotografie & video"
+        "slug": "kurse-fotografie-video-editim",
+        "nameSq": "Kurse fotografie & video & editim"
       },
       {
-        "slug": "libra-universitar",
-        "nameSq": "Libra universitar"
+        "slug": "kurse-gjuhe-shenjash",
+        "nameSq": "Kurse gjuhë shenjash"
       },
       {
-        "slug": "libra-shkollor",
-        "nameSq": "Libra shkollor"
+        "slug": "libra-universitar-profesional",
+        "nameSq": "Libra universitar & profesional"
       },
       {
-        "slug": "materiale-provimesh",
-        "nameSq": "Materiale provimesh"
+        "slug": "libra-shkollor-fillor-mesem-larte",
+        "nameSq": "Libra shkollor (fillor & mesëm & lartë)"
       },
       {
-        "slug": "diploma-certifikata",
-        "nameSq": "Diploma & Certifikata"
+        "slug": "materiale-provimesh-teste",
+        "nameSq": "Materiale provimesh & Teste"
+      },
+      {
+        "slug": "diploma-certifikata-nostrifikime",
+        "nameSq": "Diploma & Certifikata & Nostrifikime"
       }
     ]
   },
@@ -1171,73 +1094,73 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Salla dasmash"
       },
       {
-        "slug": "salla-festash-eventesh",
-        "nameSq": "Salla festash & Eventesh"
+        "slug": "salla-festash-eventesh-konferencash",
+        "nameSq": "Salla festash & Eventesh & Konferencash"
       },
       {
-        "slug": "fotograf-dasme",
-        "nameSq": "Fotograf dasme"
+        "slug": "fotograf-dasme-evente",
+        "nameSq": "Fotograf dasme & Evente"
       },
       {
-        "slug": "videograf-dasme",
-        "nameSq": "Videograf dasme"
+        "slug": "videograf-dasme-evente",
+        "nameSq": "Videograf dasme & Evente"
       },
       {
-        "slug": "katering-menuja",
-        "nameSq": "Katering & Menuja"
+        "slug": "katering-menuja-buffet",
+        "nameSq": "Katering & Menuja & Buffet"
       },
       {
-        "slug": "embelsira-torta-dasmash",
-        "nameSq": "Ëmbëlsira & Torta dasmash"
+        "slug": "embelsira-torta-dasmash-sheqerpare",
+        "nameSq": "Ëmbëlsira & Torta dasmash & Sheqerpare"
       },
       {
-        "slug": "dekorime-dasmash-lule",
-        "nameSq": "Dekorime dasmash & Lule"
+        "slug": "dekorime-dasmash-lule-buqeta",
+        "nameSq": "Dekorime dasmash & Lule & Buqeta"
       },
       {
-        "slug": "veshje-nusesh",
-        "nameSq": "Veshje nusesh"
+        "slug": "veshje-nusesh-kostume-dasmash",
+        "nameSq": "Veshje nusesh & Kostume dasmash"
       },
       {
-        "slug": "veshje-dhendrit",
-        "nameSq": "Veshje dhëndrit"
+        "slug": "veshje-dhendrit-smoking",
+        "nameSq": "Veshje dhëndrit & Smoking"
       },
       {
-        "slug": "veshje-ceremoniale",
-        "nameSq": "Veshje ceremoniale"
+        "slug": "veshje-ceremoniale-festive",
+        "nameSq": "Veshje ceremoniale & Festive"
       },
       {
-        "slug": "muzike-orkestra",
-        "nameSq": "Muzikë & Orkestra"
+        "slug": "muzike-orkestra-trupe-artistike",
+        "nameSq": "Muzikë & Orkestra & Trupë artistike"
       },
       {
-        "slug": "dj-sistem-zeri",
-        "nameSq": "DJ & Sistem zëri"
+        "slug": "dj-sistem-zeri-ndricim-skene",
+        "nameSq": "DJ & Sistem zëri & Ndriçim skenë"
       },
       {
-        "slug": "animacion-spektakel",
-        "nameSq": "Animacion & Spektakël"
+        "slug": "animacion-spektakel-magji",
+        "nameSq": "Animacion & Spektakël & Magji"
       },
       {
         "slug": "makina-dasme-kortezh",
         "nameSq": "Makina dasme & Kortezh"
       },
       {
-        "slug": "hotele-fjetje",
-        "nameSq": "Hotele & Fjetje"
+        "slug": "hotele-fjetje-honeymoon",
+        "nameSq": "Hotele & Fjetje & Honeymoon"
       },
       {
-        "slug": "organizim-eventesh",
-        "nameSq": "Organizim eventesh"
+        "slug": "organizim-eventesh-koordinim",
+        "nameSq": "Organizim eventesh & Koordinim"
       },
       {
-        "slug": "ftesa-shtyp",
-        "nameSq": "Ftesa & Shtyp"
+        "slug": "ftesa-shtyp-dhurata",
+        "nameSq": "Ftesa & Shtyp & Dhurata"
       }
     ]
   },
   {
-    "slug": "turizem-udhetime",
+    "slug": "turizem-udhetimet",
     "emoji": "✈️",
     "nameSq": "Turizëm & Udhëtime",
     "subcategories": [
@@ -1250,40 +1173,44 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
         "nameSq": "Vila & Shtëpi pushimi"
       },
       {
-        "slug": "hotele-pensione",
-        "nameSq": "Hotele & Pensione"
+        "slug": "hotele-pensione-b-b",
+        "nameSq": "Hotele & Pensione & B&B"
       },
       {
-        "slug": "camping-karavane",
-        "nameSq": "Camping & Karavane"
+        "slug": "camping-karavane-glamping",
+        "nameSq": "Camping & Karavane & Glamping"
       },
       {
-        "slug": "bileta-avioni",
-        "nameSq": "Bileta avioni"
+        "slug": "bileta-avioni-treni-autobus",
+        "nameSq": "Bileta avioni & Treni & Autobus"
       },
       {
-        "slug": "paketa-turistike",
-        "nameSq": "Paketa turistike"
+        "slug": "paketa-turistike-all-inclusive",
+        "nameSq": "Paketa turistike & All-inclusive"
       },
       {
         "slug": "makina-me-qera",
         "nameSq": "Makina me qera"
       },
       {
-        "slug": "guide-turistike",
-        "nameSq": "Guidë turistike"
+        "slug": "guide-turistike-perkthyes",
+        "nameSq": "Guidë turistike & Përkthyes"
       },
       {
-        "slug": "aktivitete-aventure",
-        "nameSq": "Aktivitete aventure"
+        "slug": "aktivitete-aventure-rafting",
+        "nameSq": "Aktivitete aventure & Rafting"
       },
       {
-        "slug": "plazhe-spa",
-        "nameSq": "Plazhe & Spa"
+        "slug": "plazhe-spa-wellness",
+        "nameSq": "Plazhe & Spa & Wellness"
       },
       {
-        "slug": "udhetime-grupore",
-        "nameSq": "Udhëtime grupore"
+        "slug": "udhetime-grupore-ekskursione",
+        "nameSq": "Udhëtime grupore & Ekskursione"
+      },
+      {
+        "slug": "vizat-dokumente-udhetimi",
+        "nameSq": "Vizat & Dokumente udhëtimi"
       }
     ]
   },
@@ -1293,56 +1220,56 @@ export const SHOP_DIRECTORY_CATEGORIES: ShopDirectoryCategory[] = [
     "nameSq": "Shëndetësi & Bukuri",
     "subcategories": [
       {
-        "slug": "pajisje-mjekesore",
-        "nameSq": "Pajisje mjekësore"
+        "slug": "pajisje-mjekesore-diagnostike",
+        "nameSq": "Pajisje mjekësore & Diagnostike"
       },
       {
         "slug": "karrige-karroce-invalidesh",
         "nameSq": "Karrige & Karrocë invalidësh"
       },
       {
-        "slug": "suplementa-vitamina",
-        "nameSq": "Suplementa & Vitamina"
+        "slug": "suplementa-vitamina-proteina",
+        "nameSq": "Suplementa & Vitamina & Proteina"
       },
       {
-        "slug": "produkte-shendetesore",
-        "nameSq": "Produkte shëndetësore"
+        "slug": "produkte-shendetesore-natyrale",
+        "nameSq": "Produkte shëndetësore & Natyrale"
       },
       {
         "slug": "kozmetike-makeup-profesional",
         "nameSq": "Kozmetikë & Makeup profesional"
       },
       {
-        "slug": "sallon-bukurie",
-        "nameSq": "Sallon bukurie"
+        "slug": "sallon-bukurie-estetike",
+        "nameSq": "Sallon bukurie & Estetikë"
       },
       {
-        "slug": "sallon-flokesh",
-        "nameSq": "Sallon flokësh"
+        "slug": "sallon-flokesh-berber",
+        "nameSq": "Sallon flokësh & Berber"
       },
       {
-        "slug": "masazh-relaksim",
-        "nameSq": "Masazh & Relaksim"
+        "slug": "masazh-relaksim-spa",
+        "nameSq": "Masazh & Relaksim & Spa"
       },
       {
         "slug": "optike-syze-mjekesore",
         "nameSq": "Optikë & Syze mjekësore"
       },
       {
-        "slug": "stomatolog-dentist",
-        "nameSq": "Stomatolog & Dentist"
+        "slug": "stomatolog-dentist-ortodoncist",
+        "nameSq": "Stomatolog & Dentist & Ortodoncist"
       },
       {
         "slug": "fizioterapi-rehabilitim",
         "nameSq": "Fizioterapi & Rehabilitim"
       },
       {
-        "slug": "psikolog-keshillim",
-        "nameSq": "Psikolog & Këshillim"
+        "slug": "psikolog-keshillim-terapi",
+        "nameSq": "Psikolog & Këshillim & Terapi"
       },
       {
-        "slug": "produkte-diete-humbje-peshe",
-        "nameSq": "Produkte dietë & Humbje peshe"
+        "slug": "nutricionit-diete-humbje-peshe",
+        "nameSq": "Nutricionit & Dietë & Humbje peshe"
       },
       {
         "slug": "produkte-shtatzenie-nena",
@@ -1366,7 +1293,7 @@ export const LISTING_PARENT_SLUG_TO_DIRECTORY: Record<string, string> = {
   "rroba-kepuce": "moda-veshje",
   "femije": "femije-nena",
   "sport-outdoor": "sport-rekreacion",
-  "pune-sherbime": "pune-sherbime",
+  "pune-sherbime": "biznes-sherbime",
   "bujqesi-blegtori": "bujqesi-blegtori",
   "kafshet": "kafshe-shtepiake",
   "arsim-kurse": "arsim-kurse",
