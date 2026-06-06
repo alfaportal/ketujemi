@@ -46,7 +46,6 @@ const KS: VipPackagesPageCopy = {
   standardTitle: "PARTNER",
   standardFeatures: [
     "Dyqan i personalizuar në KetuJemi.com",
-    "Deri 50 njoftime aktive njëkohësisht",
     "Logo e biznesit me link në faqen kryesore",
     'Badge "Partner i Verifikuar" në çdo njoftim',
     "Panel biznesi me statistika bazë",
@@ -58,7 +57,6 @@ const KS: VipPackagesPageCopy = {
   vipRecommended: "E rekomanduar",
   vipFeatures: [
     "Gjithçka nga Standard +",
-    "Deri 100 njoftime aktive njëkohësisht",
     "Pozicion prioritar në kërkim — del i pari gjithmonë",
     "Badge VIP i dukshëm në çdo njoftim",
     "Logo e madhe e biznesit me link në faqen kryesore",
@@ -73,7 +71,6 @@ const KS: VipPackagesPageCopy = {
   compareColStandard: "Partner",
   compareColVip: "VIP Partner",
   compareRows: [
-    { feature: "Njoftime aktive", free: "Pa limit", standard: "Pa limit", vip: "Pa limit" },
     { feature: "Badge i verifikuar", free: "❌", standard: "✅", vip: "✅ VIP" },
     { feature: "Logo në faqen kryesore", free: "❌", standard: "✅ e vogël", vip: "✅ e madhe" },
     { feature: "Pozicion në kërkim", free: "Normal", standard: "Prioritar", vip: "I pari" },
