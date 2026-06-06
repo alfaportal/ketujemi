@@ -1,5 +1,5 @@
-/** Auto-generated — scripts/generate-shop-subcategory-photos.mjs */
-export const SUBCATEGORY_UNSPLASH_IDS = {
+/** Curated Unsplash photo IDs per shop directory subcategory (category-slug/sub-slug). */
+export const CURATED_SHOP_SUBCATEGORY_PHOTOS = {
   "makina-transport/vetura": "1485291571150-772bcfc10da5",
   "makina-transport/kamione-furgone": "1616432043562-3671ea2e5242",
   "makina-transport/motorr-skuter": "1609630875171-b1321377ee65",
