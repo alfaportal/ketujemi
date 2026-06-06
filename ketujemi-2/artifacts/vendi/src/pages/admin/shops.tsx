@@ -62,7 +62,7 @@ export default function AdminShops() {
   const [taxonomy, setTaxonomy] = useState<ShopDirectoryTaxonomyCategory[]>([]);
   const [editRow, setEditRow] = useState<AdminShopApplication | null>(null);
   const [editSaving, setEditSaving] = useState(false);
-  const [deleteShopId, setDeleteShopId] = useState<number | null>(null);
+  const [deleteRow, setDeleteRow] = useState<AdminShopApplication | null>(null);
   const { data: categories } = useGetCategories();
 
   const categorySlugById = useMemo(() => {
@@ -165,13 +165,23 @@ export default function AdminShops() {
     }
   }
 
-  async function onConfirmDelete(shopId: number) {
-    setBusyId(shopId);
+  async function onConfirmDelete(row: AdminShopApplication) {
+    if (!row.shop_id) {
+      setToast("Gabim gjatë fshirjes.");
+      setDeleteRow(null);
+      return;
+    }
+    setBusyId(row.shop_id);
     try {
-      await deleteAdminShop(shopId);
-      setDeleteShopId(null);
-      setToast("Dyqani u fshi.");
-      await load();
+      await deleteAdminShop(row.shop_id);
+      setDeleteRow(null);
+      setRows((prev) => prev.filter((r) => r.shop_id !== row.shop_id));
+      setStats((prev) => ({
+        pending: prev.pending - (row.status === "pending" ? 1 : 0),
+        approved: prev.approved - (row.status === "approved" ? 1 : 0),
+        rejected: prev.rejected - (row.status === "rejected" ? 1 : 0),
+      }));
+      setToast("Dyqani u fshi me sukses.");
     } catch {
       setToast("Gabim gjatë fshirjes.");
     } finally {
@@ -264,24 +274,22 @@ export default function AdminShops() {
                   {row.instagram ? <span>IG: {row.instagram}</span> : null}
                   {row.website ? <span>Web: {row.website}</span> : null}
                 </div>
-                <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
+                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">
                   <button
                     type="button"
                     onClick={() => setEditRow(row)}
-                    className="px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold min-h-10"
+                    className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm font-semibold min-h-10 shadow-sm"
                   >
                     ✏️ Edito
                   </button>
-                  {row.shop_id ? (
-                    <button
-                      type="button"
-                      disabled={busyId === row.shop_id}
-                      onClick={() => setDeleteShopId(row.shop_id!)}
-                      className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold min-h-10"
-                    >
-                      🗑️ Fshi
-                    </button>
-                  ) : null}
+                  <button
+                    type="button"
+                    disabled={busyId === row.shop_id}
+                    onClick={() => setDeleteRow(row)}
+                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold min-h-10 shadow-sm"
+                  >
+                    🗑️ Fshi
+                  </button>
                 </div>
                 {row.admin_notes ? (
                   <p className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
@@ -418,21 +426,25 @@ export default function AdminShops() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={deleteShopId != null} onOpenChange={(open) => !open && setDeleteShopId(null)}>
+      <AlertDialog open={deleteRow != null} onOpenChange={(open) => !open && setDeleteRow(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Fshi dyqanin?</AlertDialogTitle>
             <AlertDialogDescription>
-              A jeni i sigurt që dëshironi ta fshini këtë dyqan?
+              {deleteRow
+                ? `A jeni i sigurt që dëshironi ta fshini dyqanin '${deleteRow.shop_name}'? Ky veprim do të fshijë dyqanin dhe të gjitha shpalljet e tij.`
+                : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Anulo</AlertDialogCancel>
+            <AlertDialogCancel className="bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-300">
+              Anulo
+            </AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-600 hover:bg-red-700"
-              onClick={() => deleteShopId && void onConfirmDelete(deleteShopId)}
+              onClick={() => deleteRow && void onConfirmDelete(deleteRow)}
             >
-              Fshi
+              Po, fshije
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
