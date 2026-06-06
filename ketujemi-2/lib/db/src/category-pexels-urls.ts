@@ -240,31 +240,19 @@ export const SUBCATEGORY_IMAGE_URL_BY_SLUG: Record<string, string> = {
   "pune-leaf-lirim-banesash-zyrash":
     "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&q=80",
 
-  // —— Ndërtim & Instalime ————————————————————————————————————————————————————
-  "ndertim-type-ndertim-murature":
-    "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80",
-  "ndertim-type-gipsi-suvatime":
-    "https://images.unsplash.com/photo-1503387762-592deb58ef03?w=400&q=80",
-  "ndertim-type-pllakosje-mozaik":
-    "https://images.unsplash.com/photo-1581858722598-fac7e3027fb2?w=400&q=80",
-  "ndertim-type-bojatisje-dekorim":
-    "https://images.unsplash.com/photo-1615875605825-4b0c4c4c4c4c?w=400&q=80",
-  "ndertim-type-riparim-catie-izolim":
-    "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&q=80",
-  "ndertim-type-riparim-dyshemeje-parket":
-    "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&q=80",
-  "ndertim-type-riparim-dritaresh-dyerve":
-    "https://images.unsplash.com/photo-1600607687644-c7171b42498b?w=400&q=80",
-  "ndertim-type-instalime-ngrohje-klima":
-    "https://images.unsplash.com/photo-1631545461158-1f38d7d1a423?w=400&q=80",
-  "ndertim-type-instalime-kamera-alarme":
-    "https://images.unsplash.com/photo-1606983340126-99e4eada4d24?w=400&q=80",
-  "ndertim-type-instalime-solar-panele":
-    "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&q=80",
-  "ndertim-type-levizje-transport":
-    "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=400&q=80",
-  "ndertim-type-mirembajtje-riparime":
-    "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&q=80",
+  // —— Ndërtim & Instalime (nivel 2 banners) —————————————————————————————————
+  "ndertim-type-ndertim-murature": pexelsPhoto(14367421, 1200),
+  "ndertim-type-gipsi-suvatime": pexelsPhoto(6474479, 1200),
+  "ndertim-type-pllakosje-mozaik": pexelsPhoto(259588, 1200),
+  "ndertim-type-bojatisje-dekorim": pexelsPhoto(1249611, 1200),
+  "ndertim-type-riparim-catie-izolim": pexelsPhoto(1170085, 1200),
+  "ndertim-type-riparim-dyshemeje-parket": pexelsPhoto(1571459, 1200),
+  "ndertim-type-riparim-dritaresh-dyerve": pexelsPhoto(2071167, 1200),
+  "ndertim-type-instalime-ngrohje-klima": pexelsPhoto(9120507, 1200),
+  "ndertim-type-instalime-kamera-alarme": pexelsPhoto(6804072, 1200),
+  "ndertim-type-instalime-solar-panele": pexelsPhoto(8853502, 1200),
+  "ndertim-type-levizje-transport": pexelsPhoto(1427107, 1200),
+  "ndertim-type-mirembajtje-riparime": pexelsPhoto(3991879, 1200),
 
   // —— Bujqësi —————————————————————————————————————————————————————————————————
   "bujq-type-bageti":

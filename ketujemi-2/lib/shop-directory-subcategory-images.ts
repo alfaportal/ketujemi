@@ -115,23 +115,40 @@ export const SHOP_DIRECTORY_SUBCATEGORY_IMAGE_URLS: Record<string, string> = {
   "moda-veshje/kujdes-lekure-serume": "https://images.unsplash.com/photo-1516625940017-103a1133aab0?w=200",
   "moda-veshje/kujdes-flokesh-ngjyra": "https://images.unsplash.com/photo-1522337360788-8a13dedfc01b?w=200",
   "moda-veshje/produkte-hijenie-parfumeri": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200",
-  "ndertim-instalime/ndertim-murature": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200",
-  "ndertim-instalime/gipsi-suvatime": "https://images.unsplash.com/photo-1503387762-592deb58ef03?w=200",
-  "ndertim-instalime/pllakosje-mozaik": "https://images.unsplash.com/photo-1581858722598-fac7e3027fb2?w=200",
-  "ndertim-instalime/bojatisje-dekorim": "https://images.unsplash.com/photo-1615875605825-4b0c4c4c4c4c?w=200",
-  "ndertim-instalime/riparim-catie-izolim": "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=200",
-  "ndertim-instalime/riparim-dyshemeje-parket": "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=200",
-  "ndertim-instalime/riparim-dritaresh-dyerve": "https://images.unsplash.com/photo-1600607687644-c7171b42498b?w=200",
-  "ndertim-instalime/instalime-elektrike": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200",
-  "ndertim-instalime/instalime-hidraulike-ujesjelles": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200",
-  "ndertim-instalime/instalime-ngrohje-klima": "https://images.unsplash.com/photo-1631545461158-1f38d7d1a423?w=200",
-  "ndertim-instalime/instalime-kamera-alarme": "https://images.unsplash.com/photo-1606983340126-99e4eada4d24?w=200",
-  "ndertim-instalime/instalime-rrjeta-internet": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200",
-  "ndertim-instalime/instalime-solar-panele-diellore": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200",
-  "ndertim-instalime/levizje-furniture-transport": "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=200",
-  "ndertim-instalime/pastrim-shtepish-zyrave": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=200",
-  "ndertim-instalime/pastrim-industrial-dezinfektim": "https://images.unsplash.com/photo-1581578731544-c64695cc6952?w=200",
-  "ndertim-instalime/mirembajtje-riparime-te-pergjithshme": "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=200",
+  "ndertim-instalime/ndertim-murature":
+    "https://images.pexels.com/photos/14367421/pexels-photo-14367421.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/gipsi-suvatime":
+    "https://images.pexels.com/photos/6474479/pexels-photo-6474479.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/pllakosje-mozaik":
+    "https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/bojatisje-dekorim":
+    "https://images.pexels.com/photos/1249611/pexels-photo-1249611.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/riparim-catie-izolim":
+    "https://images.pexels.com/photos/1170085/pexels-photo-1170085.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/riparim-dyshemeje-parket":
+    "https://images.pexels.com/photos/1571459/pexels-photo-1571459.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/riparim-dritaresh-dyerve":
+    "https://images.pexels.com/photos/2071167/pexels-photo-2071167.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/instalime-elektrike":
+    "https://images.pexels.com/photos/162553/pexels-photo-162553.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/instalime-hidraulike-ujesjelles":
+    "https://images.pexels.com/photos/8482593/pexels-photo-8482593.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/instalime-ngrohje-klima":
+    "https://images.pexels.com/photos/9120507/pexels-photo-9120507.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/instalime-kamera-alarme":
+    "https://images.pexels.com/photos/6804072/pexels-photo-6804072.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/instalime-rrjeta-internet":
+    "https://images.pexels.com/photos/2881230/pexels-photo-2881230.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/instalime-solar-panele-diellore":
+    "https://images.pexels.com/photos/8853502/pexels-photo-8853502.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/levizje-furniture-transport":
+    "https://images.pexels.com/photos/1427107/pexels-photo-1427107.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/pastrim-shtepish-zyrave":
+    "https://images.pexels.com/photos/4239146/pexels-photo-4239146.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/pastrim-industrial-dezinfektim":
+    "https://images.pexels.com/photos/8460157/pexels-photo-8460157.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
+  "ndertim-instalime/mirembajtje-riparime-te-pergjithshme":
+    "https://images.pexels.com/photos/3991879/pexels-photo-3991879.jpeg?auto=compress&cs=tinysrgb&w=200&q=80",
   "biznes-sherbime/oferta-pune-kohe-te-plote": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=200",
   "biznes-sherbime/oferta-pune-kohe-te-pjesshme-sezonale": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=200",
   "biznes-sherbime/kerkoj-pune": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=200",

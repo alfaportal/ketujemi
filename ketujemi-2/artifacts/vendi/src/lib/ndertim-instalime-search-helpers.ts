@@ -1,11 +1,10 @@
 /** Ndërtim & Instalime hub slug (matches seeded category). */
 export const NDERTIM_INSTALIME_HUB_SLUG = "ndertim-instalime";
 
+import { ndertimListingTypePhoto } from "../../../../lib/ndertim-instalime-category-images.ts";
+
 export const NDERTIM_INSTALIME_HERO_PHOTO =
   "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=80&auto=format&fit=crop";
-
-const unsplash = (photoId: string) =>
-  `https://images.unsplash.com/photo-${photoId}?w=400&q=80&auto=format&fit=crop`;
 
 export const NI_TYPE_KEYS = [
   "ndertim_murature",
@@ -39,19 +38,20 @@ export const NI_TYPE_DB_SLUG: Record<NiTypeKey, string> = {
   mirembajtje: "ndertim-type-mirembajtje-riparime",
 };
 
+/** Nivel 1 hub grid — Pexels only (see `ndertim-instalime-category-images.ts`). */
 export const NI_TYPE_PHOTOS: Record<NiTypeKey, string> = {
-  ndertim_murature: unsplash("1504307651254-35680f356dfd"),
-  gipsi_suvatime: unsplash("1503387762-592deb58ef03"),
-  pllakosje_mozaik: unsplash("1581858722598-fac7e3027fb2"),
-  bojatisje_dekorim: unsplash("1615875605825-4b0c4c4c4c4c"),
-  riparim_catie: unsplash("1486262715619-67b85e0b08d3"),
-  riparim_dyshemeje: unsplash("1486262715619-67b85e0b08d3"),
-  riparim_dritaresh: unsplash("1600607687644-c7171b42498b"),
-  instalime_ngrohje: unsplash("1631545461158-1f38d7d1a423"),
-  instalime_kamera: unsplash("1606983340126-99e4eada4d24"),
-  instalime_solar: unsplash("1621905251189-08b45d6a269e"),
-  levizje_transport: unsplash("1601584115197-04ecc0da31d7"),
-  mirembajtje: unsplash("1486262715619-67b85e0b08d3"),
+  ndertim_murature: ndertimListingTypePhoto("ndertim_murature"),
+  gipsi_suvatime: ndertimListingTypePhoto("gipsi_suvatime"),
+  pllakosje_mozaik: ndertimListingTypePhoto("pllakosje_mozaik"),
+  bojatisje_dekorim: ndertimListingTypePhoto("bojatisje_dekorim"),
+  riparim_catie: ndertimListingTypePhoto("riparim_catie"),
+  riparim_dyshemeje: ndertimListingTypePhoto("riparim_dyshemeje"),
+  riparim_dritaresh: ndertimListingTypePhoto("riparim_dritaresh"),
+  instalime_ngrohje: ndertimListingTypePhoto("instalime_ngrohje"),
+  instalime_kamera: ndertimListingTypePhoto("instalime_kamera"),
+  instalime_solar: ndertimListingTypePhoto("instalime_solar"),
+  levizje_transport: ndertimListingTypePhoto("levizje_transport"),
+  mirembajtje: ndertimListingTypePhoto("mirembajtje"),
 };
 
 export const NI_TYPE_LABEL_KEY: Record<NiTypeKey, string> = {
