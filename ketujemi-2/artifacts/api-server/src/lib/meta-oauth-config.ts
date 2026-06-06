@@ -28,42 +28,10 @@ export function facebookAppSecret(): string | null {
   return cleanMetaEnv("FACEBOOK_APP_SECRET") ?? cleanMetaEnv("META_APP_SECRET");
 }
 
-/**
- * Instagram Login credentials — MUST be the Instagram App ID/Secret from
- * Meta Dashboard → Instagram → API setup with Instagram login → Business login settings.
- * Do NOT reuse FACEBOOK_APP_ID (causes "Invalid platform app").
- */
-export function instagramAppId(): string | null {
-  return cleanMetaEnv("INSTAGRAM_APP_ID");
-}
-
-export function instagramAppSecret(): string | null {
-  return cleanMetaEnv("INSTAGRAM_APP_SECRET");
-}
-
-/** True when Instagram OAuth env uses the Facebook App ID by mistake. */
-export function isInstagramOAuthMisconfigured(): boolean {
-  const igId = instagramAppId();
-  const fbId = facebookAppId();
-  return Boolean(igId && fbId && igId === fbId);
-}
-
 export function isFacebookOAuthEnabled(): boolean {
   const flag = cleanMetaEnv("FACEBOOK_OAUTH_ENABLED")?.toLowerCase();
   if (flag === "false" || flag === "0" || flag === "no") return false;
   return Boolean(facebookAppId() && facebookAppSecret());
-}
-
-export function isInstagramOAuthEnabled(): boolean {
-  const flag = cleanMetaEnv("INSTAGRAM_OAUTH_ENABLED")?.toLowerCase();
-  if (flag === "false" || flag === "0" || flag === "no") return false;
-  if (!instagramAppId() || !instagramAppSecret()) return false;
-  if (isInstagramOAuthMisconfigured()) return false;
-  return true;
-}
-
-export function instagramOAuthCallbackUrlForOrigin(origin: string): string {
-  return oauthCallbackUrl(origin, "instagram");
 }
 
 /**

@@ -96,7 +96,6 @@ export default function LoginPage() {
   const [smsAuthEnabled, setSmsAuthEnabled] = useState(false);
   const [googleOAuthEnabled, setGoogleOAuthEnabled] = useState(false);
   const [facebookOAuthEnabled, setFacebookOAuthEnabled] = useState(false);
-  const [instagramOAuthEnabled, setInstagramOAuthEnabled] = useState(false);
   const [tiktokOAuthEnabled, setTiktokOAuthEnabled] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const recaptchaRef = useRef<RecaptchaV2Handle>(null);
@@ -110,14 +109,12 @@ export default function LoginPage() {
         smsAuthEnabled?: boolean;
         googleOAuthEnabled?: boolean;
         facebookOAuthEnabled?: boolean;
-        instagramOAuthEnabled?: boolean;
         tiktokOAuthEnabled?: boolean;
       }) => {
         if (cancelled) return;
         setSmsAuthEnabled(Boolean(data.smsAuthEnabled));
         setGoogleOAuthEnabled(Boolean(data.googleOAuthEnabled));
         setFacebookOAuthEnabled(Boolean(data.facebookOAuthEnabled));
-        setInstagramOAuthEnabled(Boolean(data.instagramOAuthEnabled));
         setTiktokOAuthEnabled(Boolean(data.tiktokOAuthEnabled));
       })
       .catch(() => {
@@ -125,7 +122,6 @@ export default function LoginPage() {
           setSmsAuthEnabled(false);
           setGoogleOAuthEnabled(false);
           setFacebookOAuthEnabled(false);
-          setInstagramOAuthEnabled(false);
           setTiktokOAuthEnabled(false);
         }
       });
@@ -167,8 +163,6 @@ export default function LoginPage() {
     } else if (
       oauthErr === "facebook_denied" ||
       oauthErr === "facebook_failed" ||
-      oauthErr === "instagram_denied" ||
-      oauthErr === "instagram_failed" ||
       oauthErr === "oauth_state" ||
       oauthErr === "oauth_code"
     ) {
@@ -517,7 +511,6 @@ export default function LoginPage() {
     google: t.login_google_btn,
     facebook: t.login_oauth_facebook,
     tiktok: t.login_tiktok_btn,
-    instagram: t.login_oauth_instagram,
   };
 
   const oauthButtons = (
@@ -526,7 +519,6 @@ export default function LoginPage() {
       googleEnabled={googleOAuthEnabled}
       facebookEnabled={facebookOAuthEnabled}
       tiktokEnabled={tiktokOAuthEnabled}
-      instagramEnabled={instagramOAuthEnabled}
       labels={oauthLabels}
     />
   );

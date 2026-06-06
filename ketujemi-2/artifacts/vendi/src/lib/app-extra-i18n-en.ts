@@ -964,7 +964,7 @@ export const EN_EXTRA: Record<string, string> = {
   login_mode_register: "Sign up",
   login_oauth_or: "or",
   login_google_btn: "Sign in with Google",
-  login_oauth_facebook: "Sign in with Facebook",
+  login_oauth_facebook: "Sign in with Facebook / Instagram",
   login_tiktok_btn: "Sign in with TikTok",
   login_oauth_instagram: "Continue with Instagram",
   login_oauth_google_denied: "Google sign-in was cancelled.",

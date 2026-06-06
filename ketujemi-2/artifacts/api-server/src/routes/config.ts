@@ -2,7 +2,7 @@ import { Router } from "express";
 import { isRecaptchaRequired } from "../lib/recaptcha-verify";
 import { hasEmailDeliveryConfigured, isEmailVerificationRequired } from "../lib/email-auth";
 import { isSmsAuthEnabled } from "../lib/sms-auth";
-import { isFacebookOAuthEnabled, isInstagramOAuthEnabled, facebookPageUrl, instagramProfileUrl } from "../lib/meta-oauth-config";
+import { isFacebookOAuthEnabled, facebookPageUrl, instagramProfileUrl } from "../lib/meta-oauth-config";
 import { isGoogleOAuthEnabled } from "../lib/google-oauth-config";
 import { isTikTokOAuthEnabled } from "../lib/tiktok-oauth-config";
 import { isB2UploadConfigured } from "../lib/b2-upload-presign";
@@ -53,7 +53,6 @@ router.get("/config/public", (_req, res) => {
     emailVerificationRequired: isEmailVerificationRequired(),
     emailConfigured: hasEmailDeliveryConfigured(),
     facebookOAuthEnabled: isFacebookOAuthEnabled(),
-    instagramOAuthEnabled: isInstagramOAuthEnabled(),
     googleOAuthEnabled: isGoogleOAuthEnabled(),
     tiktokOAuthEnabled: isTikTokOAuthEnabled(),
     facebookPageUrl: facebookPageUrl(),

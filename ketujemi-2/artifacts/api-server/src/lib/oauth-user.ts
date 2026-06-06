@@ -3,7 +3,10 @@ import { db, usersTable } from "@workspace/db";
 import type { User } from "@workspace/db";
 import type { FacebookProfile } from "./facebook-oauth";
 import type { GoogleProfile } from "./google-oauth";
-import type { InstagramProfile } from "./instagram-oauth";
+export type InstagramProfile = {
+  id: string;
+  username: string | null;
+};
 import type { TikTokProfile } from "./tiktok-oauth";
 
 async function findUserByFacebookId(facebookUserId: string): Promise<User | undefined> {

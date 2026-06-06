@@ -8,13 +8,7 @@ import {
   fetchFacebookProfile,
   isFacebookOAuthEnabled,
 } from "../lib/facebook-oauth";
-import {
-  buildInstagramAuthorizeUrl,
-  exchangeInstagramCode,
-  fetchInstagramProfile,
-  isInstagramOAuthEnabled,
-} from "../lib/instagram-oauth";
-import { findOrCreateUserFromFacebook, findOrCreateUserFromInstagram } from "../lib/oauth-user";
+import { findOrCreateUserFromFacebook } from "../lib/oauth-user";
 import { isNewlyRegisteredUser, setUserSessionCookie } from "../lib/user-session";
 import { assertAccountActive } from "../lib/user-ban";
 
@@ -75,64 +69,6 @@ router.get("/auth/oauth/facebook/callback", async (req, res) => {
   } catch (err) {
     req.log?.error({ err }, "facebook oauth callback");
     redirectOAuthLogin(res, origin, "facebook_failed");
-  }
-});
-
-router.get("/auth/oauth/instagram/start", (req, res) => {
-  if (!isInstagramOAuthEnabled()) {
-    res.status(503).json({ error: "INSTAGRAM_OAUTH_DISABLED" });
-    return;
-  }
-
-  try {
-    const origin = appOriginFromRequest(req);
-    const returnTo = sanitizeOAuthReturnTo(
-      typeof req.query.return === "string" ? req.query.return : "/",
-    );
-    const state = createOAuthState({ provider: "instagram", returnTo });
-    res.redirect(302, buildInstagramAuthorizeUrl(state, origin));
-  } catch (err) {
-    req.log?.error({ err }, "instagram oauth start");
-    res.status(500).json({ error: "OAuth start failed" });
-  }
-});
-
-router.get("/auth/oauth/instagram/callback", async (req, res) => {
-  const origin = appOriginFromRequest(req);
-  const stateRaw = typeof req.query.state === "string" ? req.query.state : "";
-  const code = typeof req.query.code === "string" ? req.query.code : "";
-
-  if (req.query.error) {
-    redirectOAuthLogin(res, origin, "instagram_denied");
-    return;
-  }
-
-  const state = verifyOAuthState(stateRaw);
-  if (!state || state.provider !== "instagram") {
-    redirectOAuthLogin(res, origin, "oauth_state");
-    return;
-  }
-
-  if (!code) {
-    redirectOAuthLogin(res, origin, "oauth_code");
-    return;
-  }
-
-  try {
-    const { accessToken } = await exchangeInstagramCode(code, origin);
-    const profile = await fetchInstagramProfile(accessToken);
-    const user = await findOrCreateUserFromInstagram(profile);
-    await assertAccountActive(user, user.phone_e164_digits ?? undefined);
-    setUserSessionCookie(res, user.id);
-    redirectOAuthSuccess(
-      res,
-      origin,
-      state.returnTo,
-      isNewlyRegisteredUser(user) ? { welcome: "1" } : undefined,
-    );
-  } catch (err) {
-    req.log?.error({ err }, "instagram oauth callback");
-    redirectOAuthLogin(res, origin, "instagram_failed");
   }
 });
 
