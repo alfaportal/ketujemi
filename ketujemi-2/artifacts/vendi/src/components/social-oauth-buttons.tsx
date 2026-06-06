@@ -25,7 +25,7 @@ function googleStartUrl(): string {
 }
 
 function facebookStartUrl(): string {
-  return "/auth/facebook/start";
+  return "/api/auth/facebook/start";
 }
 
 function tiktokStartUrl(): string {
