@@ -9,6 +9,7 @@ import {
   ensureShopDirectoryTaxonomy,
   ensureFemijeCategoryImages,
   ensureSportOutdoorTypeCategories,
+  ensureNdertimInstalimeTypeCategories,
   ensureWalletSchema,
   pool,
 } from "@workspace/db";
@@ -69,6 +70,8 @@ async function startServer(): Promise<void> {
     logger.info("Shop directory taxonomy seeded (15 categories + subcategories)");
     await ensureSportOutdoorTypeCategories(pool);
     logger.info("Sport & Outdoor type subcategories verified (sport-type-*)");
+    await ensureNdertimInstalimeTypeCategories(pool);
+    logger.info("Ndërtim & Instalime type subcategories verified (ndertim-type-*)");
     await ensureFemijeCategoryImages(pool);
     logger.info("Fëmijë category thumbnails synced (groups + leaves)");
     await purgeInvalidListingImagesOnStartup();

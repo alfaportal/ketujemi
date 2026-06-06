@@ -25,6 +25,7 @@ const NAME_PREFIX_PHOTOS: [string, string][] = [
   ["Fëmij", "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=800&q=80"],
   ["Sport", "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80"],
   ["Punë", "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&q=80"],
+  ["Ndërtim", "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80"],
   ["Bujqësi", "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=800&q=80"],
   ["Arsim", "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&q=80"],
   ["Muzikë", "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&q=80"],

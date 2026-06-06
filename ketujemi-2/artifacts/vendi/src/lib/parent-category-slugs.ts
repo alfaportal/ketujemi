@@ -14,6 +14,7 @@ export const PARENT_CATEGORY_SLUG_ORDER = [
   "femije",
   "sport-outdoor",
   "pune-sherbime",
+  "ndertim-instalime",
   "bujqesi-blegtori",
   "arsim-kurse",
   "muzike-hobby",

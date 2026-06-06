@@ -73,6 +73,7 @@ export const CATEGORY_SLUG_ALIASES: Record<string, string> = {
   "auto-pjese": "auto-pjese",
   "sport-outdoor": "sport-outdoor",
   "pune-sherbime": "pune-sherbime",
+  "ndertim-instalime": "ndertim-instalime",
   "bujqesi-blegtori": "bujqesi-blegtori",
   "arsim-kurse": "arsim-kurse",
   "muzike-hobby": "muzike-hobby",

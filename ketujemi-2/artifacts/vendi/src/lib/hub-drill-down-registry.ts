@@ -41,6 +41,13 @@ import {
   MUZIKE_HOBBY_HUB_SLUG,
 } from "@/lib/muzike-hobby-search-helpers";
 import {
+  NI_TYPE_DB_SLUG,
+  NI_TYPE_KEYS,
+  NI_TYPE_LABEL_KEY,
+  NI_TYPE_PHOTOS,
+  NDERTIM_INSTALIME_HUB_SLUG,
+} from "@/lib/ndertim-instalime-search-helpers";
+import {
   PS_TYPE_DB_SLUG,
   PS_TYPE_KEYS,
   PS_TYPE_LABEL_KEY,
@@ -120,6 +127,15 @@ export const HUB_DRILL_DOWN_REGISTRY = {
     titleI18nKey: "ps_sec_types",
     hintI18nKey: "hub_drill_pick_type",
   } satisfies HubTypePickerConfig,
+  ndertim: {
+    hubSlug: NDERTIM_INSTALIME_HUB_SLUG,
+    typeKeys: NI_TYPE_KEYS,
+    typeDbSlug: NI_TYPE_DB_SLUG,
+    typePhotos: NI_TYPE_PHOTOS,
+    typeLabelKey: NI_TYPE_LABEL_KEY,
+    titleI18nKey: "ni_sec_types",
+    hintI18nKey: "hub_drill_pick_type",
+  } satisfies HubTypePickerConfig,
   tv: {
     hubSlug: TV_ELEKTRONIKE_HUB_SLUG,
     typeKeys: EP_TYPE_KEYS,
@@ -142,5 +158,6 @@ export const HUB_SLUG_TO_DRILL_DOWN_KEY: Record<string, HubDrillDownRegistryKey>
   [MUZIKE_HOBBY_HUB_SLUG]: "muzike",
   [RROBA_KEPUCE_HUB_SLUG]: "rroba",
   [PUNE_SHERBIME_HUB_SLUG]: "pune",
+  [NDERTIM_INSTALIME_HUB_SLUG]: "ndertim",
   [TV_ELEKTRONIKE_HUB_SLUG]: "tv",
 };

@@ -68,6 +68,7 @@ import { SportOutdoorHeroSlideshow } from "@/components/sport-outdoor-hero-slide
 import { ArsimKurseHeroSlideshow } from "@/components/arsim-kurse-hero-slideshow";
 import { MuzikeHobbyHeroSlideshow } from "@/components/muzike-hobby-hero-slideshow";
 import { BujqesiBlegtoriHeroSlideshow } from "@/components/bujqesi-blegtori-hero-slideshow";
+import { NdertimInstalimeHeroSlideshow } from "@/components/ndertim-instalime-hero-slideshow";
 import { PuneSherbimeHeroSlideshow } from "@/components/pune-sherbime-hero-slideshow";
 import { KafshetHeroSlideshow } from "@/components/kafshet-hero-slideshow";
 import { KerkojTeBlejHeroSlideshow } from "@/components/kerkoj-te-blej-hero-slideshow";
@@ -367,6 +368,7 @@ const MOBILJE_DEKORIM_HUB_SLUG = "mobilje-dekorime";
 const RROBA_KEPUCE_HUB_SLUG = "rroba-kepuce";
 const FEMIJE_HUB_SLUG = "femije";
 const PUNE_SHERBIME_HUB_SLUG = "pune-sherbime";
+const NDERTIM_INSTALIME_HUB_SLUG = "ndertim-instalime";
 const BUJQESI_BLEGTORI_HUB_SLUG = "bujqesi-blegtori";
 const MUZIKE_HOBBY_HUB_SLUG = "muzike-hobby";
 const KAFSHET_HUB_SLUG = "kafshet";
@@ -754,6 +756,7 @@ export default function CategoryPage() {
     isRrobaKepuceHub,
     isFemijeHub,
     isPuneSherbimeHub,
+    isNdertimInstalimeHub,
     isBujqesiBlegtoriHub,
     isMuzikeHobbyHub,
     isKafshetHub,
@@ -869,6 +872,7 @@ export default function CategoryPage() {
     if (isMuzikeHobbyHub) return "muzike";
     if (isRrobaKepuceHub) return "rroba";
     if (isPuneSherbimeHub) return "pune";
+    if (isNdertimInstalimeHub) return "ndertim";
     if (isTvElektronikeHub) return "tv";
     return null;
   }, [
@@ -879,6 +883,7 @@ export default function CategoryPage() {
     isMuzikeHobbyHub,
     isRrobaKepuceHub,
     isPuneSherbimeHub,
+    isNdertimInstalimeHub,
     isTvElektronikeHub,
   ]);
 
@@ -941,6 +946,7 @@ export default function CategoryPage() {
     rrobaKepuce: rrobaKepuceLeafCsv,
     femije: femijeLeafCsv,
     puneSherbime: puneSherbimeLeafCsv,
+    ndertimInstalime: ndertimInstalimeLeafCsv,
     bujqesiBlegtori: bujqesiBlegtoriLeafCsv,
     muzikeHobby: muzikeHobbyLeafCsv,
     kafshet: kafshetLeafCsv,
@@ -964,6 +970,8 @@ export default function CategoryPage() {
     useState<GetListingsParams | null>(null);
   const [femijeListParams, setFemijeListParams] = useState<GetListingsParams | null>(null);
   const [puneSherbimeListParams, setPuneSherbimeListParams] =
+    useState<GetListingsParams | null>(null);
+  const [ndertimInstalimeListParams, setNdertimInstalimeListParams] =
     useState<GetListingsParams | null>(null);
   const [bujqesiBlegtoriListParams, setBujqesiBlegtoriListParams] =
     useState<GetListingsParams | null>(null);
@@ -1008,6 +1016,8 @@ export default function CategoryPage() {
           return rrobaKepuceListParams ?? drillFallback;
         case "pune":
           return puneSherbimeListParams ?? drillFallback;
+        case "ndertim":
+          return ndertimInstalimeListParams ?? drillFallback;
         case "tv":
           return tvElektronikeListParams ?? drillFallback;
         default:
@@ -1046,6 +1056,9 @@ export default function CategoryPage() {
     }
     if (isPuneSherbimeHub && puneSherbimeLeafCsv) {
       return puneSherbimeListParams ?? { category_ids: puneSherbimeLeafCsv, page: 1, limit: 20 };
+    }
+    if (isNdertimInstalimeHub && ndertimInstalimeLeafCsv) {
+      return ndertimInstalimeListParams ?? { category_ids: ndertimInstalimeLeafCsv, page: 1, limit: 20 };
     }
     if (isBujqesiBlegtoriHub && bujqesiBlegtoriLeafCsv) {
       return bujqesiBlegtoriListParams ?? { category_ids: bujqesiBlegtoriLeafCsv, page: 1, limit: 20 };
@@ -1118,6 +1131,9 @@ export default function CategoryPage() {
     isPuneSherbimeHub,
     puneSherbimeLeafCsv,
     puneSherbimeListParams,
+    isNdertimInstalimeHub,
+    ndertimInstalimeLeafCsv,
+    ndertimInstalimeListParams,
     isBujqesiBlegtoriHub,
     bujqesiBlegtoriLeafCsv,
     bujqesiBlegtoriListParams,
@@ -1456,6 +1472,7 @@ export default function CategoryPage() {
           isMuzikeHobbyHub ||
           isBujqesiBlegtoriHub ||
           isPuneSherbimeHub ||
+          isNdertimInstalimeHub ||
           isKafshetHub
             ? "relative h-[220px] md:h-[420px] w-full max-w-[100vw] overflow-hidden isolate"
             : "relative h-[260px] sm:h-[300px] md:h-[400px] w-full max-w-[100vw] overflow-hidden isolate"
@@ -1495,6 +1512,8 @@ export default function CategoryPage() {
           <BujqesiBlegtoriHeroSlideshow />
         ) : isPuneSherbimeHub ? (
           <PuneSherbimeHeroSlideshow />
+        ) : isNdertimInstalimeHub ? (
+          <NdertimInstalimeHeroSlideshow />
         ) : isKafshetHub ? (
           <KafshetHeroSlideshow />
         ) : isKerkojTeBlejHub ? (
@@ -1780,6 +1799,9 @@ export default function CategoryPage() {
                 case "pune":
                   setPuneSherbimeListParams(params);
                   break;
+                case "ndertim":
+                  setNdertimInstalimeListParams(params);
+                  break;
                 case "tv":
                   setTvElektronikeListParams(params);
                   break;
@@ -1934,6 +1956,7 @@ export default function CategoryPage() {
           !isRrobaKepuceHub &&
           !isFemijeHub &&
           !isPuneSherbimeHub &&
+          !isNdertimInstalimeHub &&
           !isBujqesiBlegtoriHub &&
           !isMuzikeHobbyHub &&
           !isKafshetHub &&

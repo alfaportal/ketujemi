@@ -24,6 +24,7 @@ const PARENT_CATEGORIES: {
   { name: "Fëmijë", slug: "femije", icon: "Baby" },
   { name: "Sport & Outdoor", slug: "sport-outdoor", icon: "Dumbbell" },
   { name: "Punë & Shërbime", slug: "pune-sherbime", icon: "Briefcase" },
+  { name: "Ndërtim & Instalime", slug: "ndertim-instalime", icon: "Wrench" },
   { name: "Bujqësi & Blegtori", slug: "bujqesi-blegtori", icon: "Wheat" },
   { name: "Arsim & Kurse", slug: "arsim-kurse", icon: "GraduationCap" },
   { name: "Muzikë & Hobby", slug: "muzike-hobby", icon: "Music" },
@@ -406,6 +407,25 @@ const PUNE_SHERBIME_TYPES: { name: string; slug: string; icon: string }[] = [
   { name: "Zejtari", slug: "pune-type-zejtari", icon: "Briefcase" },
 ];
 
+const NDERTIM_INSTALIME_TYPES: { name: string; slug: string; icon: string }[] = [
+  { name: "Ndërtim & Muraturë", slug: "ndertim-type-ndertim-murature", icon: "Wrench" },
+  { name: "Gipsi & Suvatime", slug: "ndertim-type-gipsi-suvatime", icon: "Wrench" },
+  { name: "Pllakosje & Mozaik", slug: "ndertim-type-pllakosje-mozaik", icon: "Wrench" },
+  { name: "Bojatisje & Dekorim", slug: "ndertim-type-bojatisje-dekorim", icon: "Wrench" },
+  { name: "Riparim çatie & Izolim", slug: "ndertim-type-riparim-catie-izolim", icon: "Wrench" },
+  { name: "Riparim dyshemeje & Parket", slug: "ndertim-type-riparim-dyshemeje-parket", icon: "Wrench" },
+  { name: "Riparim dritaresh & dyerve", slug: "ndertim-type-riparim-dritaresh-dyerve", icon: "Wrench" },
+  { name: "Instalime ngrohje & Klima", slug: "ndertim-type-instalime-ngrohje-klima", icon: "Wrench" },
+  { name: "Instalime kamera & Alarme", slug: "ndertim-type-instalime-kamera-alarme", icon: "Wrench" },
+  { name: "Instalime solar & Panele diellore", slug: "ndertim-type-instalime-solar-panele", icon: "Wrench" },
+  { name: "Lëvizje furniture & Transport", slug: "ndertim-type-levizje-transport", icon: "Wrench" },
+  {
+    name: "Mirëmbajtje & Riparime të përgjithshme",
+    slug: "ndertim-type-mirembajtje-riparime",
+    icon: "Wrench",
+  },
+];
+
 const BUJQESI_BLEGTORI_TYPES: { name: string; slug: string; icon: string }[] = [
   { name: "Bagëti", slug: "bujq-type-bageti", icon: "Wheat" },
   { name: "Farëra & Plehra", slug: "bujq-type-farera-plehra", icon: "Wheat" },
@@ -499,6 +519,7 @@ async function seedRemainingMarketplaceHubSubcategoriesAlways() {
   await seedTypesUnderParentSlug("femije", FEMIJE_TYPES, "Fëmijë");
   await seedTypesUnderParentSlug("sport-outdoor", SPORT_OUTDOOR_TYPES, "Sport & Outdoor");
   await seedTypesUnderParentSlug("pune-sherbime", PUNE_SHERBIME_TYPES, "Punë & Shërbime");
+  await seedTypesUnderParentSlug("ndertim-instalime", NDERTIM_INSTALIME_TYPES, "Ndërtim & Instalime");
   await seedTypesUnderParentSlug("bujqesi-blegtori", BUJQESI_BLEGTORI_TYPES, "Bujqësi & Blegtori");
   await seedArsimKurseSubcategoriesAlways();
   await seedMuzikeHobbySubcategoriesAlways();

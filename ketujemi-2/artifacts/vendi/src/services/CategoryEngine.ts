@@ -13,6 +13,7 @@ import { getKafshetLeafCategoryIds } from "@/lib/kafshet-search-helpers";
 import { getKamioneBrandLeafCategoryIds } from "@/lib/kamione-search-helpers";
 import { getLokaleZyreLeafCategoryIds } from "@/lib/lokale-zyre-search-helpers";
 import { getMobiljeDekorimLeafCategoryIds } from "@/lib/mobilje-dekorim-search-helpers";
+import { getNdertimInstalimeLeafCategoryIds } from "@/lib/ndertim-instalime-search-helpers";
 import { getMotorBrandLeafCategoryIds } from "@/lib/motorr-search-helpers";
 import { getMuzikeHobbyLeafCategoryIds } from "@/lib/muzike-hobby-search-helpers";
 import { getPuneSherbimeLeafCategoryIds } from "@/lib/pune-sherbime-search-helpers";
@@ -47,6 +48,7 @@ export const CATEGORY_HUB_SLUGS = {
   rrobaKepuce: "rroba-kepuce",
   femije: "femije",
   puneSherbime: "pune-sherbime",
+  ndertimInstalime: "ndertim-instalime",
   bujqesiBlegtori: "bujqesi-blegtori",
   muzikeHobby: "muzike-hobby",
   kafshet: "kafshet",
@@ -101,6 +103,7 @@ export type CategoryPageProfile = {
   isRrobaKepuceHub: boolean;
   isFemijeHub: boolean;
   isPuneSherbimeHub: boolean;
+  isNdertimInstalimeHub: boolean;
   isBujqesiBlegtoriHub: boolean;
   isMuzikeHobbyHub: boolean;
   isKafshetHub: boolean;
@@ -131,6 +134,7 @@ export type CategoryFilters = {
     rrobaKepuce: string;
     femije: string;
     puneSherbime: string;
+    ndertimInstalime: string;
     bujqesiBlegtori: string;
     muzikeHobby: string;
     kafshet: string;
@@ -326,6 +330,7 @@ export class CategoryEngine {
     const isRrobaKepuceHub = hub(CATEGORY_HUB_SLUGS.rrobaKepuce);
     const isFemijeHub = hub(CATEGORY_HUB_SLUGS.femije);
     const isPuneSherbimeHub = hub(CATEGORY_HUB_SLUGS.puneSherbime);
+    const isNdertimInstalimeHub = hub(CATEGORY_HUB_SLUGS.ndertimInstalime);
     const isBujqesiBlegtoriHub = hub(CATEGORY_HUB_SLUGS.bujqesiBlegtori);
     const isMuzikeHobbyHub = hub(CATEGORY_HUB_SLUGS.muzikeHobby);
     const isKafshetHub = hub(CATEGORY_HUB_SLUGS.kafshet);
@@ -351,6 +356,7 @@ export class CategoryEngine {
       isRrobaKepuceHub ||
       isFemijeHub ||
       isPuneSherbimeHub ||
+      isNdertimInstalimeHub ||
       isBujqesiBlegtoriHub ||
       isMuzikeHobbyHub ||
       isKafshetHub ||
@@ -376,6 +382,7 @@ export class CategoryEngine {
       isRrobaKepuceHub,
       isFemijeHub,
       isPuneSherbimeHub,
+      isNdertimInstalimeHub,
       isBujqesiBlegtoriHub,
       isMuzikeHobbyHub,
       isKafshetHub,
@@ -437,6 +444,9 @@ export class CategoryEngine {
       puneSherbime: page.isPuneSherbimeHub
         ? csv(getPuneSherbimeLeafCategoryIds(cats as any, categoryId))
         : "",
+      ndertimInstalime: page.isNdertimInstalimeHub
+        ? csv(getNdertimInstalimeLeafCategoryIds(cats as any, categoryId))
+        : "",
       bujqesiBlegtori: page.isBujqesiBlegtoriHub
         ? csv(getBujqesiBlegtoriLeafCategoryIds(cats as any, categoryId))
         : "",
@@ -477,7 +487,9 @@ export class CategoryEngine {
                             ? "femije-results"
                             : page.isPuneSherbimeHub
                               ? "pune-sherbime-results"
-                              : page.isBujqesiBlegtoriHub
+                              : page.isNdertimInstalimeHub
+                                ? "ndertim-instalime-results"
+                                : page.isBujqesiBlegtoriHub
                                 ? "bujqesi-blegtori-results"
                                 : page.isMuzikeHobbyHub
                                   ? "muzike-hobby-results"
