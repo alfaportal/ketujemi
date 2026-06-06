@@ -26,6 +26,7 @@ import { SiteHeader } from "@/components/site-header";
 import { ShopRatingBadge } from "@/components/shop-rating-badge";
 import { ShopRatingsPanel } from "@/components/shop-ratings-panel";
 import ListingCard from "@/components/listing-card";
+import { ListingShareButtons, listingPublicUrl } from "@/components/listing-share-buttons";
 import { BRAND_BLUE, BRAND_ORANGE } from "@/lib/brand-colors";
 import { applyPageMeta, truncateMetaDescription } from "@/lib/page-meta";
 import { translateCategory } from "@/lib/category-translations";
@@ -308,7 +309,12 @@ export default function ShopDetailPage() {
                 <div key={l.id} className="space-y-2">
                   <ListingCard listing={l} />
                   {isOwner ? (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <ListingShareButtons
+                        title={l.title}
+                        url={listingPublicUrl(l.id)}
+                        variant="compact"
+                      />
                       <Button
                         type="button"
                         variant="outline"

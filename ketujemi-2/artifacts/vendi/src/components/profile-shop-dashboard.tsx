@@ -12,6 +12,7 @@ import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 import ListingCard from "@/components/listing-card";
+import { ListingShareButtons, listingPublicUrl } from "@/components/listing-share-buttons";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
 
@@ -247,7 +248,14 @@ export function ProfileShopDashboard() {
             ) : (
               <div className="grid grid-cols-1 gap-3">
                 {shopListings.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} />
+                  <div key={listing.id} className="space-y-2">
+                    <ListingCard listing={listing} />
+                    <ListingShareButtons
+                      title={listing.title}
+                      url={listingPublicUrl(listing.id)}
+                      variant="compact"
+                    />
+                  </div>
                 ))}
               </div>
             )}

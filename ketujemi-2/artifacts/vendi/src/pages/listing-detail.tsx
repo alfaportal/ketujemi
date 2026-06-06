@@ -556,8 +556,6 @@ export default function ListingDetail() {
                 </div>
               </div>
 
-              <ListingShareButtons title={listing.title} url={listingShareUrl} />
-
               <div className="text-3xl font-black text-blue-600 mb-4" data-testid="text-listing-price">
                 {isAgreement ? (
                   <span className="text-2xl text-gray-700">{t.agreement}</span>
@@ -565,6 +563,8 @@ export default function ListingDetail() {
                   <>{listing.price.toLocaleString()} <span className="text-xl">EUR</span></>
                 )}
               </div>
+
+              <ListingShareButtons title={listing.title} url={listingShareUrl} />
 
               <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 text-sm bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full font-medium">
