@@ -564,8 +564,6 @@ export default function ListingDetail() {
                 )}
               </div>
 
-              <ListingShareButtons title={listing.title} url={listingShareUrl} />
-
               <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 text-sm bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full font-medium">
                   <MapPin size={11} />
@@ -612,6 +610,8 @@ export default function ListingDetail() {
                 </p>
               </div>
             )}
+
+            <ListingShareButtons url={listingShareUrl} />
           </div>
 
           {/* ── Right: seller sidebar ── */}

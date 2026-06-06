@@ -1,15 +1,18 @@
-import { useCallback, useMemo } from "react";
-import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
-import { Link2 } from "lucide-react";
+import { useCallback } from "react";
+import { FaFacebook } from "react-icons/fa";
+import { Link2, Share2, Smartphone } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 type Props = {
-  title: string;
   url: string;
   variant?: "full" | "compact";
+  /** @deprecated unused — kept for call-site compatibility */
+  title?: string;
 };
+
+const GREEN_TOAST_CLASS = "border-green-200 bg-green-50 text-green-900";
 
 export function listingPublicUrl(listingId: number): string {
   if (typeof window !== "undefined") {
@@ -18,15 +21,10 @@ export function listingPublicUrl(listingId: number): string {
   return `https://ketujemi.com/listings/${listingId}`;
 }
 
-export function ListingShareButtons({ title, url, variant = "full" }: Props) {
+export function ListingShareButtons({ url, variant = "full" }: Props) {
   const { t } = useMarket();
   const { toast } = useToast();
   const tx = t as Record<string, string | undefined>;
-
-  const facebookHref = useMemo(
-    () => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-    [url],
-  );
 
   const copyToClipboard = useCallback(async () => {
     try {
@@ -37,133 +35,128 @@ export function ListingShareButtons({ title, url, variant = "full" }: Props) {
     }
   }, [url]);
 
+  const onFacebookShare = useCallback(() => {
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+  }, [url]);
+
   const onCopyLink = useCallback(() => {
     void copyToClipboard().then((ok) => {
       if (ok) {
-        toast({ title: tx.share_copied ?? "Linku u kopjua! ✓" });
+        toast({
+          title: tx.share_copied
+            ?? "✓ Linku u kopjua! Ngarkoje në Instagram ose TikTok për më shumë klientë 🚀",
+          className: GREEN_TOAST_CLASS,
+        });
       }
     });
   }, [copyToClipboard, toast, tx.share_copied]);
 
-  const onInstagramShare = useCallback(() => {
-    void copyToClipboard();
-    window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
-    toast({
-      title: tx.share_toastInstagram
-        ?? "Kopjo linkun dhe ngarkoje te historia ose postimi yt në Instagram 📲",
+  const onSocialAppsShare = useCallback(() => {
+    void copyToClipboard().then((ok) => {
+      if (ok) {
+        toast({
+          title: tx.share_toastSocial
+            ?? "✓ Linku u kopjua! Hape Instagram ose TikTok dhe ngarkoje te historia ose postimi yt 📲",
+        });
+      }
     });
-  }, [copyToClipboard, toast, tx.share_toastInstagram]);
-
-  const onTiktokShare = useCallback(() => {
-    void copyToClipboard();
-    window.open("https://www.tiktok.com/", "_blank", "noopener,noreferrer");
-    toast({
-      title: tx.share_toastTiktok
-        ?? "Kopjo linkun dhe ngarkoje te historia ose postimi yt në TikTok 📲",
-    });
-  }, [copyToClipboard, toast, tx.share_toastTiktok]);
+  }, [copyToClipboard, toast, tx.share_toastSocial]);
 
   if (!url) return null;
 
-  const facebookLabel = tx.share_facebook ?? "📘 Shpërndaje në Facebook";
-  const instagramLabel = tx.share_instagram ?? "📸 Shpërndaje në Instagram";
-  const tiktokLabel = tx.share_tiktok ?? "🎵 Shpërndaje në TikTok";
+  const facebookLabel = tx.share_facebook ?? "📘 Facebook";
   const copyLinkLabel = tx.share_copyLink ?? "🔗 Kopjo Linkun";
+  const socialAppsLabel = tx.share_socialApps ?? "📲 Instagram / TikTok";
+  const compactLabel = tx.share_compactLabel ?? "Shpërndaje";
+
+  const btnClass =
+    "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors touch-manipulation";
 
   if (variant === "compact") {
-    const compactBtn =
-      "inline-flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-semibold transition-colors touch-manipulation";
+    const iconBtn =
+      "inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors touch-manipulation";
     return (
       <div className="flex flex-wrap items-center gap-1.5" data-testid="listing-share-buttons-compact">
-        <a
-          href={facebookHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn(compactBtn, "border-[#1877F2]/30 bg-[#1877F2]/5 text-[#1877F2] hover:bg-[#1877F2]/10")}
+        <span className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500">
+          <Share2 className="h-3.5 w-3.5" aria-hidden />
+          {compactLabel}
+        </span>
+        <button
+          type="button"
+          onClick={onFacebookShare}
+          className={cn(iconBtn, "border-[#1877F2]/30 bg-[#1877F2]/5 text-[#1877F2] hover:bg-[#1877F2]/10")}
           title={facebookLabel}
           aria-label={facebookLabel}
           data-testid="share-facebook"
         >
-          <FaFacebook className="h-4 w-4" aria-hidden />
-        </a>
-        <button
-          type="button"
-          onClick={onInstagramShare}
-          className={cn(
-            compactBtn,
-            "border-pink-300/50 bg-gradient-to-r from-[#fdf497]/20 via-[#fd5949]/10 to-[#d6249f]/10 text-[#C13584]",
-          )}
-          title={instagramLabel}
-          aria-label={instagramLabel}
-          data-testid="share-instagram"
-        >
-          <FaInstagram className="h-4 w-4" aria-hidden />
-        </button>
-        <button
-          type="button"
-          onClick={onTiktokShare}
-          className={cn(compactBtn, "border-gray-800/20 bg-gray-900/5 text-gray-900 hover:bg-gray-900/10")}
-          title={tiktokLabel}
-          aria-label={tiktokLabel}
-          data-testid="share-tiktok"
-        >
-          <FaTiktok className="h-4 w-4" aria-hidden />
+          <FaFacebook className="h-3.5 w-3.5" aria-hidden />
         </button>
         <button
           type="button"
           onClick={onCopyLink}
-          className={cn(compactBtn, "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100")}
+          className={cn(iconBtn, "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100")}
           title={copyLinkLabel}
           aria-label={copyLinkLabel}
           data-testid="share-copy-link"
         >
-          <Link2 className="h-4 w-4" aria-hidden />
+          <Link2 className="h-3.5 w-3.5" aria-hidden />
+        </button>
+        <button
+          type="button"
+          onClick={onSocialAppsShare}
+          className={cn(iconBtn, "border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100")}
+          title={socialAppsLabel}
+          aria-label={socialAppsLabel}
+          data-testid="share-social-apps"
+        >
+          <Smartphone className="h-3.5 w-3.5" aria-hidden />
         </button>
       </div>
     );
   }
 
-  const fullBtn =
-    "inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors";
+  const sectionTitle = tx.share_sectionTitle ?? "Shpërndaje këtë shpallje";
+  const motivation =
+    tx.share_motivation
+    ?? "💡 Shpërndaje shpalljen tënde — çdo klik sjell klientë të rinj te dyqani yt falas!";
 
   return (
-    <div className="flex flex-wrap items-center gap-2 pt-1" data-testid="listing-share-buttons">
-      <a
-        href={facebookHref}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={cn(fullBtn, "border-[#1877F2]/30 bg-[#1877F2]/5 text-[#1877F2] hover:bg-[#1877F2]/10")}
-        data-testid="share-facebook"
-      >
-        {facebookLabel}
-      </a>
-      <button
-        type="button"
-        onClick={onInstagramShare}
-        className={cn(
-          fullBtn,
-          "border-pink-300/50 bg-gradient-to-r from-[#fdf497]/20 via-[#fd5949]/10 to-[#d6249f]/10 text-[#C13584] hover:from-[#fdf497]/30 hover:via-[#fd5949]/15 hover:to-[#d6249f]/15",
-        )}
-        data-testid="share-instagram"
-      >
-        {instagramLabel}
-      </button>
-      <button
-        type="button"
-        onClick={onTiktokShare}
-        className={cn(fullBtn, "border-gray-800/20 bg-gray-900/5 text-gray-900 hover:bg-gray-900/10")}
-        data-testid="share-tiktok"
-      >
-        {tiktokLabel}
-      </button>
-      <button
-        type="button"
-        onClick={onCopyLink}
-        className={cn(fullBtn, "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100")}
-        data-testid="share-copy-link"
-      >
-        {copyLinkLabel}
-      </button>
-    </div>
+    <section
+      className="bg-white rounded-2xl border border-gray-100 p-5"
+      data-testid="listing-share-section"
+    >
+      <h2 className="font-bold text-gray-900 mb-2">{sectionTitle}</h2>
+      <p className="text-sm text-gray-600 mb-3 leading-relaxed">{motivation}</p>
+      <div className="flex flex-wrap items-center gap-2" data-testid="listing-share-buttons">
+        <button
+          type="button"
+          onClick={onFacebookShare}
+          className={cn(btnClass, "border-[#1877F2]/30 bg-[#1877F2]/5 text-[#1877F2] hover:bg-[#1877F2]/10")}
+          data-testid="share-facebook"
+        >
+          {facebookLabel}
+        </button>
+        <button
+          type="button"
+          onClick={onCopyLink}
+          className={cn(btnClass, "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100")}
+          data-testid="share-copy-link"
+        >
+          {copyLinkLabel}
+        </button>
+        <button
+          type="button"
+          onClick={onSocialAppsShare}
+          className={cn(btnClass, "border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100")}
+          data-testid="share-social-apps"
+        >
+          {socialAppsLabel}
+        </button>
+      </div>
+    </section>
   );
 }

@@ -310,11 +310,7 @@ export default function ShopDetailPage() {
                   <ListingCard listing={l} />
                   {isOwner ? (
                     <div className="flex flex-wrap items-center gap-2">
-                      <ListingShareButtons
-                        title={l.title}
-                        url={listingPublicUrl(l.id)}
-                        variant="compact"
-                      />
+                      <ListingShareButtons url={listingPublicUrl(l.id)} variant="compact" />
                       <Button
                         type="button"
                         variant="outline"
