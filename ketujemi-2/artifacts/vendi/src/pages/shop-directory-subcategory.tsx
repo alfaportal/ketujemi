@@ -20,6 +20,8 @@ import {
 } from "@/lib/shop-directory-i18n";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
+import { SHOP_COUNTRY_CODES, useShopFormCopy } from "@/lib/shop-application-i18n";
+import { citiesForShopCountry } from "@/lib/shop-application-locations";
 
 export default function ShopDirectorySubcategoryPage() {
   const [, params] = useRoute("/dyqanet/:categorySlug/:subcategorySlug");
@@ -28,12 +30,17 @@ export default function ShopDirectorySubcategoryPage() {
   const cat = directoryCategoryBySlug(categorySlug);
   const sub = cat ? directorySubcategoryBySlug(cat.slug, subcategorySlug) : null;
   const d = useShopDirectoryCopy();
+  const formCopy = useShopFormCopy();
   const { uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
 
   const [loading, setLoading] = useState(true);
   const [shops, setShops] = useState<ShopDirectoryListItem[]>([]);
   const [query, setQuery] = useState("");
+  const [city, setCity] = useState("");
+  const [country, setCountry] = useState("");
+
+  const cityOptions = country ? citiesForShopCountry(country) : [];
 
   const categoryName = cat ? translateDirectoryCategory(cat, locale) : "";
   const subcategoryName = sub ? translateDirectorySubcategory(sub, locale) : "";
@@ -48,12 +55,14 @@ export default function ShopDirectorySubcategoryPage() {
     if (!categorySlug || !subcategorySlug) return;
     setLoading(true);
     const qs = new URLSearchParams({ category: categorySlug, subcategory: subcategorySlug });
+    if (city) qs.set("city", city);
+    if (country) qs.set("country", country);
     void fetchWithTimeout(`/api/shops/directory?${qs}`)
       .then((r) => r.json() as Promise<{ shops: ShopDirectoryListItem[] }>)
       .then((data) => setShops(data.shops ?? []))
       .catch(() => setShops([]))
       .finally(() => setLoading(false));
-  }, [categorySlug, subcategorySlug]);
+  }, [categorySlug, subcategorySlug, city, country]);
 
   const filteredShops = useMemo(
     () => filterShopsByQuery(shops, query, locale),
@@ -88,6 +97,50 @@ export default function ShopDirectorySubcategoryPage() {
         <StaticPageBackLink />
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        <div className="space-y-3">
+          <ShopDirectorySearchBar
+            value={query}
+            onChange={setQuery}
+            placeholder={d.searchPlaceholder}
+            searchLabel={d.searchBtn}
+            onSubmit={() => {}}
+          />
+          <div className="flex flex-col sm:flex-row gap-2">
+            <select
+              value={country}
+              onChange={(e) => {
+                setCountry(e.target.value);
+                setCity("");
+              }}
+              className="min-h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm flex-1"
+            >
+              <option value="">
+                {d.filterCountry}: {d.filterAll}
+              </option>
+              {SHOP_COUNTRY_CODES.map((code) => (
+                <option key={code} value={code}>
+                  {formCopy.countryLabels[code]}
+                </option>
+              ))}
+            </select>
+            <select
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              disabled={!country}
+              className="min-h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm flex-1 disabled:opacity-50"
+            >
+              <option value="">
+                {d.filterCity}: {d.filterAll}
+              </option>
+              {cityOptions.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         <div className="flex items-center gap-3 sm:gap-4">
           {subImageUrl ? (
             <img
@@ -112,13 +165,6 @@ export default function ShopDirectorySubcategoryPage() {
             </p>
           </div>
         </div>
-
-        <ShopDirectorySearchBar
-          value={query}
-          onChange={setQuery}
-          placeholder={d.searchPlaceholder}
-          searchLabel={d.searchBtn}
-        />
 
         {loading ? (
           <div className="flex justify-center py-16">
