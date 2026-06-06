@@ -38,14 +38,17 @@ export default function ShopDirectoryPage() {
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
 
+  const categoryCount = SHOP_DIRECTORY_CATEGORIES.length;
+  const seoDescription = d.seoDescription.replace("{count}", String(categoryCount));
+
   useEffect(() => {
     applyPageMeta({
       title: d.seoTitle,
-      description: d.seoDescription,
+      description: seoDescription,
       ogTitle: d.seoTitle,
-      ogDescription: d.seoDescription,
+      ogDescription: seoDescription,
     });
-  }, [d.seoTitle, d.seoDescription]);
+  }, [d.seoTitle, seoDescription]);
 
   useEffect(() => {
     setLoading(true);

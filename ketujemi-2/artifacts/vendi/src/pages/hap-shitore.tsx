@@ -45,6 +45,18 @@ export default function HapShitorePage() {
           <p className="mt-4 text-base sm:text-lg text-blue-50 font-medium max-w-2xl mx-auto leading-relaxed">
             {c.heroSubtitle}
           </p>
+          <button
+            type="button"
+            onClick={handleCta}
+            className={cn(
+              "mt-8 inline-flex items-center justify-center min-h-[3.75rem] px-10 py-4 rounded-2xl",
+              "text-lg sm:text-xl font-black text-white shadow-xl ring-4 ring-white/25",
+              "hover:opacity-95 active:scale-[0.98] transition-all",
+            )}
+            style={{ background: `linear-gradient(90deg, ${BRAND_ORANGE}, ${BRAND_BLUE})` }}
+          >
+            {c.ctaButton}
+          </button>
         </div>
       </section>
 
@@ -141,8 +153,8 @@ export default function HapShitorePage() {
             type="button"
             onClick={handleCta}
             className={cn(
-              "inline-flex items-center justify-center min-h-14 px-8 py-4 rounded-2xl",
-              "text-base sm:text-lg font-black text-white shadow-lg",
+              "inline-flex items-center justify-center min-h-16 px-10 py-5 rounded-2xl",
+              "text-lg sm:text-xl font-black text-white shadow-xl ring-2 ring-blue-200",
               "hover:opacity-95 active:scale-[0.98] transition-all",
             )}
             style={{ background: `linear-gradient(90deg, ${BRAND_BLUE}, ${BRAND_ORANGE})` }}

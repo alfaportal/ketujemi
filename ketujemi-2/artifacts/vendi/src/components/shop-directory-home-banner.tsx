@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { BRAND_BLUE, BRAND_ORANGE } from "@/lib/brand-colors";
 import { useShopDirectoryCopy } from "@/lib/shop-directory-i18n";
+import { SHOP_DIRECTORY_CATEGORIES } from "@/lib/shop-directory-taxonomy";
 import { cn } from "@/lib/utils";
+
+function withCategoryCount(text: string, count: number): string {
+  return text.replace("{count}", String(count));
+}
 
 const BANNER_SLIDES = [
   {
@@ -35,6 +40,7 @@ const SLIDE_INTERVAL_MS = 3000;
 
 export function ShopDirectoryHomeBanner() {
   const d = useShopDirectoryCopy();
+  const categoryCount = SHOP_DIRECTORY_CATEGORIES.length;
   const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
@@ -72,7 +78,7 @@ export function ShopDirectoryHomeBanner() {
               {d.homeBannerTitle}
             </h2>
             <p className="mt-2 sm:mt-3 text-sm sm:text-base text-white/95 leading-relaxed drop-shadow-sm">
-              {d.homeBannerSubtitle}
+              {withCategoryCount(d.homeBannerSubtitle, categoryCount)}
             </p>
             <Link
               href="/dyqanet"

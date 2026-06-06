@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { fetchWithTimeout, getFetchErrorMessage } from "@/lib/fetch-with-timeout";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -66,6 +66,7 @@ import {
 } from "@/lib/listing-post-preflight";
 import { engagementCopyForUiLang } from "@/lib/engagement-i18n";
 import { queueFirstListingCelebration } from "@/components/engagement-effects";
+import { staticPagePaths } from "@/lib/static-page-paths";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 /** Avoid Zod "Expected number, received nan" when optional/hidden numeric fields are empty. */
@@ -192,6 +193,7 @@ export default function NewListing() {
   const [isVideoUploading, setIsVideoUploading] = useState(false);
   const videoUploadRef = useRef<HTMLInputElement>(null);
   const videoUpload = useListingVideoUpload();
+  const [hasShop, setHasShop] = useState<boolean | null>(null);
   const [dhurataPledgeOk, setDhurataPledgeOk] = useState(() => {
     try {
       return sessionStorage.getItem(DHURATA_PLEDGE_STORAGE_KEY) === "1";
@@ -208,6 +210,17 @@ export default function NewListing() {
   const furnishedOpts = formOptionsForUiLang("furnished", uiLang);
 
   const parentCats = (allCategories ?? []).filter((c: any) => !c.parent_id);
+
+  useEffect(() => {
+    if (!user) return;
+    void fetchWithTimeout("/api/shops/me", { credentials: "include" })
+      .then(async (res) => {
+        if (!res.ok) throw new Error("fail");
+        return res.json() as Promise<{ shop: unknown }>;
+      })
+      .then((data) => setHasShop(!!data.shop))
+      .catch(() => setHasShop(null));
+  }, [user]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema as never),
@@ -649,6 +662,17 @@ export default function NewListing() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
+        {hasShop === false && tx.shopSuggestBanner ? (
+          <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-gray-800 leading-relaxed flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span>{tx.shopSuggestBanner}</span>
+            <Link
+              href={staticPagePaths(uiLang).openShop}
+              className="inline-flex font-bold text-blue-700 hover:text-blue-900 underline-offset-2 hover:underline whitespace-nowrap"
+            >
+              {tx.shopSuggestBannerBtn ?? "Hap Dyqanin →"}
+            </Link>
+          </div>
+        ) : null}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)} className="space-y-4">
 
