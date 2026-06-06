@@ -151,7 +151,7 @@ export default function ShopDirectoryPage() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
             {SHOP_DIRECTORY_CATEGORIES.map((cat) => {
               const count = categoryCounts[cat.slug] ?? 0;
               const imageUrl = shopDirectoryCategoryImageUrl(cat.slug);
@@ -161,7 +161,7 @@ export default function ShopDirectoryPage() {
                   href={`/dyqanet/${cat.slug}`}
                   className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex flex-col"
                 >
-                  <div className="aspect-[4/3] relative bg-gray-100">
+                  <div className="relative w-full aspect-[4/3] bg-gray-100">
                     {imageUrl ? (
                       <img
                         src={imageUrl}
@@ -175,14 +175,14 @@ export default function ShopDirectoryPage() {
                       </span>
                     )}
                   </div>
-                  <div className="p-3 sm:p-4 flex flex-col gap-1 flex-1 text-center">
+                  <div className="p-4 sm:p-5 flex flex-col gap-1.5 flex-1 text-center">
                     <p className="font-bold text-gray-900 text-sm sm:text-base leading-snug">
                       <span className="mr-1" aria-hidden>
                         {cat.emoji}
                       </span>
                       {translateDirectoryCategory(cat, locale)}
                     </p>
-                    <p className="text-xs sm:text-sm font-bold text-orange-500 mt-auto">
+                    <p className="text-xs sm:text-sm font-bold text-orange-500 mt-auto pt-1">
                       {count} {d.shopsCount}
                     </p>
                   </div>

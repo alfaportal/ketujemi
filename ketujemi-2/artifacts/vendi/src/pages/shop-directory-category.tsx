@@ -116,14 +116,14 @@ export default function ShopDirectoryCategoryPage() {
           searchLabel={d.searchBtn}
         />
 
-        <CategoryPhotoPickerGrid>
+        <CategoryPhotoPickerGrid spacious>
           <CategoryPhotoPickerCard
             selected={!subFilter}
             onClick={() => setSubFilter("")}
             imageSrc={categoryImageUrl ?? ""}
             fallbackImageSrc={categoryImageUrl}
             label={d.allSubcategories}
-            size="compact"
+            size="directory"
           />
           {cat.subcategories.map((sub) => (
             <CategoryPhotoPickerCard
@@ -133,7 +133,7 @@ export default function ShopDirectoryCategoryPage() {
               imageSrc={shopDirectorySubcategoryImageUrl(cat.slug, sub.slug) ?? categoryImageUrl ?? ""}
               fallbackImageSrc={categoryImageUrl}
               label={translateDirectorySubcategory(sub, locale)}
-              size="compact"
+              size="directory"
             />
           ))}
         </CategoryPhotoPickerGrid>
