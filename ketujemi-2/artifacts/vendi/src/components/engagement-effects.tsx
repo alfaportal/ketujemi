@@ -23,7 +23,7 @@ const FIRST_LISTING_KEY = "kj_engagement_first_listing";
 
 /** Global welcome toast, first-listing confetti modal, FCM registration. */
 export function EngagementEffects() {
-  const { user } = useAuth();
+  const { user, refresh } = useAuth();
   const { uiLang } = useMarket();
   const { toast } = useToast();
   const [loc] = useLocation();
@@ -34,6 +34,17 @@ export function EngagementEffects() {
     if (!user) return;
     void registerFcmTokenIfConfigured();
   }, [user?.id]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("verified") !== "1") return;
+    void refresh().finally(() => {
+      params.delete("verified");
+      const next = `${window.location.pathname}${params.toString() ? `?${params}` : ""}`;
+      window.history.replaceState({}, "", next);
+    });
+  }, [refresh]);
 
   useEffect(() => {
     if (!user || typeof window === "undefined") return;

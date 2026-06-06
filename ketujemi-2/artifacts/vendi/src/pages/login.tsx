@@ -522,7 +522,7 @@ export default function LoginPage() {
 
   const oauthButtons = (
     <SocialOAuthButtons
-      returnTo={returnTo}
+      returnTo="/"
       googleEnabled={googleOAuthEnabled}
       facebookEnabled={facebookOAuthEnabled}
       tiktokEnabled={tiktokOAuthEnabled}

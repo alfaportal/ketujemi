@@ -7,21 +7,12 @@ import {
   isFacebookOAuthEnabled,
 } from "../lib/facebook-oauth";
 import { findOrCreateUserFromFacebook } from "../lib/oauth-user";
-import { createOAuthState, verifyOAuthState } from "../lib/oauth-state";
-import { setUserSessionCookie } from "../lib/user-session";
+import { createOAuthState, sanitizeOAuthReturnTo, verifyOAuthState } from "../lib/oauth-state";
+import { isNewlyRegisteredUser, setUserSessionCookie } from "../lib/user-session";
 import { assertAccountActive } from "../lib/user-ban";
+import { redirectOAuthLogin, redirectOAuthSuccess } from "../lib/oauth-redirect";
 
 const router = Router();
-
-function redirectLogin(res: import("express").Response, origin: string, error: string): void {
-  const url = `${origin.replace(/\/$/, "")}/login?error=${encodeURIComponent(error)}`;
-  res.redirect(302, url);
-}
-
-function redirectHome(res: import("express").Response, origin: string): void {
-  const url = `${origin.replace(/\/$/, "")}/?verified=1`;
-  res.redirect(302, url);
-}
 
 router.get("/auth/facebook/start", (req, res) => {
   if (!isFacebookOAuthEnabled()) {
@@ -31,7 +22,10 @@ router.get("/auth/facebook/start", (req, res) => {
 
   try {
     const origin = appOriginFromRequest(req);
-    const state = createOAuthState({ provider: "facebook", returnTo: "/" });
+    const returnTo = sanitizeOAuthReturnTo(
+      typeof req.query.return === "string" ? req.query.return : "/",
+    );
+    const state = createOAuthState({ provider: "facebook", returnTo });
     res.redirect(302, buildFacebookAuthorizeUrl(state, origin, "public"));
   } catch (err) {
     req.log?.error({ err }, "facebook oauth start");
@@ -45,18 +39,18 @@ router.get("/auth/facebook/callback", async (req, res) => {
   const code = typeof req.query.code === "string" ? req.query.code : "";
 
   if (req.query.error) {
-    redirectLogin(res, origin, "facebook_denied");
+    redirectOAuthLogin(res, origin, "facebook_denied");
     return;
   }
 
   const state = verifyOAuthState(stateRaw);
   if (!state || state.provider !== "facebook") {
-    redirectLogin(res, origin, "oauth_state");
+    redirectOAuthLogin(res, origin, "oauth_state");
     return;
   }
 
   if (!code) {
-    redirectLogin(res, origin, "oauth_code");
+    redirectOAuthLogin(res, origin, "oauth_code");
     return;
   }
 
@@ -66,10 +60,15 @@ router.get("/auth/facebook/callback", async (req, res) => {
     const user = await findOrCreateUserFromFacebook(profile);
     await assertAccountActive(user, user.phone_e164_digits ?? undefined);
     setUserSessionCookie(res, user.id);
-    redirectHome(res, origin);
+    redirectOAuthSuccess(
+      res,
+      origin,
+      state.returnTo,
+      isNewlyRegisteredUser(user) ? { welcome: "1" } : undefined,
+    );
   } catch (err) {
     req.log?.error({ err }, "facebook oauth callback");
-    redirectLogin(res, origin, "facebook_failed");
+    redirectOAuthLogin(res, origin, "facebook_failed");
   }
 });
 

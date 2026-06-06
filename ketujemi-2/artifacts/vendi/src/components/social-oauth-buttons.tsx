@@ -24,8 +24,9 @@ function googleStartUrl(): string {
   return "/auth/google/start";
 }
 
-function facebookStartUrl(): string {
-  return "/api/auth/facebook/start";
+function facebookStartUrl(returnTo: string): string {
+  const params = new URLSearchParams({ return: returnTo });
+  return `/api/auth/facebook/start?${params}`;
 }
 
 function tiktokStartUrl(): string {
@@ -58,7 +59,7 @@ export function SocialOAuthButtons({
 
       {facebookEnabled ? (
         <a
-          href={facebookStartUrl()}
+          href={facebookStartUrl(returnTo)}
           className="flex w-full min-h-12 items-center justify-center gap-2 rounded-md border border-[#1877F2]/30 bg-[#1877F2]/5 px-4 text-sm font-semibold text-[#1877F2] hover:bg-[#1877F2]/10 transition-colors"
         >
           <FaFacebook className="h-5 w-5 shrink-0" aria-hidden />
