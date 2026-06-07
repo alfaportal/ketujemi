@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { runInstagramFollowersSync } from "./social-followers-sync.js";
+import { runSocialFollowersDailySync } from "./social-followers-sync.js";
 import { logger } from "./logger.js";
 
 /** Daily at 06:00 Europe/Belgrade */
@@ -22,7 +22,7 @@ async function tick(): Promise<void> {
 
   runInFlight = true;
   try {
-    const result = await runInstagramFollowersSync();
+    const result = await runSocialFollowersDailySync();
     logger.info(result, "social followers daily sync finished");
   } catch (err) {
     logger.error({ err }, "social followers daily sync failed");
@@ -37,15 +37,19 @@ export function startSocialFollowersCron(): void {
     return;
   }
 
+  const pageId =
+    process.env.FB_PAGE_ID?.trim() ||
+    process.env.PAGE_ID?.trim() ||
+    process.env.FACEBOOK_PAGE_ID?.trim();
   const igUserId =
     process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID?.trim() ||
     process.env.IG_BUSINESS_ACCOUNT_ID?.trim();
   const token =
     process.env.FB_PAGE_ACCESS_TOKEN?.trim() || process.env.PAGE_ACCESS_TOKEN?.trim();
 
-  if (!igUserId || !token) {
+  if (!token || (!pageId && !igUserId)) {
     logger.warn(
-      "social followers cron skipped: set INSTAGRAM_BUSINESS_ACCOUNT_ID and FB_PAGE_ACCESS_TOKEN",
+      "social followers cron skipped: set FB_PAGE_ID or INSTAGRAM_BUSINESS_ACCOUNT_ID and FB_PAGE_ACCESS_TOKEN",
     );
     return;
   }
@@ -59,6 +63,6 @@ export function startSocialFollowersCron(): void {
 
   logger.info(
     { schedule: CRON_SCHEDULE, timezone, time: "06:00" },
-    "social followers cron started (Instagram daily sync)",
+    "social followers cron started (Instagram + Facebook daily sync)",
   );
 }

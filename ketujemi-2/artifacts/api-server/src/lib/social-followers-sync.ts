@@ -6,9 +6,20 @@ import {
   parseInstagramFollowersExport,
   type FetchedFollower,
 } from "./instagram-followers-fetch.js";
+import { fetchFacebookFollowersFromGraph } from "./facebook-followers-fetch.js";
 import { logger } from "./logger.js";
 
 const PLATFORMS: SocialFollowerPlatform[] = ["instagram", "facebook", "tiktok"];
+
+function startOfCurrentMonth(): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+}
+
+function csvEscape(value: string): string {
+  if (/[",\n\r]/.test(value)) return `"${value.replace(/"/g, '""')}"`;
+  return value;
+}
 
 function apiCountSettingKey(platform: SocialFollowerPlatform): string {
   return `social_followers_api_count_${platform}`;
@@ -118,56 +129,109 @@ export async function syncFollowersForPlatform(
   return { added, reactivated, unfollowed, skipped: false };
 }
 
-export async function runInstagramFollowersSync(): Promise<{
+type PlatformSyncResult = {
   ok: boolean;
+  platform: SocialFollowerPlatform;
   listSynced: boolean;
   totalCount: number | null;
   added: number;
   reactivated: number;
   unfollowed: number;
   message: string;
-}> {
-  const fetched = await fetchInstagramFollowersFromGraph();
+};
 
+async function runPlatformFollowersSync(
+  platform: SocialFollowerPlatform,
+  fetched: {
+    followers: FetchedFollower[];
+    totalCount: number | null;
+    listAvailable: boolean;
+  },
+  emptyListMessage: string,
+): Promise<PlatformSyncResult> {
   if (fetched.totalCount != null) {
-    await upsertAdminSetting(apiCountSettingKey("instagram"), String(fetched.totalCount));
-    await upsertAdminSetting(apiSyncedAtSettingKey("instagram"), new Date().toISOString());
+    await upsertAdminSetting(apiCountSettingKey(platform), String(fetched.totalCount));
+    await upsertAdminSetting(apiSyncedAtSettingKey(platform), new Date().toISOString());
   }
 
   if (!fetched.listAvailable || fetched.followers.length === 0) {
-    const msg =
-      "Instagram API returned follower count only (no individual list). Import followers JSON in admin or wait for Graph API access.";
     logger.warn(
       {
+        platform,
         totalCount: fetched.totalCount,
-        username: fetched.username,
-        dbActive: await countActiveFollowers("instagram"),
+        dbActive: await countActiveFollowers(platform),
       },
-      msg,
+      emptyListMessage,
     );
     return {
       ok: true,
+      platform,
       listSynced: false,
       totalCount: fetched.totalCount,
       added: 0,
       reactivated: 0,
       unfollowed: 0,
-      message: msg,
+      message: emptyListMessage,
     };
   }
 
-  const result = await syncFollowersForPlatform("instagram", fetched.followers);
-  logger.info({ ...result, totalCount: fetched.totalCount }, "instagram followers sync complete");
+  const result = await syncFollowersForPlatform(platform, fetched.followers);
+  logger.info({ platform, ...result, totalCount: fetched.totalCount }, "social followers sync complete");
 
   return {
     ok: true,
+    platform,
     listSynced: true,
     totalCount: fetched.totalCount,
     added: result.added,
     reactivated: result.reactivated,
     unfollowed: result.unfollowed,
-    message: "Instagram followers synced from Graph API",
+    message: `${platform} followers synced from Graph API`,
   };
+}
+
+export async function runInstagramFollowersSync(): Promise<PlatformSyncResult> {
+  const fetched = await fetchInstagramFollowersFromGraph();
+  return runPlatformFollowersSync(
+    "instagram",
+    fetched,
+    "Instagram API returned follower count only (no individual list). Import followers JSON in admin.",
+  );
+}
+
+export async function runFacebookFollowersSync(): Promise<PlatformSyncResult> {
+  const fetched = await fetchFacebookFollowersFromGraph();
+  return runPlatformFollowersSync(
+    "facebook",
+    fetched,
+    "Facebook API returned fan count only (no individual fan list). Import or wait for Graph API access.",
+  );
+}
+
+export async function runTikTokFollowersSync(): Promise<PlatformSyncResult> {
+  return {
+    ok: true,
+    platform: "tiktok",
+    listSynced: false,
+    totalCount: null,
+    added: 0,
+    reactivated: 0,
+    unfollowed: 0,
+    message: "TikTok follower sync not configured — add TikTok API credentials when available.",
+  };
+}
+
+export async function runSocialFollowersDailySync(): Promise<{
+  instagram: PlatformSyncResult;
+  facebook: PlatformSyncResult;
+  tiktok: PlatformSyncResult;
+}> {
+  const [instagram, facebook, tiktok] = await Promise.all([
+    runInstagramFollowersSync(),
+    runFacebookFollowersSync(),
+    runTikTokFollowersSync(),
+  ]);
+  return { instagram, facebook, tiktok };
 }
 
 export async function importInstagramFollowersFromExport(raw: unknown): Promise<{
@@ -203,6 +267,7 @@ export async function getSocialFollowersStats(): Promise<
     {
       active: number;
       unfollowed: number;
+      unfollowed_this_month: number;
       api_count: number | null;
       api_synced_at: string | null;
     }
@@ -213,10 +278,13 @@ export async function getSocialFollowersStats(): Promise<
     {
       active: number;
       unfollowed: number;
+      unfollowed_this_month: number;
       api_count: number | null;
       api_synced_at: string | null;
     }
   >;
+
+  const monthStart = startOfCurrentMonth();
 
   for (const platform of PLATFORMS) {
     const [activeRow] = await db
@@ -229,6 +297,16 @@ export async function getSocialFollowersStats(): Promise<
       .where(
         and(eq(socialFollowersTable.platform, platform), eq(socialFollowersTable.is_active, false)),
       );
+    const [unfollowedMonthRow] = await db
+      .select({ c: count() })
+      .from(socialFollowersTable)
+      .where(
+        and(
+          eq(socialFollowersTable.platform, platform),
+          eq(socialFollowersTable.is_active, false),
+          gte(socialFollowersTable.unfollowed_at, monthStart),
+        ),
+      );
 
     const apiRaw = await readAdminSetting(apiCountSettingKey(platform));
     const apiSynced = await readAdminSetting(apiSyncedAtSettingKey(platform));
@@ -236,6 +314,7 @@ export async function getSocialFollowersStats(): Promise<
     stats[platform] = {
       active: Number(activeRow?.c ?? 0),
       unfollowed: Number(unfollowedRow?.c ?? 0),
+      unfollowed_this_month: Number(unfollowedMonthRow?.c ?? 0),
       api_count: apiRaw != null && apiRaw !== "" ? Number(apiRaw) : null,
       api_synced_at: apiSynced,
     };
@@ -335,4 +414,32 @@ export async function listSocialFollowers(opts: SocialFollowersListFilter = {}):
       is_active: r.is_active,
     })),
   };
+}
+
+const EXPORT_MAX_ROWS = 50_000;
+
+export async function exportSocialFollowersCsv(
+  opts: Omit<SocialFollowersListFilter, "page" | "limit"> & { platform: SocialFollowerPlatform },
+): Promise<string> {
+  const data = await listSocialFollowers({
+    ...opts,
+    platform: opts.platform,
+    page: 1,
+    limit: EXPORT_MAX_ROWS,
+  });
+
+  const lines = [
+    "follower_username,follower_id,followed_at,unfollowed_at,status",
+    ...data.rows.map((r) =>
+      [
+        csvEscape(r.follower_username),
+        csvEscape(r.follower_id ?? ""),
+        csvEscape(r.followed_at),
+        csvEscape(r.unfollowed_at ?? ""),
+        csvEscape(r.is_active ? "active" : "unfollowed"),
+      ].join(","),
+    ),
+  ];
+
+  return lines.join("\n");
 }

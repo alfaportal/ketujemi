@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
+  downloadAdminFollowersCsv,
   getAdminFollowersList,
   getAdminFollowersStats,
   importAdminInstagramFollowers,
@@ -10,12 +11,27 @@ import {
 } from "@/lib/admin-api";
 import { useMarket } from "@/lib/market-context";
 import { fillPlaceholders } from "@/lib/app-extra-i18n";
-import { ChevronLeft, ChevronRight, RefreshCw, Upload, Users } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Facebook,
+  Instagram,
+  Music2,
+  RefreshCw,
+  Upload,
+  Users,
+} from "lucide-react";
 
-type PlatformFilter = SocialFollowerPlatform | "all";
 type StatusFilter = "active" | "unfollowed" | "all";
 
-const PLATFORMS: PlatformFilter[] = ["all", "instagram", "facebook", "tiktok"];
+const TABS: SocialFollowerPlatform[] = ["instagram", "facebook", "tiktok"];
+
+const TAB_ICON: Record<SocialFollowerPlatform, React.ElementType> = {
+  instagram: Instagram,
+  facebook: Facebook,
+  tiktok: Music2,
+};
 
 function formatDt(iso: string | null): string {
   if (!iso) return "—";
@@ -26,16 +42,26 @@ function formatDt(iso: string | null): string {
   }
 }
 
-function platformLabel(platform: string, t: Record<string, string>): string {
+function platformLabel(platform: SocialFollowerPlatform, t: Record<string, string>): string {
   const key = `adm_followers_platform_${platform}` as keyof typeof t;
   const v = t[key];
   return typeof v === "string" ? v : platform;
+}
+
+function displayFollowerCount(
+  platform: SocialFollowerPlatform,
+  stats: AdminSocialFollowersStats | null,
+): number {
+  if (!stats) return 0;
+  const row = stats[platform];
+  return row.api_count ?? row.active;
 }
 
 export default function AdminFollowers() {
   const { t } = useMarket();
   const tr = t as Record<string, string>;
 
+  const [activeTab, setActiveTab] = useState<SocialFollowerPlatform>("instagram");
   const [stats, setStats] = useState<AdminSocialFollowersStats | null>(null);
   const [rows, setRows] = useState<AdminSocialFollowerRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -43,9 +69,9 @@ export default function AdminFollowers() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
-  const [platform, setPlatform] = useState<PlatformFilter>("all");
   const [status, setStatus] = useState<StatusFilter>("active");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -58,7 +84,7 @@ export default function AdminFollowers() {
       const [statsRes, listRes] = await Promise.all([
         getAdminFollowersStats(),
         getAdminFollowersList({
-          platform,
+          platform: activeTab,
           status,
           from: fromDate || undefined,
           to: toDate || undefined,
@@ -72,7 +98,7 @@ export default function AdminFollowers() {
     } finally {
       setLoading(false);
     }
-  }, [platform, status, fromDate, toDate, page]);
+  }, [activeTab, status, fromDate, toDate, page]);
 
   useEffect(() => {
     fetchAll();
@@ -80,30 +106,20 @@ export default function AdminFollowers() {
 
   useEffect(() => {
     setPage(1);
-  }, [platform, status, fromDate, toDate]);
+  }, [activeTab, status, fromDate, toDate]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-
-  const statCards = useMemo(() => {
-    if (!stats) return [];
-    return (["instagram", "facebook", "tiktok"] as SocialFollowerPlatform[]).map((p) => ({
-      platform: p,
-      active: stats[p].active,
-      unfollowed: stats[p].unfollowed,
-      apiCount: stats[p].api_count,
-      apiSynced: stats[p].api_synced_at,
-    }));
-  }, [stats]);
+  const tabStats = stats?.[activeTab];
 
   const runSync = async () => {
     setSyncing(true);
     setMessage(null);
     try {
       const res = await syncAdminFollowers();
-      setMessage({
-        type: res.listSynced ? "ok" : "err",
-        text: res.message,
-      });
+      const parts = [res.instagram, res.facebook, res.tiktok]
+        .map((r) => `${r.platform}: ${r.message}`)
+        .join(" · ");
+      setMessage({ type: "ok", text: parts });
       await fetchAll();
     } catch (e) {
       setMessage({
@@ -141,6 +157,26 @@ export default function AdminFollowers() {
     }
   };
 
+  const runExport = async () => {
+    setExporting(true);
+    setMessage(null);
+    try {
+      await downloadAdminFollowersCsv({
+        platform: activeTab,
+        status,
+        from: fromDate || undefined,
+        to: toDate || undefined,
+      });
+    } catch (e) {
+      setMessage({
+        type: "err",
+        text: e instanceof Error ? e.message : tr.adm_followers_export_fail,
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
@@ -149,21 +185,23 @@ export default function AdminFollowers() {
           <p className="text-xs text-amber-700 mt-1">{tr.adm_followers_api_note}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">
-            <Upload size={14} />
-            {importing ? tr.adm_followers_importing : tr.adm_followers_import}
-            <input
-              type="file"
-              accept=".json,application/json"
-              className="hidden"
-              disabled={importing}
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) void onImportFile(f);
-                e.target.value = "";
-              }}
-            />
-          </label>
+          {activeTab === "instagram" && (
+            <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">
+              <Upload size={14} />
+              {importing ? tr.adm_followers_importing : tr.adm_followers_import}
+              <input
+                type="file"
+                accept=".json,application/json"
+                className="hidden"
+                disabled={importing}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void onImportFile(f);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+          )}
           <button
             type="button"
             onClick={() => fetchAll()}
@@ -196,84 +234,121 @@ export default function AdminFollowers() {
         </div>
       )}
 
+      {/* Summary dashboard */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {statCards.map((card) => (
-          <div key={card.platform} className="bg-white rounded-2xl border border-gray-100 p-4">
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              {platformLabel(card.platform, tr)}
+        {TABS.map((p) => {
+          const row = stats?.[p];
+          const Icon = TAB_ICON[p];
+          const followers = displayFollowerCount(p, stats);
+          const unfollowedMonth = row?.unfollowed_this_month ?? 0;
+          return (
+            <div
+              key={p}
+              className={`bg-white rounded-2xl border p-4 ${
+                activeTab === p ? "border-blue-400 ring-2 ring-blue-100" : "border-gray-100"
+              }`}
+            >
+              <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <Icon size={14} />
+                {platformLabel(p, tr)}
+              </div>
+              <p className="mt-2 text-sm text-gray-600">
+                {fillPlaceholders(tr.adm_followers_summary_line, {
+                  followers: String(followers),
+                  unfollowed: String(unfollowedMonth),
+                })}
+              </p>
             </div>
-            <div className="mt-2 text-2xl font-black text-gray-900">{card.active}</div>
-            <div className="text-xs text-gray-500 mt-1">
-              {tr.adm_followers_stat_active}
-              {card.apiCount != null && (
-                <span className="block mt-0.5">
-                  {fillPlaceholders(tr.adm_followers_stat_api, { count: String(card.apiCount) })}
-                </span>
-              )}
-            </div>
-            <div className="text-xs text-red-600 mt-2">
-              {fillPlaceholders(tr.adm_followers_stat_unfollowed, {
-                count: String(card.unfollowed),
-              })}
-            </div>
+          );
+        })}
+      </div>
+
+      {/* Platform tabs */}
+      <div className="flex gap-1 border-b border-gray-200">
+        {TABS.map((p) => {
+          const Icon = TAB_ICON[p];
+          return (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setActiveTab(p)}
+              className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors ${
+                activeTab === p
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-800"
+              }`}
+            >
+              <Icon size={16} />
+              {platformLabel(p, tr)}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Tab panel */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-2xl font-black text-gray-900">
+              {displayFollowerCount(activeTab, stats)}
+            </p>
+            <p className="text-xs text-gray-500">{tr.adm_followers_tab_total}</p>
+            {tabStats?.api_count != null && tabStats.api_count !== tabStats.active && (
+              <p className="text-xs text-gray-400 mt-0.5">
+                {fillPlaceholders(tr.adm_followers_stat_api, { count: String(tabStats.api_count) })}
+              </p>
+            )}
           </div>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap gap-2 items-end">
-        <div>
-          <label className="text-xs text-gray-500 block mb-1">{tr.adm_followers_filter_platform}</label>
-          <select
-            value={platform}
-            onChange={(e) => setPlatform(e.target.value as PlatformFilter)}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+          <button
+            type="button"
+            onClick={runExport}
+            disabled={exporting}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
-            {PLATFORMS.map((p) => (
-              <option key={p} value={p}>
-                {p === "all" ? tr.adm_followers_filter_all : platformLabel(p, tr)}
-              </option>
-            ))}
-          </select>
+            <Download size={14} />
+            {exporting ? tr.adm_followers_exporting : tr.adm_followers_export}
+          </button>
         </div>
-        <div>
-          <label className="text-xs text-gray-500 block mb-1">{tr.adm_followers_filter_status}</label>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as StatusFilter)}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-          >
-            <option value="active">{tr.adm_followers_status_active}</option>
-            <option value="unfollowed">{tr.adm_followers_status_unfollowed}</option>
-            <option value="all">{tr.adm_followers_filter_all}</option>
-          </select>
-        </div>
-        <div>
-          <label className="text-xs text-gray-500 block mb-1">{tr.adm_followers_filter_from}</label>
-          <input
-            type="date"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-          />
-        </div>
-        <div>
-          <label className="text-xs text-gray-500 block mb-1">{tr.adm_followers_filter_to}</label>
-          <input
-            type="date"
-            value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-          />
-        </div>
-      </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="flex flex-wrap gap-2 items-end">
+          <div>
+            <label className="text-xs text-gray-500 block mb-1">{tr.adm_followers_filter_status}</label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as StatusFilter)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+            >
+              <option value="active">{tr.adm_followers_status_active}</option>
+              <option value="unfollowed">{tr.adm_followers_status_unfollowed}</option>
+              <option value="all">{tr.adm_followers_filter_all}</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-gray-500 block mb-1">{tr.adm_followers_filter_from}</label>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500 block mb-1">{tr.adm_followers_filter_to}</label>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+        </div>
+
+        <div className="overflow-x-auto rounded-xl border border-gray-100">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 text-left text-xs text-gray-500 uppercase tracking-wide">
                 <th className="p-3">{tr.adm_followers_col_user}</th>
-                <th className="p-3">{tr.adm_followers_col_platform}</th>
+                <th className="p-3">{tr.adm_followers_col_id}</th>
                 <th className="p-3">{tr.adm_followers_col_followed}</th>
                 <th className="p-3">{tr.adm_followers_col_unfollowed}</th>
                 <th className="p-3">{tr.adm_followers_col_status}</th>
@@ -298,7 +373,7 @@ export default function AdminFollowers() {
                 rows.map((r) => (
                   <tr key={r.id} className="border-t border-gray-50 hover:bg-gray-50/80">
                     <td className="p-3 font-medium text-gray-900">@{r.follower_username}</td>
-                    <td className="p-3">{platformLabel(r.platform, tr)}</td>
+                    <td className="p-3 text-gray-600 font-mono text-xs">{r.follower_id ?? "—"}</td>
                     <td className="p-3 text-gray-600">{formatDt(r.followed_at)}</td>
                     <td className="p-3 text-gray-600">{formatDt(r.unfollowed_at)}</td>
                     <td className="p-3">
@@ -321,7 +396,7 @@ export default function AdminFollowers() {
         </div>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 text-sm">
+          <div className="flex items-center justify-between text-sm">
             <span className="text-gray-500">
               {fillPlaceholders(tr.adm_followers_page_info, {
                 page: String(page),

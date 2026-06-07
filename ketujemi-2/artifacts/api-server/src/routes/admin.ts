@@ -59,10 +59,11 @@ import {
   listAdminSocialPostListings,
 } from "../lib/admin-social-post.js";
 import {
+  exportSocialFollowersCsv,
   getSocialFollowersStats,
   importInstagramFollowersFromExport,
   listSocialFollowers,
-  runInstagramFollowersSync,
+  runSocialFollowersDailySync,
 } from "../lib/social-followers-sync.js";
 
 const router = Router();
@@ -1740,9 +1741,36 @@ router.get("/admin/followers", requireAdmin, async (req, res) => {
   }
 });
 
+router.get("/admin/followers/export", requireAdmin, async (req, res) => {
+  try {
+    const q = req.query as Record<string, string>;
+    const platform = q.platform as "instagram" | "facebook" | "tiktok" | undefined;
+    if (!platform || !["instagram", "facebook", "tiktok"].includes(platform)) {
+      res.status(400).json({ error: "platform required (instagram|facebook|tiktok)" });
+      return;
+    }
+    const status = q.status as "active" | "unfollowed" | "all" | undefined;
+    const csv = await exportSocialFollowersCsv({
+      platform,
+      status: status ?? "all",
+      from: q.from,
+      to: q.to,
+    });
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="ketujemi-${platform}-followers.csv"`,
+    );
+    res.send(csv);
+  } catch (err) {
+    req.log.error({ err }, "admin followers export error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.post("/admin/followers/sync", requireAdmin, async (req, res) => {
   try {
-    const result = await runInstagramFollowersSync();
+    const result = await runSocialFollowersDailySync();
     res.json(result);
   } catch (err) {
     req.log.error({ err }, "admin followers sync error");

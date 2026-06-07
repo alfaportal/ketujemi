@@ -13,6 +13,7 @@ import {
   ensureSportOutdoorTypeCategories,
   ensureNdertimInstalimeTypeCategories,
   ensureSocialFollowersSchema,
+  ensureUserSocialConnectionsSchema,
   ensureWalletSchema,
   pool,
 } from "@workspace/db";
@@ -86,6 +87,8 @@ async function startServer(): Promise<void> {
     logger.info("Fëmijë category thumbnails synced (groups + leaves)");
     await ensureSocialFollowersSchema(pool);
     logger.info("Social followers schema verified (social_followers)");
+    await ensureUserSocialConnectionsSchema(pool);
+    logger.info("User social connections schema verified (user_social_connections)");
     await purgeInvalidListingImagesOnStartup();
     logPaymentStackReadiness(logger);
     logger.info(vonageConfigSummary(), "vonage sms config (masked)");

@@ -8,6 +8,17 @@ export type InstagramProfile = {
   username: string | null;
 };
 import type { TikTokProfile } from "./tiktok-oauth";
+import { recordUserSocialConnection } from "./user-social-connections.js";
+
+function oauthUsername(raw: string | null | undefined, fallbackId: string): string {
+  const s = String(raw ?? "")
+    .trim()
+    .replace(/^@/, "")
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9._-]/g, "");
+  return s || `user_${fallbackId}`;
+}
 
 async function findUserByFacebookId(facebookUserId: string): Promise<User | undefined> {
   const [row] = await db
@@ -93,7 +104,15 @@ function mergeProfileFields(
 
 export async function findOrCreateUserFromFacebook(profile: FacebookProfile): Promise<User> {
   const byFb = await findUserByFacebookId(profile.id);
-  if (byFb) return byFb;
+  if (byFb) {
+    await recordUserSocialConnection({
+      userId: byFb.id,
+      platform: "facebook",
+      externalUserId: profile.id,
+      username: oauthUsername(profile.name, profile.id),
+    });
+    return byFb;
+  }
 
   if (profile.email) {
     const byEmail = await findUserByEmail(profile.email);
@@ -109,8 +128,21 @@ export async function findOrCreateUserFromFacebook(profile: FacebookProfile): Pr
           .set(patch)
           .where(eq(usersTable.id, byEmail.id))
           .returning();
-        return updated ?? byEmail;
+        const user = updated ?? byEmail;
+        await recordUserSocialConnection({
+          userId: user.id,
+          platform: "facebook",
+          externalUserId: profile.id,
+          username: oauthUsername(profile.name, profile.id),
+        });
+        return user;
       }
+      await recordUserSocialConnection({
+        userId: byEmail.id,
+        platform: "facebook",
+        externalUserId: profile.id,
+        username: oauthUsername(profile.name, profile.id),
+      });
       return byEmail;
     }
   }
@@ -125,6 +157,13 @@ export async function findOrCreateUserFromFacebook(profile: FacebookProfile): Pr
       profile_photo_url: profile.pictureUrl,
     })
     .returning();
+
+  await recordUserSocialConnection({
+    userId: created.id,
+    platform: "facebook",
+    externalUserId: profile.id,
+    username: oauthUsername(profile.name, profile.id),
+  });
 
   return created;
 }
@@ -169,7 +208,15 @@ export async function findOrCreateUserFromGoogle(profile: GoogleProfile): Promis
 
 export async function findOrCreateUserFromTikTok(profile: TikTokProfile): Promise<User> {
   const byTikTok = await findUserByTikTokId(profile.id);
-  if (byTikTok) return byTikTok;
+  if (byTikTok) {
+    await recordUserSocialConnection({
+      userId: byTikTok.id,
+      platform: "tiktok",
+      externalUserId: profile.id,
+      username: oauthUsername(profile.name, profile.id),
+    });
+    return byTikTok;
+  }
 
   const [created] = await db
     .insert(usersTable)
@@ -180,12 +227,27 @@ export async function findOrCreateUserFromTikTok(profile: TikTokProfile): Promis
     })
     .returning();
 
+  await recordUserSocialConnection({
+    userId: created.id,
+    platform: "tiktok",
+    externalUserId: profile.id,
+    username: oauthUsername(profile.name, profile.id),
+  });
+
   return created;
 }
 
 export async function findOrCreateUserFromInstagram(profile: InstagramProfile): Promise<User> {
   const byIg = await findUserByInstagramId(profile.id);
-  if (byIg) return byIg;
+  if (byIg) {
+    await recordUserSocialConnection({
+      userId: byIg.id,
+      platform: "instagram",
+      externalUserId: profile.id,
+      username: profile.username,
+    });
+    return byIg;
+  }
 
   const displayName = profile.username ? `@${profile.username.replace(/^@/, "")}` : null;
   const partnerLink = profile.username
@@ -202,6 +264,13 @@ export async function findOrCreateUserFromInstagram(profile: InstagramProfile): 
       partner_link_type: profile.username ? "instagram" : null,
     })
     .returning();
+
+  await recordUserSocialConnection({
+    userId: created.id,
+    platform: "instagram",
+    externalUserId: profile.id,
+    username: profile.username,
+  });
 
   return created;
 }
