@@ -27,6 +27,8 @@ export const listingsTable = pgTable("listings", {
   /** Sort key for feed position (repost resets to go to end of list). */
   listed_at: timestamp("listed_at").notNull().defaultNow(),
   status: text("status").notNull().default("active"),
+  /** True after this listing was auto-posted to the Facebook Page (scheduled or on create). */
+  fb_posted: boolean("fb_posted").notNull().default(false),
   moderation_status: text("moderation_status").notNull().default("approved"),
   moderation_reason: text("moderation_reason"),
   image_url: text("image_url"),

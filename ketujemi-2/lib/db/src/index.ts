@@ -23,6 +23,7 @@ export { ensureWalletSchema } from "./ensure-wallet-schema.js";
 export { ensureFiscalSchema } from "./ensure-fiscal-schema.js";
 export { ensureOAuthSchema } from "./ensure-oauth-schema.js";
 export { ensureListingUserSchema } from "./ensure-listing-user-schema.js";
+export { ensureListingFbPostedSchema } from "./ensure-listing-fb-posted-schema.js";
 export { ensureListingShopSchema } from "./ensure-listing-shop-schema.js";
 export { ensureHomepagePartnersSchema } from "./ensure-homepage-partners-schema.js";
 export { ensureSportOutdoorTypeCategories } from "./ensure-sport-outdoor-types.js";

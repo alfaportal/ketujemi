@@ -54,6 +54,7 @@ import {
   resolveCategorySlugMeta,
 } from "../lib/listing-special-categories.js";
 import { postNewListingToFacebook } from "../services/socialMedia.js";
+import { markListingFbPosted } from "../lib/facebook-scheduled-post-job";
 import { logger } from "../lib/logger";
 
 const reportRate = new Map<string, number[]>();
@@ -545,9 +546,13 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     image_url: safeImageUrl ?? row.image_url,
     category_name: catRow?.name ?? null,
     listing_country: bodyExtra.listing_country ?? null,
-  }).catch((err) => {
-    logger.error({ err, listingId: row.id }, "facebook auto-post background error");
-  });
+  })
+    .then(async (postId) => {
+      if (postId) await markListingFbPosted(row.id);
+    })
+    .catch((err) => {
+      logger.error({ err, listingId: row.id }, "facebook auto-post background error");
+    });
 
   const cat = await db
     .select({ name: categoriesTable.name })

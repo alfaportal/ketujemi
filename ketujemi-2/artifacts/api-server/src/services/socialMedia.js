@@ -201,6 +201,7 @@ export function buildFacebookCaption(market, input) {
  */
 function readPageId() {
   return (
+    process.env.FB_PAGE_ID?.trim() ||
     process.env.PAGE_ID?.trim() ||
     process.env.FACEBOOK_PAGE_ID?.trim() ||
     ""
@@ -208,7 +209,11 @@ function readPageId() {
 }
 
 function readEnvPageAccessToken() {
-  return process.env.PAGE_ACCESS_TOKEN?.trim() || "";
+  return (
+    process.env.FB_PAGE_ACCESS_TOKEN?.trim() ||
+    process.env.PAGE_ACCESS_TOKEN?.trim() ||
+    ""
+  );
 }
 
 function readPageAccessToken() {
