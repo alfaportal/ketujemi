@@ -59,7 +59,7 @@ const SOCIAL_FOOTER_IG = {
 
 /** @type {Record<string, { fb: Record<string, string>; ig: Record<string, string> }>} */
 const CATEGORY_FLAIR = {
-  decor: {
+  wedding_decor: {
     fb: {
       ks: "Klienti ynë e di si ta bëjë dasmën magjike — zbukurime që lënë pa frymë dhe çdo detaj të kujdesshëm! ✨",
       al: "Klienti ynë e di si ta bëjë dasmën magjike — zbukurime që lënë pa frymë dhe çdo detaj të kujdesshëm! ✨",
@@ -73,6 +73,22 @@ const CATEGORY_FLAIR = {
       mk: "Свадба од соништата започнува тука 💐 Декорации што зборуваат сами!",
       mne: "Vjenčanje iz snova počinje ovdje 💐 Dekoracije koje govore same!",
       en: "Dream wedding vibes right here 💐 Décor that speaks for itself!",
+    },
+  },
+  home_decor: {
+    fb: {
+      ks: "Mobilje & dekor për shtëpinë tënde — stil, komoditet dhe detaje që vlejnë nga klienti ynë! 🛋️",
+      al: "Mobilje & dekor për shtëpinë tënde — stil, komoditet dhe detaje që vlejnë nga klienti ynë! 🛋️",
+      mk: "Мебел и декор за вашиот дом — стил и удобност од наш клиент! 🛋️",
+      mne: "Namještaj i dekor za vaš dom — stil i udobnost od našeg klijenta! 🛋️",
+      en: "Home furniture & décor with real style — comfort and quality from our seller! 🛋️",
+    },
+    ig: {
+      ks: "Zbukuro ambientin tënd 🏠 Mobilje & dekorime që të pëlqejnë — shiko ofertën!",
+      al: "Zbukuro ambientin tënd 🏠 Mobilje & dekorime që të pëlqejnë — shiko ofertën!",
+      mk: "Украси го просторот 🏠 Мебел и декор — погледни ја понудата!",
+      mne: "Ukrasi prostor 🏠 Namještaj i dekor — pogledaj ponudu!",
+      en: "Refresh your space 🏠 Home décor & furniture worth a look!",
     },
   },
   phones: {
@@ -303,6 +319,49 @@ const CATEGORY_FLAIR = {
 
 const DIASPORA_MARKETS = new Set(["de", "ch", "at", "fr", "it", "gb", "us"]);
 
+/** Root category slug → social theme (authoritative when present). */
+const ROOT_SLUG_THEME = {
+  vetura: "vehicles",
+  "motorr-skuter": "vehicles",
+  "kamione-furgone": "vehicles",
+  "auto-pjese": "vehicles",
+  "banesa-shtepi": "real_estate",
+  "lokale-zyre": "real_estate",
+  telefona: "phones",
+  "kompjutere-laptope": "electronics",
+  "tv-elektronike": "electronics",
+  "mobilje-dekorime": "home_decor",
+  "rroba-kepuce": "fashion",
+  femije: "children",
+  "sport-outdoor": "sport",
+  "pune-sherbime": "jobs",
+  "ndertim-instalime": "construction",
+  "bujqesi-blegtori": "agriculture",
+  "arsim-kurse": "education",
+  "muzike-hobby": "music",
+  kafshet: "animals",
+  "kerkoj-te-blej": "default",
+  "dhurata-falas": "default",
+};
+
+/** Slug prefix families when root slug is unavailable. */
+const SLUG_PREFIX_THEME = [
+  ["telefona-", "phones"],
+  ["femije-", "children"],
+  ["mobilje-", "home_decor"],
+  ["vetura-", "vehicles"],
+  ["motorr-", "vehicles"],
+  ["kompjutere-laptope-", "electronics"],
+  ["tv-elektronike-", "electronics"],
+  ["rroba-", "fashion"],
+  ["sport-", "sport"],
+  ["pune-", "jobs"],
+  ["ndertim-", "construction"],
+  ["bujqesi-", "agriculture"],
+  ["arsim-", "education"],
+  ["muzike-", "music"],
+];
+
 function normalizeCategoryKey(name) {
   return String(name ?? "")
     .toLowerCase()
@@ -310,19 +369,64 @@ function normalizeCategoryKey(name) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
-/**
- * @param {string | null | undefined} categoryName
- * @returns {keyof typeof CATEGORY_FLAIR}
- */
-export function resolveCategoryTheme(categoryName) {
+function parseCategoryInput(input) {
+  if (input == null) return { categoryName: null, categorySlug: null, rootCategorySlug: null };
+  if (typeof input === "string") return { categoryName: input, categorySlug: null, rootCategorySlug: null };
+  return {
+    categoryName: input.categoryName ?? input.category_name ?? null,
+    categorySlug: input.categorySlug ?? input.category_slug ?? null,
+    rootCategorySlug: input.rootCategorySlug ?? input.root_category_slug ?? null,
+  };
+}
+
+/** Wedding/dasmë copy only when the category name explicitly says so. */
+function isWeddingCategoryName(categoryName) {
   const n = normalizeCategoryKey(categoryName);
-  if (/dekor|dasm|zbukurim|lule|mobilje|karroce|ceremoni|event/.test(n)) return "decor";
-  if (/telefon|smartphone|iphone|samsung|huawei|xiaomi|tablet/.test(n)) return "phones";
-  if (/kompjuter|laptop|elektronik|televizor|pajisje shtepiake|gadget|\btv\b/.test(n)) return "electronics";
-  if (/vetur|motor|skuter|kamion|furgon|auto pjese|rimorkio|trailer/.test(n)) return "vehicles";
-  if (/banes|shtepi|apartament|lokal|zyre|patundshm|toka|truall|vikendic/.test(n)) return "real_estate";
+  if (!n) return false;
+  return (
+    /\bdasma\b|\bdasem\b|\bdasme\b|\bdasmes\b/.test(n) ||
+    /\bnuses\b|\bnuseri/.test(n) ||
+    /\bzbukurim\b.*\bdasm/.test(n) ||
+    /\blule\b.*\bdasm/.test(n) ||
+    /\bdasm\b.*\bdekor/.test(n) ||
+    /\bkarroce nuses\b|\bkarroca nuses\b/.test(n) ||
+    /\bfustan nuses\b/.test(n)
+  );
+}
+
+function themeFromSlug(slug) {
+  const s = normalizeCategoryKey(slug);
+  if (!s) return null;
+  if (ROOT_SLUG_THEME[s]) return ROOT_SLUG_THEME[s];
+  for (const [prefix, theme] of SLUG_PREFIX_THEME) {
+    if (s.startsWith(prefix)) return theme;
+  }
+  if (s === "telefona") return "phones";
+  if (s === "femije") return "children";
+  if (s === "mobilje-dekorime") return "home_decor";
+  return null;
+}
+
+function themeFromCategoryName(categoryName) {
+  const n = normalizeCategoryKey(categoryName);
+  if (!n) return "default";
+
+  if (/telefon|smartphone|iphone|samsung|huawei|xiaomi|oppo|oneplus|nokia|tablet/.test(n)) {
+    return "phones";
+  }
+  if (/femij|bebe|foshnj|djal|vajz|karroca klasike|karroca cader|lodr/.test(n)) {
+    return "children";
+  }
+  if (/kompjuter|laptop|elektronik|televizor|pajisje shtepiake|gadget|\btv\b/.test(n)) {
+    return "electronics";
+  }
+  if (/vetur|motor|skuter|kamion|furgon|auto pjese|rimorkio|trailer/.test(n)) {
+    return "vehicles";
+  }
+  if (/banes|apartament|lokal|zyre|patundshm|toka|truall|vikendic/.test(n)) {
+    return "real_estate";
+  }
   if (/rrob|kepuce|veshje|mod/.test(n)) return "fashion";
-  if (/femij|bebe|djal|vajz|karroce|lodr/.test(n)) return "children";
   if (/pune|sherbim|profesion/.test(n)) return "jobs";
   if (/sport|biciklet|fitness|outdoor|kamping|gym/.test(n)) return "sport";
   if (/kafsh|qen|mace|pet/.test(n)) return "animals";
@@ -330,7 +434,37 @@ export function resolveCategoryTheme(categoryName) {
   if (/ndertim|instalim|material|ndert/.test(n)) return "construction";
   if (/muzik|instrument|hobby/.test(n)) return "music";
   if (/arsim|kurs|shkoll|mesimdhen/.test(n)) return "education";
+  if (isWeddingCategoryName(categoryName)) return "wedding_decor";
+  if (/mobilje|dekor|ndricim|tepihe|perde|kuzhin|sallon|dhoma gjumit/.test(n)) {
+    return "home_decor";
+  }
   return "default";
+}
+
+/**
+ * @param {string | { categoryName?: string | null; categorySlug?: string | null; rootCategorySlug?: string | null; category_name?: string | null; category_slug?: string | null; root_category_slug?: string | null } | null | undefined} input
+ * @returns {keyof typeof CATEGORY_FLAIR}
+ */
+export function resolveCategoryTheme(input) {
+  const { categoryName, categorySlug, rootCategorySlug } = parseCategoryInput(input);
+
+  const rootTheme = themeFromSlug(rootCategorySlug);
+  if (rootTheme) {
+    if (rootTheme === "home_decor" && isWeddingCategoryName(categoryName)) {
+      return "wedding_decor";
+    }
+    return rootTheme;
+  }
+
+  const slugTheme = themeFromSlug(categorySlug);
+  if (slugTheme) {
+    if (slugTheme === "home_decor" && isWeddingCategoryName(categoryName)) {
+      return "wedding_decor";
+    }
+    return slugTheme;
+  }
+
+  return themeFromCategoryName(categoryName);
 }
 
 function marketLang(market) {
@@ -344,10 +478,10 @@ function marketLang(market) {
 /**
  * @param {"facebook" | "instagram"} platform
  * @param {string} market
- * @param {string | null | undefined} categoryName
+ * @param {Parameters<typeof resolveCategoryTheme>[0]} categoryInput
  */
-export function categoryFlairLine(platform, market, categoryName) {
-  const theme = resolveCategoryTheme(categoryName);
+export function categoryFlairLine(platform, market, categoryInput) {
+  const theme = resolveCategoryTheme(categoryInput);
   const lang = marketLang(market);
   const block = CATEGORY_FLAIR[theme] ?? CATEGORY_FLAIR.default;
   const lines = platform === "instagram" ? block.ig : block.fb;

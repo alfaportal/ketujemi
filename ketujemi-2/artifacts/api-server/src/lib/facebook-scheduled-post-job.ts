@@ -5,6 +5,7 @@ import {
   isFacebookAutoPostConfigured,
   postNewListingToFacebook,
 } from "../services/socialMedia.js";
+import { loadAllCategories, resolveRootCategoryId } from "./category-quota";
 import { logger } from "./logger";
 
 const CANDIDATE_BATCH = 20;
@@ -27,6 +28,7 @@ export async function runFacebookScheduledPost(): Promise<{
   }
 
   const now = new Date();
+  const { byId: categoriesById } = await loadAllCategories();
   const rows = await db
     .select({
       id: listingsTable.id,
@@ -35,7 +37,9 @@ export async function runFacebookScheduledPost(): Promise<{
       price: listingsTable.price,
       location: listingsTable.location,
       image_url: listingsTable.image_url,
+      category_id: listingsTable.category_id,
       category_name: categoriesTable.name,
+      category_slug: categoriesTable.slug,
     })
     .from(listingsTable)
     .leftJoin(categoriesTable, eq(listingsTable.category_id, categoriesTable.id))
@@ -56,6 +60,11 @@ export async function runFacebookScheduledPost(): Promise<{
   }
 
   for (const row of rows) {
+    const rootId =
+      row.category_id != null ? resolveRootCategoryId(row.category_id, categoriesById) : null;
+    const rootSlug =
+      rootId != null ? (categoriesById.get(rootId)?.slug?.trim() ?? null) : null;
+
     const listing = {
       id: row.id,
       title: row.title,
@@ -64,6 +73,8 @@ export async function runFacebookScheduledPost(): Promise<{
       location: row.location,
       image_url: row.image_url,
       category_name: row.category_name,
+      category_slug: row.category_slug,
+      root_category_slug: rootSlug,
       listing_country: null as string | null,
     };
 

@@ -544,7 +544,9 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     price: listingPrice,
     location: row.location,
     image_url: safeImageUrl ?? row.image_url,
-    category_name: catRow?.name ?? null,
+    category_name: catRow?.name ?? categoryMeta?.name ?? null,
+    category_slug: categoryMeta?.slug ?? null,
+    root_category_slug: categoryMeta?.rootSlug ?? null,
     listing_country: bodyExtra.listing_country ?? null,
   })
     .then(async (postId) => {
