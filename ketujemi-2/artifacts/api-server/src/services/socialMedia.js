@@ -1,9 +1,9 @@
 /**
- * Facebook Page auto-post (Meta Graph API) when a new listing is created.
+ * Facebook Page + linked Instagram auto-post (Meta Graph API).
  * Caption language + link path follow listing market (where the seller posted from).
  *
- * On startup, exchanges PAGE_ACCESS_TOKEN (short-lived) for a long-lived user token,
- * then resolves a long-lived Page access token (stored in memory for all posts).
+ * On startup, exchanges PAGE_ACCESS_TOKEN for a long-lived Page token and resolves the
+ * linked Instagram Business account (@ketujemi.ks) for simultaneous IG publishing.
  *
  * Requires PAGE_ID, PAGE_ACCESS_TOKEN, FACEBOOK_APP_ID, FACEBOOK_APP_SECRET (see .env.example).
  */
@@ -18,6 +18,8 @@ const GRAPH_API_VERSION = "v25.0";
 
 /** Resolved at startup via Meta token exchange; falls back to PAGE_ACCESS_TOKEN env. */
 let memoryPageAccessToken = null;
+/** Linked Instagram Business account ID for @ketujemi.ks (from env or Page lookup). */
+let memoryInstagramBusinessAccountId = null;
 /** @type {{ longLivedUserExpiresAt: string | null; pageTokenExpiresAt: string | null; source: string } | null} */
 let pageTokenMeta = null;
 
@@ -220,6 +222,27 @@ function readPageAccessToken() {
   return memoryPageAccessToken || readEnvPageAccessToken();
 }
 
+function readInstagramBusinessAccountIdEnv() {
+  return (
+    process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID?.trim() ||
+    process.env.IG_BUSINESS_ACCOUNT_ID?.trim() ||
+    ""
+  );
+}
+
+function readInstagramBusinessAccountId() {
+  return memoryInstagramBusinessAccountId || readInstagramBusinessAccountIdEnv();
+}
+
+function isInstagramAutoPostEnabled() {
+  const flag = process.env.INSTAGRAM_AUTO_POST_ENABLED?.trim().toLowerCase();
+  return flag !== "false" && flag !== "0" && flag !== "no";
+}
+
+export function isInstagramAutoPostConfigured() {
+  return isInstagramAutoPostEnabled() && !!readInstagramBusinessAccountId() && !!readPageAccessToken();
+}
+
 function graphUrl(pathAndQuery) {
   const p = pathAndQuery.startsWith("/") ? pathAndQuery : `/${pathAndQuery}`;
   return `https://graph.facebook.com/${GRAPH_API_VERSION}${p}`;
@@ -332,6 +355,125 @@ async function fetchPageAccessTokenFromLongLived(longLivedUserToken, pageId) {
 }
 
 /**
+ * @param {string} pageId
+ * @param {string} accessToken
+ * @returns {Promise<string | null>}
+ */
+async function fetchInstagramBusinessAccountId(pageId, accessToken) {
+  const envId = readInstagramBusinessAccountIdEnv();
+  if (envId) return envId;
+
+  const url = graphUrl(
+    `/${pageId}?fields=instagram_business_account&access_token=${encodeURIComponent(accessToken)}`,
+  );
+  const res = await fetch(url);
+  const json = await res.json().catch(() => ({}));
+  const igId = json?.instagram_business_account?.id;
+  if (res.ok && igId != null) {
+    return String(igId);
+  }
+
+  logger.warn(
+    { pageId, status: res.status, facebook: json },
+    "instagram auto-post: could not resolve instagram_business_account from Facebook Page — set INSTAGRAM_BUSINESS_ACCOUNT_ID",
+  );
+  return null;
+}
+
+/**
+ * @param {string} creationId
+ * @param {string} accessToken
+ * @returns {Promise<boolean>}
+ */
+async function waitForInstagramMediaContainer(creationId, accessToken) {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const url = graphUrl(
+      `/${creationId}?fields=status_code&access_token=${encodeURIComponent(accessToken)}`,
+    );
+    const res = await fetch(url);
+    const json = await res.json().catch(() => ({}));
+    const status = json?.status_code;
+    if (status === "FINISHED") return true;
+    if (status === "ERROR") {
+      logger.error({ creationId, facebook: json }, "instagram media container error");
+      return false;
+    }
+    await new Promise((r) => setTimeout(r, 1500));
+  }
+  return false;
+}
+
+/**
+ * @param {{
+ *   igUserId: string;
+ *   accessToken: string;
+ *   photoUrl: string;
+ *   caption: string;
+ *   listingId: number;
+ * }} input
+ * @returns {Promise<string | null>}
+ */
+async function postPhotoToInstagram(input) {
+  const { igUserId, accessToken, photoUrl, caption, listingId } = input;
+
+  const createBody = new URLSearchParams({
+    image_url: photoUrl,
+    caption,
+    access_token: accessToken,
+  });
+
+  try {
+    const createRes = await fetch(graphUrl(`/${igUserId}/media`), {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: createBody.toString(),
+    });
+    const createJson = await createRes.json().catch(() => ({}));
+    const creationId = typeof createJson.id === "string" ? createJson.id : null;
+
+    if (!createRes.ok || !creationId) {
+      logger.error(
+        { listingId, status: createRes.status, instagram: createJson },
+        "instagram auto-post: media container failed",
+      );
+      return null;
+    }
+
+    const ready = await waitForInstagramMediaContainer(creationId, accessToken);
+    if (!ready) {
+      logger.warn({ listingId, creationId }, "instagram auto-post: media container not ready");
+      return null;
+    }
+
+    const publishBody = new URLSearchParams({
+      creation_id: creationId,
+      access_token: accessToken,
+    });
+    const publishRes = await fetch(graphUrl(`/${igUserId}/media_publish`), {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: publishBody.toString(),
+    });
+    const publishJson = await publishRes.json().catch(() => ({}));
+
+    if (!publishRes.ok) {
+      logger.error(
+        { listingId, status: publishRes.status, instagram: publishJson, creationId },
+        "instagram auto-post: publish failed",
+      );
+      return null;
+    }
+
+    const mediaId = typeof publishJson.id === "string" ? publishJson.id : null;
+    logger.info({ listingId, instagramMediaId: mediaId, igUserId }, "instagram auto-post ok");
+    return mediaId;
+  } catch (err) {
+    logger.error({ err, listingId }, "instagram auto-post error");
+    return null;
+  }
+}
+
+/**
  * Exchange env PAGE_ACCESS_TOKEN for a long-lived Page token once at startup.
  * @returns {Promise<void>}
  */
@@ -339,6 +481,7 @@ export async function initializeFacebookPageAccessToken() {
   const pageId = readPageId();
   const shortOrPageToken = readEnvPageAccessToken();
   memoryPageAccessToken = null;
+  memoryInstagramBusinessAccountId = null;
   pageTokenMeta = null;
 
   if (!pageId || !shortOrPageToken) {
@@ -357,37 +500,52 @@ export async function initializeFacebookPageAccessToken() {
     );
     memoryPageAccessToken = shortOrPageToken;
     pageTokenMeta = { longLivedUserExpiresAt: null, pageTokenExpiresAt: null, source: "env_only" };
-    return;
+  } else {
+    try {
+      const longLivedUser = await exchangeShortLivedForLongLivedUserToken(shortOrPageToken);
+      const pageToken = await fetchPageAccessTokenFromLongLived(longLivedUser.accessToken, pageId);
+
+      memoryPageAccessToken = pageToken.accessToken;
+      pageTokenMeta = {
+        longLivedUserExpiresAt: longLivedUser.expiresAt,
+        pageTokenExpiresAt: pageToken.expiresAt,
+        source: pageToken.via ?? "exchange",
+      };
+
+      logger.info(
+        {
+          pageId,
+          tokenSource: pageTokenMeta.source,
+          longLivedUserExpiresAt: pageTokenMeta.longLivedUserExpiresAt ?? "non-expiring_or_unknown",
+          pageTokenExpiresAt: pageTokenMeta.pageTokenExpiresAt ?? "non-expiring_or_unknown",
+          tokenLength: memoryPageAccessToken.length,
+        },
+        "facebook page access token ready (long-lived exchange)",
+      );
+    } catch (err) {
+      memoryPageAccessToken = shortOrPageToken;
+      pageTokenMeta = { longLivedUserExpiresAt: null, pageTokenExpiresAt: null, source: "env_fallback" };
+      logger.error(
+        { err, pageId },
+        "facebook token exchange failed; using PAGE_ACCESS_TOKEN from env (may be short-lived)",
+      );
+    }
   }
 
-  try {
-    const longLivedUser = await exchangeShortLivedForLongLivedUserToken(shortOrPageToken);
-    const pageToken = await fetchPageAccessTokenFromLongLived(longLivedUser.accessToken, pageId);
-
-    memoryPageAccessToken = pageToken.accessToken;
-    pageTokenMeta = {
-      longLivedUserExpiresAt: longLivedUser.expiresAt,
-      pageTokenExpiresAt: pageToken.expiresAt,
-      source: pageToken.via ?? "exchange",
-    };
-
-    logger.info(
-      {
-        pageId,
-        tokenSource: pageTokenMeta.source,
-        longLivedUserExpiresAt: pageTokenMeta.longLivedUserExpiresAt ?? "non-expiring_or_unknown",
-        pageTokenExpiresAt: pageTokenMeta.pageTokenExpiresAt ?? "non-expiring_or_unknown",
-        tokenLength: memoryPageAccessToken.length,
-      },
-      "facebook page access token ready (long-lived exchange)",
-    );
-  } catch (err) {
-    memoryPageAccessToken = shortOrPageToken;
-    pageTokenMeta = { longLivedUserExpiresAt: null, pageTokenExpiresAt: null, source: "env_fallback" };
-    logger.error(
-      { err, pageId },
-      "facebook token exchange failed; using PAGE_ACCESS_TOKEN from env (may be short-lived)",
-    );
+  const pageToken = readPageAccessToken();
+  if (pageId && pageToken && isInstagramAutoPostEnabled()) {
+    memoryInstagramBusinessAccountId = await fetchInstagramBusinessAccountId(pageId, pageToken);
+    if (memoryInstagramBusinessAccountId) {
+      logger.info(
+        {
+          igBusinessAccountId: memoryInstagramBusinessAccountId,
+          handle: "@ketujemi.ks",
+        },
+        "instagram auto-post ready (linked to Facebook Page)",
+      );
+    }
+  } else if (!isInstagramAutoPostEnabled()) {
+    logger.info("instagram auto-post disabled (INSTAGRAM_AUTO_POST_ENABLED=false)");
   }
 }
 
@@ -496,45 +654,73 @@ export async function postNewListingToFacebook(listing) {
     configured: isFacebookAutoPostConfigured(),
   });
 
+  const fullCaption = `${caption}\n\n${listingLink}`;
+  const igUserId = readInstagramBusinessAccountId();
+  const postInstagram = isInstagramAutoPostConfigured();
+
   const endpoint = `https://graph.facebook.com/${GRAPH_API_VERSION}/${pageId}/photos`;
   const body = new URLSearchParams({
     url: photoUrl,
-    caption: `${caption}\n\n${listingLink}`,
+    caption: fullCaption,
     access_token: accessToken,
   });
 
   try {
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: body.toString(),
-    });
-    const json = await res.json().catch(() => ({}));
+    const [fbResult, igResult] = await Promise.allSettled([
+      (async () => {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: body.toString(),
+        });
+        const json = await res.json().catch(() => ({}));
 
-    console.log("[facebook] Graph API response", {
-      listingId: listing.id,
-      status: res.status,
-      ok: res.ok,
-      body: json,
-    });
+        console.log("[facebook] Graph API response", {
+          listingId: listing.id,
+          status: res.status,
+          ok: res.ok,
+          body: json,
+        });
 
-    if (!res.ok) {
-      console.error("[facebook] Graph API error (non-OK status)", {
-        listingId: listing.id,
-        status: res.status,
-        statusText: res.statusText,
-        response: json,
-      });
-      logger.error(
-        { status: res.status, facebook: json, listingId: listing.id },
-        "facebook auto-post failed",
-      );
-      return null;
+        if (!res.ok) {
+          console.error("[facebook] Graph API error (non-OK status)", {
+            listingId: listing.id,
+            status: res.status,
+            statusText: res.statusText,
+            response: json,
+          });
+          logger.error(
+            { status: res.status, facebook: json, listingId: listing.id },
+            "facebook auto-post failed",
+          );
+          return null;
+        }
+
+        const postId =
+          typeof json.id === "string" ? json.id : typeof json.post_id === "string" ? json.post_id : null;
+        logger.info({ listingId: listing.id, facebookPostId: postId, market }, "facebook auto-post ok");
+        return postId;
+      })(),
+      postInstagram
+        ? postPhotoToInstagram({
+            igUserId,
+            accessToken,
+            photoUrl,
+            caption: fullCaption,
+            listingId: listing.id,
+          })
+        : Promise.resolve(null),
+    ]);
+
+    if (postInstagram && igResult.status === "fulfilled" && !igResult.value) {
+      logger.warn({ listingId: listing.id }, "instagram auto-post failed (facebook may still have posted)");
     }
 
-    const postId = typeof json.id === "string" ? json.id : typeof json.post_id === "string" ? json.post_id : null;
-    logger.info({ listingId: listing.id, facebookPostId: postId, market }, "facebook auto-post ok");
-    return postId;
+    if (fbResult.status === "rejected") {
+      throw fbResult.reason;
+    }
+
+    return fbResult.value;
   } catch (err) {
     console.error("[facebook] postNewListingToFacebook exception", {
       listingId: listing.id,

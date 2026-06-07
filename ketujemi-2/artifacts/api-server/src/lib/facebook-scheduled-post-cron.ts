@@ -3,8 +3,8 @@ import { isFacebookAutoPostConfigured } from "../services/socialMedia.js";
 import { runFacebookScheduledPost } from "./facebook-scheduled-post-job";
 import { logger } from "./logger";
 
-/** 09:00, 13:00, 18:00, 21:00 — four posts per day (~6h apart). */
-const CRON_SCHEDULE = "0 9,13,18,21 * * *";
+/** 10:00, 14:00, 19:00, 22:00 Europe/Belgrade — four posts per day. */
+const CRON_SCHEDULE = "0 10,14,19,22 * * *";
 const DEFAULT_TZ = "Europe/Belgrade";
 
 let runInFlight = false;
@@ -54,7 +54,7 @@ export function startFacebookScheduledPostCron(): void {
   );
 
   logger.info(
-    { schedule: CRON_SCHEDULE, timezone, times: ["09:00", "13:00", "18:00", "21:00"] },
+    { schedule: CRON_SCHEDULE, timezone, times: ["10:00", "14:00", "19:00", "22:00"] },
     "facebook scheduled post cron started",
   );
 }
