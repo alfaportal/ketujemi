@@ -20,6 +20,7 @@ import {
   ensureAdminLoginSchema,
   ensureShopSocialProfileSchema,
   ensureDeletionFeedbackSchema,
+  ensureFacebookDataDeletionSchema,
   ensureWalletSchema,
   pool,
 } from "@workspace/db";
@@ -109,6 +110,8 @@ async function startServer(): Promise<void> {
     logger.info("Shop social profile enrichments schema verified");
     await ensureDeletionFeedbackSchema(pool);
     logger.info("Deletion feedback schema verified (deletion_feedback, users.deleted_at, shops.deleted_at)");
+    await ensureFacebookDataDeletionSchema(pool);
+    logger.info("Facebook data deletion schema verified (facebook_data_deletion_requests)");
     await purgeInvalidListingImagesOnStartup();
     logPaymentStackReadiness(logger);
     logger.info(vonageConfigSummary(), "vonage sms config (masked)");

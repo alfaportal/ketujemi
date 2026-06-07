@@ -33,3 +33,4 @@ export * from "./profile_change";
 export * from "./admin_login";
 export * from "./shop-social-profile-enrichments";
 export * from "./deletion_feedback";
+export * from "./facebook_data_deletion_requests";

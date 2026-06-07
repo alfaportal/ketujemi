@@ -15,6 +15,11 @@ import { isNewlyRegisteredUser, setUserSessionCookie } from "../lib/user-session
 import { assertAccountActive } from "../lib/user-ban";
 import { parseFacebookOAuthCallbackError } from "../lib/facebook-oauth-errors.js";
 import { redirectOAuthLogin, redirectOAuthSuccess } from "../lib/oauth-redirect";
+import { parseFacebookSignedRequest } from "../lib/facebook-signed-request.js";
+import {
+  getFacebookDataDeletionStatus,
+  handleFacebookDataDeletionCallback,
+} from "../lib/facebook-data-deletion.js";
 
 const router = Router();
 
@@ -91,6 +96,54 @@ router.get("/auth/facebook/callback", async (req, res) => {
         : "facebook_failed";
     redirectOAuthLogin(res, origin, code);
   }
+});
+
+/** Meta Data Deletion Request callback — configure in App Dashboard → Settings → Basic. */
+router.post("/auth/facebook/data-deletion", async (req, res) => {
+  const signedRequest =
+    typeof req.body?.signed_request === "string"
+      ? req.body.signed_request.trim()
+      : "";
+
+  if (!signedRequest) {
+    res.status(400).json({ error: "MISSING_SIGNED_REQUEST" });
+    return;
+  }
+
+  const parsed = parseFacebookSignedRequest(signedRequest);
+  if (!parsed.ok) {
+    req.log?.warn({ error: parsed.error }, "facebook data deletion invalid signed_request");
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  try {
+    const origin = appOriginFromRequest(req);
+    const result = await handleFacebookDataDeletionCallback(parsed.payload.user_id, origin);
+    res.status(200).json({
+      url: result.statusUrl,
+      confirmation_code: result.confirmationCode,
+    });
+  } catch (err) {
+    req.log?.error({ err }, "facebook data deletion failed");
+    res.status(500).json({ error: "DELETION_FAILED" });
+  }
+});
+
+router.get("/auth/facebook/data-deletion/status", async (req, res) => {
+  const code = typeof req.query.code === "string" ? req.query.code.trim() : "";
+  if (!code) {
+    res.status(400).json({ error: "MISSING_CODE" });
+    return;
+  }
+
+  const status = await getFacebookDataDeletionStatus(code);
+  if (!status) {
+    res.status(404).json({ error: "NOT_FOUND" });
+    return;
+  }
+
+  res.status(200).json(status);
 });
 
 export default router;
