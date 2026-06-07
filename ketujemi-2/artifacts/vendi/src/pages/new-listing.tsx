@@ -613,7 +613,7 @@ export default function NewListing() {
         } else {
           toast({ title: engagement.subsequentListingToast });
         }
-        setLocation(`/listings/${(body as { id: number }).id}`);
+        setLocation(`/listings/${(body as { id: number }).id}?posted=1`);
       })
       .catch((e) => refusePost(getFetchErrorMessage(e)))
       .finally(() => setIsSubmitting(false));

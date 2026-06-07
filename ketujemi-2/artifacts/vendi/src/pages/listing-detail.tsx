@@ -36,6 +36,7 @@ import { notifyTopListingsRefresh } from "@/lib/top-listings-events";
 import { parseListingImageUrls } from "@/lib/listing-images";
 import { recordListingView } from "@/lib/record-listing-view";
 import { ListingShareButtons } from "@/components/listing-share-buttons";
+import { ListingSocialPostedShare } from "@/components/listing-social-posted-share";
 import { ListingShopCard, type ListingShopInfo } from "@/components/listing-shop-card";
 
 // ─── Spec parser ─────────────────────────────────────────────────────────────
@@ -213,6 +214,36 @@ export default function ListingDetail() {
   );
   const canRepost = !!(listing && (listing as { can_repost?: boolean }).can_repost);
   const isExpired = !!(listing && (listing as { is_expired?: boolean }).is_expired);
+  const fbPosted = !!(listing && (listing as { fb_posted?: boolean }).fb_posted);
+  const igPosted = !!(listing && (listing as { ig_posted?: boolean }).ig_posted);
+  const justPosted =
+    typeof window !== "undefined"
+    && new URLSearchParams(window.location.search).get("posted") === "1";
+
+  useEffect(() => {
+    if (!canManage || !justPosted || !id) return;
+    if (fbPosted && igPosted) return;
+
+    const interval = window.setInterval(() => {
+      void queryClient.invalidateQueries({ queryKey: getGetListingQueryKey(id) });
+    }, 4000);
+    const stop = window.setTimeout(() => window.clearInterval(interval), 3 * 60 * 1000);
+
+    return () => {
+      window.clearInterval(interval);
+      window.clearTimeout(stop);
+    };
+  }, [canManage, justPosted, id, fbPosted, igPosted, queryClient]);
+
+  useEffect(() => {
+    if (!justPosted || !canManage) return;
+    if (!fbPosted && !igPosted) return;
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("posted")) return;
+    url.searchParams.delete("posted");
+    window.history.replaceState({}, "", url.pathname + url.search);
+  }, [justPosted, canManage, fbPosted, igPosted]);
   const listingImageCount = listing ? parseListingImageUrls(listing.image_url).length : 0;
 
   useEffect(() => {
@@ -610,6 +641,15 @@ export default function ListingDetail() {
                 </p>
               </div>
             )}
+
+            {canManage && (fbPosted || igPosted) ? (
+              <ListingSocialPostedShare
+                url={listingShareUrl}
+                fbPosted={fbPosted}
+                igPosted={igPosted}
+                title={listing.title}
+              />
+            ) : null}
 
             <ListingShareButtons url={listingShareUrl} />
           </div>
