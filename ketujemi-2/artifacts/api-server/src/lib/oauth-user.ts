@@ -3,14 +3,8 @@ import { db, usersTable } from "@workspace/db";
 import type { User } from "@workspace/db";
 import type { FacebookProfile } from "./facebook-oauth";
 import type { GoogleProfile } from "./google-oauth";
-export type InstagramProfile = {
-  id: string;
-  username: string | null;
-};
 import type { TikTokProfile } from "./tiktok-oauth";
 import { recordUserSocialConnection } from "./user-social-connections.js";
-
-/** OAuth user id columns — registry lives in `auth-identity.ts` (`OAUTH_PROVIDER_REGISTRY`). */
 
 function oauthUsername(raw: string | null | undefined, fallbackId: string): string {
   const s = String(raw ?? "")
@@ -49,18 +43,30 @@ async function findUserByTikTokId(tiktokUserId: string): Promise<User | undefine
   return row;
 }
 
-async function findUserByInstagramId(instagramUserId: string): Promise<User | undefined> {
-  const [row] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.instagram_user_id, instagramUserId))
-    .limit(1);
-  return row;
-}
-
 async function findUserByEmail(email: string): Promise<User | undefined> {
   const [row] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
   return row;
+}
+
+function facebookProfilePatch(existing: User | null, profile: FacebookProfile): Partial<User> {
+  const patch: Partial<User> = {
+    identity_verified: true,
+    identity_verified_via: "facebook",
+  };
+  if (profile.name?.trim()) {
+    patch.display_name = profile.name.trim().slice(0, 120);
+  }
+  if (profile.pictureUrl?.trim()) {
+    patch.profile_photo_url = profile.pictureUrl.trim().slice(0, 2048);
+  }
+  if (profile.email?.trim()) {
+    const email = profile.email.trim().toLowerCase();
+    if (!existing?.email?.trim() || !existing.email_verified_at) {
+      patch.email = email;
+      patch.email_verified_at = new Date();
+    }
+  }
+  return patch;
 }
 
 function mergeProfileFields(
@@ -72,9 +78,9 @@ function mergeProfileFields(
     email_verified_at?: Date | null;
     facebook_user_id?: string | null;
     google_user_id?: string | null;
-    instagram_user_id?: string | null;
-    instagram_username?: string | null;
     tiktok_user_id?: string | null;
+    identity_verified?: boolean;
+    identity_verified_via?: string | null;
   },
 ): Partial<User> {
   const out: Record<string, unknown> = {};
@@ -92,42 +98,55 @@ function mergeProfileFields(
   if (patch.google_user_id && !existing.google_user_id) {
     out.google_user_id = patch.google_user_id;
   }
-  if (patch.instagram_user_id && !existing.instagram_user_id) {
-    out.instagram_user_id = patch.instagram_user_id;
-  }
-  if (patch.instagram_username && !existing.instagram_username) {
-    out.instagram_username = patch.instagram_username;
-  }
   if (patch.tiktok_user_id && !existing.tiktok_user_id) {
     out.tiktok_user_id = patch.tiktok_user_id;
   }
+  if (patch.identity_verified) {
+    out.identity_verified = true;
+    out.identity_verified_via = patch.identity_verified_via ?? existing.identity_verified_via;
+  }
   return out as Partial<User>;
+}
+
+async function applyFacebookProfileToUser(user: User, profile: FacebookProfile): Promise<User> {
+  const patch = facebookProfilePatch(user, profile);
+  if (Object.keys(patch).length === 0) return user;
+  const [updated] = await db
+    .update(usersTable)
+    .set(patch)
+    .where(eq(usersTable.id, user.id))
+    .returning();
+  return updated ?? user;
 }
 
 export async function findOrCreateUserFromFacebook(profile: FacebookProfile): Promise<User> {
   const byFb = await findUserByFacebookId(profile.id);
   if (byFb) {
+    const user = await applyFacebookProfileToUser(byFb, profile);
     await recordUserSocialConnection({
-      userId: byFb.id,
+      userId: user.id,
       platform: "facebook",
       externalUserId: profile.id,
       username: oauthUsername(profile.name, profile.id),
     });
-    return byFb;
+    return user;
   }
 
   if (profile.email) {
     const byEmail = await findUserByEmail(profile.email);
     if (byEmail) {
-      const patch = mergeProfileFields(byEmail, {
+      const mergePatch = mergeProfileFields(byEmail, {
         display_name: profile.name,
         profile_photo_url: profile.pictureUrl,
         facebook_user_id: profile.id,
+        identity_verified: true,
+        identity_verified_via: "facebook",
       });
-      if (Object.keys(patch).length > 0) {
+      const fullPatch = { ...facebookProfilePatch(byEmail, profile), ...mergePatch };
+      if (Object.keys(fullPatch).length > 0) {
         const [updated] = await db
           .update(usersTable)
-          .set(patch)
+          .set(fullPatch)
           .where(eq(usersTable.id, byEmail.id))
           .returning();
         const user = updated ?? byEmail;
@@ -157,6 +176,8 @@ export async function findOrCreateUserFromFacebook(profile: FacebookProfile): Pr
       email_verified_at: profile.email ? new Date() : null,
       display_name: profile.name,
       profile_photo_url: profile.pictureUrl,
+      identity_verified: true,
+      identity_verified_via: "facebook",
     })
     .returning();
 
@@ -234,44 +255,6 @@ export async function findOrCreateUserFromTikTok(profile: TikTokProfile): Promis
     platform: "tiktok",
     externalUserId: profile.id,
     username: oauthUsername(profile.name, profile.id),
-  });
-
-  return created;
-}
-
-export async function findOrCreateUserFromInstagram(profile: InstagramProfile): Promise<User> {
-  const byIg = await findUserByInstagramId(profile.id);
-  if (byIg) {
-    await recordUserSocialConnection({
-      userId: byIg.id,
-      platform: "instagram",
-      externalUserId: profile.id,
-      username: profile.username,
-    });
-    return byIg;
-  }
-
-  const displayName = profile.username ? `@${profile.username.replace(/^@/, "")}` : null;
-  const partnerLink = profile.username
-    ? `https://www.instagram.com/${profile.username.replace(/^@/, "")}/`
-    : null;
-
-  const [created] = await db
-    .insert(usersTable)
-    .values({
-      instagram_user_id: profile.id,
-      instagram_username: profile.username,
-      display_name: displayName,
-      partner_link_url: partnerLink,
-      partner_link_type: profile.username ? "instagram" : null,
-    })
-    .returning();
-
-  await recordUserSocialConnection({
-    userId: created.id,
-    platform: "instagram",
-    externalUserId: profile.id,
-    username: profile.username,
   });
 
   return created;

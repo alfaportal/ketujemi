@@ -10,13 +10,12 @@ import { Label } from "@/components/ui/label";
 
 type Props = {
   user: AuthUser;
-  needsSms: boolean;
-  needsEmailForPhone: boolean;
-  token: string | null;
-  onToken: (token: string | null) => void;
+  secondFactor: "sms" | "email";
+  onUnlocked: (token: string, expiresInSeconds: number) => void;
+  onCancel: () => void;
 };
 
-export function ProfileChangeGate({ user, needsSms, needsEmailForPhone, token, onToken }: Props) {
+export function ProfileChangeGate({ user, secondFactor, onUnlocked, onCancel }: Props) {
   const { t } = useMarket();
   const { toast } = useToast();
   const [code, setCode] = useState("");
@@ -27,25 +26,14 @@ export function ProfileChangeGate({ user, needsSms, needsEmailForPhone, token, o
   const [step, setStep] = useState<"idle" | "sent">("idle");
   const [busy, setBusy] = useState(false);
 
-  const channel = needsSms ? "sms" : needsEmailForPhone ? "email" : null;
-  if (!channel) return null;
-
-  if (token) {
-    return (
-      <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-        {t.profile_verify_ok}
-      </div>
-    );
-  }
-
   async function sendCode() {
     setBusy(true);
     try {
       const url =
-        channel === "sms"
+        secondFactor === "sms"
           ? "/api/auth/profile/verify/sms/start"
           : "/api/auth/profile/verify/email/start";
-      const body = channel === "sms" ? { phone: smsPhone } : {};
+      const body = secondFactor === "sms" ? { phone: smsPhone } : {};
       const res = await fetchWithTimeout(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -62,7 +50,7 @@ export function ProfileChangeGate({ user, needsSms, needsEmailForPhone, token, o
       }
       setStep("sent");
       toast({
-        title: channel === "sms" ? t.toast_codeSent : t.toast_emailSent,
+        title: secondFactor === "sms" ? t.toast_codeSent : t.toast_emailSent,
       });
     } finally {
       setBusy(false);
@@ -74,7 +62,7 @@ export function ProfileChangeGate({ user, needsSms, needsEmailForPhone, token, o
     setBusy(true);
     try {
       const url =
-        channel === "sms"
+        secondFactor === "sms"
           ? "/api/auth/profile/verify/sms/confirm"
           : "/api/auth/profile/verify/email/confirm";
       const res = await fetchWithTimeout(url, {
@@ -85,6 +73,7 @@ export function ProfileChangeGate({ user, needsSms, needsEmailForPhone, token, o
       });
       const data = (await res.json().catch(() => ({}))) as {
         profile_change_token?: string;
+        expires_in_seconds?: number;
         message?: string;
         error?: string;
       };
@@ -95,7 +84,7 @@ export function ProfileChangeGate({ user, needsSms, needsEmailForPhone, token, o
         });
         return;
       }
-      onToken(data.profile_change_token);
+      onUnlocked(data.profile_change_token, data.expires_in_seconds ?? 600);
       setCode("");
       toast({ title: t.profile_verify_ok });
     } finally {
@@ -106,10 +95,10 @@ export function ProfileChangeGate({ user, needsSms, needsEmailForPhone, token, o
   return (
     <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 space-y-3">
       <p className="text-sm text-amber-900 font-medium">
-        {channel === "sms" ? t.profile_verify_sms_hint : t.profile_verify_email_hint}
+        {secondFactor === "sms" ? t.profile_verify_sms_hint : t.profile_verify_email_hint}
       </p>
 
-      {channel === "sms" && !user.phone_verified ? (
+      {secondFactor === "sms" && !user.phone_verified ? (
         <div className="space-y-2">
           <Label htmlFor="profile-verify-phone">{t.phoneNum}</Label>
           <Input
@@ -155,6 +144,10 @@ export function ProfileChangeGate({ user, needsSms, needsEmailForPhone, token, o
           </button>
         </form>
       )}
+
+      <Button type="button" variant="ghost" className="w-full min-h-10 text-sm" onClick={onCancel}>
+        {t.profile_edit_cancel}
+      </Button>
     </div>
   );
 }

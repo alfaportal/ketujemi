@@ -31,15 +31,18 @@ import {
   serializePartnerBannerUrls,
   type PartnerLinkType,
 } from "../lib/business-partner";
-import { hasTrustedEmail, resolveAuthIdentity } from "../lib/auth-identity";
+import { hasTrustedEmail, resolveAuthIdentity, resolveMissingSecondMethod } from "../lib/auth-identity";
 import {
-  consumeProfileChangeToken,
   getActiveProfileChallenge,
+  getActiveProfileEditSession,
   issueProfileChangeToken,
+  PROFILE_EDIT_SESSION_TTL_MS,
   profilePatchNeedsVerification,
   storeEmailProfileChallenge,
   storeSmsProfileChallenge,
+  userNeedsSellerBootstrap,
   userSmsPhoneForProfile,
+  validateProfileChangeToken,
 } from "../lib/profile-change-verify";
 import { sendProfileChangeCodeEmail } from "../lib/send-email";
 
@@ -764,6 +767,32 @@ router.get("/auth/me", async (req, res) => {
   res.json({ user: publicUser(user, { self: true }) });
 });
 
+// ─── GET /auth/profile/edit-session ───────────────────────────────────────────
+router.get("/auth/profile/edit-session", async (req, res) => {
+  const id = await sessionUserId(req);
+  if (id == null) {
+    res.status(401).json({ error: "Not logged in" });
+    return;
+  }
+
+  const session = await getActiveProfileEditSession(id);
+  if (!session) {
+    res.json({ active: false });
+    return;
+  }
+
+  res.json({
+    active: true,
+    profile_change_token: session.token,
+    channel: session.channel,
+    expires_at: session.expires_at.toISOString(),
+    expires_in_seconds: Math.max(
+      0,
+      Math.floor((session.expires_at.getTime() - Date.now()) / 1000),
+    ),
+  });
+});
+
 // ─── POST /auth/profile/verify/sms/start ─────────────────────────────────────
 router.post("/auth/profile/verify/sms/start", authLoginRegisterLimiter, async (req, res) => {
   if (!isSmsAuthEnabled()) {
@@ -780,6 +809,17 @@ router.post("/auth/profile/verify/sms/start", authLoginRegisterLimiter, async (r
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
   if (!user) {
     res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  const identity = resolveAuthIdentity(user);
+  const addingPhone =
+    identity.missing_second_method === "phone" && !identity.has_verified_phone;
+  if (identity.profile_edit_second_factor !== "sms" && !addingPhone) {
+    res.status(400).json({
+      error: "SMS_NOT_REQUIRED",
+      message: "Verifikimi SMS nuk kërkohet për këtë llogari.",
+    });
     return;
   }
 
@@ -842,7 +882,12 @@ router.post("/auth/profile/verify/sms/confirm", authLoginRegisterLimiter, async 
         .where(eq(usersTable.id, id));
     }
 
-    res.json({ ok: true, profile_change_token: token, expires_in_seconds: 600 });
+    res.json({
+      ok: true,
+      profile_change_token: token,
+      channel: "sms",
+      expires_in_seconds: Math.floor(PROFILE_EDIT_SESSION_TTL_MS / 1000),
+    });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Verification failed";
     res.status(400).json({ error: msg });
@@ -864,7 +909,8 @@ router.post("/auth/profile/verify/email/start", authLoginRegisterLimiter, async 
   }
 
   const identity = resolveAuthIdentity(user);
-  const newEmail = !user.email?.trim() ? normalizeEmail(req.body?.email) : null;
+  const addingEmail = !user.email?.trim();
+  const newEmail = addingEmail ? normalizeEmail(req.body?.email) : null;
   const targetEmail = user.email?.trim() ? user.email.trim() : newEmail;
 
   if (!targetEmail) {
@@ -873,6 +919,14 @@ router.post("/auth/profile/verify/email/start", authLoginRegisterLimiter, async 
       message: identity.can_add_email
         ? "Vendosni emailin që dëshironi të shtoni në llogari."
         : "Llogaria nuk ka email të regjistruar për verifikim.",
+    });
+    return;
+  }
+
+  if (!addingEmail && identity.profile_edit_second_factor !== "email") {
+    res.status(400).json({
+      error: "EMAIL_NOT_REQUIRED",
+      message: "Verifikimi me email nuk kërkohet për këtë llogari.",
     });
     return;
   }
@@ -954,7 +1008,73 @@ router.post("/auth/profile/verify/email/confirm", authLoginRegisterLimiter, asyn
   }
 
   const token = await issueProfileChangeToken(id, "email");
-  res.json({ ok: true, profile_change_token: token, expires_in_seconds: 600 });
+  res.json({
+    ok: true,
+    profile_change_token: token,
+    channel: "email",
+    expires_in_seconds: Math.floor(PROFILE_EDIT_SESSION_TTL_MS / 1000),
+  });
+});
+
+// ─── POST /auth/profile/seller-bootstrap ─────────────────────────────────────
+router.post("/auth/profile/seller-bootstrap", async (req, res) => {
+  const id = await sessionUserId(req);
+  if (id == null) {
+    res.status(401).json({ error: "Not logged in" });
+    return;
+  }
+
+  const [existing] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!existing) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  if (!userNeedsSellerBootstrap(existing)) {
+    res.status(400).json({
+      error: "SELLER_PROFILE_COMPLETE",
+      message: "Profili i shitësit është plotësuar.",
+    });
+    return;
+  }
+
+  const body = req.body ?? {};
+  const patch: Partial<typeof usersTable.$inferInsert> = {};
+
+  if (typeof body.display_name === "string") {
+    const v = body.display_name.trim();
+    patch.display_name = v.length ? v.slice(0, 120) : null;
+  }
+  if (typeof body.contact_phone === "string") {
+    const digits = body.contact_phone.replace(/\D/g, "");
+    patch.contact_phone = digits.length >= 8 ? digits.slice(0, 20) : null;
+  }
+
+  if (Object.keys(patch).length === 0) {
+    res.status(400).json({ error: "No valid fields" });
+    return;
+  }
+
+  const name = (patch.display_name ?? existing.display_name ?? "").trim();
+  const phoneDigits = (patch.contact_phone ?? existing.contact_phone ?? existing.phone_e164_digits ?? "").replace(
+    /\D/g,
+    "",
+  );
+  if (name.length < 2 || phoneDigits.length < 8) {
+    res.status(400).json({
+      error: "INVALID_SELLER_PROFILE",
+      message: "Plotëso emrin dhe një telefon të vlefshëm.",
+    });
+    return;
+  }
+
+  const [row] = await db
+    .update(usersTable)
+    .set(patch)
+    .where(eq(usersTable.id, id))
+    .returning();
+
+  res.json({ user: publicUser(row!, { self: true }) });
 });
 
 // ─── PATCH /auth/profile ──────────────────────────────────────────────────────
@@ -1051,18 +1171,18 @@ router.patch("/auth/profile", async (req, res) => {
     return;
   }
 
-  const verifyNeed = profilePatchNeedsVerification(existing, {
-    contact_phone: patch.contact_phone,
-  });
-  if (
-    verifyNeed.required &&
-    verifyNeed.channel === "email" &&
-    !hasTrustedEmail(existing) &&
-    !existing.email?.trim()
-  ) {
-    res.status(400).json({
-      error: "EMAIL_REQUIRED_FOR_PHONE_CHANGE",
-      message: "Shtoni dhe verifikoni një email në llogari para se të ndryshoni telefonin.",
+  const verifyNeed = profilePatchNeedsVerification(existing);
+  if (verifyNeed.required && !verifyNeed.channel) {
+    const missing = resolveMissingSecondMethod(existing);
+    res.status(403).json({
+      error: "SECOND_METHOD_REQUIRED",
+      missing_method: missing,
+      message:
+        missing === "email"
+          ? "Shtoni dhe verifikoni një email para se të ndryshoni profilin."
+          : missing === "phone"
+            ? "Shtoni dhe verifikoni një telefon para se të ndryshoni profilin."
+            : "Shtoni një metodë të dytë verifikimi para se të ndryshoni profilin.",
     });
     return;
   }
@@ -1076,11 +1196,11 @@ router.patch("/auth/profile", async (req, res) => {
         message:
           verifyNeed.channel === "sms"
             ? "Konfirmoni me SMS para se të ndryshoni profilin."
-            : "Konfirmoni me email para se të ndryshoni numrin e telefonit.",
+            : "Konfirmoni me email para se të ndryshoni profilin.",
       });
       return;
     }
-    const ok = await consumeProfileChangeToken(id, token, verifyNeed.channel);
+    const ok = await validateProfileChangeToken(id, token, verifyNeed.channel);
     if (!ok) {
       res.status(403).json({
         error: "VERIFICATION_INVALID",

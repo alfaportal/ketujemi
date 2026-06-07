@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Link, useLocation } from "wouter";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -16,6 +16,36 @@ import { PartnerProfilePanel } from "@/components/partner-profile-panel";
 import { ProfileShopDashboard } from "@/components/profile-shop-dashboard";
 import { ProfileChangeGate } from "@/components/profile-change-gate";
 import { ProfileAddEmail } from "@/components/profile-add-email";
+import { ProfileAddPhone } from "@/components/profile-add-phone";
+
+type EditPhase = "readonly" | "need-method" | "verify" | "editing";
+
+function syncFormFromUser(
+  user: NonNullable<ReturnType<typeof useAuth>["user"]>,
+  setters: {
+    setDisplayName: (v: string) => void;
+    setContactPhone: (v: string) => void;
+    setPhotoUrl: (v: string) => void;
+    setPartnerLogoUrl: (v: string) => void;
+    setCity: (v: string) => void;
+    setAboutMe: (v: string) => void;
+  },
+) {
+  const phone =
+    user.contact_phone
+      ? user.contact_phone.startsWith("+")
+        ? user.contact_phone
+        : `+${user.contact_phone}`
+      : user.phone_e164_digits
+        ? `+${user.phone_e164_digits}`
+        : "";
+  setters.setDisplayName(user.display_name ?? "");
+  setters.setContactPhone(phone);
+  setters.setPhotoUrl(user.profile_photo_url ?? "");
+  setters.setPartnerLogoUrl(user.partner_logo_url ?? "");
+  setters.setCity(user.city ?? "");
+  setters.setAboutMe(user.about_me ?? "");
+}
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
@@ -35,7 +65,33 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordBusy, setPasswordBusy] = useState(false);
   const [changeToken, setChangeToken] = useState<string | null>(null);
-  const [initialPhone, setInitialPhone] = useState("");
+  const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
+  const [editPhase, setEditPhase] = useState<EditPhase>("readonly");
+  const [sessionChecked, setSessionChecked] = useState(false);
+
+  const loadEditSession = useCallback(async () => {
+    try {
+      const res = await fetchWithTimeout("/api/auth/profile/edit-session", {
+        credentials: "include",
+      });
+      if (!res.ok) return;
+      const data = (await res.json()) as {
+        active?: boolean;
+        profile_change_token?: string;
+        expires_at?: string;
+      };
+      if (data.active && data.profile_change_token && data.expires_at) {
+        const expires = new Date(data.expires_at).getTime();
+        if (expires > Date.now()) {
+          setChangeToken(data.profile_change_token);
+          setSessionExpiresAt(expires);
+          setEditPhase("editing");
+        }
+      }
+    } finally {
+      setSessionChecked(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (loading || !user || typeof window === "undefined") return;
@@ -78,38 +134,35 @@ export default function ProfilePage() {
       setLocation(loginUrlWithReturn("/profili"));
       return;
     }
-    setDisplayName(user.display_name ?? "");
-    setContactPhone(
-      user.contact_phone
-        ? user.contact_phone.startsWith("+")
-          ? user.contact_phone
-          : `+${user.contact_phone}`
-        : user.phone_e164_digits
-          ? `+${user.phone_e164_digits}`
-          : "",
-    );
-    setPhotoUrl(user.profile_photo_url ?? "");
-    setPartnerLogoUrl(user.partner_logo_url ?? "");
-    setCity(user.city ?? "");
-    setAboutMe(user.about_me ?? "");
-    const phone =
-      user.contact_phone
-        ? user.contact_phone.startsWith("+")
-          ? user.contact_phone
-          : `+${user.contact_phone}`
-        : user.phone_e164_digits
-          ? `+${user.phone_e164_digits}`
-          : "";
-    setInitialPhone(phone);
-    setChangeToken(null);
+    syncFormFromUser(user, {
+      setDisplayName,
+      setContactPhone,
+      setPhotoUrl,
+      setPartnerLogoUrl,
+      setCity,
+      setAboutMe,
+    });
   }, [user, loading, setLocation]);
 
-  const phoneDigits = (s: string) => s.replace(/\D/g, "");
-  const phoneChanged = phoneDigits(contactPhone) !== phoneDigits(initialPhone);
-  const needsSms = Boolean(user?.profile_edit_requires_sms);
-  const needsEmailForPhone = Boolean(
-    phoneChanged && user?.phone_change_requires_email && user?.email,
-  );
+  useEffect(() => {
+    if (!loading && user && !sessionChecked) {
+      void loadEditSession();
+    }
+  }, [loading, user, sessionChecked, loadEditSession]);
+
+  useEffect(() => {
+    if (!sessionExpiresAt || editPhase !== "editing") return;
+    const tick = () => {
+      if (Date.now() >= sessionExpiresAt) {
+        setChangeToken(null);
+        setSessionExpiresAt(null);
+        setEditPhase("readonly");
+        toast({ title: t.profile_edit_session_expired });
+      }
+    };
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [sessionExpiresAt, editPhase, toast, t.profile_edit_session_expired]);
 
   function formatRegisteredAt(iso?: string): string {
     if (!iso) return "—";
@@ -122,6 +175,42 @@ export default function ProfilePage() {
     } catch {
       return iso;
     }
+  }
+
+  function sessionMinutesLeft(): number {
+    if (!sessionExpiresAt) return 0;
+    return Math.max(0, Math.ceil((sessionExpiresAt - Date.now()) / 60_000));
+  }
+
+  function startEdit() {
+    if (!user) return;
+    if (user.profile_edit_needs_second_method) {
+      setEditPhase("need-method");
+      return;
+    }
+    if (user.profile_edit_second_factor) {
+      setEditPhase("verify");
+    }
+  }
+
+  function cancelEdit() {
+    setEditPhase("readonly");
+  }
+
+  function onUnlocked(token: string, expiresInSeconds: number) {
+    setChangeToken(token);
+    setSessionExpiresAt(Date.now() + expiresInSeconds * 1000);
+    setEditPhase("editing");
+  }
+
+  async function onSecondMethodAdded(session?: { token: string; expiresInSeconds: number }) {
+    if (session) {
+      onUnlocked(session.token, session.expiresInSeconds);
+      await refresh();
+      return;
+    }
+    await refresh();
+    setEditPhase("verify");
   }
 
   async function onChangePassword(e: React.FormEvent) {
@@ -169,7 +258,7 @@ export default function ProfilePage() {
 
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !changeToken) return;
     setBusy(true);
     try {
       const res = await fetchWithTimeout("/api/auth/profile", {
@@ -185,7 +274,7 @@ export default function ProfilePage() {
             : {}),
           city,
           about_me: aboutMe,
-          ...(changeToken ? { profile_change_token: changeToken } : {}),
+          profile_change_token: changeToken,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -198,11 +287,17 @@ export default function ProfilePage() {
         return;
       }
       await refresh();
-      setChangeToken(null);
       toast({ title: t.profile_saved });
     } finally {
       setBusy(false);
     }
+  }
+
+  function oauthLinkedLabel(provider: string): string | null {
+    if (provider === "facebook") return t.profile_oauth_facebook_linked;
+    if (provider === "google") return t.profile_oauth_google_linked;
+    if (provider === "tiktok") return t.profile_oauth_tiktok_linked;
+    return null;
   }
 
   if (loading || !user) {
@@ -261,14 +356,16 @@ export default function ProfilePage() {
                 <span className="text-gray-500">{t.profile_registered}</span>
                 <span className="font-medium text-gray-900 text-right">{formatRegisteredAt(user.created_at)}</span>
               </div>
-              {user.oauth_providers && user.oauth_providers.length > 0 ? (
-                <div className="flex justify-between gap-3">
-                  <span className="text-gray-500">{t.profile_oauth_linked}</span>
-                  <span className="font-medium text-gray-900 text-right capitalize">
-                    {user.oauth_providers.join(", ")}
-                  </span>
-                </div>
-              ) : null}
+              {user.oauth_providers?.map((provider) => {
+                const label = oauthLinkedLabel(provider);
+                if (!label) return null;
+                return (
+                  <div key={provider} className="flex justify-between gap-3">
+                    <span className="text-gray-500">{t.profile_oauth_linked}</span>
+                    <span className="font-medium text-gray-900 text-right">{label}</span>
+                  </div>
+                );
+              })}
             </div>
             <Link
               href="/shpalljet-e-mia"
@@ -338,107 +435,142 @@ export default function ProfilePage() {
             </form>
           ) : null}
 
-          <form className="space-y-4 pt-4 border-t border-gray-100" onSubmit={onSave}>
-            <h2 className="text-base font-bold text-gray-900">{t.profile_edit_heading}</h2>
-
-            {user.can_add_email ? <ProfileAddEmail onAdded={() => void refresh()} /> : null}
-
-            <ProfileChangeGate
-              user={user}
-              needsSms={needsSms}
-              needsEmailForPhone={needsEmailForPhone}
-              token={changeToken}
-              onToken={setChangeToken}
-            />
-
-            <div className="space-y-2">
-              <Label htmlFor="profile-name">{t.profile_fullName}</Label>
-              <Input
-                id="profile-name"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder={t.reg_sellerGate_namePh}
-                className="min-h-12 h-12"
-              />
+          <div className="space-y-4 pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-base font-bold text-gray-900">{t.profile_edit_heading}</h2>
+              {editPhase === "editing" ? (
+                <span className="text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg px-2 py-1">
+                  {t.profile_edit_session_left.replace("{minutes}", String(sessionMinutesLeft()))}
+                </span>
+              ) : null}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="profile-phone">{t.phoneNum}</Label>
-              <Input
-                id="profile-phone"
-                type="tel"
-                value={contactPhone}
-                onChange={(e) => setContactPhone(e.target.value)}
-                className="min-h-12 h-12"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="profile-photo">{t.profile_photo}</Label>
-              <Input
-                id="profile-photo"
-                type="url"
-                value={photoUrl}
-                onChange={(e) => setPhotoUrl(e.target.value)}
-                placeholder="https://"
-                className="min-h-12 h-12"
-              />
-            </div>
-            {user.account_type === "business" && user.business_status === "active" ? (
-              <div className="space-y-2">
-                <Label htmlFor="profile-partner-logo">Logo partner</Label>
-                <Input
-                  id="profile-partner-logo"
-                  type="url"
-                  value={partnerLogoUrl}
-                  onChange={(e) => setPartnerLogoUrl(e.target.value)}
-                  placeholder="https:// — shfaqet te «Partnerët tanë të besuar»"
-                  className="min-h-12 h-12"
-                />
-                <p className="text-xs text-gray-500">
-                  URL e logos. Pa logo, shfaqet emri i biznesit. Klikimi hap linkun nga seksioni partner
-                  më sipër.
-                </p>
+
+            {editPhase === "readonly" ? (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-500">{t.profile_edit_locked_hint}</p>
+                <Button type="button" className="w-full min-h-12 h-12" onClick={startEdit}>
+                  {t.profile_edit_start}
+                </Button>
               </div>
             ) : null}
-            <div className="space-y-2">
-              <Label htmlFor="profile-city">{t.profile_city}</Label>
-              <Input
-                id="profile-city"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="min-h-12 h-12"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="profile-about">{t.profile_about}</Label>
-              <Textarea
-                id="profile-about"
-                value={aboutMe}
-                onChange={(e) => setAboutMe(e.target.value)}
-                rows={4}
-                className="min-h-[120px] text-[16px]"
-              />
-            </div>
-            {phoneChanged && user.phone_change_requires_email && !user.email ? (
-              <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-                {t.profile_phone_change_needs_email}
-              </p>
+
+            {editPhase === "need-method" ? (
+              <div className="space-y-3">
+                <p className="text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                  {t.profile_edit_need_second_method}
+                </p>
+                {user.missing_second_method === "email" ? (
+                  <ProfileAddEmail onAdded={(s) => void onSecondMethodAdded(s)} />
+                ) : user.missing_second_method === "phone" ? (
+                  <ProfileAddPhone onAdded={(s) => void onSecondMethodAdded(s)} />
+                ) : null}
+                <Button type="button" variant="ghost" className="w-full" onClick={cancelEdit}>
+                  {t.profile_edit_cancel}
+                </Button>
+              </div>
             ) : null}
 
-            <Button
-              type="submit"
-              className="w-full min-h-12 h-12 text-base"
-              disabled={
-                busy ||
-                (needsSms && !changeToken) ||
-                (needsEmailForPhone && !changeToken)
-              }
-            >
-              {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.profile_save}
-            </Button>
-          </form>
+            {editPhase === "verify" && user.profile_edit_second_factor ? (
+              <ProfileChangeGate
+                user={user}
+                secondFactor={user.profile_edit_second_factor}
+                onUnlocked={onUnlocked}
+                onCancel={cancelEdit}
+              />
+            ) : null}
+
+            {editPhase === "editing" ? (
+              <form className="space-y-4" onSubmit={onSave}>
+                <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                  {t.profile_verify_ok}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profile-name">{t.profile_fullName}</Label>
+                  <Input
+                    id="profile-name"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder={t.reg_sellerGate_namePh}
+                    className="min-h-12 h-12"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="profile-phone">{t.phoneNum}</Label>
+                  <Input
+                    id="profile-phone"
+                    type="tel"
+                    value={contactPhone}
+                    onChange={(e) => setContactPhone(e.target.value)}
+                    className="min-h-12 h-12"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="profile-photo">{t.profile_photo}</Label>
+                  <Input
+                    id="profile-photo"
+                    type="url"
+                    value={photoUrl}
+                    onChange={(e) => setPhotoUrl(e.target.value)}
+                    placeholder="https://"
+                    className="min-h-12 h-12"
+                  />
+                </div>
+                {user.account_type === "business" && user.business_status === "active" ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="profile-partner-logo">Logo partner</Label>
+                    <Input
+                      id="profile-partner-logo"
+                      type="url"
+                      value={partnerLogoUrl}
+                      onChange={(e) => setPartnerLogoUrl(e.target.value)}
+                      placeholder="https://"
+                      className="min-h-12 h-12"
+                    />
+                  </div>
+                ) : null}
+                <div className="space-y-2">
+                  <Label htmlFor="profile-city">{t.profile_city}</Label>
+                  <Input
+                    id="profile-city"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="min-h-12 h-12"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="profile-about">{t.profile_about}</Label>
+                  <Textarea
+                    id="profile-about"
+                    value={aboutMe}
+                    onChange={(e) => setAboutMe(e.target.value)}
+                    rows={4}
+                    className="min-h-[120px] text-[16px]"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1 min-h-12 h-12"
+                    onClick={cancelEdit}
+                  >
+                    {t.profile_edit_cancel}
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1 min-h-12 h-12"
+                    disabled={busy || !changeToken}
+                  >
+                    {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.profile_save}
+                  </Button>
+                </div>
+              </form>
+            ) : null}
+          </div>
         </div>
       </main>
     </div>
   );
 }
-

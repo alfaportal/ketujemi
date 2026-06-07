@@ -2,7 +2,7 @@
 
 import { resolveAppOrigin } from "./canonical-host.js";
 
-export type MetaOAuthProvider = "facebook" | "instagram";
+export type MetaOAuthProvider = "facebook";
 
 const GRAPH_VERSION = "v21.0";
 

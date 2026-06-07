@@ -1,4 +1,4 @@
-import { FaFacebook, FaGoogle, FaInstagram, FaTiktok } from "react-icons/fa";
+import { FaFacebook, FaGoogle, FaTiktok } from "react-icons/fa";
 
 type Props = {
   returnTo: string;
@@ -55,7 +55,6 @@ export function SocialOAuthButtons({
           className="flex w-full min-h-12 items-center justify-center gap-2 rounded-md border border-[#1877F2]/30 bg-[#1877F2]/5 px-4 text-sm font-semibold text-[#1877F2] hover:bg-[#1877F2]/10 transition-colors"
         >
           <FaFacebook className="h-5 w-5 shrink-0" aria-hidden />
-          <FaInstagram className="h-5 w-5 shrink-0 text-[#C13584]" aria-hidden />
           {labels.facebook}
         </a>
       ) : null}

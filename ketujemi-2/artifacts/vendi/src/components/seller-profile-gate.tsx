@@ -40,8 +40,8 @@ export function SellerProfileGate({ onReady }: Props) {
     }
     setBusy(true);
     try {
-      const res = await fetchWithTimeout("/api/auth/profile", {
-        method: "PATCH",
+      const res = await fetchWithTimeout("/api/auth/profile/seller-bootstrap", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({

@@ -11,11 +11,11 @@ type Props = {
   onAdded: (session?: { token: string; expiresInSeconds: number }) => void;
 };
 
-/** OAuth / phone-only users can attach a verified email for future profile checks. */
-export function ProfileAddEmail({ onAdded }: Props) {
+/** Email-login users can attach a verified phone as second factor for profile edits. */
+export function ProfileAddPhone({ onAdded }: Props) {
   const { toast } = useToast();
-  const { t: copy } = useMarket();
-  const [email, setEmail] = useState("");
+  const { t: copy, market } = useMarket();
+  const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"idle" | "sent">("idle");
   const [busy, setBusy] = useState(false);
@@ -23,11 +23,11 @@ export function ProfileAddEmail({ onAdded }: Props) {
   async function sendCode() {
     setBusy(true);
     try {
-      const res = await fetchWithTimeout("/api/auth/profile/verify/email/start", {
+      const res = await fetchWithTimeout("/api/auth/profile/verify/sms/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ phone: phone.trim() }),
       });
       const data = (await res.json().catch(() => ({}))) as { message?: string; error?: string };
       if (!res.ok) {
@@ -38,7 +38,7 @@ export function ProfileAddEmail({ onAdded }: Props) {
         return;
       }
       setStep("sent");
-      toast({ title: copy.toast_emailSent });
+      toast({ title: copy.toast_codeSent });
     } finally {
       setBusy(false);
     }
@@ -48,7 +48,7 @@ export function ProfileAddEmail({ onAdded }: Props) {
     e.preventDefault();
     setBusy(true);
     try {
-      const res = await fetchWithTimeout("/api/auth/profile/verify/email/confirm", {
+      const res = await fetchWithTimeout("/api/auth/profile/verify/sms/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -67,7 +67,7 @@ export function ProfileAddEmail({ onAdded }: Props) {
         });
         return;
       }
-      toast({ title: copy.profile_add_email_ok });
+      toast({ title: copy.profile_add_phone_ok });
       if (data.profile_change_token) {
         onAdded({
           token: data.profile_change_token,
@@ -84,43 +84,46 @@ export function ProfileAddEmail({ onAdded }: Props) {
   return (
     <section className="rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-4 space-y-3">
       <div>
-        <h3 className="text-sm font-bold text-gray-900">{copy.profile_add_email_heading}</h3>
-        <p className="text-xs text-gray-600 mt-1">{copy.profile_add_email_hint}</p>
+        <h3 className="text-sm font-bold text-gray-900">{copy.profile_add_phone_heading}</h3>
+        <p className="text-xs text-gray-600 mt-1">{copy.profile_add_phone_hint}</p>
       </div>
       {step === "idle" ? (
         <div className="space-y-2">
-          <Label htmlFor="profile-add-email">Email</Label>
+          <Label htmlFor="profile-add-phone">{copy.phoneNum}</Label>
           <Input
-            id="profile-add-email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="kontakt@email.com"
+            id="profile-add-phone"
+            type="tel"
+            inputMode="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder={`${market.prefix} 44 123 456`}
             className="min-h-12 h-12 bg-white"
           />
           <Button
             type="button"
             className="w-full min-h-11"
-            disabled={busy || !email.includes("@")}
+            disabled={busy || phone.replace(/\D/g, "").length < 8}
             onClick={() => void sendCode()}
           >
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : copy.profile_add_email_send}
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : copy.profile_add_phone_send}
           </Button>
         </div>
       ) : (
         <form onSubmit={confirmCode} className="space-y-3">
           <div className="space-y-2">
-            <Label htmlFor="profile-add-email-code">{copy.profile_verify_code}</Label>
+            <Label htmlFor="profile-add-phone-code">{copy.profile_verify_code}</Label>
             <Input
-              id="profile-add-email-code"
+              id="profile-add-phone-code"
               inputMode="numeric"
+              autoComplete="one-time-code"
               value={code}
               onChange={(e) => setCode(e.target.value)}
+              placeholder="123456"
               className="min-h-12 h-12 bg-white"
             />
           </div>
           <Button type="submit" className="w-full min-h-11" disabled={busy || code.length < 4}>
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : copy.profile_add_email_confirm}
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : copy.profile_add_phone_confirm}
           </Button>
         </form>
       )}

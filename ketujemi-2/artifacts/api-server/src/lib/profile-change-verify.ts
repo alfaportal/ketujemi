@@ -1,17 +1,11 @@
 import { randomBytes } from "node:crypto";
 import { and, eq, gt, lt } from "drizzle-orm";
 import { db, profileChangeChallengesTable, profileChangeTokensTable, type User } from "@workspace/db";
-import {
-  hasTrustedEmail,
-  isPhoneLoginAnchor,
-  resolveAuthChannel,
-  resolveAuthIdentity,
-  type AuthChannel,
-} from "./auth-identity";
+import { resolveProfileEditSecondFactor, type AuthChannel } from "./auth-identity";
 import { normalizePhone } from "./phone-prefixes";
 
 const CHALLENGE_TTL_MS = 15 * 60 * 1000;
-const TOKEN_TTL_MS = 10 * 60 * 1000;
+export const PROFILE_EDIT_SESSION_TTL_MS = 10 * 60 * 1000;
 
 export type { AuthChannel, AuthIdentity, CredentialChannel, OAuthProviderId } from "./auth-identity";
 export {
@@ -19,35 +13,23 @@ export {
   resolveAuthChannel,
   resolveAuthIdentity,
   resolveLinkedOAuthProviders,
+  resolveProfileEditSecondFactor,
+  resolveMissingSecondMethod,
+  userNeedsSellerBootstrap,
   hasTrustedEmail,
   hasVerifiedPhone,
   isPhoneLoginAnchor,
   isOAuthAuthChannel,
 } from "./auth-identity";
 
-function digitsOnly(s: string | null | undefined): string {
-  return (s ?? "").replace(/\D/g, "");
-}
-
 export function profilePatchNeedsVerification(
   user: User,
-  patch: { contact_phone?: string | null },
 ): { required: boolean; channel: "sms" | "email" | null } {
-  const identity = resolveAuthIdentity(user);
-
-  if (identity.profile_edit_requires_sms) {
-    return { required: true, channel: "sms" };
+  const channel = resolveProfileEditSecondFactor(user);
+  if (!channel) {
+    return { required: true, channel: null };
   }
-
-  if (patch.contact_phone !== undefined) {
-    const newDigits = digitsOnly(patch.contact_phone);
-    const oldDigits = digitsOnly(user.contact_phone ?? user.phone_e164_digits);
-    if (newDigits.length >= 8 && newDigits !== oldDigits && identity.phone_change_requires_email) {
-      return { required: true, channel: "email" };
-    }
-  }
-
-  return { required: false, channel: null };
+  return { required: true, channel };
 }
 
 export function userSmsPhoneForProfile(user: User, bodyPhone?: unknown): string | null {
@@ -119,16 +101,42 @@ export async function issueProfileChangeToken(
     user_id: userId,
     token,
     channel,
-    expires_at: new Date(Date.now() + TOKEN_TTL_MS),
+    expires_at: new Date(Date.now() + PROFILE_EDIT_SESSION_TTL_MS),
   });
   return token;
 }
 
-export async function consumeProfileChangeToken(
+export async function getActiveProfileEditSession(userId: number): Promise<{
+  token: string;
+  channel: "sms" | "email";
+  expires_at: Date;
+} | null> {
+  await clearExpiredProfileChangeRows();
+  const [row] = await db
+    .select()
+    .from(profileChangeTokensTable)
+    .where(
+      and(
+        eq(profileChangeTokensTable.user_id, userId),
+        gt(profileChangeTokensTable.expires_at, new Date()),
+      ),
+    )
+    .limit(1);
+  if (!row) return null;
+  return {
+    token: row.token,
+    channel: row.channel as "sms" | "email",
+    expires_at: row.expires_at,
+  };
+}
+
+/** Validates token without consuming it — session stays active until expiry (10 min). */
+export async function validateProfileChangeToken(
   userId: number,
   token: string,
   expectedChannel: "sms" | "email",
 ): Promise<boolean> {
+  await clearExpiredProfileChangeRows();
   const [row] = await db
     .select()
     .from(profileChangeTokensTable)
@@ -141,8 +149,5 @@ export async function consumeProfileChangeToken(
       ),
     )
     .limit(1);
-
-  if (!row) return false;
-  await db.delete(profileChangeTokensTable).where(eq(profileChangeTokensTable.id, row.id));
-  return true;
+  return Boolean(row);
 }

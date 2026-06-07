@@ -1,14 +1,13 @@
 import type { User } from "@workspace/db";
 
 /**
- * OAuth provider registry — add a new provider here only (column must exist on `users`).
- * No other auth/profile code should hardcode provider ids.
+ * OAuth login provider registry — add providers here (column must exist on `users`).
+ * Instagram Login is not supported; `instagram_user_id` may remain for legacy data only.
  */
 export const OAUTH_PROVIDER_REGISTRY = {
   facebook: { userIdColumn: "facebook_user_id" as const },
   google: { userIdColumn: "google_user_id" as const },
   tiktok: { userIdColumn: "tiktok_user_id" as const },
-  instagram: { userIdColumn: "instagram_user_id" as const },
 } satisfies Record<string, { userIdColumn: keyof User }>;
 
 export type OAuthProviderId = keyof typeof OAUTH_PROVIDER_REGISTRY;
@@ -18,16 +17,20 @@ export type CredentialChannel = "email" | "phone" | "both" | "none";
 /** Primary login channel: credential-based or `oauth:<provider>`. */
 export type AuthChannel = CredentialChannel | `oauth:${OAuthProviderId}`;
 
+export type ProfileEditSecondFactor = "sms" | "email";
+
 export type AuthIdentity = {
   auth_channel: AuthChannel;
   credential_channel: CredentialChannel;
   oauth_providers: OAuthProviderId[];
   has_trusted_email: boolean;
   has_verified_phone: boolean;
-  /** Any profile field edit needs SMS verification first. */
-  profile_edit_requires_sms: boolean;
-  /** Changing contact phone needs email verification (phone-login accounts). */
-  phone_change_requires_email: boolean;
+  identity_verified: boolean;
+  identity_verified_via: string | null;
+  /** Second-factor channel before profile edit; null = user must add a second method first. */
+  profile_edit_second_factor: ProfileEditSecondFactor | null;
+  profile_edit_needs_second_method: boolean;
+  missing_second_method: "email" | "phone" | null;
   can_add_phone: boolean;
   can_add_email: boolean;
 };
@@ -82,19 +85,65 @@ export function isPhoneLoginAnchor(u: User): boolean {
   return Boolean(u.phone_e164_digits?.trim() && !hasTrustedEmail(u));
 }
 
+/**
+ * Second authentication factor for profile edits — always the credential that is NOT
+ * the primary login channel.
+ */
+export function resolveProfileEditSecondFactor(u: User): ProfileEditSecondFactor | null {
+  const channel = resolveAuthChannel(u);
+
+  if (isOAuthAuthChannel(channel)) {
+    if (hasTrustedEmail(u)) return "email";
+    if (hasVerifiedPhone(u)) return "sms";
+    return null;
+  }
+
+  if (channel === "phone" || (channel === "both" && isPhoneLoginAnchor(u))) {
+    if (hasTrustedEmail(u)) return "email";
+    return null;
+  }
+
+  if (channel === "email" || channel === "both") {
+    if (hasVerifiedPhone(u)) return "sms";
+    return null;
+  }
+
+  return null;
+}
+
+/** What the user must add before profile edit is possible. */
+export function resolveMissingSecondMethod(u: User): "email" | "phone" | null {
+  if (resolveProfileEditSecondFactor(u) !== null) return null;
+
+  const channel = resolveAuthChannel(u);
+  if (isOAuthAuthChannel(channel)) {
+    if (!hasTrustedEmail(u)) return "email";
+    if (!hasVerifiedPhone(u)) return "phone";
+    return null;
+  }
+  if (channel === "phone" || (channel === "both" && isPhoneLoginAnchor(u))) {
+    return hasTrustedEmail(u) ? null : "email";
+  }
+  if (channel === "email" || channel === "both") {
+    return hasVerifiedPhone(u) ? null : "phone";
+  }
+  return "email";
+}
+
+export function userNeedsSellerBootstrap(u: User): boolean {
+  const name = u.display_name?.trim() ?? "";
+  const phoneDigits = (u.contact_phone ?? u.phone_e164_digits ?? "").replace(/\D/g, "");
+  return name.length < 2 || phoneDigits.length < 8;
+}
+
 export function resolveAuthIdentity(u: User): AuthIdentity {
   const oauth_providers = resolveLinkedOAuthProviders(u);
   const credential_channel = resolveCredentialChannel(u);
   const auth_channel = resolveAuthChannel(u);
   const has_trusted_email = hasTrustedEmail(u);
   const has_verified_phone = hasVerifiedPhone(u);
-
-  const profile_edit_requires_sms =
-    has_trusted_email ||
-    (Boolean(u.email?.trim()) && !has_verified_phone) ||
-    (oauth_providers.length > 0 && !has_verified_phone);
-
-  const phone_change_requires_email = isPhoneLoginAnchor(u);
+  const profile_edit_second_factor = resolveProfileEditSecondFactor(u);
+  const missing_second_method = resolveMissingSecondMethod(u);
 
   return {
     auth_channel,
@@ -102,8 +151,11 @@ export function resolveAuthIdentity(u: User): AuthIdentity {
     oauth_providers,
     has_trusted_email,
     has_verified_phone,
-    profile_edit_requires_sms,
-    phone_change_requires_email,
+    identity_verified: Boolean(u.identity_verified),
+    identity_verified_via: u.identity_verified_via?.trim() || null,
+    profile_edit_second_factor,
+    profile_edit_needs_second_method: profile_edit_second_factor === null,
+    missing_second_method,
     can_add_phone: !has_verified_phone,
     can_add_email: !has_trusted_email,
   };

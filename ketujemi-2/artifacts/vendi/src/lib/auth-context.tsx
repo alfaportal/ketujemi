@@ -34,8 +34,11 @@ export type AuthUser = {
   credential_channel?: "email" | "phone" | "both" | "none";
   oauth_providers?: string[];
   has_trusted_email?: boolean;
-  profile_edit_requires_sms?: boolean;
-  phone_change_requires_email?: boolean;
+  identity_verified?: boolean;
+  identity_verified_via?: string | null;
+  profile_edit_second_factor?: "sms" | "email" | null;
+  profile_edit_needs_second_method?: boolean;
+  missing_second_method?: "email" | "phone" | null;
   can_add_phone?: boolean;
   can_add_email?: boolean;
   phone_verified?: boolean;

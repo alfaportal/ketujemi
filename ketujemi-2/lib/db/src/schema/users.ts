@@ -24,6 +24,10 @@ export const usersTable = pgTable("users", {
   city: text("city"),
   about_me: text("about_me"),
   email_verified_at: timestamp("email_verified_at"),
+  /** True when identity was verified via Meta Facebook OAuth (no SMS required). */
+  identity_verified: boolean("identity_verified").notNull().default(false),
+  /** e.g. facebook */
+  identity_verified_via: text("identity_verified_via"),
   /** private | business — business accounts follow separate posting rules. */
   account_type: text("account_type").notNull().default("private"),
   business_name: text("business_name"),
