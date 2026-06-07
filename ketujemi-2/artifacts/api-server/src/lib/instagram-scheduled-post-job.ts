@@ -1,4 +1,4 @@
-import { db, listingsTable, categoriesTable } from "@workspace/db";
+import { db, listingsTable, categoriesTable, shopsTable } from "@workspace/db";
 import { and, asc, eq, gt, isNull, or } from "drizzle-orm";
 import {
   facebookPostSkipReason,
@@ -40,9 +40,14 @@ export async function runInstagramScheduledPost(): Promise<{
       category_id: listingsTable.category_id,
       category_name: categoriesTable.name,
       category_slug: categoriesTable.slug,
+      seller_name: listingsTable.seller_name,
+      property_subtype: listingsTable.property_subtype,
+      property_txn: listingsTable.property_txn,
+      shop_name: shopsTable.shop_name,
     })
     .from(listingsTable)
     .leftJoin(categoriesTable, eq(listingsTable.category_id, categoriesTable.id))
+    .leftJoin(shopsTable, eq(listingsTable.shop_id, shopsTable.id))
     .where(
       and(
         eq(listingsTable.status, "active"),
@@ -76,6 +81,10 @@ export async function runInstagramScheduledPost(): Promise<{
       category_name: row.category_name,
       category_slug: row.category_slug,
       root_category_slug: rootSlug,
+      seller_name: row.seller_name,
+      shop_name: row.shop_name,
+      property_subtype: row.property_subtype,
+      property_txn: row.property_txn,
       listing_country: null as string | null,
     };
 

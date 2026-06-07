@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { listingsTable, categoriesTable, listingReportsTable, usersTable } from "@workspace/db";
+import { listingsTable, categoriesTable, listingReportsTable, usersTable, shopsTable } from "@workspace/db";
 import { eq, and, gte, lte, ilike, desc, sql, count, gt, or, isNull, inArray } from "drizzle-orm";
 import {
   GetListingsQueryParams,
@@ -537,6 +537,16 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     await markFirstListingPosted(viewer.id);
   }
 
+  let shopNameForSocial: string | null = null;
+  if (shopId) {
+    const [shopRow] = await db
+      .select({ shop_name: shopsTable.shop_name })
+      .from(shopsTable)
+      .where(eq(shopsTable.id, shopId))
+      .limit(1);
+    shopNameForSocial = shopRow?.shop_name ?? null;
+  }
+
   void postNewListingToFacebook({
     id: row.id,
     title: row.title,
@@ -547,6 +557,10 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     category_name: catRow?.name ?? categoryMeta?.name ?? null,
     category_slug: categoryMeta?.slug ?? null,
     root_category_slug: categoryMeta?.rootSlug ?? null,
+    seller_name: row.seller_name,
+    shop_name: shopNameForSocial,
+    property_subtype: row.property_subtype ?? null,
+    property_txn: row.property_txn ?? null,
     listing_country: bodyExtra.listing_country ?? null,
   })
     .then(async (postId) => {

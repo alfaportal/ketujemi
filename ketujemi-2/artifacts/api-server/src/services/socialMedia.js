@@ -14,9 +14,8 @@ import { getCanonicalOrigin } from "../lib/canonical-host.js";
 import { parseListingImageUrls } from "../lib/listing-images.js";
 import { logger } from "../lib/logger.js";
 import { facebookAppId, facebookAppSecret } from "../lib/meta-oauth-config.js";
+import { resolveSocialFlairLines } from "../lib/social-listing-caption.js";
 import {
-  categoryFlairLine,
-  resolveCategoryTheme,
   platformUspLine,
   socialFooterBlock,
 } from "../lib/social-post-captions.js";
@@ -204,12 +203,7 @@ export function buildFacebookCaption(market, input) {
   const city = input.location.trim();
   const slug = input.slug;
   const priceLine = formatPriceLine(market, input.price);
-  const categoryInput = {
-    categoryName: input.categoryName ?? null,
-    categorySlug: input.categorySlug ?? null,
-    rootCategorySlug: input.rootCategorySlug ?? null,
-  };
-  const flair = categoryFlairLine("facebook", market, categoryInput);
+  const flair = input.flairLine ?? input.flair ?? "";
   const usp = platformUspLine(market);
   const socials = socialFooterBlock("facebook", market);
 
@@ -250,12 +244,7 @@ export function buildInstagramCaption(market, input) {
   const city = input.location.trim();
   const priceLine = formatPriceLine(market, input.price);
   const link = input.listingLink.replace(/^https?:\/\//, "");
-  const categoryInput = {
-    categoryName: input.categoryName ?? null,
-    categorySlug: input.categorySlug ?? null,
-    rootCategorySlug: input.rootCategorySlug ?? null,
-  };
-  const flair = categoryFlairLine("instagram", market, categoryInput);
+  const flair = input.flairLine ?? input.flair ?? "";
   const usp = platformUspLine(market);
   const socials = socialFooterBlock("instagram", market);
 
@@ -716,10 +705,18 @@ export async function postNewListingToFacebook(listing) {
   const photoUrl = parseListingImageUrls(listing.image_url)[0];
   const market = resolveListingMarketForSocial(listing.location, listing.listing_country);
   const slug = listingSlug(listing.id, listing.title);
-  const categoryTheme = resolveCategoryTheme({
+  const flairLines = await resolveSocialFlairLines({
+    title: listing.title,
+    description: listing.description ?? "",
     categoryName: listing.category_name ?? null,
     categorySlug: listing.category_slug ?? null,
     rootCategorySlug: listing.root_category_slug ?? null,
+    propertySubtype: listing.property_subtype ?? null,
+    propertyTxn: listing.property_txn ?? null,
+    sellerName: listing.seller_name ?? null,
+    shopName: listing.shop_name ?? null,
+    imageUrl: photoUrl ?? null,
+    market,
   });
   const caption = buildFacebookCaption(market, {
     title: listing.title,
@@ -727,8 +724,7 @@ export async function postNewListingToFacebook(listing) {
     location: listing.location,
     slug,
     categoryName: listing.category_name ?? null,
-    categorySlug: listing.category_slug ?? null,
-    rootCategorySlug: listing.root_category_slug ?? null,
+    flairLine: flairLines.fb,
   });
   const listingLink = `${getCanonicalOrigin()}/listings/${listing.id}`;
 
@@ -741,7 +737,10 @@ export async function postNewListingToFacebook(listing) {
     category_name: listing.category_name ?? null,
     category_slug: listing.category_slug ?? null,
     root_category_slug: listing.root_category_slug ?? null,
-    category_theme: categoryTheme,
+    category_theme: flairLines.theme,
+    caption_source: flairLines.source,
+    seller_name: listing.seller_name ?? null,
+    shop_name: listing.shop_name ?? null,
     descriptionLength: String(listing.description ?? "").length,
     image_url: listing.image_url ?? null,
     photoUrl,
@@ -840,10 +839,18 @@ export async function postNewListingToInstagram(listing) {
   const market = resolveListingMarketForSocial(listing.location, listing.listing_country);
   const slug = listingSlug(listing.id, listing.title);
   const listingLink = `${getCanonicalOrigin()}/listings/${listing.id}`;
-  const categoryTheme = resolveCategoryTheme({
+  const flairLines = await resolveSocialFlairLines({
+    title: listing.title,
+    description: listing.description ?? "",
     categoryName: listing.category_name ?? null,
     categorySlug: listing.category_slug ?? null,
     rootCategorySlug: listing.root_category_slug ?? null,
+    propertySubtype: listing.property_subtype ?? null,
+    propertyTxn: listing.property_txn ?? null,
+    sellerName: listing.seller_name ?? null,
+    shopName: listing.shop_name ?? null,
+    imageUrl: photoUrl ?? null,
+    market,
   });
   const igCaption = buildInstagramCaption(market, {
     title: listing.title,
@@ -851,11 +858,13 @@ export async function postNewListingToInstagram(listing) {
     location: listing.location,
     slug,
     categoryName: listing.category_name ?? null,
-    categorySlug: listing.category_slug ?? null,
-    rootCategorySlug: listing.root_category_slug ?? null,
+    flairLine: flairLines.ig,
     listingLink,
   });
-  logger.info({ listingId: listing.id, categoryTheme }, "instagram caption theme");
+  logger.info(
+    { listingId: listing.id, theme: flairLines.theme, source: flairLines.source },
+    "instagram caption ready",
+  );
 
   return postPhotoToInstagram({
     igUserId,

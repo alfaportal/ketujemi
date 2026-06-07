@@ -59,42 +59,106 @@ const SOCIAL_FOOTER_IG = {
 
 /** @type {Record<string, { fb: Record<string, string>; ig: Record<string, string> }>} */
 const CATEGORY_FLAIR = {
-  wedding_decor: {
+  event_wedding: {
     fb: {
-      ks: "Klienti ynë e di si ta bëjë dasmën magjike — zbukurime që lënë pa frymë dhe çdo detaj të kujdesshëm! ✨",
-      al: "Klienti ynë e di si ta bëjë dasmën magjike — zbukurime që lënë pa frymë dhe çdo detaj të kujdesshëm! ✨",
-      mk: "Нашиот клиент знае како да ја направи свадбата магична — декорации што оставаат без здив! ✨",
-      mne: "Naš klijent zna kako da napravi magično vjenčanje — dekoracije koje oduzimaju dah! ✨",
-      en: "Our seller knows how to make every celebration unforgettable — stunning décor that wows every guest! ✨",
+      ks: "{seller} e di si ta bëjë dasmën magjike — zbukurime që lënë pa frymë çdo mysafir! ✨",
+      al: "{seller} e di si ta bëjë dasmën magjike — zbukurime që lënë pa frymë çdo mysafir! ✨",
+      mk: "{seller} знае како да направи магична свадба — декорации што оставаат без здив! ✨",
+      mne: "{seller} zna kako da napravi magično vjenčanje — dekoracije koje oduzimaju dah! ✨",
+      en: "{seller} knows how to make weddings unforgettable — stunning décor for your big day! ✨",
     },
     ig: {
-      ks: "Dasmë e ëndrrave fillon këtu 💐 Zbukurime që flasin vetë — shiko çfarë ka përgatitur klienti ynë!",
-      al: "Dasmë e ëndrrave fillon këtu 💐 Zbukurime që flasin vetë — shiko çfarë ka përgatitur klienti ynë!",
-      mk: "Свадба од соништата започнува тука 💐 Декорации што зборуваат сами!",
-      mne: "Vjenčanje iz snova počinje ovdje 💐 Dekoracije koje govore same!",
-      en: "Dream wedding vibes right here 💐 Décor that speaks for itself!",
+      ks: "Dasmë e ëndrrave nga {seller} 💐 Zbukurime & detaje që flasin vetë!",
+      al: "Dasmë e ëndrrave nga {seller} 💐 Zbukurime & detaje që flasin vetë!",
+      mk: "Свадба од соништата од {seller} 💐 Декорации што зборуваат сами!",
+      mne: "Vjenčanje iz snova od {seller} 💐 Dekoracije koje govore same!",
+      en: "Dream wedding décor from {seller} 💐 Every detail counts!",
+    },
+  },
+  event_engagement: {
+    fb: {
+      ks: "Fejesë e bukur fillon me detaje — {seller} ofron zbukurime & aksesorë për momentin tuaj! 💍",
+      al: "Fejesë e bukur fillon me detaje — {seller} ofron zbukurime & aksesorë për momentin tuaj! 💍",
+      mk: "Веридбата започнува со детали — {seller} нуди декорации за вашиот момент! 💍",
+      mne: "Vjeridba počinje detaljima — {seller} nudi dekoracije za vaš trenutak! 💍",
+      en: "A beautiful engagement starts with the details — {seller} has décor & styling ready! 💍",
+    },
+    ig: {
+      ks: "Fejesë & festë e veçantë nga {seller} 💍 Shiko çfarë përgatiti për çiftin!",
+      al: "Fejesë & festë e veçantë nga {seller} 💍 Shiko çfarë përgatiti për çiftin!",
+      mk: "Веридба од {seller} 💍 Погледни ја понудата!",
+      mne: "Vjeridba od {seller} 💍 Pogledaj ponudu!",
+      en: "Engagement celebration from {seller} 💍 See what's ready!",
+    },
+  },
+  event_birthday: {
+    fb: {
+      ks: "Ditëlindje që mbeten në mendje — {seller} ka dekorime, torte & surpriza për festën tënde! 🎂",
+      al: "Ditëlindje që mbeten në mendje — {seller} ka dekorime, torte & surpriza për festën tënde! 🎂",
+      mk: "Роденден што се памети — {seller} има декорации за вашата забава! 🎂",
+      mne: "Rođendan koji se pamti — {seller} ima dekoracije za vašu proslavu! 🎂",
+      en: "Birthdays they'll remember — {seller} has décor & party essentials! 🎂",
+    },
+    ig: {
+      ks: "Festë ditëlindjeje nga {seller} 🎈 Dekorime që sjellin gëzim!",
+      al: "Festë ditëlindjeje nga {seller} 🎈 Dekorime që sjellin gëzim!",
+      mk: "Роденденска забава од {seller} 🎈 Погледни!",
+      mne: "Rođendanska proslava od {seller} 🎈 Pogledaj!",
+      en: "Birthday party vibes from {seller} 🎈 Check it out!",
+    },
+  },
+  event_party: {
+    fb: {
+      ks: "Feste & ceremoni me stil — {seller} ofron zbukurime për çdo rast të veçantë! 🎉",
+      al: "Feste & ceremoni me stil — {seller} ofron zbukurime për çdo rast të veçantë! 🎉",
+      mk: "Прослава со стил — {seller} нуди декорации за секоја прилика! 🎉",
+      mne: "Proslava sa stilom — {seller} nudi dekoracije za svaku priliku! 🎉",
+      en: "Stylish celebrations — {seller} has décor for every special occasion! 🎉",
+    },
+    ig: {
+      ks: "Zbukurime për festën tënde nga {seller} 🎊 Shiko ofertën!",
+      al: "Zbukurime për festën tënde nga {seller} 🎊 Shiko ofertën!",
+      mk: "Декорации за вашата прослава од {seller} 🎊",
+      mne: "Dekoracije za vašu proslavu od {seller} 🎊",
+      en: "Party décor from {seller} 🎊 Worth a look!",
+    },
+  },
+  event_decor: {
+    fb: {
+      ks: "Zbukurime për çdo festë — dasmë, fejesë, ditëlindje & më shumë nga {seller}! 💐",
+      al: "Zbukurime për çdo festë — dasmë, fejesë, ditëlindje & më shumë nga {seller}! 💐",
+      mk: "Декорации за секоја прослава — од {seller}! 💐",
+      mne: "Dekoracije za svaku proslavu — od {seller}! 💐",
+      en: "Celebration décor for every occasion — from {seller}! 💐",
+    },
+    ig: {
+      ks: "Dekor & stil për festat e tua nga {seller} ✨",
+      al: "Dekor & stil për festat e tua nga {seller} ✨",
+      mk: "Декор од {seller} за вашите прослави ✨",
+      mne: "Dekor od {seller} za vaše proslave ✨",
+      en: "Celebration styling from {seller} ✨",
     },
   },
   home_decor: {
     fb: {
-      ks: "Mobilje & dekor për shtëpinë tënde — stil, komoditet dhe detaje që vlejnë nga klienti ynë! 🛋️",
-      al: "Mobilje & dekor për shtëpinë tënde — stil, komoditet dhe detaje që vlejnë nga klienti ynë! 🛋️",
-      mk: "Мебел и декор за вашиот дом — стил и удобност од наш клиент! 🛋️",
-      mne: "Namještaj i dekor za vaš dom — stil i udobnost od našeg klijenta! 🛋️",
-      en: "Home furniture & décor with real style — comfort and quality from our seller! 🛋️",
+      ks: "Mobilje & dekor për shtëpinë tënde — stil dhe komoditet nga {seller}! 🛋️",
+      al: "Mobilje & dekor për shtëpinë tënde — stil dhe komoditet nga {seller}! 🛋️",
+      mk: "Мебел и декор за домот — стил од {seller}! 🛋️",
+      mne: "Namještaj i dekor za dom — stil od {seller}! 🛋️",
+      en: "Home furniture & décor with style — from {seller}! 🛋️",
     },
     ig: {
-      ks: "Zbukuro ambientin tënd 🏠 Mobilje & dekorime që të pëlqejnë — shiko ofertën!",
-      al: "Zbukuro ambientin tënd 🏠 Mobilje & dekorime që të pëlqejnë — shiko ofertën!",
-      mk: "Украси го просторот 🏠 Мебел и декор — погледни ја понудата!",
-      mne: "Ukrasi prostor 🏠 Namještaj i dekor — pogledaj ponudu!",
-      en: "Refresh your space 🏠 Home décor & furniture worth a look!",
+      ks: "Zbukuro ambientin tënd me ofertën e {seller} 🏠",
+      al: "Zbukuro ambientin tënd me ofertën e {seller} 🏠",
+      mk: "Украси го просторот со понуда од {seller} 🏠",
+      mne: "Ukrasi prostor ponudom od {seller} 🏠",
+      en: "Refresh your space with {seller} 🏠",
     },
   },
   phones: {
     fb: {
-      ks: "Sapo kanë arritur telefona të mirë e të rinë — cilësi e lartë, çmim që të pëlqen! 📱",
-      al: "Sapo kanë arritur telefona të mirë e të rinë — cilësi e lartë, çmim që të pëlqen! 📱",
+      ks: "Telefona të mirë e të rinë nga {seller} — cilësi e lartë, çmim që të pëlqen! 📱",
+      al: "Telefona të mirë e të rinë nga {seller} — cilësi e lartë, çmim që të pëlqen! 📱",
       mk: "Токму пристигнаа добри и нови телефони — висок квалитет, одлична цена! 📱",
       mne: "Upravo stigli dobri i novi telefoni — vrhunski kvalitet, odlična cijena! 📱",
       en: "Fresh phones just landed — great condition, sharp price, ready for you! 📱",
@@ -139,20 +203,116 @@ const CATEGORY_FLAIR = {
       en: "New roads ahead 🚘 Take a look at this ride!",
     },
   },
-  real_estate: {
+  re_apartment: {
     fb: {
-      ks: "Hapësirë që mund të bëhet shtëpia apo biznesi yt — lokacion i mirë, mundësi e vërtetë! 🏠",
-      al: "Hapësirë që mund të bëhet shtëpia apo biznesi yt — lokacion i mirë, mundësi e vërtetë! 🏠",
-      mk: "Простор што може да стане твој дом или бизнис — одлична локација! 🏠",
-      mne: "Prostor koji može postati tvoj dom ili biznis — odlična lokacija! 🏠",
-      en: "Space that could be your next home or business — real opportunity! 🏠",
+      ks: "Banesë / apartament me potencial — {seller} ofron pronë në lokacion të mirë! 🏢",
+      al: "Banesë / apartament me potencial — {seller} ofron pronë në lokacion të mirë! 🏢",
+      mk: "Стан / банса со потенцијал — понуда од {seller}! 🏢",
+      mne: "Stan / apartman sa potencijalom — ponuda od {seller}! 🏢",
+      en: "Apartment with real potential — listed by {seller}! 🏢",
     },
     ig: {
-      ks: "Shtëpi, banesë apo lokal — zgjidhja që po kërkon mund të jetë këtu 🔑",
-      al: "Shtëpi, banesë apo lokal — zgjidhja që po kërkon mund të jetë këtu 🔑",
-      mk: "Дом, стан или локал — решението може да е тука 🔑",
-      mne: "Kuća, stan ili lokal — rješenje možda je ovdje 🔑",
-      en: "Home, flat or commercial space — your next move might be here 🔑",
+      ks: "Banesë që vlen të shohësh — nga {seller} 🔑",
+      al: "Banesë që vlen të shohësh — nga {seller} 🔑",
+      mk: "Стан вреден за преглед — од {seller} 🔑",
+      mne: "Stan vrijedan pregleda — od {seller} 🔑",
+      en: "Apartment worth viewing — from {seller} 🔑",
+    },
+  },
+  re_house: {
+    fb: {
+      ks: "Shtëpi, vilë apo vikendicë — {seller} prezanton pronë për familjen tënde! 🏡",
+      al: "Shtëpi, vilë apo vikendicë — {seller} prezanton pronë për familjen tënde! 🏡",
+      mk: "Куќа, вила или викендица — понуда од {seller}! 🏡",
+      mne: "Kuća, vila ili vikendica — ponuda od {seller}! 🏡",
+      en: "House, villa or weekend retreat — from {seller}! 🏡",
+    },
+    ig: {
+      ks: "Shtëpi me hapësirë & stil nga {seller} 🏡",
+      al: "Shtëpi me hapësirë & stil nga {seller} 🏡",
+      mk: "Куќа со простор од {seller} 🏡",
+      mne: "Kuća sa prostorom od {seller} 🏡",
+      en: "A home with space & character — {seller} 🏡",
+    },
+  },
+  re_land: {
+    fb: {
+      ks: "Tokë / truall për ndërtim apo investim — mundësi nga {seller}! 📐",
+      al: "Tokë / truall për ndërtim apo investim — mundësi nga {seller}! 📐",
+      mk: "Земјиште / парцела за градба — понуда од {seller}! 📐",
+      mne: "Zemljište / plac za gradnju — ponuda od {seller}! 📐",
+      en: "Land & building plots — opportunity from {seller}! 📐",
+    },
+    ig: {
+      ks: "Tokë & truall nga {seller} — shiko detajet! 🌿",
+      al: "Tokë & truall nga {seller} — shiko detajet! 🌿",
+      mk: "Земјиште од {seller} 🌿",
+      mne: "Zemljište od {seller} 🌿",
+      en: "Land for your next project — {seller} 🌿",
+    },
+  },
+  re_garage: {
+    fb: {
+      ks: "Garazh / vendparkim — zgjidhje praktike nga {seller}! 🅿️",
+      al: "Garazh / vendparkim — zgjidhje praktike nga {seller}! 🅿️",
+      mk: "Гаража / паркинг — понуда од {seller}! 🅿️",
+      mne: "Garaža / parking — ponuda od {seller}! 🅿️",
+      en: "Garage or parking space — practical option from {seller}! 🅿️",
+    },
+    ig: {
+      ks: "Garazh apo parking nga {seller} 🅿️",
+      al: "Garazh apo parking nga {seller} 🅿️",
+      mk: "Гаража од {seller} 🅿️",
+      mne: "Garaža od {seller} 🅿️",
+      en: "Garage & parking from {seller} 🅿️",
+    },
+  },
+  re_rent: {
+    fb: {
+      ks: "Me qira — hapësirë e gatshme për të jetuar apo punuar, ofruar nga {seller}! 🔑",
+      al: "Me qira — hapësirë e gatshme për të jetuar apo punuar, ofruar nga {seller}! 🔑",
+      mk: "Под кирија — простор од {seller}! 🔑",
+      mne: "Pod najam — prostor od {seller}! 🔑",
+      en: "For rent — ready-to-move space from {seller}! 🔑",
+    },
+    ig: {
+      ks: "Qira e mirë nga {seller} — kontrollo ofertën! 🏠",
+      al: "Qira e mirë nga {seller} — kontrollo ofertën! 🏠",
+      mk: "Добар кирија од {seller} 🏠",
+      mne: "Dobar najam od {seller} 🏠",
+      en: "Rental pick from {seller} 🏠",
+    },
+  },
+  re_commercial: {
+    fb: {
+      ks: "Lokal, zyrë, depo apo hapësirë afariste — {seller} ka pronë për biznesin tënd! 🏪",
+      al: "Lokal, zyrë, depo apo hapësirë afariste — {seller} ka pronë për biznesin tënd! 🏪",
+      mk: "Локал, канцеларија или магацин — понуда од {seller}! 🏪",
+      mne: "Lokal, kancelarija ili magacin — ponuda od {seller}! 🏪",
+      en: "Shop, office or warehouse space — commercial listing from {seller}! 🏪",
+    },
+    ig: {
+      ks: "Hapësirë komerciale nga {seller} — ideale për biznes! 🏪",
+      al: "Hapësirë komerciale nga {seller} — ideale për biznes! 🏪",
+      mk: "Комерцијален простор од {seller} 🏪",
+      mne: "Komercijalni prostor od {seller} 🏪",
+      en: "Commercial space from {seller} 🏪",
+    },
+  },
+  real_estate: {
+    fb: {
+      ks: "Pronë me vlerë nga {seller} — lokacion i mirë, mundësi reale! 🏠",
+      al: "Pronë me vlerë nga {seller} — lokacion i mirë, mundësi reale! 🏠",
+      mk: "Недвижност од {seller} — одлична локација! 🏠",
+      mne: "Nekretnina od {seller} — odlična lokacija! 🏠",
+      en: "Property with real value — from {seller}! 🏠",
+    },
+    ig: {
+      ks: "Patundshmëri nga {seller} — shiko nëse të përshtatet! 🔑",
+      al: "Patundshmëri nga {seller} — shiko nëse të përshtatet! 🔑",
+      mk: "Недвижност од {seller} 🔑",
+      mne: "Nekretnina od {seller} 🔑",
+      en: "Property listing from {seller} 🔑",
     },
   },
   fashion: {
@@ -379,19 +539,129 @@ function parseCategoryInput(input) {
   };
 }
 
-/** Wedding/dasmë copy only when the category name explicitly says so. */
-function isWeddingCategoryName(categoryName) {
-  const n = normalizeCategoryKey(categoryName);
-  if (!n) return false;
-  return (
-    /\bdasma\b|\bdasem\b|\bdasme\b|\bdasmes\b/.test(n) ||
-    /\bnuses\b|\bnuseri/.test(n) ||
-    /\bzbukurim\b.*\bdasm/.test(n) ||
-    /\blule\b.*\bdasm/.test(n) ||
-    /\bdasm\b.*\bdekor/.test(n) ||
-    /\bkarroce nuses\b|\bkarroca nuses\b/.test(n) ||
-    /\bfustan nuses\b/.test(n)
+function listingTextBlob(ctx) {
+  return normalizeCategoryKey(
+    [ctx.title, ctx.description, ctx.categoryName, ctx.propertySubtype, ctx.propertyTxn]
+      .filter(Boolean)
+      .join(" "),
   );
+}
+
+/** Detect celebration/décor type from listing text. */
+function detectEventTheme(text) {
+  if (!text) return null;
+  if (
+    /\bdasma\b|\bdasem\b|\bdasme\b|\bdasmes\b/.test(text) ||
+    /\bnuses\b|\bnuseri/.test(text) ||
+    /\bzbukurim\b.*\bdasm/.test(text) ||
+    /\blule\b.*\bdasm/.test(text) ||
+    /\bkarroce nuses\b|\bkarroca nuses\b/.test(text) ||
+    /\bfustan nuses\b/.test(text)
+  ) {
+    return "event_wedding";
+  }
+  if (/\bfejes|\bfejesa\b|\bfejeses\b/.test(text)) return "event_engagement";
+  if (/\bditlindje\b|\bditelindje\b|\bbirthday\b|\brojendan/.test(text)) return "event_birthday";
+  if (/\bfeste\b|\bceremoni\b|\bparty\b|\bkanagjegj\b|\bbaby shower\b|\bproslav/.test(text)) {
+    return "event_party";
+  }
+  if (/\bdekor\b|\bzbukurim\b|\blule\b|\btavolin|\bdfuq|\bbalon|\bdekoracij/.test(text)) {
+    return "event_decor";
+  }
+  return null;
+}
+
+/** Detect property subtype for Banesa & Shtëpi / Lokale & Zyrë. */
+function detectRealEstateTheme(ctx) {
+  const slug = normalizeCategoryKey(ctx.categorySlug);
+  const root = normalizeCategoryKey(ctx.rootCategorySlug);
+  const text = listingTextBlob(ctx);
+  const subtype = normalizeCategoryKey(ctx.propertySubtype);
+  const txn = normalizeCategoryKey(ctx.propertyTxn);
+
+  if (
+    slug.includes("garazh") ||
+    subtype.includes("garazh") ||
+    /\bgarazh\b|\bvendparkim\b|\bparking\b/.test(text)
+  ) {
+    return "re_garage";
+  }
+  if (
+    slug.includes("toka") ||
+    slug.includes("truall") ||
+    subtype.includes("truall") ||
+    subtype.includes("toka") ||
+    /\btoka\b|\btruall\b|\bparcela\b|\bplac\b/.test(text)
+  ) {
+    return "re_land";
+  }
+  if (
+    slug.includes("shtepi") ||
+    slug.includes("vila") ||
+    slug.includes("vikendic") ||
+    subtype.includes("shtepi") ||
+    subtype.includes("vila") ||
+    /\bshtepi\b|\bvila\b|\bvikendic/.test(text)
+  ) {
+    return "re_house";
+  }
+  if (
+    slug.includes("dhoma-qira") ||
+    txn === "qira" ||
+    txn === "rent" ||
+    txn === "me_qira" ||
+    /\bme qira\b|\bqira\b|\bnajam\b|\bkirija\b/.test(text)
+  ) {
+    return "re_rent";
+  }
+  if (
+    root === "lokale-zyre" ||
+    slug.includes("lokale") ||
+    slug.includes("zyre") ||
+    slug.includes("depo") ||
+    slug.includes("afariste") ||
+    slug.includes("industriale") ||
+    /\blokal\b|\bzyre\b|\bdepo\b|\bafariste\b|\bindustrial/.test(text)
+  ) {
+    return "re_commercial";
+  }
+  if (
+    slug.includes("apartament") ||
+    slug.includes("banesa") ||
+    subtype.includes("banesa") ||
+    /\bapartament\b|\bbanesa\b|\bgarsoniere\b|\bstan\b/.test(text)
+  ) {
+    return "re_apartment";
+  }
+  if (root === "banesa-shtepi" || root === "lokale-zyre") return "real_estate";
+  return null;
+}
+
+/** Prefer shop/firm name, then seller display name. */
+export function sellerDisplayName(shopName, sellerName) {
+  const shop = String(shopName ?? "").trim();
+  const seller = String(sellerName ?? "").trim();
+  if (shop) return shop;
+  if (seller) return seller;
+  return null;
+}
+
+function defaultSellerLabel(lang) {
+  if (lang === "mk") return "нашиот продавач";
+  if (lang === "mne") return "naš prodavac";
+  if (lang === "en") return "our seller";
+  return "klienti ynë";
+}
+
+function applySellerToLine(line, sellerName, lang) {
+  const name = sellerName || defaultSellerLabel(lang);
+  return String(line)
+    .replace(/\{seller\}/g, name)
+    .replace(/klienti ynë/gi, name)
+    .replace(/našeg klijenta/gi, name)
+    .replace(/naš klijent/gi, name)
+    .replace(/наш(?:иот)? клиент/gi, name)
+    .replace(/our seller/gi, name);
 }
 
 function themeFromSlug(slug) {
@@ -434,7 +704,8 @@ function themeFromCategoryName(categoryName) {
   if (/ndertim|instalim|material|ndert/.test(n)) return "construction";
   if (/muzik|instrument|hobby/.test(n)) return "music";
   if (/arsim|kurs|shkoll|mesimdhen/.test(n)) return "education";
-  if (isWeddingCategoryName(categoryName)) return "wedding_decor";
+  const event = detectEventTheme(n);
+  if (event) return event;
   if (/mobilje|dekor|ndricim|tepihe|perde|kuzhin|sallon|dhoma gjumit/.test(n)) {
     return "home_decor";
   }
@@ -450,21 +721,52 @@ export function resolveCategoryTheme(input) {
 
   const rootTheme = themeFromSlug(rootCategorySlug);
   if (rootTheme) {
-    if (rootTheme === "home_decor" && isWeddingCategoryName(categoryName)) {
-      return "wedding_decor";
-    }
+    const event = detectEventTheme(normalizeCategoryKey(categoryName));
+    if (event && (rootTheme === "home_decor" || rootTheme === "default")) return event;
     return rootTheme;
   }
 
   const slugTheme = themeFromSlug(categorySlug);
   if (slugTheme) {
-    if (slugTheme === "home_decor" && isWeddingCategoryName(categoryName)) {
-      return "wedding_decor";
-    }
+    const event = detectEventTheme(normalizeCategoryKey(categoryName));
+    if (event && (slugTheme === "home_decor" || slugTheme === "default")) return event;
     return slugTheme;
   }
 
   return themeFromCategoryName(categoryName);
+}
+
+/**
+ * Listing-aware theme: events, real-estate subtypes, then category fallback.
+ * @param {{
+ *   title?: string | null;
+ *   description?: string | null;
+ *   categoryName?: string | null;
+ *   categorySlug?: string | null;
+ *   rootCategorySlug?: string | null;
+ *   propertySubtype?: string | null;
+ *   propertyTxn?: string | null;
+ * }} ctx
+ */
+export function resolveListingTheme(ctx) {
+  const rootTheme = themeFromSlug(ctx.rootCategorySlug);
+  const text = listingTextBlob(ctx);
+
+  if (rootTheme === "phones" || rootTheme === "children" || rootTheme === "vehicles") {
+    return rootTheme;
+  }
+
+  const event = detectEventTheme(text);
+  if (event && rootTheme !== "real_estate") return event;
+
+  const reTheme = detectRealEstateTheme(ctx);
+  if (reTheme) return reTheme;
+
+  return resolveCategoryTheme({
+    categoryName: ctx.categoryName,
+    categorySlug: ctx.categorySlug,
+    rootCategorySlug: ctx.rootCategorySlug,
+  });
 }
 
 function marketLang(market) {
@@ -478,14 +780,37 @@ function marketLang(market) {
 /**
  * @param {"facebook" | "instagram"} platform
  * @param {string} market
- * @param {Parameters<typeof resolveCategoryTheme>[0]} categoryInput
+ * @param {Parameters<typeof resolveListingTheme>[0] & { shopName?: string | null; sellerName?: string | null; shop_name?: string | null; seller_name?: string | null }} listingCtx
  */
-export function categoryFlairLine(platform, market, categoryInput) {
-  const theme = resolveCategoryTheme(categoryInput);
+function ensureSellerMention(line, sellerName, lang) {
+  if (!sellerName || line.includes(sellerName)) return line;
+  if (lang === "mk") return `${line}\n🏪 ${sellerName}`;
+  if (lang === "mne") return `${line}\n🏪 ${sellerName}`;
+  if (lang === "en") return `${line}\n🏪 From ${sellerName}`;
+  return `${line}\n🏪 Nga ${sellerName}`;
+}
+
+export function listingFlairLine(platform, market, listingCtx) {
+  const theme = resolveListingTheme(listingCtx);
   const lang = marketLang(market);
   const block = CATEGORY_FLAIR[theme] ?? CATEGORY_FLAIR.default;
   const lines = platform === "instagram" ? block.ig : block.fb;
-  return lines[lang] ?? lines.ks;
+  const raw = lines[lang] ?? lines.ks;
+  const seller = sellerDisplayName(
+    listingCtx.shopName ?? listingCtx.shop_name,
+    listingCtx.sellerName ?? listingCtx.seller_name,
+  );
+  const line = applySellerToLine(raw, seller, lang);
+  return ensureSellerMention(line, seller, lang);
+}
+
+/**
+ * @param {"facebook" | "instagram"} platform
+ * @param {string} market
+ * @param {Parameters<typeof resolveListingTheme>[0]} categoryInput
+ */
+export function categoryFlairLine(platform, market, categoryInput) {
+  return listingFlairLine(platform, market, categoryInput);
 }
 
 export function platformUspLine(market) {
