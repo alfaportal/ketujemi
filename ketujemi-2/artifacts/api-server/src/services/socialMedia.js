@@ -129,69 +129,95 @@ export function buildFacebookCaption(market, input) {
     const country = COUNTRY_LABEL_EN[market] ?? "Kosovo";
     const catTag = categoryHashtag(input.categoryName, "#Listing");
     return [
+      "⭐ FEATURED PICK — KetuJemi.com",
+      "",
       `🏷️ ${title}`,
       priceLine,
       `📍 ${city}, ${country}`,
       "",
-      `🔗 View listing: ketujemi.com/en/listing/${slug}`,
+      "Hand-picked from thousands of listings and promoted to our active community across the Balkans.",
       "",
-      `#KëtuJemi #Classifieds ${catTag}`,
+      "👇 See details & contact the seller:",
+      `ketujemi.com/en/listing/${slug}`,
+      "",
+      `#KëtuJemi #FeaturedListing #Classifieds ${catTag}`,
     ].join("\n");
   }
 
   if (market === "al") {
     const catTag = categoryHashtag(input.categoryName, "#Shpallje");
     return [
+      "⭐ OFERTË E ZGJEDHUR — KetuJemi.com",
+      "",
       `🏷️ ${title}`,
       priceLine,
       `📍 ${city}, Shqipëri`,
       "",
-      `🔗 Shiko detajet: ketujemi.com/al/shpallje/${slug}`,
+      "U përzgjodh nga mijëra shpallje për t'u promovuar para komunitetit tonë aktiv në të gjithë rajonin.",
       "",
-      `#KëtuJemi #Shpallje ${catTag}`,
+      "👇 Shiko detajet & kontakto shitësin:",
+      `ketujemi.com/al/shpallje/${slug}`,
+      "",
+      `#KëtuJemi #OfertaEZgjedhur #Shpallje ${catTag}`,
     ].join("\n");
   }
 
   if (market === "mk") {
     const catTag = categoryHashtag(input.categoryName, "#Оглас");
     return [
+      "⭐ ИЗБРАНА ПОНУДА — KetuJemi.com",
+      "",
       `🏷️ ${title}`,
       priceLine,
       `📍 ${city}, Македонија`,
       "",
-      `🔗 Види детали: ketujemi.com/mk/oglas/${slug}`,
+      "Избрана од илјадници огласи и промовирана пред нашата активна заедница низ регионот.",
       "",
-      `#KëtuJemi #Оглас ${catTag}`,
+      "👇 Види детали & контактирај го продавачот:",
+      `ketujemi.com/mk/oglas/${slug}`,
+      "",
+      `#KëtuJemi #ИзбранаПонуда #Оглас ${catTag}`,
     ].join("\n");
   }
 
   if (market === "mne") {
     const catTag = categoryHashtag(input.categoryName, "#Oglas");
     return [
+      "⭐ IZABRANA PONUDA — KetuJemi.com",
+      "",
       `🏷️ ${title}`,
       priceLine,
       `📍 ${city}, Crna Gora`,
       "",
-      `🔗 Pogledaj detalje: ketujemi.com/mne/oglas/${slug}`,
+      "Izabrana među hiljadama oglasa i promovisana pred našom aktivnom zajednicom u regionu.",
       "",
-      `#KëtuJemi #Oglas ${catTag}`,
+      "👇 Pogledaj detalje & kontaktiraj prodavca:",
+      `ketujemi.com/mne/oglas/${slug}`,
+      "",
+      `#KëtuJemi #IzabranaPonuda #Oglas ${catTag}`,
     ].join("\n");
   }
 
   const catTag = categoryHashtag(input.categoryName, "#Shpallje");
   return [
+    "⭐ OFERTË E ZGJEDHUR — KetuJemi.com",
+    "",
     `🏷️ ${title}`,
     priceLine,
     `📍 ${city}, Kosovë`,
     "",
-    `🔗 Shiko detajet: ketujemi.com/shpallje/${slug}`,
+    "U përzgjodh nga mijëra shpallje për t'u promovuar para 50,000+ vizitorëve aktivë çdo muaj.",
+    "Një vend i privilegjuar — vetëm shpalljet më të mira arrijnë këtu.",
     "",
-    `#KëtuJemi #Shpallje ${catTag}`,
+    "👇 Shiko detajet & kontakto shitësin:",
+    `ketujemi.com/shpallje/${slug}`,
+    "",
+    `#KëtuJemi #OfertaEZgjedhur #ShpalljePremium ${catTag}`,
   ].join("\n");
 }
 
 /**
- * Instagram caption — different wording/hashtags from Facebook (same listing).
+ * Instagram caption — premium tone, distinct from Facebook (same listing).
  * @param {string} market
  * @param {{
  *   title: string;
@@ -212,70 +238,85 @@ export function buildInstagramCaption(market, input) {
   if (DIASPORA_MARKETS.has(market)) {
     const country = COUNTRY_LABEL_EN[market] ?? "Kosovo";
     return [
-      "✨ New on @ketujemi.ks",
+      "💎 TODAY'S PICK · @ketujemi.ks",
+      "",
+      "The listing everyone's talking about 👇",
       "",
       title,
       priceLine,
       `📍 ${city}, ${country}`,
       "",
+      "✨ Featured on KetuJemi — don't miss it",
       `🔗 ${link}`,
       "",
-      `#KetuJemi #ketujemi.ks #Classifieds #Balkans ${catTag}`,
+      `#KetuJemi #ketujemi.ks #FeaturedListing #Balkans #Deals ${catTag}`,
     ].join("\n");
   }
 
   if (market === "al") {
     return [
-      "✨ E re në @ketujemi.ks",
+      "💎 ZGJEDHJE E VEÇANTË · @ketujemi.ks",
+      "",
+      "Oferta që po kërkohet sot 👇",
       "",
       title,
       priceLine,
       `📍 ${city}, Shqipëri`,
       "",
+      "✨ Promovuar në KetuJemi — mos e humb",
       `🔗 ${link}`,
       "",
-      `#KetuJemi #ketujemi.ks #Shpallje #Shqiperia ${catTag}`,
+      `#KetuJemi #ketujemi.ks #OfertaEDites #ShpalljePremium #Shqiperia ${catTag}`,
     ].join("\n");
   }
 
   if (market === "mk") {
     return [
-      "✨ Ново на @ketujemi.ks",
+      "💎 СПЕЦИЈАЛЕН ИЗБОР · @ketujemi.ks",
+      "",
+      "Огласот што го бараат сите денес 👇",
       "",
       title,
       priceLine,
       `📍 ${city}, Македонија`,
       "",
+      "✨ Промовирано на KetuJemi — не го пропуштај",
       `🔗 ${link}`,
       "",
-      `#KetuJemi #ketujemi.ks #Оглас #Македонија ${catTag}`,
+      `#KetuJemi #ketujemi.ks #ИзбранаПонуда #Оглас #Македонија ${catTag}`,
     ].join("\n");
   }
 
   if (market === "mne") {
     return [
-      "✨ Novo na @ketujemi.ks",
+      "💎 POSEBNI IZBOR · @ketujemi.ks",
+      "",
+      "Oglas koji svi traže danas 👇",
       "",
       title,
       priceLine,
       `📍 ${city}, Crna Gora`,
       "",
+      "✨ Promovisano na KetuJemi — ne propusti",
       `🔗 ${link}`,
       "",
-      `#KetuJemi #ketujemi.ks #Oglas #CrnaGora ${catTag}`,
+      `#KetuJemi #ketujemi.ks #IzabranaPonuda #Oglas #CrnaGora ${catTag}`,
     ].join("\n");
   }
 
   return [
-    "✨ E re në @ketujemi.ks",
+    "💎 ZGJEDHJE E VEÇANTË · @ketujemi.ks",
+    "",
+    "Oferta e ditës që po kërkohet 👇",
     "",
     title,
     priceLine,
     `📍 ${city}, Kosovë`,
     "",
+    "✨ Vetëm shpalljet më të mira arrijnë këtu — ti je me fat që e sheh",
     `🔗 ${link}`,
     "",
-    `#KetuJemi #ketujemi.ks #Shpallje #Kosova #Shqiperia #Maqedonia #MaliZi ${catTag}`,
+    `#KetuJemi #ketujemi.ks #OfertaEDites #ShpalljePremium #Kosova #Shqiperia #Maqedonia #MaliZi ${catTag}`,
   ].join("\n");
 }
 
