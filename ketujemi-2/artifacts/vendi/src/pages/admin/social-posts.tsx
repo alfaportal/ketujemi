@@ -3,7 +3,8 @@ import {
   getAdminSocialPostListings,
   postAdminSocialListings,
   previewAdminSocialPost,
-  runAdminFacebookScheduledPost,
+  runAdminListingReel,
+  runAdminSocialScheduledPosts,
   type AdminSocialListing,
 } from "@/lib/admin-api";
 import { useMarket } from "@/lib/market-context";
@@ -20,6 +21,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
+  Film,
 } from "lucide-react";
 
 type Filter = "all" | "pending_fb" | "pending_ig" | "posted";
@@ -153,6 +155,7 @@ export default function AdminSocialPosts() {
   const [previewData, setPreviewData] = useState<Awaited<ReturnType<typeof previewAdminSocialPost>> | null>(null);
   const [posting, setPosting] = useState(false);
   const [cronRunning, setCronRunning] = useState(false);
+  const [reelRunning, setReelRunning] = useState(false);
   const [message, setMessage] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [configured, setConfigured] = useState({ facebook: false, instagram: false });
   const [previewExpanded, setPreviewExpanded] = useState(false);
@@ -263,26 +266,55 @@ export default function AdminSocialPosts() {
     setCronRunning(true);
     setMessage(null);
     try {
-      const result = await runAdminFacebookScheduledPost();
-      if (result.posted) {
-        setMessage({
-          type: "ok",
-          text: fillPlaceholders(t.adm_social_cron_ok ?? "Cron posted listing #{id}.", {
-            id: String(result.listingId ?? ""),
+      const result = await runAdminSocialScheduledPosts();
+      const parts: string[] = [];
+      if (result.facebook.posted) {
+        parts.push(
+          fillPlaceholders(t.adm_social_cron_fb_ok ?? "FB: posted #{id}.", {
+            id: String(result.facebook.listingId ?? ""),
           }),
-        });
-        await fetchList();
-      } else if (result.reason === "no_pending" || result.reason === "no_eligible") {
-        setMessage({ type: "ok", text: t.adm_social_cron_empty ?? "No pending listings in queue." });
+        );
+      } else if (
+        result.facebook.reason === "no_pending" ||
+        result.facebook.reason === "no_eligible"
+      ) {
+        parts.push(t.adm_social_cron_fb_empty ?? "FB: no pending listings.");
       } else {
-        const detail = result.graphError ?? result.reason ?? "graph_api_failed";
-        setMessage({
-          type: "err",
-          text: fillPlaceholders(t.adm_social_cron_fail ?? "Scheduled cron failed: {detail}", {
-            detail,
+        parts.push(
+          fillPlaceholders(t.adm_social_cron_fb_fail ?? "FB failed: {detail}", {
+            detail: result.facebook.graphError ?? result.facebook.reason ?? "failed",
           }),
-        });
+        );
       }
+      if (result.instagram.posted) {
+        parts.push(
+          fillPlaceholders(t.adm_social_cron_ig_ok ?? "IG: posted #{id}.", {
+            id: String(result.instagram.listingId ?? ""),
+          }),
+        );
+      } else if (
+        result.instagram.reason === "no_pending" ||
+        result.instagram.reason === "no_eligible"
+      ) {
+        parts.push(t.adm_social_cron_ig_empty ?? "IG: no pending listings.");
+      } else if (result.instagram.reason !== "not_configured") {
+        parts.push(
+          fillPlaceholders(t.adm_social_cron_ig_fail ?? "IG failed: {detail}", {
+            detail: result.instagram.graphError ?? result.instagram.reason ?? "failed",
+          }),
+        );
+      }
+      const anyPosted = result.facebook.posted || result.instagram.posted;
+      const anyHardFail =
+        !anyPosted &&
+        result.facebook.reason !== "no_pending" &&
+        result.facebook.reason !== "no_eligible" &&
+        result.facebook.reason !== "not_configured";
+      setMessage({
+        type: anyPosted || !anyHardFail ? "ok" : "err",
+        text: parts.join(" "),
+      });
+      await fetchList();
     } catch (e) {
       setMessage({
         type: "err",
@@ -292,6 +324,38 @@ export default function AdminSocialPosts() {
       setCronRunning(false);
     }
   }, [fetchList, t]);
+
+  const handleRunListingReel = useCallback(async () => {
+    setReelRunning(true);
+    setMessage(null);
+    try {
+      const result = await runAdminListingReel();
+      if (result.posted) {
+        setMessage({
+          type: "ok",
+          text: fillPlaceholders(t.adm_social_reel_ok ?? "Reel posted ({count} listings).", {
+            count: String(result.listingIds?.length ?? 0),
+          }),
+        });
+      } else if (result.reason === "not_enough_listings") {
+        setMessage({ type: "ok", text: t.adm_social_reel_empty ?? "Not enough listings for a reel." });
+      } else {
+        setMessage({
+          type: "err",
+          text: fillPlaceholders(t.adm_social_reel_fail ?? "Reel failed: {detail}", {
+            detail: result.error ?? result.reason ?? "failed",
+          }),
+        });
+      }
+    } catch (e) {
+      setMessage({
+        type: "err",
+        text: e instanceof Error ? e.message : (t.adm_social_reel_fail ?? "Reel failed"),
+      });
+    } finally {
+      setReelRunning(false);
+    }
+  }, [t]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const filters: { id: Filter; label: string }[] = [
@@ -331,11 +395,24 @@ export default function AdminSocialPosts() {
           <button
             type="button"
             onClick={() => void handleRunScheduledCron()}
-            disabled={cronRunning || !configured.facebook}
+            disabled={cronRunning || (!configured.facebook && !configured.instagram)}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-blue-200 bg-blue-50 text-sm font-semibold text-blue-800 hover:bg-blue-100 disabled:opacity-50"
           >
             <Clock size={14} className={cronRunning ? "animate-pulse" : ""} />
-            {cronRunning ? (t.adm_social_cron_running ?? "Running cron…") : (t.adm_social_cron_now ?? "Run FB cron now")}
+            {cronRunning
+              ? (t.adm_social_cron_running ?? "Running cron…")
+              : (t.adm_social_cron_now ?? "Run FB + IG crons now")}
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleRunListingReel()}
+            disabled={reelRunning}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-orange-200 bg-orange-50 text-sm font-semibold text-orange-800 hover:bg-orange-100 disabled:opacity-50"
+          >
+            <Film size={14} className={reelRunning ? "animate-pulse" : ""} />
+            {reelRunning
+              ? (t.adm_social_reel_running ?? "Generating reel…")
+              : (t.adm_social_reel_now ?? "Post listing reel")}
           </button>
           <button
             type="button"

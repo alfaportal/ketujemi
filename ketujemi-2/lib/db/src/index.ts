@@ -31,6 +31,7 @@ export { ensureNdertimInstalimeTypeCategories } from "./ensure-ndertim-instalime
 export { ensureFemijeCategoryImages } from "./ensure-femije-category-images.js";
 export { ensureEngagementNotificationsSchema } from "./ensure-engagement-notifications-schema.js";
 export { ensureSocialFollowersSchema } from "./ensure-social-followers-schema.js";
+export { ensureSocialReelPostsSchema } from "./ensure-social-reel-posts-schema.js";
 export { ensureUserSocialConnectionsSchema } from "./ensure-user-social-connections-schema.js";
 export { ensureShopSchema } from "./ensure-shop-schema.js";
 export {

@@ -502,8 +502,8 @@ async function fetchInstagramBusinessAccountId(pageId, accessToken) {
  * @param {string} accessToken
  * @returns {Promise<boolean>}
  */
-async function waitForInstagramMediaContainer(creationId, accessToken) {
-  for (let attempt = 0; attempt < 8; attempt += 1) {
+async function waitForInstagramMediaContainer(creationId, accessToken, maxAttempts = 8) {
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     const url = graphUrl(
       `/${creationId}?fields=status_code&access_token=${encodeURIComponent(accessToken)}`,
     );
@@ -925,4 +925,83 @@ export async function postNewListingToInstagram(listing) {
     caption: igCaption,
     listingId: listing.id,
   });
+}
+
+/**
+ * Post a Reel (slideshow video) to Instagram @ketujemi.ks.
+ * @param {{
+ *   videoUrl: string;
+ *   caption: string;
+ *   reelId?: number;
+ * }} input
+ * @returns {Promise<string | null>} Instagram media id
+ */
+export async function postReelToInstagram(input) {
+  const { videoUrl, caption, reelId } = input;
+
+  if (!isInstagramAutoPostConfigured()) {
+    logger.info({ reelId }, "instagram reel skipped: not configured");
+    return null;
+  }
+
+  const accessToken = readPageAccessToken();
+  const igUserId = readInstagramBusinessAccountId();
+
+  const createBody = new URLSearchParams({
+    media_type: "REELS",
+    video_url: videoUrl,
+    caption,
+    share_to_feed: "true",
+    access_token: accessToken,
+  });
+
+  try {
+    const createRes = await fetch(graphUrl(`/${igUserId}/media`), {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: createBody.toString(),
+    });
+    const createJson = await createRes.json().catch(() => ({}));
+    const creationId = typeof createJson.id === "string" ? createJson.id : null;
+
+    if (!createRes.ok || !creationId) {
+      logger.error(
+        { reelId, status: createRes.status, instagram: createJson },
+        "instagram reel: media container failed",
+      );
+      return null;
+    }
+
+    const ready = await waitForInstagramMediaContainer(creationId, accessToken, 20);
+    if (!ready) {
+      logger.warn({ reelId, creationId }, "instagram reel: media container not ready");
+      return null;
+    }
+
+    const publishBody = new URLSearchParams({
+      creation_id: creationId,
+      access_token: accessToken,
+    });
+    const publishRes = await fetch(graphUrl(`/${igUserId}/media_publish`), {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: publishBody.toString(),
+    });
+    const publishJson = await publishRes.json().catch(() => ({}));
+
+    if (!publishRes.ok) {
+      logger.error(
+        { reelId, status: publishRes.status, instagram: publishJson, creationId },
+        "instagram reel: publish failed",
+      );
+      return null;
+    }
+
+    const mediaId = typeof publishJson.id === "string" ? publishJson.id : null;
+    logger.info({ reelId, instagramMediaId: mediaId, igUserId }, "instagram reel ok");
+    return mediaId;
+  } catch (err) {
+    logger.error({ err, reelId }, "instagram reel error");
+    return null;
+  }
 }

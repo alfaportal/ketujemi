@@ -665,6 +665,45 @@ export function runAdminFacebookScheduledPost() {
   });
 }
 
+export function runAdminSocialScheduledPosts() {
+  return request<{
+    ok: boolean;
+    facebook: {
+      posted: boolean;
+      listingId?: number;
+      reason?: string;
+      graphError?: string;
+      graphStatus?: number;
+    };
+    instagram: {
+      posted: boolean;
+      listingId?: number;
+      reason?: string;
+      graphError?: string;
+    };
+  }>("/social/trigger-social-crons", {
+    method: "POST",
+    body: "{}",
+  });
+}
+
+export function runAdminListingReel() {
+  return request<{
+    ok: boolean;
+    posted: boolean;
+    reelId?: number;
+    listingIds?: number[];
+    reason?: string;
+    igMediaId?: string | null;
+    tiktokPublishId?: string | null;
+    videoUrl?: string;
+    error?: string;
+  }>("/social/trigger-listing-reel", {
+    method: "POST",
+    body: "{}",
+  });
+}
+
 export function postAdminSocialListings(
   listingIds: number[],
   opts?: { facebook?: boolean; instagram?: boolean },

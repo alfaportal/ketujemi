@@ -25,6 +25,7 @@
     "railway:migrate:wallet": "node ./scripts/railway-wallet-migration.mjs",
     "run:facebook-scheduled-post": "pnpm --filter @workspace/api-server run run:facebook-scheduled-post",
     "run:social-scheduled-posts": "pnpm --filter @workspace/api-server run run:social-scheduled-posts",
+    "run:listing-reel": "pnpm --filter @workspace/api-server run run:listing-reel",
     "build": "node ./scripts/build-production.mjs",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"

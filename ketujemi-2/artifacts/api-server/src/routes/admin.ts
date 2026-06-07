@@ -60,6 +60,7 @@ import {
 } from "../lib/admin-social-post.js";
 import { runFacebookScheduledPostNow } from "../lib/facebook-scheduled-post-cron.js";
 import { runInstagramScheduledPostNow } from "../lib/instagram-scheduled-post-cron.js";
+import { runListingReelPostNow } from "../lib/listing-reel-cron.js";
 import {
   exportSocialFollowersCsv,
   getSocialFollowersStats,
@@ -1736,6 +1737,16 @@ router.post("/admin/social/trigger-social-crons", requireAdmin, async (req, res)
     res.json({ ok: true, facebook, instagram });
   } catch (err) {
     req.log.error({ err }, "admin social trigger-social-crons error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/admin/social/trigger-listing-reel", requireAdmin, async (req, res) => {
+  try {
+    const result = await runListingReelPostNow();
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    req.log.error({ err }, "admin social trigger-listing-reel error");
     res.status(500).json({ error: "Internal server error" });
   }
 });

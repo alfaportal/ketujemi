@@ -13,6 +13,7 @@ import {
   ensureSportOutdoorTypeCategories,
   ensureNdertimInstalimeTypeCategories,
   ensureSocialFollowersSchema,
+  ensureSocialReelPostsSchema,
   ensureUserSocialConnectionsSchema,
   ensureWalletSchema,
   pool,
@@ -25,6 +26,7 @@ import { startExpiryReminderScheduler } from "./lib/listing-expiry-reminders";
 import { startFacebookScheduledPostCron } from "./lib/facebook-scheduled-post-cron";
 import { startInstagramScheduledPostCron } from "./lib/instagram-scheduled-post-cron";
 import { startSocialFollowersCron } from "./lib/social-followers-cron";
+import { startListingReelCron } from "./lib/listing-reel-cron";
 import { purgeInvalidListingImagesOnStartup } from "./lib/purge-invalid-listing-images.js";
 import { startSystemMonitor } from "./lib/system-monitor.js";
 
@@ -87,6 +89,8 @@ async function startServer(): Promise<void> {
     logger.info("Fëmijë category thumbnails synced (groups + leaves)");
     await ensureSocialFollowersSchema(pool);
     logger.info("Social followers schema verified (social_followers)");
+    await ensureSocialReelPostsSchema(pool);
+    logger.info("Social reel posts schema verified (social_reel_posts)");
     await ensureUserSocialConnectionsSchema(pool);
     logger.info("User social connections schema verified (user_social_connections)");
     await purgeInvalidListingImagesOnStartup();
@@ -118,6 +122,7 @@ async function startServer(): Promise<void> {
     startExpiryReminderScheduler();
     startFacebookScheduledPostCron();
     startInstagramScheduledPostCron();
+    startListingReelCron();
     startSocialFollowersCron();
     startSystemMonitor();
   });

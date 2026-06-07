@@ -12,6 +12,7 @@
     "start": "node --enable-source-maps --env-file=../../.env ./dist/index.mjs",
     "run:facebook-scheduled-post": "tsx ./src/scripts/run-facebook-scheduled-post.ts",
     "run:social-scheduled-posts": "tsx ./src/scripts/run-social-scheduled-posts.ts",
+    "run:listing-reel": "tsx ./src/scripts/run-listing-reel.ts",
     "typecheck": "tsc --build ../../lib/db/tsconfig.json ../../lib/api-zod/tsconfig.json && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
