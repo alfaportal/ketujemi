@@ -12,6 +12,7 @@ import {
   ensureFemijeCategoryImages,
   ensureSportOutdoorTypeCategories,
   ensureNdertimInstalimeTypeCategories,
+  ensureSocialFollowersSchema,
   ensureWalletSchema,
   pool,
 } from "@workspace/db";
@@ -22,6 +23,7 @@ import { startExpiredListingsScheduler } from "./lib/expire-listings-job";
 import { startExpiryReminderScheduler } from "./lib/listing-expiry-reminders";
 import { startFacebookScheduledPostCron } from "./lib/facebook-scheduled-post-cron";
 import { startInstagramScheduledPostCron } from "./lib/instagram-scheduled-post-cron";
+import { startSocialFollowersCron } from "./lib/social-followers-cron";
 import { purgeInvalidListingImagesOnStartup } from "./lib/purge-invalid-listing-images.js";
 import { startSystemMonitor } from "./lib/system-monitor.js";
 
@@ -82,6 +84,8 @@ async function startServer(): Promise<void> {
     logger.info("Ndërtim & Instalime type subcategories verified (ndertim-type-*)");
     await ensureFemijeCategoryImages(pool);
     logger.info("Fëmijë category thumbnails synced (groups + leaves)");
+    await ensureSocialFollowersSchema(pool);
+    logger.info("Social followers schema verified (social_followers)");
     await purgeInvalidListingImagesOnStartup();
     logPaymentStackReadiness(logger);
     logger.info(vonageConfigSummary(), "vonage sms config (masked)");
@@ -111,6 +115,7 @@ async function startServer(): Promise<void> {
     startExpiryReminderScheduler();
     startFacebookScheduledPostCron();
     startInstagramScheduledPostCron();
+    startSocialFollowersCron();
     startSystemMonitor();
   });
 }

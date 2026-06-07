@@ -30,6 +30,7 @@ export { ensureSportOutdoorTypeCategories } from "./ensure-sport-outdoor-types.j
 export { ensureNdertimInstalimeTypeCategories } from "./ensure-ndertim-instalime-types.js";
 export { ensureFemijeCategoryImages } from "./ensure-femije-category-images.js";
 export { ensureEngagementNotificationsSchema } from "./ensure-engagement-notifications-schema.js";
+export { ensureSocialFollowersSchema } from "./ensure-social-followers-schema.js";
 export { ensureShopSchema } from "./ensure-shop-schema.js";
 export {
   ensureShopDirectoryTaxonomy,

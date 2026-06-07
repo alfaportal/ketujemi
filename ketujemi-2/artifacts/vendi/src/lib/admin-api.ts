@@ -672,3 +672,151 @@ export function postAdminSocialListings(
     }),
   });
 }
+
+export type SocialFollowerPlatform = "instagram" | "facebook" | "tiktok";
+
+export type AdminSocialFollowerRow = {
+  id: number;
+  platform: string;
+  follower_username: string;
+  follower_id: string | null;
+  followed_at: string;
+  unfollowed_at: string | null;
+  is_active: boolean;
+};
+
+export type AdminSocialFollowersStats = Record<
+  SocialFollowerPlatform,
+  {
+    active: number;
+    unfollowed: number;
+    api_count: number | null;
+    api_synced_at: string | null;
+  }
+>;
+
+export function getAdminFollowersStats() {
+  return request<{ stats: AdminSocialFollowersStats }>("/followers/stats");
+}
+
+export function getAdminFollowersList(params?: {
+  platform?: SocialFollowerPlatform | "all";
+  status?: "active" | "unfollowed" | "all";
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const qs = new URLSearchParams();
+  if (params?.platform) qs.set("platform", params.platform);
+  if (params?.status) qs.set("status", params.status);
+  if (params?.from) qs.set("from", params.from);
+  if (params?.to) qs.set("to", params.to);
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.limit) qs.set("limit", String(params.limit));
+  return request<{
+    total: number;
+    page: number;
+    limit: number;
+    rows: AdminSocialFollowerRow[];
+  }>(`/followers?${qs}`);
+}
+
+export function syncAdminFollowers() {
+  return request<{
+    ok: boolean;
+    listSynced: boolean;
+    totalCount: number | null;
+    added: number;
+    reactivated: number;
+    unfollowed: number;
+    message: string;
+  }>("/followers/sync", { method: "POST", body: "{}" });
+}
+
+export function importAdminInstagramFollowers(data: unknown) {
+  return request<{
+    ok: boolean;
+    parsed: number;
+    added: number;
+    reactivated: number;
+    unfollowed: number;
+  }>("/followers/import-instagram", {
+    method: "POST",
+    body: JSON.stringify({ data }),
+  });
+}
+
+export type SocialFollowerPlatform = "instagram" | "facebook" | "tiktok";
+
+export type AdminSocialFollowerRow = {
+  id: number;
+  platform: string;
+  follower_username: string;
+  follower_id: string | null;
+  followed_at: string;
+  unfollowed_at: string | null;
+  is_active: boolean;
+};
+
+export type AdminSocialFollowersStats = Record<
+  SocialFollowerPlatform,
+  {
+    active: number;
+    unfollowed: number;
+    api_count: number | null;
+    api_synced_at: string | null;
+  }
+>;
+
+export function getAdminFollowersStats() {
+  return request<{ stats: AdminSocialFollowersStats }>("/followers/stats");
+}
+
+export function getAdminFollowersList(params?: {
+  platform?: SocialFollowerPlatform | "all";
+  status?: "active" | "unfollowed" | "all";
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const qs = new URLSearchParams();
+  if (params?.platform) qs.set("platform", params.platform);
+  if (params?.status) qs.set("status", params.status);
+  if (params?.from) qs.set("from", params.from);
+  if (params?.to) qs.set("to", params.to);
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.limit) qs.set("limit", String(params.limit));
+  return request<{
+    total: number;
+    page: number;
+    limit: number;
+    rows: AdminSocialFollowerRow[];
+  }>(`/followers?${qs}`);
+}
+
+export function syncAdminFollowers() {
+  return request<{
+    ok: boolean;
+    listSynced: boolean;
+    totalCount: number | null;
+    added: number;
+    reactivated: number;
+    unfollowed: number;
+    message: string;
+  }>("/followers/sync", { method: "POST", body: "{}" });
+}
+
+export function importAdminInstagramFollowers(data: unknown) {
+  return request<{
+    ok: boolean;
+    parsed: number;
+    added: number;
+    reactivated: number;
+    unfollowed: number;
+  }>("/followers/import-instagram", {
+    method: "POST",
+    body: JSON.stringify({ data }),
+  });
+}

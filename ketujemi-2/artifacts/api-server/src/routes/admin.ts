@@ -58,6 +58,12 @@ import {
   executeAdminSocialPost,
   listAdminSocialPostListings,
 } from "../lib/admin-social-post.js";
+import {
+  getSocialFollowersStats,
+  importInstagramFollowersFromExport,
+  listSocialFollowers,
+  runInstagramFollowersSync,
+} from "../lib/social-followers-sync.js";
 
 const router = Router();
 
@@ -1696,6 +1702,65 @@ router.post("/admin/social-posts/post", requireAdmin, async (req, res) => {
     res.json({ results });
   } catch (err) {
     req.log.error({ err }, "admin social-posts post error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── Social followers tracking ───────────────────────────────────────────────
+router.get("/admin/followers/stats", requireAdmin, async (req, res) => {
+  try {
+    const stats = await getSocialFollowersStats();
+    res.json({ stats });
+  } catch (err) {
+    req.log.error({ err }, "admin followers stats error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/admin/followers", requireAdmin, async (req, res) => {
+  try {
+    const q = req.query as Record<string, string>;
+    const page = q.page ? parseInt(q.page, 10) : 1;
+    const limit = q.limit ? parseInt(q.limit, 10) : 50;
+    const platform = q.platform as "instagram" | "facebook" | "tiktok" | "all" | undefined;
+    const status = q.status as "active" | "unfollowed" | "all" | undefined;
+
+    const data = await listSocialFollowers({
+      platform: platform ?? "all",
+      status: status ?? "all",
+      from: q.from,
+      to: q.to,
+      page: Number.isFinite(page) ? page : 1,
+      limit: Number.isFinite(limit) ? limit : 50,
+    });
+    res.json(data);
+  } catch (err) {
+    req.log.error({ err }, "admin followers list error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/admin/followers/sync", requireAdmin, async (req, res) => {
+  try {
+    const result = await runInstagramFollowersSync();
+    res.json(result);
+  } catch (err) {
+    req.log.error({ err }, "admin followers sync error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/admin/followers/import-instagram", requireAdmin, async (req, res) => {
+  try {
+    const raw = req.body?.data ?? req.body;
+    if (raw == null) {
+      res.status(400).json({ error: "Missing export JSON (body.data)" });
+      return;
+    }
+    const result = await importInstagramFollowersFromExport(raw);
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    req.log.error({ err }, "admin followers import error");
     res.status(500).json({ error: "Internal server error" });
   }
 });
