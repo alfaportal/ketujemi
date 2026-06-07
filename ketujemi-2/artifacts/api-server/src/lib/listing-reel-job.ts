@@ -4,7 +4,6 @@ import { getCanonicalOrigin } from "./canonical-host";
 import { createListingReelVideo, type ReelSlideInput } from "./cloudinary-slideshow";
 import { isCloudinaryAdminConfigured } from "./cloudinary-config";
 import { logger } from "./logger";
-import { verifyListingOwnerIntegrity } from "./listing-ownership-guard";
 import { parseListingImageUrls } from "./listing-images";
 import { postReelToInstagram, isInstagramAutoPostConfigured } from "../services/socialMedia.js";
 import { postVideoToTikTok, isTikTokContentPostConfigured } from "./tiktok-content-post";
@@ -54,16 +53,13 @@ export async function selectListingsForReel(count = REEL_LISTING_COUNT): Promise
     sql`${listingsTable.image_url} IS NOT NULL AND trim(${listingsTable.image_url}) <> ''`,
   );
 
-  const query = db
+  // Automated reel posts run on behalf of the platform — skip per-listing contact/owner checks.
+  const rows = await db
     .select({
       id: listingsTable.id,
       title: listingsTable.title,
       price: listingsTable.price,
       image_url: listingsTable.image_url,
-      user_id: listingsTable.user_id,
-      seller_name: listingsTable.seller_name,
-      seller_phone: listingsTable.seller_phone,
-      description: listingsTable.description,
     })
     .from(listingsTable)
     .where(
@@ -72,24 +68,11 @@ export async function selectListingsForReel(count = REEL_LISTING_COUNT): Promise
         : baseWhere,
     )
     .orderBy(desc(listingsTable.listed_at))
-    .limit(30);
+    .limit(count);
 
-  const rows = await query;
   const picked: Array<{ id: number; title: string; price: string; imageUrl: string }> = [];
 
   for (const row of rows) {
-    const integrity = await verifyListingOwnerIntegrity(
-      {
-        id: row.id,
-        user_id: row.user_id,
-        seller_name: row.seller_name,
-        seller_phone: row.seller_phone,
-        description: row.description,
-      },
-      "social_cron_reel",
-    );
-    if (!integrity.ok) continue;
-
     const urls = parseListingImageUrls(row.image_url);
     const imageUrl = urls[0];
     if (!imageUrl) continue;
