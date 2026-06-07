@@ -22,7 +22,10 @@ async function tick(): Promise<void> {
   runInFlight = true;
   try {
     const result = await runShopSocialEnrichDailySync();
-    logger.info(result, "shop social profile enrich daily sync finished");
+    logger.info(
+      { ...result },
+      `shop social profile enrich daily sync finished (${result.processed}/${result.total})`,
+    );
   } catch (err) {
     logger.error({ err }, "shop social profile enrich daily sync failed");
   } finally {

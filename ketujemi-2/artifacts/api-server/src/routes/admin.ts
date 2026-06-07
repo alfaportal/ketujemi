@@ -1883,6 +1883,36 @@ router.post("/admin/followers/sync", requireAdmin, async (req, res) => {
   }
 });
 
+router.get("/admin/shop-social-enrichments", requireAdmin, async (req, res) => {
+  try {
+    const q = req.query as Record<string, string>;
+    const page = q.page ? parseInt(q.page, 10) : 1;
+    const limit = q.limit ? parseInt(q.limit, 10) : 50;
+    const { listShopSocialEnrichmentsForAdmin } = await import(
+      "../lib/shop-social-enrich.js"
+    );
+    const data = await listShopSocialEnrichmentsForAdmin({
+      page: Number.isFinite(page) ? page : 1,
+      limit: Number.isFinite(limit) ? limit : 50,
+    });
+    res.json(data);
+  } catch (err) {
+    req.log.error({ err }, "admin shop social enrichments list error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/admin/shop-social-enrichments/sync", requireAdmin, async (req, res) => {
+  try {
+    const { runShopSocialEnrichDailySync } = await import("../lib/shop-social-enrich.js");
+    const result = await runShopSocialEnrichDailySync();
+    res.json(result);
+  } catch (err) {
+    req.log.error({ err }, "admin shop social enrichments sync error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.post("/admin/followers/import-instagram", requireAdmin, async (req, res) => {
   try {
     const raw = req.body?.data ?? req.body;

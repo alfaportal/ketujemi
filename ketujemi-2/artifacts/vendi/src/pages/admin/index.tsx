@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard, FileText, Users, Tag, AlertTriangle, Settings,
-  LogOut, Menu, X, Lock, ShieldCheck, Building2, CreditCard, Store, Share2, UserPlus,
+  LogOut, Menu, X, Lock, ShieldCheck, Building2, CreditCard, Store, Share2, UserPlus, Instagram,
 } from "lucide-react";
 import { adminLoginEmailStart, adminLoginEmailVerify, adminLogout, isAdminLoggedIn } from "@/lib/admin-api";
 import { useMarket } from "@/lib/market-context";
@@ -17,6 +17,7 @@ import AdminPayments from "./payments";
 import AdminShops from "./shops";
 import AdminSocialPosts from "./social-posts";
 import AdminFollowers from "./followers";
+import AdminShopSocialEnrichments from "./shop-social-enrichments";
 
 type Section =
   | "dashboard"
@@ -30,12 +31,14 @@ type Section =
   | "settings"
   | "shops"
   | "social"
-  | "followers";
+  | "followers"
+  | "shop-social";
 
 const NAV: { id: Section; icon: React.ElementType }[] = [
   { id: "dashboard", icon: LayoutDashboard },
   { id: "partners", icon: Building2 },
   { id: "shops", icon: Store },
+  { id: "shop-social", icon: Instagram },
   { id: "payments", icon: CreditCard },
   { id: "listings", icon: FileText },
   { id: "social", icon: Share2 },
@@ -60,6 +63,7 @@ const NAV_TITLE_KEY: Record<Section, string> = {
   moderation: "adm_nav_mod",
   settings: "adm_nav_settings",
   shops: "adm_nav_shops",
+  "shop-social": "adm_nav_shop_social",
 };
 
 /** Admin mobile chrome only — keeps hamburger below iOS status bar; not used on main SiteHeader. */
@@ -309,6 +313,7 @@ export default function AdminPanel() {
     moderation: AdminModeration,
     settings:   AdminSettings,
     shops:      AdminShops,
+    "shop-social": AdminShopSocialEnrichments,
   }[section];
 
   return (

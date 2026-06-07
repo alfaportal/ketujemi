@@ -17,6 +17,10 @@ import { BRAND_BLUE } from "@/lib/brand-colors";
 import { translateCategory } from "@/lib/category-translations";
 import { useMarket } from "@/lib/market-context";
 import { cn } from "@/lib/utils";
+import {
+  ShopSocialProfiles,
+  type ShopSocialProfileData,
+} from "@/components/shop-social-profiles";
 
 type PartnerPublicProfile = {
   id: number;
@@ -30,6 +34,8 @@ type PartnerPublicProfile = {
   whatsapp_url: string | null;
   tiktok_url: string | null;
   website_url: string | null;
+  shop_id: number | null;
+  social_profiles?: Partial<Record<"instagram" | "tiktok", ShopSocialProfileData>>;
 };
 
 type SocialLink = {
@@ -48,7 +54,10 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
-function buildSocialLinks(profile: PartnerPublicProfile): SocialLink[] {
+function buildSocialLinks(
+  profile: PartnerPublicProfile,
+  skipKeys: Set<string> = new Set(),
+): SocialLink[] {
   const links: SocialLink[] = [];
   if (profile.facebook_url) {
     links.push({
@@ -59,7 +68,7 @@ function buildSocialLinks(profile: PartnerPublicProfile): SocialLink[] {
       className: "bg-[#1877F2] hover:bg-[#166fe5] text-white",
     });
   }
-  if (profile.instagram_url) {
+  if (profile.instagram_url && !skipKeys.has("instagram")) {
     links.push({
       key: "instagram",
       label: "Instagram",
@@ -77,7 +86,7 @@ function buildSocialLinks(profile: PartnerPublicProfile): SocialLink[] {
       className: "bg-[#25D366] hover:bg-[#20bd5a] text-white",
     });
   }
-  if (profile.tiktok_url) {
+  if (profile.tiktok_url && !skipKeys.has("tiktok")) {
     links.push({
       key: "tiktok",
       label: "TikTok",
@@ -148,7 +157,11 @@ export default function PartnerProfilePage() {
   }, [profile?.business_name]);
 
   const isVip = profile?.tier === "vip";
-  const socialLinks = profile ? buildSocialLinks(profile) : [];
+  const enrichedSocial = profile?.social_profiles ?? {};
+  const skipSocial = new Set(
+    (["instagram", "tiktok"] as const).filter((p) => enrichedSocial[p]),
+  );
+  const socialLinks = profile ? buildSocialLinks(profile, skipSocial) : [];
   const categoryLabel = profile?.category_name
     ? translateCategory(profile.category_name, uiLang)
     : null;
@@ -245,6 +258,12 @@ export default function PartnerProfilePage() {
                   />
                 </div>
                 <p className="mt-2 text-sm text-gray-600">{profile.address}</p>
+              </div>
+            ) : null}
+
+            {skipSocial.size > 0 ? (
+              <div className="px-5 sm:px-8 pb-4">
+                <ShopSocialProfiles profiles={enrichedSocial} />
               </div>
             ) : null}
 

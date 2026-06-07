@@ -1,4 +1,4 @@
-import { and, eq, inArray, lte, or, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import {
   db,
   shopSocialProfileEnrichmentsTable,
@@ -261,64 +261,107 @@ export async function getShopSocialProfilesForShops(
   return map;
 }
 
+const CRON_BATCH_SIZE = 40;
+const CRON_BATCH_PAUSE_MS = 800;
+
+function shopHasSocialUrl(shop: Shop): boolean {
+  return Boolean(parseInstagramUrl(shop.instagram) || parseTikTokUrl(shop.tiktok));
+}
+
+function pause(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Process every active shop with IG/TikTok — no row limit, batched for rate limits. */
 export async function runShopSocialEnrichDailySync(): Promise<{
   processed: number;
   errors: number;
+  total: number;
 }> {
-  const now = new Date();
-  const dueRows = await db
-    .select({ shop_id: shopSocialProfileEnrichmentsTable.shop_id })
-    .from(shopSocialProfileEnrichmentsTable)
-    .where(
-      or(
-        isNull(shopSocialProfileEnrichmentsTable.next_fetch_at),
-        lte(shopSocialProfileEnrichmentsTable.next_fetch_at, now),
-      ),
-    )
-    .limit(100);
-
-  const shopIds = [...new Set(dueRows.map((r) => r.shop_id))];
-
-  const activeShops = await db
+  const allActive = await db
     .select()
     .from(shopsTable)
-    .where(and(inArray(shopsTable.id, shopIds), eq(shopsTable.is_active, true)));
+    .where(eq(shopsTable.is_active, true));
 
+  const targets = allActive.filter(shopHasSocialUrl);
   let processed = 0;
   let errors = 0;
-  for (const shop of activeShops) {
-    try {
-      await syncShopSocialEnrichments(shop.id);
-      processed += 1;
-    } catch (err) {
-      errors += 1;
-      logger.warn({ err, shopId: shop.id }, "daily shop social enrich failed");
-    }
-  }
 
-  const shopsWithSocial = await db
-    .select()
-    .from(shopsTable)
-    .where(eq(shopsTable.is_active, true))
-    .limit(500);
-
-  for (const shop of shopsWithSocial) {
-    const hasSocial = Boolean(parseInstagramUrl(shop.instagram) || parseTikTokUrl(shop.tiktok));
-    if (!hasSocial) continue;
-    const [existing] = await db
-      .select({ id: shopSocialProfileEnrichmentsTable.id })
-      .from(shopSocialProfileEnrichmentsTable)
-      .where(eq(shopSocialProfileEnrichmentsTable.shop_id, shop.id))
-      .limit(1);
-    if (!existing) {
+  for (let i = 0; i < targets.length; i += CRON_BATCH_SIZE) {
+    const batch = targets.slice(i, i + CRON_BATCH_SIZE);
+    for (const shop of batch) {
       try {
         await syncShopSocialEnrichments(shop.id);
         processed += 1;
-      } catch {
+      } catch (err) {
         errors += 1;
+        logger.warn({ err, shopId: shop.id }, "daily shop social enrich failed");
       }
+    }
+    if (i + CRON_BATCH_SIZE < targets.length) {
+      await pause(CRON_BATCH_PAUSE_MS);
     }
   }
 
-  return { processed, errors };
+  return { processed, errors, total: targets.length };
+}
+
+export async function listShopSocialEnrichmentsForAdmin(opts?: {
+  page?: number;
+  limit?: number;
+}): Promise<{
+  rows: Array<{
+    id: number;
+    shop_id: number;
+    shop_name: string;
+    platform: string;
+    handle: string;
+    display_name: string | null;
+    follower_count: number | null;
+    link_valid: boolean;
+    oauth_verified: boolean;
+    fetch_status: string;
+    fetched_at: string | null;
+  }>;
+  total: number;
+  page: number;
+  limit: number;
+}> {
+  const page = Math.max(1, opts?.page ?? 1);
+  const limit = Math.min(200, Math.max(1, opts?.limit ?? 50));
+  const offset = (page - 1) * limit;
+
+  const rows = await db
+    .select({
+      id: shopSocialProfileEnrichmentsTable.id,
+      shop_id: shopSocialProfileEnrichmentsTable.shop_id,
+      shop_name: shopsTable.shop_name,
+      platform: shopSocialProfileEnrichmentsTable.platform,
+      handle: shopSocialProfileEnrichmentsTable.handle,
+      display_name: shopSocialProfileEnrichmentsTable.display_name,
+      follower_count: shopSocialProfileEnrichmentsTable.follower_count,
+      link_valid: shopSocialProfileEnrichmentsTable.link_valid,
+      oauth_verified: shopSocialProfileEnrichmentsTable.oauth_verified,
+      fetch_status: shopSocialProfileEnrichmentsTable.fetch_status,
+      fetched_at: shopSocialProfileEnrichmentsTable.fetched_at,
+    })
+    .from(shopSocialProfileEnrichmentsTable)
+    .innerJoin(shopsTable, eq(shopSocialProfileEnrichmentsTable.shop_id, shopsTable.id))
+    .orderBy(desc(shopSocialProfileEnrichmentsTable.fetched_at))
+    .limit(limit)
+    .offset(offset);
+
+  const [countRow] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(shopSocialProfileEnrichmentsTable);
+
+  return {
+    rows: rows.map((r) => ({
+      ...r,
+      fetched_at: r.fetched_at?.toISOString() ?? null,
+    })),
+    total: countRow?.count ?? 0,
+    page,
+    limit,
+  };
 }

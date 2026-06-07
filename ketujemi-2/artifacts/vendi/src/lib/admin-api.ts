@@ -829,6 +829,39 @@ export function syncAdminFollowers() {
   });
 }
 
+export type AdminShopSocialRow = {
+  id: number;
+  shop_id: number;
+  shop_name: string;
+  platform: string;
+  handle: string;
+  display_name: string | null;
+  follower_count: number | null;
+  link_valid: boolean;
+  oauth_verified: boolean;
+  fetch_status: string;
+  fetched_at: string | null;
+};
+
+export function getAdminShopSocialEnrichments(params?: { page?: number; limit?: number }) {
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.limit) qs.set("limit", String(params.limit));
+  return request<{
+    rows: AdminShopSocialRow[];
+    total: number;
+    page: number;
+    limit: number;
+  }>(`/shop-social-enrichments?${qs}`);
+}
+
+export function syncAdminShopSocialEnrichments() {
+  return request<{ processed: number; errors: number; total: number }>(
+    "/shop-social-enrichments/sync",
+    { method: "POST", body: "{}" },
+  );
+}
+
 export function importAdminInstagramFollowers(data: unknown) {
   return request<{
     ok: boolean;

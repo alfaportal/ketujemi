@@ -4,10 +4,12 @@ import {
   categoriesTable,
   homepagePartnerCategoriesTable,
   homepagePartnersTable,
+  shopsTable,
   usersTable,
 } from "@workspace/db";
 import type { User } from "@workspace/db";
 import { and, asc, eq } from "drizzle-orm";
+import { getShopSocialProfilesForApi, type ShopSocialProfileApi } from "./shop-social-enrich.js";
 import { isVipBusinessActive } from "./business-rules";
 import { isBusinessPartnerActive } from "./business-partner";
 import { homepagePartnerPublicId } from "./homepage-partners";
@@ -26,6 +28,8 @@ export type PartnerPublicProfile = {
   whatsapp_url: string | null;
   tiktok_url: string | null;
   website_url: string | null;
+  shop_id: number | null;
+  social_profiles: Partial<Record<"instagram" | "tiktok", ShopSocialProfileApi>>;
 };
 
 export function partnerProfilePath(publicId: number): string {
@@ -144,6 +148,8 @@ async function loadHomepagePartnerProfile(rowId: number): Promise<PartnerPublicP
     logo_url: row.logo_url.trim() || null,
     tier,
     category_name,
+    shop_id: null,
+    social_profiles: {},
     ...buildProfileFields({
       address: row.address,
       facebook_url: row.facebook_url,
@@ -172,12 +178,22 @@ async function loadBusinessUserPartnerProfile(userId: number): Promise<PartnerPu
     website_url: trimOrNull(user.partner_website_url) ?? legacy.website_url,
   });
 
+  const [shop] = await db
+    .select({ id: shopsTable.id })
+    .from(shopsTable)
+    .where(and(eq(shopsTable.user_id, userId), eq(shopsTable.is_active, true)))
+    .limit(1);
+
+  const social_profiles = shop ? await getShopSocialProfilesForApi(shop.id) : {};
+
   return {
     id: userId,
     business_name: partnerDisplayName(user),
     logo_url: resolvePartnerLogoUrl(user),
     tier,
     category_name,
+    shop_id: shop?.id ?? null,
+    social_profiles,
     ...fields,
   };
 }
