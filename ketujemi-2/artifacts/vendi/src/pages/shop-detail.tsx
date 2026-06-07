@@ -177,7 +177,7 @@ export default function ShopDetailPage() {
       });
       if (!res.ok) throw new Error("fail");
       toast({ title: d.shopDeleted });
-      setLocation("/profile");
+      setLocation("/profili");
     } catch {
       toast({ title: d.shopDeleteError, variant: "destructive" });
     } finally {

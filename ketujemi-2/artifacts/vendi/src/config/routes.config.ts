@@ -6,6 +6,7 @@ export type RouteId =
   | "admin"
   | "login"
   | "profile"
+  | "my-listings"
   | "wallet-bank-payment"
   | "business-profile"
   | "partner-profile"
@@ -92,7 +93,21 @@ export const APP_ROUTES: AppRouteDefinition[] = [
   },
   {
     id: "profile",
+    path: "/profili",
+    requiresAuth: true,
+    marketPrefix: null,
+    fallbackPath: LOGIN_FALLBACK,
+  },
+  {
+    id: "profile",
     path: "/profile",
+    requiresAuth: true,
+    marketPrefix: null,
+    fallbackPath: LOGIN_FALLBACK,
+  },
+  {
+    id: "my-listings",
+    path: "/shpalljet-e-mia",
     requiresAuth: true,
     marketPrefix: null,
     fallbackPath: LOGIN_FALLBACK,

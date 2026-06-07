@@ -100,7 +100,7 @@ export default function WalletBankPaymentPage() {
           {loadError ?? "Pagesa nuk u gjet ose transferi bankar nuk është aktiv."}
         </p>
         <Button asChild variant="outline">
-          <Link href="/profile">Kthehu te profili</Link>
+          <Link href="/profili">Kthehu te profili</Link>
         </Button>
       </div>
     );
@@ -139,7 +139,7 @@ export default function WalletBankPaymentPage() {
       </div>
 
       <Button asChild className="w-full">
-        <Link href="/profile">Kthehu te portofoli</Link>
+        <Link href="/profili">Kthehu te portofoli</Link>
       </Button>
     </div>
   );

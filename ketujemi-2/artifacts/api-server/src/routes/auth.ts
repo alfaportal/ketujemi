@@ -31,6 +31,16 @@ import {
   serializePartnerBannerUrls,
   type PartnerLinkType,
 } from "../lib/business-partner";
+import {
+  consumeProfileChangeToken,
+  getActiveProfileChallenge,
+  issueProfileChangeToken,
+  profilePatchNeedsVerification,
+  storeEmailProfileChallenge,
+  storeSmsProfileChallenge,
+  userSmsPhoneForProfile,
+} from "../lib/profile-change-verify";
+import { sendProfileChangeCodeEmail } from "../lib/send-email";
 
 const router = Router();
 
@@ -753,6 +763,156 @@ router.get("/auth/me", async (req, res) => {
   res.json({ user: publicUser(user, { self: true }) });
 });
 
+// ─── POST /auth/profile/verify/sms/start ─────────────────────────────────────
+router.post("/auth/profile/verify/sms/start", authLoginRegisterLimiter, async (req, res) => {
+  if (!isSmsAuthEnabled()) {
+    res.status(503).json({ error: "SMS_AUTH_DISABLED", message: SMS_AUTH_DISABLED_MESSAGE });
+    return;
+  }
+
+  const id = await sessionUserId(req);
+  if (id == null) {
+    res.status(401).json({ error: "Not logged in" });
+    return;
+  }
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  const phone = userSmsPhoneForProfile(user, req.body?.phone);
+  if (!phone) {
+    res.status(400).json({
+      error: "PHONE_REQUIRED",
+      message: "Vendosni numrin e telefonit për verifikim SMS.",
+    });
+    return;
+  }
+
+  try {
+    await assertSmsStartAllowed(req, phone);
+    const requestId = await vonageVerifyRequest(phone);
+    await storeSmsProfileChallenge(user.id, phone, requestId);
+    res.json({ ok: true });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "SMS start failed";
+    req.log?.error({ err }, "profile verify sms start");
+    res.status(502).json({ error: "SMS_START_FAILED", message: msg });
+  }
+});
+
+// ─── POST /auth/profile/verify/sms/confirm ──────────────────────────────────
+router.post("/auth/profile/verify/sms/confirm", authLoginRegisterLimiter, async (req, res) => {
+  const id = await sessionUserId(req);
+  if (id == null) {
+    res.status(401).json({ error: "Not logged in" });
+    return;
+  }
+
+  const code = typeof req.body?.code === "string" ? req.body.code.trim() : "";
+  if (code.length < 4) {
+    res.status(400).json({ error: "Code required" });
+    return;
+  }
+
+  const challenge = await getActiveProfileChallenge(id, "sms");
+  if (!challenge?.request_id || !challenge.phone_e164_digits) {
+    res.status(400).json({
+      error: "NO_CHALLENGE",
+      message: "Kërkoni një kod të ri SMS.",
+    });
+    return;
+  }
+
+  try {
+    await vonageVerifyCheck(challenge.request_id, code, challenge.phone_e164_digits);
+    const token = await issueProfileChangeToken(id, "sms");
+
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+    if (user && !user.phone_e164_digits) {
+      await db
+        .update(usersTable)
+        .set({
+          phone_e164_digits: challenge.phone_e164_digits,
+          contact_phone: challenge.phone_e164_digits,
+        })
+        .where(eq(usersTable.id, id));
+    }
+
+    res.json({ ok: true, profile_change_token: token, expires_in_seconds: 600 });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Verification failed";
+    res.status(400).json({ error: msg });
+  }
+});
+
+// ─── POST /auth/profile/verify/email/start ────────────────────────────────────
+router.post("/auth/profile/verify/email/start", authLoginRegisterLimiter, async (req, res) => {
+  const id = await sessionUserId(req);
+  if (id == null) {
+    res.status(401).json({ error: "Not logged in" });
+    return;
+  }
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!user?.email?.trim()) {
+    res.status(400).json({
+      error: "EMAIL_REQUIRED",
+      message: "Llogaria nuk ka email të regjistruar për verifikim.",
+    });
+    return;
+  }
+
+  if (!hasEmailDeliveryConfigured()) {
+    res.status(503).json({ error: "EMAIL_NOT_CONFIGURED" });
+    return;
+  }
+
+  try {
+    const code = sixDigitCode();
+    await storeEmailProfileChallenge(user.id, user.email, code);
+    await sendProfileChangeCodeEmail({ to: user.email, code });
+    res.json({ ok: true });
+  } catch (err: unknown) {
+    req.log?.error({ err }, "profile verify email start");
+    res.status(502).json({ error: "EMAIL_SEND_FAILED" });
+  }
+});
+
+// ─── POST /auth/profile/verify/email/confirm ──────────────────────────────────
+router.post("/auth/profile/verify/email/confirm", authLoginRegisterLimiter, async (req, res) => {
+  const id = await sessionUserId(req);
+  if (id == null) {
+    res.status(401).json({ error: "Not logged in" });
+    return;
+  }
+
+  const code = typeof req.body?.code === "string" ? req.body.code.trim() : "";
+  if (code.length < 4) {
+    res.status(400).json({ error: "Code required" });
+    return;
+  }
+
+  const challenge = await getActiveProfileChallenge(id, "email");
+  if (!challenge?.code) {
+    res.status(400).json({
+      error: "NO_CHALLENGE",
+      message: "Kërkoni një kod të ri në email.",
+    });
+    return;
+  }
+
+  if (challenge.code !== code) {
+    res.status(400).json({ error: "INVALID_CODE", message: "Kodi nuk është i saktë." });
+    return;
+  }
+
+  const token = await issueProfileChangeToken(id, "email");
+  res.json({ ok: true, profile_change_token: token, expires_in_seconds: 600 });
+});
+
 // ─── PATCH /auth/profile ──────────────────────────────────────────────────────
 router.patch("/auth/profile", async (req, res) => {
   const id = await sessionUserId(req);
@@ -845,6 +1005,44 @@ router.patch("/auth/profile", async (req, res) => {
   if (Object.keys(patch).length === 0) {
     res.status(400).json({ error: "No valid fields" });
     return;
+  }
+
+  const verifyNeed = profilePatchNeedsVerification(existing, {
+    contact_phone: patch.contact_phone,
+  });
+  if (
+    verifyNeed.required &&
+    verifyNeed.channel === "email" &&
+    !existing.email?.trim()
+  ) {
+    res.status(400).json({
+      error: "EMAIL_REQUIRED_FOR_PHONE_CHANGE",
+      message: "Shtoni një email të verifikuar në llogari para se të ndryshoni telefonin.",
+    });
+    return;
+  }
+  if (verifyNeed.required && verifyNeed.channel) {
+    const token =
+      typeof body.profile_change_token === "string" ? body.profile_change_token.trim() : "";
+    if (!token) {
+      res.status(403).json({
+        error: "VERIFICATION_REQUIRED",
+        channel: verifyNeed.channel,
+        message:
+          verifyNeed.channel === "sms"
+            ? "Konfirmoni me SMS para se të ndryshoni profilin."
+            : "Konfirmoni me email para se të ndryshoni numrin e telefonit.",
+      });
+      return;
+    }
+    const ok = await consumeProfileChangeToken(id, token, verifyNeed.channel);
+    if (!ok) {
+      res.status(403).json({
+        error: "VERIFICATION_INVALID",
+        message: "Verifikimi ka skaduar. Provoni përsëri.",
+      });
+      return;
+    }
   }
 
   const [row] = await db

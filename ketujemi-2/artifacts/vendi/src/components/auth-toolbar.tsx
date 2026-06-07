@@ -1,10 +1,10 @@
 import { useLocation } from "wouter";
-import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { useMarket } from "@/lib/market-context";
-import { Button } from "@/components/ui/button";
 import { cnPrimaryBlue } from "@/lib/primary-button-classes";
 import { NotificationBell } from "@/components/notification-bell";
+import { UserMenuDropdown } from "@/components/user-menu-dropdown";
+import { cn } from "@/lib/utils";
 
 type Props = {
   variant?: "default" | "compact";
@@ -13,13 +13,8 @@ type Props = {
 
 export function AuthToolbar({ variant = "default", className }: Props) {
   const [, setLocation] = useLocation();
-  const { user, loading, refresh } = useAuth();
+  const { user, loading } = useAuth();
   const { t } = useMarket();
-
-  async function logout() {
-    await fetchWithTimeout("/api/auth/logout", { method: "POST", credentials: "include" });
-    await refresh();
-  }
 
   function goLogin() {
     const returnTo =
@@ -37,7 +32,7 @@ export function AuthToolbar({ variant = "default", className }: Props) {
   if (loading) {
     return (
       <span
-        className={`inline-block h-12 w-14 rounded-xl bg-muted/50 animate-pulse ${className ?? ""}`}
+        className={cn("inline-block h-12 w-14 rounded-xl bg-muted/50 animate-pulse", className)}
         aria-hidden
       />
     );
@@ -56,39 +51,10 @@ export function AuthToolbar({ variant = "default", className }: Props) {
     );
   }
 
-  const label =
-    user.email ??
-    (user.phone_e164_digits ? `+${user.phone_e164_digits}` : null) ??
-    `#${user.id}`;
-
   return (
-    <div className={`flex items-center gap-2 ${className ?? ""}`}>
-      <NotificationBell btnCls={btnCls} />
-      <Button
-        type="button"
-        variant="ghost"
-        className={`${btnCls} font-semibold shrink-0 hidden sm:inline-flex`}
-        onClick={() => setLocation("/profile")}
-      >
-        {t.authProfile}
-      </Button>
-      <span
-        className="text-sm text-muted-foreground truncate font-medium hidden md:inline max-w-[116px]"
-        title={label}
-      >
-        {label}
-      </span>
-      <Button
-        type="button"
-        variant="outline"
-        className={`${btnCls} font-semibold shrink-0`}
-        data-testid="button-logout-toolbar"
-        onClick={() => {
-          void logout();
-        }}
-      >
-        {t.authLogout}
-      </Button>
+    <div className={cn("flex items-center gap-2 min-w-0 w-full", className)}>
+      <NotificationBell btnCls={btnCls} className="hidden md:inline-flex" />
+      <UserMenuDropdown variant={variant} className="min-w-0 flex-1 md:flex-none w-full" />
     </div>
   );
 }

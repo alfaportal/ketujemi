@@ -13,8 +13,8 @@ import { AuthToolbar } from "@/components/auth-toolbar";
 import { BusinessAccountCard } from "@/components/business-account-card";
 import { PartnerLogoAnalyticsCard } from "@/components/partner-logo-analytics-card";
 import { PartnerProfilePanel } from "@/components/partner-profile-panel";
-import { ProfileMyListings } from "@/components/profile-my-listings";
 import { ProfileShopDashboard } from "@/components/profile-shop-dashboard";
+import { ProfileChangeGate } from "@/components/profile-change-gate";
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
@@ -33,6 +33,8 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordBusy, setPasswordBusy] = useState(false);
+  const [changeToken, setChangeToken] = useState<string | null>(null);
+  const [initialPhone, setInitialPhone] = useState("");
 
   useEffect(() => {
     if (loading || !user || typeof window === "undefined") return;
@@ -72,7 +74,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      setLocation(loginUrlWithReturn("/profile"));
+      setLocation(loginUrlWithReturn("/profili"));
       return;
     }
     setDisplayName(user.display_name ?? "");
@@ -89,7 +91,40 @@ export default function ProfilePage() {
     setPartnerLogoUrl(user.partner_logo_url ?? "");
     setCity(user.city ?? "");
     setAboutMe(user.about_me ?? "");
+    const phone =
+      user.contact_phone
+        ? user.contact_phone.startsWith("+")
+          ? user.contact_phone
+          : `+${user.contact_phone}`
+        : user.phone_e164_digits
+          ? `+${user.phone_e164_digits}`
+          : "";
+    setInitialPhone(phone);
+    setChangeToken(null);
   }, [user, loading, setLocation]);
+
+  const isEmailPrimary =
+    user?.auth_channel === "email" ||
+    (user?.auth_channel === "both" && user.email_verified);
+  const phoneDigits = (s: string) => s.replace(/\D/g, "");
+  const phoneChanged = phoneDigits(contactPhone) !== phoneDigits(initialPhone);
+  const needsSms = Boolean(isEmailPrimary);
+  const needsEmailForPhone = Boolean(
+    user?.auth_channel === "phone" && phoneChanged && user?.email,
+  );
+
+  function formatRegisteredAt(iso?: string): string {
+    if (!iso) return "—";
+    try {
+      return new Date(iso).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch {
+      return iso;
+    }
+  }
 
   async function onChangePassword(e: React.FormEvent) {
     e.preventDefault();
@@ -152,17 +187,20 @@ export default function ProfilePage() {
             : {}),
           city,
           about_me: aboutMe,
+          ...(changeToken ? { profile_change_token: changeToken } : {}),
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        const err = data as { error?: string; message?: string };
         toast({
-          title: (data as { error?: string }).error ?? t.toast_reqFail,
+          title: err.message ?? err.error ?? t.toast_reqFail,
           variant: "destructive",
         });
         return;
       }
       await refresh();
+      setChangeToken(null);
       toast({ title: t.profile_saved });
     } finally {
       setBusy(false);
@@ -204,7 +242,35 @@ export default function ProfilePage() {
 
           <ProfileShopDashboard />
 
-          <ProfileMyListings />
+          <section className="rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-4 space-y-2 text-sm">
+            <h2 className="font-bold text-gray-900">{t.profile_info_heading}</h2>
+            <div className="grid gap-2">
+              <div className="flex justify-between gap-3">
+                <span className="text-gray-500">{t.profile_fullName}</span>
+                <span className="font-medium text-gray-900 text-right">{user.display_name || "—"}</span>
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-gray-500">Email</span>
+                <span className="font-medium text-gray-900 text-right break-all">{user.email || "—"}</span>
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-gray-500">{t.phoneNum}</span>
+                <span className="font-medium text-gray-900 text-right">
+                  {user.contact_phone || (user.phone_e164_digits ? `+${user.phone_e164_digits}` : "—")}
+                </span>
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-gray-500">{t.profile_registered}</span>
+                <span className="font-medium text-gray-900 text-right">{formatRegisteredAt(user.created_at)}</span>
+              </div>
+            </div>
+            <Link
+              href="/shpalljet-e-mia"
+              className="inline-block text-sm font-semibold text-blue-700 hover:underline pt-1"
+            >
+              {t.profile_myListings_heading} →
+            </Link>
+          </section>
 
           {user.email ? (
             <form
@@ -266,7 +332,17 @@ export default function ProfilePage() {
             </form>
           ) : null}
 
-          <form className="space-y-4" onSubmit={onSave}>
+          <form className="space-y-4 pt-4 border-t border-gray-100" onSubmit={onSave}>
+            <h2 className="text-base font-bold text-gray-900">{t.profile_edit_heading}</h2>
+
+            <ProfileChangeGate
+              user={user}
+              needsSms={needsSms}
+              needsEmailForPhone={needsEmailForPhone}
+              token={changeToken}
+              onToken={setChangeToken}
+            />
+
             <div className="space-y-2">
               <Label htmlFor="profile-name">{t.profile_fullName}</Label>
               <Input
@@ -334,7 +410,21 @@ export default function ProfilePage() {
                 className="min-h-[120px] text-[16px]"
               />
             </div>
-            <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
+            {phoneChanged && user.auth_channel === "phone" && !user.email ? (
+              <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                {t.profile_phone_change_needs_email}
+              </p>
+            ) : null}
+
+            <Button
+              type="submit"
+              className="w-full min-h-12 h-12 text-base"
+              disabled={
+                busy ||
+                (needsSms && !changeToken) ||
+                (needsEmailForPhone && !changeToken)
+              }
+            >
               {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.profile_save}
             </Button>
           </form>

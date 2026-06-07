@@ -28,6 +28,9 @@ export type AuthUser = {
   vip_expires_at?: string | null;
   email_verified?: boolean;
   has_password?: boolean;
+  created_at?: string;
+  auth_channel?: "email" | "phone" | "both";
+  phone_verified?: boolean;
   wallet?: {
     balance_cents: number;
     balance_eur: string;

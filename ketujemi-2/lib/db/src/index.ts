@@ -33,6 +33,7 @@ export { ensureEngagementNotificationsSchema } from "./ensure-engagement-notific
 export { ensureSocialFollowersSchema } from "./ensure-social-followers-schema.js";
 export { ensureSocialReelPostsSchema } from "./ensure-social-reel-posts-schema.js";
 export { ensureUserSocialConnectionsSchema } from "./ensure-user-social-connections-schema.js";
+export { ensureProfileChangeSchema } from "./ensure-profile-change-schema.js";
 export { ensureShopSchema } from "./ensure-shop-schema.js";
 export {
   ensureShopDirectoryTaxonomy,

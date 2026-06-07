@@ -64,6 +64,25 @@ type PartnerActivationMailPayload = {
   profileUrl: string;
 };
 
+export async function sendProfileChangeCodeEmail(payload: { to: string; code: string }): Promise<void> {
+  const { to, code } = payload;
+  ensureEmailConfigured();
+  const subject = "Konfirmoni ndryshimin e profilit — KetuJemi";
+  const text = [
+    "Për të ndryshuar të dhënat e profilit, vendosni këtë kod në faqen e profilit:",
+    "",
+    `Kodi: ${code}`,
+    "",
+    "Nëse nuk e keni kërkuar ju, injoroni këtë email.",
+  ].join("\n");
+  await deliverEmail({
+    to,
+    subject,
+    text,
+    html: `<p>Kodi për ndryshimin e profilit:</p><p><strong>${code}</strong></p>`,
+  });
+}
+
 export async function sendPartnerActivationEmail(
   payload: PartnerActivationMailPayload,
 ): Promise<void> {

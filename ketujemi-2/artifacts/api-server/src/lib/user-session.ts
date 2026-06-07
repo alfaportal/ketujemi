@@ -1,6 +1,7 @@
 import type { CookieOptions, Response } from "express";
 import type { User } from "@workspace/db";
 import { sellerFirstName } from "./contact-mask";
+import { resolveAuthChannel } from "./profile-change-verify";
 import { walletSummary } from "./wallet";
 
 const COOKIE = "kj_session";
@@ -71,6 +72,9 @@ export function publicUser(u: User, opts?: { self?: boolean }) {
     first_listing_posted: u.first_listing_posted ?? false,
     social_follow_notif_sent: u.social_follow_notif_sent ?? false,
     social_follow_notif_preference: u.social_follow_notif_preference ?? "pending",
+    created_at: u.created_at.toISOString(),
+    auth_channel: resolveAuthChannel(u),
+    phone_verified: Boolean(u.phone_e164_digits?.trim()),
   };
 }
 

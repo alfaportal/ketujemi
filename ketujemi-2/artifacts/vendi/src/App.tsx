@@ -31,6 +31,7 @@ const ListingDetail = lazy(() => import("@/pages/listing-detail"));
 const NewListing = lazy(() => import("@/pages/new-listing"));
 const LoginPage = lazy(() => import("@/pages/login"));
 const ProfilePage = lazy(() => import("@/pages/profile"));
+const MyListingsPage = lazy(() => import("@/pages/my-listings"));
 const BusinessProfilePage = lazy(() => import("@/pages/business-profile"));
 const PartnerProfilePage = lazy(() => import("@/pages/partner-profile"));
 const EditListing = lazy(() => import("@/pages/edit-listing"));
@@ -61,6 +62,7 @@ const ROUTE_COMPONENTS: Record<Exclude<RouteId, "category-hub-redirect">, Compon
   admin: AdminPanel,
   login: LoginPage,
   profile: ProfilePage,
+  "my-listings": MyListingsPage,
   "wallet-bank-payment": WalletBankPaymentPage,
   "business-profile": BusinessProfilePage,
   "partner-profile": PartnerProfilePage,
