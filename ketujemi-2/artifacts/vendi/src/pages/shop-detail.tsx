@@ -1,5 +1,8 @@
 import { useRoute, Link, useLocation } from "wouter";
 import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { useProfileEditGate } from "@/hooks/use-profile-edit-gate";
+import { ProfileEditGateFlow } from "@/components/profile-edit-gate-flow";
 import { Loader2, MapPin, Facebook, Instagram, Globe, ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -85,6 +88,7 @@ export default function ShopDetailPage() {
   const { uiLang, t } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
   const d = useShopDetailCopy();
+  const { user, refresh } = useAuth();
   const [loading, setLoading] = useState(true);
   const [shop, setShop] = useState<ShopData | null>(null);
   const [listings, setListings] = useState<ListingRow[]>([]);
@@ -93,12 +97,15 @@ export default function ShopDetailPage() {
   const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [editRequested, setEditRequested] = useState(false);
+  const [deleteRequested, setDeleteRequested] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
   const [deleteShopOpen, setDeleteShopOpen] = useState(false);
   const [deleteShopBusy, setDeleteShopBusy] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const gate = useProfileEditGate(user, refresh);
 
   function loadShop() {
     if (!id) return;
@@ -146,15 +153,47 @@ export default function ShopDetailPage() {
     loadShop();
   }, [id, d, locale]);
 
+  useEffect(() => {
+    if (editRequested && gate.isUnlocked) {
+      setEditOpen(true);
+      setEditRequested(false);
+    }
+  }, [editRequested, gate.isUnlocked]);
+
+  useEffect(() => {
+    if (deleteRequested && gate.isUnlocked) {
+      setDeleteShopOpen(true);
+      setDeleteRequested(false);
+    }
+  }, [deleteRequested, gate.isUnlocked]);
+
+  function onEditShopClick() {
+    if (gate.isUnlocked) {
+      setEditOpen(true);
+      return;
+    }
+    setEditRequested(true);
+    gate.startGate();
+  }
+
+  function onDeleteShopClick() {
+    if (gate.isUnlocked) {
+      setDeleteShopOpen(true);
+      return;
+    }
+    setDeleteRequested(true);
+    gate.startGate();
+  }
+
   async function onSaveShopEdit(values: ShopEditFormValues) {
-    if (!shop) return;
+    if (!shop || !gate.changeToken) return;
     setEditSaving(true);
     try {
       const res = await fetchWithTimeout(`/api/shops/${shop.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(values),
+        body: JSON.stringify({ ...values, profile_change_token: gate.changeToken }),
       });
       if (!res.ok) throw new Error("fail");
       toast({ title: d.shopSaved });
@@ -168,12 +207,14 @@ export default function ShopDetailPage() {
   }
 
   async function onDeleteShop() {
-    if (!shop) return;
+    if (!shop || !gate.changeToken) return;
     setDeleteShopBusy(true);
     try {
       const res = await fetchWithTimeout(`/api/shops/${shop.id}`, {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
+        body: JSON.stringify({ profile_change_token: gate.changeToken }),
       });
       if (!res.ok) throw new Error("fail");
       toast({ title: d.shopDeleted });
@@ -280,20 +321,19 @@ export default function ShopDetailPage() {
               type="button"
               variant="outline"
               className="min-h-11 font-semibold"
-              onClick={() => setEditOpen(true)}
+              onClick={onEditShopClick}
             >
               {d.editShop}
             </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              className="min-h-11 font-semibold bg-red-600 hover:bg-red-700"
+              onClick={onDeleteShopClick}
+            >
+              {d.deleteShop}
+            </Button>
             <AlertDialog open={deleteShopOpen} onOpenChange={setDeleteShopOpen}>
-              <AlertDialogTrigger asChild>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  className="min-h-11 font-semibold bg-red-600 hover:bg-red-700"
-                >
-                  {d.deleteShop}
-                </Button>
-              </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>{d.deleteShopTitle}</AlertDialogTitle>
@@ -471,6 +511,8 @@ export default function ShopDetailPage() {
           )}
         </section>
       </div>
+
+      {isOwner && user ? <ProfileEditGateFlow user={user} gate={gate} /> : null}
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">

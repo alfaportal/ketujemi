@@ -18,6 +18,7 @@ import { resolveDirectoryFields } from "../lib/shop-directory-patch";
 import { ownerShopFieldPatch } from "../lib/shop-field-patch";
 import { deleteShopCascade } from "../lib/delete-shop-cascade";
 import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxonomy.ts";
+import { enforceProfileChangeToken } from "../lib/profile-change-verify.js";
 
 const router = Router();
 
@@ -42,6 +43,12 @@ router.post("/shop-applications", async (req, res) => {
   }
 
   const body = req.body as Record<string, unknown>;
+  const gate = await enforceProfileChangeToken(viewer, body);
+  if (!gate.ok) {
+    res.status(gate.status).json(gate.body);
+    return;
+  }
+
   const errors: string[] = [];
   const shopNameErr = requiredString(body.shop_name, "Emri i dyqanit");
   if (shopNameErr) errors.push(shopNameErr);
@@ -424,6 +431,12 @@ router.patch("/shops/:id", async (req, res) => {
   }
 
   const body = req.body as Record<string, unknown>;
+  const gate = await enforceProfileChangeToken(viewer, body);
+  if (!gate.ok) {
+    res.status(gate.status).json(gate.body);
+    return;
+  }
+
   const patch = ownerShopFieldPatch(body);
   const directory = await resolveDirectoryFields(body, shop);
   Object.assign(patch, directory);
@@ -466,6 +479,13 @@ router.delete("/shops/:id", async (req, res) => {
   }
   if (shop.user_id !== viewer.id) {
     res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const gate = await enforceProfileChangeToken(viewer, body);
+  if (!gate.ok) {
+    res.status(gate.status).json(gate.body);
     return;
   }
 

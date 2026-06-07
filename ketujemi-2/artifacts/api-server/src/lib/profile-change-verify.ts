@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { and, eq, gt, lt } from "drizzle-orm";
 import { db, profileChangeChallengesTable, profileChangeTokensTable, type User } from "@workspace/db";
-import { resolveProfileEditSecondFactor, type AuthChannel } from "./auth-identity";
+import { resolveMissingSecondMethod, resolveProfileEditSecondFactor, type AuthChannel } from "./auth-identity";
 import { normalizePhone } from "./phone-prefixes";
 
 const CHALLENGE_TTL_MS = 15 * 60 * 1000;
@@ -150,4 +150,63 @@ export async function validateProfileChangeToken(
     )
     .limit(1);
   return Boolean(row);
+}
+
+export type ProfileChangeEnforceResult =
+  | { ok: true }
+  | { ok: false; status: number; body: Record<string, unknown> };
+
+/** Shared gate for profile and shop mutations — requires active second-factor session. */
+export async function enforceProfileChangeToken(
+  user: User,
+  body: Record<string, unknown>,
+): Promise<ProfileChangeEnforceResult> {
+  const verifyNeed = profilePatchNeedsVerification(user);
+  if (verifyNeed.required && !verifyNeed.channel) {
+    const missing = resolveMissingSecondMethod(user);
+    return {
+      ok: false,
+      status: 403,
+      body: {
+        error: "SECOND_METHOD_REQUIRED",
+        missing_method: missing,
+        message:
+          missing === "email"
+            ? "Shtoni dhe verifikoni një email para se të vazhdoni."
+            : missing === "phone"
+              ? "Shtoni dhe verifikoni një telefon para se të vazhdoni."
+              : "Shtoni një metodë të dytë verifikimi para se të vazhdoni.",
+      },
+    };
+  }
+  if (verifyNeed.required && verifyNeed.channel) {
+    const token =
+      typeof body.profile_change_token === "string" ? body.profile_change_token.trim() : "";
+    if (!token) {
+      return {
+        ok: false,
+        status: 403,
+        body: {
+          error: "VERIFICATION_REQUIRED",
+          channel: verifyNeed.channel,
+          message:
+            verifyNeed.channel === "sms"
+              ? "Konfirmoni me SMS para se të vazhdoni."
+              : "Konfirmoni me email para se të vazhdoni.",
+        },
+      };
+    }
+    const valid = await validateProfileChangeToken(user.id, token, verifyNeed.channel);
+    if (!valid) {
+      return {
+        ok: false,
+        status: 403,
+        body: {
+          error: "VERIFICATION_INVALID",
+          message: "Verifikimi ka skaduar. Provoni përsëri.",
+        },
+      };
+    }
+  }
+  return { ok: true };
 }

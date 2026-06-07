@@ -1,4 +1,8 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { useMarket } from "@/lib/market-context";
+import { useProfileEditGate } from "@/hooks/use-profile-edit-gate";
+import { ProfileEditGateFlow } from "@/components/profile-edit-gate-flow";
 import { Link } from "wouter";
 import { Loader2, Store, Eye, Package, Pencil, ChevronDown, ChevronUp } from "lucide-react";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
@@ -10,7 +14,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useShopDashboardCopy } from "@/lib/shop-dashboard-i18n";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
-import { useMarket } from "@/lib/market-context";
 import ListingCard from "@/components/listing-card";
 import { ListingShareButtons, listingPublicUrl } from "@/components/listing-share-buttons";
 import { BRAND_BLUE } from "@/lib/brand-colors";
@@ -43,16 +46,19 @@ type ShopListing = Parameters<typeof ListingCard>[0]["listing"];
 
 export function ProfileShopDashboard() {
   const c = useShopDashboardCopy();
-  const { uiLang } = useMarket();
+  const { uiLang, t } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
   const { toast } = useToast();
+  const { user, refresh } = useAuth();
+  const gate = useProfileEditGate(user, refresh);
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<ShopMeResponse | null>(null);
   const [showListings, setShowListings] = useState(false);
   const [shopListings, setShopListings] = useState<ShopListing[]>([]);
   const [listingsLoading, setListingsLoading] = useState(false);
-  const [editing, setEditing] = useState(false);
+  const [editFormOpen, setEditFormOpen] = useState(false);
+  const [editRequested, setEditRequested] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [shopName, setShopName] = useState("");
@@ -98,6 +104,13 @@ export function ProfileShopDashboard() {
     loadMe();
   }, []);
 
+  useEffect(() => {
+    if (editRequested && gate.isUnlocked) {
+      setEditFormOpen(true);
+      setEditRequested(false);
+    }
+  }, [editRequested, gate.isUnlocked]);
+
   function loadShopListings() {
     setListingsLoading(true);
     void fetchWithTimeout("/api/shops/me/listings", { credentials: "include" })
@@ -116,9 +129,18 @@ export function ProfileShopDashboard() {
     if (next && shopListings.length === 0) loadShopListings();
   }
 
+  function onEditShopClick() {
+    if (gate.isUnlocked) {
+      setEditFormOpen((open) => !open);
+      return;
+    }
+    setEditRequested(true);
+    gate.startGate();
+  }
+
   async function onSaveShop(e: React.FormEvent) {
     e.preventDefault();
-    if (!data?.shop) return;
+    if (!data?.shop || !gate.changeToken) return;
     setSaving(true);
     try {
       const res = await fetchWithTimeout(`/api/shops/${data.shop.id}`, {
@@ -126,6 +148,7 @@ export function ProfileShopDashboard() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
+          profile_change_token: gate.changeToken,
           shop_name: shopName,
           logo_url: logoUrl,
           description,
@@ -141,7 +164,7 @@ export function ProfileShopDashboard() {
       });
       if (!res.ok) throw new Error("fail");
       toast({ title: c.shopSaved });
-      setEditing(false);
+      setEditFormOpen(false);
       loadMe();
     } catch {
       toast({ title: "Error", variant: "destructive" });
@@ -225,7 +248,7 @@ export function ProfileShopDashboard() {
             type="button"
             variant="outline"
             className="w-full min-h-11"
-            onClick={() => setEditing((v) => !v)}
+            onClick={onEditShopClick}
           >
             <Pencil size={16} className="mr-2" />
             {c.editShop}
@@ -262,8 +285,11 @@ export function ProfileShopDashboard() {
           </div>
         ) : null}
 
-        {editing ? (
+        {editFormOpen && gate.isUnlocked ? (
           <form className="space-y-3 pt-2 border-t border-blue-100" onSubmit={onSaveShop}>
+            <p className="text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg px-2 py-1">
+              {t.profile_edit_session_left.replace("{minutes}", String(gate.sessionMinutesLeft()))}
+            </p>
             <div className="space-y-1">
               <Label htmlFor="shop-edit-name">{c.shopName}</Label>
               <Input id="shop-edit-name" value={shopName} onChange={(e) => setShopName(e.target.value)} />
@@ -312,12 +338,14 @@ export function ProfileShopDashboard() {
               <Label htmlFor="shop-edit-web">{c.website}</Label>
               <Input id="shop-edit-web" value={website} onChange={(e) => setWebsite(e.target.value)} />
             </div>
-            <Button type="submit" className="w-full min-h-11" disabled={saving}>
+            <Button type="submit" className="w-full min-h-11" disabled={saving || !gate.changeToken}>
               {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : c.saveShop}
             </Button>
           </form>
         ) : null}
       </div>
+
+      {user ? <ProfileEditGateFlow user={user} gate={gate} /> : null}
     </section>
   );
 }

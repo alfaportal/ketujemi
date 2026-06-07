@@ -185,6 +185,8 @@ const KS_EXTRA: Record<string, string> = {
   profile_edit_security_wait: "Ju lutem lexoni mesazhin — {seconds} sekonda",
   profile_edit_security_ready: "Mund të vazhdoni me verifikimin.",
   profile_edit_security_continue: "Kuptova, vazhdo",
+  shop_edit_gate_start: "Konfirmo dhe ndrysho dyqanin",
+  shop_apply_gate_start: "Konfirmo dhe vazhdo me aplikimin",
   profile_registered: "Data e regjistrimit",
   profile_verify_sms_hint:
     "Dërgojmë një kod SMS në telefonin tuaj. Vendoseni kodin për të hapur formularin e ndryshimit.",
@@ -2180,6 +2182,8 @@ const MK_EXTRA: Record<string, string> = {
   profile_edit_security_wait: "Ве молиме прочитајте ја пораката — {seconds} секунди",
   profile_edit_security_ready: "Можете да продолжите со верификацијата.",
   profile_edit_security_continue: "Разбрав, продолжи",
+  shop_edit_gate_start: "Потврдете и уредете ја продавницата",
+  shop_apply_gate_start: "Потврдете и продолжете со апликацијата",
   profile_registered: "Датум на регистрација",
   profile_verify_sms_hint:
     "Ќе испратиме SMS код на вашиот телефон. Внесете го кодот за да го отворите форуларот.",
@@ -4068,6 +4072,8 @@ const MNE_EXTRA: Record<string, string> = {
   profile_edit_security_wait: "Molimo pročitajte poruku — {seconds} sekundi",
   profile_edit_security_ready: "Možete nastaviti sa verifikacijom.",
   profile_edit_security_continue: "Razumijem, nastavi",
+  shop_edit_gate_start: "Potvrdite i uredite prodavnicu",
+  shop_apply_gate_start: "Potvrdite i nastavite sa prijavom",
   profile_registered: "Datum registracije",
   profile_verify_sms_hint:
     "Poslaćemo SMS kod na vaš telefon. Unesite kod da otvorite formular za izmjenu.",
