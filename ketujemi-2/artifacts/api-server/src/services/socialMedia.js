@@ -14,6 +14,11 @@ import { getCanonicalOrigin } from "../lib/canonical-host.js";
 import { parseListingImageUrls } from "../lib/listing-images.js";
 import { logger } from "../lib/logger.js";
 import { facebookAppId, facebookAppSecret } from "../lib/meta-oauth-config.js";
+import {
+  loadPersistedFacebookPageToken,
+  savePersistedFacebookPageToken,
+} from "../lib/facebook-token-store.js";
+import { getAdminEmail, monitorEmailHtml, sendAdminMonitorEmail } from "../lib/admin-monitor-email.js";
 import { resolveSocialFlairLines } from "../lib/social-listing-caption.js";
 import {
   platformUspLine,
@@ -28,6 +33,9 @@ let memoryPageAccessToken = null;
 let memoryInstagramBusinessAccountId = null;
 /** @type {{ longLivedUserExpiresAt: string | null; pageTokenExpiresAt: string | null; source: string } | null} */
 let pageTokenMeta = null;
+
+const tokenRefreshAlertDebounceMs = 15 * 60 * 1000;
+let lastTokenRefreshAlertAt = 0;
 
 const DIASPORA_MARKETS = new Set(["de", "ch", "at", "fr", "it", "gb", "us"]);
 
@@ -472,6 +480,115 @@ async function fetchPageAccessTokenFromLongLived(longLivedUserToken, pageId) {
 }
 
 /**
+ * @param {string} context
+ * @param {unknown} err
+ */
+async function notifyFacebookTokenRefreshFailure(context, err) {
+  const now = Date.now();
+  if (now - lastTokenRefreshAlertAt < tokenRefreshAlertDebounceMs) return;
+  lastTokenRefreshAlertAt = now;
+
+  const message = err instanceof Error ? err.message : String(err);
+  const at = new Date().toISOString();
+  const lines = [
+    "Rifreskimi automatik i FB_PAGE_ACCESS_TOKEN dështoi para postimit social.",
+    `Koha (UTC): ${at}`,
+    `Konteksti: ${context}`,
+    `Gabimi: ${message}`,
+    "Veprim: gjenero token të ri në Meta Graph API Explorer dhe përditëso FB_PAGE_ACCESS_TOKEN në Railway.",
+  ];
+
+  if (!getAdminEmail()) {
+    logger.warn({ context }, "facebook token refresh alert skipped — EMAIL_ADMIN not set");
+    return;
+  }
+
+  void sendAdminMonitorEmail({
+    subject: "🚨 KetuJemi — rifreskimi i token-it Meta dështoi",
+    text: lines.join("\n"),
+    html: monitorEmailHtml("Rifreskimi i token-it Meta dështoi", lines),
+  }).catch((alertErr) => logger.warn({ err: alertErr }, "facebook token refresh alert email failed"));
+}
+
+/**
+ * Resolve the best current token: persisted DB → memory → env.
+ * @returns {Promise<string>}
+ */
+async function resolveCurrentPageTokenCandidate() {
+  const pageId = readPageId();
+  if (pageId) {
+    try {
+      const persisted = await loadPersistedFacebookPageToken(pageId);
+      if (persisted?.accessToken) {
+        memoryPageAccessToken = persisted.accessToken;
+        return persisted.accessToken;
+      }
+    } catch (err) {
+      logger.warn({ err, pageId }, "facebook persisted page token load failed");
+    }
+  }
+  return memoryPageAccessToken || readEnvPageAccessToken();
+}
+
+/**
+ * Exchange current token for a fresh long-lived Page token and persist to DB.
+ * @param {string} [context]
+ * @returns {Promise<boolean>} true when a token is available for posting
+ */
+export async function refreshFacebookPageAccessTokenBeforePost(context = "social_cron") {
+  const pageId = readPageId();
+  const currentToken = await resolveCurrentPageTokenCandidate();
+
+  if (!pageId || !currentToken) {
+    logger.warn({ context, pageId: pageId || null }, "facebook token refresh skipped: missing page or token");
+    return false;
+  }
+
+  const appId = facebookAppId();
+  const appSecret = facebookAppSecret();
+  if (!appId || !appSecret) {
+    memoryPageAccessToken = currentToken;
+    pageTokenMeta = { longLivedUserExpiresAt: null, pageTokenExpiresAt: null, source: "env_only" };
+    return true;
+  }
+
+  try {
+    const longLivedUser = await exchangeShortLivedForLongLivedUserToken(currentToken);
+    const pageToken = await fetchPageAccessTokenFromLongLived(longLivedUser.accessToken, pageId);
+
+    memoryPageAccessToken = pageToken.accessToken;
+    pageTokenMeta = {
+      longLivedUserExpiresAt: longLivedUser.expiresAt,
+      pageTokenExpiresAt: pageToken.expiresAt,
+      source: pageToken.via ?? "refresh",
+    };
+
+    await savePersistedFacebookPageToken(pageId, pageToken.accessToken, pageToken.expiresAt, {
+      context,
+      refreshedAt: new Date().toISOString(),
+      longLivedUserExpiresAt: longLivedUser.expiresAt,
+    });
+
+    logger.info(
+      {
+        context,
+        pageId,
+        tokenSource: pageTokenMeta.source,
+        longLivedUserExpiresAt: pageTokenMeta.longLivedUserExpiresAt ?? "non-expiring_or_unknown",
+        pageTokenExpiresAt: pageTokenMeta.pageTokenExpiresAt ?? "non-expiring_or_unknown",
+      },
+      "facebook page access token refreshed before post",
+    );
+    return true;
+  } catch (err) {
+    logger.error({ err, context, pageId }, "facebook page token refresh failed");
+    void notifyFacebookTokenRefreshFailure(context, err);
+    memoryPageAccessToken = currentToken;
+    return true;
+  }
+}
+
+/**
  * @param {string} pageId
  * @param {string} accessToken
  * @returns {Promise<string | null>}
@@ -596,10 +713,25 @@ async function postPhotoToInstagram(input) {
  */
 export async function initializeFacebookPageAccessToken() {
   const pageId = readPageId();
-  const shortOrPageToken = readEnvPageAccessToken();
   memoryPageAccessToken = null;
   memoryInstagramBusinessAccountId = null;
   pageTokenMeta = null;
+
+  let shortOrPageToken = readEnvPageAccessToken();
+  if (pageId) {
+    try {
+      const persisted = await loadPersistedFacebookPageToken(pageId);
+      if (persisted?.accessToken) {
+        shortOrPageToken = persisted.accessToken;
+        logger.info(
+          { pageId, updatedAt: persisted.updatedAt, expiresAt: persisted.expiresAt },
+          "facebook page token loaded from database",
+        );
+      }
+    } catch (err) {
+      logger.warn({ err, pageId }, "facebook persisted page token load failed at startup");
+    }
+  }
 
   if (!pageId || !shortOrPageToken) {
     logger.warn(
@@ -634,6 +766,12 @@ export async function initializeFacebookPageAccessToken() {
         pageTokenExpiresAt: pageToken.expiresAt,
         source: pageToken.via ?? "exchange",
       };
+
+      await savePersistedFacebookPageToken(pageId, pageToken.accessToken, pageToken.expiresAt, {
+        context: "startup",
+        refreshedAt: new Date().toISOString(),
+        longLivedUserExpiresAt: longLivedUser.expiresAt,
+      });
 
       logger.info(
         {
@@ -736,6 +874,8 @@ export async function postNewListingToFacebook(listing) {
     listingId: listing?.id,
     at: new Date().toISOString(),
   });
+
+  await refreshFacebookPageAccessTokenBeforePost("social_cron_facebook");
 
   const skip = facebookPostSkipReason(listing);
   if (skip) {
@@ -879,6 +1019,8 @@ export async function postNewListingToInstagram(listing) {
     return null;
   }
 
+  await refreshFacebookPageAccessTokenBeforePost("social_cron_instagram");
+
   const skip = facebookPostSkipReason(listing);
   if (skip) {
     logger.info({ listingId: listing.id, skip }, "instagram auto-post skipped");
@@ -943,6 +1085,8 @@ export async function postReelToInstagram(input) {
     logger.info({ reelId }, "instagram reel skipped: not configured");
     return null;
   }
+
+  await refreshFacebookPageAccessTokenBeforePost("social_cron_reel");
 
   const accessToken = readPageAccessToken();
   const igUserId = readInstagramBusinessAccountId();

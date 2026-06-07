@@ -14,6 +14,7 @@ import {
   ensureNdertimInstalimeTypeCategories,
   ensureSocialFollowersSchema,
   ensureSocialReelPostsSchema,
+  ensureSocialPlatformTokensSchema,
   ensureUserSocialConnectionsSchema,
   ensureProfileChangeSchema,
   ensurePhoneVerifySchema,
@@ -98,6 +99,8 @@ async function startServer(): Promise<void> {
     logger.info("Social followers schema verified (social_followers)");
     await ensureSocialReelPostsSchema(pool);
     logger.info("Social reel posts schema verified (social_reel_posts)");
+    await ensureSocialPlatformTokensSchema(pool);
+    logger.info("Social platform tokens schema verified (social_platform_tokens)");
     await ensureUserSocialConnectionsSchema(pool);
     logger.info("User social connections schema verified (user_social_connections)");
     await ensureProfileChangeSchema(pool);

@@ -32,6 +32,7 @@ export { ensureFemijeCategoryImages } from "./ensure-femije-category-images.js";
 export { ensureEngagementNotificationsSchema } from "./ensure-engagement-notifications-schema.js";
 export { ensureSocialFollowersSchema } from "./ensure-social-followers-schema.js";
 export { ensureSocialReelPostsSchema } from "./ensure-social-reel-posts-schema.js";
+export { ensureSocialPlatformTokensSchema } from "./ensure-social-platform-tokens-schema.js";
 export { ensureUserSocialConnectionsSchema } from "./ensure-user-social-connections-schema.js";
 export { ensureProfileChangeSchema } from "./ensure-profile-change-schema.js";
 export { ensurePhoneVerifySchema } from "./ensure-phone-verify-schema.js";
