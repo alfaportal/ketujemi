@@ -39,6 +39,7 @@ import {
   adminAuthConfigured,
 } from "../lib/admin-auth";
 import { adminLoginLimiter } from "../lib/express-rate-limiters";
+import { notifyAdminLoginFailed } from "../lib/admin-login-alert.js";
 import { deleteListingCascade } from "../lib/delete-listing-cascade";
 import {
   getModerationState,
@@ -79,6 +80,7 @@ router.post("/admin/login", adminLoginLimiter, (req, res) => {
   }
   const password = typeof req.body?.password === "string" ? req.body.password : "";
   if (!verifyAdminPassword(password)) {
+    notifyAdminLoginFailed(req);
     res.status(401).json({ error: "Invalid credentials" });
     return;
   }

@@ -1,4 +1,5 @@
 import rateLimit from "express-rate-limit";
+import { notifyAdminLoginRateLimited } from "./admin-login-alert.js";
 
 /** Login & register: 10 requests / 15 min per IP */
 export const authLoginRegisterLimiter = rateLimit({
@@ -29,7 +30,8 @@ export const adminLoginLimiter = rateLimit({
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
-  handler: (_req, res) => {
+  handler: (req, res) => {
+    notifyAdminLoginRateLimited(req);
     res.status(429).json({
       error: "ADMIN_LOGIN_RATE_LIMIT",
       message: "Shumë përpjekje. Prisni 15 minuta dhe provoni përsëri.",
