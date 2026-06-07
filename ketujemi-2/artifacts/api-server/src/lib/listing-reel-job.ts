@@ -1,6 +1,6 @@
 import { db, listingsTable, pool } from "@workspace/db";
 import { and, desc, eq, gt, isNull, notInArray, or, sql } from "drizzle-orm";
-import { getCanonicalOrigin } from "./canonical-host";
+import { buildReelCaption } from "./listing-reel-caption";
 import { createListingReelVideo, type ReelSlideInput } from "./cloudinary-slideshow";
 import { isCloudinaryAdminConfigured } from "./cloudinary-config";
 import { logger } from "./logger";
@@ -16,17 +16,6 @@ function formatReelPriceLabel(price: string | number): string {
   if (!Number.isFinite(n) || n <= 0) return "Me marrëveshje";
   const formatted = n % 1 === 0 ? String(Math.round(n)) : n.toFixed(2);
   return `${formatted}€`;
-}
-
-function buildReelCaption(listingTitles: string[]): string {
-  const origin = getCanonicalOrigin();
-  const lines = [
-    "🔥 Shpallje të reja në KëtuJemi.com",
-    listingTitles.slice(0, 3).map((t) => `• ${t.slice(0, 40)}`).join("\n"),
-    `👉 ${origin}`,
-    "#ketujemi #kosovo #shpallje #blerjeshitje",
-  ];
-  return lines.filter(Boolean).join("\n\n");
 }
 
 async function recentlyUsedListingIds(): Promise<number[]> {
@@ -131,7 +120,10 @@ export async function runListingReelPost(): Promise<{
   }
 
   const listingIds = listings.map((l) => l.id);
-  const caption = buildReelCaption(listings.map((l) => l.title));
+  const caption = await buildReelCaption({
+    listingTitles: listings.map((l) => l.title),
+    seed: batchKey,
+  });
 
   const insertRows = await pool.query<{ id: number }>(
     `INSERT INTO social_reel_posts (listing_ids, video_url, video_public_id, caption, status)
