@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard, FileText, Users, Tag, AlertTriangle, Settings,
-  LogOut, Menu, X, Lock, Eye, EyeOff, ShieldCheck, Building2, CreditCard, Store,
+  LogOut, Menu, X, Lock, Eye, EyeOff, ShieldCheck, Building2, CreditCard, Store, Share2,
 } from "lucide-react";
 import { adminLogin, adminLogout, isAdminLoggedIn } from "@/lib/admin-api";
 import { useMarket } from "@/lib/market-context";
@@ -15,6 +15,7 @@ import AdminModeration from "./moderation";
 import AdminPartners from "./partners";
 import AdminPayments from "./payments";
 import AdminShops from "./shops";
+import AdminSocialPosts from "./social-posts";
 
 type Section =
   | "dashboard"
@@ -26,7 +27,8 @@ type Section =
   | "reports"
   | "moderation"
   | "settings"
-  | "shops";
+  | "shops"
+  | "social";
 
 const NAV: { id: Section; icon: React.ElementType }[] = [
   { id: "dashboard", icon: LayoutDashboard },
@@ -34,6 +36,7 @@ const NAV: { id: Section; icon: React.ElementType }[] = [
   { id: "shops", icon: Store },
   { id: "payments", icon: CreditCard },
   { id: "listings", icon: FileText },
+  { id: "social", icon: Share2 },
   { id: "users", icon: Users },
   { id: "categories", icon: Tag },
   { id: "reports", icon: AlertTriangle },
@@ -46,6 +49,7 @@ const NAV_TITLE_KEY: Record<Section, string> = {
   partners: "adm_nav_partners",
   payments: "adm_nav_payments",
   listings: "adm_nav_list",
+  social: "adm_nav_social",
   users: "adm_nav_users",
   categories: "adm_nav_cats",
   reports: "adm_nav_reports",
@@ -242,6 +246,7 @@ export default function AdminPanel() {
     partners:   AdminPartners,
     payments:   AdminPayments,
     listings:   AdminListings,
+    social:     AdminSocialPosts,
     users:      AdminUsers,
     categories: AdminCategories,
     reports:    AdminReports,

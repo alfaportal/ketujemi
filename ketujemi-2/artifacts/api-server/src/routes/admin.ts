@@ -51,6 +51,11 @@ import { purgeInvalidListingImages } from "../lib/purge-invalid-listing-images.j
 import { deleteShopCascade } from "../lib/delete-shop-cascade";
 import { resolveDirectoryFields } from "../lib/shop-directory-patch";
 import { buildApplicationFieldPatch, buildShopFieldPatch } from "../lib/shop-field-patch";
+import {
+  buildAdminSocialPostPreview,
+  executeAdminSocialPost,
+  listAdminSocialPostListings,
+} from "../lib/admin-social-post.js";
 
 const router = Router();
 
@@ -1611,6 +1616,84 @@ router.delete("/admin/shops/:id", requireAdmin, async (req, res) => {
   }
 
   res.json({ ok: true });
+});
+
+// ─── Facebook & Instagram social posting ───────────────────────────────────────
+router.get("/admin/social-posts/listings", requireAdmin, async (req, res) => {
+  try {
+    const q = req.query as Record<string, string>;
+    const page = q.page ? parseInt(q.page, 10) : 1;
+    const limit = q.limit ? parseInt(q.limit, 10) : 50;
+    const filter = q.filter as "all" | "pending_fb" | "pending_ig" | "posted" | undefined;
+    const data = await listAdminSocialPostListings({
+      search: q.search,
+      filter: filter ?? "all",
+      page: Number.isFinite(page) ? page : 1,
+      limit: Number.isFinite(limit) ? limit : 50,
+    });
+    res.json(data);
+  } catch (err) {
+    req.log.error({ err }, "admin social-posts listings error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/admin/social-posts/preview", requireAdmin, async (req, res) => {
+  try {
+    const listingId = Number(req.body?.listing_id);
+    if (!Number.isFinite(listingId) || listingId < 1) {
+      res.status(400).json({ error: "Invalid listing_id" });
+      return;
+    }
+    const preview = await buildAdminSocialPostPreview(listingId);
+    if (!preview) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+    res.json(preview);
+  } catch (err) {
+    req.log.error({ err }, "admin social-posts preview error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/admin/social-posts/post", requireAdmin, async (req, res) => {
+  try {
+    const rawIds = req.body?.listing_ids ?? (req.body?.listing_id != null ? [req.body.listing_id] : []);
+    const listingIds = (Array.isArray(rawIds) ? rawIds : [])
+      .map((id: unknown) => Number(id))
+      .filter((id: number) => Number.isFinite(id) && id > 0);
+
+    if (listingIds.length === 0) {
+      res.status(400).json({ error: "No listing_ids" });
+      return;
+    }
+    if (listingIds.length > 5) {
+      res.status(400).json({ error: "Max 5 listings per request" });
+      return;
+    }
+
+    const platforms = {
+      facebook: req.body?.facebook !== false,
+      instagram: req.body?.instagram !== false,
+    };
+
+    const results = [];
+    for (const listingId of listingIds) {
+      try {
+        const result = await executeAdminSocialPost(listingId, platforms);
+        results.push({ ...result, ok: true });
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        results.push({ listing_id: listingId, ok: false, error: message });
+      }
+    }
+
+    res.json({ results });
+  } catch (err) {
+    req.log.error({ err }, "admin social-posts post error");
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 export default router;

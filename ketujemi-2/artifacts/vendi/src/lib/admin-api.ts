@@ -562,3 +562,80 @@ export function updateAdminShopApplication(id: number, data: Record<string, unkn
 export function deleteAdminShop(id: number) {
   return request<{ ok: boolean }>(`/shops/${id}`, { method: "DELETE" });
 }
+
+export interface AdminSocialListing {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  location: string;
+  seller_name: string;
+  shop_name: string | null;
+  category_name: string | null;
+  image_urls: string[];
+  fb_posted: boolean;
+  ig_posted: boolean;
+  status: string;
+  moderation_status: string;
+  skip_reason: string | null;
+  queue: "pending_fb" | "pending_ig" | "done" | "ineligible";
+  created_at: string;
+}
+
+export function getAdminSocialPostListings(params?: {
+  search?: string;
+  filter?: "all" | "pending_fb" | "pending_ig" | "posted";
+  page?: number;
+  limit?: number;
+}) {
+  const qs = new URLSearchParams();
+  if (params?.search) qs.set("search", params.search);
+  if (params?.filter) qs.set("filter", params.filter);
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.limit) qs.set("limit", String(params.limit));
+  return request<{
+    total: number;
+    page: number;
+    listings: AdminSocialListing[];
+    configured: { facebook: boolean; instagram: boolean };
+  }>(`/social-posts/listings?${qs}`);
+}
+
+export function previewAdminSocialPost(listingId: number) {
+  return request<{
+    listing: AdminSocialListing;
+    preview: {
+      facebook: string;
+      instagram: string;
+      theme: string;
+      caption_source: string;
+      market: string;
+      primary_image: string | null;
+    };
+  }>("/social-posts/preview", {
+    method: "POST",
+    body: JSON.stringify({ listing_id: listingId }),
+  });
+}
+
+export function postAdminSocialListings(
+  listingIds: number[],
+  opts?: { facebook?: boolean; instagram?: boolean },
+) {
+  return request<{
+    results: Array<{
+      listing_id: number;
+      ok?: boolean;
+      error?: string;
+      facebook?: { ok: boolean; post_id?: string | null; error?: string };
+      instagram?: { ok: boolean; media_id?: string | null; error?: string };
+    }>;
+  }>("/social-posts/post", {
+    method: "POST",
+    body: JSON.stringify({
+      listing_ids: listingIds,
+      facebook: opts?.facebook !== false,
+      instagram: opts?.instagram !== false,
+    }),
+  });
+}
