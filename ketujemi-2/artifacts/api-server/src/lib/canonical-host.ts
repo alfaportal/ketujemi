@@ -19,7 +19,11 @@ function hostnameFromRequest(req: Request): string {
  * Skip /api/healthz so Railway health checks are not redirected.
  */
 export function canonicalHostRedirect(req: Request, res: Response, next: NextFunction): void {
-  if (req.path === "/api/healthz" || req.path.startsWith("/api/health")) {
+  if (
+    req.path === "/api/healthz" ||
+    req.path.startsWith("/api/health") ||
+    req.path === "/api/cron/social-scheduled-posts"
+  ) {
     next();
     return;
   }
