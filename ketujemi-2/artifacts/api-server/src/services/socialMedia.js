@@ -3,7 +3,8 @@
  * Caption language + link path follow listing market (where the seller posted from).
  *
  * On startup, exchanges PAGE_ACCESS_TOKEN for a long-lived Page token and resolves the
- * linked Instagram Business account (@ketujemi.ks) for simultaneous IG publishing.
+ * linked Instagram Business account (@ketujemi.ks). Instagram posts run on a separate
+ * cron (30 min after Facebook) with a different caption.
  *
  * Requires PAGE_ID, PAGE_ACCESS_TOKEN, FACEBOOK_APP_ID, FACEBOOK_APP_SECRET (see .env.example).
  */
@@ -186,6 +187,95 @@ export function buildFacebookCaption(market, input) {
     `🔗 Shiko detajet: ketujemi.com/shpallje/${slug}`,
     "",
     `#KëtuJemi #Shpallje ${catTag}`,
+  ].join("\n");
+}
+
+/**
+ * Instagram caption — different wording/hashtags from Facebook (same listing).
+ * @param {string} market
+ * @param {{
+ *   title: string;
+ *   price: number | string;
+ *   location: string;
+ *   slug: string;
+ *   categoryName: string | null;
+ *   listingLink: string;
+ * }} input
+ */
+export function buildInstagramCaption(market, input) {
+  const title = input.title.trim();
+  const city = input.location.trim();
+  const priceLine = formatPriceLine(market, input.price);
+  const catTag = categoryHashtag(input.categoryName, "#Shpallje");
+  const link = input.listingLink.replace(/^https?:\/\//, "");
+
+  if (DIASPORA_MARKETS.has(market)) {
+    const country = COUNTRY_LABEL_EN[market] ?? "Kosovo";
+    return [
+      "✨ New on @ketujemi.ks",
+      "",
+      title,
+      priceLine,
+      `📍 ${city}, ${country}`,
+      "",
+      `🔗 ${link}`,
+      "",
+      `#KetuJemi #ketujemi.ks #Classifieds #Balkans ${catTag}`,
+    ].join("\n");
+  }
+
+  if (market === "al") {
+    return [
+      "✨ E re në @ketujemi.ks",
+      "",
+      title,
+      priceLine,
+      `📍 ${city}, Shqipëri`,
+      "",
+      `🔗 ${link}`,
+      "",
+      `#KetuJemi #ketujemi.ks #Shpallje #Shqiperia ${catTag}`,
+    ].join("\n");
+  }
+
+  if (market === "mk") {
+    return [
+      "✨ Ново на @ketujemi.ks",
+      "",
+      title,
+      priceLine,
+      `📍 ${city}, Македонија`,
+      "",
+      `🔗 ${link}`,
+      "",
+      `#KetuJemi #ketujemi.ks #Оглас #Македонија ${catTag}`,
+    ].join("\n");
+  }
+
+  if (market === "mne") {
+    return [
+      "✨ Novo na @ketujemi.ks",
+      "",
+      title,
+      priceLine,
+      `📍 ${city}, Crna Gora`,
+      "",
+      `🔗 ${link}`,
+      "",
+      `#KetuJemi #ketujemi.ks #Oglas #CrnaGora ${catTag}`,
+    ].join("\n");
+  }
+
+  return [
+    "✨ E re në @ketujemi.ks",
+    "",
+    title,
+    priceLine,
+    `📍 ${city}, Kosovë`,
+    "",
+    `🔗 ${link}`,
+    "",
+    `#KetuJemi #ketujemi.ks #Shpallje #Kosova #Shqiperia #Maqedonia #MaliZi ${catTag}`,
   ].join("\n");
 }
 
@@ -655,8 +745,6 @@ export async function postNewListingToFacebook(listing) {
   });
 
   const fullCaption = `${caption}\n\n${listingLink}`;
-  const igUserId = readInstagramBusinessAccountId();
-  const postInstagram = isInstagramAutoPostConfigured();
 
   const endpoint = `https://graph.facebook.com/${GRAPH_API_VERSION}/${pageId}/photos`;
   const body = new URLSearchParams({
@@ -666,61 +754,38 @@ export async function postNewListingToFacebook(listing) {
   });
 
   try {
-    const [fbResult, igResult] = await Promise.allSettled([
-      (async () => {
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: body.toString(),
-        });
-        const json = await res.json().catch(() => ({}));
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+    });
+    const json = await res.json().catch(() => ({}));
 
-        console.log("[facebook] Graph API response", {
-          listingId: listing.id,
-          status: res.status,
-          ok: res.ok,
-          body: json,
-        });
+    console.log("[facebook] Graph API response", {
+      listingId: listing.id,
+      status: res.status,
+      ok: res.ok,
+      body: json,
+    });
 
-        if (!res.ok) {
-          console.error("[facebook] Graph API error (non-OK status)", {
-            listingId: listing.id,
-            status: res.status,
-            statusText: res.statusText,
-            response: json,
-          });
-          logger.error(
-            { status: res.status, facebook: json, listingId: listing.id },
-            "facebook auto-post failed",
-          );
-          return null;
-        }
-
-        const postId =
-          typeof json.id === "string" ? json.id : typeof json.post_id === "string" ? json.post_id : null;
-        logger.info({ listingId: listing.id, facebookPostId: postId, market }, "facebook auto-post ok");
-        return postId;
-      })(),
-      postInstagram
-        ? postPhotoToInstagram({
-            igUserId,
-            accessToken,
-            photoUrl,
-            caption: fullCaption,
-            listingId: listing.id,
-          })
-        : Promise.resolve(null),
-    ]);
-
-    if (postInstagram && igResult.status === "fulfilled" && !igResult.value) {
-      logger.warn({ listingId: listing.id }, "instagram auto-post failed (facebook may still have posted)");
+    if (!res.ok) {
+      console.error("[facebook] Graph API error (non-OK status)", {
+        listingId: listing.id,
+        status: res.status,
+        statusText: res.statusText,
+        response: json,
+      });
+      logger.error(
+        { status: res.status, facebook: json, listingId: listing.id },
+        "facebook auto-post failed",
+      );
+      return null;
     }
 
-    if (fbResult.status === "rejected") {
-      throw fbResult.reason;
-    }
-
-    return fbResult.value;
+    const postId =
+      typeof json.id === "string" ? json.id : typeof json.post_id === "string" ? json.post_id : null;
+    logger.info({ listingId: listing.id, facebookPostId: postId, market }, "facebook auto-post ok");
+    return postId;
   } catch (err) {
     console.error("[facebook] postNewListingToFacebook exception", {
       listingId: listing.id,
@@ -733,4 +798,54 @@ export async function postNewListingToFacebook(listing) {
     logger.error({ err, listingId: listing.id }, "facebook auto-post error");
     return null;
   }
+}
+
+/**
+ * Post to Instagram only — runs on a separate schedule after Facebook.
+ * @param {{
+ *   id: number;
+ *   title: string;
+ *   description: string;
+ *   price: number | string;
+ *   location: string;
+ *   image_url: string | null | undefined;
+ *   category_name?: string | null;
+ *   listing_country?: string | null;
+ * }} listing
+ * @returns {Promise<string | null>} Instagram media id
+ */
+export async function postNewListingToInstagram(listing) {
+  if (!isInstagramAutoPostConfigured()) {
+    logger.info({ listingId: listing.id }, "instagram auto-post skipped: not configured");
+    return null;
+  }
+
+  const skip = facebookPostSkipReason(listing);
+  if (skip) {
+    logger.info({ listingId: listing.id, skip }, "instagram auto-post skipped");
+    return null;
+  }
+
+  const accessToken = readPageAccessToken();
+  const igUserId = readInstagramBusinessAccountId();
+  const photoUrl = parseListingImageUrls(listing.image_url)[0];
+  const market = resolveListingMarketForSocial(listing.location, listing.listing_country);
+  const slug = listingSlug(listing.id, listing.title);
+  const listingLink = `${getCanonicalOrigin()}/listings/${listing.id}`;
+  const igCaption = buildInstagramCaption(market, {
+    title: listing.title,
+    price: listing.price,
+    location: listing.location,
+    slug,
+    categoryName: listing.category_name ?? null,
+    listingLink,
+  });
+
+  return postPhotoToInstagram({
+    igUserId,
+    accessToken,
+    photoUrl,
+    caption: igCaption,
+    listingId: listing.id,
+  });
 }

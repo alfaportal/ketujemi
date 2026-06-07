@@ -21,6 +21,7 @@ import { vonageConfigSummary } from "./lib/vonage-auth";
 import { startExpiredListingsScheduler } from "./lib/expire-listings-job";
 import { startExpiryReminderScheduler } from "./lib/listing-expiry-reminders";
 import { startFacebookScheduledPostCron } from "./lib/facebook-scheduled-post-cron";
+import { startInstagramScheduledPostCron } from "./lib/instagram-scheduled-post-cron";
 import { purgeInvalidListingImagesOnStartup } from "./lib/purge-invalid-listing-images.js";
 import { startSystemMonitor } from "./lib/system-monitor.js";
 
@@ -51,7 +52,7 @@ async function startServer(): Promise<void> {
     await ensureListingUserSchema(pool);
     logger.info("Listing user_id + self-duplicate alerts schema verified");
     await ensureListingFbPostedSchema(pool);
-    logger.info("Listing fb_posted schema verified");
+    logger.info("Listing fb_posted + ig_posted schema verified");
     await ensureListingShopSchema(pool);
     logger.info("Listing shop_id schema verified");
     await ensureEngagementNotificationsSchema(pool);
@@ -109,6 +110,7 @@ async function startServer(): Promise<void> {
     startExpiredListingsScheduler();
     startExpiryReminderScheduler();
     startFacebookScheduledPostCron();
+    startInstagramScheduledPostCron();
     startSystemMonitor();
   });
 }
