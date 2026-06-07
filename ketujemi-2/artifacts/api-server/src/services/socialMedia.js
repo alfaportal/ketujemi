@@ -14,6 +14,11 @@ import { getCanonicalOrigin } from "../lib/canonical-host.js";
 import { parseListingImageUrls } from "../lib/listing-images.js";
 import { logger } from "../lib/logger.js";
 import { facebookAppId, facebookAppSecret } from "../lib/meta-oauth-config.js";
+import {
+  categoryFlairLine,
+  platformUspLine,
+  socialFooterBlock,
+} from "../lib/social-post-captions.js";
 
 const GRAPH_API_VERSION = "v25.0";
 
@@ -119,105 +124,111 @@ function formatPriceLine(market, price) {
  *   categoryName: string | null;
  * }} input
  */
+function locationLine(market, city) {
+  if (DIASPORA_MARKETS.has(market)) {
+    const country = COUNTRY_LABEL_EN[market] ?? "Kosovo";
+    return `📍 ${city}, ${country}`;
+  }
+  if (market === "al") return `📍 ${city}, Shqipëri`;
+  if (market === "mk") return `📍 ${city}, Македонија`;
+  if (market === "mne") return `📍 ${city}, Crna Gora`;
+  return `📍 ${city}, Kosovë`;
+}
+
+function listingPathForMarket(market, slug) {
+  if (DIASPORA_MARKETS.has(market)) return `ketujemi.com/en/listing/${slug}`;
+  if (market === "al") return `ketujemi.com/al/shpallje/${slug}`;
+  if (market === "mk") return `ketujemi.com/mk/oglas/${slug}`;
+  if (market === "mne") return `ketujemi.com/mne/oglas/${slug}`;
+  return `ketujemi.com/shpallje/${slug}`;
+}
+
+function facebookHeadline(market) {
+  if (DIASPORA_MARKETS.has(market)) return "⭐ FEATURED ON KetuJemi.com";
+  if (market === "mk") return "⭐ ИЗБРАНА ПОНУДА НА KetuJemi.com";
+  if (market === "mne") return "⭐ IZABRANA PONUDA NA KetuJemi.com";
+  return "⭐ OFERTË E ZGJEDHUR NË KetuJemi.com";
+}
+
+function instagramHeadline(market) {
+  if (DIASPORA_MARKETS.has(market)) return "💎 TODAY'S PICK · @ketujemi.ks";
+  if (market === "mk") return "💎 СПЕЦИЈАЛЕН ИЗБОР · @ketujemi.ks";
+  if (market === "mne") return "💎 POSEBNI IZBOR · @ketujemi.ks";
+  return "💎 ZGJEDHJE E VEÇANTË · @ketujemi.ks";
+}
+
+function ctaFacebook(market) {
+  if (DIASPORA_MARKETS.has(market)) return "👇 See details & contact the seller:";
+  if (market === "mk") return "👇 Види детали & контактирај го продавачот:";
+  if (market === "mne") return "👇 Pogledaj detalje & kontaktiraj prodavca:";
+  return "👇 Shiko detajet & kontakto shitësin:";
+}
+
+function hashtagBlock(market, categoryName) {
+  const catTag = categoryHashtag(
+    categoryName,
+    market === "mk" ? "#Оглас" : market === "mne" ? "#Oglas" : DIASPORA_MARKETS.has(market) ? "#Listing" : "#Shpallje",
+  );
+  if (DIASPORA_MARKETS.has(market)) {
+    return `#KëtuJemi #KetuJemi #FeaturedListing #Classifieds ${catTag}`;
+  }
+  if (market === "mk") {
+    return `#KëtuJemi #KetuJemi #ИзбранаПонуда #Оглас ${catTag}`;
+  }
+  if (market === "mne") {
+    return `#KëtuJemi #KetuJemi #IzabranaPonuda #Oglas ${catTag}`;
+  }
+  return `#KëtuJemi #KetuJemi #OfertaEZgjedhur #ShpalljePremium ${catTag}`;
+}
+
+function instagramHashtagBlock(market, categoryName) {
+  const catTag = categoryHashtag(
+    categoryName,
+    market === "mk" ? "#Оглас" : market === "mne" ? "#Oglas" : DIASPORA_MARKETS.has(market) ? "#Deals" : "#Shpallje",
+  );
+  if (DIASPORA_MARKETS.has(market)) {
+    return `#KetuJemi #ketujemi.ks #OfertaEDites #Balkans ${catTag}`;
+  }
+  if (market === "mk") {
+    return `#KetuJemi #ketujemi.ks #OfertaEDites #Македонија ${catTag}`;
+  }
+  if (market === "mne") {
+    return `#KetuJemi #ketujemi.ks #OfertaEDites #CrnaGora ${catTag}`;
+  }
+  return `#KetuJemi #ketujemi.ks #OfertaEDites #Kosova #Shqiperia #Maqedonia #MaliZi ${catTag}`;
+}
+
 export function buildFacebookCaption(market, input) {
   const title = input.title.trim();
   const city = input.location.trim();
   const slug = input.slug;
   const priceLine = formatPriceLine(market, input.price);
+  const flair = categoryFlairLine("facebook", market, input.categoryName);
+  const usp = platformUspLine(market);
+  const socials = socialFooterBlock("facebook", market);
 
-  if (DIASPORA_MARKETS.has(market)) {
-    const country = COUNTRY_LABEL_EN[market] ?? "Kosovo";
-    const catTag = categoryHashtag(input.categoryName, "#Listing");
-    return [
-      "⭐ FEATURED PICK — KetuJemi.com",
-      "",
-      `🏷️ ${title}`,
-      priceLine,
-      `📍 ${city}, ${country}`,
-      "",
-      "Hand-picked from thousands of listings and promoted to our active community across the Balkans.",
-      "",
-      "👇 See details & contact the seller:",
-      `ketujemi.com/en/listing/${slug}`,
-      "",
-      `#KëtuJemi #FeaturedListing #Classifieds ${catTag}`,
-    ].join("\n");
-  }
-
-  if (market === "al") {
-    const catTag = categoryHashtag(input.categoryName, "#Shpallje");
-    return [
-      "⭐ OFERTË E ZGJEDHUR — KetuJemi.com",
-      "",
-      `🏷️ ${title}`,
-      priceLine,
-      `📍 ${city}, Shqipëri`,
-      "",
-      "U përzgjodh nga mijëra shpallje për t'u promovuar para komunitetit tonë aktiv në të gjithë rajonin.",
-      "",
-      "👇 Shiko detajet & kontakto shitësin:",
-      `ketujemi.com/al/shpallje/${slug}`,
-      "",
-      `#KëtuJemi #OfertaEZgjedhur #Shpallje ${catTag}`,
-    ].join("\n");
-  }
-
-  if (market === "mk") {
-    const catTag = categoryHashtag(input.categoryName, "#Оглас");
-    return [
-      "⭐ ИЗБРАНА ПОНУДА — KetuJemi.com",
-      "",
-      `🏷️ ${title}`,
-      priceLine,
-      `📍 ${city}, Македонија`,
-      "",
-      "Избрана од илјадници огласи и промовирана пред нашата активна заедница низ регионот.",
-      "",
-      "👇 Види детали & контактирај го продавачот:",
-      `ketujemi.com/mk/oglas/${slug}`,
-      "",
-      `#KëtuJemi #ИзбранаПонуда #Оглас ${catTag}`,
-    ].join("\n");
-  }
-
-  if (market === "mne") {
-    const catTag = categoryHashtag(input.categoryName, "#Oglas");
-    return [
-      "⭐ IZABRANA PONUDA — KetuJemi.com",
-      "",
-      `🏷️ ${title}`,
-      priceLine,
-      `📍 ${city}, Crna Gora`,
-      "",
-      "Izabrana među hiljadama oglasa i promovisana pred našom aktivnom zajednicom u regionu.",
-      "",
-      "👇 Pogledaj detalje & kontaktiraj prodavca:",
-      `ketujemi.com/mne/oglas/${slug}`,
-      "",
-      `#KëtuJemi #IzabranaPonuda #Oglas ${catTag}`,
-    ].join("\n");
-  }
-
-  const catTag = categoryHashtag(input.categoryName, "#Shpallje");
   return [
-    "⭐ OFERTË E ZGJEDHUR — KetuJemi.com",
+    facebookHeadline(market),
+    "",
+    flair,
     "",
     `🏷️ ${title}`,
     priceLine,
-    `📍 ${city}, Kosovë`,
+    locationLine(market, city),
     "",
-    "U përzgjodh nga mijëra shpallje për t'u promovuar para 50,000+ vizitorëve aktivë çdo muaj.",
-    "Një vend i privilegjuar — vetëm shpalljet më të mira arrijnë këtu.",
+    usp,
     "",
-    "👇 Shiko detajet & kontakto shitësin:",
-    `ketujemi.com/shpallje/${slug}`,
+    ctaFacebook(market),
+    listingPathForMarket(market, slug),
     "",
-    `#KëtuJemi #OfertaEZgjedhur #ShpalljePremium ${catTag}`,
+    socials,
+    "",
+    hashtagBlock(market, input.categoryName),
   ].join("\n");
 }
 
 /**
- * Instagram caption — premium tone, distinct from Facebook (same listing).
+ * Instagram caption — different structure & category flair from Facebook.
  * @param {string} market
  * @param {{
  *   title: string;
@@ -232,91 +243,26 @@ export function buildInstagramCaption(market, input) {
   const title = input.title.trim();
   const city = input.location.trim();
   const priceLine = formatPriceLine(market, input.price);
-  const catTag = categoryHashtag(input.categoryName, "#Shpallje");
   const link = input.listingLink.replace(/^https?:\/\//, "");
-
-  if (DIASPORA_MARKETS.has(market)) {
-    const country = COUNTRY_LABEL_EN[market] ?? "Kosovo";
-    return [
-      "💎 TODAY'S PICK · @ketujemi.ks",
-      "",
-      "The listing everyone's talking about 👇",
-      "",
-      title,
-      priceLine,
-      `📍 ${city}, ${country}`,
-      "",
-      "✨ Featured on KetuJemi — don't miss it",
-      `🔗 ${link}`,
-      "",
-      `#KetuJemi #ketujemi.ks #FeaturedListing #Balkans #Deals ${catTag}`,
-    ].join("\n");
-  }
-
-  if (market === "al") {
-    return [
-      "💎 ZGJEDHJE E VEÇANTË · @ketujemi.ks",
-      "",
-      "Oferta që po kërkohet sot 👇",
-      "",
-      title,
-      priceLine,
-      `📍 ${city}, Shqipëri`,
-      "",
-      "✨ Promovuar në KetuJemi — mos e humb",
-      `🔗 ${link}`,
-      "",
-      `#KetuJemi #ketujemi.ks #OfertaEDites #ShpalljePremium #Shqiperia ${catTag}`,
-    ].join("\n");
-  }
-
-  if (market === "mk") {
-    return [
-      "💎 СПЕЦИЈАЛЕН ИЗБОР · @ketujemi.ks",
-      "",
-      "Огласот што го бараат сите денес 👇",
-      "",
-      title,
-      priceLine,
-      `📍 ${city}, Македонија`,
-      "",
-      "✨ Промовирано на KetuJemi — не го пропуштај",
-      `🔗 ${link}`,
-      "",
-      `#KetuJemi #ketujemi.ks #ИзбранаПонуда #Оглас #Македонија ${catTag}`,
-    ].join("\n");
-  }
-
-  if (market === "mne") {
-    return [
-      "💎 POSEBNI IZBOR · @ketujemi.ks",
-      "",
-      "Oglas koji svi traže danas 👇",
-      "",
-      title,
-      priceLine,
-      `📍 ${city}, Crna Gora`,
-      "",
-      "✨ Promovisano na KetuJemi — ne propusti",
-      `🔗 ${link}`,
-      "",
-      `#KetuJemi #ketujemi.ks #IzabranaPonuda #Oglas #CrnaGora ${catTag}`,
-    ].join("\n");
-  }
+  const flair = categoryFlairLine("instagram", market, input.categoryName);
+  const usp = platformUspLine(market);
+  const socials = socialFooterBlock("instagram", market);
 
   return [
-    "💎 ZGJEDHJE E VEÇANTË · @ketujemi.ks",
+    instagramHeadline(market),
     "",
-    "Oferta e ditës që po kërkohet 👇",
+    flair,
     "",
     title,
     priceLine,
-    `📍 ${city}, Kosovë`,
+    locationLine(market, city),
     "",
-    "✨ Vetëm shpalljet më të mira arrijnë këtu — ti je me fat që e sheh",
+    usp,
     `🔗 ${link}`,
     "",
-    `#KetuJemi #ketujemi.ks #OfertaEDites #ShpalljePremium #Kosova #Shqiperia #Maqedonia #MaliZi ${catTag}`,
+    socials,
+    "",
+    instagramHashtagBlock(market, input.categoryName),
   ].join("\n");
 }
 
