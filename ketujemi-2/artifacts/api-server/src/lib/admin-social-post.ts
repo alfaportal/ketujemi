@@ -336,12 +336,15 @@ export async function executeAdminSocialPost(
   const postIg = platforms.instagram !== false;
 
   if (postFb) {
-    const postId = await postNewListingToFacebook(listing);
-    if (postId) {
+    const fbResult = await postNewListingToFacebook(listing);
+    if (fbResult.postId) {
       await markListingFbPosted(listingId);
-      result.facebook = { ok: true, post_id: postId };
+      result.facebook = { ok: true, post_id: fbResult.postId };
     } else {
-      result.facebook = { ok: false, error: "graph_api_failed" };
+      result.facebook = {
+        ok: false,
+        error: fbResult.graphError ?? "graph_api_failed",
+      };
     }
   }
 

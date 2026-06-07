@@ -563,8 +563,8 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     property_txn: row.property_txn ?? null,
     listing_country: bodyExtra.listing_country ?? null,
   })
-    .then(async (postId) => {
-      if (postId) await markListingFbPosted(row.id);
+    .then(async (fbResult) => {
+      if (fbResult.postId) await markListingFbPosted(row.id);
     })
     .catch((err) => {
       logger.error({ err, listingId: row.id }, "facebook auto-post background error");

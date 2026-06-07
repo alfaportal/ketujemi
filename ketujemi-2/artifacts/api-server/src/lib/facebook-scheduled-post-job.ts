@@ -22,6 +22,8 @@ export async function runFacebookScheduledPost(): Promise<{
   posted: boolean;
   listingId?: number;
   reason?: string;
+  graphError?: string;
+  graphStatus?: number;
 }> {
   if (!isFacebookAutoPostConfigured()) {
     return { posted: false, reason: "not_configured" };
@@ -93,14 +95,31 @@ export async function runFacebookScheduledPost(): Promise<{
       continue;
     }
 
-    const postId = await postNewListingToFacebook(listing);
-    if (!postId) {
-      logger.warn({ listingId: row.id }, "facebook scheduled post: Graph API failed");
-      return { posted: false, listingId: row.id, reason: "graph_api_failed" };
+    const fbResult = await postNewListingToFacebook(listing);
+    if (!fbResult.postId) {
+      logger.warn(
+        {
+          listingId: row.id,
+          graphError: fbResult.graphError,
+          graphStatus: fbResult.graphStatus,
+          graphResponse: fbResult.graphResponse,
+        },
+        "facebook scheduled post: Graph API failed",
+      );
+      return {
+        posted: false,
+        listingId: row.id,
+        reason: "graph_api_failed",
+        graphError: fbResult.graphError,
+        graphStatus: fbResult.graphStatus,
+      };
     }
 
     await markListingFbPosted(row.id);
-    logger.info({ listingId: row.id, facebookPostId: postId }, "facebook scheduled post ok");
+    logger.info(
+      { listingId: row.id, facebookPostId: fbResult.postId },
+      "facebook scheduled post ok",
+    );
     return { posted: true, listingId: row.id };
   }
 

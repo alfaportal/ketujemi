@@ -2,11 +2,11 @@
  * Facebook Page + linked Instagram auto-post (Meta Graph API).
  * Caption language + link path follow listing market (where the seller posted from).
  *
- * On startup, exchanges PAGE_ACCESS_TOKEN for a long-lived Page token and resolves the
+ * On startup, exchanges FB_PAGE_ACCESS_TOKEN for a long-lived Page token and resolves the
  * linked Instagram Business account (@ketujemi.ks). Instagram posts run on a separate
  * cron (30 min after Facebook) with a different caption.
  *
- * Requires PAGE_ID, PAGE_ACCESS_TOKEN, FACEBOOK_APP_ID, FACEBOOK_APP_SECRET (see .env.example).
+ * Requires FB_PAGE_ID, FB_PAGE_ACCESS_TOKEN, FACEBOOK_APP_ID, FACEBOOK_APP_SECRET (see .env.example).
  */
 
 import { LISTING_LOCATIONS_BY_COUNTRY } from "../lib/listing-locations.js";
@@ -22,7 +22,7 @@ import {
 
 const GRAPH_API_VERSION = "v25.0";
 
-/** Resolved at startup via Meta token exchange; falls back to PAGE_ACCESS_TOKEN env. */
+/** Resolved at startup via Meta token exchange; falls back to FB_PAGE_ACCESS_TOKEN env. */
 let memoryPageAccessToken = null;
 /** Linked Instagram Business account ID for @ketujemi.ks (from env or Page lookup). */
 let memoryInstagramBusinessAccountId = null;
@@ -295,6 +295,12 @@ function readPageId() {
   );
 }
 
+function readEnvPageAccessTokenSource() {
+  if (process.env.FB_PAGE_ACCESS_TOKEN?.trim()) return "FB_PAGE_ACCESS_TOKEN";
+  if (process.env.PAGE_ACCESS_TOKEN?.trim()) return "PAGE_ACCESS_TOKEN";
+  return null;
+}
+
 function readEnvPageAccessToken() {
   return (
     process.env.FB_PAGE_ACCESS_TOKEN?.trim() ||
@@ -305,6 +311,32 @@ function readEnvPageAccessToken() {
 
 function readPageAccessToken() {
   return memoryPageAccessToken || readEnvPageAccessToken();
+}
+
+/**
+ * Human-readable Meta Graph API error for logs and cron responses.
+ * @param {unknown} json
+ * @param {number} [status]
+ * @returns {string}
+ */
+export function formatFacebookGraphApiError(json, status) {
+  const err = json && typeof json === "object" && "error" in json ? json.error : null;
+  if (err && typeof err === "object") {
+    const message =
+      typeof err.message === "string"
+        ? err.message
+        : typeof err.error_user_msg === "string"
+          ? err.error_user_msg
+          : null;
+    const code = err.code != null ? String(err.code) : null;
+    const subcode = err.error_subcode != null ? String(err.error_subcode) : null;
+    const type = typeof err.type === "string" ? err.type : null;
+    const parts = [message, type && `type=${type}`, code && `code=${code}`, subcode && `subcode=${subcode}`]
+      .filter(Boolean);
+    if (parts.length > 0) return parts.join(" | ");
+  }
+  if (status) return `HTTP ${status}: ${JSON.stringify(json)}`;
+  return JSON.stringify(json);
 }
 
 function readInstagramBusinessAccountIdEnv() {
@@ -571,17 +603,23 @@ export async function initializeFacebookPageAccessToken() {
 
   if (!pageId || !shortOrPageToken) {
     logger.warn(
-      "facebook auto-post disabled: set PAGE_ID (or FACEBOOK_PAGE_ID) and PAGE_ACCESS_TOKEN on the server",
+      "facebook auto-post disabled: set FB_PAGE_ID (or PAGE_ID) and FB_PAGE_ACCESS_TOKEN on the server",
     );
     return;
   }
+
+  const tokenEnvSource = readEnvPageAccessTokenSource();
+  logger.info(
+    { pageId, tokenEnvSource: tokenEnvSource ?? "missing" },
+    "facebook page token env source",
+  );
 
   const appId = facebookAppId();
   const appSecret = facebookAppSecret();
   if (!appId || !appSecret) {
     logger.warn(
       { pageId, hasAppId: !!appId, hasAppSecret: !!appSecret },
-      "facebook token exchange skipped: set FACEBOOK_APP_ID and FACEBOOK_APP_SECRET; using PAGE_ACCESS_TOKEN from env as-is",
+      "facebook token exchange skipped: set FACEBOOK_APP_ID and FACEBOOK_APP_SECRET; using FB_PAGE_ACCESS_TOKEN from env as-is",
     );
     memoryPageAccessToken = shortOrPageToken;
     pageTokenMeta = { longLivedUserExpiresAt: null, pageTokenExpiresAt: null, source: "env_only" };
@@ -612,7 +650,7 @@ export async function initializeFacebookPageAccessToken() {
       pageTokenMeta = { longLivedUserExpiresAt: null, pageTokenExpiresAt: null, source: "env_fallback" };
       logger.error(
         { err, pageId },
-        "facebook token exchange failed; using PAGE_ACCESS_TOKEN from env (may be short-lived)",
+        "facebook token exchange failed; using FB_PAGE_ACCESS_TOKEN from env (may be short-lived)",
       );
     }
   }
@@ -665,7 +703,7 @@ export function isFacebookAutoPostConfigured() {
 export function logFacebookAutoPostReadiness() {
   if (!isFacebookAutoPostConfigured()) {
     logger.warn(
-      "facebook auto-post disabled: set PAGE_ID (or FACEBOOK_PAGE_ID) and PAGE_ACCESS_TOKEN on the server",
+      "facebook auto-post disabled: set FB_PAGE_ID (or PAGE_ID) and FB_PAGE_ACCESS_TOKEN on the server",
     );
     return;
   }
@@ -691,7 +729,7 @@ export function logFacebookAutoPostReadiness() {
  *   category_name?: string | null;
  *   listing_country?: string | null;
  * }} listing
- * @returns {Promise<string | null>} Facebook post/photo id
+ * @returns {Promise<{ postId: string | null; graphError?: string; graphStatus?: number; graphResponse?: unknown }>}
  */
 export async function postNewListingToFacebook(listing) {
   console.log("[facebook] postNewListingToFacebook called", {
@@ -703,7 +741,7 @@ export async function postNewListingToFacebook(listing) {
   if (skip) {
     console.log("[facebook] post skipped", { listingId: listing.id, skip });
     logger.info({ listingId: listing.id, skip }, "facebook auto-post skipped");
-    return null;
+    return { postId: null, graphError: skip };
   }
 
   const pageId = readPageId();
@@ -782,34 +820,42 @@ export async function postNewListingToFacebook(listing) {
     });
 
     if (!res.ok) {
+      const graphError = formatFacebookGraphApiError(json, res.status);
       console.error("[facebook] Graph API error (non-OK status)", {
         listingId: listing.id,
         status: res.status,
         statusText: res.statusText,
+        graphError,
         response: json,
       });
       logger.error(
-        { status: res.status, facebook: json, listingId: listing.id },
+        { status: res.status, graphError, facebook: json, listingId: listing.id },
         "facebook auto-post failed",
       );
-      return null;
+      return {
+        postId: null,
+        graphError,
+        graphStatus: res.status,
+        graphResponse: json,
+      };
     }
 
     const postId =
       typeof json.id === "string" ? json.id : typeof json.post_id === "string" ? json.post_id : null;
     logger.info({ listingId: listing.id, facebookPostId: postId, market }, "facebook auto-post ok");
-    return postId;
+    return { postId };
   } catch (err) {
+    const graphError = err instanceof Error ? err.message : String(err);
     console.error("[facebook] postNewListingToFacebook exception", {
       listingId: listing.id,
       name: err instanceof Error ? err.name : "unknown",
-      message: err instanceof Error ? err.message : String(err),
+      message: graphError,
       stack: err instanceof Error ? err.stack : undefined,
       cause: err instanceof Error && err.cause ? err.cause : undefined,
       err,
     });
-    logger.error({ err, listingId: listing.id }, "facebook auto-post error");
-    return null;
+    logger.error({ err, graphError, listingId: listing.id }, "facebook auto-post error");
+    return { postId: null, graphError };
   }
 }
 
