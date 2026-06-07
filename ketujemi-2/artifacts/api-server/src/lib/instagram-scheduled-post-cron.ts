@@ -15,16 +15,25 @@ function isInstagramScheduledPostEnabled(): boolean {
 }
 
 async function tick(): Promise<void> {
+  await runInstagramScheduledPostNow();
+}
+
+/** Manual / admin trigger — same logic as the cron tick, with a result payload. */
+export async function runInstagramScheduledPostNow(): Promise<
+  Awaited<ReturnType<typeof runInstagramScheduledPost>> & { reason?: string }
+> {
   if (runInFlight) {
     logger.warn("instagram scheduled post: previous run still in flight, skipping");
-    return;
+    return { posted: false, reason: "in_flight" };
   }
 
   runInFlight = true;
   try {
-    await runInstagramScheduledPost();
+    return await runInstagramScheduledPost();
   } catch (err) {
     logger.error({ err }, "instagram scheduled post cron failed");
+    const message = err instanceof Error ? err.message : String(err);
+    return { posted: false, reason: "exception", graphError: message };
   } finally {
     runInFlight = false;
   }

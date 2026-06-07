@@ -24,6 +24,7 @@
     "railway:env:payments": "node ./scripts/railway-set-payment-env.mjs",
     "railway:migrate:wallet": "node ./scripts/railway-wallet-migration.mjs",
     "run:facebook-scheduled-post": "pnpm --filter @workspace/api-server run run:facebook-scheduled-post",
+    "run:social-scheduled-posts": "pnpm --filter @workspace/api-server run run:social-scheduled-posts",
     "build": "node ./scripts/build-production.mjs",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
