@@ -15,6 +15,7 @@ import { PartnerLogoAnalyticsCard } from "@/components/partner-logo-analytics-ca
 import { PartnerProfilePanel } from "@/components/partner-profile-panel";
 import { ProfileShopDashboard } from "@/components/profile-shop-dashboard";
 import { ProfileChangeGate } from "@/components/profile-change-gate";
+import { ProfileAddEmail } from "@/components/profile-add-email";
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
@@ -103,14 +104,11 @@ export default function ProfilePage() {
     setChangeToken(null);
   }, [user, loading, setLocation]);
 
-  const isEmailPrimary =
-    user?.auth_channel === "email" ||
-    (user?.auth_channel === "both" && user.email_verified);
   const phoneDigits = (s: string) => s.replace(/\D/g, "");
   const phoneChanged = phoneDigits(contactPhone) !== phoneDigits(initialPhone);
-  const needsSms = Boolean(isEmailPrimary);
+  const needsSms = Boolean(user?.profile_edit_requires_sms);
   const needsEmailForPhone = Boolean(
-    user?.auth_channel === "phone" && phoneChanged && user?.email,
+    phoneChanged && user?.phone_change_requires_email && user?.email,
   );
 
   function formatRegisteredAt(iso?: string): string {
@@ -263,6 +261,14 @@ export default function ProfilePage() {
                 <span className="text-gray-500">{t.profile_registered}</span>
                 <span className="font-medium text-gray-900 text-right">{formatRegisteredAt(user.created_at)}</span>
               </div>
+              {user.oauth_providers && user.oauth_providers.length > 0 ? (
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500">{t.profile_oauth_linked}</span>
+                  <span className="font-medium text-gray-900 text-right capitalize">
+                    {user.oauth_providers.join(", ")}
+                  </span>
+                </div>
+              ) : null}
             </div>
             <Link
               href="/shpalljet-e-mia"
@@ -334,6 +340,8 @@ export default function ProfilePage() {
 
           <form className="space-y-4 pt-4 border-t border-gray-100" onSubmit={onSave}>
             <h2 className="text-base font-bold text-gray-900">{t.profile_edit_heading}</h2>
+
+            {user.can_add_email ? <ProfileAddEmail onAdded={() => void refresh()} /> : null}
 
             <ProfileChangeGate
               user={user}
@@ -410,7 +418,7 @@ export default function ProfilePage() {
                 className="min-h-[120px] text-[16px]"
               />
             </div>
-            {phoneChanged && user.auth_channel === "phone" && !user.email ? (
+            {phoneChanged && user.phone_change_requires_email && !user.email ? (
               <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
                 {t.profile_phone_change_needs_email}
               </p>

@@ -184,6 +184,13 @@ const KS_EXTRA: Record<string, string> = {
   profile_verify_ok: "Verifikimi u krye. Mund të ruani ndryshimet.",
   profile_phone_change_needs_email:
     "Për të ndryshuar numrin e telefonit, së pari shtoni një email të verifikuar në llogarinë tuaj.",
+  profile_oauth_linked: "Llogaria e lidhur",
+  profile_add_email_heading: "Shto email në llogari",
+  profile_add_email_hint:
+    "Për llogaritë me Facebook, Google, TikTok ose Instagram — shtoni email për verifikim dhe siguri.",
+  profile_add_email_send: "Dërgo kodin në email",
+  profile_add_email_confirm: "Konfirmo emailin",
+  profile_add_email_ok: "Emaili u shtua dhe u verifikua.",
   reg_sellerGate_title: "Para se të postosh",
   reg_sellerGate_sub: "Na duhen emri dhe telefoni — vetëm një herë.",
   reg_sellerGate_save: "Ruaj dhe vazhdo",
@@ -2145,6 +2152,13 @@ const MK_EXTRA: Record<string, string> = {
   profile_verify_ok: "Верификацијата е успешна. Можете да ги зачувате промените.",
   profile_phone_change_needs_email:
     "За да го промените телефонот, прво додадете верификуван email на вашата сметка.",
+  profile_oauth_linked: "Поврзана сметка",
+  profile_add_email_heading: "Додај email на сметката",
+  profile_add_email_hint:
+    "За сметки преку Facebook, Google, TikTok или Instagram — додајте email за верификација.",
+  profile_add_email_send: "Испрати код на email",
+  profile_add_email_confirm: "Потврди email",
+  profile_add_email_ok: "Email-от е додаден и верификуван.",
   reg_sellerGate_title: "Пред објава",
   reg_sellerGate_sub: "Потребни се име и телефон — само еднаш.",
   reg_sellerGate_save: "Зачувај и продолжи",
@@ -3999,6 +4013,13 @@ const MNE_EXTRA: Record<string, string> = {
   profile_verify_ok: "Verifikacija uspjela. Možete sačuvati promjene.",
   profile_phone_change_needs_email:
     "Da biste promijenili broj telefona, prvo dodajte verifikovani email na nalog.",
+  profile_oauth_linked: "Povezani nalog",
+  profile_add_email_heading: "Dodaj email na nalog",
+  profile_add_email_hint:
+    "Za naloge preko Facebook, Google, TikTok ili Instagram — dodajte email za verifikaciju.",
+  profile_add_email_send: "Pošalji kod na email",
+  profile_add_email_confirm: "Potvrdi email",
+  profile_add_email_ok: "Email je dodat i verifikovan.",
   reg_sellerGate_title: "Prije objave",
   reg_sellerGate_sub: "Potrebni su ime i telefon — samo jednom.",
   reg_sellerGate_save: "Sačuvaj i nastavi",

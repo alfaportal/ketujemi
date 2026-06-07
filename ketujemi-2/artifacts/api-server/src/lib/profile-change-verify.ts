@@ -1,27 +1,29 @@
 import { randomBytes } from "node:crypto";
 import { and, eq, gt, lt } from "drizzle-orm";
 import { db, profileChangeChallengesTable, profileChangeTokensTable, type User } from "@workspace/db";
+import {
+  hasTrustedEmail,
+  isPhoneLoginAnchor,
+  resolveAuthChannel,
+  resolveAuthIdentity,
+  type AuthChannel,
+} from "./auth-identity";
 import { normalizePhone } from "./phone-prefixes";
 
 const CHALLENGE_TTL_MS = 15 * 60 * 1000;
 const TOKEN_TTL_MS = 10 * 60 * 1000;
 
-export type AuthChannel = "email" | "phone" | "both";
-
-export function resolveAuthChannel(u: User): AuthChannel {
-  const hasEmail = Boolean(u.email?.trim());
-  const hasPhone = Boolean(u.phone_e164_digits?.trim());
-  if (hasEmail && hasPhone) return "both";
-  if (hasEmail) return "email";
-  return "phone";
-}
-
-/** Email-verified account or email-only login — profile edits require SMS. */
-export function isEmailPrimaryUser(u: User): boolean {
-  if (!u.email?.trim()) return false;
-  if (!u.phone_e164_digits?.trim()) return true;
-  return u.email_verified_at != null;
-}
+export type { AuthChannel, AuthIdentity, CredentialChannel, OAuthProviderId } from "./auth-identity";
+export {
+  OAUTH_PROVIDER_REGISTRY,
+  resolveAuthChannel,
+  resolveAuthIdentity,
+  resolveLinkedOAuthProviders,
+  hasTrustedEmail,
+  hasVerifiedPhone,
+  isPhoneLoginAnchor,
+  isOAuthAuthChannel,
+} from "./auth-identity";
 
 function digitsOnly(s: string | null | undefined): string {
   return (s ?? "").replace(/\D/g, "");
@@ -31,14 +33,16 @@ export function profilePatchNeedsVerification(
   user: User,
   patch: { contact_phone?: string | null },
 ): { required: boolean; channel: "sms" | "email" | null } {
-  if (isEmailPrimaryUser(user)) {
+  const identity = resolveAuthIdentity(user);
+
+  if (identity.profile_edit_requires_sms) {
     return { required: true, channel: "sms" };
   }
 
   if (patch.contact_phone !== undefined) {
     const newDigits = digitsOnly(patch.contact_phone);
     const oldDigits = digitsOnly(user.contact_phone ?? user.phone_e164_digits);
-    if (newDigits.length >= 8 && newDigits !== oldDigits) {
+    if (newDigits.length >= 8 && newDigits !== oldDigits && identity.phone_change_requires_email) {
       return { required: true, channel: "email" };
     }
   }

@@ -10,6 +10,8 @@ export type InstagramProfile = {
 import type { TikTokProfile } from "./tiktok-oauth";
 import { recordUserSocialConnection } from "./user-social-connections.js";
 
+/** OAuth user id columns — registry lives in `auth-identity.ts` (`OAUTH_PROVIDER_REGISTRY`). */
+
 function oauthUsername(raw: string | null | undefined, fallbackId: string): string {
   const s = String(raw ?? "")
     .trim()

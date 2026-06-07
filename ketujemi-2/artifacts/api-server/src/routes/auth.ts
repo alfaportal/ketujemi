@@ -31,6 +31,7 @@ import {
   serializePartnerBannerUrls,
   type PartnerLinkType,
 } from "../lib/business-partner";
+import { hasTrustedEmail, resolveAuthIdentity } from "../lib/auth-identity";
 import {
   consumeProfileChangeToken,
   getActiveProfileChallenge,
@@ -857,12 +858,38 @@ router.post("/auth/profile/verify/email/start", authLoginRegisterLimiter, async 
   }
 
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
-  if (!user?.email?.trim()) {
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  const identity = resolveAuthIdentity(user);
+  const newEmail = !user.email?.trim() ? normalizeEmail(req.body?.email) : null;
+  const targetEmail = user.email?.trim() ? user.email.trim() : newEmail;
+
+  if (!targetEmail) {
     res.status(400).json({
       error: "EMAIL_REQUIRED",
-      message: "Llogaria nuk ka email të regjistruar për verifikim.",
+      message: identity.can_add_email
+        ? "Vendosni emailin që dëshironi të shtoni në llogari."
+        : "Llogaria nuk ka email të regjistruar për verifikim.",
     });
     return;
+  }
+
+  if (newEmail) {
+    const [taken] = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.email, newEmail))
+      .limit(1);
+    if (taken && taken.id !== user.id) {
+      res.status(409).json({
+        error: "EMAIL_TAKEN",
+        message: "Ky email është i regjistruar në një llogari tjetër.",
+      });
+      return;
+    }
   }
 
   if (!hasEmailDeliveryConfigured()) {
@@ -872,9 +899,9 @@ router.post("/auth/profile/verify/email/start", authLoginRegisterLimiter, async 
 
   try {
     const code = sixDigitCode();
-    await storeEmailProfileChallenge(user.id, user.email, code);
-    await sendProfileChangeCodeEmail({ to: user.email, code });
-    res.json({ ok: true });
+    await storeEmailProfileChallenge(user.id, targetEmail, code);
+    await sendProfileChangeCodeEmail({ to: targetEmail, code });
+    res.json({ ok: true, adding_email: Boolean(newEmail) });
   } catch (err: unknown) {
     req.log?.error({ err }, "profile verify email start");
     res.status(502).json({ error: "EMAIL_SEND_FAILED" });
@@ -907,6 +934,23 @@ router.post("/auth/profile/verify/email/confirm", authLoginRegisterLimiter, asyn
   if (challenge.code !== code) {
     res.status(400).json({ error: "INVALID_CODE", message: "Kodi nuk është i saktë." });
     return;
+  }
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (user && challenge.email && !user.email?.trim()) {
+    const [taken] = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.email, challenge.email))
+      .limit(1);
+    if (taken && taken.id !== user.id) {
+      res.status(409).json({ error: "EMAIL_TAKEN", message: "Ky email është i zënë." });
+      return;
+    }
+    await db
+      .update(usersTable)
+      .set({ email: challenge.email, email_verified_at: new Date() })
+      .where(eq(usersTable.id, id));
   }
 
   const token = await issueProfileChangeToken(id, "email");
@@ -1013,11 +1057,12 @@ router.patch("/auth/profile", async (req, res) => {
   if (
     verifyNeed.required &&
     verifyNeed.channel === "email" &&
+    !hasTrustedEmail(existing) &&
     !existing.email?.trim()
   ) {
     res.status(400).json({
       error: "EMAIL_REQUIRED_FOR_PHONE_CHANGE",
-      message: "Shtoni një email të verifikuar në llogari para se të ndryshoni telefonin.",
+      message: "Shtoni dhe verifikoni një email në llogari para se të ndryshoni telefonin.",
     });
     return;
   }

@@ -29,7 +29,15 @@ export type AuthUser = {
   email_verified?: boolean;
   has_password?: boolean;
   created_at?: string;
-  auth_channel?: "email" | "phone" | "both";
+  /** Credential channel, `oauth:<provider>`, or `none` — extensible via API. */
+  auth_channel?: string;
+  credential_channel?: "email" | "phone" | "both" | "none";
+  oauth_providers?: string[];
+  has_trusted_email?: boolean;
+  profile_edit_requires_sms?: boolean;
+  phone_change_requires_email?: boolean;
+  can_add_phone?: boolean;
+  can_add_email?: boolean;
   phone_verified?: boolean;
   wallet?: {
     balance_cents: number;

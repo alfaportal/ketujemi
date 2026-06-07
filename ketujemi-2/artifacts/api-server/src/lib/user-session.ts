@@ -1,7 +1,7 @@
 import type { CookieOptions, Response } from "express";
 import type { User } from "@workspace/db";
 import { sellerFirstName } from "./contact-mask";
-import { resolveAuthChannel } from "./profile-change-verify";
+import { resolveAuthIdentity } from "./auth-identity";
 import { walletSummary } from "./wallet";
 
 const COOKIE = "kj_session";
@@ -73,8 +73,20 @@ export function publicUser(u: User, opts?: { self?: boolean }) {
     social_follow_notif_sent: u.social_follow_notif_sent ?? false,
     social_follow_notif_preference: u.social_follow_notif_preference ?? "pending",
     created_at: u.created_at.toISOString(),
-    auth_channel: resolveAuthChannel(u),
-    phone_verified: Boolean(u.phone_e164_digits?.trim()),
+    ...(() => {
+      const identity = resolveAuthIdentity(u);
+      return {
+        auth_channel: identity.auth_channel,
+        credential_channel: identity.credential_channel,
+        oauth_providers: identity.oauth_providers,
+        has_trusted_email: identity.has_trusted_email,
+        profile_edit_requires_sms: identity.profile_edit_requires_sms,
+        phone_change_requires_email: identity.phone_change_requires_email,
+        can_add_phone: identity.can_add_phone,
+        can_add_email: identity.can_add_email,
+        phone_verified: identity.has_verified_phone,
+      };
+    })(),
   };
 }
 
