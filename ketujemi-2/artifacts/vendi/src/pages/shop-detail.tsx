@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useProfileEditGate } from "@/hooks/use-profile-edit-gate";
 import { ProfileEditGateFlow } from "@/components/profile-edit-gate-flow";
+import { DeletionExitSurveyModal } from "@/components/deletion-exit-survey-modal";
 import { Loader2, MapPin, Facebook, Instagram, Globe, ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -102,10 +103,8 @@ export default function ShopDetailPage() {
   const [isOwner, setIsOwner] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editRequested, setEditRequested] = useState(false);
-  const [deleteRequested, setDeleteRequested] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
   const [deleteShopOpen, setDeleteShopOpen] = useState(false);
-  const [deleteShopBusy, setDeleteShopBusy] = useState(false);
   const [socialProfiles, setSocialProfiles] = useState<
     Partial<Record<"instagram" | "tiktok", ShopSocialProfileData>>
   >({});
@@ -169,13 +168,6 @@ export default function ShopDetailPage() {
     }
   }, [editRequested, gate.isUnlocked]);
 
-  useEffect(() => {
-    if (deleteRequested && gate.isUnlocked) {
-      setDeleteShopOpen(true);
-      setDeleteRequested(false);
-    }
-  }, [deleteRequested, gate.isUnlocked]);
-
   function onEditShopClick() {
     if (gate.isUnlocked) {
       setEditOpen(true);
@@ -186,12 +178,7 @@ export default function ShopDetailPage() {
   }
 
   function onDeleteShopClick() {
-    if (gate.isUnlocked) {
-      setDeleteShopOpen(true);
-      return;
-    }
-    setDeleteRequested(true);
-    gate.startGate();
+    setDeleteShopOpen(true);
   }
 
   async function onSaveShopEdit(values: ShopEditFormValues) {
@@ -212,27 +199,6 @@ export default function ShopDetailPage() {
       toast({ title: d.shopSaveError, variant: "destructive" });
     } finally {
       setEditSaving(false);
-    }
-  }
-
-  async function onDeleteShop() {
-    if (!shop || !gate.changeToken) return;
-    setDeleteShopBusy(true);
-    try {
-      const res = await fetchWithTimeout(`/api/shops/${shop.id}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ profile_change_token: gate.changeToken }),
-      });
-      if (!res.ok) throw new Error("fail");
-      toast({ title: d.shopDeleted });
-      setLocation("/profili");
-    } catch {
-      toast({ title: d.shopDeleteError, variant: "destructive" });
-    } finally {
-      setDeleteShopBusy(false);
-      setDeleteShopOpen(false);
     }
   }
 
@@ -348,24 +314,6 @@ export default function ShopDetailPage() {
             >
               {d.deleteShop}
             </Button>
-            <AlertDialog open={deleteShopOpen} onOpenChange={setDeleteShopOpen}>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{d.deleteShopTitle}</AlertDialogTitle>
-                  <AlertDialogDescription>{d.deleteShopDesc}</AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel disabled={deleteShopBusy}>{d.cancel}</AlertDialogCancel>
-                  <AlertDialogAction
-                    className="bg-red-600 hover:bg-red-700"
-                    disabled={deleteShopBusy}
-                    onClick={() => void onDeleteShop()}
-                  >
-                    {d.deleteShop}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
           </div>
         ) : null}
 
@@ -532,6 +480,18 @@ export default function ShopDetailPage() {
       </div>
 
       {isOwner && user ? <ProfileEditGateFlow user={user} gate={gate} /> : null}
+
+      {isOwner && user && shop ? (
+        <DeletionExitSurveyModal
+          open={deleteShopOpen}
+          onOpenChange={setDeleteShopOpen}
+          mode="shop"
+          shopId={shop.id}
+          user={user}
+          refresh={refresh}
+          onSuccess={() => setLocation("/profili")}
+        />
+      ) : null}
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">

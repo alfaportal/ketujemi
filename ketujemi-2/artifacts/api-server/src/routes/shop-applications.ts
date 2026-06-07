@@ -16,7 +16,8 @@ import { sendShopApplicationEmail, sendShopRatingEmail } from "../lib/send-shop-
 import { formatListingsBatch } from "../lib/format-listings-batch";
 import { resolveDirectoryFields } from "../lib/shop-directory-patch";
 import { ownerShopFieldPatch } from "../lib/shop-field-patch";
-import { deleteShopCascade } from "../lib/delete-shop-cascade";
+import { parseDeletionSurveyBody } from "../lib/deletion-feedback.js";
+import { softDeleteShopWithFeedback } from "../lib/soft-delete-shop.js";
 import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxonomy.ts";
 import { enforceProfileChangeToken } from "../lib/profile-change-verify.js";
 import {
@@ -476,11 +477,16 @@ router.delete("/shops/:id", async (req, res) => {
   }
 
   const [shop] = await db
-    .select({ id: shopsTable.id, user_id: shopsTable.user_id })
+    .select({
+      id: shopsTable.id,
+      user_id: shopsTable.user_id,
+      deleted_at: shopsTable.deleted_at,
+      is_active: shopsTable.is_active,
+    })
     .from(shopsTable)
     .where(eq(shopsTable.id, id))
     .limit(1);
-  if (!shop) {
+  if (!shop || shop.deleted_at || !shop.is_active) {
     res.status(404).json({ error: "Not found" });
     return;
   }
@@ -490,13 +496,24 @@ router.delete("/shops/:id", async (req, res) => {
   }
 
   const body = (req.body ?? {}) as Record<string, unknown>;
+  const survey = parseDeletionSurveyBody(body);
+  if (!survey.ok) {
+    res.status(400).json({ error: "VALIDATION", message: survey.message });
+    return;
+  }
+
   const gate = await enforceProfileChangeToken(viewer, body);
   if (!gate.ok) {
     res.status(gate.status).json(gate.body);
     return;
   }
 
-  await deleteShopCascade(id, "owner");
+  const notifyEmail = viewer.email?.trim() || null;
+  const ok = await softDeleteShopWithFeedback(id, viewer.id, survey.data, notifyEmail);
+  if (!ok) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
   res.json({ ok: true });
 });
 

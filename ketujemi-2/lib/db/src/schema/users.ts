@@ -75,6 +75,7 @@ export const usersTable = pgTable("users", {
   /** pending | opted_in | opted_out — promotional follow-up preference. */
   social_follow_notif_preference: text("social_follow_notif_preference").notNull().default("pending"),
   created_at: timestamp("created_at").notNull().defaultNow(),
+  deleted_at: timestamp("deleted_at"),
 });
 
 export type User = typeof usersTable.$inferSelect;

@@ -862,6 +862,30 @@ export function syncAdminShopSocialEnrichments() {
   );
 }
 
+export type AdminDeletionFeedbackRow = {
+  id: number;
+  user_id: number;
+  entity_type: string;
+  shop_id: number | null;
+  shop_name: string | null;
+  reason: string;
+  reason_label: string;
+  custom_text: string | null;
+  additional_feedback: string | null;
+  deleted_at: string;
+};
+
+export function getAdminDeletionFeedback(params?: { page?: number; limit?: number }) {
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.limit) qs.set("limit", String(params.limit));
+  return request<{
+    rows: AdminDeletionFeedbackRow[];
+    total: number;
+    stats: Array<{ reason: string; reason_label: string; count: number }>;
+  }>(`/deletion-feedback?${qs}`);
+}
+
 export function importAdminInstagramFollowers(data: unknown) {
   return request<{
     ok: boolean;

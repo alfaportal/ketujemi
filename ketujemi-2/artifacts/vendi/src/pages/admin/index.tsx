@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard, FileText, Users, Tag, AlertTriangle, Settings,
-  LogOut, Menu, X, Lock, ShieldCheck, Building2, CreditCard, Store, Share2, UserPlus, Instagram,
+  LogOut, Menu, X, Lock, ShieldCheck, Building2, CreditCard, Store, Share2, UserPlus, Instagram, Trash2,
 } from "lucide-react";
 import { adminLoginEmailStart, adminLoginEmailVerify, adminLogout, isAdminLoggedIn } from "@/lib/admin-api";
 import { useMarket } from "@/lib/market-context";
@@ -18,6 +18,7 @@ import AdminShops from "./shops";
 import AdminSocialPosts from "./social-posts";
 import AdminFollowers from "./followers";
 import AdminShopSocialEnrichments from "./shop-social-enrichments";
+import AdminDeletionFeedback from "./deletion-feedback";
 
 type Section =
   | "dashboard"
@@ -32,13 +33,15 @@ type Section =
   | "shops"
   | "social"
   | "followers"
-  | "shop-social";
+  | "shop-social"
+  | "deletion-feedback";
 
 const NAV: { id: Section; icon: React.ElementType }[] = [
   { id: "dashboard", icon: LayoutDashboard },
   { id: "partners", icon: Building2 },
   { id: "shops", icon: Store },
   { id: "shop-social", icon: Instagram },
+  { id: "deletion-feedback", icon: Trash2 },
   { id: "payments", icon: CreditCard },
   { id: "listings", icon: FileText },
   { id: "social", icon: Share2 },
@@ -64,6 +67,7 @@ const NAV_TITLE_KEY: Record<Section, string> = {
   settings: "adm_nav_settings",
   shops: "adm_nav_shops",
   "shop-social": "adm_nav_shop_social",
+  "deletion-feedback": "adm_nav_deletion",
 };
 
 /** Admin mobile chrome only — keeps hamburger below iOS status bar; not used on main SiteHeader. */
@@ -314,6 +318,7 @@ export default function AdminPanel() {
     settings:   AdminSettings,
     shops:      AdminShops,
     "shop-social": AdminShopSocialEnrichments,
+    "deletion-feedback": AdminDeletionFeedback,
   }[section];
 
   return (

@@ -1,7 +1,7 @@
 import { randomInt, randomUUID } from "node:crypto";
 import { Router } from "express";
 import bcrypt from "bcryptjs";
-import { eq, desc, and, lt, gt } from "drizzle-orm";
+import { eq, desc, and, lt, gt, isNull } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   usersTable,
@@ -43,7 +43,10 @@ import {
   userNeedsSellerBootstrap,
   userSmsPhoneForProfile,
   validateProfileChangeToken,
+  enforceProfileChangeToken,
 } from "../lib/profile-change-verify";
+import { parseDeletionSurveyBody } from "../lib/deletion-feedback.js";
+import { softDeleteUserAccount } from "../lib/soft-delete-account.js";
 import { sendProfileChangeCodeEmail } from "../lib/send-email";
 import { isPlatformAdminUser } from "../lib/platform-admin.js";
 import {
@@ -754,6 +757,56 @@ router.post("/auth/logout", (_req, res) => {
   res.json({ ok: true });
 });
 
+// ─── POST /auth/account/delete ───────────────────────────────────────────────
+router.post("/auth/account/delete", async (req, res) => {
+  const id = await sessionUserId(req);
+  if (id == null) {
+    res.status(401).json({ error: "Not logged in" });
+    return;
+  }
+
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(and(eq(usersTable.id, id), isNull(usersTable.deleted_at)))
+    .limit(1);
+  if (!user) {
+    clearUserSessionCookie(res);
+    res.status(401).json({ error: "Not logged in" });
+    return;
+  }
+
+  if (isPlatformAdminUser(user)) {
+    res.status(403).json({
+      error: "FORBIDDEN",
+      message: "Llogaritë e administratorit nuk mund të fshihen nga këtu.",
+    });
+    return;
+  }
+
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const survey = parseDeletionSurveyBody(body);
+  if (!survey.ok) {
+    res.status(400).json({ error: "VALIDATION", message: survey.message });
+    return;
+  }
+
+  const gate = await enforceProfileChangeToken(user, body);
+  if (!gate.ok) {
+    res.status(gate.status).json(gate.body);
+    return;
+  }
+
+  try {
+    await softDeleteUserAccount(user, survey.data);
+    clearUserSessionCookie(res);
+    res.json({ ok: true });
+  } catch (err) {
+    req.log?.error({ err, userId: user.id }, "account delete failed");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // ─── GET /auth/me ─────────────────────────────────────────────────────────────
 router.get("/auth/me", async (req, res) => {
   const id = await sessionUserId(req);
@@ -762,7 +815,11 @@ router.get("/auth/me", async (req, res) => {
     return;
   }
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(and(eq(usersTable.id, id), isNull(usersTable.deleted_at)))
+    .limit(1);
   if (!user) {
     clearUserSessionCookie(res);
     res.status(401).json({ error: "Not logged in" });

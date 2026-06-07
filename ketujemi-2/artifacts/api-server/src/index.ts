@@ -19,6 +19,7 @@ import {
   ensurePhoneVerifySchema,
   ensureAdminLoginSchema,
   ensureShopSocialProfileSchema,
+  ensureDeletionFeedbackSchema,
   ensureWalletSchema,
   pool,
 } from "@workspace/db";
@@ -106,6 +107,8 @@ async function startServer(): Promise<void> {
     logger.info("Admin login schema verified (admin_login_challenges)");
     await ensureShopSocialProfileSchema(pool);
     logger.info("Shop social profile enrichments schema verified");
+    await ensureDeletionFeedbackSchema(pool);
+    logger.info("Deletion feedback schema verified (deletion_feedback, users.deleted_at, shops.deleted_at)");
     await purgeInvalidListingImagesOnStartup();
     logPaymentStackReadiness(logger);
     logger.info(vonageConfigSummary(), "vonage sms config (masked)");

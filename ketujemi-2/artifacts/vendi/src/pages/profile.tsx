@@ -18,6 +18,7 @@ import { ProfileChangeGate } from "@/components/profile-change-gate";
 import { ProfileAddEmail } from "@/components/profile-add-email";
 import { ProfileAddPhone } from "@/components/profile-add-phone";
 import { ProfileEditSecurityNotice } from "@/components/profile-edit-security-notice";
+import { DeletionExitSurveyModal } from "@/components/deletion-exit-survey-modal";
 
 type EditPhase = "readonly" | "security-notice" | "need-method" | "verify" | "editing";
 
@@ -69,6 +70,7 @@ export default function ProfilePage() {
   const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
   const [editPhase, setEditPhase] = useState<EditPhase>("readonly");
   const [sessionChecked, setSessionChecked] = useState(false);
+  const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
 
   const loadEditSession = useCallback(async () => {
     try {
@@ -575,11 +577,40 @@ export default function ProfilePage() {
               </form>
             ) : null}
           </div>
+
+          {user && !user.is_platform_admin ? (
+            <div className="space-y-3 pt-6 mt-6 border-t border-red-100">
+              <h2 className="text-base font-bold text-red-800">{t.delete_account_btn}</h2>
+              <p className="text-sm text-gray-600">{t.delete_account_desc}</p>
+              <Button
+                type="button"
+                variant="destructive"
+                className="w-full min-h-12 h-12 bg-red-600 hover:bg-red-700"
+                onClick={() => setDeleteAccountOpen(true)}
+              >
+                {t.delete_account_btn}
+              </Button>
+            </div>
+          ) : null}
         </div>
       </main>
 
       {editPhase === "security-notice" ? (
         <ProfileEditSecurityNotice onContinue={proceedAfterSecurityNotice} />
+      ) : null}
+
+      {user && !user.is_platform_admin ? (
+        <DeletionExitSurveyModal
+          open={deleteAccountOpen}
+          onOpenChange={setDeleteAccountOpen}
+          mode="account"
+          user={user}
+          refresh={refresh}
+          onSuccess={() => {
+            void refresh();
+            setLocation("/");
+          }}
+        />
       ) : null}
     </div>
   );
