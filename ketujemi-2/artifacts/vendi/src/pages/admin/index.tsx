@@ -62,6 +62,10 @@ const NAV_TITLE_KEY: Record<Section, string> = {
   shops: "adm_nav_shops",
 };
 
+/** Admin mobile chrome only — keeps hamburger below iOS status bar; not used on main SiteHeader. */
+const ADMIN_MOBILE_SAFE_TOP = "pt-[max(env(safe-area-inset-top,0px),44px)] md:pt-0";
+const ADMIN_MOBILE_TOP_BAR = `${ADMIN_MOBILE_SAFE_TOP} min-h-[calc(3.5rem+max(env(safe-area-inset-top,0px),44px))] md:min-h-14`;
+
 // ─── Login page ───────────────────────────────────────────────────────────────
 function LoginPage({ onLogin }: { onLogin: () => void }) {
   const { t } = useMarket();
@@ -177,7 +181,9 @@ function Sidebar({
   return (
     <div className={`flex flex-col h-full bg-gray-900 ${mobile ? "w-64" : "w-56"}`}>
       {/* Brand */}
-      <div className="flex items-center justify-between px-5 py-5 border-b border-gray-800">
+      <div
+        className={`flex items-center justify-between px-5 py-5 border-b border-gray-800 ${mobile ? ADMIN_MOBILE_SAFE_TOP : ""}`}
+      >
         <div>
           <div className="flex items-center gap-2">
             <ShieldCheck size={18} className="text-blue-400" />
@@ -291,10 +297,13 @@ export default function AdminPanel() {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <div className="bg-white border-b border-gray-100 px-4 md:px-6 h-14 flex items-center gap-4 flex-shrink-0">
+        <div
+          className={`sticky top-0 z-30 bg-white border-b border-gray-100 px-4 md:px-6 flex items-center gap-4 flex-shrink-0 ${ADMIN_MOBILE_TOP_BAR}`}
+        >
           <button
             onClick={() => setMobileOpen(true)}
-            className="md:hidden p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+            className="md:hidden flex items-center justify-center min-h-11 min-w-11 p-2.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+            aria-label={t.adm_sidebarTitle}
           >
             <Menu size={20} />
           </button>
