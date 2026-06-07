@@ -28,6 +28,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     pathname === "/admin" ||
     pathname.startsWith("/admin/") ||
     pathname.startsWith("/admin-secret-panel");
+  const hideSupportChat = hideFooter || pathname === "/login";
   const isListingDetailPage = /^\/listings\/\d+$/.test(pathname);
 
   const hidePaymentsStrip =
@@ -49,7 +50,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <CardPaymentsPanel listingId={listingId} compact className="sticky bottom-0 z-20" />
         ) : null}
         {!hideFooter ? <SiteFooter /> : null}
-        {!hideFooter ? (
+        {!hideSupportChat ? (
           <Suspense fallback={null}>
             <SupportChatWidget />
           </Suspense>
