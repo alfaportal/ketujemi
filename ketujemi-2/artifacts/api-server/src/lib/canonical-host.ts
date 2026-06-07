@@ -22,7 +22,9 @@ export function canonicalHostRedirect(req: Request, res: Response, next: NextFun
   if (
     req.path === "/api/healthz" ||
     req.path.startsWith("/api/health") ||
-    req.path === "/api/cron/social-scheduled-posts"
+    req.path === "/api/cron/social-scheduled-posts" ||
+    req.path === "/api/cron/social-scheduled-posts/facebook" ||
+    req.path === "/api/cron/social-scheduled-posts/instagram"
   ) {
     next();
     return;

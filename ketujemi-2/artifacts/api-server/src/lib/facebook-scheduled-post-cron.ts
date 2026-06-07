@@ -1,5 +1,8 @@
 import cron from "node-cron";
-import { isFacebookAutoPostConfigured } from "../services/socialMedia.js";
+import {
+  initializeFacebookPageAccessToken,
+  isFacebookAutoPostConfigured,
+} from "../services/socialMedia.js";
 import { runFacebookScheduledPost } from "./facebook-scheduled-post-job";
 import { logger } from "./logger";
 
@@ -29,6 +32,7 @@ export async function runFacebookScheduledPostNow(): Promise<
 
   runInFlight = true;
   try {
+    await initializeFacebookPageAccessToken();
     return await runFacebookScheduledPost();
   } catch (err) {
     logger.error({ err }, "facebook scheduled post cron failed");
@@ -45,13 +49,6 @@ export function startFacebookScheduledPostCron(): void {
     return;
   }
 
-  if (!isFacebookAutoPostConfigured()) {
-    logger.warn(
-      "facebook scheduled post cron skipped: set FB_PAGE_ID (or PAGE_ID) and FB_PAGE_ACCESS_TOKEN (or PAGE_ACCESS_TOKEN)",
-    );
-    return;
-  }
-
   const timezone = process.env.FB_CRON_TZ?.trim() || DEFAULT_TZ;
 
   cron.schedule(
@@ -62,8 +59,16 @@ export function startFacebookScheduledPostCron(): void {
     { timezone },
   );
 
+  const configured = isFacebookAutoPostConfigured();
   logger.info(
-    { schedule: CRON_SCHEDULE, timezone, times: ["10:00", "14:00", "19:00", "22:00"] },
-    "facebook scheduled post cron started",
+    {
+      schedule: CRON_SCHEDULE,
+      timezone,
+      times: ["10:00", "14:00", "19:00", "22:00"],
+      configured,
+    },
+    configured
+      ? "facebook scheduled photo post cron started"
+      : "facebook scheduled photo post cron armed (waiting for FB_PAGE_ACCESS_TOKEN)",
   );
 }

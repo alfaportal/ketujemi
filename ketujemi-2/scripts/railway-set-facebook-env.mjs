@@ -116,11 +116,20 @@ if (igId) {
   railway([`INSTAGRAM_BUSINESS_ACCOUNT_ID=${igId}`, "--skip-deploys"]);
 }
 
+console.log("[railway:env:facebook] Enabling automatic photo post schedules…");
+railway(["FB_SCHEDULED_POST_ENABLED=true", "--skip-deploys"]);
+railway(["INSTAGRAM_AUTO_POST_ENABLED=true", "--skip-deploys"]);
+railway(["LISTING_REEL_CRON_ENABLED=true", "--skip-deploys"]);
+
 console.log(
   [
     "[railway:env:facebook] Done.",
-    "Redeploy API on Railway, then run:",
-    "  pnpm run run:social-scheduled-posts",
-    "Or use Admin → Social posts → Run FB + IG crons.",
+    "Photo posts auto-schedule on API startup:",
+    "  Facebook: 10:00, 14:00, 19:00, 22:00 Europe/Belgrade",
+    "  Instagram: 10:30, 14:30, 19:30, 22:30 Europe/Belgrade",
+    "  Reel: 12:00 Europe/Belgrade",
+    "Redeploy API on Railway, then test:",
+    "  pnpm run run:social-scheduled-posts:railway",
+    "Or Admin → Social posts → Run FB + IG crons.",
   ].join("\n"),
 );

@@ -1,5 +1,8 @@
 import cron from "node-cron";
-import { isInstagramAutoPostConfigured } from "../services/socialMedia.js";
+import {
+  initializeFacebookPageAccessToken,
+  isInstagramAutoPostConfigured,
+} from "../services/socialMedia.js";
 import { runInstagramScheduledPost } from "./instagram-scheduled-post-job";
 import { logger } from "./logger";
 
@@ -29,6 +32,7 @@ export async function runInstagramScheduledPostNow(): Promise<
 
   runInFlight = true;
   try {
+    await initializeFacebookPageAccessToken();
     return await runInstagramScheduledPost();
   } catch (err) {
     logger.error({ err }, "instagram scheduled post cron failed");
@@ -45,13 +49,6 @@ export function startInstagramScheduledPostCron(): void {
     return;
   }
 
-  if (!isInstagramAutoPostConfigured()) {
-    logger.warn(
-      "instagram scheduled post cron skipped: link @ketujemi.ks to Facebook Page or set INSTAGRAM_BUSINESS_ACCOUNT_ID",
-    );
-    return;
-  }
-
   const timezone = process.env.IG_CRON_TZ?.trim() || process.env.FB_CRON_TZ?.trim() || DEFAULT_TZ;
 
   cron.schedule(
@@ -62,13 +59,17 @@ export function startInstagramScheduledPostCron(): void {
     { timezone },
   );
 
+  const configured = isInstagramAutoPostConfigured();
   logger.info(
     {
       schedule: CRON_SCHEDULE,
       timezone,
       times: ["10:30", "14:30", "19:30", "22:30"],
       note: "30 minutes after Facebook cron",
+      configured,
     },
-    "instagram scheduled post cron started",
+    configured
+      ? "instagram scheduled photo post cron started"
+      : "instagram scheduled photo post cron armed (waiting for Meta page/IG config)",
   );
 }
