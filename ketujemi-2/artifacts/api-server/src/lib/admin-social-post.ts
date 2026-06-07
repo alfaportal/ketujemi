@@ -17,6 +17,7 @@ import {
   resolveListingMarketForSocial,
 } from "../services/socialMedia.js";
 import { getCanonicalOrigin } from "./canonical-host.js";
+import { verifyListingOwnerIntegrity } from "./listing-ownership-guard.js";
 
 export type AdminSocialListingRow = {
   id: number;
@@ -206,6 +207,8 @@ export async function loadListingForSocialPost(listingId: number) {
       price: listingsTable.price,
       location: listingsTable.location,
       seller_name: listingsTable.seller_name,
+      seller_phone: listingsTable.seller_phone,
+      user_id: listingsTable.user_id,
       image_url: listingsTable.image_url,
       fb_posted: listingsTable.fb_posted,
       ig_posted: listingsTable.ig_posted,
@@ -248,7 +251,17 @@ export async function loadListingForSocialPost(listingId: number) {
     listing_country: null as string | null,
   };
 
-  return { enriched, listing };
+  return {
+    enriched,
+    listing,
+    integrity: {
+      id: row.id,
+      user_id: row.user_id,
+      seller_name: row.seller_name,
+      seller_phone: row.seller_phone,
+      description: row.description,
+    },
+  };
 }
 
 export async function buildAdminSocialPostPreview(listingId: number) {
@@ -320,10 +333,15 @@ export async function executeAdminSocialPost(
     throw new Error("LISTING_NOT_FOUND");
   }
 
-  const { listing } = loaded;
+  const { listing, integrity: integrityRow } = loaded;
   const skip = facebookPostSkipReason(listing);
   if (skip) {
     throw new Error(`INELIGIBLE:${skip}`);
+  }
+
+  const integrity = await verifyListingOwnerIntegrity(integrityRow, "admin_social_post");
+  if (!integrity.ok) {
+    throw new Error(`OWNERSHIP_VIOLATION:${integrity.reason}`);
   }
 
   const result: {

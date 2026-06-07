@@ -72,3 +72,38 @@ export function listingBelongsToUser(
   if (listing.user_id != null) return listing.user_id === userId;
   return userOwnsListing(user, listing);
 }
+
+/** Canonical seller contact from the authenticated account — never trust client-submitted values. */
+export function canonicalSellerContactForUser(
+  user: Pick<User, "display_name" | "contact_phone" | "phone_e164_digits">,
+): { seller_name: string; seller_phone: string } {
+  const seller_name = user.display_name?.trim() ?? "";
+  const digits = user.contact_phone?.trim() || user.phone_e164_digits?.trim() || "";
+  let seller_phone = digits;
+  if (seller_phone && !seller_phone.startsWith("+") && /^\d/.test(seller_phone)) {
+    seller_phone = `+${seller_phone}`;
+  }
+  return { seller_name, seller_phone };
+}
+
+function namesMatch(a: string | null | undefined, b: string | null | undefined): boolean {
+  const na = (a ?? "").trim().toLocaleLowerCase();
+  const nb = (b ?? "").trim().toLocaleLowerCase();
+  if (!na || !nb) return true;
+  return na === nb;
+}
+
+/** Listing contact data must match the registered owner (phone, name, specs email). */
+export function listingContactMatchesUser(
+  user: Pick<User, "email" | "display_name" | "contact_phone" | "phone_e164_digits">,
+  listing: { seller_name?: string | null; seller_phone: string; description: string },
+): boolean {
+  const canonical = canonicalSellerContactForUser(user);
+  if (!phonesMatch(canonical.seller_phone, listing.seller_phone)) return false;
+  if (!namesMatch(canonical.seller_name, listing.seller_name)) return false;
+
+  const specEmail = parseSpecsEmailFromDescription(listing.description);
+  const userEmail = user.email?.trim().toLowerCase() ?? "";
+  if (specEmail && userEmail && specEmail !== userEmail) return false;
+  return true;
+}

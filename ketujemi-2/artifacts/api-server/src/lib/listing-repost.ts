@@ -1,7 +1,7 @@
 import { db, listingsTable } from "@workspace/db";
 import type { User } from "@workspace/db";
 import { eq } from "drizzle-orm";
-import { userOwnsListing } from "./listing-ownership";
+import { listingBelongsToUser } from "./listing-ownership";
 import { removeUserDuplicateListingsForPost } from "./listing-duplicate-guard";
 import { expiresAtAfterListingLifetime } from "./listing-lifetime";
 
@@ -22,7 +22,7 @@ export async function repostListing(
     return { ok: false, error: "NOT_FOUND", message: "Njoftimi nuk u gjet." };
   }
 
-  if (!userOwnsListing(user, row)) {
+  if (!listingBelongsToUser(user.id, user, row)) {
     return { ok: false, error: "FORBIDDEN", message: "Nuk keni leje." };
   }
 

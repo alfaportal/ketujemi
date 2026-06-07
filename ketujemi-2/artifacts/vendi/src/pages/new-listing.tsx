@@ -400,6 +400,7 @@ export default function NewListing() {
     const { seller_name, seller_phone } = sellerContactFromUser(user);
     if (seller_name) form.setValue("seller_name", seller_name);
     if (seller_phone) form.setValue("seller_phone", seller_phone);
+    if (user.email) form.setValue("xSellerEmail", user.email);
   }, [user, form]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -558,7 +559,10 @@ export default function NewListing() {
       return;
     }
     const finalDescription = validation.extraDescriptionPrefix + listingData.description;
-    const contact = { seller_name: listingData.seller_name, seller_phone: listingData.seller_phone };
+    const contact = user ? sellerContactFromUser(user) : {
+      seller_name: listingData.seller_name,
+      seller_phone: listingData.seller_phone,
+    };
 
     const payload: Record<string, unknown> = {
       title: listingData.title,
@@ -1381,7 +1385,13 @@ export default function NewListing() {
                     <FormItem>
                       <FormLabel>{t.yourName} <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <Input data-testid="input-seller-name" placeholder="Arben Krasniqi" {...field} />
+                        <Input
+                          data-testid="input-seller-name"
+                          placeholder="Arben Krasniqi"
+                          readOnly={!!user}
+                          className={user ? "bg-gray-50 cursor-not-allowed" : undefined}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1394,7 +1404,13 @@ export default function NewListing() {
                     <FormItem>
                       <FormLabel>{t.phoneNum} <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <Input data-testid="input-phone" placeholder={`${market.prefix} 44 123 456`} {...field} />
+                        <Input
+                          data-testid="input-phone"
+                          placeholder={`${market.prefix} 44 123 456`}
+                          readOnly={!!user}
+                          className={user ? "bg-gray-50 cursor-not-allowed" : undefined}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1407,7 +1423,14 @@ export default function NewListing() {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="kontakt@email.com" type="email" {...field} value={field.value as string} />
+                        <Input
+                          placeholder="kontakt@email.com"
+                          type="email"
+                          readOnly={!!user?.email}
+                          className={user?.email ? "bg-gray-50 cursor-not-allowed" : undefined}
+                          {...field}
+                          value={field.value as string}
+                        />
                       </FormControl>
                     </FormItem>
                   )}

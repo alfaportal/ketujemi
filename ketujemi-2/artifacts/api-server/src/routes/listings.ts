@@ -12,7 +12,14 @@ import {
 } from "@workspace/api-zod";
 import { getSessionUser } from "../lib/session-user";
 import { postListingLimiter, searchLimiter } from "../lib/express-rate-limiters";
-import { listingBelongsToUser } from "../lib/listing-ownership";
+import { canonicalSellerContactForUser, listingBelongsToUser } from "../lib/listing-ownership";
+import {
+  detectContactImpersonation,
+  recordListingOwnershipViolation,
+  sanitizeListingDescriptionEmail,
+  userHasPostableContact,
+  verifyListingOwnerIntegrity,
+} from "../lib/listing-ownership-guard";
 import { maskSellerPhone } from "../lib/contact-mask";
 import { assertAccountActive } from "../lib/user-ban";
 import { formatZodIssuesMessage } from "../lib/listing-api-errors";
@@ -344,8 +351,42 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   const safeImageUrl = sanitizeListingImageUrlField(parsed.data.image_url) ?? undefined;
   const safeVideoUrl = sanitizeListingVideoUrl(parsed.data.video_url) ?? undefined;
 
+  if (!userHasPostableContact(viewer)) {
+    res.status(400).json({
+      error: "INCOMPLETE_PROFILE",
+      message:
+        "Plotësoni emrin dhe numrin e telefonit në profilin tuaj para se të postoni.",
+    });
+    return;
+  }
+
+  const impersonation = detectContactImpersonation(viewer, {
+    seller_name: parsed.data.seller_name,
+    seller_phone: parsed.data.seller_phone,
+    description: parsed.data.description,
+  });
+  if (impersonation.impersonation) {
+    await recordListingOwnershipViolation({
+      userId: viewer.id,
+      context: "listing_create",
+      reason: impersonation.reason,
+      req,
+      submittedPhone: parsed.data.seller_phone,
+      submittedName: parsed.data.seller_name,
+    });
+    res.status(403).json({
+      error: "OWNERSHIP_VIOLATION",
+      message:
+        "Nuk mund të postoni me të dhëna kontakti që nuk përputhen me llogarinë tuaj.",
+    });
+    return;
+  }
+
+  const sellerContact = canonicalSellerContactForUser(viewer);
+  const listingDescription = sanitizeListingDescriptionEmail(parsed.data.description, viewer.email);
+
   try {
-    await assertAccountActive(viewer, parsed.data.seller_phone);
+    await assertAccountActive(viewer, sellerContact.seller_phone);
   } catch {
     res.status(403).json({
       error: "Account suspended",
@@ -358,7 +399,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   const selfDuplicate = await blockSelfDuplicateListingIfNeeded(
     viewer,
     parsed.data.title,
-    parsed.data.description,
+    listingDescription,
   );
   if (selfDuplicate) {
     res.status(409).json({
@@ -372,7 +413,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     userId: viewer.id,
     categoryId: parsed.data.category_id,
     title: parsed.data.title,
-    description: parsed.data.description,
+    description: listingDescription,
     price: parsed.data.price,
     imageUrl: safeImageUrl ?? null,
   });
@@ -391,8 +432,8 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     userId: viewer.id,
     user: viewer,
     title: parsed.data.title,
-    description: parsed.data.description,
-    sellerPhone: parsed.data.seller_phone,
+    description: listingDescription,
+    sellerPhone: sellerContact.seller_phone,
     categoryId: parsed.data.category_id,
     imageUrl: safeImageUrl ?? null,
   });
@@ -408,7 +449,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   try {
     await assertBusinessListingCreate(viewer, {
       title: parsed.data.title,
-      description: parsed.data.description,
+      description: listingDescription,
       price: listingPrice,
       image_url: safeImageUrl,
       categoryRootSlug: categoryMeta?.rootSlug ?? null,
@@ -442,7 +483,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   const moderation = await moderateListingContent(
     {
       title: parsed.data.title,
-      description: parsed.data.description,
+      description: listingDescription,
       price: listingPrice,
       price_agreement: priceAgreement,
       category_name: catRow?.name ?? null,
@@ -496,12 +537,12 @@ router.post("/listings", postListingLimiter, async (req, res) => {
       user_id: viewer.id,
       shop_id: shopId,
       title: parsed.data.title,
-      description: parsed.data.description,
+      description: listingDescription,
       price: String(listingPrice),
       category_id: parsed.data.category_id,
       location: parsed.data.location,
-      seller_name: parsed.data.seller_name,
-      seller_phone: parsed.data.seller_phone,
+      seller_name: sellerContact.seller_name,
+      seller_phone: sellerContact.seller_phone,
       condition: parsed.data.condition,
       image_url: safeImageUrl ?? null,
       video_url: safeVideoUrl ?? null,
@@ -547,6 +588,18 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     shopNameForSocial = shopRow?.shop_name ?? null;
   }
 
+  const socialIntegrity = await verifyListingOwnerIntegrity(
+    {
+      id: row.id,
+      user_id: row.user_id,
+      seller_name: row.seller_name,
+      seller_phone: row.seller_phone,
+      description: row.description,
+    },
+    "social_cron_facebook",
+  );
+
+  if (socialIntegrity.ok) {
   void postNewListingToFacebook({
     id: row.id,
     title: row.title,
@@ -569,6 +622,12 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     .catch((err) => {
       logger.error({ err, listingId: row.id }, "facebook auto-post background error");
     });
+  } else {
+    logger.warn(
+      { listingId: row.id, reason: socialIntegrity.reason },
+      "facebook auto-post skipped — listing owner integrity failed",
+    );
+  }
 
   const cat = await db
     .select({ name: categoriesTable.name })
@@ -1123,7 +1182,31 @@ router.patch("/listings/:id", async (req, res) => {
   const patchExtra = req.body as { price_agreement?: boolean; lang?: string };
 
   const nextTitle = body.title ?? existing[0].title;
-  const nextDescription = body.description ?? existing[0].description;
+  let nextDescription = body.description ?? existing[0].description;
+
+  if (body.description != null) {
+    const emailCheck = detectContactImpersonation(viewer, {
+      seller_name: existing[0].seller_name,
+      seller_phone: existing[0].seller_phone,
+      description: body.description,
+    });
+    if (emailCheck.impersonation) {
+      await recordListingOwnershipViolation({
+        userId: viewer.id,
+        listingId: paramsParsed.data.id,
+        context: "listing_update",
+        reason: emailCheck.reason,
+        req,
+      });
+      res.status(403).json({
+        error: "OWNERSHIP_VIOLATION",
+        message:
+          "Nuk mund të përdorni email kontakti që nuk përputhet me llogarinë tuaj.",
+      });
+      return;
+    }
+    nextDescription = sanitizeListingDescriptionEmail(body.description, viewer.email);
+  }
 
   if (body.title != null || body.description != null) {
     await removeUserDuplicateListingsForPost(
@@ -1135,7 +1218,7 @@ router.patch("/listings/:id", async (req, res) => {
   }
 
   if (body.title != null) updates.title = body.title;
-  if (body.description != null) updates.description = body.description;
+  if (body.description != null) updates.description = nextDescription;
   if (body.price != null) updates.price = String(body.price);
   if (body.location != null) updates.location = body.location;
   if (body.condition != null) updates.condition = body.condition;
