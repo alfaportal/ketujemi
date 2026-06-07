@@ -18,6 +18,7 @@ import {
   ensureProfileChangeSchema,
   ensurePhoneVerifySchema,
   ensureAdminLoginSchema,
+  ensureShopSocialProfileSchema,
   ensureWalletSchema,
   pool,
 } from "@workspace/db";
@@ -29,6 +30,7 @@ import { startExpiryReminderScheduler } from "./lib/listing-expiry-reminders";
 import { startFacebookScheduledPostCron } from "./lib/facebook-scheduled-post-cron";
 import { startInstagramScheduledPostCron } from "./lib/instagram-scheduled-post-cron";
 import { startSocialFollowersCron } from "./lib/social-followers-cron";
+import { startShopSocialProfileEnrichCron } from "./lib/shop-social-profile-enrich-cron";
 import { startListingReelCron } from "./lib/listing-reel-cron";
 import { purgeInvalidListingImagesOnStartup } from "./lib/purge-invalid-listing-images.js";
 import { startSystemMonitor } from "./lib/system-monitor.js";
@@ -102,6 +104,8 @@ async function startServer(): Promise<void> {
     logger.info("Phone verify schema verified (phone_verify_challenges.fail_count)");
     await ensureAdminLoginSchema(pool);
     logger.info("Admin login schema verified (admin_login_challenges)");
+    await ensureShopSocialProfileSchema(pool);
+    logger.info("Shop social profile enrichments schema verified");
     await purgeInvalidListingImagesOnStartup();
     logPaymentStackReadiness(logger);
     logger.info(vonageConfigSummary(), "vonage sms config (masked)");
@@ -133,6 +137,7 @@ async function startServer(): Promise<void> {
     startInstagramScheduledPostCron();
     startListingReelCron();
     startSocialFollowersCron();
+    startShopSocialProfileEnrichCron();
     startSystemMonitor();
   });
 }

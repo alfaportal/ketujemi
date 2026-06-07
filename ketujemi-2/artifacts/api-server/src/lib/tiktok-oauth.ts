@@ -10,10 +10,11 @@ export { isTikTokOAuthEnabled };
 export type TikTokProfile = {
   id: string;
   name: string | null;
+  username: string | null;
   pictureUrl: string | null;
 };
 
-const TIKTOK_SCOPE = "user.info.basic";
+const TIKTOK_SCOPE = "user.info.basic,user.info.profile";
 
 export function buildTikTokAuthorizeUrl(state: string, origin: string): string {
   const clientKey = tiktokClientKey();
@@ -70,7 +71,7 @@ export async function exchangeTikTokCode(code: string, origin: string): Promise<
 }
 
 export async function fetchTikTokProfile(accessToken: string): Promise<TikTokProfile> {
-  const fields = "open_id,union_id,avatar_url,display_name";
+  const fields = "open_id,union_id,avatar_url,display_name,username";
   const url = `https://open.tiktokapis.com/v2/user/info/?fields=${encodeURIComponent(fields)}`;
 
   const res = await fetch(url, {
@@ -83,6 +84,7 @@ export async function fetchTikTokProfile(accessToken: string): Promise<TikTokPro
         open_id?: string;
         union_id?: string;
         display_name?: string;
+        username?: string;
         avatar_url?: string;
       };
     };
@@ -98,6 +100,7 @@ export async function fetchTikTokProfile(accessToken: string): Promise<TikTokPro
   return {
     id,
     name: user?.display_name?.trim() || null,
+    username: user?.username?.trim().replace(/^@/, "").toLowerCase() || null,
     pictureUrl: user?.avatar_url?.trim() || null,
   };
 }

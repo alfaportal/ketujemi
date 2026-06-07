@@ -1,6 +1,10 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { db, shopsTable } from "@workspace/db";
 import { annotateListingsWithVipFlag } from "./vip-seller-lookup";
+import {
+  getShopSocialProfilesForShops,
+  type ShopSocialProfileApi,
+} from "./shop-social-enrich.js";
 
 export type ShopListingFields = {
   shop_id: number | null;
@@ -14,6 +18,7 @@ export type ShopListingFields = {
   shop_whatsapp: string | null;
   shop_website: string | null;
   shop_verified: boolean;
+  shop_social_profiles?: Partial<Record<"instagram" | "tiktok", ShopSocialProfileApi>>;
 };
 
 export async function getApprovedShopIdForUser(userId: number): Promise<number | null> {
@@ -48,6 +53,7 @@ export async function annotateListingsWithShopInfo<
     .map((l) => l.shop_id)
     .filter((id): id is number => typeof id === "number" && id > 0);
   const shopMap = await activeShopMap(shopIds);
+  const socialMap = await getShopSocialProfilesForShops(shopIds);
 
   return listings.map((listing) => {
     const shop = listing.shop_id ? shopMap.get(listing.shop_id) : undefined;
@@ -64,6 +70,7 @@ export async function annotateListingsWithShopInfo<
       shop_whatsapp: shop?.whatsapp ?? null,
       shop_website: shop?.website ?? null,
       shop_verified: !!shop,
+      shop_social_profiles: listing.shop_id ? socialMap.get(listing.shop_id) : undefined,
     };
   });
 }

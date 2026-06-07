@@ -94,3 +94,27 @@ export async function fetchFacebookProfile(accessToken: string): Promise<Faceboo
     pictureUrl: data.picture?.data?.url?.trim() || null,
   };
 }
+
+export type FacebookLinkedInstagram = {
+  id: string;
+  username: string;
+};
+
+/** Linked Instagram business/creator account for the authenticated Facebook user, if any. */
+export async function fetchFacebookLinkedInstagram(
+  accessToken: string,
+): Promise<FacebookLinkedInstagram | null> {
+  const fields = "instagram_business_account{id,username}";
+  const params = new URLSearchParams({ fields, access_token: accessToken });
+  const res = await fetch(`https://graph.facebook.com/${metaGraphVersion()}/me?${params}`);
+  const data = (await res.json()) as {
+    instagram_business_account?: { id?: string; username?: string };
+    error?: { message?: string };
+  };
+  if (!res.ok) return null;
+  const ig = data.instagram_business_account;
+  const username = ig?.username?.trim().replace(/^@/, "").toLowerCase();
+  const id = ig?.id?.trim();
+  if (!username || !id) return null;
+  return { id, username };
+}

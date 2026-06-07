@@ -1547,6 +1547,9 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
     req.log?.error({ err, shopId: shop.id }, "shop approved email failed");
   }
 
+  const { scheduleShopSocialEnrich } = await import("../lib/shop-social-enrich.js");
+  scheduleShopSocialEnrich(shop.id);
+
   res.json({ ok: true, shop_id: shop.id });
 });
 

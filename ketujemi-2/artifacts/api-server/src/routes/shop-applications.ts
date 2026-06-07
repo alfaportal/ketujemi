@@ -19,6 +19,10 @@ import { ownerShopFieldPatch } from "../lib/shop-field-patch";
 import { deleteShopCascade } from "../lib/delete-shop-cascade";
 import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxonomy.ts";
 import { enforceProfileChangeToken } from "../lib/profile-change-verify.js";
+import {
+  getShopSocialProfilesForApi,
+  scheduleShopSocialEnrich,
+} from "../lib/shop-social-enrich.js";
 
 const router = Router();
 
@@ -452,7 +456,10 @@ router.patch("/shops/:id", async (req, res) => {
     await db.update(shopApplicationsTable).set(patch).where(eq(shopApplicationsTable.id, shop.application_id));
   }
 
-  res.json({ ok: true, shop: updated });
+  scheduleShopSocialEnrich(id);
+
+  const social_profiles = await getShopSocialProfilesForApi(id);
+  res.json({ ok: true, shop: updated, social_profiles });
 });
 
 router.delete("/shops/:id", async (req, res) => {
@@ -686,6 +693,7 @@ router.get("/shops/:id", async (req, res) => {
 
   const ratingMap = await ratingSummariesForShops([shop.id]);
   const ratings = ratingMap[shop.id];
+  const social_profiles = await getShopSocialProfilesForApi(shop.id);
 
   res.json({
     shop: {
@@ -718,6 +726,7 @@ router.get("/shops/:id", async (req, res) => {
     active_count: listings.length,
     subcategories,
     is_owner: viewer ? viewer.id === shop.user_id : false,
+    social_profiles,
   });
 });
 

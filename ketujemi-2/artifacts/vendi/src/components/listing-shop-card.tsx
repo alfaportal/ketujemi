@@ -5,6 +5,10 @@ import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 import { useShopDashboardCopy } from "@/lib/shop-dashboard-i18n";
 import { BRAND_BLUE } from "@/lib/brand-colors";
+import {
+  ShopSocialProfiles,
+  type ShopSocialProfileData,
+} from "@/components/shop-social-profiles";
 
 export type ListingShopInfo = {
   shop_id: number;
@@ -18,6 +22,7 @@ export type ListingShopInfo = {
   shop_whatsapp?: string | null;
   shop_website?: string | null;
   shop_verified?: boolean;
+  shop_social_profiles?: Partial<Record<"instagram" | "tiktok", ShopSocialProfileData>>;
 };
 
 type Props = {
@@ -31,11 +36,19 @@ export function ListingShopCard({ shop }: Props) {
 
   if (!shop.shop_verified || !shop.shop_id) return null;
 
+  const enriched = shop.shop_social_profiles ?? {};
+  const hasEnrichedIg = Boolean(enriched.instagram);
+  const hasEnrichedTt = Boolean(enriched.tiktok);
+
   const socials = [
     shop.shop_facebook?.trim() ? { href: shop.shop_facebook, icon: Facebook, label: "Facebook" } : null,
-    shop.shop_instagram?.trim() ? { href: shop.shop_instagram, icon: Instagram, label: "Instagram" } : null,
+    shop.shop_instagram?.trim() && !hasEnrichedIg
+      ? { href: shop.shop_instagram, icon: Instagram, label: "Instagram" }
+      : null,
     shop.shop_website?.trim() ? { href: shop.shop_website, icon: Globe, label: "Web" } : null,
-    shop.shop_tiktok?.trim() ? { href: shop.shop_tiktok, icon: ExternalLink, label: "TikTok" } : null,
+    shop.shop_tiktok?.trim() && !hasEnrichedTt
+      ? { href: shop.shop_tiktok, icon: ExternalLink, label: "TikTok" }
+      : null,
     shop.shop_whatsapp?.trim()
       ? {
           href: `https://wa.me/${shop.shop_whatsapp.replace(/\D/g, "")}`,
@@ -93,6 +106,11 @@ export function ListingShopCard({ shop }: Props) {
           ) : null}
         </div>
       </div>
+      {hasEnrichedIg || hasEnrichedTt ? (
+        <div className="mt-3">
+          <ShopSocialProfiles profiles={enriched} compact />
+        </div>
+      ) : null}
       <Link
         href={`/dyqani/${shop.shop_id}`}
         className="mt-4 flex items-center justify-center w-full rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-colors hover:opacity-90"

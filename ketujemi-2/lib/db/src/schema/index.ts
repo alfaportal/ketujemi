@@ -31,3 +31,4 @@ export * from "./social-followers";
 export * from "./user-social-connections";
 export * from "./profile_change";
 export * from "./admin_login";
+export * from "./shop-social-profile-enrichments";

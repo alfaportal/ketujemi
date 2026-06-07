@@ -48,6 +48,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  ShopSocialProfiles,
+  type ShopSocialProfileData,
+} from "@/components/shop-social-profiles";
 
 type ShopData = {
   id: number;
@@ -102,6 +106,9 @@ export default function ShopDetailPage() {
   const [editSaving, setEditSaving] = useState(false);
   const [deleteShopOpen, setDeleteShopOpen] = useState(false);
   const [deleteShopBusy, setDeleteShopBusy] = useState(false);
+  const [socialProfiles, setSocialProfiles] = useState<
+    Partial<Record<"instagram" | "tiktok", ShopSocialProfileData>>
+  >({});
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -119,6 +126,7 @@ export default function ShopDetailPage() {
           active_count?: number;
           subcategories?: SubcategoryFilter[];
           is_owner?: boolean;
+          social_profiles?: Partial<Record<"instagram" | "tiktok", ShopSocialProfileData>>;
         }>;
       })
       .then((data) => {
@@ -127,6 +135,7 @@ export default function ShopDetailPage() {
         setActiveCount(data.active_count ?? data.listings.length);
         setSubcategories(data.subcategories ?? []);
         setIsOwner(!!data.is_owner);
+        setSocialProfiles(data.social_profiles ?? {});
         setCategoryFilter(null);
         const categoryLabel = translateCategory(data.shop.category, locale);
         const title = shopDetailSeoTitle(d, data.shop.shop_name, categoryLabel, data.shop.city);
@@ -270,11 +279,17 @@ export default function ShopDetailPage() {
   }
 
   const mapQuery = encodeURIComponent(`${shop.address}, ${shop.city}, ${shop.country}`);
+  const hasEnrichedIg = Boolean(socialProfiles.instagram);
+  const hasEnrichedTt = Boolean(socialProfiles.tiktok);
   const socials = [
     shop.facebook?.trim() ? { href: shop.facebook, label: "Facebook", icon: Facebook } : null,
-    shop.instagram?.trim() ? { href: shop.instagram, label: "Instagram", icon: Instagram } : null,
+    shop.instagram?.trim() && !hasEnrichedIg
+      ? { href: shop.instagram, label: "Instagram", icon: Instagram }
+      : null,
     shop.website?.trim() ? { href: shop.website, label: "Website", icon: Globe } : null,
-    shop.tiktok?.trim() ? { href: shop.tiktok, label: "TikTok", icon: ExternalLink } : null,
+    shop.tiktok?.trim() && !hasEnrichedTt
+      ? { href: shop.tiktok, label: "TikTok", icon: ExternalLink }
+      : null,
     shop.whatsapp?.trim()
       ? { href: `https://wa.me/${shop.whatsapp.replace(/\D/g, "")}`, label: "WhatsApp", icon: ExternalLink }
       : null,
@@ -360,6 +375,10 @@ export default function ShopDetailPage() {
         </section>
 
         <ShopRatingsPanel shopId={shop.id} />
+
+        {hasEnrichedIg || hasEnrichedTt ? (
+          <ShopSocialProfiles profiles={socialProfiles} />
+        ) : null}
 
         {socials.length > 0 ? (
           <section className="flex flex-wrap gap-3">

@@ -8,7 +8,10 @@ import {
   fetchFacebookProfile,
   isFacebookOAuthEnabled,
 } from "../lib/facebook-oauth";
-import { findOrCreateUserFromFacebook } from "../lib/oauth-user";
+import {
+  findOrCreateUserFromFacebook,
+  recordFacebookLinkedInstagramFromToken,
+} from "../lib/oauth-user";
 import { isNewlyRegisteredUser, setUserSessionCookie } from "../lib/user-session";
 import { assertAccountActive } from "../lib/user-ban";
 
@@ -58,6 +61,9 @@ router.get("/auth/oauth/facebook/callback", async (req, res) => {
     const accessToken = await exchangeFacebookCode(code, origin);
     const profile = await fetchFacebookProfile(accessToken);
     const user = await findOrCreateUserFromFacebook(profile);
+    await recordFacebookLinkedInstagramFromToken(user.id, accessToken);
+    const { scheduleShopSocialEnrichForUser } = await import("../lib/shop-social-enrich.js");
+    scheduleShopSocialEnrichForUser(user.id);
     await assertAccountActive(user, user.phone_e164_digits ?? undefined);
     setUserSessionCookie(res, user.id);
     redirectOAuthSuccess(

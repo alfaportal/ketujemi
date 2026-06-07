@@ -37,6 +37,7 @@ export { ensureProfileChangeSchema } from "./ensure-profile-change-schema.js";
 export { ensurePhoneVerifySchema } from "./ensure-phone-verify-schema.js";
 export { ensureAdminLoginSchema } from "./ensure-admin-login-schema.js";
 export { ensureShopSchema } from "./ensure-shop-schema.js";
+export { ensureShopSocialProfileSchema } from "./ensure-shop-social-profile-schema.js";
 export {
   ensureShopDirectoryTaxonomy,
   ensureShopDirectoryTaxonomyTables,

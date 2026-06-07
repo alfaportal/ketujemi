@@ -64,6 +64,8 @@ router.get("/auth/tiktok/callback", async (req, res) => {
     const accessToken = await exchangeTikTokCode(code, origin);
     const profile = await fetchTikTokProfile(accessToken);
     const user = await findOrCreateUserFromTikTok(profile);
+    const { scheduleShopSocialEnrichForUser } = await import("../lib/shop-social-enrich.js");
+    scheduleShopSocialEnrichForUser(user.id);
     await assertAccountActive(user, user.phone_e164_digits ?? undefined);
     setUserSessionCookie(res, user.id);
     redirectHome(res, origin);

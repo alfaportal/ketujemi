@@ -5,6 +5,7 @@ import type { FacebookProfile } from "./facebook-oauth";
 import type { GoogleProfile } from "./google-oauth";
 import type { TikTokProfile } from "./tiktok-oauth";
 import { recordUserSocialConnection } from "./user-social-connections.js";
+import { fetchFacebookLinkedInstagram } from "./facebook-oauth.js";
 
 function oauthUsername(raw: string | null | undefined, fallbackId: string): string {
   const s = String(raw ?? "")
@@ -191,6 +192,25 @@ export async function findOrCreateUserFromFacebook(profile: FacebookProfile): Pr
   return created;
 }
 
+/** Store linked Instagram username after Facebook OAuth (for shop handle verification). */
+export async function recordFacebookLinkedInstagramFromToken(
+  userId: number,
+  accessToken: string,
+): Promise<void> {
+  try {
+    const linked = await fetchFacebookLinkedInstagram(accessToken);
+    if (!linked) return;
+    await recordUserSocialConnection({
+      userId,
+      platform: "instagram",
+      externalUserId: linked.id,
+      username: linked.username,
+    });
+  } catch {
+    // optional — not all Facebook users have linked Instagram
+  }
+}
+
 export async function findOrCreateUserFromGoogle(profile: GoogleProfile): Promise<User> {
   const byGoogle = await findUserByGoogleId(profile.id);
   if (byGoogle) return byGoogle;
@@ -236,7 +256,7 @@ export async function findOrCreateUserFromTikTok(profile: TikTokProfile): Promis
       userId: byTikTok.id,
       platform: "tiktok",
       externalUserId: profile.id,
-      username: oauthUsername(profile.name, profile.id),
+      username: profile.username ?? oauthUsername(profile.name, profile.id),
     });
     return byTikTok;
   }
@@ -254,7 +274,7 @@ export async function findOrCreateUserFromTikTok(profile: TikTokProfile): Promis
     userId: created.id,
     platform: "tiktok",
     externalUserId: profile.id,
-    username: oauthUsername(profile.name, profile.id),
+    username: profile.username ?? oauthUsername(profile.name, profile.id),
   });
 
   return created;
