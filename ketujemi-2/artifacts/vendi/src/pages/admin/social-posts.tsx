@@ -48,18 +48,35 @@ function skipReasonLabel(code: string | null, t: Record<string, string>): string
   return typeof label === "string" ? label : code;
 }
 
-function QueueBadge({ queue, t }: { queue: AdminSocialListing["queue"]; t: Record<string, string> }) {
-  const map: Record<AdminSocialListing["queue"], { color: string; label: string }> = {
-    pending_fb: { color: "bg-blue-100 text-blue-700", label: t.adm_social_queue_fb },
-    pending_ig: { color: "bg-purple-100 text-purple-700", label: t.adm_social_queue_ig },
-    done: { color: "bg-green-100 text-green-700", label: t.adm_social_queue_done },
-    ineligible: { color: "bg-red-100 text-red-700", label: t.adm_social_queue_skip },
-  };
-  const item = map[queue];
+/** FB dhe IG veç e veç — jo vetëm radha e parë (cron poston FB pastaj IG). */
+function SocialQueueBadges({ listing, t }: { listing: AdminSocialListing; t: Record<string, string> }) {
+  if (listing.skip_reason) {
+    return (
+      <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+        {t.adm_social_queue_skip}
+      </span>
+    );
+  }
+  if (listing.fb_posted && listing.ig_posted) {
+    return (
+      <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+        {t.adm_social_queue_done}
+      </span>
+    );
+  }
   return (
-    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${item.color}`}>
-      {item.label}
-    </span>
+    <div className="flex flex-col gap-1 items-start">
+      {!listing.fb_posted && (
+        <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+          {t.adm_social_queue_fb}
+        </span>
+      )}
+      {!listing.ig_posted && (
+        <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+          {t.adm_social_queue_ig}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -259,6 +276,12 @@ export default function AdminSocialPosts() {
               {t.adm_social_not_configured}
             </p>
           )}
+          {configured.facebook && !configured.instagram && (
+            <p className="text-sm text-amber-700 mt-1 flex items-center gap-1">
+              <AlertCircle size={14} />
+              {t.adm_social_ig_not_configured}
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -333,12 +356,12 @@ export default function AdminSocialPosts() {
                       />
                     </th>
                     <th className="p-3">{t.adm_social_col_listing}</th>
-                    <th className="p-3 hidden md:table-cell">{t.adm_social_col_queue}</th>
-                    <th className="p-3">
-                      <Facebook size={14} className="inline" />
-                    </th>
-                    <th className="p-3">
-                      <Instagram size={14} className="inline" />
+                    <th className="p-3 min-w-[108px]">{t.adm_social_col_queue}</th>
+                    <th className="p-3 w-20">
+                      <div className="flex flex-col items-center gap-0.5" title="Facebook / Instagram">
+                        <Facebook size={14} className="inline" />
+                        <Instagram size={14} className="inline" />
+                      </div>
                     </th>
                     <th className="p-3 w-24" />
                   </tr>
@@ -346,14 +369,14 @@ export default function AdminSocialPosts() {
                 <tbody>
                   {loading && (
                     <tr>
-                      <td colSpan={6} className="p-8 text-center text-gray-400">
+                      <td colSpan={5} className="p-8 text-center text-gray-400">
                         {t.adm_social_loading}
                       </td>
                     </tr>
                   )}
                   {!loading && listings.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="p-8 text-center text-gray-400">
+                      <td colSpan={5} className="p-8 text-center text-gray-400">
                         {t.adm_social_empty}
                       </td>
                     </tr>
@@ -398,14 +421,14 @@ export default function AdminSocialPosts() {
                             </div>
                           </div>
                         </td>
-                        <td className="p-3 hidden md:table-cell">
-                          <QueueBadge queue={l.queue} t={t as Record<string, string>} />
+                        <td className="p-3 align-top">
+                          <SocialQueueBadges listing={l} t={t as Record<string, string>} />
                         </td>
-                        <td className="p-3">
-                          <StatusBadge posted={l.fb_posted} label={l.fb_posted ? "FB ✓" : "FB —"} />
-                        </td>
-                        <td className="p-3">
-                          <StatusBadge posted={l.ig_posted} label={l.ig_posted ? "IG ✓" : "IG —"} />
+                        <td className="p-3 align-top">
+                          <div className="flex flex-col gap-1">
+                            <StatusBadge posted={l.fb_posted} label={l.fb_posted ? "FB ✓" : "FB —"} />
+                            <StatusBadge posted={l.ig_posted} label={l.ig_posted ? "IG ✓" : "IG —"} />
+                          </div>
                         </td>
                         <td className="p-3">
                           <button
