@@ -17,8 +17,9 @@ import { ProfileShopDashboard } from "@/components/profile-shop-dashboard";
 import { ProfileChangeGate } from "@/components/profile-change-gate";
 import { ProfileAddEmail } from "@/components/profile-add-email";
 import { ProfileAddPhone } from "@/components/profile-add-phone";
+import { ProfileEditSecurityNotice } from "@/components/profile-edit-security-notice";
 
-type EditPhase = "readonly" | "need-method" | "verify" | "editing";
+type EditPhase = "readonly" | "security-notice" | "need-method" | "verify" | "editing";
 
 function syncFormFromUser(
   user: NonNullable<ReturnType<typeof useAuth>["user"]>,
@@ -183,6 +184,11 @@ export default function ProfilePage() {
   }
 
   function startEdit() {
+    if (!user) return;
+    setEditPhase("security-notice");
+  }
+
+  function proceedAfterSecurityNotice() {
     if (!user) return;
     if (user.profile_edit_needs_second_method) {
       setEditPhase("need-method");
@@ -571,6 +577,10 @@ export default function ProfilePage() {
           </div>
         </div>
       </main>
+
+      {editPhase === "security-notice" ? (
+        <ProfileEditSecurityNotice onContinue={proceedAfterSecurityNotice} />
+      ) : null}
     </div>
   );
 }

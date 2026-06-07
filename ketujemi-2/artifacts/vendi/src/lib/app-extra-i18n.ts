@@ -179,6 +179,12 @@ const KS_EXTRA: Record<string, string> = {
     "Shtoni dhe verifikoni një metodë të dytë (email ose telefon) para se të hapni formularin e ndryshimit.",
   profile_edit_session_left: "Sesioni: {minutes} min",
   profile_edit_session_expired: "Sesioni i redaktimit skadoi. Konfirmoni përsëri.",
+  profile_edit_security_title: "Për sigurinë tuaj",
+  profile_edit_security_message:
+    "Për të ndryshuar të dhënat e profilit tuaj, sistemi kërkon një verifikim shtesë. Ky hap ekstra ekziston për t'ju mbrojtur ju dhe për të garantuar që vetëm ju mund të bëni ndryshime në llogarinë tuaj. KëtuJemi e merr seriozisht sigurinë e të dhënave tuaja personale.",
+  profile_edit_security_wait: "Ju lutem lexoni mesazhin — {seconds} sekonda",
+  profile_edit_security_ready: "Mund të vazhdoni me verifikimin.",
+  profile_edit_security_continue: "Kuptova, vazhdo",
   profile_registered: "Data e regjistrimit",
   profile_verify_sms_hint:
     "Dërgojmë një kod SMS në telefonin tuaj. Vendoseni kodin për të hapur formularin e ndryshimit.",
@@ -2168,6 +2174,12 @@ const MK_EXTRA: Record<string, string> = {
     "Додајте и верификувајте втора метода (email или телефон) пред да го отворите форуларот.",
   profile_edit_session_left: "Сесија: {minutes} мин",
   profile_edit_session_expired: "Сесијата за уредување истече. Потврдете повторно.",
+  profile_edit_security_title: "За ваша безбедност",
+  profile_edit_security_message:
+    "За да ги промените податоците на профилот, системот бара дополнителна верификација. Овој дополнителен чекор постои за да ве заштити и да гарантира дека само вие може да правите промени на вашата сметка. KetuJemi сериозно ја сфаќа безбедноста на вашите лични податоци.",
+  profile_edit_security_wait: "Ве молиме прочитајте ја пораката — {seconds} секунди",
+  profile_edit_security_ready: "Можете да продолжите со верификацијата.",
+  profile_edit_security_continue: "Разбрав, продолжи",
   profile_registered: "Датум на регистрација",
   profile_verify_sms_hint:
     "Ќе испратиме SMS код на вашиот телефон. Внесете го кодот за да го отворите форуларот.",
@@ -4050,6 +4062,12 @@ const MNE_EXTRA: Record<string, string> = {
     "Dodajte i verifikujte drugu metodu (email ili telefon) prije otvaranja formulara.",
   profile_edit_session_left: "Sesija: {minutes} min",
   profile_edit_session_expired: "Sesija za uređivanje je istekla. Potvrdite ponovo.",
+  profile_edit_security_title: "Za vašu sigurnost",
+  profile_edit_security_message:
+    "Da biste promijenili podatke profila, sistem traži dodatnu verifikaciju. Ovaj dodatni korak postoji da vas zaštiti i garantuje da samo vi možete mijenjati svoj nalog. KetuJemi ozbiljno shvata sigurnost vaših ličnih podataka.",
+  profile_edit_security_wait: "Molimo pročitajte poruku — {seconds} sekundi",
+  profile_edit_security_ready: "Možete nastaviti sa verifikacijom.",
+  profile_edit_security_continue: "Razumijem, nastavi",
   profile_registered: "Datum registracije",
   profile_verify_sms_hint:
     "Poslaćemo SMS kod na vaš telefon. Unesite kod da otvorite formular za izmjenu.",
