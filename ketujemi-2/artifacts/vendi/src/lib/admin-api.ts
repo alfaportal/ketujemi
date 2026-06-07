@@ -1,8 +1,35 @@
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 const BASE = "/api/admin";
+const SESSION_KEY = "admin_token";
+const REMEMBER_KEY = "admin_token_remember";
+const REMEMBER_EXP_KEY = "admin_token_expires";
+
+function readStoredToken(): string {
+  const remembered = localStorage.getItem(REMEMBER_KEY);
+  const rememberedExp = localStorage.getItem(REMEMBER_EXP_KEY);
+  if (remembered && rememberedExp) {
+    const exp = Date.parse(rememberedExp);
+    if (Number.isFinite(exp) && Date.now() < exp) return remembered;
+    localStorage.removeItem(REMEMBER_KEY);
+    localStorage.removeItem(REMEMBER_EXP_KEY);
+  }
+  return sessionStorage.getItem(SESSION_KEY) ?? "";
+}
+
+function persistToken(token: string, expiresAt: string, rememberMe: boolean): void {
+  sessionStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(REMEMBER_KEY);
+  localStorage.removeItem(REMEMBER_EXP_KEY);
+  if (rememberMe) {
+    localStorage.setItem(REMEMBER_KEY, token);
+    localStorage.setItem(REMEMBER_EXP_KEY, expiresAt);
+  } else {
+    sessionStorage.setItem(SESSION_KEY, token);
+  }
+}
 
 function getToken(): string {
-  return sessionStorage.getItem("admin_token") ?? "";
+  return readStoredToken();
 }
 
 function authHeaders(): HeadersInit {
@@ -25,27 +52,33 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
 }
 
 /** Owner-only: password from ADMIN_PANEL_PASSWORD (no username). */
-export async function adminLogin(password: string): Promise<string> {
+export async function adminLogin(password: string, rememberMe = false): Promise<string> {
   const res = await fetchWithTimeout(`${BASE}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password }),
+    body: JSON.stringify({ password, remember_me: rememberMe }),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error((body as { error?: string }).error ?? "Invalid credentials");
   }
-  const { token } = (await res.json()) as { token: string };
-  sessionStorage.setItem("admin_token", token);
-  return token;
+  const data = (await res.json()) as {
+    token: string;
+    expires_at: string;
+    remember_me?: boolean;
+  };
+  persistToken(data.token, data.expires_at, rememberMe || !!data.remember_me);
+  return data.token;
 }
 
 export function adminLogout() {
-  sessionStorage.removeItem("admin_token");
+  sessionStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(REMEMBER_KEY);
+  localStorage.removeItem(REMEMBER_EXP_KEY);
 }
 
 export function isAdminLoggedIn(): boolean {
-  return !!sessionStorage.getItem("admin_token");
+  return !!readStoredToken();
 }
 
 export function getDashboard() {

@@ -63,6 +63,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
   const { t } = useMarket();
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -71,7 +72,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
     setError("");
     setLoading(true);
     try {
-      await adminLogin(password);
+      await adminLogin(password, rememberMe);
       onLogin();
     } catch {
       setError(t.adm_badLogin);
@@ -122,6 +123,16 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
                 </button>
               </div>
             </div>
+
+            <label className="flex items-center gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-600">{t.adm_remember_device}</span>
+            </label>
 
             {error && (
               <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">

@@ -35,9 +35,10 @@ import { CreateListingBody } from "@workspace/api-zod";
 import {
   verifyAdminPassword,
   verifyAdminBearer,
-  getAdminBearerToken,
+  createAdminSession,
   adminAuthConfigured,
 } from "../lib/admin-auth";
+import { adminLoginLimiter } from "../lib/express-rate-limiters";
 import { deleteListingCascade } from "../lib/delete-listing-cascade";
 import {
   getModerationState,
@@ -71,7 +72,7 @@ function requireAdmin(req: { headers: { authorization?: string } }, res: any, ne
 }
 
 // ─── POST /admin/login (owner password only) ─────────────────────────────────
-router.post("/admin/login", (req, res) => {
+router.post("/admin/login", adminLoginLimiter, (req, res) => {
   if (!adminAuthConfigured()) {
     res.status(503).json({ error: "Admin panel not configured on server" });
     return;
@@ -81,12 +82,13 @@ router.post("/admin/login", (req, res) => {
     res.status(401).json({ error: "Invalid credentials" });
     return;
   }
-  const token = getAdminBearerToken();
-  if (!token) {
+  const rememberMe = req.body?.remember_me === true;
+  const session = createAdminSession(rememberMe);
+  if (!session) {
     res.status(503).json({ error: "Admin panel not configured on server" });
     return;
   }
-  res.json({ token });
+  res.json(session);
 });
 
 // ─── GET /admin/dashboard ─────────────────────────────────────────────────────

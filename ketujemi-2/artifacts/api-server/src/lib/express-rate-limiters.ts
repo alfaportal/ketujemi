@@ -23,6 +23,20 @@ export const postListingLimiter = rateLimit({
   },
 });
 
+/** POST /admin/login — strict brute-force protection */
+export const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) => {
+    res.status(429).json({
+      error: "ADMIN_LOGIN_RATE_LIMIT",
+      message: "Shumë përpjekje. Prisni 15 minuta dhe provoni përsëri.",
+    });
+  },
+});
+
 /** GET /listings (search): 60 requests / minute per IP */
 export const searchLimiter = rateLimit({
   windowMs: 60 * 1000,

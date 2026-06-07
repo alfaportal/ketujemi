@@ -67,6 +67,21 @@ export default defineConfig(async ({ command }) => {
         lang: "sq",
         dir: "ltr",
         categories: ["shopping", "business"],
+        shortcuts: [
+          {
+            name: "KetuJemi Admin",
+            short_name: "Admin",
+            description: "Paneli i operatorit — vetëm për pronarin",
+            url: `${pwaScope}admin`.replace(/\/+/g, "/"),
+            icons: [
+              {
+                src: `${pwaScope}icons/pwa-192x192.png`.replace(/\/+/g, "/"),
+                sizes: "192x192",
+                type: "image/png",
+              },
+            ],
+          },
+        ],
         icons: [
           {
             src: `${pwaScope}icons/pwa-192x192.png`.replace(/\/+/g, "/"),

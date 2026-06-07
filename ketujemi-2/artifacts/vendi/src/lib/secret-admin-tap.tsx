@@ -37,6 +37,7 @@ function SecretAdminPasswordDialog({
 }) {
   const [, setLocation] = useLocation();
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -45,7 +46,7 @@ function SecretAdminPasswordDialog({
     setError("");
     setBusy(true);
     try {
-      await adminLogin(password);
+      await adminLogin(password, rememberMe);
       onOpenChange(false);
       setPassword("");
       setLocation("/admin");
@@ -81,6 +82,15 @@ function SecretAdminPasswordDialog({
             className="min-h-11"
             autoFocus
           />
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300"
+            />
+            <span className="text-sm text-muted-foreground">Më mbaj të kyçur në këtë pajisje (30 ditë)</span>
+          </label>
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
           <Button type="submit" className="w-full min-h-11" disabled={busy || !password}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Vazhdo"}
