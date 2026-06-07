@@ -651,6 +651,20 @@ export function previewAdminSocialPost(listingId: number) {
   });
 }
 
+export function runAdminFacebookScheduledPost() {
+  return request<{
+    ok: boolean;
+    posted: boolean;
+    listingId?: number;
+    reason?: string;
+    graphError?: string;
+    graphStatus?: number;
+  }>("/social/trigger-facebook-cron", {
+    method: "POST",
+    body: "{}",
+  });
+}
+
 export function postAdminSocialListings(
   listingIds: number[],
   opts?: { facebook?: boolean; instagram?: boolean },

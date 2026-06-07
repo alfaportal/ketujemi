@@ -3,6 +3,7 @@ import {
   getAdminSocialPostListings,
   postAdminSocialListings,
   previewAdminSocialPost,
+  runAdminFacebookScheduledPost,
   type AdminSocialListing,
 } from "@/lib/admin-api";
 import { useMarket } from "@/lib/market-context";
@@ -151,6 +152,7 @@ export default function AdminSocialPosts() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewData, setPreviewData] = useState<Awaited<ReturnType<typeof previewAdminSocialPost>> | null>(null);
   const [posting, setPosting] = useState(false);
+  const [cronRunning, setCronRunning] = useState(false);
   const [message, setMessage] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [configured, setConfigured] = useState({ facebook: false, instagram: false });
   const [previewExpanded, setPreviewExpanded] = useState(false);
@@ -257,6 +259,40 @@ export default function AdminSocialPosts() {
 
   const handlePost = () => runPost([...selected]);
 
+  const handleRunScheduledCron = useCallback(async () => {
+    setCronRunning(true);
+    setMessage(null);
+    try {
+      const result = await runAdminFacebookScheduledPost();
+      if (result.posted) {
+        setMessage({
+          type: "ok",
+          text: fillPlaceholders(t.adm_social_cron_ok ?? "Cron posted listing #{id}.", {
+            id: String(result.listingId ?? ""),
+          }),
+        });
+        await fetchList();
+      } else if (result.reason === "no_pending" || result.reason === "no_eligible") {
+        setMessage({ type: "ok", text: t.adm_social_cron_empty ?? "No pending listings in queue." });
+      } else {
+        const detail = result.graphError ?? result.reason ?? "graph_api_failed";
+        setMessage({
+          type: "err",
+          text: fillPlaceholders(t.adm_social_cron_fail ?? "Scheduled cron failed: {detail}", {
+            detail,
+          }),
+        });
+      }
+    } catch (e) {
+      setMessage({
+        type: "err",
+        text: e instanceof Error ? e.message : (t.adm_social_cron_fail ?? "Scheduled cron failed"),
+      });
+    } finally {
+      setCronRunning(false);
+    }
+  }, [fetchList, t]);
+
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const filters: { id: Filter; label: string }[] = [
     { id: "all", label: t.adm_social_filter_all },
@@ -291,6 +327,15 @@ export default function AdminSocialPosts() {
           >
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
             {t.adm_social_refresh}
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleRunScheduledCron()}
+            disabled={cronRunning || !configured.facebook}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-blue-200 bg-blue-50 text-sm font-semibold text-blue-800 hover:bg-blue-100 disabled:opacity-50"
+          >
+            <Clock size={14} className={cronRunning ? "animate-pulse" : ""} />
+            {cronRunning ? (t.adm_social_cron_running ?? "Running cron…") : (t.adm_social_cron_now ?? "Run FB cron now")}
           </button>
           <button
             type="button"

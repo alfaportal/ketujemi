@@ -58,6 +58,7 @@ import {
   executeAdminSocialPost,
   listAdminSocialPostListings,
 } from "../lib/admin-social-post.js";
+import { runFacebookScheduledPostNow } from "../lib/facebook-scheduled-post-cron.js";
 import {
   exportSocialFollowersCsv,
   getSocialFollowersStats,
@@ -1703,6 +1704,16 @@ router.post("/admin/social-posts/post", requireAdmin, async (req, res) => {
     res.json({ results });
   } catch (err) {
     req.log.error({ err }, "admin social-posts post error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/admin/social/trigger-facebook-cron", requireAdmin, async (req, res) => {
+  try {
+    const result = await runFacebookScheduledPostNow();
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    req.log.error({ err }, "admin social trigger-facebook-cron error");
     res.status(500).json({ error: "Internal server error" });
   }
 });
