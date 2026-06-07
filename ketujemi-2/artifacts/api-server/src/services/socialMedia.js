@@ -105,13 +105,21 @@ function formatPriceNumber(price) {
  * @param {number | string} price
  */
 function formatPriceLine(market, price) {
-  const n = formatPriceNumber(price);
-  if (market === "al") return `💰 ${n} Lekë`;
-  if (market === "mk") return `💰 ${n} ден`;
-  if (market === "gb") return `💰 ${n} £`;
-  if (market === "ch") return `💰 ${n} CHF`;
-  if (market === "us") return `💰 ${n} $`;
-  return `💰 ${n} €`;
+  const n = Number(price);
+  if (!Number.isFinite(n) || n <= 0) {
+    if (market === "mk") return "💰 Цена по договор";
+    if (market === "mne") return "💰 Cijena po dogovoru";
+    if (DIASPORA_MARKETS.has(market)) return "💰 Price on request";
+    if (market === "al") return "💰 Me marrëveshje";
+    return "💰 Me marrëveshje";
+  }
+  const formatted = formatPriceNumber(n);
+  if (market === "al") return `💰 ${formatted} Lekë`;
+  if (market === "mk") return `💰 ${formatted} ден`;
+  if (market === "gb") return `💰 ${formatted} £`;
+  if (market === "ch") return `💰 ${formatted} CHF`;
+  if (market === "us") return `💰 ${formatted} $`;
+  return `💰 ${formatted} €`;
 }
 
 /**
@@ -640,8 +648,6 @@ export function facebookPostSkipReason(listing) {
   }
   const desc = String(listing.description ?? "").trim();
   if (desc.length < 10) return "description_too_short";
-  const price = Number(listing.price);
-  if (!Number.isFinite(price) || price <= 0) return "price_missing_or_zero";
   const urls = parseListingImageUrls(listing.image_url);
   if (urls.length < 1) return "no_valid_photo_url";
   return null;

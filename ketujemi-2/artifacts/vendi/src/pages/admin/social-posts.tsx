@@ -36,6 +36,18 @@ function StatusBadge({ posted, label }: { posted: boolean; label: string }) {
   );
 }
 
+function formatAdminPrice(price: number, t: Record<string, string>): string {
+  if (!Number.isFinite(price) || price <= 0) return t.adm_social_price_agreement ?? "Me marrëveshje";
+  return `${price}€`;
+}
+
+function skipReasonLabel(code: string | null, t: Record<string, string>): string | null {
+  if (!code) return null;
+  const key = `adm_social_skip_${code}` as keyof typeof t;
+  const label = t[key];
+  return typeof label === "string" ? label : code;
+}
+
 function QueueBadge({ queue, t }: { queue: AdminSocialListing["queue"]; t: Record<string, string> }) {
   const map: Record<AdminSocialListing["queue"], { color: string; label: string }> = {
     pending_fb: { color: "bg-blue-100 text-blue-700", label: t.adm_social_queue_fb },
@@ -124,6 +136,7 @@ export default function AdminSocialPosts() {
   const [posting, setPosting] = useState(false);
   const [message, setMessage] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [configured, setConfigured] = useState({ facebook: false, instagram: false });
+  const [previewExpanded, setPreviewExpanded] = useState(false);
 
   const PAGE_SIZE = 20;
 
@@ -375,10 +388,12 @@ export default function AdminSocialPosts() {
                             <div className="min-w-0">
                               <div className="font-medium text-gray-900 truncate">{l.title}</div>
                               <div className="text-xs text-gray-500 truncate">
-                                {l.shop_name ?? l.seller_name} · {l.price}€ · {l.location}
+                                {l.shop_name ?? l.seller_name} · {formatAdminPrice(l.price, t as Record<string, string>)} · {l.location}
                               </div>
                               {l.skip_reason && (
-                                <div className="text-xs text-red-600">{l.skip_reason}</div>
+                                <div className="text-xs text-red-600">
+                                  {skipReasonLabel(l.skip_reason, t as Record<string, string>)}
+                                </div>
                               )}
                             </div>
                           </div>
@@ -442,9 +457,20 @@ export default function AdminSocialPosts() {
           )}
         </div>
 
-        <div className="w-full lg:w-[380px] flex-shrink-0">
-          <div className="bg-white rounded-2xl border border-gray-100 p-4 sticky top-4">
-            <h3 className="font-bold text-gray-900 mb-3">{t.adm_social_preview_title}</h3>
+        <div className="w-full lg:w-[min(520px,42vw)] flex-shrink-0">
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 sticky top-4 max-h-[calc(100vh-5rem)] overflow-y-auto">
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <h3 className="font-bold text-gray-900">{t.adm_social_preview_title}</h3>
+              {previewData && !previewLoading && (
+                <button
+                  type="button"
+                  onClick={() => setPreviewExpanded(true)}
+                  className="text-xs font-semibold text-blue-600 hover:underline"
+                >
+                  {t.adm_social_preview_expand}
+                </button>
+              )}
+            </div>
             {!previewId && (
               <p className="text-sm text-gray-400">{t.adm_social_preview_pick}</p>
             )}
@@ -476,7 +502,7 @@ export default function AdminSocialPosts() {
                     {t.adm_social_preview_ig}
                   </button>
                 </div>
-                <pre className="text-xs text-gray-700 whitespace-pre-wrap bg-gray-50 rounded-xl p-3 max-h-64 overflow-y-auto font-sans leading-relaxed">
+                <pre className="text-sm text-gray-800 whitespace-pre-wrap bg-gray-50 rounded-xl p-4 min-h-[280px] max-h-[min(60vh,520px)] overflow-y-auto font-sans leading-relaxed border border-gray-100">
                   {previewTab === "facebook" ? previewData.preview.facebook : previewData.preview.instagram}
                 </pre>
                 <div className="flex flex-wrap gap-2 text-xs text-gray-500">
@@ -504,6 +530,53 @@ export default function AdminSocialPosts() {
           </div>
         </div>
       </div>
+
+      {previewExpanded && previewData && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          onClick={() => setPreviewExpanded(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <h3 className="font-bold text-gray-900">{t.adm_social_preview_title}</h3>
+              <button
+                type="button"
+                onClick={() => setPreviewExpanded(false)}
+                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex gap-1 px-5 pt-3">
+              <button
+                type="button"
+                onClick={() => setPreviewTab("facebook")}
+                className={`flex-1 py-2 rounded-lg text-sm font-semibold ${
+                  previewTab === "facebook" ? "bg-blue-600 text-white" : "bg-gray-100"
+                }`}
+              >
+                Facebook
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewTab("instagram")}
+                className={`flex-1 py-2 rounded-lg text-sm font-semibold ${
+                  previewTab === "instagram" ? "bg-pink-600 text-white" : "bg-gray-100"
+                }`}
+              >
+                Instagram
+              </button>
+            </div>
+            <pre className="flex-1 overflow-y-auto m-5 p-4 text-sm text-gray-800 whitespace-pre-wrap bg-gray-50 rounded-xl leading-relaxed font-sans">
+              {previewTab === "facebook" ? previewData.preview.facebook : previewData.preview.instagram}
+            </pre>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
