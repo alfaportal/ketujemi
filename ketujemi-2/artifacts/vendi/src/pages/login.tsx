@@ -162,12 +162,13 @@ export default function LoginPage() {
       toast({ title: t.login_oauth_tiktok_denied, variant: "destructive" });
     } else if (oauthErr === "tiktok_failed") {
       toast({ title: t.login_oauth_tiktok_failed, variant: "destructive" });
-    } else if (
-      oauthErr === "facebook_denied" ||
-      oauthErr === "facebook_failed" ||
-      oauthErr === "oauth_state" ||
-      oauthErr === "oauth_code"
-    ) {
+    } else if (oauthErr === "facebook_app_not_live") {
+      toast({ title: t.login_oauth_facebook_not_live, variant: "destructive" });
+    } else if (oauthErr === "facebook_denied") {
+      toast({ title: t.login_oauth_facebook_denied, variant: "destructive" });
+    } else if (oauthErr === "facebook_failed") {
+      toast({ title: t.login_oauth_facebook_failed, variant: "destructive" });
+    } else if (oauthErr === "oauth_state" || oauthErr === "oauth_code") {
       toast({ title: t.login_oauth_failed, variant: "destructive" });
     }
     if (params.get("verified") === "1") {
@@ -533,12 +534,15 @@ export default function LoginPage() {
     tiktok: t.login_tiktok_btn,
   };
 
+  const hasOAuth = googleOAuthEnabled || facebookOAuthEnabled || tiktokOAuthEnabled;
+
   const oauthButtons = (
     <SocialOAuthButtons
-      returnTo="/"
+      returnTo={returnTo}
       googleEnabled={googleOAuthEnabled}
       facebookEnabled={facebookOAuthEnabled}
       tiktokEnabled={tiktokOAuthEnabled}
+      showOrLabel={false}
       labels={oauthLabels}
     />
   );
@@ -561,6 +565,20 @@ export default function LoginPage() {
               {isRegister ? t.login_sub_register_email_only : t.login_sub_login_phone_only}
             </p>
           </div>
+
+          {hasOAuth ? oauthButtons : null}
+
+          {hasOAuth ? (
+            <p className="text-xs text-center text-gray-500">{t.login_oauth_social_hint}</p>
+          ) : null}
+
+          {hasOAuth && (smsAuthEnabled || isRegister) ? (
+            <div className="flex items-center gap-3 py-1">
+              <div className="h-px flex-1 bg-gray-200" />
+              <span className="text-xs text-gray-400 uppercase tracking-wide">{t.login_oauth_or}</span>
+              <div className="h-px flex-1 bg-gray-200" />
+            </div>
+          ) : null}
 
           {smsAuthEnabled ? (
             <div className="flex rounded-lg bg-gray-100 p-1">
@@ -726,7 +744,6 @@ export default function LoginPage() {
                 <Button type="submit" className="w-full min-h-12 h-12 text-base" disabled={busy}>
                   {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_submit_login}
                 </Button>
-                {oauthButtons}
                 {passwordFailCount >= 2 ? (
                   <button
                     type="button"
@@ -808,7 +825,6 @@ export default function LoginPage() {
                 >
                   {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_sendSmsBtn}
                 </Button>
-                {oauthButtons}
                 <p className="text-center text-sm text-gray-500">
                   {t.login_needEmailAccount}{" "}
                   <button

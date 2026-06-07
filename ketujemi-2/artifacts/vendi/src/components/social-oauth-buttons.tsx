@@ -5,6 +5,8 @@ type Props = {
   googleEnabled: boolean;
   facebookEnabled: boolean;
   tiktokEnabled: boolean;
+  /** When false, omit the «or» heading (used when buttons are shown above email/phone forms). */
+  showOrLabel?: boolean;
   labels: {
     or: string;
     google: string;
@@ -19,7 +21,7 @@ function googleStartUrl(): string {
 
 function facebookStartUrl(returnTo: string): string {
   const params = new URLSearchParams({ return: returnTo });
-  return `/api/auth/facebook/start?${params}`;
+  return `/auth/facebook/start?${params}`;
 }
 
 function tiktokStartUrl(): string {
@@ -31,13 +33,16 @@ export function SocialOAuthButtons({
   googleEnabled,
   facebookEnabled,
   tiktokEnabled,
+  showOrLabel = true,
   labels,
 }: Props) {
   if (!googleEnabled && !facebookEnabled && !tiktokEnabled) return null;
 
   return (
-    <div className="space-y-3 pt-2">
-      <p className="text-xs text-gray-500 uppercase tracking-wide text-center">{labels.or}</p>
+    <div className="space-y-3">
+      {showOrLabel ? (
+        <p className="text-xs text-gray-500 uppercase tracking-wide text-center">{labels.or}</p>
+      ) : null}
 
       {googleEnabled ? (
         <a

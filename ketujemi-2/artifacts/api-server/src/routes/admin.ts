@@ -1913,6 +1913,22 @@ router.post("/admin/shop-social-enrichments/sync", requireAdmin, async (req, res
   }
 });
 
+router.get("/admin/facebook-oauth-diagnostics", requireAdmin, async (_req, res) => {
+  try {
+    const { getFacebookOAuthDiagnostics } = await import("../lib/facebook-oauth-health.js");
+    const data = await getFacebookOAuthDiagnostics();
+    res.json({
+      ...data,
+      app_id: data.app_id_masked,
+      likely_cause_not_released:
+        "Meta app is in Development mode (not Live). Only Roles (Admin/Developer/Tester) can log in until the app is switched to Live in App Review.",
+    });
+  } catch (err) {
+    _req.log.error({ err }, "admin facebook oauth diagnostics error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.get("/admin/deletion-feedback", requireAdmin, async (req, res) => {
   try {
     const q = req.query as Record<string, string>;

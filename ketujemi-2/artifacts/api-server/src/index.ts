@@ -114,6 +114,8 @@ async function startServer(): Promise<void> {
     logger.info(vonageConfigSummary(), "vonage sms config (masked)");
     const { initializeFacebookPageAccessToken } = await import("./services/socialMedia.js");
     await initializeFacebookPageAccessToken();
+    const { logFacebookOAuthStartupDiagnostics } = await import("./lib/facebook-oauth-health.js");
+    await logFacebookOAuthStartupDiagnostics();
     const { startJobQueueWorkers } = await import("./queues/jobQueue.js");
     startJobQueueWorkers();
   } catch (err) {

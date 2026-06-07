@@ -963,8 +963,13 @@ export const EN_EXTRA: Record<string, string> = {
   login_mode_login: "Log in",
   login_mode_register: "Sign up",
   login_oauth_or: "or",
+  login_oauth_social_hint: "One click — no email or password on our site.",
   login_google_btn: "Sign in with Google",
   login_oauth_facebook: "Sign in with Facebook",
+  login_oauth_facebook_denied: "Facebook sign-in was cancelled.",
+  login_oauth_facebook_failed: "Facebook sign-in failed. Please try again.",
+  login_oauth_facebook_not_live:
+    "Facebook sign-in is not open to all users yet. Use email/phone or try again later.",
   login_tiktok_btn: "Sign in with TikTok",
   login_oauth_google_denied: "Google sign-in was cancelled.",
   login_oauth_google_failed: "Google sign-in failed. Please try again.",

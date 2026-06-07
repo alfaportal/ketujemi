@@ -69,6 +69,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(googleOAuthPublicRouter);
+app.use(facebookOAuthPublicRouter);
 app.use("/api", facebookOAuthPublicRouter);
 app.use(tiktokOAuthPublicRouter);
 app.use("/api", router);

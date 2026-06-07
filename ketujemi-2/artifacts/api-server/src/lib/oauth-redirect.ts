@@ -4,8 +4,10 @@ export function redirectOAuthLogin(
   res: import("express").Response,
   origin: string,
   error: string,
+  extra?: Record<string, string>,
 ): void {
-  const url = `${origin.replace(/\/$/, "")}/login?error=${encodeURIComponent(error)}`;
+  const params = new URLSearchParams({ error, ...extra });
+  const url = `${origin.replace(/\/$/, "")}/login?${params.toString()}`;
   res.redirect(302, url);
 }
 

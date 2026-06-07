@@ -13,6 +13,7 @@ import {
 import { createOAuthState, sanitizeOAuthReturnTo, verifyOAuthState } from "../lib/oauth-state";
 import { isNewlyRegisteredUser, setUserSessionCookie } from "../lib/user-session";
 import { assertAccountActive } from "../lib/user-ban";
+import { parseFacebookOAuthCallbackError } from "../lib/facebook-oauth-errors.js";
 import { redirectOAuthLogin, redirectOAuthSuccess } from "../lib/oauth-redirect";
 
 const router = Router();
@@ -42,7 +43,16 @@ router.get("/auth/facebook/callback", async (req, res) => {
   const code = typeof req.query.code === "string" ? req.query.code : "";
 
   if (req.query.error) {
-    redirectOAuthLogin(res, origin, "facebook_denied");
+    const fbErr = parseFacebookOAuthCallbackError(req.query as Record<string, unknown>);
+    req.log?.warn(
+      {
+        facebook_error: req.query.error,
+        reason: fbErr.logReason,
+        description: fbErr.logDescription,
+      },
+      "facebook oauth callback rejected by Meta",
+    );
+    redirectOAuthLogin(res, origin, fbErr.code);
     return;
   }
 
@@ -73,8 +83,13 @@ router.get("/auth/facebook/callback", async (req, res) => {
       isNewlyRegisteredUser(user) ? { welcome: "1" } : undefined,
     );
   } catch (err) {
-    req.log?.error({ err }, "facebook oauth callback");
-    redirectOAuthLogin(res, origin, "facebook_failed");
+    const message = err instanceof Error ? err.message : "unknown";
+    req.log?.error({ err, message }, "facebook oauth callback");
+    const code =
+      /development mode|not available|app not active|not released/i.test(message)
+        ? "facebook_app_not_live"
+        : "facebook_failed";
+    redirectOAuthLogin(res, origin, code);
   }
 });
 

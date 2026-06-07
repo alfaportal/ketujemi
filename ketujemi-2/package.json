@@ -20,6 +20,7 @@
     "start:production": "node ./scripts/start-production.mjs",
     "railway:env:vonage": "node ./scripts/railway-set-vonage-env.mjs",
     "railway:env:facebook": "node ./scripts/railway-set-facebook-env.mjs",
+    "check:facebook-oauth": "node ./scripts/check-facebook-oauth.mjs",
     "railway:env:database-url": "node ./scripts/railway-set-database-url.mjs",
     "railway:env:resend": "node ./scripts/railway-set-resend-env.mjs",
     "railway:env:payments": "node ./scripts/railway-set-payment-env.mjs",
