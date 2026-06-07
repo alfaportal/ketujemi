@@ -1,8 +1,5 @@
 import { createHash } from "node:crypto";
 import { parseCloudinaryPublicIdFromUrl } from "../../../../lib/cloudinary-asset.js";
-/** KëtuJemi brand — matches vendi `brand-colors.ts` */
-const BRAND_BLUE = "#1A56A0";
-const BRAND_ORANGE = "#EA580C";
 import {
   cloudinaryApiKey,
   cloudinaryApiSecret,
@@ -15,41 +12,14 @@ const REEL_WIDTH = 1080;
 const REEL_HEIGHT = 1920;
 const SLIDE_DURATION_MS = 2500;
 const TRANSITION_DURATION_MS = 400;
+const EMPTY_REEL_BASE_PUBLIC_ID = "site-assets/empty-reel-base";
+const DEMO_EMPTY_VIDEO_URL = "https://res.cloudinary.com/demo/video/upload/docs/empty.mp4";
 
 export type ReelSlideInput = {
   imageUrl: string;
   title: string;
   priceLabel: string;
 };
-
-function rgbHex(hex: string): string {
-  return hex.replace("#", "").toUpperCase();
-}
-
-/** Cloudinary l_text safe string (max length, no special layer chars). */
-function cloudinaryCaptionText(text: string, maxLen = 44): string {
-  return text
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9\s€.\-]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, maxLen) || "Shpallje";
-}
-
-function slideTransformation(title: string, priceLabel: string): string {
-  const titleEnc = encodeURIComponent(cloudinaryCaptionText(title));
-  const priceEnc = encodeURIComponent(cloudinaryCaptionText(priceLabel, 24));
-  const blue = rgbHex(BRAND_BLUE);
-  const orange = rgbHex(BRAND_ORANGE);
-  return [
-    `c_fill,w_${REEL_WIDTH},h_${REEL_HEIGHT}`,
-    `l_text:Arial_44_bold:${titleEnc},co_rgb:${blue},bo_5px_solid_rgb:${orange},g_south,y_200`,
-    `l_text:Arial_36_bold:${priceEnc},co_rgb:${orange},bo_3px_solid_rgb:${blue},g_south,y_110`,
-    `l_text:Arial_28_bold:KetuJemi.com,co_rgb:${blue},g_north,y_48`,
-    "fl_layer_apply",
-  ].join("/");
-}
 
 function signCloudinaryParams(params: Record<string, string>): string {
   const apiSecret = cloudinaryApiSecret();
@@ -58,7 +28,17 @@ function signCloudinaryParams(params: Record<string, string>): string {
   return createHash("sha1").update(toSign).digest("hex");
 }
 
-async function fetchCloudinaryResource(publicId: string): Promise<{ bytes?: number } | null> {
+function reelEmptyBasePublicId(): string {
+  return process.env.CLOUDINARY_REEL_EMPTY_BASE?.trim() || EMPTY_REEL_BASE_PUBLIC_ID;
+}
+
+function layerPublicId(publicId: string): string {
+  return publicId.replace(/\//g, ":");
+}
+
+async function fetchCloudinaryVideoResource(
+  publicId: string,
+): Promise<{ bytes?: number } | null> {
   const cloud = cloudinaryCloudName();
   const apiKey = cloudinaryApiKey();
   const timestamp = String(Math.round(Date.now() / 1000));
@@ -73,12 +53,104 @@ async function fetchCloudinaryResource(publicId: string): Promise<{ bytes?: numb
   return json;
 }
 
+async function ensureEmptyReelBaseVideo(): Promise<boolean> {
+  const publicId = reelEmptyBasePublicId();
+  const existing = await fetchCloudinaryVideoResource(publicId);
+  if (existing?.bytes && existing.bytes > 100) {
+    return true;
+  }
+
+  const cloud = cloudinaryCloudName();
+  const uploadPreset = process.env.VITE_CLOUDINARY_UPLOAD_PRESET?.trim();
+  if (uploadPreset) {
+    const unsignedBody = new URLSearchParams({
+      file: DEMO_EMPTY_VIDEO_URL,
+      upload_preset: uploadPreset,
+      public_id: publicId,
+    });
+    const unsignedRes = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/video/upload`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: unsignedBody,
+    });
+    if (unsignedRes.ok) {
+      return true;
+    }
+  }
+
+  const timestamp = String(Math.round(Date.now() / 1000));
+  const signParams: Record<string, string> = {
+    public_id: publicId,
+    overwrite: "true",
+    timestamp,
+  };
+  const signature = signCloudinaryParams(signParams);
+  const body = new URLSearchParams({
+    ...signParams,
+    file: DEMO_EMPTY_VIDEO_URL,
+    api_key: cloudinaryApiKey(),
+    signature,
+  });
+
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/video/upload`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+  if (!res.ok) {
+    const err = await res.text().catch(() => "");
+    logger.error({ status: res.status, body: err.slice(0, 300) }, "empty reel base upload failed");
+    return false;
+  }
+  return true;
+}
+
+function buildSpliceReelDeliveryUrl(slides: ReelSlideInput[]): string | { error: string } {
+  const cloud = cloudinaryCloudName();
+  const emptyBase = reelEmptyBasePublicId();
+  const slideSec = (SLIDE_DURATION_MS / 1000).toFixed(1);
+  const transSec = (TRANSITION_DURATION_MS / 1000).toFixed(1);
+  const baseTx = `c_fill,w_${REEL_WIDTH},h_${REEL_HEIGHT}`;
+
+  let path = `du_1.0/${baseTx}/`;
+
+  for (const slide of slides) {
+    const publicId = reelSlidePublicId(slide.imageUrl);
+    if (!publicId) {
+      return { error: "image_not_on_cloudinary" };
+    }
+    const layer = layerPublicId(publicId);
+    path += `fl_splice:transition_(name_fade;du_${transSec}),l_${layer}/du_${slideSec}/${baseTx}/fl_layer_apply/`;
+  }
+
+  return `https://res.cloudinary.com/${cloud}/video/upload/${path}${emptyBase}.mp4`;
+}
+
+async function warmupReelDeliveryUrl(videoUrl: string): Promise<boolean> {
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    try {
+      const res = await fetch(videoUrl, { method: "GET", redirect: "follow" });
+      const type = res.headers.get("content-type") ?? "";
+      if (res.ok && type.includes("video")) {
+        const len = Number(res.headers.get("content-length") ?? "0");
+        if (len > 10_000 || attempt >= 3) {
+          return true;
+        }
+      }
+    } catch {
+      /* retry */
+    }
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+  return false;
+}
+
 export function reelSlidePublicId(imageUrl: string): string | null {
   return parseCloudinaryPublicIdFromUrl(imageUrl);
 }
 
 /**
- * Build a vertical Reel MP4 from 4–5 listing photos with title + price overlays.
+ * Build a vertical Reel MP4 from 4–5 listing photos via Cloudinary fl_splice delivery URL.
  * Returns HTTPS URL suitable for Instagram Reels and TikTok pull-from-URL.
  */
 export async function createListingReelVideo(
@@ -92,76 +164,23 @@ export async function createListingReelVideo(
     return { error: "invalid_slide_count" };
   }
 
-  const manifestSlides: Array<{ media: string; transformation?: string }> = [];
-  for (const slide of slides) {
-    const publicId = reelSlidePublicId(slide.imageUrl);
-    if (!publicId) {
-      return { error: "image_not_on_cloudinary" };
-    }
-    manifestSlides.push({
-      media: `i:${publicId}`,
-      transformation: slideTransformation(slide.title, slide.priceLabel),
-    });
+  const emptyReady = await ensureEmptyReelBaseVideo();
+  if (!emptyReady) {
+    logger.warn("empty reel base upload failed; trying fl_splice delivery anyway");
   }
 
-  const manifest = {
-    w: REEL_WIDTH,
-    h: REEL_HEIGHT,
-    fps: 30,
-    vars: { sdur: SLIDE_DURATION_MS, tdur: TRANSITION_DURATION_MS },
-    slides: manifestSlides,
-  };
+  const built = buildSpliceReelDeliveryUrl(slides);
+  if (typeof built !== "string") {
+    return built;
+  }
 
-  const cloud = cloudinaryCloudName();
+  const ready = await warmupReelDeliveryUrl(built);
+  if (!ready) {
+    logger.warn({ videoUrl: built }, "listing reel delivery URL not ready after warmup");
+    return { error: "slideshow_processing_timeout" };
+  }
+
   const publicId = `social-reels/batch-${batchKey}`;
-  const timestamp = String(Math.round(Date.now() / 1000));
-  const manifestStr = JSON.stringify(manifest);
-  const params: Record<string, string> = {
-    manifest_json: manifestStr,
-    overwrite: "true",
-    public_id: publicId,
-    timestamp,
-  };
-  const signature = signCloudinaryParams(params);
-  const body = new URLSearchParams({
-    ...params,
-    api_key: cloudinaryApiKey(),
-    signature,
-  });
-
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/video/create_slideshow`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body,
-  });
-  const json = (await res.json().catch(() => ({}))) as {
-    error?: { message?: string };
-    secure_url?: string;
-    public_id?: string;
-  };
-
-  if (!res.ok) {
-    const msg = json?.error?.message ?? `HTTP ${res.status}`;
-    logger.error({ status: res.status, cloudinary: json }, "listing reel slideshow create failed");
-    return { error: msg };
-  }
-
-  const resolvedPublicId = json.public_id ?? publicId;
-  const directUrl = `https://res.cloudinary.com/${cloud}/video/upload/${resolvedPublicId}.mp4`;
-
-  for (let attempt = 0; attempt < 24; attempt += 1) {
-    const resource = await fetchCloudinaryResource(resolvedPublicId);
-    if (resource?.bytes && resource.bytes > 10_000) {
-      const videoUrl = json.secure_url ?? directUrl;
-      logger.info({ publicId: resolvedPublicId, bytes: resource.bytes }, "listing reel video ready");
-      return { videoUrl, publicId: resolvedPublicId };
-    }
-    await new Promise((r) => setTimeout(r, 2500));
-  }
-
-  if (json.secure_url) {
-    return { videoUrl: json.secure_url, publicId: resolvedPublicId };
-  }
-
-  return { error: "slideshow_processing_timeout" };
+  logger.info({ publicId, videoUrl: built }, "listing reel video ready (fl_splice delivery)");
+  return { videoUrl: built, publicId };
 }
