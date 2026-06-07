@@ -9,7 +9,7 @@ import { postReelToInstagram, isInstagramAutoPostConfigured } from "../services/
 import { postVideoToTikTok, isTikTokContentPostConfigured } from "./tiktok-content-post";
 
 const REEL_LISTING_COUNT = 5;
-const REEL_COOLDOWN_DAYS = 7;
+const REEL_COOLDOWN_DAYS = 1;
 
 function formatReelPriceLabel(price: string | number): string {
   const n = Number(price);
