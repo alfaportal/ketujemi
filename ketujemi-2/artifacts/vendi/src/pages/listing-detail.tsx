@@ -28,6 +28,7 @@ import { dateFnsLocale } from "@/lib/app-extra-i18n";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { userOwnsListing } from "@/lib/listing-ownership";
 import { sellerFirstName } from "@/lib/seller-display";
+import { MobileSafeTopSpacer } from "@/components/mobile-safe-top-spacer";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { ReportListingDialog } from "@/components/report-listing-dialog";
 import { SimilarListingsSection } from "@/components/similar-listings-section";
@@ -421,8 +422,9 @@ export default function ListingDetail() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sticky back bar */}
-      <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-sm border-b border-gray-100 px-4 py-3">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-sm border-b border-gray-100">
+        <MobileSafeTopSpacer />
+        <div className="max-w-4xl mx-auto flex items-center justify-between px-4 py-3">
           <button
             data-testid="button-back"
             onClick={() => window.history.back()}

@@ -70,10 +70,6 @@ const NAV_TITLE_KEY: Record<Section, string> = {
   "deletion-feedback": "adm_nav_deletion",
 };
 
-/** Admin mobile chrome only — keeps hamburger below iOS status bar; not used on main SiteHeader. */
-const ADMIN_MOBILE_SAFE_TOP = "pt-[max(env(safe-area-inset-top,0px),44px)] md:pt-0";
-const ADMIN_MOBILE_TOP_BAR = `${ADMIN_MOBILE_SAFE_TOP} min-h-[calc(3.5rem+max(env(safe-area-inset-top,0px),44px))] md:min-h-14`;
-
 // ─── Login page ───────────────────────────────────────────────────────────────
 function LoginPage({ onLogin }: { onLogin: () => void }) {
   const { t } = useMarket();
@@ -222,10 +218,9 @@ function Sidebar({
   const { t } = useMarket();
   return (
     <div className={`flex flex-col h-full bg-gray-900 ${mobile ? "w-64" : "w-56"}`}>
+      {mobile ? <div className="mobile-safe-top md:hidden" aria-hidden="true" /> : null}
       {/* Brand */}
-      <div
-        className={`flex items-center justify-between px-5 py-5 border-b border-gray-800 ${mobile ? ADMIN_MOBILE_SAFE_TOP : ""}`}
-      >
+      <div className="flex items-center justify-between px-5 py-5 border-b border-gray-800">
         <div>
           <div className="flex items-center gap-2">
             <ShieldCheck size={18} className="text-blue-400" />
@@ -340,21 +335,22 @@ export default function AdminPanel() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
-        <div
-          className={`sticky top-0 z-30 bg-white border-b border-gray-100 px-4 md:px-6 flex items-center gap-4 flex-shrink-0 ${ADMIN_MOBILE_TOP_BAR}`}
-        >
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="md:hidden flex items-center justify-center min-h-11 min-w-11 p-2.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-            aria-label={t.adm_sidebarTitle}
-          >
-            <Menu size={20} />
-          </button>
-          <h1 className="font-bold text-gray-900">{sectionLabel}</h1>
-          <div className="ml-auto flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-xs text-gray-500 hidden sm:block">{t.adm_role}</span>
+        {/* Top bar — safe-area spacer pushes hamburger below iOS status bar on mobile */}
+        <div className="sticky top-0 z-30 bg-white border-b border-gray-100 flex-shrink-0">
+          <div className="mobile-safe-top md:hidden" aria-hidden="true" />
+          <div className="px-4 md:px-6 flex items-center gap-4 min-h-14">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="md:hidden flex items-center justify-center min-h-11 min-w-11 p-2.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors touch-manipulation"
+              aria-label={t.adm_sidebarTitle}
+            >
+              <Menu size={20} />
+            </button>
+            <h1 className="font-bold text-gray-900">{sectionLabel}</h1>
+            <div className="ml-auto flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-green-500" />
+              <span className="text-xs text-gray-500 hidden sm:block">{t.adm_role}</span>
+            </div>
           </div>
         </div>
 

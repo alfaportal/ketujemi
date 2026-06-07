@@ -2,6 +2,7 @@ import { useLocation } from "wouter";
 import { Home, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
+import { MobileSafeTopSpacer } from "@/components/mobile-safe-top-spacer";
 import { SiteLogo } from "@/components/site-logo";
 import { useMarket } from "@/lib/market-context";
 
@@ -12,6 +13,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-card border-b border-border shadow-sm">
+      <MobileSafeTopSpacer />
       <div className="max-w-7xl mx-auto px-4 min-h-14 py-2 flex flex-wrap items-center justify-between gap-3">
         <SiteLogo />
 

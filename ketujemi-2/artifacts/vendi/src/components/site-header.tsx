@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { MobileSafeTopSpacer } from "@/components/mobile-safe-top-spacer";
 import { SiteLogo } from "@/components/site-logo";
 import { LanguageSelector } from "@/components/language-selector";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
@@ -42,6 +43,7 @@ export function SiteHeader({ className, children }: SiteHeaderProps) {
         className,
       )}
     >
+      <MobileSafeTopSpacer />
       <div className="max-w-7xl mx-auto px-2 max-md:px-2.5 sm:px-6 lg:px-8">
         {/* —— Mobile: 2 rows —— */}
         <div className="flex flex-col gap-3 py-3 md:hidden">

@@ -13,6 +13,7 @@ import {
   ArrowLeft, Camera, X, CheckCircle2, ChevronRight,
   Car, Home as HomeIcon, Smartphone, Info, Loader2, ImagePlus, Video,
 } from "lucide-react";
+import { MobileSafeTopSpacer } from "@/components/mobile-safe-top-spacer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -649,6 +650,7 @@ export default function NewListing() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">
+        <MobileSafeTopSpacer />
         <div className="max-w-2xl mx-auto px-4 min-h-[3.75rem] flex items-center gap-4 py-2">
           <button
             data-testid="button-back"
