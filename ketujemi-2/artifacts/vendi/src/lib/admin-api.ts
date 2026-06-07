@@ -51,7 +51,38 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-/** Owner-only: password from ADMIN_PANEL_PASSWORD (no username). */
+export async function adminLoginEmailStart(): Promise<void> {
+  const res = await fetchWithTimeout(`${BASE}/login/email/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as { error?: string }).error ?? "EMAIL_SEND_FAILED");
+  }
+}
+
+/** Admin panel: verify email code sent to EMAIL_ADMIN. */
+export async function adminLoginEmailVerify(code: string, rememberMe = false): Promise<string> {
+  const res = await fetchWithTimeout(`${BASE}/login/email/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code, remember_me: rememberMe }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as { error?: string }).error ?? "Invalid credentials");
+  }
+  const data = (await res.json()) as {
+    token: string;
+    expires_at: string;
+    remember_me?: boolean;
+  };
+  persistToken(data.token, data.expires_at, rememberMe || !!data.remember_me);
+  return data.token;
+}
+
+/** Legacy password login (kept for scripts). */
 export async function adminLogin(password: string, rememberMe = false): Promise<string> {
   const res = await fetchWithTimeout(`${BASE}/login`, {
     method: "POST",

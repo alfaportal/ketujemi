@@ -38,6 +38,12 @@ import {
   createAdminSession,
   adminAuthConfigured,
 } from "../lib/admin-auth";
+import {
+  startAdminEmailLoginChallenge,
+  verifyAdminEmailLoginCode,
+} from "../lib/admin-login-email.js";
+import { hasEmailDeliveryConfigured } from "../lib/email-auth";
+import { getAdminEmail } from "../lib/admin-monitor-email.js";
 import { adminLoginLimiter } from "../lib/express-rate-limiters";
 import { notifyAdminLoginFailed } from "../lib/admin-login-alert.js";
 import { deleteListingCascade } from "../lib/delete-listing-cascade";
@@ -82,7 +88,59 @@ function requireAdmin(req: { headers: { authorization?: string } }, res: any, ne
   res.status(403).json({ error: "Forbidden" });
 }
 
-// ─── POST /admin/login (owner password only) ─────────────────────────────────
+// ─── POST /admin/login/email/start ───────────────────────────────────────────
+router.post("/admin/login/email/start", adminLoginLimiter, async (req, res) => {
+  if (!adminAuthConfigured()) {
+    res.status(503).json({ error: "Admin panel not configured on server" });
+    return;
+  }
+  if (!getAdminEmail()) {
+    res.status(503).json({ error: "EMAIL_ADMIN_NOT_CONFIGURED" });
+    return;
+  }
+  if (!hasEmailDeliveryConfigured()) {
+    res.status(503).json({ error: "EMAIL_NOT_CONFIGURED" });
+    return;
+  }
+  try {
+    const result = await startAdminEmailLoginChallenge();
+    if (!result.ok) {
+      res.status(503).json({ error: result.reason });
+      return;
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    req.log?.error({ err }, "admin login email start");
+    res.status(502).json({ error: "EMAIL_SEND_FAILED" });
+  }
+});
+
+// ─── POST /admin/login/email/verify ──────────────────────────────────────────
+router.post("/admin/login/email/verify", adminLoginLimiter, async (req, res) => {
+  if (!adminAuthConfigured()) {
+    res.status(503).json({ error: "Admin panel not configured on server" });
+    return;
+  }
+  const code = typeof req.body?.code === "string" ? req.body.code.trim() : "";
+  const rememberMe = req.body?.remember_me === true;
+  if (code.length < 4) {
+    res.status(400).json({ error: "Code required" });
+    return;
+  }
+  if (!(await verifyAdminEmailLoginCode(code))) {
+    notifyAdminLoginFailed(req);
+    res.status(401).json({ error: "Invalid credentials" });
+    return;
+  }
+  const session = createAdminSession(rememberMe);
+  if (!session) {
+    res.status(503).json({ error: "Admin panel not configured on server" });
+    return;
+  }
+  res.json(session);
+});
+
+// ─── POST /admin/login (owner password — legacy) ─────────────────────────────
 router.post("/admin/login", adminLoginLimiter, (req, res) => {
   if (!adminAuthConfigured()) {
     res.status(503).json({ error: "Admin panel not configured on server" });

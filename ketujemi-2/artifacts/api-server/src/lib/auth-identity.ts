@@ -1,4 +1,5 @@
 import type { User } from "@workspace/db";
+import { isPlatformAdminUser } from "./platform-admin.js";
 
 /**
  * OAuth login provider registry — add providers here (column must exist on `users`).
@@ -90,6 +91,10 @@ export function isPhoneLoginAnchor(u: User): boolean {
  * the primary login channel.
  */
 export function resolveProfileEditSecondFactor(u: User): ProfileEditSecondFactor | null {
+  if (isPlatformAdminUser(u)) {
+    return hasTrustedEmail(u) ? "email" : null;
+  }
+
   const channel = resolveAuthChannel(u);
 
   if (isOAuthAuthChannel(channel)) {
@@ -113,6 +118,10 @@ export function resolveProfileEditSecondFactor(u: User): ProfileEditSecondFactor
 
 /** What the user must add before profile edit is possible. */
 export function resolveMissingSecondMethod(u: User): "email" | "phone" | null {
+  if (isPlatformAdminUser(u)) {
+    return hasTrustedEmail(u) ? null : "email";
+  }
+
   if (resolveProfileEditSecondFactor(u) !== null) return null;
 
   const channel = resolveAuthChannel(u);
@@ -156,7 +165,7 @@ export function resolveAuthIdentity(u: User): AuthIdentity {
     profile_edit_second_factor,
     profile_edit_needs_second_method: profile_edit_second_factor === null,
     missing_second_method,
-    can_add_phone: !has_verified_phone,
+    can_add_phone: isPlatformAdminUser(u) ? false : !has_verified_phone,
     can_add_email: !has_trusted_email,
   };
 }

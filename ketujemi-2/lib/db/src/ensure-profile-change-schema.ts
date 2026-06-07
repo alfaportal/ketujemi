@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS profile_change_challenges (
   email text,
   request_id text,
   code text,
+  fail_count integer NOT NULL DEFAULT 0,
   expires_at timestamp NOT NULL,
   created_at timestamp NOT NULL DEFAULT now()
 );
@@ -29,6 +30,11 @@ CREATE INDEX IF NOT EXISTS profile_change_tokens_user_idx
   ON profile_change_tokens (user_id, expires_at DESC);
 `;
 
+const FAIL_COUNT_SQL = `
+ALTER TABLE profile_change_challenges ADD COLUMN IF NOT EXISTS fail_count integer NOT NULL DEFAULT 0;
+`;
+
 export async function ensureProfileChangeSchema(pool: pg.Pool): Promise<void> {
   await pool.query(SQL);
+  await pool.query(FAIL_COUNT_SQL);
 }

@@ -2,6 +2,7 @@ import type { CookieOptions, Response } from "express";
 import type { User } from "@workspace/db";
 import { sellerFirstName } from "./contact-mask";
 import { resolveAuthIdentity } from "./auth-identity";
+import { isPlatformAdminUser } from "./platform-admin.js";
 import { walletSummary } from "./wallet";
 
 const COOKIE = "kj_session";
@@ -87,6 +88,7 @@ export function publicUser(u: User, opts?: { self?: boolean }) {
         missing_second_method: identity.missing_second_method,
         can_add_phone: identity.can_add_phone,
         can_add_email: identity.can_add_email,
+        is_platform_admin: isPlatformAdminUser(u),
         phone_verified: identity.has_verified_phone,
       };
     })(),

@@ -19,6 +19,8 @@ export function ProfileChangeGate({ user, secondFactor, onUnlocked, onCancel }: 
   const { t } = useMarket();
   const { toast } = useToast();
   const [code, setCode] = useState("");
+  const [activeChannel, setActiveChannel] = useState<"sms" | "email">(secondFactor);
+  const [fallbackNote, setFallbackNote] = useState<string | null>(null);
   const [smsPhone, setSmsPhone] = useState(
     user.contact_phone?.trim() ||
       (user.phone_e164_digits ? `+${user.phone_e164_digits}` : ""),
@@ -30,10 +32,10 @@ export function ProfileChangeGate({ user, secondFactor, onUnlocked, onCancel }: 
     setBusy(true);
     try {
       const url =
-        secondFactor === "sms"
+        activeChannel === "sms"
           ? "/api/auth/profile/verify/sms/start"
           : "/api/auth/profile/verify/email/start";
-      const body = secondFactor === "sms" ? { phone: smsPhone } : {};
+      const body = activeChannel === "sms" ? { phone: smsPhone } : {};
       const res = await fetchWithTimeout(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -50,7 +52,7 @@ export function ProfileChangeGate({ user, secondFactor, onUnlocked, onCancel }: 
       }
       setStep("sent");
       toast({
-        title: secondFactor === "sms" ? t.toast_codeSent : t.toast_emailSent,
+        title: activeChannel === "sms" ? t.toast_codeSent : t.toast_emailSent,
       });
     } finally {
       setBusy(false);
@@ -62,7 +64,7 @@ export function ProfileChangeGate({ user, secondFactor, onUnlocked, onCancel }: 
     setBusy(true);
     try {
       const url =
-        secondFactor === "sms"
+        activeChannel === "sms"
           ? "/api/auth/profile/verify/sms/confirm"
           : "/api/auth/profile/verify/email/confirm";
       const res = await fetchWithTimeout(url, {
@@ -74,14 +76,29 @@ export function ProfileChangeGate({ user, secondFactor, onUnlocked, onCancel }: 
       const data = (await res.json().catch(() => ({}))) as {
         profile_change_token?: string;
         expires_in_seconds?: number;
+        fallback_to_email?: boolean;
+        masked_email?: string;
         message?: string;
         error?: string;
       };
-      if (!res.ok || !data.profile_change_token) {
+      if (!res.ok) {
+        if (data.fallback_to_email && activeChannel === "sms") {
+          const msg = data.message ?? t.profile_sms_fallback_message;
+          setActiveChannel("email");
+          setFallbackNote(msg);
+          setStep("sent");
+          setCode("");
+          toast({ title: msg });
+          return;
+        }
         toast({
           title: data.message ?? data.error ?? t.toast_verifyFail,
           variant: "destructive",
         });
+        return;
+      }
+      if (!data.profile_change_token) {
+        toast({ title: t.toast_verifyFail, variant: "destructive" });
         return;
       }
       onUnlocked(data.profile_change_token, data.expires_in_seconds ?? 600);
@@ -95,10 +112,16 @@ export function ProfileChangeGate({ user, secondFactor, onUnlocked, onCancel }: 
   return (
     <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 space-y-3">
       <p className="text-sm text-amber-900 font-medium">
-        {secondFactor === "sms" ? t.profile_verify_sms_hint : t.profile_verify_email_hint}
+        {activeChannel === "sms" ? t.profile_verify_sms_hint : t.profile_verify_email_hint}
       </p>
 
-      {secondFactor === "sms" && !user.phone_verified ? (
+      {fallbackNote ? (
+        <p className="text-sm text-blue-900 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+          {fallbackNote}
+        </p>
+      ) : null}
+
+      {activeChannel === "sms" && !user.phone_verified ? (
         <div className="space-y-2">
           <Label htmlFor="profile-verify-phone">{t.phoneNum}</Label>
           <Input

@@ -64,6 +64,44 @@ type PartnerActivationMailPayload = {
   profileUrl: string;
 };
 
+export async function sendLoginSmsFallbackCodeEmail(payload: { to: string; code: string }): Promise<void> {
+  const { to, code } = payload;
+  ensureEmailConfigured();
+  const subject = "Kodi i hyrjes — KetuJemi";
+  const text = [
+    "SMS nuk funksionoi — përdorni këtë kod për të hyrë në llogari:",
+    "",
+    `Kodi: ${code}`,
+    "",
+    "Nëse nuk e keni kërkuar ju, injoroni këtë email.",
+  ].join("\n");
+  await deliverEmail({
+    to,
+    subject,
+    text,
+    html: `<p>SMS nuk funksionoi — përdorni këtë kod për të hyrë:</p><p><strong>${code}</strong></p>`,
+  });
+}
+
+export async function sendAdminLoginCodeEmail(payload: { to: string; code: string }): Promise<void> {
+  const { to, code } = payload;
+  ensureEmailConfigured();
+  const subject = "Kodi i hyrjes në panel — KetuJemi";
+  const text = [
+    "Kodi për hyrje në panelin e administratorit:",
+    "",
+    `Kodi: ${code}`,
+    "",
+    "Kodi skadon pas 15 minutash.",
+  ].join("\n");
+  await deliverEmail({
+    to,
+    subject,
+    text,
+    html: `<p>Kodi për panelin e administratorit:</p><p><strong>${code}</strong></p>`,
+  });
+}
+
 export async function sendProfileChangeCodeEmail(payload: { to: string; code: string }): Promise<void> {
   const { to, code } = payload;
   ensureEmailConfigured();

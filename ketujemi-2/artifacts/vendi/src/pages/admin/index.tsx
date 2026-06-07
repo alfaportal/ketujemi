@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard, FileText, Users, Tag, AlertTriangle, Settings,
-  LogOut, Menu, X, Lock, Eye, EyeOff, ShieldCheck, Building2, CreditCard, Store, Share2, UserPlus,
+  LogOut, Menu, X, Lock, ShieldCheck, Building2, CreditCard, Store, Share2, UserPlus,
 } from "lucide-react";
-import { adminLogin, adminLogout, isAdminLoggedIn } from "@/lib/admin-api";
+import { adminLoginEmailStart, adminLoginEmailVerify, adminLogout, isAdminLoggedIn } from "@/lib/admin-api";
 import { useMarket } from "@/lib/market-context";
 import Dashboard from "./dashboard";
 import AdminListings from "./listings";
@@ -69,18 +69,31 @@ const ADMIN_MOBILE_TOP_BAR = `${ADMIN_MOBILE_SAFE_TOP} min-h-[calc(3.5rem+max(en
 // ─── Login page ───────────────────────────────────────────────────────────────
 function LoginPage({ onLogin }: { onLogin: () => void }) {
   const { t } = useMarket();
-  const [password, setPassword] = useState("");
-  const [showPw, setShowPw] = useState(false);
+  const [code, setCode] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<"idle" | "sent">("idle");
+
+  async function sendCode() {
+    setError("");
+    setLoading(true);
+    try {
+      await adminLoginEmailStart();
+      setStep("sent");
+    } catch {
+      setError(t.adm_emailLoginSendFail);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      await adminLogin(password, rememberMe);
+      await adminLoginEmailVerify(code, rememberMe);
       onLogin();
     } catch {
       setError(t.adm_badLogin);
@@ -106,57 +119,78 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <h2 className="text-xl font-bold text-gray-900 mb-6">{t.adm_signInHeading}</h2>
-          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
-            <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
-                {t.adm_password}
-              </label>
-              <div className="relative">
+          <p className="text-sm text-gray-600 mb-4">{t.adm_emailLoginHint}</p>
+          {step === "idle" ? (
+            <div className="space-y-4">
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => void sendCode()}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl py-3 font-bold text-sm transition-colors"
+              >
+                {loading ? t.adm_signingIn : t.adm_emailLoginSend}
+              </button>
+              {error ? (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
+                  <Lock size={14} />
+                  {error}
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+                  {t.adm_emailLoginCodeLbl}
+                </label>
                 <input
-                  type={showPw ? "text" : "password"}
-                  name="ketujemi-admin-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  autoComplete="new-password"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-11 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="123456"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all"
                   required
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
               </div>
-            </div>
 
-            <label className="flex items-center gap-2.5 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="text-sm text-gray-600">{t.adm_remember_device}</span>
-            </label>
+              <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-600">{t.adm_remember_device}</span>
+              </label>
 
-            {error && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
-                <Lock size={14} />
-                {error}
-              </div>
-            )}
+              {error ? (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
+                  <Lock size={14} />
+                  {error}
+                </div>
+              ) : null}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl py-3 font-bold text-sm transition-colors"
-            >
-              {loading ? t.adm_signingIn : t.adm_signInBtn}
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={loading || code.trim().length < 4}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl py-3 font-bold text-sm transition-colors"
+              >
+                {loading ? t.adm_signingIn : t.adm_signInBtn}
+              </button>
+              <button
+                type="button"
+                className="w-full text-sm text-gray-500 underline"
+                onClick={() => {
+                  setStep("idle");
+                  setCode("");
+                }}
+              >
+                {t.adm_emailLoginResend}
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </div>

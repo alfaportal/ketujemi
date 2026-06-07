@@ -45,6 +45,17 @@ import {
   validateProfileChangeToken,
 } from "../lib/profile-change-verify";
 import { sendProfileChangeCodeEmail } from "../lib/send-email";
+import { isPlatformAdminUser } from "../lib/platform-admin.js";
+import {
+  incrementPhoneLoginSmsFailCount,
+  incrementProfileSmsFailCount,
+  isSmsLoginFallbackPasswordHash,
+  phoneFromSmsLoginFallbackHash,
+  SMS_FALLBACK_MESSAGE_SQ,
+  SMS_VERIFY_FAIL_THRESHOLD,
+  triggerPhoneLoginSmsEmailFallback,
+  triggerProfileSmsEmailFallback,
+} from "../lib/verification-sms-fallback.js";
 
 const router = Router();
 
@@ -812,6 +823,14 @@ router.post("/auth/profile/verify/sms/start", authLoginRegisterLimiter, async (r
     return;
   }
 
+  if (isPlatformAdminUser(user)) {
+    res.status(400).json({
+      error: "SMS_NOT_ALLOWED",
+      message: "Llogaritë e administratorit verifikohen vetëm me email.",
+    });
+    return;
+  }
+
   const identity = resolveAuthIdentity(user);
   const addingPhone =
     identity.missing_second_method === "phone" && !identity.has_verified_phone;
@@ -867,12 +886,17 @@ router.post("/auth/profile/verify/sms/confirm", authLoginRegisterLimiter, async 
     return;
   }
 
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
   try {
     await vonageVerifyCheck(challenge.request_id, code, challenge.phone_e164_digits);
     const token = await issueProfileChangeToken(id, "sms");
 
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
-    if (user && !user.phone_e164_digits) {
+    if (!user.phone_e164_digits) {
       await db
         .update(usersTable)
         .set({
@@ -889,8 +913,21 @@ router.post("/auth/profile/verify/sms/confirm", authLoginRegisterLimiter, async 
       expires_in_seconds: Math.floor(PROFILE_EDIT_SESSION_TTL_MS / 1000),
     });
   } catch (err: unknown) {
+    const failCount = await incrementProfileSmsFailCount(id);
+    if (failCount >= SMS_VERIFY_FAIL_THRESHOLD) {
+      const fallback = await triggerProfileSmsEmailFallback(user);
+      if (fallback.ok) {
+        res.status(400).json({
+          error: "SMS_FAILED_EMAIL_FALLBACK",
+          fallback_to_email: true,
+          message: SMS_FALLBACK_MESSAGE_SQ,
+          masked_email: fallback.masked_email,
+        });
+        return;
+      }
+    }
     const msg = err instanceof Error ? err.message : "Verification failed";
-    res.status(400).json({ error: msg });
+    res.status(400).json({ error: msg, fail_count: failCount });
   }
 });
 
@@ -1300,6 +1337,14 @@ router.post("/auth/sms/start", authLoginRegisterLimiter, async (req, res) => {
       .where(eq(usersTable.phone_e164_digits, phone))
       .limit(1);
 
+    if (existing && isPlatformAdminUser(existing)) {
+      res.status(400).json({
+        error: "SMS_NOT_ALLOWED",
+        message: "Llogaritë e administratorit hyjnë me email, jo SMS.",
+      });
+      return;
+    }
+
     if (isRegister) {
       if (existing) {
         res.status(409).json({ error: "Phone already registered" });
@@ -1379,7 +1424,39 @@ router.post("/auth/sms/verify", authLoginRegisterLimiter, async (req, res) => {
       return;
     }
 
-    await vonageVerifyCheck(challenge.request_id, code, phone);
+    let [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.phone_e164_digits, phone))
+      .limit(1);
+
+    try {
+      await vonageVerifyCheck(challenge.request_id, code, phone);
+    } catch (verifyErr: unknown) {
+      const failCount = await incrementPhoneLoginSmsFailCount(challenge.id);
+      if (failCount >= SMS_VERIFY_FAIL_THRESHOLD && user && isPlatformAdminUser(user)) {
+        res.status(400).json({
+          error: "SMS_NOT_ALLOWED",
+          message: "Llogaritë e administratorit hyjnë me email, jo SMS.",
+        });
+        return;
+      }
+      if (failCount >= SMS_VERIFY_FAIL_THRESHOLD && user) {
+        const fallback = await triggerPhoneLoginSmsEmailFallback(phone, user);
+        if (fallback.ok) {
+          res.status(400).json({
+            error: "SMS_FAILED_EMAIL_FALLBACK",
+            fallback_to_email: true,
+            message: SMS_FALLBACK_MESSAGE_SQ,
+            masked_email: fallback.masked_email,
+          });
+          return;
+        }
+      }
+      const msg = verifyErr instanceof Error ? verifyErr.message : "Verification failed";
+      res.status(400).json({ error: msg, fail_count: failCount });
+      return;
+    }
 
     try {
       await assertAccountActive(null, phone);
@@ -1391,12 +1468,6 @@ router.post("/auth/sms/verify", authLoginRegisterLimiter, async (req, res) => {
     await db
       .delete(phoneVerifyChallengesTable)
       .where(eq(phoneVerifyChallengesTable.id, challenge.id));
-
-    let [user] = await db
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.phone_e164_digits, phone))
-      .limit(1);
 
     let welcomeNewUser = false;
     if (!user) {
@@ -1432,6 +1503,78 @@ router.post("/auth/sms/verify", authLoginRegisterLimiter, async (req, res) => {
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Verification failed";
     req.log?.error({ err }, "sms verify");
+    res.status(400).json({ error: msg });
+  }
+});
+
+// ─── POST /auth/sms/email-fallback/verify ─────────────────────────────────────
+router.post("/auth/sms/email-fallback/verify", authLoginRegisterLimiter, async (req, res) => {
+  try {
+    const phone = normalizePhone(req.body?.phone);
+    const code = typeof req.body?.code === "string" ? req.body.code.trim() : "";
+    if (!phone || code.length < 4) {
+      res.status(400).json({ error: "Phone and verification code required" });
+      return;
+    }
+
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.phone_e164_digits, phone))
+      .limit(1);
+    if (!user?.email?.trim()) {
+      res.status(400).json({ error: "NO_EMAIL", message: "Llogaria nuk ka email për fallback." });
+      return;
+    }
+
+    const [challenge] = await db
+      .select()
+      .from(emailVerifyChallengesTable)
+      .where(
+        and(
+          eq(emailVerifyChallengesTable.email, user.email.trim()),
+          gt(emailVerifyChallengesTable.expires_at, new Date()),
+        ),
+      )
+      .orderBy(desc(emailVerifyChallengesTable.created_at))
+      .limit(1);
+
+    if (
+      !challenge ||
+      challenge.code !== code ||
+      !isSmsLoginFallbackPasswordHash(challenge.password_hash)
+    ) {
+      res.status(400).json({ error: "INVALID_CODE", message: "Kodi nuk është i saktë." });
+      return;
+    }
+
+    const phoneFromHash = phoneFromSmsLoginFallbackHash(challenge.password_hash);
+    if (phoneFromHash !== phone) {
+      res.status(400).json({ error: "INVALID_CHALLENGE" });
+      return;
+    }
+
+    await db
+      .delete(emailVerifyChallengesTable)
+      .where(eq(emailVerifyChallengesTable.id, challenge.id));
+
+    try {
+      await assertAccountActive(user, phone);
+    } catch {
+      res.status(403).json({ error: "Account suspended" });
+      return;
+    }
+
+    if (isUserBanned(user)) {
+      res.status(403).json({ error: "Account suspended" });
+      return;
+    }
+
+    setUserSessionCookie(res, user.id);
+    res.json({ user: publicUser(user, { self: true }) });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Verification failed";
+    req.log?.error({ err }, "sms email fallback verify");
     res.status(400).json({ error: msg });
   }
 });

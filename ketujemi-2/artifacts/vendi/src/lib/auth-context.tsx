@@ -41,6 +41,7 @@ export type AuthUser = {
   missing_second_method?: "email" | "phone" | null;
   can_add_phone?: boolean;
   can_add_email?: boolean;
+  is_platform_admin?: boolean;
   phone_verified?: boolean;
   wallet?: {
     balance_cents: number;

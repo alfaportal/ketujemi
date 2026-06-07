@@ -57,10 +57,16 @@ export function ProfileAddPhone({ onAdded }: Props) {
       const data = (await res.json().catch(() => ({}))) as {
         profile_change_token?: string;
         expires_in_seconds?: number;
+        fallback_to_email?: boolean;
         message?: string;
         error?: string;
       };
       if (!res.ok) {
+        if (data.fallback_to_email) {
+          toast({ title: data.message ?? copy.profile_sms_fallback_message });
+          onAdded();
+          return;
+        }
         toast({
           title: data.message ?? data.error ?? copy.toast_verifyFail,
           variant: "destructive",

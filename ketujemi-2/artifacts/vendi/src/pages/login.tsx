@@ -92,6 +92,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
+  const [phoneLoginEmailFallback, setPhoneLoginEmailFallback] = useState(false);
+  const [phoneFallbackNote, setPhoneFallbackNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [smsAuthEnabled, setSmsAuthEnabled] = useState(false);
   const [googleOAuthEnabled, setGoogleOAuthEnabled] = useState(false);
@@ -182,6 +184,8 @@ export default function LoginPage() {
   function resetVerify() {
     setStep("credentials");
     setCode("");
+    setPhoneLoginEmailFallback(false);
+    setPhoneFallbackNote(null);
     setRecaptchaToken(null);
     recaptchaRef.current?.reset();
   }
@@ -470,7 +474,10 @@ export default function LoginPage() {
     setBusy(true);
     try {
       await clearAuthSessionBeforeRegister();
-      const res = await fetchWithTimeout("/api/auth/sms/verify", {
+      const url = phoneLoginEmailFallback
+        ? "/api/auth/sms/email-fallback/verify"
+        : "/api/auth/sms/verify";
+      const res = await fetchWithTimeout(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -478,8 +485,21 @@ export default function LoginPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        const payload = data as {
+          error?: string;
+          message?: string;
+          fallback_to_email?: boolean;
+        };
+        if (payload.fallback_to_email && !phoneLoginEmailFallback) {
+          const msg = payload.message ?? t.profile_sms_fallback_message;
+          setPhoneLoginEmailFallback(true);
+          setPhoneFallbackNote(msg);
+          setCode("");
+          toast({ title: msg });
+          return;
+        }
         toast({
-          title: (data as { error?: string }).error ?? t.toast_verifyFail,
+          title: payload.message ?? payload.error ?? t.toast_verifyFail,
           variant: "destructive",
         });
         return;
@@ -733,7 +753,14 @@ export default function LoginPage() {
           ) : smsAuthEnabled ? (
             isVerify ? (
               <form className="space-y-4" onSubmit={onVerifyPhone} noValidate>
-                <p className="text-sm text-gray-600">{t.login_phoneVerifyHint}</p>
+                <p className="text-sm text-gray-600">
+                  {phoneLoginEmailFallback ? t.login_emailFallbackHint : t.login_phoneVerifyHint}
+                </p>
+                {phoneFallbackNote ? (
+                  <p className="text-sm text-blue-900 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2">
+                    {phoneFallbackNote}
+                  </p>
+                ) : null}
                 <button
                   type="button"
                   className="text-sm text-blue-600 font-medium hover:underline min-h-11"

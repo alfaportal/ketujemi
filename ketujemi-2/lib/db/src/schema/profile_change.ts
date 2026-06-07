@@ -11,6 +11,7 @@ export const profileChangeChallengesTable = pgTable("profile_change_challenges",
   email: text("email"),
   request_id: text("request_id"),
   code: text("code"),
+  fail_count: integer("fail_count").notNull().default(0),
   expires_at: timestamp("expires_at").notNull(),
   created_at: timestamp("created_at").notNull().defaultNow(),
 });

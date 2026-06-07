@@ -16,6 +16,8 @@ import {
   ensureSocialReelPostsSchema,
   ensureUserSocialConnectionsSchema,
   ensureProfileChangeSchema,
+  ensurePhoneVerifySchema,
+  ensureAdminLoginSchema,
   ensureWalletSchema,
   pool,
 } from "@workspace/db";
@@ -96,6 +98,10 @@ async function startServer(): Promise<void> {
     logger.info("User social connections schema verified (user_social_connections)");
     await ensureProfileChangeSchema(pool);
     logger.info("Profile change verify schema verified (profile_change_challenges, profile_change_tokens)");
+    await ensurePhoneVerifySchema(pool);
+    logger.info("Phone verify schema verified (phone_verify_challenges.fail_count)");
+    await ensureAdminLoginSchema(pool);
+    logger.info("Admin login schema verified (admin_login_challenges)");
     await purgeInvalidListingImagesOnStartup();
     logPaymentStackReadiness(logger);
     logger.info(vonageConfigSummary(), "vonage sms config (masked)");
