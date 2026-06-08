@@ -123,6 +123,14 @@ function femijeRuleMatch(text: string, cats: CategoryRow[]): CategorySuggestResu
   };
 }
 
+/** Rule-based category match only — no Claude. Used by Google Vision listing analyze. */
+export function matchListingCategoryFromRules(
+  text: string,
+  cats: CategoryRow[],
+): CategorySuggestResult | null {
+  return ruleMatch(text, cats);
+}
+
 function ruleMatch(text: string, cats: CategoryRow[]): CategorySuggestResult | null {
   const femije = femijeRuleMatch(text, cats);
   if (femije) return femije;

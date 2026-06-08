@@ -6,7 +6,7 @@ import {
   isGoogleVisionConfigured,
   type GoogleVisionDetectResult,
 } from "./google-vision-client";
-import { suggestListingCategory } from "./listing-category-suggest";
+import { matchListingCategoryFromRules } from "./listing-category-suggest";
 
 export type ListingImageAnalyzeResult = {
   parent_category_id: number;
@@ -52,31 +52,6 @@ type CopyPayload = {
 /** Parents that must never be auto-selected from a product photo. */
 const EXCLUDED_PARENT_SLUGS = new Set(["kerkoj-te-blej", "dhurata-falas"]);
 
-const CATEGORY_FROM_LABELS_SYSTEM = `You classify second-hand listings for KetuJemi.com from Google Vision labels (NOT from an image).
-
-Given detected labels/objects, pick the BEST matching categories from the JSON catalog. Use exact numeric ids only.
-
-═══ CATEGORY ID RULES ═══
-parent_category_id = top-level hub (root in catalog)
-category_id = DIRECT child of that parent (required when parent has children)
-brand_category_id = deepest leaf when 3+ levels exist; null otherwise
-
-═══ VISUAL LABEL → PARENT HUB (exact catalog names) ═══
-Clothing, shoes, costumes → «Rroba & Këpucë» (NEVER Muzikë & Hobby for clothing)
-Cars → «Vetura» | Motorcycles → «Motorr & Skuter» | Trucks → «Kamionë & Furgonë»
-Car parts, tires → «Auto Pjesë»
-Phones → «Telefona» (iPhone/Apple/Samsung → brand child when visible)
-Laptops/PCs → «Kompjuterë & Laptopë»
-TVs, speakers, cameras, gaming → «Elektronikë & Pajisje Shtëpiake»
-Furniture → «Mobilje & Dekorime»
-Baby/toys → «Fëmijë»
-Sports, bicycles → «Sport & Outdoor»
-Pets → «Kafshë»
-Musical instruments, art supplies → «Muzikë & Hobby» ONLY for those items
-
-Reply ONLY JSON:
-{"parent_category_id":number,"category_id":number,"brand_category_id":number|null,"confidence":"high"|"medium"|"low"}`;
-
 const COPY_FROM_LABELS_SYSTEM = `You write Albanian (sq) listing copy for KetuJemi.com second-hand marketplace.
 
 You receive Google Vision labels and the already-chosen category. Write based on what was detected — do NOT invent features not suggested by the labels.
@@ -89,7 +64,7 @@ If seller_type is "shop", write as a clear shop product listing.
 Reply ONLY JSON:
 {"title":"...","description":"...","confidence":"high"|"medium"|"low"}`;
 
-const AI_VISION_FALLBACK_SYSTEM = `You analyze product photos for second-hand listings on KetuJemi.com (Albanian marketplace).
+const CLAUDE_VISION_SYSTEM = `You analyze product photos for second-hand listings on KetuJemi.com (Albanian marketplace).
 
 TASK: Look at the MAIN OBJECT being sold. Classify by what the item IS (material product type), not by cultural context, decoration style, or where it might be used.
 
@@ -295,77 +270,58 @@ function matchBrandChildFromLabels(
   return undefined;
 }
 
-async function classifyCategoryFromLabels(
+function classifyCategoryFromGoogleLabels(
   vision: GoogleVisionDetectResult,
   rows: CategoryRow[],
-  catalog: CatalogNode[],
-): Promise<CategoryPickPayload | null> {
+): CategoryPickPayload | null {
   const labelText = visionTextFromDetect(vision);
   const searchText = labelText.slice(0, 400);
 
-  const fromRules = await suggestListingCategory({
-    title: searchText.slice(0, 200),
-    description: searchText,
-  });
+  const fromRules = matchListingCategoryFromRules(searchText, rows);
+  if (!fromRules) return null;
 
-  if (fromRules) {
-    let categoryId = fromRules.category_id;
-    let brandId = fromRules.brand_category_id;
-
-    const matched = matchBrandChildFromLabels(
-      labelText,
-      fromRules.parent_category_id,
-      fromRules.category_id,
-      rows,
-    );
-    if (matched) {
-      const matchedRow = rows.find((c) => c.id === matched);
-      if (matchedRow?.parent_id === fromRules.parent_category_id) {
-        categoryId = matched;
-        brandId = undefined;
-      } else if (!brandId) {
-        brandId = matched;
-      }
-    }
-
-    return {
-      parent_category_id: fromRules.parent_category_id,
-      category_id: categoryId,
-      brand_category_id: brandId ?? null,
-      confidence: fromRules.confidence,
-    };
-  }
-
-  if (!isClaudeConfigured()) return null;
-
-  const parsed = await claudeJsonCompletion<CategoryPickPayload>({
-    system: CATEGORY_FROM_LABELS_SYSTEM,
-    user: JSON.stringify({
-      google_vision: formatVisionDetectResult(vision),
-      categories: catalog,
-    }),
-    maxTokens: 500,
-  });
-
-  if (!parsed?.parent_category_id || !parsed?.category_id) return null;
+  let categoryId = fromRules.category_id;
+  let brandId = fromRules.brand_category_id;
 
   const matched = matchBrandChildFromLabels(
     labelText,
-    parsed.parent_category_id,
-    parsed.category_id,
+    fromRules.parent_category_id,
+    fromRules.category_id,
     rows,
   );
   if (matched) {
     const matchedRow = rows.find((c) => c.id === matched);
-    if (matchedRow?.parent_id === parsed.parent_category_id) {
-      parsed.category_id = matched;
-      parsed.brand_category_id = null;
-    } else if (!parsed.brand_category_id) {
-      parsed.brand_category_id = matched;
+    if (matchedRow?.parent_id === fromRules.parent_category_id) {
+      categoryId = matched;
+      brandId = undefined;
+    } else if (!brandId) {
+      brandId = matched;
     }
   }
 
-  return parsed;
+  return {
+    parent_category_id: fromRules.parent_category_id,
+    category_id: categoryId,
+    brand_category_id: brandId ?? null,
+    confidence: fromRules.confidence,
+  };
+}
+
+function fallbackCopyFromGoogleLabels(
+  vision: GoogleVisionDetectResult,
+  category: { parent_name: string; category_name: string },
+): CopyPayload {
+  const topLabel =
+    vision.labels[0]?.description ??
+    vision.objects[0]?.name ??
+    category.category_name;
+  const title = `${topLabel}`.slice(0, 80);
+  const description =
+    `Shitet ${topLabel}. Kategori: ${category.parent_name} › ${category.category_name}.`.slice(
+      0,
+      400,
+    );
+  return { title, description, confidence: "low" };
 }
 
 async function generateCopyFromLabels(
@@ -396,16 +352,19 @@ async function generateCopyFromLabels(
   });
 }
 
-async function analyzeWithGoogleVisionHybrid(
+/**
+ * Pipeline A — Google Vision only for detection/classification.
+ * Claude TEXT (not vision) may write Albanian copy from labels when configured.
+ */
+async function analyzeWithGoogleVisionPipeline(
   imageBase64: string,
   rows: CategoryRow[],
-  catalog: CatalogNode[],
   shop?: { shop_name: string; shop_category: string | null },
 ): Promise<ListingImageAnalyzeResult | null> {
   const vision = await detectImageLabels(imageBase64);
   if (!vision) return null;
 
-  const categoryPick = await classifyCategoryFromLabels(vision, rows, catalog);
+  const categoryPick = classifyCategoryFromGoogleLabels(vision, rows);
   if (!categoryPick?.parent_category_id || !categoryPick.category_id) return null;
 
   const chain = categoryChain(
@@ -415,16 +374,19 @@ async function analyzeWithGoogleVisionHybrid(
   const mapped = chain ? mapChainToForm(chain) : null;
   if (!mapped) return null;
 
-  const copy = await generateCopyFromLabels(
-    vision,
-    {
-      parent_name: mapped.parent.name,
-      category_name: mapped.category.name,
-      brand_name: mapped.brand?.name,
-    },
-    shop,
-  );
-  if (!copy?.title || !copy.description) return null;
+  const categoryInfo = {
+    parent_name: mapped.parent.name,
+    category_name: mapped.category.name,
+    brand_name: mapped.brand?.name,
+  };
+
+  let copy: CopyPayload | null = null;
+  if (isClaudeConfigured()) {
+    copy = await generateCopyFromLabels(vision, categoryInfo, shop);
+  }
+  if (!copy?.title || !copy.description) {
+    copy = fallbackCopyFromGoogleLabels(vision, categoryInfo);
+  }
 
   return validateHierarchy(rows, {
     parent_category_id: categoryPick.parent_category_id,
@@ -436,6 +398,10 @@ async function analyzeWithGoogleVisionHybrid(
   });
 }
 
+/**
+ * Pipeline B — Claude Vision analyzes the image directly (category + copy together).
+ * Never mixed with Google Vision labels.
+ */
 async function analyzeWithClaudeVision(
   imageBase64: string,
   mediaType: string,
@@ -444,7 +410,7 @@ async function analyzeWithClaudeVision(
   shop?: { shop_name: string; shop_category: string | null },
 ): Promise<ListingImageAnalyzeResult | null> {
   const parsed = await claudeVisionJsonCompletionFromBase64<VisionAiPayload>({
-    system: AI_VISION_FALLBACK_SYSTEM,
+    system: CLAUDE_VISION_SYSTEM,
     userText: JSON.stringify({
       instruction:
         "Classify the main sellable object in the image. Pick parent_category_id, category_id (direct child of parent), and brand_category_id (deepest leaf when available).",
@@ -466,6 +432,10 @@ async function analyzeWithClaudeVision(
   return validateHierarchy(rows, parsed);
 }
 
+export function isListingImageAnalyzeConfigured(): boolean {
+  return isGoogleVisionConfigured() || isClaudeConfigured();
+}
+
 export async function analyzeListingImage(input: {
   imageBase64: string;
   mediaType: string;
@@ -474,7 +444,10 @@ export async function analyzeListingImage(input: {
 }): Promise<ListingImageAnalyzeResult | null> {
   const imageBase64 = input.imageBase64.trim();
   if (imageBase64.length < 100 || imageBase64.length > 6_000_000) return null;
-  if (!isClaudeConfigured()) return null;
+
+  const canGoogle = isGoogleVisionConfigured();
+  const canClaudeVision = isClaudeConfigured();
+  if (!canGoogle && !canClaudeVision) return null;
 
   const cats = await db.select().from(categoriesTable);
   const rows: CategoryRow[] = cats.map((c) => ({
@@ -493,12 +466,18 @@ export async function analyzeListingImage(input: {
       : undefined;
 
   try {
-    if (isGoogleVisionConfigured()) {
-      const hybrid = await analyzeWithGoogleVisionHybrid(imageBase64, rows, catalog, shop);
-      if (hybrid) return hybrid;
+    // Pipeline A: Google Vision (fast) — fully separate from Claude Vision.
+    if (canGoogle) {
+      const googleResult = await analyzeWithGoogleVisionPipeline(imageBase64, rows, shop);
+      if (googleResult) return googleResult;
     }
 
-    return analyzeWithClaudeVision(imageBase64, input.mediaType, rows, catalog, shop);
+    // Pipeline B: Claude Vision fallback when Google is unavailable or inconclusive.
+    if (canClaudeVision) {
+      return analyzeWithClaudeVision(imageBase64, input.mediaType, rows, catalog, shop);
+    }
+
+    return null;
   } catch {
     return null;
   }

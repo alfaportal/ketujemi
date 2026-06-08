@@ -3,11 +3,15 @@ import { getSessionUser } from "../lib/session-user";
 import { getPostingSuggestions } from "../lib/listing-posting-assistant";
 import { polishListingDescription } from "../lib/listing-description-polish";
 import { generateShopDescription } from "../lib/shop-description-generate";
-import { analyzeListingImage } from "../lib/listing-image-analyze";
+import {
+  analyzeListingImage,
+  isListingImageAnalyzeConfigured,
+} from "../lib/listing-image-analyze";
 import { suggestListingCategory } from "../lib/listing-category-suggest";
 import { getSimilarListingsForListing } from "../lib/listing-ai-recommendations";
 import { runSupportChat, supportChatFallbackReply, type ChatMessage } from "../lib/support-chatbot";
 import { isClaudeConfigured, parseUiLang } from "../lib/claude-client";
+import { isGoogleVisionConfigured } from "../lib/google-vision-client";
 
 const router = Router();
 
@@ -142,7 +146,7 @@ router.post("/ai/analyze-listing-image", async (req, res) => {
     return;
   }
 
-  if (!isClaudeConfigured()) {
+  if (!isListingImageAnalyzeConfigured()) {
     res.status(503).json({ error: "AI_NOT_CONFIGURED" });
     return;
   }
@@ -159,7 +163,12 @@ router.post("/ai/analyze-listing-image", async (req, res) => {
     return;
   }
 
-  res.json({ analysis, ai_enabled: true });
+  res.json({
+    analysis,
+    ai_enabled: isListingImageAnalyzeConfigured(),
+    google_vision: isGoogleVisionConfigured(),
+    claude_vision: isClaudeConfigured(),
+  });
 });
 
 // ─── GET /ai/listings/:id/similar ─────────────────────────────────────────────
