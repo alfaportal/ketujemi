@@ -22,7 +22,7 @@ type Props = {
 };
 
 export function ListingDescriptionHelper({ description, onApplyDescription }: Props) {
-  const { market } = useMarket();
+  const { market, t } = useMarket();
   const [loading, setLoading] = useState(false);
   const [polished, setPolished] = useState<string | null>(null);
   const usedRef = useRef(false);
@@ -70,7 +70,7 @@ export function ListingDescriptionHelper({ description, onApplyDescription }: Pr
         ) : (
           <Sparkles className="h-4 w-4" aria-hidden />
         )}
-        Ndihmë AI
+        {t.systemHelpBtn ?? "Ndihmë nga sistemi jonë"}
       </Button>
 
       {polished ? (
@@ -86,7 +86,7 @@ export function ListingDescriptionHelper({ description, onApplyDescription }: Pr
                 setPolished(null);
               }}
             >
-              Prano
+              {t.descriptionHelperAccept ?? "Prano"}
             </Button>
             <Button
               type="button"
@@ -95,7 +95,7 @@ export function ListingDescriptionHelper({ description, onApplyDescription }: Pr
               className="min-h-10 text-gray-600"
               onClick={() => setPolished(null)}
             >
-              Injoro
+              {t.descriptionHelperIgnore ?? "Injoro"}
             </Button>
           </div>
         </div>

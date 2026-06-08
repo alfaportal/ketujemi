@@ -790,7 +790,7 @@ export default function NewListing() {
                   {(isAnalyzingImage || isUploading) && (
                     <p className="text-sm text-blue-600 font-medium mb-2 flex items-center gap-2" role="status">
                       <Loader2 size={14} className="animate-spin shrink-0" />
-                      {isUploading ? t.uploading : (tx.analyzingPhoto ?? "Duke analizuar foton me AI...")}
+                      {isUploading ? t.uploading : (tx.analyzingPhoto ?? "Duke analizuar foton me sistemin tonë...")}
                     </p>
                   )}
 
@@ -809,7 +809,7 @@ export default function NewListing() {
                     ) : isAnalyzingImage ? (
                       <div className="flex flex-col items-center gap-1.5 text-blue-500">
                         <Loader2 size={30} className="animate-spin" />
-                        <p className="text-sm font-semibold">{tx.analyzingPhoto ?? "Duke analizuar foton me AI..."}</p>
+                        <p className="text-sm font-semibold">{tx.analyzingPhoto ?? "Duke analizuar foton me sistemin tonë..."}</p>
                         <p className="text-sm text-gray-400">{tx.analyzingPhotoHint ?? "Kategoria, titulli dhe përshkrimi plotësohen automatikisht."}</p>
                       </div>
                     ) : (
@@ -825,7 +825,7 @@ export default function NewListing() {
                   <ImagePreview urls={imageUrls} onRemove={isUploading ? () => {} : removeImage} mainLabel={t.mainPhotoLabel} />
 
                   <p className="text-sm text-gray-600 mt-3 leading-relaxed">
-                    {t.firstPhotoAiHint}
+                    {hasShop ? t.firstPhotoAiHintShop : t.firstPhotoAiHint}
                   </p>
                 </div>
 

@@ -8,7 +8,7 @@ export const KETUJEMI_PLATFORM_KNOWLEDGE = `
 KetuJemi.com është platformë njoftimesh (shpallje) për blerje/shitje në Ballkan dhe diasporë.
 • Çdo rresht = NJË njoftim nga NJË shitës (jo dyqan me inventar të centralizuar).
 • Çmimet, gjendja dhe kontakti janë te shitësi — KetuJemi nuk është ndërmjetës pagese për njoftimet normale.
-• Moderim AI para publikimit; raportim «Raporto» në njoftim.
+• Moderim automatik para publikimit; raportim «Raporto» në njoftim.
 
 === FAQET & NAVIGIMI (pa thënë vetëm «shiko faqen kryesore») ===
 • Faqja kryesore (/): 20 kategori + njoftime të fundit + TOP.
@@ -91,7 +91,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 4) Plotësoni: titull i qartë, përshkrim, çmim në **€** (ose «Me marrëveshje» për privatë).
 5) Ngarkoni foto **të pakufizuara** (opsionalisht një video deri **150MB**); rekomandohen min. 3 foto reale të produktit.
 6) Vendndodhja/qyteti, emri, telefon kontakti.
-7) Publikoni — **moderim AI** → njoftim aktiv deri **3 muaj**.
+7) Publikoni — **moderim automatik** → njoftim aktiv deri **3 muaj**.
 8) Menaxhim: **Profili** → njoftimet e mia → ndrysho / fshi / **«Rifillo njoftimin»** pas skadimit (+3 muaj).
 9) **TOP** (opsional): **€2 = 4 ditë**, **€5 = 15 ditë**, **€8 = 30 ditë** në krye të listës (zgjidhni paketën → Stripe).
 10) Mos postoni duplikat të njëjtë titull+përshkrim aktiv.
@@ -157,5 +157,5 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 
 === RREGULLA & MODERIM ===
 Lejohet: produkt real, foto të vërteta, një produkt për njoftim, çmim i qartë.
-Moderim AI para publikimit; refuzim nëse përmbajtja shkel rregullat.
+Moderim automatik para publikimit; refuzim nëse përmbajtja shkel rregullat.
 `.trim();

@@ -174,7 +174,7 @@ const KS: OpenShopFormCopy = {
   successMsg: "✅ Kërkesa juaj u dërgua! Do të kontaktoheni brenda 24 orëve.",
   loginRequired: "Për të dërguar kërkesën, duhet të jeni i regjistruar dhe i kyçur në llogarinë tuaj.",
   uploadingLogo: "Duke ngarkuar logon...",
-  aiHelpBtn: "✨ Ndihmë AI",
+  aiHelpBtn: "✨ Ndihmë nga sistemi jonë",
   aiBusinessTypePrompt:
     "Çfarë lloj biznesi keni? (p.sh. dyqan rrobash, agjenci patundshmërie, servis makine...)",
   aiBusinessTypePlaceholder: "p.sh. dyqan rrobash",
@@ -228,7 +228,7 @@ const MK: OpenShopFormCopy = {
   successMsg: "✅ Вашето барање е испратено! Ќе бидете контактирани во рок од 24 часа.",
   loginRequired: "За да го испратите барањето, мора да сте регистрирани и најавени.",
   uploadingLogo: "Се прикачува логото...",
-  aiHelpBtn: "✨ AI помош",
+  aiHelpBtn: "✨ Помош од нашиот систем",
   aiBusinessTypePrompt:
     "Каков вид на бизнис имате? (на пр. продавница за облека, агенција за недвижности, сервис за автомобили...)",
   aiBusinessTypePlaceholder: "на пр. продавница за облека",
@@ -281,7 +281,7 @@ const MNE: OpenShopFormCopy = {
   successMsg: "✅ Vaš zahtjev je poslan! Bićete kontaktirani u roku od 24 sata.",
   loginRequired: "Da biste poslali zahtjev, morate biti registrovani i prijavljeni.",
   uploadingLogo: "Otpremanje loga...",
-  aiHelpBtn: "✨ AI pomoć",
+  aiHelpBtn: "✨ Pomoć našeg sistema",
   aiBusinessTypePrompt:
     "Kakav tip poslovanja imate? (npr. prodavnica odjeće, agencija za nekretnine, servis automobila...)",
   aiBusinessTypePlaceholder: "npr. prodavnica odjeće",
@@ -334,7 +334,7 @@ const EN: OpenShopFormCopy = {
   successMsg: "✅ Your request was sent! We will contact you within 24 hours.",
   loginRequired: "You must be registered and signed in to submit a shop request.",
   uploadingLogo: "Uploading logo...",
-  aiHelpBtn: "✨ AI help",
+  aiHelpBtn: "✨ Help from our system",
   aiBusinessTypePrompt:
     "What type of business do you have? (e.g. clothing shop, real estate agency, car service...)",
   aiBusinessTypePlaceholder: "e.g. clothing shop",

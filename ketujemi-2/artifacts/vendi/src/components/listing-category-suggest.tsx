@@ -110,7 +110,7 @@ export function ListingCategorySuggest({
         ) : (
           <Sparkles className="h-4 w-4 shrink-0 text-violet-600" aria-hidden />
         )}
-        {tx.ui_categorySuggestTitle ?? "Këshillë AI për kategori"}
+        {tx.ui_categorySuggestTitle ?? "Këshillë nga sistemi për kategori"}
       </div>
       {loading && !suggestion ? (
         <p className="text-emerald-800 text-xs">

@@ -24,7 +24,7 @@ export function PostingAssistantPanel({
   parentCategoryName,
   imageCount,
 }: Props) {
-  const { market } = useMarket();
+  const { market, t } = useMarket();
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -88,14 +88,14 @@ export function PostingAssistantPanel({
         ) : (
           <Sparkles className="h-4 w-4" aria-hidden />
         )}
-        Sugjerime AI
+        {t.postingSuggestionsTitle ?? "Sugjerime nga sistemi jonë"}
       </div>
       {loadError ? (
         <p className="text-red-600 text-xs" role="alert">
           {loadError}
         </p>
       ) : loading && suggestions.length === 0 ? (
-        <p className="text-violet-700 text-xs">Duke analizuar njoftimin…</p>
+        <p className="text-violet-700 text-xs">{t.postingSuggestionsLoading ?? "Duke analizuar njoftimin…"}</p>
       ) : (
         <ul className="space-y-1.5 text-violet-900">
           {suggestions.map((s, i) => (
