@@ -19,6 +19,8 @@ export type ListingVideoMetadata = {
 
 export type VideoPrepareProgress = (percent: number) => void;
 
+const METADATA_TIMEOUT_MS = 12_000;
+
 export async function readListingVideoMetadata(file: File): Promise<ListingVideoMetadata> {
   const url = URL.createObjectURL(file);
   try {
@@ -27,9 +29,25 @@ export async function readListingVideoMetadata(file: File): Promise<ListingVideo
     video.muted = true;
     video.playsInline = true;
     await new Promise<void>((resolve, reject) => {
-      video.onloadedmetadata = () => resolve();
-      video.onerror = () => reject(new Error("video_metadata_failed"));
+      const timer = window.setTimeout(() => {
+        cleanup();
+        reject(new Error("video_metadata_timeout"));
+      }, METADATA_TIMEOUT_MS);
+      const cleanup = () => {
+        window.clearTimeout(timer);
+        video.onloadedmetadata = null;
+        video.onerror = null;
+      };
+      video.onloadedmetadata = () => {
+        cleanup();
+        resolve();
+      };
+      video.onerror = () => {
+        cleanup();
+        reject(new Error("video_metadata_failed"));
+      };
       video.src = url;
+      video.load();
     });
     const durationSec =
       Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 0;
@@ -59,11 +77,18 @@ function outputFileName(sourceName: string): string {
 }
 
 function inputFileName(file: File): string {
-  const m = file.name.match(/\.(mp4|mov|avi)$/i);
-  if (m) return `input.${m[1]!.toLowerCase()}`;
+  const m = file.name.match(/\.(mp4|mov|avi|m4v|3gp|3gpp|webm|mkv)$/i);
+  if (m) {
+    const ext = m[1]!.toLowerCase();
+    if (ext === "3gpp") return "input.3gp";
+    return `input.${ext}`;
+  }
   const mime = file.type?.toLowerCase() ?? "";
   if (mime.includes("quicktime")) return "input.mov";
   if (mime.includes("msvideo") || mime.includes("avi")) return "input.avi";
+  if (mime.includes("3gpp") || mime.includes("3gp")) return "input.3gp";
+  if (mime.includes("webm")) return "input.webm";
+  if (mime.includes("matroska") || mime.includes("mkv")) return "input.mkv";
   return "input.mp4";
 }
 
@@ -84,6 +109,10 @@ function targetVideoBitrate(durationSec: number, scale = 1): number {
 
 let ffmpegReady: Promise<FFmpeg> | null = null;
 
+function resetFfmpegLoader(): void {
+  ffmpegReady = null;
+}
+
 async function loadFfmpeg(onProgress?: VideoPrepareProgress): Promise<FFmpeg> {
   if (!ffmpegReady) {
     ffmpegReady = (async () => {
@@ -103,7 +132,12 @@ async function loadFfmpeg(onProgress?: VideoPrepareProgress): Promise<FFmpeg> {
       return ffmpeg;
     })();
   }
-  return ffmpegReady;
+  try {
+    return await ffmpegReady;
+  } catch (err) {
+    resetFfmpegLoader();
+    throw err;
+  }
 }
 
 async function transcodeToMp4(
@@ -170,7 +204,13 @@ async function transcodeToMp4(
   if (lastBlob && lastBlob.size > LISTING_VIDEO_MAX_BYTES) {
     throw new Error("video_shorten_needed");
   }
+  resetFfmpegLoader();
   throw new Error("video_prepare_failed");
+}
+
+/** Upload original when browser/ffmpeg cannot transcode but file already fits. */
+function canUploadOriginalWithoutPrepare(file: File): boolean {
+  return file.size > 0 && file.size <= LISTING_VIDEO_MAX_BYTES;
 }
 
 /**
@@ -181,8 +221,18 @@ export async function prepareListingVideoFile(
   file: File,
   onProgress?: VideoPrepareProgress,
 ): Promise<File> {
-  const meta = await readListingVideoMetadata(file);
-  if (meta.durationSec <= 0) throw new Error("video_metadata_failed");
+  let meta: ListingVideoMetadata;
+  try {
+    meta = await readListingVideoMetadata(file);
+  } catch {
+    if (canUploadOriginalWithoutPrepare(file)) return file;
+    throw new Error("video_metadata_failed");
+  }
+
+  if (meta.durationSec <= 0) {
+    if (canUploadOriginalWithoutPrepare(file)) return file;
+    throw new Error("video_metadata_failed");
+  }
 
   if (!canVideoFitAfterCompression(meta.durationSec)) {
     throw new Error("video_shorten_needed");
@@ -196,6 +246,11 @@ export async function prepareListingVideoFile(
     onProgress?.(0);
     return await transcodeToMp4(file, meta, onProgress);
   } catch (err) {
+    if (err instanceof Error && err.message === "video_shorten_needed") throw err;
+    if (canUploadOriginalWithoutPrepare(file)) {
+      resetFfmpegLoader();
+      return file;
+    }
     if (err instanceof Error) throw err;
     throw new Error("video_prepare_failed");
   }

@@ -59,9 +59,8 @@ import { listingPhotoAnalyzeFailureToast } from "@/lib/listing-photo-analyze-toa
 import { useListingImageUpload } from "@/lib/listing-image-upload";
 import {
   isAllowedListingVideoFile,
+  listingVideoErrorMessage,
   listingVideoFormatsHint,
-  listingVideoShortenMessage,
-  listingVideoTooLargeMessage,
   useListingVideoUpload,
   type ListingVideoUploadPhase,
 } from "@/lib/listing-video-upload";
@@ -615,9 +614,10 @@ export default function NewListing() {
       return;
     }
     if (!isAllowedListingVideoFile(file)) {
+      const msg = listingVideoErrorMessage(new Error("invalid_video_format"), uiLang);
       toast({
-        title: tx.videoInvalidFormatTitle ?? "Format i pavlefshëm",
-        description: tx.videoInvalidFormatDesc ?? "Lejohen vetëm MP4, MOV dhe AVI.",
+        title: msg?.title ?? (tx.videoInvalidFormatTitle ?? "Format i pavlefshëm"),
+        description: msg?.description ?? (tx.videoInvalidFormatDesc ?? "Lejohen vetëm MP4, MOV dhe AVI."),
         variant: "destructive",
       });
       return;
@@ -631,11 +631,8 @@ export default function NewListing() {
       });
       setVideoUrl(url);
     } catch (err) {
-      if (err instanceof Error && err.message === "video_shorten_needed") {
-        const msg = listingVideoShortenMessage(uiLang);
-        toast({ title: msg.title, description: msg.description, variant: "destructive" });
-      } else if (err instanceof Error && err.message === "video_too_large") {
-        const msg = listingVideoTooLargeMessage(uiLang);
+      const msg = listingVideoErrorMessage(err, uiLang);
+      if (msg) {
         toast({ title: msg.title, description: msg.description, variant: "destructive" });
       } else {
         toast({ title: t.uploadFailed, variant: "destructive" });
@@ -957,7 +954,7 @@ export default function NewListing() {
                   <input
                     ref={videoUploadRef}
                     type="file"
-                    accept="video/mp4,video/quicktime,video/x-msvideo,.mp4,.mov,.avi"
+                    accept="video/*,.mp4,.mov,.avi,.m4v,.3gp,.webm"
                     className="hidden"
                     onChange={(e) => void handleVideoChange(e)}
                   />

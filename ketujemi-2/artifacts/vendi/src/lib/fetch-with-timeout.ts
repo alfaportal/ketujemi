@@ -4,6 +4,9 @@ export const FETCH_TIMEOUT_MS = 10_000;
 /** Vision / Claude image analysis can take 20–45s on mobile networks. */
 export const IMAGE_ANALYZE_TIMEOUT_MS = 60_000;
 
+/** Listing video upload to Cloudinary (up to ~100 MB on slow mobile). */
+export const VIDEO_UPLOAD_TIMEOUT_MS = 600_000;
+
 export class FetchTimeoutError extends Error {
   constructor(message = "Request timed out") {
     super(message);

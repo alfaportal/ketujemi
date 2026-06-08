@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { fetchWithTimeout, VIDEO_UPLOAD_TIMEOUT_MS } from "@/lib/fetch-with-timeout";
 import {
   CLOUDINARY_LISTINGS_FOLDER,
   CLOUDINARY_PARTNERS_FOLDER,
@@ -122,13 +122,21 @@ export async function uploadVideoToCloudinary(
   fd.append("tags", "listing,video,deletable");
   fd.append("resource_type", "video");
 
-  const res = await fetchWithTimeout(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
-    method: "POST",
-    body: fd,
-  });
+  const res = await fetchWithTimeout(
+    `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
+    {
+      method: "POST",
+      body: fd,
+    },
+    VIDEO_UPLOAD_TIMEOUT_MS,
+  );
 
   if (!res.ok) {
-    throw new Error("Video upload failed");
+    const detail = await res.text().catch(() => "");
+    if (res.status === 413 || /file size too large|max(imum)? file size/i.test(detail)) {
+      throw new Error("video_too_large");
+    }
+    throw new Error("video_upload_failed");
   }
 
   const data = (await res.json()) as { secure_url?: string };
