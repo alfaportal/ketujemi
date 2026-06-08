@@ -12,12 +12,17 @@ import { getSimilarListingsForListing } from "../lib/listing-ai-recommendations"
 import { runSupportChat, supportChatFallbackReply, type ChatMessage } from "../lib/support-chatbot";
 import { isClaudeConfigured, parseUiLang } from "../lib/claude-client";
 import { isGoogleVisionConfigured } from "../lib/google-vision-client";
-import { analyzeListingImageLimiter } from "../lib/express-rate-limiters";
+import {
+  aiAuthenticatedLimiter,
+  aiSimilarListingsLimiter,
+  aiSupportChatLimiter,
+  analyzeListingImageLimiter,
+} from "../lib/express-rate-limiters";
 
 const router = Router();
 
 // ─── POST /ai/posting-suggestions ─────────────────────────────────────────────
-router.post("/ai/posting-suggestions", async (req, res) => {
+router.post("/ai/posting-suggestions", aiAuthenticatedLimiter, async (req, res) => {
   const viewer = await getSessionUser(req);
   if (!viewer) {
     res.status(401).json({ error: "Authentication required" });
@@ -52,7 +57,7 @@ router.post("/ai/posting-suggestions", async (req, res) => {
 });
 
 // ─── POST /ai/polish-listing-description ────────────────────────────────────────
-router.post("/ai/polish-listing-description", async (req, res) => {
+router.post("/ai/polish-listing-description", aiAuthenticatedLimiter, async (req, res) => {
   const viewer = await getSessionUser(req);
   if (!viewer) {
     res.status(401).json({ error: "Authentication required" });
@@ -72,7 +77,7 @@ router.post("/ai/polish-listing-description", async (req, res) => {
 });
 
 // ─── POST /ai/generate-shop-description ─────────────────────────────────────────
-router.post("/ai/generate-shop-description", async (req, res) => {
+router.post("/ai/generate-shop-description", aiAuthenticatedLimiter, async (req, res) => {
   const viewer = await getSessionUser(req);
   if (!viewer) {
     res.status(401).json({ error: "Authentication required" });
@@ -104,7 +109,7 @@ router.post("/ai/generate-shop-description", async (req, res) => {
 });
 
 // ─── POST /ai/suggest-listing-category ─────────────────────────────────────────
-router.post("/ai/suggest-listing-category", async (req, res) => {
+router.post("/ai/suggest-listing-category", aiAuthenticatedLimiter, async (req, res) => {
   const viewer = await getSessionUser(req);
   if (!viewer) {
     res.status(401).json({ error: "Authentication required" });
@@ -183,7 +188,7 @@ router.post("/ai/analyze-listing-image", analyzeListingImageLimiter, async (req,
 });
 
 // ─── GET /ai/listings/:id/similar ─────────────────────────────────────────────
-router.get("/ai/listings/:id/similar", async (req, res) => {
+router.get("/ai/listings/:id/similar", aiSimilarListingsLimiter, async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id) || id < 1) {
     res.status(400).json({ error: "Invalid listing id" });
@@ -195,7 +200,7 @@ router.get("/ai/listings/:id/similar", async (req, res) => {
 });
 
 // ─── POST /ai/support-chat ──────────────────────────────────────────────────────
-router.post("/ai/support-chat", async (req, res) => {
+router.post("/ai/support-chat", aiSupportChatLimiter, async (req, res) => {
   const body = req.body as { messages?: ChatMessage[]; lang?: string };
   const messages = Array.isArray(body.messages) ? body.messages : [];
   const valid = messages.filter(

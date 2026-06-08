@@ -60,3 +60,39 @@ export const analyzeListingImageLimiter = rateLimit({
     });
   },
 });
+
+/** Authenticated AI helpers (suggestions, polish, category, shop description). */
+export const aiAuthenticatedLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) => {
+    res.status(429).json({
+      error: "RATE_LIMIT_AI",
+      message: "Shumë kërkesa ndaj sistemit tonë. Prisni pak dhe provoni përsëri.",
+    });
+  },
+});
+
+/** Public support chat — stricter cap. */
+export const aiSupportChatLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 25,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) => {
+    res.status(429).json({
+      error: "RATE_LIMIT_SUPPORT_CHAT",
+      message: "Shumë mesazhe. Prisni disa minuta para se të provoni përsëri.",
+    });
+  },
+});
+
+/** GET similar listings — light cache-friendly cap. */
+export const aiSimilarListingsLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+});

@@ -7,7 +7,6 @@ import {
 import { Link, useLocation } from "wouter";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
   useGetCategories,
   getGetListingsQueryKey, getGetRecentListingsQueryKey,
@@ -90,59 +89,9 @@ import {
 import { engagementCopyForUiLang } from "@/lib/engagement-i18n";
 import { queueFirstListingCelebration } from "@/components/engagement-effects";
 import { staticPagePaths } from "@/lib/static-page-paths";
+import { buildNewListingSchema, type NewListingFormData } from "@/lib/listing-form-schema";
 
-// ─── Schema ───────────────────────────────────────────────────────────────────
-/** Avoid Zod "Expected number, received nan" when optional/hidden numeric fields are empty. */
-function finiteFormNumber(fallback = 0) {
-  return z.preprocess((val) => {
-    if (val === undefined || val === null || val === "") return fallback;
-    const n = typeof val === "number" ? val : Number(val);
-    return Number.isFinite(n) ? n : fallback;
-  }, z.number());
-}
-
-const schema = z.object({
-  parent_category_id: finiteFormNumber(0).pipe(
-    z.number().min(1, "Zgjidhni kategorinë kryesore."),
-  ),
-  /** Set automatically (AI / single child); not a visible dropdown — validated in onSubmit. */
-  category_id: finiteFormNumber(0),
-  brand_category_id: finiteFormNumber(0).optional(),
-  title: z.string().min(5, "Titulli duhet të ketë të paktën 5 karaktere."),
-  description: z.string().min(15, "Përshkrimi duhet të ketë të paktën 15 karaktere."),
-  price: finiteFormNumber(0).pipe(z.number().min(0)),
-  price_agreement: z.boolean().default(false),
-  image_url: z.string().optional(),
-  location: z.string().min(1, "Zgjidhni qytetin."),
-  seller_phone: z.string().min(5, "Telefoni duhet të ketë të paktën 5 shifra."),
-  seller_name: z.string().min(2, "Shkruani emrin e shitësit."),
-  condition: z.enum(["New", "Used", "Damaged"]),
-  xMarka: z.string().optional(),
-  xModeli: z.string().optional(),
-  xViti: z.string().optional(),
-  xKm: z.string().optional(),
-  xKarburanti: z.string().optional(),
-  xTransmisioni: z.string().optional(),
-  xTipi: z.string().optional(),
-  xNgjyraV: z.string().optional(),
-  xMotori: z.string().optional(),
-  xFuqia: z.string().optional(),
-  xGjendjaT: z.string().optional(),
-  xKlima: z.string().optional(),
-  xPanorama: z.string().optional(),
-  xSellerEmail: z.string().optional(),
-  xSellerAddress: z.string().optional(),
-  xSiperfaqja: z.string().optional(),
-  xKati: z.string().optional(),
-  xDhomat: z.string().optional(),
-  xFurnished: z.string().optional(),
-  xTelMarka: z.string().optional(),
-  xTelModeli: z.string().optional(),
-  xKapaciteti: z.string().optional(),
-  xNgjyra: z.string().optional(),
-});
-
-type FormData = z.infer<typeof schema>;
+type FormData = NewListingFormData;
 
 // ─── Step badge ───────────────────────────────────────────────────────────────
 function StepBadge({ n, label, active, done }: { n: number; label: string; active: boolean; done: boolean }) {
@@ -271,8 +220,28 @@ export default function NewListing() {
       });
   }, [user]);
 
+  const formSchema = useMemo(
+    () =>
+      buildNewListingSchema({
+        parentCategory: tx.zodParentCategory ?? "Zgjidhni kategorinë kryesore.",
+        titleMin: tx.zodTitleMin ?? "Titulli duhet të ketë të paktën 5 karaktere.",
+        descriptionMin: tx.zodDescriptionMin ?? "Përshkrimi duhet të ketë të paktën 15 karaktere.",
+        location: tx.zodLocation ?? "Zgjidhni qytetin.",
+        phoneMin: tx.zodPhoneMin ?? "Telefoni duhet të ketë të paktën 5 shifra.",
+        sellerName: tx.zodSellerName ?? "Shkruani emrin e shitësit.",
+      }),
+    [
+      tx.zodParentCategory,
+      tx.zodTitleMin,
+      tx.zodDescriptionMin,
+      tx.zodLocation,
+      tx.zodPhoneMin,
+      tx.zodSellerName,
+    ],
+  );
+
   const form = useForm<FormData>({
-    resolver: zodResolver(schema as never),
+    resolver: zodResolver(formSchema as never),
     defaultValues: {
       parent_category_id: 0,
       category_id: 0,
@@ -646,8 +615,8 @@ export default function NewListing() {
     }
     if (!isAllowedListingVideoFile(file)) {
       toast({
-        title: "Format i pavlefshëm",
-        description: "Lejohen vetëm MP4, MOV dhe AVI.",
+        title: tx.videoInvalidFormatTitle ?? "Format i pavlefshëm",
+        description: tx.videoInvalidFormatDesc ?? "Lejohen vetëm MP4, MOV dhe AVI.",
         variant: "destructive",
       });
       return;
@@ -683,7 +652,8 @@ export default function NewListing() {
     refusePost(
       formatFormValidationSummary(
         messages,
-        "Plotësoni të gjitha fushat e detyrueshme (kategori, titull min. 5, përshkrim min. 15, foto, çmim, qytet).",
+        tx.formInvalidSummary ??
+          "Plotësoni të gjitha fushat e detyrueshme (kategori, titull min. 5, përshkrim min. 15, foto, çmim, qytet).",
       ),
     );
   };

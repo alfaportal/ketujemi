@@ -9,6 +9,7 @@ import tiktokOAuthPublicRouter from "./routes/tiktok-oauth-public";
 import { logger } from "./lib/logger";
 import { attachStaticFrontend } from "./lib/serve-static";
 import { canonicalHostRedirect } from "./lib/canonical-host";
+import { isCorsOriginAllowed } from "./lib/cors-config.js";
 
 const app: Express = express();
 
@@ -54,7 +55,18 @@ app.use(
     },
   }),
 );
-app.use(cors({ origin: true, credentials: true }));
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (isCorsOriginAllowed(origin)) {
+        callback(null, origin ?? true);
+        return;
+      }
+      callback(null, false);
+    },
+    credentials: true,
+  }),
+);
 app.use(cookieParser(sessionSecret));
 app.use(
   "/api/payments/webhook",

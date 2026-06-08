@@ -22,7 +22,8 @@ type Props = { listingId: number };
 export function SimilarListingsSection({ listingId }: Props) {
   const { t, market } = useMarket();
   const [items, setItems] = useState<Similar[]>([]);
-  const [heading, setHeading] = useState("Mund të të interesojë gjithashtu");
+  const tx = t as Record<string, string | undefined>;
+  const heading = tx.similarListingsHeading ?? "Mund të të interesojë gjithashtu";
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -38,8 +39,7 @@ export function SimilarListingsSection({ listingId }: Props) {
       .then((j) => {
         if (cancelled || !j) return;
         setItems((j as { similar?: Similar[] }).similar ?? []);
-        const h = (j as { heading?: string }).heading;
-        if (h) setHeading(h);
+        void j;
       })
       .catch((e) => {
         if (!cancelled) {
