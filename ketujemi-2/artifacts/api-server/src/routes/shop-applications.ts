@@ -48,11 +48,6 @@ router.post("/shop-applications", async (req, res) => {
   }
 
   const body = req.body as Record<string, unknown>;
-  const gate = await enforceProfileChangeToken(viewer, body);
-  if (!gate.ok) {
-    res.status(gate.status).json(gate.body);
-    return;
-  }
 
   const errors: string[] = [];
   const shopNameErr = requiredString(body.shop_name, "Emri i dyqanit");

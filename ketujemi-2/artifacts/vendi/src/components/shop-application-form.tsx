@@ -7,8 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
-import { useProfileEditGate } from "@/hooks/use-profile-edit-gate";
-import { ProfileEditGateFlow } from "@/components/profile-edit-gate-flow";
 import { useShopFormCopy, SHOP_COUNTRY_CODES } from "@/lib/shop-application-i18n";
 import { citiesForShopCountry } from "@/lib/shop-application-locations";
 import { uploadImageToCloudinary, useCloudinaryConfig } from "@/lib/cloudinary-config";
@@ -24,8 +22,7 @@ import { ShopDescriptionHelper } from "@/components/shop-description-helper";
 export function ShopApplicationForm() {
   const c = useShopFormCopy();
   const { uiLang, t } = useMarket();
-  const { user, refresh } = useAuth();
-  const gate = useProfileEditGate(user, refresh);
+  const { user } = useAuth();
   const cloudinary = useCloudinaryConfig();
   const { data: categories } = useGetCategories();
   const logoRef = useRef<HTMLInputElement>(null);
@@ -89,10 +86,6 @@ export function ShopApplicationForm() {
       window.location.href = loginUrlWithReturn(openShopApplyPath(uiLang));
       return;
     }
-    if (!gate.isUnlocked || !gate.changeToken) {
-      gate.startGate();
-      return;
-    }
     setError(null);
 
     const cat = parentCategories.find((p: { id: number }) => String(p.id) === categoryId);
@@ -116,7 +109,6 @@ export function ShopApplicationForm() {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          profile_change_token: gate.changeToken,
           shop_name: shopName,
           logo_url: logoUrl,
           description,
@@ -157,24 +149,25 @@ export function ShopApplicationForm() {
     );
   }
 
-  if (!gate.isUnlocked) {
+  if (!user) {
     return (
       <div className="space-y-4">
         <p className="text-sm text-amber-900 border border-amber-200 bg-amber-50 rounded-xl px-4 py-3 leading-relaxed">
           {c.formImportant}
         </p>
         <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm text-center space-y-4">
-          <p className="text-sm text-gray-600 leading-relaxed">{t.profile_edit_locked_hint}</p>
+          <p className="text-sm text-gray-600 leading-relaxed">{c.loginRequired}</p>
           <Button
             type="button"
             className="min-h-12 h-12 px-8 font-semibold text-white"
             style={{ background: `linear-gradient(90deg, ${BRAND_BLUE}, ${BRAND_ORANGE})` }}
-            onClick={gate.startGate}
+            onClick={() => {
+              window.location.href = loginUrlWithReturn(openShopApplyPath(uiLang));
+            }}
           >
-            {t.shop_apply_gate_start}
+            {t.authLogin ?? "Hyni në llogari"}
           </Button>
         </div>
-        {user ? <ProfileEditGateFlow user={user} gate={gate} /> : null}
       </div>
     );
   }
@@ -357,8 +350,6 @@ export function ShopApplicationForm() {
           {submitBusy ? <Loader2 className="h-5 w-5 animate-spin" /> : c.submitBtn}
         </Button>
       </form>
-
-      {user ? <ProfileEditGateFlow user={user} gate={gate} /> : null}
     </div>
   );
 }
