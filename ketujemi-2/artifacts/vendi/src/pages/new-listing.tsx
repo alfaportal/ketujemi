@@ -55,6 +55,7 @@ import { ListingCategorySuggest } from "@/components/listing-category-suggest";
 import { ListingDescriptionHelper } from "@/components/listing-description-helper";
 import { joinListingImageUrls } from "@/lib/listing-images";
 import { fileToVisionBase64, type ListingImageAnalysis } from "@/lib/listing-image-vision";
+import { videoFileToVisionBase64 } from "@/lib/listing-video-frame";
 import { listingPhotoAnalyzeFailureToast } from "@/lib/listing-photo-analyze-toast";
 import { useListingImageUpload } from "@/lib/listing-image-upload";
 import {
@@ -517,12 +518,15 @@ export default function NewListing() {
     applyImageAnalysis(analysis);
   }, [allCategories?.length, applyImageAnalysis]);
 
-  const analyzeFirstListingImage = useCallback(
-    async (file: File) => {
+  const analyzeFirstListingMedia = useCallback(
+    async (file: File, source: "image" | "video") => {
       if (imageAnalyzedRef.current || isDhurataPostRoute) return;
       setIsAnalyzingImage(true);
       try {
-        const { data, mediaType } = await fileToVisionBase64(file);
+        const { data, mediaType } =
+          source === "video"
+            ? await videoFileToVisionBase64(file)
+            : await fileToVisionBase64(file);
         const res = await fetchWithTimeout(
           "/api/ai/analyze-listing-image",
           {
@@ -582,7 +586,7 @@ export default function NewListing() {
     setIsUploading(true);
     try {
       const [, urls] = await Promise.all([
-        firstFile ? analyzeFirstListingImage(firstFile) : Promise.resolve(),
+        firstFile ? analyzeFirstListingMedia(firstFile, "image") : Promise.resolve(),
         Promise.all(files.map((file) => imageUpload.uploadFile(file))),
       ]);
       setImageUrls((prev) => [...prev, ...urls]);
@@ -622,13 +626,17 @@ export default function NewListing() {
       });
       return;
     }
+    const shouldAnalyze = imageUrls.length === 0 && !imageAnalyzedRef.current;
     setVideoUploadPhase("preparing");
     setVideoPreparePct(0);
     try {
-      const url = await videoUpload.uploadFile(file, {
-        onPhase: setVideoUploadPhase,
-        onPrepareProgress: setVideoPreparePct,
-      });
+      const [, url] = await Promise.all([
+        shouldAnalyze ? analyzeFirstListingMedia(file, "video") : Promise.resolve(),
+        videoUpload.uploadFile(file, {
+          onPhase: setVideoUploadPhase,
+          onPrepareProgress: setVideoPreparePct,
+        }),
+      ]);
       setVideoUrl(url);
     } catch (err) {
       const msg = listingVideoErrorMessage(err, uiLang);
@@ -994,15 +1002,22 @@ export default function NewListing() {
                     </div>
                   ) : null}
 
-                  {isVideoUploading ? (
+                  {isVideoUploading || (isAnalyzingImage && imageUrls.length === 0) ? (
                     <div className="mt-2 flex flex-col items-center gap-2 py-8 text-blue-600">
                       <Loader2 size={28} className="animate-spin" />
                       <p className="text-sm font-semibold">
-                        {videoUploadPhase === "preparing"
-                          ? (tx.videoPreparingTitle ?? "Duke përgatitur videon...")
-                          : t.uploading}
+                        {isAnalyzingImage && !isVideoUploading
+                          ? (tx.analyzingPhoto ?? "Duke analizuar me sistemin tonë...")
+                          : videoUploadPhase === "preparing"
+                            ? (tx.videoPreparingTitle ?? "Duke përgatitur videon...")
+                            : t.uploading}
                       </p>
-                      {videoUploadPhase === "preparing" ? (
+                      {isAnalyzingImage && !isVideoUploading ? (
+                        <p className="text-xs text-gray-500 text-center max-w-xs px-4">
+                          {tx.analyzingPhotoHint ??
+                            "Kategoria, titulli dhe përshkrimi plotësohen automatikisht."}
+                        </p>
+                      ) : videoUploadPhase === "preparing" ? (
                         <p className="text-xs text-gray-500 text-center max-w-xs px-4">
                           {tx.videoPreparingHint ??
                             "Video optimizohet automatikisht për shpallje (max 100 MB)."}
