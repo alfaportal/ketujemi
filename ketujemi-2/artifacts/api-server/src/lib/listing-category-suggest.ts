@@ -78,7 +78,8 @@ const SLUG_RULES: SlugRule[] = [
   {
     parentSlug: "telefona",
     categorySlug: "telefona-type-smartphones",
-    pattern: /\b(iphone|samsung\s*galaxy|xiaomi|huawei|telefon|smartphone|redmi|pixel)\b/i,
+    pattern:
+      /\b(iphone|samsung\s*galaxy|xiaomi|huawei|telefon|smartphone|mobile\s*phone|cell\s*phone|redmi|pixel|android\s*phone)\b/i,
     weight: 8,
   },
 ];

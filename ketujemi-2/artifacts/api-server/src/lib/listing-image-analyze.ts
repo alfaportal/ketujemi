@@ -1,5 +1,6 @@
-import { db, categoriesTable } from "@workspace/db";
+import { logger } from "./logger.js";
 import { claudeJsonCompletion, claudeVisionJsonCompletionFromBase64, isClaudeConfigured } from "./claude-client";
+import { getCachedCategoryRows, type CategoryRow } from "./category-rows-cache";
 import {
   detectImageLabels,
   formatVisionDetectResult,
@@ -7,6 +8,14 @@ import {
   type GoogleVisionDetectResult,
 } from "./google-vision-client";
 import { matchListingCategoryFromRules } from "./listing-category-suggest";
+import { matchVisionLabelsToCategory } from "./vision-category-rules";
+
+export type ListingImageAnalyzePipeline = "google" | "claude" | null;
+
+export type ListingImageAnalyzeOutcome = {
+  result: ListingImageAnalyzeResult | null;
+  pipeline: ListingImageAnalyzePipeline;
+};
 
 export type ListingImageAnalyzeResult = {
   parent_category_id: number;
@@ -20,12 +29,8 @@ export type ListingImageAnalyzeResult = {
   confidence: "high" | "medium" | "low";
 };
 
-type CategoryRow = {
-  id: number;
-  name: string;
-  slug: string;
-  parent_id: number | null;
-};
+/** Hubs where product types and brands are siblings under the parent (not type → brand). */
+const FLAT_TYPE_BRAND_HUB_SLUGS = new Set(["telefona", "kompjutere-laptope"]);
 
 type VisionAiPayload = {
   parent_category_id?: number;
@@ -177,7 +182,7 @@ function resolveLeafId(rows: CategoryRow[], parsed: VisionAiPayload): number | n
   for (const id of candidates) {
     const chain = categoryChain(rows, id);
     if (!chain) continue;
-    if (chain.length >= bestDepth) {
+    if (chain.length > bestDepth) {
       bestDepth = chain.length;
       bestId = id;
     }
@@ -186,26 +191,84 @@ function resolveLeafId(rows: CategoryRow[], parsed: VisionAiPayload): number | n
   return bestId;
 }
 
-function validateHierarchy(
+function mapFlatHubForm(
+  rows: CategoryRow[],
+  parentId: number,
+  typeId: number,
+  brandId: number | null | undefined,
+): { parent: CategoryRow; category: CategoryRow; brand?: CategoryRow } | null {
+  const parent = rows.find((c) => c.id === parentId);
+  if (!parent || !FLAT_TYPE_BRAND_HUB_SLUGS.has(parent.slug)) return null;
+
+  const brandRow = brandId ? rows.find((c) => c.id === brandId) : undefined;
+  if (brandRow && brandRow.parent_id === parentId) {
+    return { parent, category: brandRow };
+  }
+
+  const typeRow = typeId ? rows.find((c) => c.id === typeId) : undefined;
+  if (typeRow && typeRow.parent_id === parentId) {
+    return { parent, category: typeRow };
+  }
+
+  return null;
+}
+
+function mapParsedToForm(
   rows: CategoryRow[],
   parsed: VisionAiPayload,
-): ListingImageAnalyzeResult | null {
+): { parent: CategoryRow; category: CategoryRow; brand?: CategoryRow } | null {
+  const parentId = Number(parsed.parent_category_id) || 0;
+  const typeId = Number(parsed.category_id) || 0;
+  const brandId = parsed.brand_category_id ? Number(parsed.brand_category_id) : 0;
+
+  const flat = mapFlatHubForm(rows, parentId, typeId, brandId || null);
+  if (flat) return flat;
+
   const leafId = resolveLeafId(rows, parsed);
   if (!leafId) return null;
 
   const chain = categoryChain(rows, leafId);
   if (!chain) return null;
 
-  const mapped = mapChainToForm(chain);
+  return mapChainToForm(chain);
+}
+
+function ensureCopyMinimums(
+  title: string,
+  description: string,
+  mapped: { parent: CategoryRow; category: CategoryRow; brand?: CategoryRow },
+): { title: string; description: string } | null {
+  let nextTitle = title.trim();
+  let nextDescription = description.trim();
+
+  if (nextTitle.length < 5) {
+    nextTitle = (mapped.brand?.name ?? mapped.category.name).slice(0, 80);
+  }
+  if (nextDescription.length < 15) {
+    const label = mapped.brand?.name ?? mapped.category.name;
+    nextDescription = `Shitet ${label}. Kategori: ${mapped.parent.name} › ${mapped.category.name}.`.slice(
+      0,
+      400,
+    );
+  }
+
+  if (nextTitle.length < 5 || nextDescription.length < 15) return null;
+  return { title: nextTitle, description: nextDescription };
+}
+
+function validateHierarchy(
+  rows: CategoryRow[],
+  parsed: VisionAiPayload,
+): ListingImageAnalyzeResult | null {
+  const mapped = mapParsedToForm(rows, parsed);
   if (!mapped || isExcludedParent(mapped.parent)) return null;
 
   if (parentHasChildren(rows, mapped.parent.id) && mapped.category.id === mapped.parent.id) {
     return null;
   }
 
-  const title = parsed.title?.trim() ?? "";
-  const description = parsed.description?.trim() ?? "";
-  if (title.length < 5 || description.length < 10) return null;
+  const copy = ensureCopyMinimums(parsed.title?.trim() ?? "", parsed.description?.trim() ?? "", mapped);
+  if (!copy) return null;
 
   return {
     parent_category_id: mapped.parent.id,
@@ -214,8 +277,8 @@ function validateHierarchy(
     parent_name: mapped.parent.name,
     category_name: mapped.category.name,
     brand_name: mapped.brand?.name,
-    title: title.slice(0, 120),
-    description: description.slice(0, 2000),
+    title: copy.title.slice(0, 120),
+    description: copy.description.slice(0, 2000),
     confidence:
       parsed.confidence === "high" || parsed.confidence === "medium" || parsed.confidence === "low"
         ? parsed.confidence
@@ -224,7 +287,15 @@ function validateHierarchy(
 }
 
 function visionTextFromDetect(result: GoogleVisionDetectResult): string {
-  return formatVisionDetectResult(result).toLowerCase();
+  const objects = result.objects
+    .slice(0, 12)
+    .map((o) => o.name)
+    .join(" ");
+  const labels = result.labels
+    .slice(0, 20)
+    .map((l) => l.description)
+    .join(" ");
+  return `${objects} ${labels} ${formatVisionDetectResult(result)}`.toLowerCase();
 }
 
 function isUnderParentTree(rows: CategoryRow[], nodeId: number, parentId: number): boolean {
@@ -275,23 +346,61 @@ function classifyCategoryFromGoogleLabels(
   rows: CategoryRow[],
 ): CategoryPickPayload | null {
   const labelText = visionTextFromDetect(vision);
-  const searchText = labelText.slice(0, 400);
+  const searchText = labelText.slice(0, 600);
 
+  const fromVision = matchVisionLabelsToCategory(searchText, rows);
   const fromRules = matchListingCategoryFromRules(searchText, rows);
-  if (!fromRules) return null;
+  if (!fromVision && !fromRules) return null;
 
-  let categoryId = fromRules.category_id;
-  let brandId = fromRules.brand_category_id;
+  const confidenceScore = (c: "high" | "medium" | "low") =>
+    c === "high" ? 3 : c === "medium" ? 2 : 1;
+
+  const base =
+    fromVision && fromRules
+      ? confidenceScore(fromVision.confidence) >= confidenceScore(fromRules.confidence)
+        ? fromVision
+        : {
+            parent_category_id: fromRules.parent_category_id,
+            category_id: fromRules.category_id,
+            parent_name: fromRules.parent_name,
+            category_name: fromRules.category_name,
+            confidence: fromRules.confidence,
+          }
+      : fromVision ?? {
+          parent_category_id: fromRules!.parent_category_id,
+          category_id: fromRules!.category_id,
+          parent_name: fromRules!.parent_name,
+          category_name: fromRules!.category_name,
+          confidence: fromRules!.confidence,
+        };
+
+  const fromRulesCompat = {
+    parent_category_id: base.parent_category_id,
+    category_id: base.category_id,
+    parent_name: base.parent_name,
+    category_name: base.category_name,
+    confidence: base.confidence,
+    source: "rules" as const,
+  };
+
+  let categoryId = fromRulesCompat.category_id;
+  let brandId: number | undefined;
 
   const matched = matchBrandChildFromLabels(
     labelText,
-    fromRules.parent_category_id,
-    fromRules.category_id,
+    fromRulesCompat.parent_category_id,
+    fromRulesCompat.category_id,
     rows,
   );
   if (matched) {
     const matchedRow = rows.find((c) => c.id === matched);
-    if (matchedRow?.parent_id === fromRules.parent_category_id) {
+    const parentRow = rows.find((c) => c.id === fromRulesCompat.parent_category_id);
+    if (
+      matchedRow &&
+      parentRow &&
+      FLAT_TYPE_BRAND_HUB_SLUGS.has(parentRow.slug) &&
+      matchedRow.parent_id === fromRulesCompat.parent_category_id
+    ) {
       categoryId = matched;
       brandId = undefined;
     } else if (!brandId) {
@@ -300,10 +409,10 @@ function classifyCategoryFromGoogleLabels(
   }
 
   return {
-    parent_category_id: fromRules.parent_category_id,
+    parent_category_id: fromRulesCompat.parent_category_id,
     category_id: categoryId,
     brand_category_id: brandId ?? null,
-    confidence: fromRules.confidence,
+    confidence: fromRulesCompat.confidence,
   };
 }
 
@@ -365,13 +474,19 @@ async function analyzeWithGoogleVisionPipeline(
   if (!vision) return null;
 
   const categoryPick = classifyCategoryFromGoogleLabels(vision, rows);
-  if (!categoryPick?.parent_category_id || !categoryPick.category_id) return null;
+  if (!categoryPick?.parent_category_id || !categoryPick.category_id) {
+    logger.info(
+      { sample: visionTextFromDetect(vision).slice(0, 240) },
+      "google vision labels ok but no category rule matched",
+    );
+    return null;
+  }
 
-  const chain = categoryChain(
-    rows,
-    Number(categoryPick.brand_category_id) || categoryPick.category_id,
-  );
-  const mapped = chain ? mapChainToForm(chain) : null;
+  const mapped = mapParsedToForm(rows, {
+    parent_category_id: categoryPick.parent_category_id,
+    category_id: categoryPick.category_id,
+    brand_category_id: categoryPick.brand_category_id,
+  });
   if (!mapped) return null;
 
   const categoryInfo = {
@@ -380,12 +495,15 @@ async function analyzeWithGoogleVisionPipeline(
     brand_name: mapped.brand?.name,
   };
 
-  let copy: CopyPayload | null = null;
+  let copy: CopyPayload = fallbackCopyFromGoogleLabels(vision, categoryInfo);
   if (isClaudeConfigured()) {
-    copy = await generateCopyFromLabels(vision, categoryInfo, shop);
-  }
-  if (!copy?.title || !copy.description) {
-    copy = fallbackCopyFromGoogleLabels(vision, categoryInfo);
+    const enhanced = await Promise.race([
+      generateCopyFromLabels(vision, categoryInfo, shop),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 2_500)),
+    ]);
+    if (enhanced?.title && enhanced.description) {
+      copy = enhanced;
+    }
   }
 
   return validateHierarchy(rows, {
@@ -436,26 +554,87 @@ export function isListingImageAnalyzeConfigured(): boolean {
   return isGoogleVisionConfigured() || isClaudeConfigured();
 }
 
+function emptyOutcome(): ListingImageAnalyzeOutcome {
+  return { result: null, pipeline: null };
+}
+
+/**
+ * Both pipelines start at once. First successful full result wins so users are not
+ * stuck waiting for a slow/failed Google call before Claude begins.
+ * Pipelines never mix — one complete result from either Google or Claude.
+ */
+async function analyzeWithParallelFallback(input: {
+  imageBase64: string;
+  mediaType: string;
+  rows: CategoryRow[];
+  catalog: CatalogNode[];
+  shop?: { shop_name: string; shop_category: string | null };
+}): Promise<ListingImageAnalyzeOutcome> {
+  const googleFlight = analyzeWithGoogleVisionPipeline(
+    input.imageBase64,
+    input.rows,
+    input.shop,
+  ).catch((err) => {
+    logger.warn({ err }, "listing-image-analyze google vision failed");
+    return null;
+  });
+
+  const claudeFlight = analyzeWithClaudeVision(
+    input.imageBase64,
+    input.mediaType,
+    input.rows,
+    input.catalog,
+    input.shop,
+  ).catch((err) => {
+    logger.warn({ err }, "listing-image-analyze claude vision failed");
+    return null;
+  });
+
+  return new Promise((resolve) => {
+    let settled = false;
+
+    const tryFinish = (result: ListingImageAnalyzeResult | null, pipeline: ListingImageAnalyzePipeline) => {
+      if (!settled && result) {
+        settled = true;
+        resolve({ result, pipeline });
+      }
+    };
+
+    googleFlight.then((r) => tryFinish(r, "google"));
+    claudeFlight.then((r) => tryFinish(r, "claude"));
+
+    Promise.allSettled([googleFlight, claudeFlight]).then(([google, claude]) => {
+      if (settled) return;
+      settled = true;
+      const googleResult = google.status === "fulfilled" ? google.value : null;
+      const claudeResult = claude.status === "fulfilled" ? claude.value : null;
+      if (googleResult) {
+        resolve({ result: googleResult, pipeline: "google" });
+        return;
+      }
+      if (claudeResult) {
+        resolve({ result: claudeResult, pipeline: "claude" });
+        return;
+      }
+      resolve(emptyOutcome());
+    });
+  });
+}
+
 export async function analyzeListingImage(input: {
   imageBase64: string;
   mediaType: string;
   shop_name?: string | null;
   shop_category?: string | null;
-}): Promise<ListingImageAnalyzeResult | null> {
+}): Promise<ListingImageAnalyzeOutcome> {
   const imageBase64 = input.imageBase64.trim();
-  if (imageBase64.length < 100 || imageBase64.length > 6_000_000) return null;
+  if (imageBase64.length < 100 || imageBase64.length > 6_000_000) return emptyOutcome();
 
   const canGoogle = isGoogleVisionConfigured();
   const canClaudeVision = isClaudeConfigured();
-  if (!canGoogle && !canClaudeVision) return null;
+  if (!canGoogle && !canClaudeVision) return emptyOutcome();
 
-  const cats = await db.select().from(categoriesTable);
-  const rows: CategoryRow[] = cats.map((c) => ({
-    id: c.id,
-    name: c.name,
-    slug: c.slug,
-    parent_id: c.parent_id,
-  }));
+  const rows = await getCachedCategoryRows();
 
   const catalog = buildCategoryCatalog(rows);
   const shopName = input.shop_name?.trim() ?? "";
@@ -466,19 +645,35 @@ export async function analyzeListingImage(input: {
       : undefined;
 
   try {
-    // Pipeline A: Google Vision (fast) — fully separate from Claude Vision.
+    if (canGoogle && canClaudeVision) {
+      return analyzeWithParallelFallback({
+        imageBase64,
+        mediaType: input.mediaType,
+        rows,
+        catalog,
+        shop,
+      });
+    }
+
     if (canGoogle) {
       const googleResult = await analyzeWithGoogleVisionPipeline(imageBase64, rows, shop);
-      if (googleResult) return googleResult;
+      return googleResult
+        ? { result: googleResult, pipeline: "google" }
+        : emptyOutcome();
     }
 
-    // Pipeline B: Claude Vision fallback when Google is unavailable or inconclusive.
-    if (canClaudeVision) {
-      return analyzeWithClaudeVision(imageBase64, input.mediaType, rows, catalog, shop);
-    }
-
-    return null;
-  } catch {
-    return null;
+    const claudeResult = await analyzeWithClaudeVision(
+      imageBase64,
+      input.mediaType,
+      rows,
+      catalog,
+      shop,
+    );
+    return claudeResult
+      ? { result: claudeResult, pipeline: "claude" }
+      : emptyOutcome();
+  } catch (err) {
+    logger.warn({ err }, "listing-image-analyze unexpected error");
+    return emptyOutcome();
   }
 }

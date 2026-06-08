@@ -22,6 +22,8 @@ export function isGoogleVisionConfigured(): boolean {
   return !!getGoogleVisionApiKey();
 }
 
+const GOOGLE_VISION_FETCH_TIMEOUT_MS = 12_000;
+
 function stripBase64Prefix(data: string): string {
   return data.replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, "").trim();
 }
@@ -32,12 +34,16 @@ export async function detectImageLabels(imageBase64: string): Promise<GoogleVisi
   const content = stripBase64Prefix(imageBase64);
   if (!key || content.length < 100) return null;
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), GOOGLE_VISION_FETCH_TIMEOUT_MS);
+
   try {
     const res = await fetch(
       `https://vision.googleapis.com/v1/images:annotate?key=${encodeURIComponent(key)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           requests: [
             {
@@ -84,6 +90,8 @@ export async function detectImageLabels(imageBase64: string): Promise<GoogleVisi
     return { labels, objects };
   } catch {
     return null;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

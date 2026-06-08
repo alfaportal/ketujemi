@@ -34,6 +34,21 @@ import {
   locationsForListingMarket,
   type ListingMarketCode,
 } from "@/lib/market-context";
+
+function isCategoryUnderParent(
+  catId: number,
+  parentId: number,
+  categories: Array<{ id: number; parent_id?: number | null }>,
+): boolean {
+  if (!catId || !parentId) return false;
+  let node = categories.find((c) => c.id === catId);
+  while (node) {
+    if (node.id === parentId) return true;
+    if (!node.parent_id) break;
+    node = categories.find((c) => c.id === node!.parent_id);
+  }
+  return false;
+}
 import { ListingCountryPicker } from "@/components/listing-country-picker";
 import { ListingCategorySuggest } from "@/components/listing-category-suggest";
 import { ListingDescriptionHelper } from "@/components/listing-description-helper";
@@ -199,6 +214,7 @@ export default function NewListing() {
   const skipBrandCascadeRef = useRef(false);
   const skipTitleSuggestRef = useRef(false);
   const pendingImageAnalysisRef = useRef<ListingImageAnalysis | null>(null);
+  const lastImageAnalysisRef = useRef<ListingImageAnalysis | null>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
   const imageUpload = useListingImageUpload();
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -322,6 +338,9 @@ export default function NewListing() {
   const hasBrands = brandCats.length > 0;
 
   useEffect(() => {
+    const parentId = Number(parentCatId);
+    if (!parentId) return;
+
     if (skipCategoryCascadeRef.current) {
       skipCategoryCascadeRef.current = false;
       const pending = pendingImageAnalysisRef.current;
@@ -332,17 +351,45 @@ export default function NewListing() {
       }
       return;
     }
+
+    const analysis = lastImageAnalysisRef.current;
+    if (analysis && analysis.parent_category_id === parentId) {
+      form.setValue("category_id", analysis.category_id, { shouldDirty: true });
+      form.setValue("brand_category_id", analysis.brand_category_id ?? 0, { shouldDirty: true });
+      return;
+    }
+
+    const cats = (allCategories ?? []) as Array<{ id: number; parent_id?: number | null }>;
+    const currentCatId = Number(form.getValues("category_id"));
+    const currentBrandId = Number(form.getValues("brand_category_id"));
+
+    if (currentCatId > 0 && isCategoryUnderParent(currentCatId, parentId, cats)) {
+      return;
+    }
+    if (currentBrandId > 0 && isCategoryUnderParent(currentBrandId, parentId, cats)) {
+      return;
+    }
+
     form.setValue("category_id", 0);
     form.setValue("brand_category_id", 0);
-  }, [parentCatId, form]);
+  }, [parentCatId, allCategories, form]);
 
   useEffect(() => {
     if (skipBrandCascadeRef.current) {
       skipBrandCascadeRef.current = false;
       return;
     }
+    const analysis = lastImageAnalysisRef.current;
+    if (
+      analysis?.brand_category_id &&
+      Number(bodyCatId) === analysis.category_id &&
+      analysis.parent_category_id === Number(parentCatId)
+    ) {
+      form.setValue("brand_category_id", analysis.brand_category_id, { shouldDirty: true });
+      return;
+    }
     form.setValue("brand_category_id", 0);
-  }, [bodyCatId, form]);
+  }, [bodyCatId, parentCatId, form]);
 
   const suggestLang = market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq";
 
@@ -449,29 +496,42 @@ export default function NewListing() {
 
   const applyImageAnalysis = useCallback(
     (analysis: ListingImageAnalysis) => {
+      lastImageAnalysisRef.current = analysis;
       pendingImageAnalysisRef.current = analysis;
       skipCategoryCascadeRef.current = true;
       skipBrandCascadeRef.current = true;
       skipTitleSuggestRef.current = true;
 
-      const fieldOpts = { shouldDirty: true, shouldTouch: true } as const;
+      const fieldOpts = { shouldDirty: true, shouldTouch: true, shouldValidate: true } as const;
       form.setValue("title", analysis.title, fieldOpts);
       form.setValue("description", analysis.description, fieldOpts);
       form.setValue("parent_category_id", analysis.parent_category_id, fieldOpts);
       form.setValue("category_id", analysis.category_id, fieldOpts);
       form.setValue("brand_category_id", analysis.brand_category_id ?? 0, fieldOpts);
 
-      // Re-apply after cascade effects — guards against effect ordering on mobile.
-      queueMicrotask(() => {
+      const reapply = () => {
+        form.setValue("parent_category_id", analysis.parent_category_id, fieldOpts);
         form.setValue("category_id", analysis.category_id, fieldOpts);
         form.setValue("brand_category_id", analysis.brand_category_id ?? 0, fieldOpts);
-      });
+        form.setValue("title", analysis.title, fieldOpts);
+        form.setValue("description", analysis.description, fieldOpts);
+      };
+
+      queueMicrotask(reapply);
+      window.setTimeout(reapply, 50);
+      window.setTimeout(reapply, 200);
       window.setTimeout(() => {
         skipTitleSuggestRef.current = false;
-      }, 2500);
+      }, 3000);
     },
     [form],
   );
+
+  useEffect(() => {
+    if (!allCategories?.length) return;
+    const analysis = lastImageAnalysisRef.current;
+    if (analysis) applyImageAnalysis(analysis);
+  }, [allCategories?.length, applyImageAnalysis]);
 
   const analyzeFirstListingImage = useCallback(
     async (file: File) => {
@@ -497,24 +557,44 @@ export default function NewListing() {
         );
         const body = (await res.json().catch(() => ({}))) as {
           analysis?: ListingImageAnalysis | null;
+          pipeline?: "google" | "claude" | null;
           error?: string;
         };
-        console.log("[listing-image-analyze] response", res.status, body);
+        console.log("[listing-image-analyze] response", res.status, body.pipeline, body);
         if (!res.ok) {
           console.warn("[listing-image-analyze] failed", res.status, body.error);
+          toast({
+            title: tx.photoAnalyzeFailed ?? "Nuk u plotësua automatikisht",
+            description:
+              tx.photoAnalyzeFailedHint ??
+              "Vazhdoni manualisht me kategorinë, titullin dhe përshkrimin.",
+            variant: "destructive",
+          });
           return;
         }
         if (body.analysis) {
           imageAnalyzedRef.current = true;
           applyImageAnalysis(body.analysis);
+        } else {
+          toast({
+            title: tx.photoAnalyzeFailed ?? "Nuk u plotësua automatikisht",
+            description:
+              tx.photoAnalyzeFailedHint ??
+              "Vazhdoni manualisht me kategorinë, titullin dhe përshkrimin.",
+          });
         }
       } catch (error) {
         console.warn("[listing-image-analyze] error", error);
+        toast({
+          title: tx.photoAnalyzeFailed ?? "Nuk u plotësua automatikisht",
+          description: getFetchErrorMessage(error, tx.photoAnalyzeFailedHint),
+          variant: "destructive",
+        });
       } finally {
         setIsAnalyzingImage(false);
       }
     },
-    [applyImageAnalysis, isDhurataPostRoute, myShop],
+    [applyImageAnalysis, isDhurataPostRoute, myShop, toast, tx],
   );
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -546,6 +626,7 @@ export default function NewListing() {
       const next = prev.filter((_, idx) => idx !== i);
       if (next.length === 0) {
         imageAnalyzedRef.current = false;
+        lastImageAnalysisRef.current = null;
       }
       return next;
     });

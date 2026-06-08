@@ -46,3 +46,17 @@ export const searchLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+/** POST /ai/analyze-listing-image — vision is expensive */
+export const analyzeListingImageLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) => {
+    res.status(429).json({
+      error: "RATE_LIMIT_IMAGE_ANALYZE",
+      message: "Shumë analiza fotosh. Prisni pak dhe provoni përsëri, ose plotësoni manualisht.",
+    });
+  },
+});

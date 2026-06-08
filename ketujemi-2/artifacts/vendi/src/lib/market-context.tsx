@@ -148,6 +148,9 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     waitPlease: "Ju lutemi prisni",
     analyzingPhoto: "Duke analizuar foton me sistemin tonë...",
     analyzingPhotoHint: "Kategoria, titulli dhe përshkrimi plotësohen automatikisht.",
+    photoAnalyzeFailed: "Nuk u plotësua automatikisht",
+    photoAnalyzeFailedHint:
+      "Vazhdoni manualisht me kategorinë, titullin dhe përshkrimin — ose provoni një foto më të qartë.",
     firstPhotoAiHint:
       "📸 Ngarko foton e parë dhe sistemi jonë do të plotësojë automatikisht kategorinë, titullin dhe përshkrimin për ty — kursen kohë dhe e bën shpalljen më të lehtë!",
     firstPhotoAiHintShop:
@@ -331,6 +334,9 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     waitPlease: "Ju lutemi prisni",
     analyzingPhoto: "Duke analizuar foton me sistemin tonë...",
     analyzingPhotoHint: "Kategoria, titulli dhe përshkrimi plotësohen automatikisht.",
+    photoAnalyzeFailed: "Nuk u plotësua automatikisht",
+    photoAnalyzeFailedHint:
+      "Vazhdoni manualisht me kategorinë, titullin dhe përshkrimin — ose provoni një foto më të qartë.",
     firstPhotoAiHint:
       "📸 Ngarko foton e parë dhe sistemi jonë do të plotësojë automatikisht kategorinë, titullin dhe përshkrimin për ty — kursen kohë dhe e bën shpalljen më të lehtë!",
     firstPhotoAiHintShop:
@@ -514,6 +520,9 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     waitPlease: "Ве молиме почекајте",
     analyzingPhoto: "Се анализира фотографијата со нашиот систем...",
     analyzingPhotoHint: "Категоријата, насловот и описот се пополнуваат автоматски.",
+    photoAnalyzeFailed: "Не се пополни автоматски",
+    photoAnalyzeFailedHint:
+      "Продолжете рачно со категорија, наслов и опис — или обидете се со појасна фотографија.",
     firstPhotoAiHint:
       "📸 Прикачи ја првата фотографија и нашиот систем автоматски ќе ги пополни категоријата, насловот и описот — заштеди време и олесни го огласувањето!",
     firstPhotoAiHintShop:
@@ -697,6 +706,9 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     waitPlease: "Molimo sačekajte",
     analyzingPhoto: "Analizira se fotografija pomoću našeg sistema...",
     analyzingPhotoHint: "Kategorija, naslov i opis popunjavaju se automatski.",
+    photoAnalyzeFailed: "Nije popunjeno automatski",
+    photoAnalyzeFailedHint:
+      "Nastavite ručno s kategorijom, naslovom i opisom — ili pokušajte s jasnijom fotografijom.",
     firstPhotoAiHint:
       "📸 Učitaj prvu fotografiju i naš sistem će automatski popuniti kategoriju, naslov i opis — uštedi vrijeme i olakšaj oglašavanje!",
     firstPhotoAiHintShop:

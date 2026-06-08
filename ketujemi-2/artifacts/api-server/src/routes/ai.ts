@@ -12,6 +12,7 @@ import { getSimilarListingsForListing } from "../lib/listing-ai-recommendations"
 import { runSupportChat, supportChatFallbackReply, type ChatMessage } from "../lib/support-chatbot";
 import { isClaudeConfigured, parseUiLang } from "../lib/claude-client";
 import { isGoogleVisionConfigured } from "../lib/google-vision-client";
+import { analyzeListingImageLimiter } from "../lib/express-rate-limiters";
 
 const router = Router();
 
@@ -123,7 +124,7 @@ router.post("/ai/suggest-listing-category", async (req, res) => {
 });
 
 // ─── POST /ai/analyze-listing-image ───────────────────────────────────────────
-router.post("/ai/analyze-listing-image", async (req, res) => {
+router.post("/ai/analyze-listing-image", analyzeListingImageLimiter, async (req, res) => {
   const viewer = await getSessionUser(req);
   if (!viewer) {
     res.status(401).json({ error: "Authentication required" });
@@ -151,7 +152,7 @@ router.post("/ai/analyze-listing-image", async (req, res) => {
     return;
   }
 
-  const analysis = await analyzeListingImage({
+  const { result: analysis, pipeline } = await analyzeListingImage({
     imageBase64,
     mediaType,
     shop_name: shopName || null,
@@ -159,12 +160,18 @@ router.post("/ai/analyze-listing-image", async (req, res) => {
   });
 
   if (!analysis) {
-    res.status(422).json({ error: "ANALYSIS_FAILED", ai_enabled: true });
+    res.status(422).json({
+      error: "ANALYSIS_FAILED",
+      ai_enabled: true,
+      google_vision: isGoogleVisionConfigured(),
+      claude_vision: isClaudeConfigured(),
+    });
     return;
   }
 
   res.json({
     analysis,
+    pipeline,
     ai_enabled: isListingImageAnalyzeConfigured(),
     google_vision: isGoogleVisionConfigured(),
     claude_vision: isClaudeConfigured(),
