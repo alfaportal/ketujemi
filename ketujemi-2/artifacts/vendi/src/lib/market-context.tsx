@@ -148,6 +148,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     waitPlease: "Ju lutemi prisni",
     analyzingPhoto: "Duke analizuar foton me AI...",
     analyzingPhotoHint: "Kategoria, titulli dhe përshkrimi plotësohen automatikisht.",
+    firstPhotoAiHint:
+      "📸 Ngarko foton e parë dhe AI do të plotësojë automatikisht kategorinë, titullin dhe përshkrimin për ty — kursen kohë dhe e bën shpalljen më të lehtë!",
     firstPhotoMain: "Foto e parë do të jetë foto kryesore e shpalljes",
     carDetails: "Detajet e automjetit",
     houseDetails: "Detajet e pronës",
@@ -322,6 +324,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     waitPlease: "Ju lutemi prisni",
     analyzingPhoto: "Duke analizuar foton me AI...",
     analyzingPhotoHint: "Kategoria, titulli dhe përshkrimi plotësohen automatikisht.",
+    firstPhotoAiHint:
+      "📸 Ngarko foton e parë dhe AI do të plotësojë automatikisht kategorinë, titullin dhe përshkrimin për ty — kursen kohë dhe e bën shpalljen më të lehtë!",
     firstPhotoMain: "Foto e parë do të jetë foto kryesore e njoftimit",
     carDetails: "Detajet e automjetit",
     houseDetails: "Detajet e pronës",
@@ -496,6 +500,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     waitPlease: "Ве молиме почекајте",
     analyzingPhoto: "Се анализира фотографијата со AI...",
     analyzingPhotoHint: "Категоријата, насловот и описот се пополнуваат автоматски.",
+    firstPhotoAiHint:
+      "📸 Прикачи ја првата фотографија и AI автоматски ќе ги пополни категоријата, насловот и описот — заштеди време и олесни го огласувањето!",
     firstPhotoMain: "Првата фотографија ќе биде главна на огласот",
     carDetails: "Детали за возилото",
     houseDetails: "Детали за имотот",
@@ -670,6 +676,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     waitPlease: "Molimo sačekajte",
     analyzingPhoto: "Analizira se fotografija pomoću AI...",
     analyzingPhotoHint: "Kategorija, naslov i opis popunjavaju se automatski.",
+    firstPhotoAiHint:
+      "📸 Učitaj prvu fotografiju i AI će automatski popuniti kategoriju, naslov i opis — uštedi vrijeme i olakšaj oglašavanje!",
     firstPhotoMain: "Prva fotografija će biti glavna na oglasu",
     carDetails: "Detalji vozila",
     houseDetails: "Detalji nekretnine",
@@ -844,6 +852,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     waitPlease: "Please wait",
     analyzingPhoto: "Analyzing photo with AI...",
     analyzingPhotoHint: "Category, title, and description are filled in automatically.",
+    firstPhotoAiHint:
+      "📸 Upload your first photo and AI will automatically fill in the category, title and description for you — saves time and makes listing easier!",
     firstPhotoMain: "The first photo will be the main listing image",
     carDetails: "Vehicle details",
     houseDetails: "Property details",

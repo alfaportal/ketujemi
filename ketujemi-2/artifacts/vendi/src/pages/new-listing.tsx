@@ -733,7 +733,70 @@ export default function NewListing() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)} className="space-y-4">
 
-            {/* ── 1. Title (first — AI tip appears right below) ── */}
+            {/* ── 1. Photos (first — AI auto-fill from first image) ── */}
+            <Section title={t.photosSection} icon={Camera}>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm font-medium">
+                    {t.listingPhotos} <span className="text-red-500">*</span>
+                    <span className="text-gray-400 font-normal ml-1">(min 1)</span>
+                  </Label>
+                  <span className="text-sm text-gray-400">{imageUrls.length}</span>
+                </div>
+
+                <input
+                  ref={uploadRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+
+                {(isAnalyzingImage || isUploading) && (
+                  <p className="text-sm text-blue-600 font-medium mb-2 flex items-center gap-2" role="status">
+                    <Loader2 size={14} className="animate-spin shrink-0" />
+                    {isUploading ? t.uploading : (tx.analyzingPhoto ?? "Duke analizuar foton me AI...")}
+                  </p>
+                )}
+
+                <button
+                    type="button"
+                    onClick={() => uploadRef.current?.click()}
+                    disabled={isUploading || isAnalyzingImage || !imageUpload.ready}
+                    className="w-full border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl py-12 px-6 text-center transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none min-h-[10.5rem] touch-manipulation"
+                  >
+                    {isUploading ? (
+                      <div className="flex flex-col items-center gap-1.5 text-blue-500">
+                        <Loader2 size={30} className="animate-spin" />
+                        <p className="text-sm font-semibold">{t.uploading}</p>
+                        <p className="text-sm text-gray-400">{t.waitPlease}</p>
+                      </div>
+                    ) : isAnalyzingImage ? (
+                      <div className="flex flex-col items-center gap-1.5 text-blue-500">
+                        <Loader2 size={30} className="animate-spin" />
+                        <p className="text-sm font-semibold">{tx.analyzingPhoto ?? "Duke analizuar foton me AI..."}</p>
+                        <p className="text-sm text-gray-400">{tx.analyzingPhotoHint ?? "Kategoria, titulli dhe përshkrimi plotësohen automatikisht."}</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1.5 text-gray-400 hover:text-blue-500 transition-colors">
+                        <ImagePlus size={30} />
+                        <p className="text-sm font-semibold text-gray-600">{t.addPhoto}</p>
+                        <p className="text-sm">{t.clickToSelect}</p>
+                        <p className="text-sm text-gray-300">JPG, PNG, WEBP</p>
+                      </div>
+                    )}
+                  </button>
+
+                <ImagePreview urls={imageUrls} onRemove={isUploading ? () => {} : removeImage} mainLabel={t.mainPhotoLabel} />
+
+                <p className="text-sm text-gray-600 mt-3 leading-relaxed">
+                  {t.firstPhotoAiHint}
+                </p>
+              </div>
+            </Section>
+
+            {/* ── 2. Title ── */}
             <Section title={t.titleField} icon={Info}>
               <FormField
                 control={form.control}
@@ -1284,72 +1347,7 @@ export default function NewListing() {
             </Section>
             )}
 
-            {/* ── 6. Photos ── */}
-            <Section title={t.photosSection} icon={Camera}>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm font-medium">
-                    {t.listingPhotos} <span className="text-red-500">*</span>
-                    <span className="text-gray-400 font-normal ml-1">(min 1)</span>
-                  </Label>
-                  <span className="text-sm text-gray-400">{imageUrls.length}</span>
-                </div>
-
-                <input
-                  ref={uploadRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-
-                {(isAnalyzingImage || isUploading) && (
-                  <p className="text-sm text-blue-600 font-medium mb-2 flex items-center gap-2" role="status">
-                    <Loader2 size={14} className="animate-spin shrink-0" />
-                    {isUploading ? t.uploading : (tx.analyzingPhoto ?? "Duke analizuar foton me AI...")}
-                  </p>
-                )}
-
-                <button
-                    type="button"
-                    onClick={() => uploadRef.current?.click()}
-                    disabled={isUploading || isAnalyzingImage || !imageUpload.ready}
-                    className="w-full border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl py-12 px-6 text-center transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none min-h-[10.5rem] touch-manipulation"
-                  >
-                    {isUploading ? (
-                      <div className="flex flex-col items-center gap-1.5 text-blue-500">
-                        <Loader2 size={30} className="animate-spin" />
-                        <p className="text-sm font-semibold">{t.uploading}</p>
-                        <p className="text-sm text-gray-400">{t.waitPlease}</p>
-                      </div>
-                    ) : isAnalyzingImage ? (
-                      <div className="flex flex-col items-center gap-1.5 text-blue-500">
-                        <Loader2 size={30} className="animate-spin" />
-                        <p className="text-sm font-semibold">{tx.analyzingPhoto ?? "Duke analizuar foton me AI..."}</p>
-                        <p className="text-sm text-gray-400">{tx.analyzingPhotoHint ?? "Kategoria, titulli dhe përshkrimi plotësohen automatikisht."}</p>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center gap-1.5 text-gray-400 hover:text-blue-500 transition-colors">
-                        <ImagePlus size={30} />
-                        <p className="text-sm font-semibold text-gray-600">{t.addPhoto}</p>
-                        <p className="text-sm">{t.clickToSelect}</p>
-                        <p className="text-sm text-gray-300">JPG, PNG, WEBP</p>
-                      </div>
-                    )}
-                  </button>
-
-                <ImagePreview urls={imageUrls} onRemove={isUploading ? () => {} : removeImage} mainLabel={t.mainPhotoLabel} />
-
-                {imageUrls.length === 0 && !isUploading && (
-                  <p className="text-sm text-gray-400 mt-2 text-center">
-                    {t.firstPhotoMain}
-                  </p>
-                )}
-              </div>
-            </Section>
-
-            {/* ── 6b. Video (optional) ── */}
+            {/* ── Video (optional) ── */}
             <Section title={tx.ui_listingVideoSection ?? "Video (opsionale)"} icon={Video}>
               <div>
                 <Label className="text-sm font-medium text-gray-700">
