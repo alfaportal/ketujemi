@@ -3,6 +3,7 @@ import { getSessionUser } from "../lib/session-user";
 import { getPostingSuggestions } from "../lib/listing-posting-assistant";
 import { polishListingDescription } from "../lib/listing-description-polish";
 import { generateShopDescription } from "../lib/shop-description-generate";
+import { analyzeListingImage } from "../lib/listing-image-analyze";
 import { suggestListingCategory } from "../lib/listing-category-suggest";
 import { getSimilarListingsForListing } from "../lib/listing-ai-recommendations";
 import { runSupportChat, supportChatFallbackReply, type ChatMessage } from "../lib/support-chatbot";
@@ -115,6 +116,38 @@ router.post("/ai/suggest-listing-category", async (req, res) => {
   );
 
   res.json({ suggestion, ai_enabled: isClaudeConfigured() });
+});
+
+// ─── POST /ai/analyze-listing-image ───────────────────────────────────────────
+router.post("/ai/analyze-listing-image", async (req, res) => {
+  const viewer = await getSessionUser(req);
+  if (!viewer) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+
+  const body = req.body as { image_base64?: string; media_type?: string };
+  const imageBase64 = typeof body.image_base64 === "string" ? body.image_base64.trim() : "";
+  const mediaType = typeof body.media_type === "string" ? body.media_type.trim() : "image/jpeg";
+
+  if (!imageBase64) {
+    res.status(400).json({ error: "IMAGE_REQUIRED" });
+    return;
+  }
+
+  if (!isClaudeConfigured()) {
+    res.status(503).json({ error: "AI_NOT_CONFIGURED" });
+    return;
+  }
+
+  const analysis = await analyzeListingImage({ imageBase64, mediaType });
+
+  if (!analysis) {
+    res.status(422).json({ error: "ANALYSIS_FAILED", ai_enabled: true });
+    return;
+  }
+
+  res.json({ analysis, ai_enabled: true });
 });
 
 // ─── GET /ai/listings/:id/similar ─────────────────────────────────────────────

@@ -44,7 +44,7 @@ export function SiteHeaderToolbar({ className, mobileBar }: Props) {
         type="button"
         data-testid="button-new-listing"
         onClick={goToPostListing}
-        className={cnPrimaryBlue("font-bold")}
+        className={cnPrimaryBlue("font-bold shrink-0 whitespace-nowrap")}
       >
         {t.postFree}
       </button>

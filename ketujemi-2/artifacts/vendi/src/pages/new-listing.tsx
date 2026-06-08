@@ -34,6 +34,7 @@ import { ListingCountryPicker } from "@/components/listing-country-picker";
 import { ListingCategorySuggest } from "@/components/listing-category-suggest";
 import { ListingDescriptionHelper } from "@/components/listing-description-helper";
 import { joinListingImageUrls } from "@/lib/listing-images";
+import { fileToVisionBase64, type ListingImageAnalysis } from "@/lib/listing-image-vision";
 import { useListingImageUpload } from "@/lib/listing-image-upload";
 import {
   isAllowedListingVideoFile,
@@ -188,6 +189,8 @@ export default function NewListing() {
   const { data: allCategories } = useGetCategories();
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  const imageAnalyzedRef = useRef(false);
   const uploadRef = useRef<HTMLInputElement>(null);
   const imageUpload = useListingImageUpload();
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -404,6 +407,50 @@ export default function NewListing() {
     if (user.email) form.setValue("xSellerEmail", user.email);
   }, [user, form]);
 
+  const applyImageAnalysis = useCallback(
+    (analysis: ListingImageAnalysis) => {
+      form.setValue("parent_category_id", analysis.parent_category_id);
+      window.setTimeout(() => {
+        form.setValue("category_id", analysis.category_id);
+        form.setValue("brand_category_id", analysis.brand_category_id ?? 0);
+      }, 0);
+      if (!form.getValues("title").trim()) {
+        form.setValue("title", analysis.title);
+      }
+      if (!form.getValues("description").trim()) {
+        form.setValue("description", analysis.description);
+      }
+    },
+    [form],
+  );
+
+  const analyzeFirstListingImage = useCallback(
+    async (file: File) => {
+      if (imageAnalyzedRef.current || isDhurataPostRoute) return;
+      setIsAnalyzingImage(true);
+      try {
+        const { data, mediaType } = await fileToVisionBase64(file);
+        const res = await fetchWithTimeout("/api/ai/analyze-listing-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ image_base64: data, media_type: mediaType }),
+        });
+        if (!res.ok) return;
+        const body = (await res.json()) as { analysis?: ListingImageAnalysis | null };
+        if (body.analysis) {
+          imageAnalyzedRef.current = true;
+          applyImageAnalysis(body.analysis);
+        }
+      } catch {
+        // AI assist is optional — user can fill fields manually
+      } finally {
+        setIsAnalyzingImage(false);
+      }
+    },
+    [applyImageAnalysis, isDhurataPostRoute],
+  );
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
@@ -411,10 +458,14 @@ export default function NewListing() {
       toast({ title: t.uploadFailed, variant: "destructive" });
       return;
     }
+    const shouldAnalyze = imageUrls.length === 0 && !imageAnalyzedRef.current;
     setIsUploading(true);
     try {
       const urls = await Promise.all(files.map((file) => imageUpload.uploadFile(file)));
       setImageUrls((prev) => [...prev, ...urls]);
+      if (shouldAnalyze && files[0]) {
+        void analyzeFirstListingImage(files[0]);
+      }
     } catch {
       toast({ title: t.uploadFailed, variant: "destructive" });
     } finally {
@@ -1253,10 +1304,17 @@ export default function NewListing() {
                   onChange={handleFileChange}
                 />
 
+                {(isAnalyzingImage || isUploading) && (
+                  <p className="text-sm text-blue-600 font-medium mb-2 flex items-center gap-2" role="status">
+                    <Loader2 size={14} className="animate-spin shrink-0" />
+                    {isUploading ? t.uploading : (tx.analyzingPhoto ?? "Duke analizuar foton me AI...")}
+                  </p>
+                )}
+
                 <button
                     type="button"
                     onClick={() => uploadRef.current?.click()}
-                    disabled={isUploading || !imageUpload.ready}
+                    disabled={isUploading || isAnalyzingImage || !imageUpload.ready}
                     className="w-full border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl py-12 px-6 text-center transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none min-h-[10.5rem] touch-manipulation"
                   >
                     {isUploading ? (
@@ -1264,6 +1322,12 @@ export default function NewListing() {
                         <Loader2 size={30} className="animate-spin" />
                         <p className="text-sm font-semibold">{t.uploading}</p>
                         <p className="text-sm text-gray-400">{t.waitPlease}</p>
+                      </div>
+                    ) : isAnalyzingImage ? (
+                      <div className="flex flex-col items-center gap-1.5 text-blue-500">
+                        <Loader2 size={30} className="animate-spin" />
+                        <p className="text-sm font-semibold">{tx.analyzingPhoto ?? "Duke analizuar foton me AI..."}</p>
+                        <p className="text-sm text-gray-400">{tx.analyzingPhotoHint ?? "Kategoria, titulli dhe përshkrimi plotësohen automatikisht."}</p>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center gap-1.5 text-gray-400 hover:text-blue-500 transition-colors">

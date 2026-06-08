@@ -134,3 +134,87 @@ export async function claudeVisionJsonCompletion<T>(opts: {
 
   return parseJsonObject<T>(text);
 }
+
+/** Claude vision — JSON reply from base64 image + text prompt. */
+export async function claudeVisionJsonCompletionFromBase64<T>(opts: {
+  system: string;
+  userText: string;
+  imageBase64: string;
+  mediaType: string;
+  maxTokens?: number;
+}): Promise<T | null> {
+  const data = opts.imageBase64.trim();
+  if (!isClaudeConfigured() || !data) {
+    return null;
+  }
+
+  const mediaType = opts.mediaType.trim() || "image/jpeg";
+  const client = getAnthropicClient();
+  const content: Anthropic.MessageCreateParams["messages"][0]["content"] = [
+    {
+      type: "image",
+      source: {
+        type: "base64",
+        media_type: mediaType as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
+        data,
+      },
+    },
+    { type: "text", text: opts.userText },
+  ];
+
+  const message = await client.messages.create({
+    model: getClaudeModel(),
+    max_tokens: opts.maxTokens ?? 1024,
+    system: opts.system,
+    messages: [{ role: "user", content }],
+  });
+
+  const text = message.content
+    .filter((b) => b.type === "text")
+    .map((b) => b.text)
+    .join("\n");
+
+  return parseJsonObject<T>(text);
+}
+
+/** Claude vision — JSON reply from base64 image + text prompt. */
+export async function claudeVisionJsonCompletionFromBase64<T>(opts: {
+  system: string;
+  userText: string;
+  imageBase64: string;
+  mediaType: string;
+  maxTokens?: number;
+}): Promise<T | null> {
+  const data = opts.imageBase64.trim();
+  if (!isClaudeConfigured() || !data) {
+    return null;
+  }
+
+  const mediaType = opts.mediaType.trim() || "image/jpeg";
+  const client = getAnthropicClient();
+  const content: Anthropic.MessageCreateParams["messages"][0]["content"] = [
+    {
+      type: "image",
+      source: {
+        type: "base64",
+        media_type: mediaType as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
+        data,
+      },
+    },
+    { type: "text", text: opts.userText },
+  ];
+
+  const message = await client.messages.create({
+    model: getClaudeModel(),
+    max_tokens: opts.maxTokens ?? 1024,
+    system: opts.system,
+    messages: [{ role: "user", content }],
+  });
+
+  const text = message.content
+    .filter((b) => b.type === "text")
+    .map((b) => b.text)
+    .join("\n");
+
+  return parseJsonObject<T>(text);
+}

@@ -52,9 +52,9 @@ export function AuthToolbar({ variant = "default", className }: Props) {
   }
 
   return (
-    <div className={cn("flex items-center gap-2 min-w-0 w-full", className)}>
-      <NotificationBell btnCls={btnCls} className="hidden md:inline-flex" />
-      <UserMenuDropdown variant={variant} className="min-w-0 flex-1 md:flex-none w-full" />
+    <div className={cn("flex items-center gap-2 min-w-0 max-md:w-full md:w-auto md:shrink-0", className)}>
+      <NotificationBell btnCls={btnCls} className="hidden md:inline-flex shrink-0" />
+      <UserMenuDropdown variant={variant} className="min-w-0 max-md:flex-1 max-md:w-full md:flex-none md:w-auto" />
     </div>
   );
 }
