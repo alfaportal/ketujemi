@@ -29,46 +29,121 @@ type VisionAiPayload = {
   confidence?: "high" | "medium" | "low";
 };
 
+/** Parents that must never be auto-selected from a product photo. */
+const EXCLUDED_PARENT_SLUGS = new Set(["kerkoj-te-blej", "dhurata-falas"]);
+
 const AI_SYSTEM = `You analyze product photos for second-hand listings on KetuJemi.com (Albanian marketplace).
 
-From the image, identify what is being sold and pick the BEST matching categories from the provided JSON catalog.
-Use exact numeric ids from the catalog only.
+TASK: Look at the MAIN OBJECT being sold. Classify by what the item IS (material product type), not by cultural context, decoration style, or where it might be used.
 
-Hierarchy:
-- parent_category_id = top-level category (no parent in catalog)
-- category_id = subcategory directly under that parent, OR the deepest child if only two levels exist
-- brand_category_id = optional third level (brand/model/leaf) when catalog has grandchildren; omit or null if not applicable
+Use ONLY numeric ids from the provided JSON catalog. Never invent ids.
 
-If seller_type is "shop", the photo is inventory for that shop — title/description should suit a shop product listing (professional, clear product name).
+═══ CATEGORY ID RULES (critical) ═══
+parent_category_id = top-level hub (root row in catalog, no parent)
+category_id = the DIRECT child of that parent (type/subcategory row). REQUIRED whenever the parent has children.
+brand_category_id = deepest leaf when the catalog has 3+ levels under the parent (grandchild or deeper). Use null only when the tree stops at category_id.
 
-Also write in Albanian (sq):
-- title: concise listing title (5–80 chars), e.g. "BMW X5 3.0d 2018" or "iPhone 14 Pro 128GB"
-- description: helpful description (40–400 chars) mentioning condition, key features visible; no phone/email; no price
+Examples:
+• Traditional dress / kostum / fustan → parent «Rroba & Këpucë» → category «Veshje për Femra» or «Veshje për Meshkuj» → leaf e.g. «Veshje festive», «Veshje Ceremoniale», «Kostume & Sako»
+• Car → parent «Vetura» → body type (Sedan, SUV…) → brand if visible (BMW, Audi…)
+• Phone → parent «Telefona» → brand/model leaf under Telefona
 
-Electronics rules:
-- Speakers/headphones/JBL/Bose → Audio & Pajisje Zëri, NOT TVs
-- TVs/projectors → Televizorë & Projektorë
-- Phones → under Telefona
+Always pick the MOST SPECIFIC leaf available. Never stop at parent only when children exist.
+
+═══ VISUAL OBJECT → PARENT HUB (use exact catalog names) ═══
+CLOTHING & WEARABLES → «Rroba & Këpucë»
+  Dresses, shirts, pants, shoes, jackets, costumes, traditional/folk clothing (kostum tradicional, fustan, xhaketë, xhubleta), accessories, bags, watches, jewelry, sunglasses.
+  NOT «Muzikë & Hobby» — clothing is NEVER hobby even if ornate, cultural, or handmade.
+
+VEHICLES → pick the correct vehicle hub:
+  Cars → «Vetura» | Motorcycles/scooters → «Motorr & Skuter» | Trucks/vans/buses → «Kamionë & Furgonë»
+
+AUTO PARTS → «Auto Pjesë»
+  Tires, engines, brakes, batteries, body parts, filters, tools for vehicles.
+
+REAL ESTATE → «Banesa & Shtëpi» (apartments, houses, land, residential) or «Lokale & Zyrë» (commercial/office).
+
+ELECTRONICS & TECH → pick the best hub:
+  Phones → «Telefona»
+  Laptops/PCs/tablets → «Kompjuterë & Laptopë»
+  TVs, cameras, gaming consoles, speakers, appliances, smartwatches → «Elektronikë & Pajisje Shtëpiake»
+  Speakers/headphones → sub «Audio & Pajisje Zëri» (NOT TVs)
+  TVs/projectors → sub «Televizorë & Projektorë»
+  Cameras → sub «Kamera, Foto & Smart Watch» (NOT Muzikë & Hobby unless clearly pro studio-only and not consumer electronics)
+
+HOME → «Mobilje & Dekorime»
+  Furniture, sofas, beds, kitchen items, decor, lighting, carpets.
+
+JOBS & SERVICES → «Punë & Shërbime» (only if image shows a service/job ad, not a physical product).
+
+BABY & KIDS → «Fëmijë»
+  Strollers, baby gear, toys, children's clothes (NOT adult clothing).
+
+SPORTS & OUTDOOR → «Sport & Outdoor»
+  Sports gear, bicycles, camping, fitness equipment.
+
+PETS → «Kafshë» (live animals, pet supplies).
+
+MUSIC & HOBBY → «Muzikë & Hobby» ONLY for:
+  Musical instruments, studio/audio gear, art supplies, hobby craft materials, collectible books/coins, hobby model kits.
+  NEVER for clothing, costumes, dresses, or jewelry.
+
+AGRICULTURE → «Bujqësi & Blegtori» (farm animals, tractors as farm equipment, seeds, feed).
+
+EDUCATION → «Arsim & Kurse» (courses, tutoring, textbooks, study materials).
+
+CONSTRUCTION → «Ndërtim & Instalime» (building services, installations — not furniture).
+
+═══ COMMON MISTAKES — AVOID ═══
+✗ Folk/traditional/ceremonial costume → NOT Muzikë & Hobby → USE Rroba & Këpucë
+✗ Embroidered dress or formal wear → NOT Art & Kreativitet → USE Rroba & Këpucë
+✗ Car tire or engine → NOT Vetura → USE Auto Pjesë
+✗ Bicycle → NOT Vetura → USE Sport & Outdoor › Biçikleta
+✗ Children's toy → NOT Muzikë & Hobby puzzle section unless clearly adult collectible
+✗ iPhone → NOT Kompjuterë if Telefona exists with matching brand leaf
+
+═══ SHOP SELLERS ═══
+If seller_type is "shop", write title/description as a clear shop product listing.
+
+═══ TEXT OUTPUT (Albanian sq) ═══
+title: 5–80 chars, product-focused (e.g. "BMW X5 3.0d 2018", "Kostum tradicional femrash")
+description: 40–400 chars, condition + visible features; no phone/email/price
 
 Reply ONLY JSON:
 {"parent_category_id":number,"category_id":number,"brand_category_id":number|null,"title":"...","description":"...","confidence":"high"|"medium"|"low"}`;
 
-function buildCategoryCatalog(rows: CategoryRow[]) {
-  const parents = rows.filter((c) => !c.parent_id);
+function isExcludedParent(row: CategoryRow): boolean {
+  return Boolean(row.slug && EXCLUDED_PARENT_SLUGS.has(row.slug));
+}
+
+type CatalogNode = {
+  id: number;
+  name: string;
+  slug: string;
+  children?: CatalogNode[];
+};
+
+function buildCategorySubtree(rows: CategoryRow[], parentId: number): CatalogNode[] {
+  return rows
+    .filter((c) => c.parent_id === parentId)
+    .map((row) => {
+      const grandchildren = buildCategorySubtree(rows, row.id);
+      return {
+        id: row.id,
+        name: row.name,
+        slug: row.slug,
+        ...(grandchildren.length > 0 ? { children: grandchildren } : {}),
+      };
+    });
+}
+
+function buildCategoryCatalog(rows: CategoryRow[]): CatalogNode[] {
+  const parents = rows.filter((c) => !c.parent_id && !isExcludedParent(c));
   return parents.map((p) => ({
     id: p.id,
     name: p.name,
     slug: p.slug,
-    children: rows
-      .filter((c) => c.parent_id === p.id)
-      .map((child) => ({
-        id: child.id,
-        name: child.name,
-        slug: child.slug,
-        children: rows
-          .filter((c) => c.parent_id === child.id)
-          .map((leaf) => ({ id: leaf.id, name: leaf.name, slug: leaf.slug })),
-      })),
+    children: buildCategorySubtree(rows, p.id),
   }));
 }
 
@@ -98,29 +173,49 @@ function mapChainToForm(chain: CategoryRow[]): {
   if (chain.length === 1) {
     return { parent: chain[0], category: chain[0] };
   }
-  if (chain.length === 2) {
-    return { parent: chain[0], category: chain[1] };
-  }
   return {
     parent: chain[0],
-    category: chain[chain.length - 2],
-    brand: chain[chain.length - 1],
+    category: chain[1],
+    brand: chain.length >= 3 ? chain[chain.length - 1] : undefined,
   };
+}
+
+function parentHasChildren(rows: CategoryRow[], parentId: number): boolean {
+  return rows.some((c) => c.parent_id === parentId);
+}
+
+function resolveLeafId(rows: CategoryRow[], parsed: VisionAiPayload): number | null {
+  const brandId = Number(parsed.brand_category_id) || 0;
+  const categoryId = Number(parsed.category_id) || 0;
+  const parentId = Number(parsed.parent_category_id) || 0;
+  if (!parentId) return null;
+
+  if (brandId > 0) return brandId;
+  if (categoryId > 0) return categoryId;
+
+  return parentHasChildren(rows, parentId) ? null : parentId;
 }
 
 function validateHierarchy(
   rows: CategoryRow[],
   parsed: VisionAiPayload,
 ): ListingImageAnalyzeResult | null {
-  if (!parsed.parent_category_id || !parsed.category_id) return null;
+  const parentId = Number(parsed.parent_category_id) || 0;
+  if (!parentId) return null;
 
-  const brandId = Number(parsed.brand_category_id) || 0;
-  const leafId = brandId > 0 ? brandId : parsed.category_id;
+  const parentRow = rows.find((c) => c.id === parentId);
+  if (!parentRow || isExcludedParent(parentRow)) return null;
+
+  const leafId = resolveLeafId(rows, parsed);
+  if (!leafId) return null;
+
   const chain = categoryChain(rows, leafId);
   if (!chain) return null;
 
   const mapped = mapChainToForm(chain);
-  if (!mapped || mapped.parent.id !== parsed.parent_category_id) return null;
+  if (!mapped || mapped.parent.id !== parentId) return null;
+
+  if (parentHasChildren(rows, parentId) && mapped.category.id === parentId) return null;
 
   const title = parsed.title?.trim() ?? "";
   const description = parsed.description?.trim() ?? "";
@@ -168,6 +263,8 @@ export async function analyzeListingImage(input: {
     const parsed = await claudeVisionJsonCompletionFromBase64<VisionAiPayload>({
       system: AI_SYSTEM,
       userText: JSON.stringify({
+        instruction:
+          "Classify the main sellable object in the image. Pick parent_category_id, category_id (direct child of parent), and brand_category_id (deepest leaf when available). Match subcategory precisely to what is visible — e.g. folk costume → Rroba & Këpucë › Veshje për Femra/Meshkuj › festive/ceremonial leaf.",
         categories: catalog,
         ...(shopName
           ? {
@@ -179,7 +276,7 @@ export async function analyzeListingImage(input: {
       }),
       imageBase64,
       mediaType: input.mediaType,
-      maxTokens: 700,
+      maxTokens: 900,
     });
 
     if (!parsed) return null;

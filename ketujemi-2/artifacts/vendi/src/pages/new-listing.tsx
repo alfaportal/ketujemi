@@ -191,6 +191,8 @@ export default function NewListing() {
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const imageAnalyzedRef = useRef(false);
+  const skipCategoryCascadeRef = useRef(false);
+  const skipBrandCascadeRef = useRef(false);
   const uploadRef = useRef<HTMLInputElement>(null);
   const imageUpload = useListingImageUpload();
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -314,11 +316,19 @@ export default function NewListing() {
   const hasBrands = brandCats.length > 0;
 
   useEffect(() => {
+    if (skipCategoryCascadeRef.current) {
+      skipCategoryCascadeRef.current = false;
+      return;
+    }
     form.setValue("category_id", 0);
     form.setValue("brand_category_id", 0);
   }, [parentCatId, form]);
 
   useEffect(() => {
+    if (skipBrandCascadeRef.current) {
+      skipBrandCascadeRef.current = false;
+      return;
+    }
     form.setValue("brand_category_id", 0);
   }, [bodyCatId, form]);
 
@@ -426,11 +436,11 @@ export default function NewListing() {
 
   const applyImageAnalysis = useCallback(
     (analysis: ListingImageAnalysis) => {
+      skipCategoryCascadeRef.current = true;
+      skipBrandCascadeRef.current = true;
       form.setValue("parent_category_id", analysis.parent_category_id);
-      window.setTimeout(() => {
-        form.setValue("category_id", analysis.category_id);
-        form.setValue("brand_category_id", analysis.brand_category_id ?? 0);
-      }, 0);
+      form.setValue("category_id", analysis.category_id);
+      form.setValue("brand_category_id", analysis.brand_category_id ?? 0);
       if (!form.getValues("title").trim()) {
         form.setValue("title", analysis.title);
       }
