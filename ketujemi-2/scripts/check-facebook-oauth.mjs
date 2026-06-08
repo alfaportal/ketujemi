@@ -35,9 +35,8 @@ function parseEnvFile(filePath) {
 }
 
 const fileEnv = parseEnvFile(envPath);
-const appId = process.env.FACEBOOK_APP_ID ?? process.env.META_APP_ID ?? fileEnv.FACEBOOK_APP_ID ?? fileEnv.META_APP_ID;
-const secret =
-  process.env.FACEBOOK_APP_SECRET ?? process.env.META_APP_SECRET ?? fileEnv.FACEBOOK_APP_SECRET ?? fileEnv.META_APP_SECRET;
+const appId = process.env.FACEBOOK_APP_ID ?? fileEnv.FACEBOOK_APP_ID;
+const secret = process.env.FACEBOOK_APP_SECRET ?? fileEnv.FACEBOOK_APP_SECRET;
 const origin = (process.env.PUBLIC_APP_ORIGIN ?? fileEnv.PUBLIC_APP_ORIGIN ?? "https://ketujemi.com").replace(/\/$/, "");
 const version = "v21.0";
 const redirectUri = `${origin}/api/auth/facebook/callback`;

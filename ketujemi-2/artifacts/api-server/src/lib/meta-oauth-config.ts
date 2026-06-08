@@ -20,12 +20,13 @@ export function cleanMetaEnv(name: string): string | null {
   return v || null;
 }
 
+/** Facebook Login OAuth — must match Meta Developers app (Railway: FACEBOOK_APP_ID). */
 export function facebookAppId(): string | null {
-  return cleanMetaEnv("FACEBOOK_APP_ID") ?? cleanMetaEnv("META_APP_ID");
+  return cleanMetaEnv("FACEBOOK_APP_ID");
 }
 
 export function facebookAppSecret(): string | null {
-  return cleanMetaEnv("FACEBOOK_APP_SECRET") ?? cleanMetaEnv("META_APP_SECRET");
+  return cleanMetaEnv("FACEBOOK_APP_SECRET");
 }
 
 export function isFacebookOAuthEnabled(): boolean {

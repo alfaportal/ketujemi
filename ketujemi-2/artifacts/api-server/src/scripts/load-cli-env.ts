@@ -12,8 +12,6 @@ const SOCIAL_ENV_KEYS = new Set([
   "IG_BUSINESS_ACCOUNT_ID",
   "FACEBOOK_APP_ID",
   "FACEBOOK_APP_SECRET",
-  "META_APP_ID",
-  "META_APP_SECRET",
 ]);
 
 export function isRailwayInjectedEnv(): boolean {
