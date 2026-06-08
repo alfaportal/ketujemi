@@ -7,6 +7,23 @@ import { walletSummary } from "./wallet";
 
 const COOKIE = "kj_session";
 const MAX_AGE_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
+const PRODUCTION_COOKIE_DOMAIN = ".ketujemi.com";
+
+/** Apex + www on ketujemi.com share the session cookie. */
+export function resolveSessionCookieDomain(): string | undefined {
+  const raw = process.env.COOKIE_DOMAIN?.trim();
+  if (raw) {
+    const host = raw.replace(/^\./, "").toLowerCase();
+    if (host === "ketujemi.com" || host === "www.ketujemi.com") {
+      return PRODUCTION_COOKIE_DOMAIN;
+    }
+    return raw;
+  }
+  if (process.env.NODE_ENV === "production") {
+    return PRODUCTION_COOKIE_DOMAIN;
+  }
+  return undefined;
+}
 
 function sessionCookieBase(): CookieOptions {
   const opts: CookieOptions = {
@@ -16,9 +33,7 @@ function sessionCookieBase(): CookieOptions {
     sameSite: "lax",
     path: "/",
   };
-  const domain =
-    process.env.COOKIE_DOMAIN?.trim() ??
-    (process.env.NODE_ENV === "production" ? ".ketujemi.com" : undefined);
+  const domain = resolveSessionCookieDomain();
   if (domain) opts.domain = domain;
   return opts;
 }
@@ -28,6 +43,21 @@ export function setUserSessionCookie(res: Response, userId: number): void {
     ...sessionCookieBase(),
     maxAge: MAX_AGE_MS,
   });
+}
+
+/** Debug helper — inspect cookie flags without logging the signed value. */
+export function sessionCookieDebugInfo(): Record<string, unknown> {
+  const base = sessionCookieBase();
+  return {
+    name: COOKIE,
+    domain: base.domain ?? "(host-only)",
+    path: base.path,
+    secure: base.secure,
+    sameSite: base.sameSite,
+    httpOnly: base.httpOnly,
+    signed: base.signed,
+    maxAgeMs: MAX_AGE_MS,
+  };
 }
 
 export function clearUserSessionCookie(res: Response): void {

@@ -11,7 +11,11 @@ import {
   recordFacebookLinkedInstagramFromToken,
 } from "../lib/oauth-user";
 import { createOAuthState, sanitizeOAuthReturnTo, verifyOAuthState } from "../lib/oauth-state";
-import { isNewlyRegisteredUser, setUserSessionCookie } from "../lib/user-session";
+import {
+  isNewlyRegisteredUser,
+  sessionCookieDebugInfo,
+  setUserSessionCookie,
+} from "../lib/user-session";
 import { assertAccountActive } from "../lib/user-ban";
 import { parseFacebookOAuthCallbackError } from "../lib/facebook-oauth-errors.js";
 import { redirectOAuthLogin, redirectOAuthSuccess } from "../lib/oauth-redirect";
@@ -76,17 +80,41 @@ router.get("/auth/facebook/callback", async (req, res) => {
     const accessToken = await exchangeFacebookCode(code, origin, "public");
     const profile = await fetchFacebookProfile(accessToken);
     const user = await findOrCreateUserFromFacebook(profile);
-    await recordFacebookLinkedInstagramFromToken(user.id, accessToken);
-    const { scheduleShopSocialEnrichForUser } = await import("../lib/shop-social-enrich.js");
-    scheduleShopSocialEnrichForUser(user.id);
-    await assertAccountActive(user, user.phone_e164_digits ?? undefined);
-    setUserSessionCookie(res, user.id);
-    redirectOAuthSuccess(
-      res,
+
+    console.log("[facebook oauth callback] findOrCreateUserFromFacebook", {
+      userId: user.id,
+      facebookUserId: profile.id,
+      email: user.email ?? profile.email ?? null,
+      displayName: user.display_name ?? profile.name ?? null,
+      isNewUser: isNewlyRegisteredUser(user),
       origin,
-      state.returnTo,
-      isNewlyRegisteredUser(user) ? { welcome: "1" } : undefined,
+      returnTo: state.returnTo,
+    });
+
+    await assertAccountActive(user, user.phone_e164_digits ?? undefined);
+
+    setUserSessionCookie(res, user.id);
+
+    const welcome = isNewlyRegisteredUser(user) ? { welcome: "1" } : undefined;
+    const redirectPath = sanitizeOAuthReturnTo(state.returnTo);
+    const redirectParams = new URLSearchParams({ verified: "1", ...welcome });
+    const redirectSep = redirectPath.includes("?") ? "&" : "?";
+    const redirectUrl = `${origin.replace(/\/$/, "")}${redirectPath}${redirectSep}${redirectParams.toString()}`;
+
+    console.log("[facebook oauth callback] session cookie set before redirect", {
+      userId: user.id,
+      cookie: sessionCookieDebugInfo(),
+      setCookieHeader: res.getHeader("Set-Cookie"),
+      redirectUrl,
+    });
+
+    // Optional post-login enrichment — must not block session cookie + redirect.
+    void recordFacebookLinkedInstagramFromToken(user.id, accessToken);
+    void import("../lib/shop-social-enrich.js").then((m) =>
+      m.scheduleShopSocialEnrichForUser(user.id),
     );
+
+    redirectOAuthSuccess(res, origin, state.returnTo, welcome);
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown";
     req.log?.error({ err, message }, "facebook oauth callback");
