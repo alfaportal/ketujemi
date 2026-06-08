@@ -163,13 +163,31 @@ export default function LoginPage() {
     } else if (oauthErr === "tiktok_failed") {
       toast({ title: t.login_oauth_tiktok_failed, variant: "destructive" });
     } else if (oauthErr === "facebook_app_not_live") {
-      toast({ title: t.login_oauth_facebook_not_live, variant: "destructive" });
+      toast({
+        title: t.login_oauth_facebook_not_live,
+        description: t.login_oauth_facebook_not_live_hint,
+        variant: "destructive",
+      });
+      setFlow("register");
     } else if (oauthErr === "facebook_denied") {
-      toast({ title: t.login_oauth_facebook_denied, variant: "destructive" });
+      toast({
+        title: t.login_oauth_facebook_denied,
+        description: t.login_oauth_facebook_denied_hint,
+      });
     } else if (oauthErr === "facebook_failed") {
-      toast({ title: t.login_oauth_facebook_failed, variant: "destructive" });
+      toast({
+        title: t.login_oauth_facebook_failed,
+        description: t.login_oauth_facebook_failed_hint,
+        variant: "destructive",
+      });
+      setFlow("register");
     } else if (oauthErr === "oauth_state" || oauthErr === "oauth_code") {
-      toast({ title: t.login_oauth_failed, variant: "destructive" });
+      toast({
+        title: t.login_oauth_failed,
+        description: t.login_oauth_failed_hint,
+        variant: "destructive",
+      });
+      setFlow("register");
     }
     if (params.get("verified") === "1") {
       void refresh().then(() => setLocation(returnTo));

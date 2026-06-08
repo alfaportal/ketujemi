@@ -115,15 +115,21 @@ const KS_EXTRA: Record<string, string> = {
   login_google_btn: "Hyr me Google",
   login_oauth_facebook: "Hyr me Facebook",
   login_oauth_facebook_denied: "Hyrja me Facebook u anulua.",
-  login_oauth_facebook_failed: "Hyrja me Facebook dështoi. Provoni përsëri.",
-  login_oauth_facebook_not_live:
-    "Hyrja me Facebook nuk është e hapur për të gjithë përdoruesit ende. Përdorni email/telefon ose provoni më vonë.",
+  login_oauth_facebook_denied_hint:
+    "Regjistrohu me email më poshtë nëse dëshiron të vazhdosh.",
+  login_oauth_facebook_failed: "Facebook është jashtë rrjetit për momentin.",
+  login_oauth_facebook_failed_hint:
+    "Regjistrohu me email më poshtë — funksionon menjëherë.",
+  login_oauth_facebook_not_live: "Facebook është jashtë rrjetit për momentin.",
+  login_oauth_facebook_not_live_hint:
+    "Regjistrohu me email më poshtë — funksionon menjëherë.",
   login_tiktok_btn: "Hyr me TikTok",
   login_oauth_google_denied: "Hyrja me Google u anulua.",
   login_oauth_google_failed: "Hyrja me Google dështoi. Provoni përsëri.",
   login_oauth_tiktok_denied: "Hyrja me TikTok u anulua.",
   login_oauth_tiktok_failed: "Hyrja me TikTok dështoi. Provoni përsëri.",
   login_oauth_failed: "Hyrja sociale dështoi. Provoni përsëri.",
+  login_oauth_failed_hint: "Regjistrohu me email më poshtë — funksionon menjëherë.",
   login_submit_login: "Kyçu",
   login_submit_register: "Krijo llogarinë",
   login_continueBtn: "Vazhdo",
@@ -2181,15 +2187,21 @@ const MK_EXTRA: Record<string, string> = {
   login_google_btn: "Најави се со Google",
   login_oauth_facebook: "Најави се со Facebook",
   login_oauth_facebook_denied: "Најавата со Facebook е откажана.",
-  login_oauth_facebook_failed: "Најавата со Facebook не успеа. Обидете се повторно.",
-  login_oauth_facebook_not_live:
-    "Најавата со Facebook сè уште не е достапна за сите корисници. Користете email/телефон или обидете се подоцна.",
+  login_oauth_facebook_denied_hint:
+    "Регистрирај се со email подолу ако сакаш да продолжиш.",
+  login_oauth_facebook_failed: "Facebook моментално е надвор од мрежата.",
+  login_oauth_facebook_failed_hint:
+    "Регистрирај се со email подолу — работи веднаш.",
+  login_oauth_facebook_not_live: "Facebook моментално е надвор од мрежата.",
+  login_oauth_facebook_not_live_hint:
+    "Регистрирај се со email подолу — работи веднаш.",
   login_tiktok_btn: "Најави се со TikTok",
   login_oauth_google_denied: "Најавата со Google е откажана.",
   login_oauth_google_failed: "Најавата со Google не успеа. Обидете се повторно.",
   login_oauth_tiktok_denied: "Најавата со TikTok е откажана.",
   login_oauth_tiktok_failed: "Најавата со TikTok не успеа. Обидете се повторно.",
   login_oauth_failed: "Социјалната најава не успеа. Обидете се повторно.",
+  login_oauth_failed_hint: "Регистрирај се со email подолу — работи веднаш.",
   login_submit_login: "Најави се",
   login_submit_register: "Создај профил",
   login_continueBtn: "Продолжи",
@@ -4146,15 +4158,21 @@ const MNE_EXTRA: Record<string, string> = {
   login_google_btn: "Prijavi se putem Google",
   login_oauth_facebook: "Prijavi se putem Facebook",
   login_oauth_facebook_denied: "Prijava putem Facebook je otkazana.",
-  login_oauth_facebook_failed: "Prijava putem Facebook nije uspjela. Pokušajte ponovo.",
-  login_oauth_facebook_not_live:
-    "Prijava putem Facebook još nije dostupna svim korisnicima. Koristite email/telefon ili pokušajte kasnije.",
+  login_oauth_facebook_denied_hint:
+    "Registruj se emailom ispod ako želiš da nastaviš.",
+  login_oauth_facebook_failed: "Facebook je trenutno van mreže.",
+  login_oauth_facebook_failed_hint:
+    "Registruj se emailom ispod — radi odmah.",
+  login_oauth_facebook_not_live: "Facebook je trenutno van mreže.",
+  login_oauth_facebook_not_live_hint:
+    "Registruj se emailom ispod — radi odmah.",
   login_tiktok_btn: "Prijavi se putem TikTok",
   login_oauth_google_denied: "Prijava putem Google je otkazana.",
   login_oauth_google_failed: "Prijava putem Google nije uspjela. Pokušajte ponovo.",
   login_oauth_tiktok_denied: "Prijava putem TikTok je otkazana.",
   login_oauth_tiktok_failed: "Prijava putem TikTok nije uspjela. Pokušajte ponovo.",
   login_oauth_failed: "Društvena prijava nije uspjela. Pokušajte ponovo.",
+  login_oauth_failed_hint: "Registruj se emailom ispod — radi odmah.",
   login_submit_login: "Prijavi se",
   login_submit_register: "Napravi nalog",
   login_continueBtn: "Nastavi",

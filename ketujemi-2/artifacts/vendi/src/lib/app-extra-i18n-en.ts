@@ -967,15 +967,21 @@ export const EN_EXTRA: Record<string, string> = {
   login_google_btn: "Sign in with Google",
   login_oauth_facebook: "Sign in with Facebook",
   login_oauth_facebook_denied: "Facebook sign-in was cancelled.",
-  login_oauth_facebook_failed: "Facebook sign-in failed. Please try again.",
-  login_oauth_facebook_not_live:
-    "Facebook sign-in is not open to all users yet. Use email/phone or try again later.",
+  login_oauth_facebook_denied_hint:
+    "Sign up with email below if you want to continue.",
+  login_oauth_facebook_failed: "Facebook is temporarily unavailable.",
+  login_oauth_facebook_failed_hint:
+    "Sign up with email below — it works right away.",
+  login_oauth_facebook_not_live: "Facebook is temporarily unavailable.",
+  login_oauth_facebook_not_live_hint:
+    "Sign up with email below — it works right away.",
   login_tiktok_btn: "Sign in with TikTok",
   login_oauth_google_denied: "Google sign-in was cancelled.",
   login_oauth_google_failed: "Google sign-in failed. Please try again.",
   login_oauth_tiktok_denied: "TikTok sign-in was cancelled.",
   login_oauth_tiktok_failed: "TikTok sign-in failed. Please try again.",
   login_oauth_failed: "Social sign-in failed. Please try again.",
+  login_oauth_failed_hint: "Sign up with email below — it works right away.",
   login_needEmailAccount: "New email account?",
   login_passLbl: "Fjalëkalimi",
   login_passPh: "••••••••",
