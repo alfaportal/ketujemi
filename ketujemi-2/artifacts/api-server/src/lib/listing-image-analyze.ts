@@ -185,27 +185,30 @@ function parentHasChildren(rows: CategoryRow[], parentId: number): boolean {
 }
 
 function resolveLeafId(rows: CategoryRow[], parsed: VisionAiPayload): number | null {
-  const brandId = Number(parsed.brand_category_id) || 0;
-  const categoryId = Number(parsed.category_id) || 0;
-  const parentId = Number(parsed.parent_category_id) || 0;
-  if (!parentId) return null;
+  const candidates = [
+    Number(parsed.brand_category_id) || 0,
+    Number(parsed.category_id) || 0,
+    Number(parsed.parent_category_id) || 0,
+  ].filter((id) => id > 0);
 
-  if (brandId > 0) return brandId;
-  if (categoryId > 0) return categoryId;
+  let bestId: number | null = null;
+  let bestDepth = 0;
+  for (const id of candidates) {
+    const chain = categoryChain(rows, id);
+    if (!chain) continue;
+    if (chain.length >= bestDepth) {
+      bestDepth = chain.length;
+      bestId = id;
+    }
+  }
 
-  return parentHasChildren(rows, parentId) ? null : parentId;
+  return bestId;
 }
 
 function validateHierarchy(
   rows: CategoryRow[],
   parsed: VisionAiPayload,
 ): ListingImageAnalyzeResult | null {
-  const parentId = Number(parsed.parent_category_id) || 0;
-  if (!parentId) return null;
-
-  const parentRow = rows.find((c) => c.id === parentId);
-  if (!parentRow || isExcludedParent(parentRow)) return null;
-
   const leafId = resolveLeafId(rows, parsed);
   if (!leafId) return null;
 
@@ -213,13 +216,15 @@ function validateHierarchy(
   if (!chain) return null;
 
   const mapped = mapChainToForm(chain);
-  if (!mapped || mapped.parent.id !== parentId) return null;
+  if (!mapped || isExcludedParent(mapped.parent)) return null;
 
-  if (parentHasChildren(rows, parentId) && mapped.category.id === parentId) return null;
+  if (parentHasChildren(rows, mapped.parent.id) && mapped.category.id === mapped.parent.id) {
+    return null;
+  }
 
   const title = parsed.title?.trim() ?? "";
   const description = parsed.description?.trim() ?? "";
-  if (title.length < 5 || description.length < 15) return null;
+  if (title.length < 5 || description.length < 10) return null;
 
   return {
     parent_category_id: mapped.parent.id,

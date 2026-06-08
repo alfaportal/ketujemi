@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { fetchWithTimeout, getFetchErrorMessage } from "@/lib/fetch-with-timeout";
+import {
+  fetchWithTimeout,
+  getFetchErrorMessage,
+  IMAGE_ANALYZE_TIMEOUT_MS,
+} from "@/lib/fetch-with-timeout";
 import { Link, useLocation } from "wouter";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -193,6 +197,8 @@ export default function NewListing() {
   const imageAnalyzedRef = useRef(false);
   const skipCategoryCascadeRef = useRef(false);
   const skipBrandCascadeRef = useRef(false);
+  const skipTitleSuggestRef = useRef(false);
+  const pendingImageAnalysisRef = useRef<ListingImageAnalysis | null>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
   const imageUpload = useListingImageUpload();
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -318,6 +324,12 @@ export default function NewListing() {
   useEffect(() => {
     if (skipCategoryCascadeRef.current) {
       skipCategoryCascadeRef.current = false;
+      const pending = pendingImageAnalysisRef.current;
+      if (pending) {
+        form.setValue("category_id", pending.category_id, { shouldDirty: true });
+        form.setValue("brand_category_id", pending.brand_category_id ?? 0, { shouldDirty: true });
+        pendingImageAnalysisRef.current = null;
+      }
       return;
     }
     form.setValue("category_id", 0);
@@ -337,6 +349,7 @@ export default function NewListing() {
   useEffect(() => {
     const parentId = Number(parentCatId);
     if (!parentId) return;
+    if (skipTitleSuggestRef.current) return;
 
     const children = (allCategories ?? []).filter(
       (c: { parent_id?: number | null }) => c.parent_id === parentId,
@@ -436,17 +449,26 @@ export default function NewListing() {
 
   const applyImageAnalysis = useCallback(
     (analysis: ListingImageAnalysis) => {
+      pendingImageAnalysisRef.current = analysis;
       skipCategoryCascadeRef.current = true;
       skipBrandCascadeRef.current = true;
-      form.setValue("parent_category_id", analysis.parent_category_id);
-      form.setValue("category_id", analysis.category_id);
-      form.setValue("brand_category_id", analysis.brand_category_id ?? 0);
-      if (!form.getValues("title").trim()) {
-        form.setValue("title", analysis.title);
-      }
-      if (!form.getValues("description").trim()) {
-        form.setValue("description", analysis.description);
-      }
+      skipTitleSuggestRef.current = true;
+
+      const fieldOpts = { shouldDirty: true, shouldTouch: true } as const;
+      form.setValue("title", analysis.title, fieldOpts);
+      form.setValue("description", analysis.description, fieldOpts);
+      form.setValue("parent_category_id", analysis.parent_category_id, fieldOpts);
+      form.setValue("category_id", analysis.category_id, fieldOpts);
+      form.setValue("brand_category_id", analysis.brand_category_id ?? 0, fieldOpts);
+
+      // Re-apply after cascade effects — guards against effect ordering on mobile.
+      queueMicrotask(() => {
+        form.setValue("category_id", analysis.category_id, fieldOpts);
+        form.setValue("brand_category_id", analysis.brand_category_id ?? 0, fieldOpts);
+      });
+      window.setTimeout(() => {
+        skipTitleSuggestRef.current = false;
+      }, 2500);
     },
     [form],
   );
@@ -457,26 +479,37 @@ export default function NewListing() {
       setIsAnalyzingImage(true);
       try {
         const { data, mediaType } = await fileToVisionBase64(file);
-        const res = await fetchWithTimeout("/api/ai/analyze-listing-image", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            image_base64: data,
-            media_type: mediaType,
-            ...(myShop
-              ? { shop_name: myShop.shop_name, shop_category: myShop.category || undefined }
-              : {}),
-          }),
-        });
-        if (!res.ok) return;
-        const body = (await res.json()) as { analysis?: ListingImageAnalysis | null };
+        const res = await fetchWithTimeout(
+          "/api/ai/analyze-listing-image",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              image_base64: data,
+              media_type: mediaType,
+              ...(myShop
+                ? { shop_name: myShop.shop_name, shop_category: myShop.category || undefined }
+                : {}),
+            }),
+          },
+          IMAGE_ANALYZE_TIMEOUT_MS,
+        );
+        const body = (await res.json().catch(() => ({}))) as {
+          analysis?: ListingImageAnalysis | null;
+          error?: string;
+        };
+        console.log("[listing-image-analyze] response", res.status, body);
+        if (!res.ok) {
+          console.warn("[listing-image-analyze] failed", res.status, body.error);
+          return;
+        }
         if (body.analysis) {
           imageAnalyzedRef.current = true;
           applyImageAnalysis(body.analysis);
         }
-      } catch {
-        // AI assist is optional — user can fill fields manually
+      } catch (error) {
+        console.warn("[listing-image-analyze] error", error);
       } finally {
         setIsAnalyzingImage(false);
       }
@@ -492,13 +525,14 @@ export default function NewListing() {
       return;
     }
     const shouldAnalyze = imageUrls.length === 0 && !imageAnalyzedRef.current;
+    const firstFile = shouldAnalyze ? files[0] : null;
     setIsUploading(true);
     try {
-      const urls = await Promise.all(files.map((file) => imageUpload.uploadFile(file)));
+      const [, urls] = await Promise.all([
+        firstFile ? analyzeFirstListingImage(firstFile) : Promise.resolve(),
+        Promise.all(files.map((file) => imageUpload.uploadFile(file))),
+      ]);
       setImageUrls((prev) => [...prev, ...urls]);
-      if (shouldAnalyze && files[0]) {
-        void analyzeFirstListingImage(files[0]);
-      }
     } catch {
       toast({ title: t.uploadFailed, variant: "destructive" });
     } finally {
@@ -507,7 +541,15 @@ export default function NewListing() {
     }
   };
 
-  const removeImage = (i: number) => setImageUrls((prev) => prev.filter((_, idx) => idx !== i));
+  const removeImage = (i: number) => {
+    setImageUrls((prev) => {
+      const next = prev.filter((_, idx) => idx !== i);
+      if (next.length === 0) {
+        imageAnalyzedRef.current = false;
+      }
+      return next;
+    });
+  };
 
   const handleVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

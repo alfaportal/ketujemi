@@ -1,6 +1,9 @@
 /** Default client fetch timeout (10s). */
 export const FETCH_TIMEOUT_MS = 10_000;
 
+/** Vision / Claude image analysis can take 20–45s on mobile networks. */
+export const IMAGE_ANALYZE_TIMEOUT_MS = 60_000;
+
 export class FetchTimeoutError extends Error {
   constructor(message = "Request timed out") {
     super(message);
