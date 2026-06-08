@@ -156,7 +156,7 @@ router.post("/ai/analyze-listing-image", analyzeListingImageLimiter, async (req,
   if (!isListingImageAnalyzeConfigured()) {
     res.status(503).json({
       error: "AI_NOT_CONFIGURED",
-      message: "ANTHROPIC_API_KEY is not configured on the server.",
+      message: "Image analysis is not configured on the server.",
     });
     return;
   }

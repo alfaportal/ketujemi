@@ -172,6 +172,12 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     photoAnalyzeFailed: "Nuk u plotësua automatikisht",
     photoAnalyzeFailedHint:
       "Vazhdoni manualisht me kategorinë, titullin dhe përshkrimin — ose provoni një foto më të qartë.",
+    photoAnalyzeLoginRequired: "Duhet të jesh i kyçur",
+    photoAnalyzeLoginRequiredHint:
+      "Hyni në llogari dhe provoni përsëri ngarkimin e fotos.",
+    photoAnalyzeUnavailable: "Analiza e fotos nuk është e disponueshme për momentin",
+    photoAnalyzeUnavailableHint:
+      "Plotësoni manualisht kategorinë, titullin dhe përshkrimin.",
     firstPhotoAiHint:
       "📸 Ngarko foton e parë dhe sistemi jonë do të plotësojë automatikisht kategorinë, titullin dhe përshkrimin për ty — kursen kohë dhe e bën shpalljen më të lehtë!",
     firstPhotoAiHintShop:
@@ -379,6 +385,12 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     photoAnalyzeFailed: "Nuk u plotësua automatikisht",
     photoAnalyzeFailedHint:
       "Vazhdoni manualisht me kategorinë, titullin dhe përshkrimin — ose provoni një foto më të qartë.",
+    photoAnalyzeLoginRequired: "Duhet të jesh i kyçur",
+    photoAnalyzeLoginRequiredHint:
+      "Hyni në llogari dhe provoni përsëri ngarkimin e fotos.",
+    photoAnalyzeUnavailable: "Analiza e fotos nuk është e disponueshme për momentin",
+    photoAnalyzeUnavailableHint:
+      "Plotësoni manualisht kategorinë, titullin dhe përshkrimin.",
     firstPhotoAiHint:
       "📸 Ngarko foton e parë dhe sistemi jonë do të plotësojë automatikisht kategorinë, titullin dhe përshkrimin për ty — kursen kohë dhe e bën shpalljen më të lehtë!",
     firstPhotoAiHintShop:
@@ -586,6 +598,12 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     photoAnalyzeFailed: "Не се пополни автоматски",
     photoAnalyzeFailedHint:
       "Продолжете рачно со категорија, наслов и опис — или обидете се со појасна фотографија.",
+    photoAnalyzeLoginRequired: "Мора да сте најавени",
+    photoAnalyzeLoginRequiredHint:
+      "Најавете се и обидете повторно да ја прикачите фотографијата.",
+    photoAnalyzeUnavailable: "Анализата на фотографијата моментално не е достапна",
+    photoAnalyzeUnavailableHint:
+      "Пополнете рачно категорија, наслов и опис.",
     firstPhotoAiHint:
       "📸 Прикачи ја првата фотографија и нашиот систем автоматски ќе ги пополни категоријата, насловот и описот — заштеди време и олесни го огласувањето!",
     firstPhotoAiHintShop:
@@ -793,6 +811,12 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     photoAnalyzeFailed: "Nije popunjeno automatski",
     photoAnalyzeFailedHint:
       "Nastavite ručno s kategorijom, naslovom i opisom — ili pokušajte s jasnijom fotografijom.",
+    photoAnalyzeLoginRequired: "Morate biti prijavljeni",
+    photoAnalyzeLoginRequiredHint:
+      "Prijavite se i ponovo pokušajte učitati fotografiju.",
+    photoAnalyzeUnavailable: "Analiza fotografije trenutno nije dostupna",
+    photoAnalyzeUnavailableHint:
+      "Ručno popunite kategoriju, naslov i opis.",
     firstPhotoAiHint:
       "📸 Učitaj prvu fotografiju i naš sistem će automatski popuniti kategoriju, naslov i opis — uštedi vrijeme i olakšaj oglašavanje!",
     firstPhotoAiHintShop:
@@ -965,6 +989,12 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     photoAnalyzeFailed: "Could not fill in automatically",
     photoAnalyzeFailedHint:
       "Continue manually with category, title, and description — or try a clearer photo.",
+    photoAnalyzeLoginRequired: "You need to be logged in",
+    photoAnalyzeLoginRequiredHint:
+      "Sign in and try uploading the photo again.",
+    photoAnalyzeUnavailable: "Photo analysis is temporarily unavailable",
+    photoAnalyzeUnavailableHint:
+      "Fill in category, title, and description manually.",
     choose: "Choose...",
     chooseYear: "Choose year...",
     chooseCity: "Choose city...",

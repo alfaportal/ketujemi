@@ -55,6 +55,7 @@ import { ListingCategorySuggest } from "@/components/listing-category-suggest";
 import { ListingDescriptionHelper } from "@/components/listing-description-helper";
 import { joinListingImageUrls } from "@/lib/listing-images";
 import { fileToVisionBase64, type ListingImageAnalysis } from "@/lib/listing-image-vision";
+import { listingPhotoAnalyzeFailureToast } from "@/lib/listing-photo-analyze-toast";
 import { useListingImageUpload } from "@/lib/listing-image-upload";
 import {
   isAllowedListingVideoFile,
@@ -540,31 +541,19 @@ export default function NewListing() {
           pipeline?: "google" | "claude" | null;
           error?: string;
         };
-        console.log("[listing-image-analyze] response", res.status, body.pipeline, body);
         if (!res.ok) {
-          console.warn("[listing-image-analyze] failed", res.status, body.error);
-          toast({
-            title: tx.photoAnalyzeFailed ?? "Nuk u plotësua automatikisht",
-            description:
-              tx.photoAnalyzeFailedHint ??
-              "Vazhdoni manualisht me kategorinë, titullin dhe përshkrimin.",
-            variant: "destructive",
-          });
+          const fail = listingPhotoAnalyzeFailureToast(res.status, tx);
+          toast({ ...fail, variant: "destructive" });
           return;
         }
         if (body.analysis) {
           imageAnalyzedRef.current = true;
           applyImageAnalysis(body.analysis);
         } else {
-          toast({
-            title: tx.photoAnalyzeFailed ?? "Nuk u plotësua automatikisht",
-            description:
-              tx.photoAnalyzeFailedHint ??
-              "Vazhdoni manualisht me kategorinë, titullin dhe përshkrimin.",
-          });
+          const fail = listingPhotoAnalyzeFailureToast(422, tx);
+          toast(fail);
         }
       } catch (error) {
-        console.warn("[listing-image-analyze] error", error);
         toast({
           title: tx.photoAnalyzeFailed ?? "Nuk u plotësua automatikisht",
           description: getFetchErrorMessage(error, tx.photoAnalyzeFailedHint),

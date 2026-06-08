@@ -554,7 +554,7 @@ async function analyzeWithClaudeVision(
 }
 
 export function isListingImageAnalyzeConfigured(): boolean {
-  return isClaudeConfigured();
+  return isGoogleVisionConfigured() || isClaudeConfigured();
 }
 
 function emptyOutcome(): ListingImageAnalyzeOutcome {
@@ -562,9 +562,8 @@ function emptyOutcome(): ListingImageAnalyzeOutcome {
 }
 
 /**
- * Both pipelines start at once. First successful full result wins so users are not
- * stuck waiting for a slow/failed Google call before Claude begins.
- * Pipelines never mix — one complete result from either Google or Claude.
+ * Run Google + Claude in parallel. Prefer Claude when both succeed — Google labels
+ * sometimes match the wrong category before Claude vision finishes.
  */
 async function analyzeWithParallelFallback(input: {
   imageBase64: string;
@@ -574,57 +573,32 @@ async function analyzeWithParallelFallback(input: {
   lang: ListingCopyLang;
   shop?: { shop_name: string; shop_category: string | null };
 }): Promise<ListingImageAnalyzeOutcome> {
-  const googleFlight = analyzeWithGoogleVisionPipeline(
-    input.imageBase64,
-    input.rows,
-    input.lang,
-    input.shop,
-  ).catch((err) => {
-    logger.warn({ err }, "listing-image-analyze google vision failed");
-    return null;
-  });
+  const [google, claude] = await Promise.allSettled([
+    analyzeWithGoogleVisionPipeline(input.imageBase64, input.rows, input.lang, input.shop).catch(
+      (err) => {
+        logger.warn({ err }, "listing-image-analyze google vision failed");
+        return null;
+      },
+    ),
+    analyzeWithClaudeVision(
+      input.imageBase64,
+      input.mediaType,
+      input.rows,
+      input.catalog,
+      input.lang,
+      input.shop,
+    ).catch((err) => {
+      logger.warn({ err }, "listing-image-analyze claude vision failed");
+      return null;
+    }),
+  ]);
 
-  const claudeFlight = analyzeWithClaudeVision(
-    input.imageBase64,
-    input.mediaType,
-    input.rows,
-    input.catalog,
-    input.lang,
-    input.shop,
-  ).catch((err) => {
-    logger.warn({ err }, "listing-image-analyze claude vision failed");
-    return null;
-  });
+  const claudeResult = claude.status === "fulfilled" ? claude.value : null;
+  const googleResult = google.status === "fulfilled" ? google.value : null;
 
-  return new Promise((resolve) => {
-    let settled = false;
-
-    const tryFinish = (result: ListingImageAnalyzeResult | null, pipeline: ListingImageAnalyzePipeline) => {
-      if (!settled && result) {
-        settled = true;
-        resolve({ result, pipeline });
-      }
-    };
-
-    googleFlight.then((r) => tryFinish(r, "google"));
-    claudeFlight.then((r) => tryFinish(r, "claude"));
-
-    Promise.allSettled([googleFlight, claudeFlight]).then(([google, claude]) => {
-      if (settled) return;
-      settled = true;
-      const googleResult = google.status === "fulfilled" ? google.value : null;
-      const claudeResult = claude.status === "fulfilled" ? claude.value : null;
-      if (googleResult) {
-        resolve({ result: googleResult, pipeline: "google" });
-        return;
-      }
-      if (claudeResult) {
-        resolve({ result: claudeResult, pipeline: "claude" });
-        return;
-      }
-      resolve(emptyOutcome());
-    });
-  });
+  if (claudeResult) return { result: claudeResult, pipeline: "claude" };
+  if (googleResult) return { result: googleResult, pipeline: "google" };
+  return emptyOutcome();
 }
 
 export async function analyzeListingImage(input: {
@@ -637,7 +611,9 @@ export async function analyzeListingImage(input: {
   const imageBase64 = input.imageBase64.trim();
   if (imageBase64.length < 100 || imageBase64.length > 6_000_000) return emptyOutcome();
 
-  if (!isClaudeConfigured()) return emptyOutcome();
+  const canGoogle = isGoogleVisionConfigured();
+  const canClaude = isClaudeConfigured();
+  if (!canGoogle && !canClaude) return emptyOutcome();
 
   const lang = parseListingCopyLang(input.lang);
   const rows = await getCachedCategoryRows();
@@ -650,16 +626,34 @@ export async function analyzeListingImage(input: {
       : undefined;
 
   try {
-    const claudeResult = await analyzeWithClaudeVision(
-      imageBase64,
-      input.mediaType,
-      rows,
-      catalog,
-      lang,
-      shop,
-    );
-    return claudeResult
-      ? { result: claudeResult, pipeline: "claude" }
+    if (canGoogle && canClaude) {
+      return analyzeWithParallelFallback({
+        imageBase64,
+        mediaType: input.mediaType,
+        rows,
+        catalog,
+        lang,
+        shop,
+      });
+    }
+
+    if (canClaude) {
+      const claudeResult = await analyzeWithClaudeVision(
+        imageBase64,
+        input.mediaType,
+        rows,
+        catalog,
+        lang,
+        shop,
+      );
+      return claudeResult
+        ? { result: claudeResult, pipeline: "claude" }
+        : emptyOutcome();
+    }
+
+    const googleResult = await analyzeWithGoogleVisionPipeline(imageBase64, rows, lang, shop);
+    return googleResult
+      ? { result: googleResult, pipeline: "google" }
       : emptyOutcome();
   } catch (err) {
     logger.warn({ err }, "listing-image-analyze unexpected error");
