@@ -171,6 +171,8 @@ export default function NewListing() {
   const pendingImageAnalysisRef = useRef<ListingImageAnalysis | null>(null);
   const lastImageAnalysisRef = useRef<ListingImageAnalysis | null>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
+  const cameraPhotoRef = useRef<HTMLInputElement>(null);
+  const cameraVideoRef = useRef<HTMLInputElement>(null);
   const imageUpload = useListingImageUpload();
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoUploadPhase, setVideoUploadPhase] = useState<ListingVideoUploadPhase | null>(null);
@@ -590,6 +592,7 @@ export default function NewListing() {
     } finally {
       setIsUploading(false);
       if (uploadRef.current) uploadRef.current.value = "";
+      if (cameraPhotoRef.current) cameraPhotoRef.current.value = "";
     }
   };
 
@@ -641,6 +644,7 @@ export default function NewListing() {
       setVideoUploadPhase(null);
       setVideoPreparePct(0);
       if (videoUploadRef.current) videoUploadRef.current.value = "";
+      if (cameraVideoRef.current) cameraVideoRef.current.value = "";
     }
   };
 
@@ -883,6 +887,14 @@ export default function NewListing() {
                     className="hidden"
                     onChange={handleFileChange}
                   />
+                  <input
+                    ref={cameraPhotoRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
 
                   {(isAnalyzingImage || isUploading) && (
                     <p className="text-sm text-blue-600 font-medium mb-2 flex items-center gap-2" role="status">
@@ -919,6 +931,16 @@ export default function NewListing() {
                     )}
                   </button>
 
+                  <button
+                    type="button"
+                    onClick={() => cameraPhotoRef.current?.click()}
+                    disabled={isUploading || isAnalyzingImage || !imageUpload.ready}
+                    className="mt-2 w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 hover:border-blue-400 hover:bg-blue-50 py-3 px-4 text-sm font-semibold text-gray-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
+                  >
+                    <Camera size={20} className="text-blue-600 shrink-0" />
+                    {tx.photoCameraBtn ?? "Foto me kamerë"}
+                  </button>
+
                   <ImagePreview urls={imageUrls} onRemove={isUploading ? () => {} : removeImage} mainLabel={t.mainPhotoLabel} />
 
                   <p className="text-sm text-gray-600 mt-3 leading-relaxed">
@@ -939,21 +961,40 @@ export default function NewListing() {
                     className="hidden"
                     onChange={(e) => void handleVideoChange(e)}
                   />
+                  <input
+                    ref={cameraVideoRef}
+                    type="file"
+                    accept="video/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={(e) => void handleVideoChange(e)}
+                  />
 
                   {!videoUrl && !isVideoUploading ? (
-                    <button
-                      type="button"
-                      onClick={() => videoUploadRef.current?.click()}
-                      disabled={!videoUpload.ready}
-                      className="mt-2 w-full border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl py-8 px-4 text-center transition-colors disabled:opacity-60 disabled:cursor-not-allowed min-h-[6rem] touch-manipulation"
-                    >
-                      <div className="flex flex-col items-center gap-1.5 text-gray-500">
-                        <Video size={28} className="text-gray-400" />
-                        <p className="text-sm font-semibold text-gray-600">
-                          {tx.ui_listingVideoAdd ?? "Shto video"}
-                        </p>
-                      </div>
-                    </button>
+                    <div className="mt-2 space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => videoUploadRef.current?.click()}
+                        disabled={!videoUpload.ready}
+                        className="w-full border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl py-8 px-4 text-center transition-colors disabled:opacity-60 disabled:cursor-not-allowed min-h-[6rem] touch-manipulation"
+                      >
+                        <div className="flex flex-col items-center gap-1.5 text-gray-500">
+                          <Video size={28} className="text-gray-400" />
+                          <p className="text-sm font-semibold text-gray-600">
+                            {tx.ui_listingVideoAdd ?? "Shto video"}
+                          </p>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => cameraVideoRef.current?.click()}
+                        disabled={!videoUpload.ready}
+                        className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 hover:border-blue-400 hover:bg-blue-50 py-3 px-4 text-sm font-semibold text-gray-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
+                      >
+                        <Video size={20} className="text-blue-600 shrink-0" />
+                        {tx.videoCameraBtn ?? "Video me kamerë"}
+                      </button>
+                    </div>
                   ) : null}
 
                   {isVideoUploading ? (
