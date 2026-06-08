@@ -32,10 +32,10 @@ import {
   defaultListingMarketFromMarket,
   isListingMarketCode,
   locationsForListingMarket,
-  translationKeyForUiLang,
   type ListingMarketCode,
 } from "@/lib/market-context";
 import { listingApiLangFromUi } from "@/lib/listing-api-lang";
+import { translationKeyForUiLang } from "@/lib/ui-languages";
 
 function isCategoryUnderParent(
   catId: number,
