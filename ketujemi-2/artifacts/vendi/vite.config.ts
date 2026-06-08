@@ -194,6 +194,9 @@ export default defineConfig(async ({ command }) => {
         },
       },
     },
+    optimizeDeps: {
+      exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"],
+    },
     server: {
       port,
       strictPort: true,

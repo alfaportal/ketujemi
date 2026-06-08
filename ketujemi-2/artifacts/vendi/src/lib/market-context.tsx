@@ -147,6 +147,9 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Plotësoni të gjitha fushat e detyrueshme (kategori, titull min. 5, përshkrim min. 15, foto, çmim, qytet).",
     videoInvalidFormatTitle: "Format i pavlefshëm",
     videoInvalidFormatDesc: "Lejohen vetëm MP4, MOV dhe AVI.",
+    videoPreparingTitle: "Duke përgatitur videon...",
+    videoPreparingHint:
+      "Video optimizohet automatikisht për shpallje (max 100 MB). Mos e mbyll faqen.",
     similarListingsHeading: "Mund të të interesojë gjithashtu",
     titleField: "Titulli",
     listingTitle: "Titulli i shpalljes",
@@ -360,6 +363,9 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Plotësoni të gjitha fushat e detyrueshme (kategori, titull min. 5, përshkrim min. 15, foto, çmim, qytet).",
     videoInvalidFormatTitle: "Format i pavlefshëm",
     videoInvalidFormatDesc: "Lejohen vetëm MP4, MOV dhe AVI.",
+    videoPreparingTitle: "Duke përgatitur videon...",
+    videoPreparingHint:
+      "Video optimizohet automatikisht për shpallje (max 100 MB). Mos e mbyll faqen.",
     similarListingsHeading: "Mund të të interesojë gjithashtu",
     titleField: "Titulli",
     listingTitle: "Titulli i njoftimit",
@@ -573,6 +579,9 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Пополнете ги сите задолжителни полиња (категорија, наслов мин. 5, опис мин. 15, фото, цена, град).",
     videoInvalidFormatTitle: "Невалиден формат",
     videoInvalidFormatDesc: "Дозволени се само MP4, MOV и AVI.",
+    videoPreparingTitle: "Се подготвува видеото...",
+    videoPreparingHint:
+      "Видеото се оптимизира автоматски за оглас (макс. 100 MB). Не ја затворајте страницата.",
     similarListingsHeading: "Може да ве интересира исто така",
     titleField: "Наслов",
     listingTitle: "Наслов на оглас",
@@ -786,6 +795,9 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Popunite sva obavezna polja (kategorija, naslov min. 5, opis min. 15, foto, cijena, grad).",
     videoInvalidFormatTitle: "Nevažeći format",
     videoInvalidFormatDesc: "Dozvoljeni su samo MP4, MOV i AVI.",
+    videoPreparingTitle: "Priprema se video...",
+    videoPreparingHint:
+      "Video se automatski optimizuje za oglas (max 100 MB). Ne zatvarajte stranicu.",
     similarListingsHeading: "Možda vas zanima i ovo",
     titleField: "Naslov",
     listingTitle: "Naslov oglasa",
@@ -1008,6 +1020,9 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Fill in all required fields (category, title min. 5, description min. 15, photo, price, city).",
     videoInvalidFormatTitle: "Invalid format",
     videoInvalidFormatDesc: "Only MP4, MOV, and AVI are allowed.",
+    videoPreparingTitle: "Preparing video...",
+    videoPreparingHint:
+      "Video is being optimized for your listing (max 100 MB). Do not close this page.",
     similarListingsHeading: "You may also like",
     titleField: "Title",
     listingTitle: "Listing title",

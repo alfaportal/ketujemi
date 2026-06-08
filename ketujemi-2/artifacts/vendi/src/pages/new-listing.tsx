@@ -59,10 +59,11 @@ import { listingPhotoAnalyzeFailureToast } from "@/lib/listing-photo-analyze-toa
 import { useListingImageUpload } from "@/lib/listing-image-upload";
 import {
   isAllowedListingVideoFile,
-  LISTING_VIDEO_MAX_BYTES,
   listingVideoFormatsHint,
+  listingVideoShortenMessage,
   listingVideoTooLargeMessage,
   useListingVideoUpload,
+  type ListingVideoUploadPhase,
 } from "@/lib/listing-video-upload";
 import {
   useAuth,
@@ -172,7 +173,9 @@ export default function NewListing() {
   const uploadRef = useRef<HTMLInputElement>(null);
   const imageUpload = useListingImageUpload();
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [isVideoUploading, setIsVideoUploading] = useState(false);
+  const [videoUploadPhase, setVideoUploadPhase] = useState<ListingVideoUploadPhase | null>(null);
+  const [videoPreparePct, setVideoPreparePct] = useState(0);
+  const isVideoUploading = videoUploadPhase !== null;
   const videoUploadRef = useRef<HTMLInputElement>(null);
   const videoUpload = useListingVideoUpload();
   const [hasShop, setHasShop] = useState<boolean | null>(null);
@@ -616,28 +619,27 @@ export default function NewListing() {
       });
       return;
     }
-    if (file.size > LISTING_VIDEO_MAX_BYTES) {
-      const msg = listingVideoTooLargeMessage(uiLang);
-      toast({
-        title: msg.title,
-        description: msg.description,
-        variant: "destructive",
-      });
-      return;
-    }
-    setIsVideoUploading(true);
+    setVideoUploadPhase("preparing");
+    setVideoPreparePct(0);
     try {
-      const url = await videoUpload.uploadFile(file);
+      const url = await videoUpload.uploadFile(file, {
+        onPhase: setVideoUploadPhase,
+        onPrepareProgress: setVideoPreparePct,
+      });
       setVideoUrl(url);
     } catch (err) {
-      if (err instanceof Error && err.message === "video_too_large") {
+      if (err instanceof Error && err.message === "video_shorten_needed") {
+        const msg = listingVideoShortenMessage(uiLang);
+        toast({ title: msg.title, description: msg.description, variant: "destructive" });
+      } else if (err instanceof Error && err.message === "video_too_large") {
         const msg = listingVideoTooLargeMessage(uiLang);
         toast({ title: msg.title, description: msg.description, variant: "destructive" });
       } else {
         toast({ title: t.uploadFailed, variant: "destructive" });
       }
     } finally {
-      setIsVideoUploading(false);
+      setVideoUploadPhase(null);
+      setVideoPreparePct(0);
       if (videoUploadRef.current) videoUploadRef.current.value = "";
     }
   };
@@ -957,7 +959,18 @@ export default function NewListing() {
                   {isVideoUploading ? (
                     <div className="mt-2 flex flex-col items-center gap-2 py-8 text-blue-600">
                       <Loader2 size={28} className="animate-spin" />
-                      <p className="text-sm font-semibold">{t.uploading}</p>
+                      <p className="text-sm font-semibold">
+                        {videoUploadPhase === "preparing"
+                          ? (tx.videoPreparingTitle ?? "Duke përgatitur videon...")
+                          : t.uploading}
+                      </p>
+                      {videoUploadPhase === "preparing" ? (
+                        <p className="text-xs text-gray-500 text-center max-w-xs px-4">
+                          {tx.videoPreparingHint ??
+                            "Video optimizohet automatikisht për shpallje (max 100 MB)."}
+                          {videoPreparePct > 0 ? ` ${videoPreparePct}%` : ""}
+                        </p>
+                      ) : null}
                     </div>
                   ) : null}
 

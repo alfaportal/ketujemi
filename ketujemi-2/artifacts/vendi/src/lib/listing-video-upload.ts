@@ -1,46 +1,30 @@
 import { useCallback } from "react";
 import { uploadVideoToCloudinary, useCloudinaryConfig } from "./cloudinary-config";
+import {
+  LISTING_VIDEO_MAX_BYTES,
+  LISTING_VIDEO_MAX_MB,
+  listingVideoShortenMessage,
+  prepareListingVideoFile,
+  type VideoPrepareProgress,
+} from "./listing-video-prepare";
 
-export const LISTING_VIDEO_MAX_MB = 100;
-export const LISTING_VIDEO_MAX_BYTES = LISTING_VIDEO_MAX_MB * 1024 * 1024;
+export { LISTING_VIDEO_MAX_BYTES, LISTING_VIDEO_MAX_MB, listingVideoShortenMessage };
 
 export function listingVideoTooLargeMessage(uiLang: string): { title: string; description: string } {
-  const mb = String(LISTING_VIDEO_MAX_MB);
-  switch (uiLang) {
-    case "mk":
-      return {
-        title: "Видеото е преголемо",
-        description: `Максималната големина е ${mb} MB. Изберете помало видео.`,
-      };
-    case "mne":
-      return {
-        title: "Video je preveliko",
-        description: `Maksimalna veličina je ${mb} MB. Odaberite manji video.`,
-      };
-    case "en":
-      return {
-        title: "Video is too large",
-        description: `Maximum size is ${mb} MB. Choose a smaller video.`,
-      };
-    default:
-      return {
-        title: "Video shumë e madhe",
-        description: `Maksimumi është ${mb} MB. Zgjidhni një video më të vogël.`,
-      };
-  }
+  return listingVideoShortenMessage(uiLang);
 }
 
 export function listingVideoFormatsHint(uiLang: string): string {
-  const base = "(MP4, MOV, AVI";
+  const mb = String(LISTING_VIDEO_MAX_MB);
   switch (uiLang) {
     case "mk":
-      return `${base} • макс. ${LISTING_VIDEO_MAX_MB} MB)`;
+      return `(MP4, MOV, AVI • Full HD • автоматски до ${mb} MB)`;
     case "mne":
-      return `${base} • max ${LISTING_VIDEO_MAX_MB} MB)`;
+      return `(MP4, MOV, AVI • Full HD • automatski do ${mb} MB)`;
     case "en":
-      return `${base} • max ${LISTING_VIDEO_MAX_MB} MB)`;
+      return `(MP4, MOV, AVI • Full HD • auto-optimized to ${mb} MB)`;
     default:
-      return `${base} • max ${LISTING_VIDEO_MAX_MB} MB)`;
+      return `(MP4, MOV, AVI • Full HD • optimizohet automatikisht deri në ${mb} MB)`;
   }
 }
 
@@ -59,22 +43,36 @@ export function isAllowedListingVideoFile(file: File): boolean {
   return VIDEO_EXT.test(file.name);
 }
 
+export type ListingVideoUploadPhase = "preparing" | "uploading";
+
 /** Cloudinary video upload for listing form (optional, max 1 per listing). */
 export function useListingVideoUpload() {
   const cloudinary = useCloudinaryConfig();
 
   const uploadFile = useCallback(
-    async (file: File): Promise<string> => {
+    async (
+      file: File,
+      opts?: {
+        onPhase?: (phase: ListingVideoUploadPhase) => void;
+        onPrepareProgress?: VideoPrepareProgress;
+      },
+    ): Promise<string> => {
       if (!cloudinary.ready) {
         throw new Error("upload_not_configured");
       }
       if (!isAllowedListingVideoFile(file)) {
         throw new Error("invalid_video_format");
       }
-      if (file.size > LISTING_VIDEO_MAX_BYTES) {
-        throw new Error("video_too_large");
+
+      opts?.onPhase?.("preparing");
+      const prepared = await prepareListingVideoFile(file, opts?.onPrepareProgress);
+
+      if (prepared.size > LISTING_VIDEO_MAX_BYTES) {
+        throw new Error("video_shorten_needed");
       }
-      return uploadVideoToCloudinary(file, cloudinary);
+
+      opts?.onPhase?.("uploading");
+      return uploadVideoToCloudinary(prepared, cloudinary);
     },
     [cloudinary],
   );
