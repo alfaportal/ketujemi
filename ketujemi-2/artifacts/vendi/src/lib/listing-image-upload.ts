@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { prepareListingImageFile } from "@/lib/listing-image-prepare";
 import { uploadImageToCloudinary } from "./cloudinary-config";
 
 const BUILD_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME?.trim() ?? "";
@@ -63,14 +64,15 @@ export function useListingImageUpload(): ListingImageUploadConfig & {
 
   const uploadFile = useCallback(
     async (file: File): Promise<string> => {
-      const ct = file.type?.trim() || "image/jpeg";
+      const prepared = await prepareListingImageFile(file);
+      const ct = "image/jpeg";
 
       if (provider === "b2") {
         const pres = await fetchWithTimeout("/api/uploads/b2-presign", {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ filename: file.name, contentType: ct }),
+          body: JSON.stringify({ filename: prepared.name, contentType: ct }),
         });
         const body = (await pres.json().catch(() => ({}))) as {
           uploadUrl?: string;
@@ -83,7 +85,7 @@ export function useListingImageUpload(): ListingImageUploadConfig & {
         const putCt = body.contentType?.trim() || ct;
         const put = await fetchWithTimeout(body.uploadUrl, {
           method: "PUT",
-          body: file,
+          body: prepared,
           headers: { "Content-Type": putCt },
         });
         if (!put.ok) throw new Error("b2_upload_failed");
@@ -93,7 +95,7 @@ export function useListingImageUpload(): ListingImageUploadConfig & {
       if (provider === "cloudinary") {
         const cn = cloudinaryCloudName || BUILD_CLOUD_NAME;
         const preset = cloudinaryUploadPreset || BUILD_UPLOAD_PRESET;
-        return uploadImageToCloudinary(file, { cloudName: cn, uploadPreset: preset }, "listing");
+        return uploadImageToCloudinary(prepared, { cloudName: cn, uploadPreset: preset }, "listing");
       }
 
       throw new Error("upload_not_configured");
