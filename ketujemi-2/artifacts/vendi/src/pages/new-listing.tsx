@@ -165,6 +165,7 @@ export default function NewListing() {
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const imageAnalyzedRef = useRef(false);
+  const lastVideoAnalyzeKeyRef = useRef<string | null>(null);
   const skipCategoryCascadeRef = useRef(false);
   const skipBrandCascadeRef = useRef(false);
   const skipTitleSuggestRef = useRef(false);
@@ -518,60 +519,80 @@ export default function NewListing() {
     applyImageAnalysis(analysis);
   }, [allCategories?.length, applyImageAnalysis]);
 
+  const runListingVisionAnalysis = useCallback(
+    async (vision: { data: string; mediaType: string }) => {
+      if (imageAnalyzedRef.current || isDhurataPostRoute) return false;
+
+      const res = await fetchWithTimeout(
+        "/api/ai/analyze-listing-image",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            image_base64: vision.data,
+            media_type: vision.mediaType,
+            lang: listingLang,
+            ...(myShop
+              ? { shop_name: myShop.shop_name, shop_category: myShop.category || undefined }
+              : {}),
+          }),
+        },
+        IMAGE_ANALYZE_TIMEOUT_MS,
+      );
+      const body = (await res.json().catch(() => ({}))) as {
+        analysis?: ListingImageAnalysis | null;
+        pipeline?: "google" | "claude" | null;
+        error?: string;
+      };
+      if (!res.ok) {
+        const fail = listingPhotoAnalyzeFailureToast(res.status, tx);
+        toast({ ...fail, variant: "destructive" });
+        return false;
+      }
+      if (body.analysis) {
+        imageAnalyzedRef.current = true;
+        applyImageAnalysis(body.analysis);
+        return true;
+      }
+      const fail = listingPhotoAnalyzeFailureToast(422, tx);
+      toast(fail);
+      return false;
+    },
+    [applyImageAnalysis, isDhurataPostRoute, listingLang, myShop, toast, tx],
+  );
+
   const analyzeFirstListingMedia = useCallback(
     async (file: File, source: "image" | "video") => {
       if (imageAnalyzedRef.current || isDhurataPostRoute) return;
       setIsAnalyzingImage(true);
       try {
-        const { data, mediaType } =
+        const vision =
           source === "video"
             ? await videoFileToVisionBase64(file)
             : await fileToVisionBase64(file);
-        const res = await fetchWithTimeout(
-          "/api/ai/analyze-listing-image",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({
-              image_base64: data,
-              media_type: mediaType,
-              lang: listingLang,
-              ...(myShop
-                ? { shop_name: myShop.shop_name, shop_category: myShop.category || undefined }
-                : {}),
-            }),
-          },
-          IMAGE_ANALYZE_TIMEOUT_MS,
-        );
-        const body = (await res.json().catch(() => ({}))) as {
-          analysis?: ListingImageAnalysis | null;
-          pipeline?: "google" | "claude" | null;
-          error?: string;
-        };
-        if (!res.ok) {
-          const fail = listingPhotoAnalyzeFailureToast(res.status, tx);
-          toast({ ...fail, variant: "destructive" });
-          return;
-        }
-        if (body.analysis) {
-          imageAnalyzedRef.current = true;
-          applyImageAnalysis(body.analysis);
-        } else {
-          const fail = listingPhotoAnalyzeFailureToast(422, tx);
-          toast(fail);
-        }
+        await runListingVisionAnalysis(vision);
       } catch (error) {
+        const code = error instanceof Error ? error.message : "";
+        const isVideoFrame =
+          source === "video" &&
+          (code === "video_frame_failed" ||
+            code === "video_frame_timeout" ||
+            code === "video_frame_blank" ||
+            code === "video_frame_encode_failed");
         toast({
           title: tx.photoAnalyzeFailed ?? "Nuk u plotësua automatikisht",
-          description: getFetchErrorMessage(error, tx.photoAnalyzeFailedHint),
+          description: isVideoFrame
+            ? (tx.videoAnalyzeFrameHint ??
+              "Nuk u lexua korniza e videos. Provoni video më të shkurtër me dritë të mirë, ose shtoni një foto.")
+            : getFetchErrorMessage(error, tx.photoAnalyzeFailedHint),
           variant: "destructive",
         });
       } finally {
         setIsAnalyzingImage(false);
       }
     },
-    [applyImageAnalysis, isDhurataPostRoute, listingLang, myShop, toast, tx],
+    [isDhurataPostRoute, runListingVisionAnalysis, toast, tx],
   );
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -626,17 +647,42 @@ export default function NewListing() {
       });
       return;
     }
-    const shouldAnalyze = imageUrls.length === 0 && !imageAnalyzedRef.current;
+    const videoFileKey = `${file.name}:${file.size}:${file.lastModified}`;
+    const shouldAnalyze =
+      imageUrls.length === 0 &&
+      (!imageAnalyzedRef.current || lastVideoAnalyzeKeyRef.current !== videoFileKey);
     setVideoUploadPhase("preparing");
     setVideoPreparePct(0);
     try {
-      const [, url] = await Promise.all([
-        shouldAnalyze ? analyzeFirstListingMedia(file, "video") : Promise.resolve(),
-        videoUpload.uploadFile(file, {
-          onPhase: setVideoUploadPhase,
-          onPrepareProgress: setVideoPreparePct,
-        }),
-      ]);
+      let vision: { data: string; mediaType: string } | null = null;
+      if (shouldAnalyze) {
+        setIsAnalyzingImage(true);
+        try {
+          vision = await videoFileToVisionBase64(file);
+        } catch (error) {
+          const code = error instanceof Error ? error.message : "";
+          toast({
+            title: tx.photoAnalyzeFailed ?? "Nuk u plotësua automatikisht",
+            description:
+              code === "video_frame_blank" || code.startsWith("video_frame")
+                ? (tx.videoAnalyzeFrameHint ??
+                  "Nuk u lexua korniza e videos. Provoni video më të shkurtër me dritë të mirë, ose shtoni një foto.")
+                : getFetchErrorMessage(error, tx.photoAnalyzeFailedHint),
+            variant: "destructive",
+          });
+        }
+      }
+
+      const url = await videoUpload.uploadFile(file, {
+        onPhase: setVideoUploadPhase,
+        onPrepareProgress: setVideoPreparePct,
+      });
+
+      if (vision) {
+        const ok = await runListingVisionAnalysis(vision);
+        if (ok) lastVideoAnalyzeKeyRef.current = videoFileKey;
+      }
+
       setVideoUrl(url);
     } catch (err) {
       const msg = listingVideoErrorMessage(err, uiLang);
@@ -646,6 +692,7 @@ export default function NewListing() {
         toast({ title: t.uploadFailed, variant: "destructive" });
       }
     } finally {
+      setIsAnalyzingImage(false);
       setVideoUploadPhase(null);
       setVideoPreparePct(0);
       if (videoUploadRef.current) videoUploadRef.current.value = "";
@@ -1037,7 +1084,14 @@ export default function NewListing() {
                       />
                       <button
                         type="button"
-                        onClick={() => setVideoUrl(null)}
+                        onClick={() => {
+                          setVideoUrl(null);
+                          if (imageUrls.length === 0) {
+                            imageAnalyzedRef.current = false;
+                            lastImageAnalysisRef.current = null;
+                            lastVideoAnalyzeKeyRef.current = null;
+                          }
+                        }}
                         className="absolute top-2 right-2 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors"
                         aria-label={tx.ui_listingVideoRemove ?? "Hiq videon"}
                       >

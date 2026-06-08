@@ -154,6 +154,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     videoPreparingTitle: "Duke përgatitur videon...",
     videoPreparingHint:
       "Video optimizohet automatikisht për shpallje (max 100 MB). Mos e mbyll faqen.",
+    videoAnalyzeFrameHint:
+      "Nuk u lexua korniza e videos. Provoni video më të shkurtër me dritë të mirë, ose shtoni një foto.",
     similarListingsHeading: "Mund të të interesojë gjithashtu",
     titleField: "Titulli",
     listingTitle: "Titulli i shpalljes",
@@ -376,6 +378,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     videoPreparingTitle: "Duke përgatitur videon...",
     videoPreparingHint:
       "Video optimizohet automatikisht për shpallje (max 100 MB). Mos e mbyll faqen.",
+    videoAnalyzeFrameHint:
+      "Nuk u lexua korniza e videos. Provoni video më të shkurtër me dritë të mirë, ose shtoni një foto.",
     similarListingsHeading: "Mund të të interesojë gjithashtu",
     titleField: "Titulli",
     listingTitle: "Titulli i njoftimit",
@@ -598,6 +602,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     videoPreparingTitle: "Се подготвува видеото...",
     videoPreparingHint:
       "Видеото се оптимизира автоматски за оглас (макс. 100 MB). Не ја затворајте страницата.",
+    videoAnalyzeFrameHint:
+      "Кадарот од видеото не се прочита. Обидете се со пократко видео со добра светлина или додајте фотографија.",
     similarListingsHeading: "Може да ве интересира исто така",
     titleField: "Наслов",
     listingTitle: "Наслов на оглас",
@@ -820,6 +826,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     videoPreparingTitle: "Priprema se video...",
     videoPreparingHint:
       "Video se automatski optimizuje za oglas (max 100 MB). Ne zatvarajte stranicu.",
+    videoAnalyzeFrameHint:
+      "Kadar iz videa nije pročitan. Probajte kraći video uz dobro svjetlo ili dodajte fotografiju.",
     similarListingsHeading: "Možda vas zanima i ovo",
     titleField: "Naslov",
     listingTitle: "Naslov oglasa",
@@ -1051,6 +1059,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     videoPreparingTitle: "Preparing video...",
     videoPreparingHint:
       "Video is being optimized for your listing (max 100 MB). Do not close this page.",
+    videoAnalyzeFrameHint:
+      "Could not read a frame from the video. Try a shorter clip with good lighting, or add a photo.",
     similarListingsHeading: "You may also like",
     titleField: "Title",
     listingTitle: "Listing title",
