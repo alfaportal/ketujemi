@@ -198,6 +198,7 @@ export default function NewListing() {
   const videoUploadRef = useRef<HTMLInputElement>(null);
   const videoUpload = useListingVideoUpload();
   const [hasShop, setHasShop] = useState<boolean | null>(null);
+  const [myShop, setMyShop] = useState<{ shop_name: string; category: string } | null>(null);
   const [dhurataPledgeOk, setDhurataPledgeOk] = useState(() => {
     try {
       return sessionStorage.getItem(DHURATA_PLEDGE_STORAGE_KEY) === "1";
@@ -220,10 +221,26 @@ export default function NewListing() {
     void fetchWithTimeout("/api/shops/me", { credentials: "include" })
       .then(async (res) => {
         if (!res.ok) throw new Error("fail");
-        return res.json() as Promise<{ shop: unknown }>;
+        return res.json() as Promise<{
+          shop?: { shop_name?: string; category?: string } | null;
+        }>;
       })
-      .then((data) => setHasShop(!!data.shop))
-      .catch(() => setHasShop(null));
+      .then((data) => {
+        const shop = data.shop ?? null;
+        setHasShop(!!shop);
+        if (shop?.shop_name?.trim()) {
+          setMyShop({
+            shop_name: shop.shop_name.trim(),
+            category: shop.category?.trim() ?? "",
+          });
+        } else {
+          setMyShop(null);
+        }
+      })
+      .catch(() => {
+        setHasShop(null);
+        setMyShop(null);
+      });
   }, [user]);
 
   const form = useForm<FormData>({
@@ -434,7 +451,13 @@ export default function NewListing() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ image_base64: data, media_type: mediaType }),
+          body: JSON.stringify({
+            image_base64: data,
+            media_type: mediaType,
+            ...(myShop
+              ? { shop_name: myShop.shop_name, shop_category: myShop.category || undefined }
+              : {}),
+          }),
         });
         if (!res.ok) return;
         const body = (await res.json()) as { analysis?: ListingImageAnalysis | null };
@@ -448,7 +471,7 @@ export default function NewListing() {
         setIsAnalyzingImage(false);
       }
     },
-    [applyImageAnalysis, isDhurataPostRoute],
+    [applyImageAnalysis, isDhurataPostRoute, myShop],
   );
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -791,7 +814,7 @@ export default function NewListing() {
                 <ImagePreview urls={imageUrls} onRemove={isUploading ? () => {} : removeImage} mainLabel={t.mainPhotoLabel} />
 
                 <p className="text-sm text-gray-600 mt-3 leading-relaxed">
-                  {t.firstPhotoAiHint}
+                  {hasShop ? t.firstPhotoAiHintShop : t.firstPhotoAiHint}
                 </p>
               </div>
             </Section>

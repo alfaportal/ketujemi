@@ -126,9 +126,16 @@ router.post("/ai/analyze-listing-image", async (req, res) => {
     return;
   }
 
-  const body = req.body as { image_base64?: string; media_type?: string };
+  const body = req.body as {
+    image_base64?: string;
+    media_type?: string;
+    shop_name?: string;
+    shop_category?: string;
+  };
   const imageBase64 = typeof body.image_base64 === "string" ? body.image_base64.trim() : "";
   const mediaType = typeof body.media_type === "string" ? body.media_type.trim() : "image/jpeg";
+  const shopName = typeof body.shop_name === "string" ? body.shop_name.trim() : "";
+  const shopCategory = typeof body.shop_category === "string" ? body.shop_category.trim() : "";
 
   if (!imageBase64) {
     res.status(400).json({ error: "IMAGE_REQUIRED" });
@@ -140,7 +147,12 @@ router.post("/ai/analyze-listing-image", async (req, res) => {
     return;
   }
 
-  const analysis = await analyzeListingImage({ imageBase64, mediaType });
+  const analysis = await analyzeListingImage({
+    imageBase64,
+    mediaType,
+    shop_name: shopName || null,
+    shop_category: shopCategory || null,
+  });
 
   if (!analysis) {
     res.status(422).json({ error: "ANALYSIS_FAILED", ai_enabled: true });
