@@ -756,34 +756,35 @@ export default function NewListing() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)} className="space-y-4">
 
-            {/* ── 1. Photos (first — AI auto-fill from first image) ── */}
+            {/* ── 1. Photos + video (si në shpallje: foto pastaj video) ── */}
             <Section title={t.photosSection} icon={Camera}>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm font-medium">
-                    {t.listingPhotos} <span className="text-red-500">*</span>
-                    <span className="text-gray-400 font-normal ml-1">(min 1)</span>
-                  </Label>
-                  <span className="text-sm text-gray-400">{imageUrls.length}</span>
-                </div>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-sm font-medium">
+                      {t.listingPhotos} <span className="text-red-500">*</span>
+                      <span className="text-gray-400 font-normal ml-1">(min 1)</span>
+                    </Label>
+                    <span className="text-sm text-gray-400">{imageUrls.length}</span>
+                  </div>
 
-                <input
-                  ref={uploadRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
+                  <input
+                    ref={uploadRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
 
-                {(isAnalyzingImage || isUploading) && (
-                  <p className="text-sm text-blue-600 font-medium mb-2 flex items-center gap-2" role="status">
-                    <Loader2 size={14} className="animate-spin shrink-0" />
-                    {isUploading ? t.uploading : (tx.analyzingPhoto ?? "Duke analizuar foton me AI...")}
-                  </p>
-                )}
+                  {(isAnalyzingImage || isUploading) && (
+                    <p className="text-sm text-blue-600 font-medium mb-2 flex items-center gap-2" role="status">
+                      <Loader2 size={14} className="animate-spin shrink-0" />
+                      {isUploading ? t.uploading : (tx.analyzingPhoto ?? "Duke analizuar foton me AI...")}
+                    </p>
+                  )}
 
-                <button
+                  <button
                     type="button"
                     onClick={() => uploadRef.current?.click()}
                     disabled={isUploading || isAnalyzingImage || !imageUpload.ready}
@@ -811,11 +812,69 @@ export default function NewListing() {
                     )}
                   </button>
 
-                <ImagePreview urls={imageUrls} onRemove={isUploading ? () => {} : removeImage} mainLabel={t.mainPhotoLabel} />
+                  <ImagePreview urls={imageUrls} onRemove={isUploading ? () => {} : removeImage} mainLabel={t.mainPhotoLabel} />
 
-                <p className="text-sm text-gray-600 mt-3 leading-relaxed">
-                  {hasShop ? t.firstPhotoAiHintShop : t.firstPhotoAiHint}
-                </p>
+                  <p className="text-sm text-gray-600 mt-3 leading-relaxed">
+                    {t.firstPhotoAiHint}
+                  </p>
+                </div>
+
+                <div className="border-t border-gray-100 pt-4">
+                  <Label className="text-sm font-medium text-gray-700">
+                    {tx.ui_listingVideoLabel ?? "Një video për shpallje"}{" "}
+                    <span className="text-gray-400 font-normal">{listingVideoFormatsHint(uiLang)}</span>
+                  </Label>
+
+                  <input
+                    ref={videoUploadRef}
+                    type="file"
+                    accept="video/mp4,video/quicktime,video/x-msvideo,.mp4,.mov,.avi"
+                    className="hidden"
+                    onChange={(e) => void handleVideoChange(e)}
+                  />
+
+                  {!videoUrl && !isVideoUploading ? (
+                    <button
+                      type="button"
+                      onClick={() => videoUploadRef.current?.click()}
+                      disabled={!videoUpload.ready}
+                      className="mt-2 w-full border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl py-8 px-4 text-center transition-colors disabled:opacity-60 disabled:cursor-not-allowed min-h-[6rem] touch-manipulation"
+                    >
+                      <div className="flex flex-col items-center gap-1.5 text-gray-500">
+                        <Video size={28} className="text-gray-400" />
+                        <p className="text-sm font-semibold text-gray-600">
+                          {tx.ui_listingVideoAdd ?? "Shto video"}
+                        </p>
+                      </div>
+                    </button>
+                  ) : null}
+
+                  {isVideoUploading ? (
+                    <div className="mt-2 flex flex-col items-center gap-2 py-8 text-blue-600">
+                      <Loader2 size={28} className="animate-spin" />
+                      <p className="text-sm font-semibold">{t.uploading}</p>
+                    </div>
+                  ) : null}
+
+                  {videoUrl ? (
+                    <div className="mt-2 relative rounded-xl overflow-hidden border border-gray-200 bg-black">
+                      <video
+                        src={videoUrl}
+                        controls
+                        playsInline
+                        className="w-full max-h-64 object-contain"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setVideoUrl(null)}
+                        className="absolute top-2 right-2 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors"
+                        aria-label={tx.ui_listingVideoRemove ?? "Hiq videon"}
+                      >
+                        <X size={14} className="text-white" />
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </Section>
 
@@ -1370,67 +1429,7 @@ export default function NewListing() {
             </Section>
             )}
 
-            {/* ── Video (optional) ── */}
-            <Section title={tx.ui_listingVideoSection ?? "Video (opsionale)"} icon={Video}>
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  {tx.ui_listingVideoLabel ?? "Një video për shpallje"}{" "}
-                  <span className="text-gray-400 font-normal">{listingVideoFormatsHint(uiLang)}</span>
-                </Label>
-
-                <input
-                  ref={videoUploadRef}
-                  type="file"
-                  accept="video/mp4,video/quicktime,video/x-msvideo,.mp4,.mov,.avi"
-                  className="hidden"
-                  onChange={(e) => void handleVideoChange(e)}
-                />
-
-                {!videoUrl && !isVideoUploading ? (
-                  <button
-                    type="button"
-                    onClick={() => videoUploadRef.current?.click()}
-                    disabled={!videoUpload.ready}
-                    className="mt-2 w-full border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl py-8 px-4 text-center transition-colors disabled:opacity-60 disabled:cursor-not-allowed min-h-[6rem] touch-manipulation"
-                  >
-                    <div className="flex flex-col items-center gap-1.5 text-gray-500">
-                      <Video size={28} className="text-gray-400" />
-                      <p className="text-sm font-semibold text-gray-600">
-                        {tx.ui_listingVideoAdd ?? "Shto video"}
-                      </p>
-                    </div>
-                  </button>
-                ) : null}
-
-                {isVideoUploading ? (
-                  <div className="mt-2 flex flex-col items-center gap-2 py-8 text-blue-600">
-                    <Loader2 size={28} className="animate-spin" />
-                    <p className="text-sm font-semibold">{t.uploading}</p>
-                  </div>
-                ) : null}
-
-                {videoUrl ? (
-                  <div className="mt-2 relative rounded-xl overflow-hidden border border-gray-200 bg-black">
-                    <video
-                      src={videoUrl}
-                      controls
-                      playsInline
-                      className="w-full max-h-64 object-contain"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setVideoUrl(null)}
-                      className="absolute top-2 right-2 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors"
-                      aria-label={tx.ui_listingVideoRemove ?? "Hiq videon"}
-                    >
-                      <X size={14} className="text-white" />
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-            </Section>
-
-            {/* ── 7. Location (city, then country) ── */}
+            {/* ── Location (city, then country) ── */}
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
               <div className="p-5 space-y-4">
                 <FormField

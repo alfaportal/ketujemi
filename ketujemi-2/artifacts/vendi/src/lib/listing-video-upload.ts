@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { uploadVideoToCloudinary, useCloudinaryConfig } from "./cloudinary-config";
 
-export const LISTING_VIDEO_MAX_MB = 150;
+export const LISTING_VIDEO_MAX_MB = 100;
 export const LISTING_VIDEO_MAX_BYTES = LISTING_VIDEO_MAX_MB * 1024 * 1024;
 
 export function listingVideoTooLargeMessage(uiLang: string): { title: string; description: string } {

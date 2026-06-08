@@ -149,7 +149,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     analyzingPhoto: "Duke analizuar foton me AI...",
     analyzingPhotoHint: "Kategoria, titulli dhe përshkrimi plotësohen automatikisht.",
     firstPhotoAiHint:
-      "📸 Shitës, ngarko foton e parë dhe AI do të plotësojë automatikisht kategorinë, titullin dhe përshkrimin për ty — kursen kohë dhe e bën shpalljen më të lehtë!",
+      "📸 Ngarko foton e parë dhe AI do të plotësojë automatikisht kategorinë, titullin dhe përshkrimin për ty — kursen kohë dhe e bën shpalljen më të lehtë!",
     firstPhotoAiHintShop:
       "📸 Ngarko foton e produktit — AI do të plotësojë automatikisht kategorinë, titullin dhe përshkrimin për shpalljen e dyqanit tënd. Kursen kohë dhe e bën shitjen më të lehtë!",
     firstPhotoMain: "Foto e parë do të jetë foto kryesore e shpalljes",
@@ -327,7 +327,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     analyzingPhoto: "Duke analizuar foton me AI...",
     analyzingPhotoHint: "Kategoria, titulli dhe përshkrimi plotësohen automatikisht.",
     firstPhotoAiHint:
-      "📸 Shitës, ngarko foton e parë dhe AI do të plotësojë automatikisht kategorinë, titullin dhe përshkrimin për ty — kursen kohë dhe e bën shpalljen më të lehtë!",
+      "📸 Ngarko foton e parë dhe AI do të plotësojë automatikisht kategorinë, titullin dhe përshkrimin për ty — kursen kohë dhe e bën shpalljen më të lehtë!",
     firstPhotoAiHintShop:
       "📸 Ngarko foton e produktit — AI do të plotësojë automatikisht kategorinë, titullin dhe përshkrimin për shpalljen e dyqanit tënd. Kursen kohë dhe e bën shitjen më të lehtë!",
     firstPhotoMain: "Foto e parë do të jetë foto kryesore e njoftimit",
@@ -505,7 +505,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     analyzingPhoto: "Се анализира фотографијата со AI...",
     analyzingPhotoHint: "Категоријата, насловот и описот се пополнуваат автоматски.",
     firstPhotoAiHint:
-      "📸 Продавач, прикачи ја првата фотографија и AI автоматски ќе ги пополни категоријата, насловот и описот — заштеди време и олесни го огласувањето!",
+      "📸 Прикачи ја првата фотографија и AI автоматски ќе ги пополни категоријата, насловот и описот — заштеди време и олесни го огласувањето!",
     firstPhotoAiHintShop:
       "📸 Прикачи ја фотографијата на производот — AI автоматски ќе ја пополни категоријата, насловот и описот за огласот на твојот продавница. Заштеди време и олесни ја продажбата!",
     firstPhotoMain: "Првата фотографија ќе биде главна на огласот",
@@ -683,7 +683,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     analyzingPhoto: "Analizira se fotografija pomoću AI...",
     analyzingPhotoHint: "Kategorija, naslov i opis popunjavaju se automatski.",
     firstPhotoAiHint:
-      "📸 Prodavaču, učitaj prvu fotografiju i AI će automatski popuniti kategoriju, naslov i opis — uštedi vrijeme i olakšaj oglašavanje!",
+      "📸 Učitaj prvu fotografiju i AI će automatski popuniti kategoriju, naslov i opis — uštedi vrijeme i olakšaj oglašavanje!",
     firstPhotoAiHintShop:
       "📸 Učitaj fotografiju proizvoda — AI će automatski popuniti kategoriju, naslov i opis za oglas tvoje prodavnice. Uštedi vrijeme i olakšaj prodaju!",
     firstPhotoMain: "Prva fotografija će biti glavna na oglasu",
@@ -861,7 +861,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     analyzingPhoto: "Analyzing photo with AI...",
     analyzingPhotoHint: "Category, title, and description are filled in automatically.",
     firstPhotoAiHint:
-      "📸 Seller, upload your first photo and AI will automatically fill in the category, title and description — saves time and makes listing easier!",
+      "📸 Upload your first photo and AI will automatically fill in the category, title and description for you — saves time and makes listing easier!",
     firstPhotoAiHintShop:
       "📸 Upload a product photo — AI will automatically fill in the category, title and description for your shop listing. Saves time and makes selling easier!",
     firstPhotoMain: "The first photo will be the main listing image",
