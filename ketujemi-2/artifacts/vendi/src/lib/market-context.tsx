@@ -124,6 +124,16 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     bodyTypeLabel: "Tipi i karocerisë",
     chooseType: "Zgjidh tipin...",
     chooseMark: "Zgjidh markën...",
+    chooseSubcategory: "Zgjidh nënkategorinë...",
+    subcategoryTitleMinHint:
+      "Shkruani titullin (min. 5 karaktere) — pastaj zgjidhni ose caktohet nënkategoria.",
+    subcategoryAutoSetting: "Duke caktuar nënkategorinë…",
+    titlePlaceholderExample: "p.sh. BMW X5 2020, JBL 500, iPhone 14 Pro Max...",
+    postErrTitleForSubcategory:
+      "Shkruani titullin (të paktën 5 shkronja) që sistemi të caktojë nënkategorinë.",
+    postErrChooseSubcategory:
+      "Zgjidhni nënkategorinë nga lista, ose prisni një sekondë pas titullit.",
+    postErrChooseBrand: "Zgjidhni markën / modelin e produktit.",
     choose: "Zgjidh...",
     chooseYear: "Zgjidh vitin...",
     chooseCity: "Zgjidh qytetin...",
@@ -310,6 +320,16 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     bodyTypeLabel: "Tipi i karocerisë",
     chooseType: "Zgjidh tipin...",
     chooseMark: "Zgjidh markën...",
+    chooseSubcategory: "Zgjidh nënkategorinë...",
+    subcategoryTitleMinHint:
+      "Shkruani titullin (min. 5 karaktere) — pastaj zgjidhni ose caktohet nënkategoria.",
+    subcategoryAutoSetting: "Duke caktuar nënkategorinë…",
+    titlePlaceholderExample: "p.sh. BMW X5 2020, JBL 500, iPhone 14 Pro Max...",
+    postErrTitleForSubcategory:
+      "Shkruani titullin (të paktën 5 shkronja) që sistemi të caktojë nënkategorinë.",
+    postErrChooseSubcategory:
+      "Zgjidhni nënkategorinë nga lista, ose prisni një sekondë pas titullit.",
+    postErrChooseBrand: "Zgjidhni markën / modelin e produktit.",
     choose: "Zgjidh...",
     chooseYear: "Zgjidh vitin...",
     chooseCity: "Zgjidh qytetin...",
@@ -496,6 +516,16 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     bodyTypeLabel: "Тип на каросерија",
     chooseType: "Изберете тип...",
     chooseMark: "Изберете марка...",
+    chooseSubcategory: "Изберете поткатегорија...",
+    subcategoryTitleMinHint:
+      "Внесете наслов (мин. 5 знаци) — потоа изберете или ќе се постави поткатегоријата.",
+    subcategoryAutoSetting: "Се поставува поткатегоријата…",
+    titlePlaceholderExample: "пр. BMW X5 2020, JBL 500, iPhone 14 Pro Max...",
+    postErrTitleForSubcategory:
+      "Внесете наслов (најмалку 5 знаци) за системот да ја постави поткатегоријата.",
+    postErrChooseSubcategory:
+      "Изберете поткатегорија од листата или почекајте една секунда по насловот.",
+    postErrChooseBrand: "Изберете марка / модел на производот.",
     choose: "Изберете...",
     chooseYear: "Изберете година...",
     chooseCity: "Изберете град...",
@@ -682,6 +712,16 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     bodyTypeLabel: "Tip karoserije",
     chooseType: "Izaberite tip...",
     chooseMark: "Izaberite marku...",
+    chooseSubcategory: "Izaberite potkategoriju...",
+    subcategoryTitleMinHint:
+      "Unesite naslov (min. 5 znakova) — zatim izaberite ili će se postaviti potkategorija.",
+    subcategoryAutoSetting: "Postavlja se potkategorija…",
+    titlePlaceholderExample: "npr. BMW X5 2020, JBL 500, iPhone 14 Pro Max...",
+    postErrTitleForSubcategory:
+      "Unesite naslov (najmanje 5 znakova) da sistem postavi potkategoriju.",
+    postErrChooseSubcategory:
+      "Izaberite potkategoriju sa liste ili sačekajte sekundu nakon naslova.",
+    postErrChooseBrand: "Izaberite marku / model proizvoda.",
     choose: "Izaberite...",
     chooseYear: "Izaberite godinu...",
     chooseCity: "Izaberite grad...",
@@ -868,6 +908,19 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     bodyTypeLabel: "Body type",
     chooseType: "Choose type...",
     chooseMark: "Choose brand...",
+    chooseSubcategory: "Choose subcategory...",
+    subcategoryTitleMinHint:
+      "Enter a title (min. 5 characters) — then pick or the subcategory will be set automatically.",
+    subcategoryAutoSetting: "Setting subcategory…",
+    titlePlaceholderExample: "e.g. BMW X5 2020, JBL 500, iPhone 14 Pro Max...",
+    postErrTitleForSubcategory:
+      "Enter a title (at least 5 characters) so the system can set the subcategory.",
+    postErrChooseSubcategory:
+      "Choose a subcategory from the list, or wait a moment after entering the title.",
+    postErrChooseBrand: "Choose the product brand / model.",
+    photoAnalyzeFailed: "Could not fill in automatically",
+    photoAnalyzeFailedHint:
+      "Continue manually with category, title, and description — or try a clearer photo.",
     choose: "Choose...",
     chooseYear: "Choose year...",
     chooseCity: "Choose city...",

@@ -8,6 +8,13 @@ import {
   type GoogleVisionDetectResult,
 } from "./google-vision-client";
 import { matchListingCategoryFromRules } from "./listing-category-suggest";
+import {
+  buildClaudeVisionSystem,
+  buildCopyFromLabelsSystem,
+  fallbackListingDescription,
+  parseListingCopyLang,
+  type ListingCopyLang,
+} from "./listing-copy-lang";
 import { matchVisionLabelsToCategory } from "./vision-category-rules";
 
 export type ListingImageAnalyzePipeline = "google" | "claude" | null;
@@ -56,47 +63,6 @@ type CopyPayload = {
 
 /** Parents that must never be auto-selected from a product photo. */
 const EXCLUDED_PARENT_SLUGS = new Set(["kerkoj-te-blej", "dhurata-falas"]);
-
-const COPY_FROM_LABELS_SYSTEM = `You write Albanian (sq) listing copy for KetuJemi.com second-hand marketplace.
-
-You receive Google Vision labels and the already-chosen category. Write based on what was detected — do NOT invent features not suggested by the labels.
-
-title: 5–80 chars, product-focused (e.g. "iPhone 7 me ekran të thyer", "Kostum tradicional femrash")
-description: 40–400 chars, condition + visible features from labels; no phone/email/price
-
-If seller_type is "shop", write as a clear shop product listing.
-
-Reply ONLY JSON:
-{"title":"...","description":"...","confidence":"high"|"medium"|"low"}`;
-
-const CLAUDE_VISION_SYSTEM = `You analyze product photos for second-hand listings on KetuJemi.com (Albanian marketplace).
-
-TASK: Look at the MAIN OBJECT being sold. Classify by what the item IS (material product type), not by cultural context, decoration style, or where it might be used.
-
-Use ONLY numeric ids from the provided JSON catalog. Never invent ids.
-
-═══ CATEGORY ID RULES (critical) ═══
-parent_category_id = top-level hub (root row in catalog, no parent)
-category_id = the DIRECT child of that parent (type/subcategory row). REQUIRED whenever the parent has children.
-brand_category_id = deepest leaf when the catalog has 3+ levels under the parent (grandchild or deeper). Use null only when the tree stops at category_id.
-
-Always pick the MOST SPECIFIC leaf available. Never stop at parent only when children exist.
-
-═══ VISUAL OBJECT → PARENT HUB (use exact catalog names) ═══
-CLOTHING & WEARABLES → «Rroba & Këpucë» — NOT «Muzikë & Hobby»
-VEHICLES → «Vetura» | «Motorr & Skuter» | «Kamionë & Furgonë»
-AUTO PARTS → «Auto Pjesë»
-REAL ESTATE → «Banesa & Shtëpi» or «Lokale & Zyrë»
-PHONES → «Telefona» | LAPTOPS → «Kompjuterë & Laptopë» | OTHER ELECTRONICS → «Elektronikë & Pajisje Shtëpiake»
-HOME → «Mobilje & Dekorime»
-BABY → «Fëmijë» | SPORTS → «Sport & Outdoor» | PETS → «Kafshë»
-MUSIC & HOBBY → instruments/art supplies only — NEVER clothing
-
-═══ TEXT OUTPUT (Albanian sq) ═══
-title: 5–80 chars | description: 40–400 chars; no phone/email/price
-
-Reply ONLY JSON:
-{"parent_category_id":number,"category_id":number,"brand_category_id":number|null,"title":"...","description":"...","confidence":"high"|"medium"|"low"}`;
 
 function isExcludedParent(row: CategoryRow): boolean {
   return Boolean(row.slug && EXCLUDED_PARENT_SLUGS.has(row.slug));
@@ -237,6 +203,7 @@ function ensureCopyMinimums(
   title: string,
   description: string,
   mapped: { parent: CategoryRow; category: CategoryRow; brand?: CategoryRow },
+  lang: ListingCopyLang,
 ): { title: string; description: string } | null {
   let nextTitle = title.trim();
   let nextDescription = description.trim();
@@ -246,10 +213,12 @@ function ensureCopyMinimums(
   }
   if (nextDescription.length < 15) {
     const label = mapped.brand?.name ?? mapped.category.name;
-    nextDescription = `Shitet ${label}. Kategori: ${mapped.parent.name} › ${mapped.category.name}.`.slice(
-      0,
-      400,
-    );
+    nextDescription = fallbackListingDescription(
+      lang,
+      label,
+      mapped.parent.name,
+      mapped.category.name,
+    ).slice(0, 400);
   }
 
   if (nextTitle.length < 5 || nextDescription.length < 15) return null;
@@ -259,6 +228,7 @@ function ensureCopyMinimums(
 function validateHierarchy(
   rows: CategoryRow[],
   parsed: VisionAiPayload,
+  lang: ListingCopyLang,
 ): ListingImageAnalyzeResult | null {
   const mapped = mapParsedToForm(rows, parsed);
   if (!mapped || isExcludedParent(mapped.parent)) return null;
@@ -267,7 +237,12 @@ function validateHierarchy(
     return null;
   }
 
-  const copy = ensureCopyMinimums(parsed.title?.trim() ?? "", parsed.description?.trim() ?? "", mapped);
+  const copy = ensureCopyMinimums(
+    parsed.title?.trim() ?? "",
+    parsed.description?.trim() ?? "",
+    mapped,
+    lang,
+  );
   if (!copy) return null;
 
   return {
@@ -419,30 +394,34 @@ function classifyCategoryFromGoogleLabels(
 function fallbackCopyFromGoogleLabels(
   vision: GoogleVisionDetectResult,
   category: { parent_name: string; category_name: string },
+  lang: ListingCopyLang,
 ): CopyPayload {
   const topLabel =
     vision.labels[0]?.description ??
     vision.objects[0]?.name ??
     category.category_name;
   const title = `${topLabel}`.slice(0, 80);
-  const description =
-    `Shitet ${topLabel}. Kategori: ${category.parent_name} › ${category.category_name}.`.slice(
-      0,
-      400,
-    );
+  const description = fallbackListingDescription(
+    lang,
+    topLabel,
+    category.parent_name,
+    category.category_name,
+  ).slice(0, 400);
   return { title, description, confidence: "low" };
 }
 
 async function generateCopyFromLabels(
   vision: GoogleVisionDetectResult,
   category: { parent_name: string; category_name: string; brand_name?: string },
+  lang: ListingCopyLang,
   shop?: { shop_name: string; shop_category: string | null },
 ): Promise<CopyPayload | null> {
   if (!isClaudeConfigured()) return null;
 
   return claudeJsonCompletion<CopyPayload>({
-    system: COPY_FROM_LABELS_SYSTEM,
+    system: buildCopyFromLabelsSystem(lang),
     user: JSON.stringify({
+      output_lang: lang,
       google_vision: formatVisionDetectResult(vision),
       category: {
         parent: category.parent_name,
@@ -468,6 +447,7 @@ async function generateCopyFromLabels(
 async function analyzeWithGoogleVisionPipeline(
   imageBase64: string,
   rows: CategoryRow[],
+  lang: ListingCopyLang,
   shop?: { shop_name: string; shop_category: string | null },
 ): Promise<ListingImageAnalyzeResult | null> {
   const vision = await detectImageLabels(imageBase64);
@@ -495,10 +475,10 @@ async function analyzeWithGoogleVisionPipeline(
     brand_name: mapped.brand?.name,
   };
 
-  let copy: CopyPayload = fallbackCopyFromGoogleLabels(vision, categoryInfo);
+  let copy: CopyPayload = fallbackCopyFromGoogleLabels(vision, categoryInfo, lang);
   if (isClaudeConfigured()) {
     const enhanced = await Promise.race([
-      generateCopyFromLabels(vision, categoryInfo, shop),
+      generateCopyFromLabels(vision, categoryInfo, lang, shop),
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 2_500)),
     ]);
     if (enhanced?.title && enhanced.description) {
@@ -506,14 +486,18 @@ async function analyzeWithGoogleVisionPipeline(
     }
   }
 
-  return validateHierarchy(rows, {
-    parent_category_id: categoryPick.parent_category_id,
-    category_id: categoryPick.category_id,
-    brand_category_id: categoryPick.brand_category_id,
-    title: copy.title,
-    description: copy.description,
-    confidence: copy.confidence ?? categoryPick.confidence ?? "medium",
-  });
+  return validateHierarchy(
+    rows,
+    {
+      parent_category_id: categoryPick.parent_category_id,
+      category_id: categoryPick.category_id,
+      brand_category_id: categoryPick.brand_category_id,
+      title: copy.title,
+      description: copy.description,
+      confidence: copy.confidence ?? categoryPick.confidence ?? "medium",
+    },
+    lang,
+  );
 }
 
 /**
@@ -525,13 +509,15 @@ async function analyzeWithClaudeVision(
   mediaType: string,
   rows: CategoryRow[],
   catalog: CatalogNode[],
+  lang: ListingCopyLang,
   shop?: { shop_name: string; shop_category: string | null },
 ): Promise<ListingImageAnalyzeResult | null> {
   const parsed = await claudeVisionJsonCompletionFromBase64<VisionAiPayload>({
-    system: CLAUDE_VISION_SYSTEM,
+    system: buildClaudeVisionSystem(lang),
     userText: JSON.stringify({
       instruction:
-        "Classify the main sellable object in the image. Pick parent_category_id, category_id (direct child of parent), and brand_category_id (deepest leaf when available).",
+        "Classify the main sellable object in the image. Pick parent_category_id, category_id (direct child of parent), and brand_category_id (deepest leaf when available). Write title and description in the requested output language.",
+      output_lang: lang,
       categories: catalog,
       ...(shop
         ? {
@@ -547,7 +533,7 @@ async function analyzeWithClaudeVision(
   });
 
   if (!parsed) return null;
-  return validateHierarchy(rows, parsed);
+  return validateHierarchy(rows, parsed, lang);
 }
 
 export function isListingImageAnalyzeConfigured(): boolean {
@@ -568,11 +554,13 @@ async function analyzeWithParallelFallback(input: {
   mediaType: string;
   rows: CategoryRow[];
   catalog: CatalogNode[];
+  lang: ListingCopyLang;
   shop?: { shop_name: string; shop_category: string | null };
 }): Promise<ListingImageAnalyzeOutcome> {
   const googleFlight = analyzeWithGoogleVisionPipeline(
     input.imageBase64,
     input.rows,
+    input.lang,
     input.shop,
   ).catch((err) => {
     logger.warn({ err }, "listing-image-analyze google vision failed");
@@ -584,6 +572,7 @@ async function analyzeWithParallelFallback(input: {
     input.mediaType,
     input.rows,
     input.catalog,
+    input.lang,
     input.shop,
   ).catch((err) => {
     logger.warn({ err }, "listing-image-analyze claude vision failed");
@@ -624,6 +613,7 @@ async function analyzeWithParallelFallback(input: {
 export async function analyzeListingImage(input: {
   imageBase64: string;
   mediaType: string;
+  lang?: string | null;
   shop_name?: string | null;
   shop_category?: string | null;
 }): Promise<ListingImageAnalyzeOutcome> {
@@ -634,6 +624,7 @@ export async function analyzeListingImage(input: {
   const canClaudeVision = isClaudeConfigured();
   if (!canGoogle && !canClaudeVision) return emptyOutcome();
 
+  const lang = parseListingCopyLang(input.lang);
   const rows = await getCachedCategoryRows();
 
   const catalog = buildCategoryCatalog(rows);
@@ -651,12 +642,13 @@ export async function analyzeListingImage(input: {
         mediaType: input.mediaType,
         rows,
         catalog,
+        lang,
         shop,
       });
     }
 
     if (canGoogle) {
-      const googleResult = await analyzeWithGoogleVisionPipeline(imageBase64, rows, shop);
+      const googleResult = await analyzeWithGoogleVisionPipeline(imageBase64, rows, lang, shop);
       return googleResult
         ? { result: googleResult, pipeline: "google" }
         : emptyOutcome();
@@ -667,6 +659,7 @@ export async function analyzeListingImage(input: {
       input.mediaType,
       rows,
       catalog,
+      lang,
       shop,
     );
     return claudeResult

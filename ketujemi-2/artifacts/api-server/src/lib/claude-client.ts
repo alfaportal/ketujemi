@@ -1,9 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-export type UiLang = "sq" | "mk" | "me";
+export type UiLang = "sq" | "mk" | "me" | "en";
 
 export function parseUiLang(raw: unknown): UiLang {
+  if (raw === "en") return "en";
   if (raw === "mk" || raw === "me") return raw;
+  if (raw === "mne") return "me";
   return "sq";
 }
 
@@ -29,6 +31,7 @@ export function getAnthropicClient(): Anthropic {
 }
 
 export function langLabel(lang: UiLang): string {
+  if (lang === "en") return "English";
   if (lang === "mk") return "Macedonian";
   if (lang === "me") return "Montenegrin";
   return "Albanian";

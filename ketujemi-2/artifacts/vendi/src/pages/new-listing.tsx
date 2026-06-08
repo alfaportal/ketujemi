@@ -32,8 +32,10 @@ import {
   defaultListingMarketFromMarket,
   isListingMarketCode,
   locationsForListingMarket,
+  translationKeyForUiLang,
   type ListingMarketCode,
 } from "@/lib/market-context";
+import { listingApiLangFromUi } from "@/lib/listing-api-lang";
 
 function isCategoryUnderParent(
   catId: number,
@@ -202,6 +204,8 @@ export default function NewListing() {
   const { toast } = useToast();
   const { market, t, uiLang } = useMarket();
   const tx = t as Record<string, string | undefined>;
+  const categoryLocale = translationKeyForUiLang(uiLang);
+  const listingLang = listingApiLangFromUi(uiLang);
   const [listingCountry, setListingCountry] = useState<ListingMarketCode>(() =>
     defaultListingMarketFromMarket(market.code),
   );
@@ -391,7 +395,7 @@ export default function NewListing() {
     form.setValue("brand_category_id", 0);
   }, [bodyCatId, parentCatId, form]);
 
-  const suggestLang = market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq";
+  const suggestLang = listingLang;
 
   useEffect(() => {
     const parentId = Number(parentCatId);
@@ -548,6 +552,7 @@ export default function NewListing() {
             body: JSON.stringify({
               image_base64: data,
               media_type: mediaType,
+              lang: listingLang,
               ...(myShop
                 ? { shop_name: myShop.shop_name, shop_category: myShop.category || undefined }
                 : {}),
@@ -594,7 +599,7 @@ export default function NewListing() {
         setIsAnalyzingImage(false);
       }
     },
-    [applyImageAnalysis, isDhurataPostRoute, myShop, toast, tx],
+    [applyImageAnalysis, isDhurataPostRoute, listingLang, myShop, toast, tx],
   );
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -728,8 +733,10 @@ export default function NewListing() {
       } else {
         refusePost(
           watchTitle.trim().length < 5
-            ? "Shkruani titullin (të paktën 5 shkronja) që sistemi të caktojë nënkategorinë."
-            : "Zgjidhni nënkategorinë nga lista, ose prisni një sekondë pas titullit.",
+            ? (tx.postErrTitleForSubcategory ??
+                "Shkruani titullin (të paktën 5 shkronja) që sistemi të caktojë nënkategorinë.")
+            : (tx.postErrChooseSubcategory ??
+                "Zgjidhni nënkategorinë nga lista, ose prisni një sekondë pas titullit."),
         );
         return;
       }
@@ -737,7 +744,7 @@ export default function NewListing() {
 
     const resolvedBrandId = Number(listingData.brand_category_id) || 0;
     if (hasBrands && resolvedBrandId < 1) {
-      refusePost("Zgjidhni markën / modelin e produktit.");
+      refusePost(tx.postErrChooseBrand ?? "Zgjidhni markën / modelin e produktit.");
       return;
     }
     const partCat = subCats.find((c: any) => c.id === resolvedCategoryId);
@@ -777,7 +784,7 @@ export default function NewListing() {
       description: finalDescription,
       price: Number.isFinite(validation.price) ? validation.price : 0,
       price_agreement: validation.price_agreement,
-      lang: market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq",
+      lang: listingLang,
       category_id: resolvedBrandId || resolvedCategoryId || parentId,
       location: listingData.location,
       listing_country: listingCountry,
@@ -1022,7 +1029,7 @@ export default function NewListing() {
                     <FormControl>
                       <Input
                         data-testid="input-title"
-                        placeholder="p.sh. BMW X5 2020, JBL 500, iPhone 14 Pro Max..."
+                        placeholder={tx.titlePlaceholderExample ?? "p.sh. BMW X5 2020, JBL 500, iPhone 14 Pro Max..."}
                         {...field}
                       />
                     </FormControl>
@@ -1061,7 +1068,9 @@ export default function NewListing() {
                       </FormControl>
                       <SelectContent className="max-h-[min(70vh,360px)]">
                         {parentCats.map((cat: any) => (
-                          <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
+                          <SelectItem key={cat.id} value={String(cat.id)}>
+                            {translateCategory(cat.name, categoryLocale)}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1069,7 +1078,10 @@ export default function NewListing() {
                     {subCats.length > 0 && bodyCatId > 0 && (
                       <p className="text-sm mt-1 text-green-700" role="status">
                         {`${t.subcategory}: ${
-                          subCats.find((c: { id: number }) => c.id === Number(bodyCatId))?.name ?? "—"
+                          translateCategory(
+                            subCats.find((c: { id: number }) => c.id === Number(bodyCatId))?.name ?? "",
+                            categoryLocale,
+                          ) || "—"
                         }`}
                       </p>
                     )}
@@ -1088,13 +1100,13 @@ export default function NewListing() {
                             >
                               <FormControl>
                                 <SelectTrigger data-testid="select-subcategory">
-                                  <SelectValue placeholder="Zgjidhni nënkategorinë..." />
+                                  <SelectValue placeholder={tx.chooseSubcategory ?? "..."} />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent className="max-h-[min(70vh,360px)]">
                                 {subCats.map((cat: { id: number; name: string }) => (
                                   <SelectItem key={cat.id} value={String(cat.id)}>
-                                    {cat.name}
+                                    {translateCategory(cat.name, categoryLocale)}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -1106,12 +1118,13 @@ export default function NewListing() {
                     )}
                     {subCats.length > 1 && !bodyCatId && watchTitle.trim().length < 5 && (
                       <p className="text-sm mt-1 text-amber-700" role="status">
-                        Shkruani titullin (min. 5 karaktere) — pastaj zgjidhni ose caktohet nënkategoria.
+                        {tx.subcategoryTitleMinHint ??
+                          "Shkruani titullin (min. 5 karaktere) — pastaj zgjidhni ose caktohet nënkategoria."}
                       </p>
                     )}
                     {subCats.length === 1 && !bodyCatId && (
                       <p className="text-sm mt-1 text-amber-700" role="status">
-                        Duke caktuar nënkategorinë…
+                        {tx.subcategoryAutoSetting ?? "Duke caktuar nënkategorinë…"}
                       </p>
                     )}
                   </FormItem>
@@ -1133,7 +1146,9 @@ export default function NewListing() {
                         </FormControl>
                         <SelectContent className="max-h-[min(70vh,360px)]">
                           {brandCats.map((cat: any) => (
-                            <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
+                            <SelectItem key={cat.id} value={String(cat.id)}>
+                              {translateCategory(cat.name, categoryLocale)}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>

@@ -134,6 +134,7 @@ router.post("/ai/analyze-listing-image", analyzeListingImageLimiter, async (req,
   const body = req.body as {
     image_base64?: string;
     media_type?: string;
+    lang?: string;
     shop_name?: string;
     shop_category?: string;
   };
@@ -152,9 +153,12 @@ router.post("/ai/analyze-listing-image", analyzeListingImageLimiter, async (req,
     return;
   }
 
+  const lang = typeof body.lang === "string" ? body.lang.trim() : "";
+
   const { result: analysis, pipeline } = await analyzeListingImage({
     imageBase64,
     mediaType,
+    lang: lang || null,
     shop_name: shopName || null,
     shop_category: shopCategory || null,
   });
