@@ -7,7 +7,6 @@ import {
 } from "../services/socialMedia.js";
 import { loadAllCategories, resolveRootCategoryId } from "./category-quota";
 import { logger } from "./logger";
-import { verifyListingOwnerIntegrity } from "./listing-ownership-guard";
 
 const CANDIDATE_BATCH = 20;
 
@@ -94,24 +93,6 @@ export async function runInstagramScheduledPost(): Promise<{
     const skip = facebookPostSkipReason(listing);
     if (skip) {
       logger.info({ listingId: row.id, skip }, "instagram scheduled post: skip candidate");
-      continue;
-    }
-
-    const integrity = await verifyListingOwnerIntegrity(
-      {
-        id: row.id,
-        user_id: row.user_id,
-        seller_name: row.seller_name,
-        seller_phone: row.seller_phone,
-        description: row.description,
-      },
-      "social_cron_instagram",
-    );
-    if (!integrity.ok) {
-      logger.warn(
-        { listingId: row.id, reason: integrity.reason },
-        "instagram scheduled post: ownership integrity failed",
-      );
       continue;
     }
 
