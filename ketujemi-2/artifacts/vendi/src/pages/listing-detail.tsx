@@ -159,6 +159,9 @@ export default function ListingDetail() {
     const clean = new URL(window.location.href);
     clean.search = "";
     clean.hash = "";
+    if (clean.hostname === "www.ketujemi.com") {
+      clean.hostname = "ketujemi.com";
+    }
     setListingShareUrl(clean.toString());
   }, [listing?.id]);
 
@@ -597,6 +600,12 @@ export default function ListingDetail() {
                 )}
               </div>
 
+              <ListingShareButtons
+                url={listingShareUrl}
+                title={listing.title}
+                variant="inline"
+              />
+
               <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 text-sm bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full font-medium">
                   <MapPin size={11} />
@@ -653,14 +662,18 @@ export default function ListingDetail() {
               />
             ) : null}
 
-            <ListingShareButtons url={listingShareUrl} />
           </div>
 
           {/* ── Right: seller sidebar ── */}
           <div className="space-y-4">
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
               <h2 className="font-bold text-gray-900 mb-4">{t.seller}</h2>
-              <div className="space-y-3">
+              <ListingShareButtons
+                url={listingShareUrl}
+                title={listing.title}
+                variant="compact"
+              />
+              <div className="space-y-3 mt-4">
                 <div className="flex items-center gap-3 pb-3 border-b border-gray-50">
                   <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0">
                     <User className="h-5 w-5 text-white" />
