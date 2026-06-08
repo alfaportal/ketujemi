@@ -80,6 +80,7 @@ export async function runInstagramScheduledPost(): Promise<{
       price: row.price,
       location: row.location,
       image_url: row.image_url,
+      category_id: row.category_id,
       category_name: row.category_name,
       category_slug: row.category_slug,
       root_category_slug: rootSlug,
@@ -88,6 +89,7 @@ export async function runInstagramScheduledPost(): Promise<{
       property_subtype: row.property_subtype,
       property_txn: row.property_txn,
       listing_country: null as string | null,
+      useScheduledCategoryCaption: true,
     };
 
     const skip = facebookPostSkipReason(listing);

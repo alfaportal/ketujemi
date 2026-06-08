@@ -19,6 +19,7 @@ import {
   savePersistedFacebookPageToken,
 } from "../lib/facebook-token-store.js";
 import { getAdminEmail, monitorEmailHtml, sendAdminMonitorEmail } from "../lib/admin-monitor-email.js";
+import { buildCategorySocialCaption } from "../lib/listing-category-social-caption.js";
 import { resolveSocialFlairLines } from "../lib/social-listing-caption.js";
 import {
   platformUspLine,
@@ -889,27 +890,39 @@ export async function postNewListingToFacebook(listing) {
   const photoUrl = parseListingImageUrls(listing.image_url)[0];
   const market = resolveListingMarketForSocial(listing.location, listing.listing_country);
   const slug = listingSlug(listing.id, listing.title);
-  const flairLines = await resolveSocialFlairLines({
-    title: listing.title,
-    description: listing.description ?? "",
-    categoryName: listing.category_name ?? null,
-    categorySlug: listing.category_slug ?? null,
-    rootCategorySlug: listing.root_category_slug ?? null,
-    propertySubtype: listing.property_subtype ?? null,
-    propertyTxn: listing.property_txn ?? null,
-    sellerName: listing.seller_name ?? null,
-    shopName: listing.shop_name ?? null,
-    imageUrl: photoUrl ?? null,
-    market,
-  });
-  const caption = buildFacebookCaption(market, {
-    title: listing.title,
-    price: listing.price,
-    location: listing.location,
-    slug,
-    categoryName: listing.category_name ?? null,
-    flairLine: flairLines.fb,
-  });
+  const useScheduledCategoryCaption = listing.useScheduledCategoryCaption === true;
+  let caption;
+  let flairLines = { fb: "", ig: "", theme: null, source: "scheduled_category" };
+  if (useScheduledCategoryCaption) {
+    caption = buildCategorySocialCaption({
+      category_id: listing.category_id ?? null,
+      category_name: listing.category_name ?? null,
+      category_slug: listing.category_slug ?? null,
+      root_category_slug: listing.root_category_slug ?? null,
+    });
+  } else {
+    flairLines = await resolveSocialFlairLines({
+      title: listing.title,
+      description: listing.description ?? "",
+      categoryName: listing.category_name ?? null,
+      categorySlug: listing.category_slug ?? null,
+      rootCategorySlug: listing.root_category_slug ?? null,
+      propertySubtype: listing.property_subtype ?? null,
+      propertyTxn: listing.property_txn ?? null,
+      sellerName: listing.seller_name ?? null,
+      shopName: listing.shop_name ?? null,
+      imageUrl: photoUrl ?? null,
+      market,
+    });
+    caption = buildFacebookCaption(market, {
+      title: listing.title,
+      price: listing.price,
+      location: listing.location,
+      slug,
+      categoryName: listing.category_name ?? null,
+      flairLine: flairLines.fb,
+    });
+  }
   const listingLink = `${getCanonicalOrigin()}/listings/${listing.id}`;
 
   console.log("[facebook] listing data for post", {
@@ -1033,28 +1046,40 @@ export async function postNewListingToInstagram(listing) {
   const market = resolveListingMarketForSocial(listing.location, listing.listing_country);
   const slug = listingSlug(listing.id, listing.title);
   const listingLink = `${getCanonicalOrigin()}/listings/${listing.id}`;
-  const flairLines = await resolveSocialFlairLines({
-    title: listing.title,
-    description: listing.description ?? "",
-    categoryName: listing.category_name ?? null,
-    categorySlug: listing.category_slug ?? null,
-    rootCategorySlug: listing.root_category_slug ?? null,
-    propertySubtype: listing.property_subtype ?? null,
-    propertyTxn: listing.property_txn ?? null,
-    sellerName: listing.seller_name ?? null,
-    shopName: listing.shop_name ?? null,
-    imageUrl: photoUrl ?? null,
-    market,
-  });
-  const igCaption = buildInstagramCaption(market, {
-    title: listing.title,
-    price: listing.price,
-    location: listing.location,
-    slug,
-    categoryName: listing.category_name ?? null,
-    flairLine: flairLines.ig,
-    listingLink,
-  });
+  const useScheduledCategoryCaption = listing.useScheduledCategoryCaption === true;
+  let igCaption;
+  let flairLines = { fb: "", ig: "", theme: null, source: "scheduled_category" };
+  if (useScheduledCategoryCaption) {
+    igCaption = buildCategorySocialCaption({
+      category_id: listing.category_id ?? null,
+      category_name: listing.category_name ?? null,
+      category_slug: listing.category_slug ?? null,
+      root_category_slug: listing.root_category_slug ?? null,
+    });
+  } else {
+    flairLines = await resolveSocialFlairLines({
+      title: listing.title,
+      description: listing.description ?? "",
+      categoryName: listing.category_name ?? null,
+      categorySlug: listing.category_slug ?? null,
+      rootCategorySlug: listing.root_category_slug ?? null,
+      propertySubtype: listing.property_subtype ?? null,
+      propertyTxn: listing.property_txn ?? null,
+      sellerName: listing.seller_name ?? null,
+      shopName: listing.shop_name ?? null,
+      imageUrl: photoUrl ?? null,
+      market,
+    });
+    igCaption = buildInstagramCaption(market, {
+      title: listing.title,
+      price: listing.price,
+      location: listing.location,
+      slug,
+      categoryName: listing.category_name ?? null,
+      flairLine: flairLines.ig,
+      listingLink,
+    });
+  }
   logger.info(
     { listingId: listing.id, theme: flairLines.theme, source: flairLines.source },
     "instagram caption ready",

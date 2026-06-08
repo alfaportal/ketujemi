@@ -27,9 +27,9 @@ const COPY: Record<EngagementLocale, EngagementCopy> = {
       `Mirë se erdhe ${name}! 🎉 Tani je pjesë e familjes KetuJemi. Posto shpalljet tuaja falas — pa limite, pa pagesa.`,
     firstListingTitle: "Urime! 🎊",
     firstListingBody:
-      "Shpallja juaj është live dhe po shihet nga njerëzit tani. Ndajeni me miqtë për ta shitur edhe më shpejt!",
+      "🎉 Urime! Shpallja jote është aktive tani në KëtuJemi.com dhe do të shfaqet automatikisht edhe në Facebook, Instagram dhe TikTok. Sa më shumë njerëz ta shohin, aq më shpejt shitet! 🚀",
     subsequentListingToast:
-      "Shumë mirë! Sa më shumë poston → aq më shumë njerëz të njohin. Vazhdo kështu! 💪",
+      "🎉 Urime! Shpallja jote është aktive tani në KëtuJemi.com dhe do të shfaqet automatikisht edhe në Facebook, Instagram dhe TikTok. Sa më shumë njerëz ta shohin, aq më shpejt shitet! 🚀",
     listingFirstView: (title) =>
       `👀 Dikush e shikoi shpalljen tuaj për ${title} — je në rrugë të mirë!`,
     socialFollowTitle: "🔥 Shpallja juaj po tërheq vëmendjen!",
@@ -51,9 +51,9 @@ const COPY: Record<EngagementLocale, EngagementCopy> = {
       `Добредојде ${name}! 🎉 Сега си дел од семејството KetuJemi. Објавувај огласи бесплатно — без лимити, без плаќање.`,
     firstListingTitle: "Честитки! 🎊",
     firstListingBody:
-      "Вашиот оглас е live и го гледаат луѓето. Споделете го со пријателите за побрза продажба!",
+      "🎉 Честитки! Вашиот оглас е активен на KëtuJemi.com и автоматски ќе се објави на Facebook, Instagram и TikTok. Колку повеќе луѓе го видат, толку побрзо ќе се продаде! 🚀",
     subsequentListingToast:
-      "Одлично! Колку повеќе објавувате → толку повеќе луѓе ве запознаваат. Продолжете вака! 💪",
+      "🎉 Честитки! Вашиот оглас е активен на KëtuJemi.com и автоматски ќе се објави на Facebook, Instagram и TikTok. Колку повеќе луѓе го видат, толку побрзо ќе се продаде! 🚀",
     listingFirstView: (title) =>
       `👀 Некој го погледна вашиот оглас за ${title} — сте на добар пат!`,
     socialFollowTitle: "🔥 Вашиот оглас привлекува внимание!",
@@ -75,9 +75,9 @@ const COPY: Record<EngagementLocale, EngagementCopy> = {
       `Dobrodošli ${name}! 🎉 Sada ste dio porodice KetuJemi. Objavljujte oglase besplatno — bez limita, bez plaćanja.`,
     firstListingTitle: "Čestitamo! 🎊",
     firstListingBody:
-      "Vaš oglas je live i ljudi ga sada vide. Podijelite ga s prijateljima da brže prodate!",
+      "🎉 Čestitamo! Vaš oglas je aktivan na KëtuJemi.com i automatski će se objaviti na Facebooku, Instagramu i TikToku. Što više ljudi ga vidi, brže će se prodati! 🚀",
     subsequentListingToast:
-      "Odlično! Što više objavljujete → više vas ljudi upoznaje. Nastavite tako! 💪",
+      "🎉 Čestitamo! Vaš oglas je aktivan na KëtuJemi.com i automatski će se objaviti na Facebooku, Instagramu i TikToku. Što više ljudi ga vidi, brže će se prodati! 🚀",
     listingFirstView: (title) =>
       `👀 Neko je pogledao vaš oglas za ${title} — na dobrom ste putu!`,
     socialFollowTitle: "🔥 Vaš oglas privlači pažnju!",
@@ -99,9 +99,9 @@ const COPY: Record<EngagementLocale, EngagementCopy> = {
       `Welcome ${name}! 🎉 You're now part of the KetuJemi family. Post your listings for free — no limits, no fees.`,
     firstListingTitle: "Congrats! 🎊",
     firstListingBody:
-      "Your listing is live and people can see it now. Share it with friends to sell even faster!",
+      "🎉 Congrats! Your listing is live on KëtuJemi.com and will be shared automatically on Facebook, Instagram, and TikTok. The more people see it, the faster it sells! 🚀",
     subsequentListingToast:
-      "Great job! The more you post → the more people discover you. Keep it up! 💪",
+      "🎉 Congrats! Your listing is live on KëtuJemi.com and will be shared automatically on Facebook, Instagram, and TikTok. The more people see it, the faster it sells! 🚀",
     listingFirstView: (title) =>
       `👀 Someone viewed your listing for ${title} — you're on the right track!`,
     socialFollowTitle: "🔥 Your listing is getting attention!",

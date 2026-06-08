@@ -1,7 +1,8 @@
-import { db, listingsTable, pool } from "@workspace/db";
+import { categoriesTable, db, listingsTable, pool } from "@workspace/db";
 import { and, desc, eq, gt, isNull, notInArray, or, sql } from "drizzle-orm";
-import { buildReelCaption } from "./listing-reel-caption";
+import { buildCategorySocialCaption } from "./listing-category-social-caption";
 import { createListingReelVideo, type ReelSlideInput } from "./cloudinary-slideshow";
+import { loadAllCategories, resolveRootCategoryId } from "./category-quota";
 import { isCloudinaryAdminConfigured } from "./cloudinary-config";
 import { logger } from "./logger";
 import { parseListingImageUrls } from "./listing-images";
@@ -30,10 +31,20 @@ async function recentlyUsedListingIds(): Promise<number[]> {
 }
 
 export async function selectListingsForReel(count = REEL_LISTING_COUNT): Promise<
-  Array<{ id: number; title: string; price: string; imageUrl: string }>
+  Array<{
+    id: number;
+    title: string;
+    price: string;
+    imageUrl: string;
+    category_id: number | null;
+    category_name: string | null;
+    category_slug: string | null;
+    root_category_slug: string | null;
+  }>
 > {
   const excludeIds = await recentlyUsedListingIds();
   const now = new Date();
+  const { byId: categoriesById } = await loadAllCategories();
 
   const baseWhere = and(
     eq(listingsTable.status, "active"),
@@ -49,8 +60,12 @@ export async function selectListingsForReel(count = REEL_LISTING_COUNT): Promise
       title: listingsTable.title,
       price: listingsTable.price,
       image_url: listingsTable.image_url,
+      category_id: listingsTable.category_id,
+      category_name: categoriesTable.name,
+      category_slug: categoriesTable.slug,
     })
     .from(listingsTable)
+    .leftJoin(categoriesTable, eq(listingsTable.category_id, categoriesTable.id))
     .where(
       excludeIds.length > 0
         ? and(baseWhere, notInArray(listingsTable.id, excludeIds))
@@ -59,17 +74,34 @@ export async function selectListingsForReel(count = REEL_LISTING_COUNT): Promise
     .orderBy(desc(listingsTable.listed_at))
     .limit(count);
 
-  const picked: Array<{ id: number; title: string; price: string; imageUrl: string }> = [];
+  const picked: Array<{
+    id: number;
+    title: string;
+    price: string;
+    imageUrl: string;
+    category_id: number | null;
+    category_name: string | null;
+    category_slug: string | null;
+    root_category_slug: string | null;
+  }> = [];
 
   for (const row of rows) {
     const urls = parseListingImageUrls(row.image_url);
     const imageUrl = urls[0];
     if (!imageUrl) continue;
+    const rootId =
+      row.category_id != null ? resolveRootCategoryId(row.category_id, categoriesById) : null;
+    const rootSlug =
+      rootId != null ? (categoriesById.get(rootId)?.slug?.trim() ?? null) : null;
     picked.push({
       id: row.id,
       title: row.title,
       price: String(row.price),
       imageUrl,
+      category_id: row.category_id ?? null,
+      category_name: row.category_name ?? null,
+      category_slug: row.category_slug ?? null,
+      root_category_slug: rootSlug,
     });
     if (picked.length >= count) break;
   }
@@ -120,9 +152,12 @@ export async function runListingReelPost(): Promise<{
   }
 
   const listingIds = listings.map((l) => l.id);
-  const caption = await buildReelCaption({
-    listingTitles: listings.map((l) => l.title),
-    seed: batchKey,
+  const primaryListing = listings[0];
+  const caption = buildCategorySocialCaption({
+    category_id: primaryListing?.category_id ?? null,
+    category_name: primaryListing?.category_name ?? null,
+    category_slug: primaryListing?.category_slug ?? null,
+    root_category_slug: primaryListing?.root_category_slug ?? null,
   });
 
   const insertRows = await pool.query<{ id: number }>(
