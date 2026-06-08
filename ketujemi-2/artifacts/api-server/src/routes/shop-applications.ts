@@ -24,6 +24,11 @@ import {
   getShopSocialProfilesForApi,
   scheduleShopSocialEnrich,
 } from "../lib/shop-social-enrich.js";
+import { parseUiLang } from "../lib/claude-client.js";
+import {
+  contentTranslationTarget,
+  translateUserTexts,
+} from "../lib/translate-user-content.js";
 
 const router = Router();
 
@@ -563,18 +568,32 @@ router.get("/shops/:id/ratings", async (req, res) => {
     if (mine) userRating = { rating: mine.rating, comment: mine.comment };
   }
 
+  const lang = parseUiLang(req.query.lang);
+  let reviews = reviewRows.map((r) => ({
+    id: r.id,
+    rating: r.rating,
+    comment: r.comment,
+    created_at: r.created_at.toISOString(),
+    author_name: r.business_name?.trim() || r.display_name?.trim() || null,
+    is_mine: viewer?.id === r.user_id,
+  }));
+
+  if (contentTranslationTarget(lang)) {
+    const translatedComments = await translateUserTexts(
+      reviews.map((r) => r.comment),
+      lang,
+    );
+    reviews = reviews.map((r, i) => ({
+      ...r,
+      comment: r.comment ? translatedComments[i] : null,
+    }));
+  }
+
   res.json({
     average_rating: summary?.rating_count ? Number(summary.average_rating) : null,
     rating_count: summary?.rating_count ?? 0,
     user_rating: userRating,
-    reviews: reviewRows.map((r) => ({
-      id: r.id,
-      rating: r.rating,
-      comment: r.comment,
-      created_at: r.created_at.toISOString(),
-      author_name: r.business_name?.trim() || r.display_name?.trim() || null,
-      is_mine: viewer?.id === r.user_id,
-    })),
+    reviews,
   });
 });
 
@@ -707,12 +726,28 @@ router.get("/shops/:id", async (req, res) => {
   const ratings = ratingMap[shop.id];
   const social_profiles = await getShopSocialProfilesForApi(shop.id);
 
+  const lang = parseUiLang(req.query.lang);
+  let description = shop.description;
+  let address = shop.address;
+  let translatedListings = listings;
+
+  if (contentTranslationTarget(lang)) {
+    const texts = [shop.description, shop.address, ...listings.map((l) => l.title)];
+    const translated = await translateUserTexts(texts, lang);
+    description = translated[0] ?? shop.description;
+    address = translated[1] ?? shop.address;
+    translatedListings = listings.map((listing, i) => ({
+      ...listing,
+      title: translated[i + 2] ?? listing.title,
+    }));
+  }
+
   res.json({
     shop: {
       id: shop.id,
       shop_name: shop.shop_name,
       logo_url: shop.logo_url,
-      description: shop.description,
+      description,
       category: shop.category,
       category_id: shop.category_id,
       directory_category_slug: shop.directory_category_slug,
@@ -722,7 +757,7 @@ router.get("/shops/:id", async (req, res) => {
       country: shop.country,
       city: shop.city,
       region: shop.region,
-      address: shop.address,
+      address,
       facebook: shop.facebook,
       instagram: shop.instagram,
       tiktok: shop.tiktok,
@@ -734,8 +769,8 @@ router.get("/shops/:id", async (req, res) => {
       average_rating: ratings?.average_rating ?? null,
       rating_count: ratings?.rating_count ?? 0,
     },
-    listings,
-    active_count: listings.length,
+    listings: translatedListings,
+    active_count: translatedListings.length,
     subcategories,
     is_owner: viewer ? viewer.id === shop.user_id : false,
     social_profiles,

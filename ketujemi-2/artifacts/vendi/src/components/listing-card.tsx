@@ -195,7 +195,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
           </div>
         ) : listing.is_featured ? (
           <div className="absolute top-2 left-2 bg-amber-400 text-amber-900 text-sm font-bold px-2.5 py-1 rounded-lg shadow-sm">
-            ⭐ Promovuar
+            ⭐ {t.promoted}
           </div>
         ) : null}
         {isVipSeller ? (

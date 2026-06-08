@@ -7,6 +7,7 @@ import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { useShopRatingCopy } from "@/lib/shop-rating-i18n";
 import { BRAND_BLUE } from "@/lib/brand-colors";
+import { useMarket } from "@/lib/market-context";
 
 type Review = {
   id: number;
@@ -30,6 +31,7 @@ type Props = {
 
 export function ShopRatingsPanel({ shopId }: Props) {
   const copy = useShopRatingCopy();
+  const { uiLang } = useMarket();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -37,10 +39,11 @@ export function ShopRatingsPanel({ shopId }: Props) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [saved, setSaved] = useState(false);
+  const ratingsUrl = `/api/shops/${shopId}/ratings?lang=${encodeURIComponent(uiLang)}`;
 
   useEffect(() => {
     setLoading(true);
-    void fetchWithTimeout(`/api/shops/${shopId}/ratings`)
+    void fetchWithTimeout(ratingsUrl)
       .then((r) => r.json() as Promise<RatingsPayload>)
       .then((payload) => {
         setData(payload);
@@ -51,7 +54,7 @@ export function ShopRatingsPanel({ shopId }: Props) {
       })
       .catch(() => setData(null))
       .finally(() => setLoading(false));
-  }, [shopId]);
+  }, [shopId, uiLang]);
 
   async function submitRating() {
     if (!user || rating < 1) return;
@@ -80,7 +83,7 @@ export function ShopRatingsPanel({ shopId }: Props) {
           : prev,
       );
       setSaved(true);
-      void fetchWithTimeout(`/api/shops/${shopId}/ratings`)
+      void fetchWithTimeout(ratingsUrl)
         .then((r) => r.json() as Promise<RatingsPayload>)
         .then(setData);
     } finally {

@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { Facebook, Globe, Instagram, ExternalLink } from "lucide-react";
 import { ShopRatingBadge } from "@/components/shop-rating-badge";
 import { BRAND_BLUE } from "@/lib/brand-colors";
-import { translateDirectorySubcategory } from "@/lib/shop-directory-i18n";
+import { translateDirectoryCategory, translateDirectorySubcategory } from "@/lib/shop-directory-i18n";
 import { directoryCategoryBySlug, directorySubcategoryBySlug } from "@/lib/shop-directory-taxonomy";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
@@ -76,7 +76,9 @@ export function ShopDirectoryCard({ shop, viewLabel }: Props) {
               {translateDirectorySubcategory(sub, locale)}
             </p>
           ) : cat ? (
-            <p className="text-xs sm:text-sm font-semibold text-orange-600 mt-1">{cat.nameSq}</p>
+            <p className="text-xs sm:text-sm font-semibold text-orange-600 mt-1">
+              {translateDirectoryCategory(cat, locale)}
+            </p>
           ) : null}
           <p className="text-xs text-gray-500 mt-1">
             {shop.city} · {countryLabel}

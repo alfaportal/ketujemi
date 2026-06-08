@@ -116,7 +116,9 @@ export default function ShopDetailPage() {
   function loadShop() {
     if (!id) return;
     setLoading(true);
-    void fetchWithTimeout(`/api/shops/${id}`, { credentials: "include" })
+    void fetchWithTimeout(`/api/shops/${id}?lang=${encodeURIComponent(uiLang)}`, {
+      credentials: "include",
+    })
       .then(async (r) => {
         if (!r.ok) throw new Error("not found");
         return r.json() as Promise<{
@@ -159,7 +161,7 @@ export default function ShopDetailPage() {
 
   useEffect(() => {
     loadShop();
-  }, [id, d, locale]);
+  }, [id, d, locale, uiLang]);
 
   useEffect(() => {
     if (editRequested && gate.isUnlocked) {
