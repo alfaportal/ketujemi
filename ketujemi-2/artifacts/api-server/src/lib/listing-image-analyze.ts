@@ -529,15 +529,32 @@ async function analyzeWithClaudeVision(
     }),
     imageBase64,
     mediaType,
-    maxTokens: 900,
+    maxTokens: 1200,
   });
 
-  if (!parsed) return null;
-  return validateHierarchy(rows, parsed, lang);
+  if (!parsed) {
+    logger.warn("listing-image-analyze: claude vision returned no JSON");
+    return null;
+  }
+
+  const result = validateHierarchy(rows, parsed, lang);
+  if (!result) {
+    logger.warn(
+      {
+        parent_category_id: parsed.parent_category_id,
+        category_id: parsed.category_id,
+        brand_category_id: parsed.brand_category_id,
+        title_len: parsed.title?.trim().length ?? 0,
+        description_len: parsed.description?.trim().length ?? 0,
+      },
+      "listing-image-analyze: claude vision JSON failed validation",
+    );
+  }
+  return result;
 }
 
 export function isListingImageAnalyzeConfigured(): boolean {
-  return isGoogleVisionConfigured() || isClaudeConfigured();
+  return isClaudeConfigured();
 }
 
 function emptyOutcome(): ListingImageAnalyzeOutcome {
@@ -620,13 +637,10 @@ export async function analyzeListingImage(input: {
   const imageBase64 = input.imageBase64.trim();
   if (imageBase64.length < 100 || imageBase64.length > 6_000_000) return emptyOutcome();
 
-  const canGoogle = isGoogleVisionConfigured();
-  const canClaudeVision = isClaudeConfigured();
-  if (!canGoogle && !canClaudeVision) return emptyOutcome();
+  if (!isClaudeConfigured()) return emptyOutcome();
 
   const lang = parseListingCopyLang(input.lang);
   const rows = await getCachedCategoryRows();
-
   const catalog = buildCategoryCatalog(rows);
   const shopName = input.shop_name?.trim() ?? "";
   const shopCategory = input.shop_category?.trim() ?? "";
@@ -636,24 +650,6 @@ export async function analyzeListingImage(input: {
       : undefined;
 
   try {
-    if (canGoogle && canClaudeVision) {
-      return analyzeWithParallelFallback({
-        imageBase64,
-        mediaType: input.mediaType,
-        rows,
-        catalog,
-        lang,
-        shop,
-      });
-    }
-
-    if (canGoogle) {
-      const googleResult = await analyzeWithGoogleVisionPipeline(imageBase64, rows, lang, shop);
-      return googleResult
-        ? { result: googleResult, pipeline: "google" }
-        : emptyOutcome();
-    }
-
     const claudeResult = await analyzeWithClaudeVision(
       imageBase64,
       input.mediaType,

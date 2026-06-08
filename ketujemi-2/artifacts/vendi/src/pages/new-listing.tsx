@@ -370,6 +370,7 @@ export default function NewListing() {
     const parentId = Number(parentCatId);
     if (!parentId) return;
     if (skipTitleSuggestRef.current) return;
+    if (lastImageAnalysisRef.current) return;
 
     const children = (allCategories ?? []).filter(
       (c: { parent_id?: number | null }) => c.parent_id === parentId,
@@ -469,6 +470,10 @@ export default function NewListing() {
 
   const applyImageAnalysis = useCallback(
     (analysis: ListingImageAnalysis) => {
+      if (!allCategories?.length) {
+        lastImageAnalysisRef.current = analysis;
+        return;
+      }
       lastImageAnalysisRef.current = analysis;
       pendingImageAnalysisRef.current = analysis;
       skipCategoryCascadeRef.current = true;
@@ -497,13 +502,14 @@ export default function NewListing() {
         skipTitleSuggestRef.current = false;
       }, 3000);
     },
-    [form],
+    [form, allCategories],
   );
 
   useEffect(() => {
     if (!allCategories?.length) return;
     const analysis = lastImageAnalysisRef.current;
-    if (analysis) applyImageAnalysis(analysis);
+    if (!analysis) return;
+    applyImageAnalysis(analysis);
   }, [allCategories?.length, applyImageAnalysis]);
 
   const analyzeFirstListingImage = useCallback(

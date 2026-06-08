@@ -77,7 +77,8 @@ app.use(
     next();
   },
 );
-app.use(express.json());
+/** Listing image analyze sends base64 JPEG — default 100kb limit rejects the body. */
+app.use(express.json({ limit: "12mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use(googleOAuthPublicRouter);
