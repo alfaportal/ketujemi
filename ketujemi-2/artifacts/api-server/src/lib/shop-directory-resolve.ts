@@ -1,7 +1,7 @@
 import {
   defaultSubcategoryForCategory,
   guessDirectoryCategoryFromListingSlug,
-} from "../../../../lib/shop-directory-taxonomy.ts";
+} from "../../../../lib/shop-directory-taxonomy.js";
 
 const NAME_TO_DIRECTORY: Record<string, string> = {
   vetura: "makina-transport",

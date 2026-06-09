@@ -51,7 +51,7 @@ export async function fulfillPaidCheckoutSession(session: Stripe.Checkout.Sessio
   }
 
   const { parseWalletTopupPurpose } = await import("./wallet");
-  if (parseWalletTopupPurpose(purpose) && Number.isFinite(userId)) {
+  if (purpose && parseWalletTopupPurpose(purpose) && Number.isFinite(userId)) {
     const billingCountry = await resolveCheckoutBillingCountry(session);
     const { fulfillWalletTopupFromPayment } = await import("./wallet-stripe");
     await fulfillWalletTopupFromPayment(userId, purpose, token, {

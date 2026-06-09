@@ -16,7 +16,7 @@ export type CategorySuggestResult = {
 type CategoryRow = {
   id: number;
   name: string;
-  slug: string;
+  slug: string | null;
   parent_id: number | null;
 };
 

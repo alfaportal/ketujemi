@@ -103,7 +103,7 @@ function resolveRouteComponent(route: AppRouteDefinition): ComponentType {
   if (route.id === "category-hub-redirect" && route.hubSlug) {
     return withRouteErrorBoundary(categoryHubRedirectComponent(route.hubSlug));
   }
-  return SAFE_ROUTE_COMPONENTS[route.id];
+  return SAFE_ROUTE_COMPONENTS[route.id as Exclude<RouteId, "category-hub-redirect">];
 }
 
 const queryClient = new QueryClient({
@@ -133,7 +133,13 @@ function Router() {
                 component={resolveRouteComponent(route)}
               />
             ))}
-            <Route component={ROUTE_COMPONENTS[CATCH_ALL_ROUTE.id]} />
+            <Route
+              component={
+                SAFE_ROUTE_COMPONENTS[
+                  CATCH_ALL_ROUTE.id as Exclude<RouteId, "category-hub-redirect">
+                ]
+              }
+            />
           </Switch>
         </Suspense>
       </main>

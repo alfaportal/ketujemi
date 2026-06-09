@@ -38,7 +38,7 @@ export function scheduleScrollToCategoryFocus(): () => void {
     if (y != null) scheduleRestoreScrollY(y);
   };
   apply();
-  const timers: ReturnType<typeof setTimeout>[] = [];
+  const timers: number[] = [];
   requestAnimationFrame(() => {
     apply();
     requestAnimationFrame(apply);
@@ -56,6 +56,7 @@ const categoryScrollRestore = new Map<number, number>();
 
 export type CategoryRef = {
   id: number;
+  parent_id?: number | null;
   slug?: string | null;
 };
 

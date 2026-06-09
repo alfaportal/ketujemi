@@ -1,4 +1,9 @@
-import type { ZodIssue } from "zod";
+/** Minimal Zod issue shape — avoids a direct `zod` dependency in this package. */
+export interface ZodIssue {
+  path: (string | number)[];
+  message: string;
+  code?: string;
+}
 
 const FIELD_LABELS_SQ: Record<string, string> = {
   title: "Titulli",

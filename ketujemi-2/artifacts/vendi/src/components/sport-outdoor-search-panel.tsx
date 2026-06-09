@@ -123,8 +123,8 @@ export function SportOutdoorSearchPanel({
 
     const min = priceMin.trim() ? Number(priceMin) : undefined;
     const max = priceMax.trim() ? Number(priceMax) : undefined;
-    if (min != null && Number.isFinite(min) && min >= 0) params.price_min = min;
-    if (max != null && Number.isFinite(max) && max >= 0) params.price_max = max;
+    if (min != null && Number.isFinite(min) && min >= 0) params.min_price = min;
+    if (max != null && Number.isFinite(max) && max >= 0) params.max_price = max;
 
     return params;
   };

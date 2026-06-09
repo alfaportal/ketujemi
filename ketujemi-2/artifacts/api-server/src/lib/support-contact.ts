@@ -19,11 +19,15 @@ export function getSupportPhoneDisplay(): string {
   return `+${digits}`;
 }
 
-export function supportFallbackLine(lang: "sq" | "mk" | "me"): string {
-  const lines: Record<typeof lang, string> = {
-    sq: `Kontakto: ${SUPPORT_EMAIL}`,
-    mk: `Контактирајте: ${SUPPORT_EMAIL}`,
-    me: `Kontaktirajte: ${SUPPORT_EMAIL}`,
-  };
-  return lines[lang];
+import { langText, type LangCopy, type UiLang } from "./claude-client";
+
+const SUPPORT_FALLBACK: LangCopy = {
+  sq: `Kontakto: ${SUPPORT_EMAIL}`,
+  mk: `Контактирајте: ${SUPPORT_EMAIL}`,
+  me: `Kontaktirajte: ${SUPPORT_EMAIL}`,
+  en: `Contact: ${SUPPORT_EMAIL}`,
+};
+
+export function supportFallbackLine(lang: UiLang): string {
+  return langText(SUPPORT_FALLBACK, lang);
 }

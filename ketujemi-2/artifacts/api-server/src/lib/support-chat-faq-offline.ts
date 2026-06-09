@@ -1,4 +1,4 @@
-import type { UiLang } from "./claude-client";
+import { langText, type LangCopy, type UiLang } from "./claude-client";
 import { inferSupportLang } from "./infer-support-lang";
 import type { ChatMessage } from "./support-chatbot";
 import {
@@ -14,7 +14,7 @@ import {
   isSupportContactQuestion,
 } from "./support-chat-screening";
 
-type FaqEntry = { keywords: RegExp; reply: Record<UiLang, string> };
+type FaqEntry = { keywords: RegExp; reply: LangCopy };
 
 function normalizeText(raw: string): string {
   return raw.normalize("NFD").replace(/\p{M}/gu, "");
@@ -49,15 +49,18 @@ function isShortFollowUp(raw: string): boolean {
 
 function phoneReply(lang: UiLang): string {
   const phone = getSupportPhoneDisplay();
-  const copy: Record<UiLang, string> = {
-    sq: `Mbështetja KetuJemi: ${phone} · ${SUPPORT_EMAIL}`,
-    mk: `Поддршка KetuJemi: ${phone} · ${SUPPORT_EMAIL}`,
-    me: `Podrška KetuJemi: ${phone} · ${SUPPORT_EMAIL}`,
-  };
-  return copy[lang] ?? copy.sq;
+  return langText(
+    {
+      sq: `Mbështetja KetuJemi: ${phone} · ${SUPPORT_EMAIL}`,
+      mk: `Поддршка KetuJemi: ${phone} · ${SUPPORT_EMAIL}`,
+      me: `Podrška KetuJemi: ${phone} · ${SUPPORT_EMAIL}`,
+      en: `KetuJemi support: ${phone} · ${SUPPORT_EMAIL}`,
+    },
+    lang,
+  );
 }
 
-const COMPOSITE_INTENTS: { test: (t: string) => boolean; reply: Record<UiLang, string> }[] = [
+const COMPOSITE_INTENTS: { test: (t: string) => boolean; reply: LangCopy }[] = [
   {
     test: (t) => /regjistr|regjistro|sign\s*up/i.test(t) && /muzik|hobi|instrument/i.test(t),
     reply: {
@@ -194,7 +197,7 @@ function tryProductCategoryAnswer(text: string, lang: UiLang): string | null {
 function tryCompositeAnswer(text: string, lang: UiLang): string | null {
   for (const entry of COMPOSITE_INTENTS) {
     if (entry.test(text)) {
-      return entry.reply[lang] ?? entry.reply.sq;
+      return langText(entry.reply, lang);
     }
   }
   return null;
@@ -203,7 +206,7 @@ function tryCompositeAnswer(text: string, lang: UiLang): string | null {
 function tryDetailedFaqAnswer(text: string, lang: UiLang): string | null {
   for (const entry of DETAILED_FAQ) {
     if (entry.keywords.test(text)) {
-      return entry.reply[lang] ?? entry.reply.sq;
+      return langText(entry.reply, lang);
     }
   }
   return null;
@@ -253,12 +256,15 @@ export function escalateToEmailReply(lang: UiLang): string {
 }
 
 export function browsePlatformReply(lang: UiLang): string {
-  const copy: Record<UiLang, string> = {
-    sq: "Nuk e identifikova produktin specifik — shkruani p.sh. «iPhone», «banesë», «muzikë», «veturë». Ose: faqja kryesore → kategoria → njoftimet; për të gjitha: «Njoftimet» + fjalë kyçe.",
-    mk: "Наведете го производот (телефон, кола, музика…) или почетна → категорија → огласи.",
-    me: "Navedite proizvod (telefon, auto, muzika…) ili početna → kategorija → oglasi.",
-  };
-  return copy[lang] ?? copy.sq;
+  return langText(
+    {
+      sq: "Nuk e identifikova produktin specifik — shkruani p.sh. «iPhone», «banesë», «muzikë», «veturë». Ose: faqja kryesore → kategoria → njoftimet; për të gjitha: «Njoftimet» + fjalë kyçe.",
+      mk: "Наведете го производот (телефон, кола, музика…) или почетна → категорија → огласи.",
+      me: "Navedite proizvod (telefon, auto, muzika…) ili početna → kategorija → oglasi.",
+      en: "Name the product (phone, car, music…) or use Home → category → listings; for everything: Listings + keywords.",
+    },
+    lang,
+  );
 }
 
 export function tryBrowseOrFaqAnswer(
@@ -293,10 +299,13 @@ export function supportUnknownQueryReply(
   if (lastUser && isRecognizedMarketplaceQuery(lastUser)) {
     return browsePlatformReply(lang);
   }
-  const copy: Record<UiLang, string> = {
-    sq: "Më shkruani pak më qartë çfarë kërkoni (p.sh. «goma veture», «banesë Prishtinë», «iPhone 13») — do t'ju tregoj kategorinë e saktë në KetuJemi.",
-    mk: "Напишете појасно што барате (на пр. «гуми», «стан») за точна категорија.",
-    me: "Napišite jasnije šta tražite (npr. «gume», «stan») za tačnu kategoriju.",
-  };
-  return copy[lang] ?? copy.sq;
+  return langText(
+    {
+      sq: "Më shkruani pak më qartë çfarë kërkoni (p.sh. «goma veture», «banesë Prishtinë», «iPhone 13») — do t'ju tregoj kategorinë e saktë në KetuJemi.",
+      mk: "Напишете појасно што барате (на пр. «гуми», «стан») за точна категорија.",
+      me: "Napišite jasnije šta tražite (npr. «gume», «stan») za tačnu kategoriju.",
+      en: "Please clarify what you need (e.g. «car tires», «apartment», «iPhone 13») — I'll point you to the right KetuJemi category.",
+    },
+    lang,
+  );
 }

@@ -194,7 +194,7 @@ async function transcodeToMp4(
     const data = await ffmpeg.readFile("output.mp4");
     const bytes =
       data instanceof Uint8Array ? data : new TextEncoder().encode(String(data));
-    lastBlob = new Blob([bytes], { type: "video/mp4" });
+    lastBlob = new Blob([bytes as BlobPart], { type: "video/mp4" });
     if (lastBlob.size <= LISTING_VIDEO_MAX_BYTES) {
       onProgress?.(100);
       return new File([lastBlob], outputFileName(file.name), { type: "video/mp4" });

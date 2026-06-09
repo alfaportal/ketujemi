@@ -52,7 +52,7 @@ function isValidEmailForSubmit(value: string): boolean {
 function validateEmailPassword(
   email: string,
   password: string,
-  copy: { login_email_invalid: string; login_password_min: string },
+  copy: Record<string, string>,
   toast: (opts: { title: string; variant?: "destructive" }) => void,
 ): boolean {
   if (!isValidEmailForSubmit(email)) {

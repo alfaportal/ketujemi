@@ -27,7 +27,7 @@ import {
   CategoryPhotoPickerCard,
 } from "@/components/category-photo-picker";
 import { Skeleton } from "@/components/ui/skeleton";
-import { translateCategory, type MarketCode } from "@/lib/category-translations";
+import { translateCategory, type UiCategoryLocale } from "@/lib/category-translations";
 import { resolveCategoryImageUrl } from "@/lib/resolve-category-image";
 import {
   CATEGORY_FOCUS_ELEMENT_ID,
@@ -472,7 +472,7 @@ function BodyTypeCard({
 }: {
   category: any;
   onClick: () => void;
-  locale: MarketCode;
+  locale: UiCategoryLocale;
 }) {
   const label = translateCategory(category.name, locale);
   const photo = resolveCategoryImageUrl(category) || getCatPhoto(category.name);
@@ -525,7 +525,7 @@ function KompjuterBrandPhotoCard({
 }: {
   category: any;
   onClick: () => void;
-  locale: MarketCode;
+  locale: UiCategoryLocale;
 }) {
   const label = translateCategory(category.name, locale);
   const logoUrl = KOMPJUTER_BRAND_LOGOS[category.name] ?? null;
@@ -570,7 +570,7 @@ function BrandCard({
 }: {
   category: any;
   onClick: () => void;
-  locale: MarketCode;
+  locale: UiCategoryLocale;
 }) {
   const label = translateCategory(category.name, locale);
   const color   = BRAND_COLORS[category.name] ?? "#1A4FCC";
@@ -906,7 +906,7 @@ export default function CategoryPage() {
 
   const drillDownTypeKey =
     isDrillDownTypePage && drillDownTypeConfig
-      ? resolveTypeKeyFromSlugMap(currentSlug, drillDownTypeConfig.typeDbSlug)
+      ? resolveTypeKeyFromSlugMap(currentSlug, drillDownTypeConfig.typeDbSlug as Record<string, string>)
       : null;
 
   const drillDownHubCategoryId = useMemo(() => {
@@ -1363,7 +1363,7 @@ export default function CategoryPage() {
   })();
 
   const renderListingsSection = () => (
-    <div ref={resultsAnchorRef} id={hubResultsId} className="scroll-mt-28">
+    <div ref={resultsAnchorRef} id={hubResultsId ?? undefined} className="scroll-mt-28">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-black text-gray-900">
           {isBrandLevel || isMotorBrandLeaf || isKamionBrandLeaf || isTelefonaBrandLeaf || isKompjuterBrandLeaf
@@ -1758,7 +1758,7 @@ export default function CategoryPage() {
 
         {drillDownHubKey ? (
           <HubTypePicker
-            config={HUB_DRILL_DOWN_REGISTRY[drillDownHubKey]}
+            config={HUB_DRILL_DOWN_REGISTRY[drillDownHubKey] as never}
             hubId={categoryId}
             categories={allCategories as any}
             onNavigateToCategory={(childId) =>

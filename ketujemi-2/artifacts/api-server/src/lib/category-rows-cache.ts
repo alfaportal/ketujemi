@@ -3,7 +3,7 @@ import { db, categoriesTable } from "@workspace/db";
 export type CategoryRow = {
   id: number;
   name: string;
-  slug: string;
+  slug: string | null;
   parent_id: number | null;
 };
 
@@ -24,5 +24,5 @@ export async function getCachedCategoryRows(): Promise<CategoryRow[]> {
     parent_id: c.parent_id,
   }));
   cachedAt = now;
-  return cachedRows;
+  return cachedRows!;
 }

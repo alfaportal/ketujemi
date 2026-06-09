@@ -2,6 +2,17 @@ import Anthropic from "@anthropic-ai/sdk";
 
 export type UiLang = "sq" | "mk" | "me" | "en";
 
+/** sq/mk/me copy with optional English fallback. */
+export type LangCopy = { sq: string; mk: string; me: string; en?: string };
+
+export function langText(copy: LangCopy | Record<UiLang, string>, lang: UiLang): string {
+  if (lang === "en") {
+    const en = (copy as LangCopy).en;
+    return en ?? copy.sq;
+  }
+  return (copy as Record<UiLang, string>)[lang] ?? copy.sq;
+}
+
 export function parseUiLang(raw: unknown): UiLang {
   if (raw === "en") return "en";
   if (raw === "mk" || raw === "me") return raw;

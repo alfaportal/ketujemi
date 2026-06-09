@@ -3,7 +3,7 @@ import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Loader2 } from "lucide-react";
 import { formatQuotaResetLabel } from "@/components/listing-limit-reached-modal";
 import { useMarket } from "@/lib/market-context";
-import { translateCategory } from "@/lib/category-translations";
+import { translateCategory, type UiCategoryLocale } from "@/lib/category-translations";
 
 type PostRow = { id: number; title: string; created_at: string };
 
@@ -91,7 +91,9 @@ export function MyListingsThisMonth() {
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
       {data?.categories.map((cat) => {
-        const name = translateCategory(cat.root_category_name, uiLang);
+        const catLocale: UiCategoryLocale =
+          uiLang === "sq" ? "ks" : uiLang === "mne" ? "mne" : uiLang;
+        const name = translateCategory(cat.root_category_name, catLocale);
         const catReset = formatQuotaResetLabel(data.quota_resets_at, locale);
         return (
           <div

@@ -619,7 +619,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     .then(async (fbResult) => {
       if (fbResult.postId) await markListingFbPosted(row.id);
     })
-    .catch((err) => {
+    .catch((err: unknown) => {
       logger.error({ err, listingId: row.id }, "facebook auto-post background error");
     });
   } else {

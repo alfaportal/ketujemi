@@ -71,7 +71,7 @@ function isExcludedParent(row: CategoryRow): boolean {
 type CatalogNode = {
   id: number;
   name: string;
-  slug: string;
+  slug: string | null;
   children?: CatalogNode[];
 };
 
@@ -164,7 +164,7 @@ function mapFlatHubForm(
   brandId: number | null | undefined,
 ): { parent: CategoryRow; category: CategoryRow; brand?: CategoryRow } | null {
   const parent = rows.find((c) => c.id === parentId);
-  if (!parent || !FLAT_TYPE_BRAND_HUB_SLUGS.has(parent.slug)) return null;
+  if (!parent?.slug || !FLAT_TYPE_BRAND_HUB_SLUGS.has(parent.slug)) return null;
 
   const brandRow = brandId ? rows.find((c) => c.id === brandId) : undefined;
   if (brandRow && brandRow.parent_id === parentId) {
@@ -373,6 +373,7 @@ function classifyCategoryFromGoogleLabels(
     if (
       matchedRow &&
       parentRow &&
+      parentRow.slug &&
       FLAT_TYPE_BRAND_HUB_SLUGS.has(parentRow.slug) &&
       matchedRow.parent_id === fromRulesCompat.parent_category_id
     ) {

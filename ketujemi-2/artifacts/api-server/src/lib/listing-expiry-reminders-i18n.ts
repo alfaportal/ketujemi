@@ -65,12 +65,31 @@ const COPY: Record<UiLang, Record<ReminderKind, ReminderCopy>> = {
       footer: "KetuJemi.com — vaša lokalna tržnica",
     },
   },
+  en: {
+    "3d": {
+      subject: "Your listing expires soon — KetuJemi",
+      greeting: "Hello,",
+      body: (title, days, url) =>
+        `Your listing "${title}" expires in ${days}.\n\nAfter expiry it is removed automatically. You can renew it with one click:\n${url}\n\nButton: "Renew listing" — active again for up to 3 months.`,
+      cta: "View listing",
+      footer: "KetuJemi.com — your local marketplace",
+    },
+    "1d": {
+      subject: "Your listing expires tomorrow — KetuJemi",
+      greeting: "Hello,",
+      body: (title, _days, url) =>
+        `Your listing "${title}" expires tomorrow.\n\nTo keep it online, renew or update it now:\n${url}`,
+      cta: "Renew or update",
+      footer: "KetuJemi.com — your local marketplace",
+    },
+  },
 };
 
 const DAYS_LABEL: Record<UiLang, Record<ReminderKind, string>> = {
   sq: { "3d": "3 ditë", "1d": "1 ditë" },
   mk: { "3d": "3 дена", "1d": "1 ден" },
   me: { "3d": "3 dana", "1d": "1 dan" },
+  en: { "3d": "3 days", "1d": "1 day" },
 };
 
 function escapeHtml(input: string): string {

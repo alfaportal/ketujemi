@@ -26,6 +26,7 @@ import {
   listAdminPartnerApplications,
 } from "../lib/admin-partner-applications";
 import { syncPartnerStatusToUser } from "../lib/partner-activate";
+import type { PartnerTier } from "../lib/trusted-partners";
 import {
   getMonthlyPackageRevenueCents,
   LISTING_PACKAGE_CATALOG,
@@ -226,7 +227,7 @@ router.get("/admin/dashboard", requireAdmin, async (req, res) => {
 });
 
 // ─── GET /admin/listings/image-audit ───────────────────────────────────────────
-router.get("/admin/listings/image-audit", requireAdmin, async (_req, res) => {
+router.get("/admin/listings/image-audit", requireAdmin, async (req, res) => {
   try {
     const rows = await db
       .select({
@@ -721,7 +722,7 @@ router.post("/admin/homepage-partners", requireAdmin, async (req, res) => {
       business_name: String(req.body?.business_name ?? ""),
       logo_url: String(req.body?.logo_url ?? ""),
       link_url: req.body?.link_url != null ? String(req.body.link_url) : undefined,
-      tier: String(req.body?.tier ?? "standard"),
+      tier: (String(req.body?.tier ?? "standard") === "vip" ? "vip" : "standard") as PartnerTier,
       sort_order: Number(req.body?.sort_order ?? 0),
       category_ids: Array.isArray(req.body?.category_ids) ? req.body.category_ids : [],
       address: req.body?.address != null ? String(req.body.address) : undefined,
@@ -782,7 +783,11 @@ router.patch("/admin/homepage-partners/:id", requireAdmin, async (req, res) => {
         : {}),
       ...(body.tiktok_url !== undefined ? { tiktok_url: String(body.tiktok_url) } : {}),
       ...(body.website_url !== undefined ? { website_url: String(body.website_url) } : {}),
-      ...(body.tier !== undefined ? { tier: String(body.tier) } : {}),
+      ...(body.tier !== undefined
+        ? {
+            tier: (String(body.tier) === "vip" ? "vip" : "standard") as PartnerTier,
+          }
+        : {}),
       ...(body.sort_order !== undefined ? { sort_order: Number(body.sort_order) } : {}),
       ...(body.is_active !== undefined ? { is_active: Boolean(body.is_active) } : {}),
       ...(body.category_ids !== undefined

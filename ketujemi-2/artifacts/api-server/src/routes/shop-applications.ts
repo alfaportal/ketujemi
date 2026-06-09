@@ -18,7 +18,7 @@ import { resolveDirectoryFields } from "../lib/shop-directory-patch";
 import { ownerShopFieldPatch } from "../lib/shop-field-patch";
 import { parseDeletionSurveyBody } from "../lib/deletion-feedback.js";
 import { softDeleteShopWithFeedback } from "../lib/soft-delete-shop.js";
-import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxonomy.ts";
+import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxonomy.js";
 import { enforceProfileChangeToken } from "../lib/profile-change-verify.js";
 import {
   getShopSocialProfilesForApi,

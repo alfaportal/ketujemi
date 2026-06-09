@@ -374,7 +374,11 @@ export default function ListingDetail() {
   const allImages = parseListingImageUrls(listing.image_url);
   const listingVideoUrl = (listing.video_url ?? "").trim();
   const isVipSeller = !!(listing as { is_vip_seller?: boolean }).is_vip_seller;
-  const postedAt = listing.listed_at ?? listing.created_at;
+  const listingMeta = listing as typeof listing & {
+    listed_at?: string;
+    expires_at?: string | null;
+  };
+  const postedAt = listingMeta.listed_at ?? listing.created_at;
   const postedLabel = new Date(postedAt).toLocaleString("sq-AL", {
     day: "2-digit",
     month: "2-digit",
@@ -382,8 +386,8 @@ export default function ListingDetail() {
     hour: "2-digit",
     minute: "2-digit",
   });
-  const expiresLabel = listing.expires_at
-    ? new Date(listing.expires_at).toLocaleDateString("sq-AL", {
+  const expiresLabel = listingMeta.expires_at
+    ? new Date(listingMeta.expires_at).toLocaleDateString("sq-AL", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -764,8 +768,9 @@ export default function ListingDetail() {
               </div>
             </div>
 
-            {(listing as ListingShopInfo).shop_verified && (listing as ListingShopInfo).shop_id ? (
-              <ListingShopCard shop={listing as ListingShopInfo} />
+            {(listing as unknown as ListingShopInfo).shop_verified &&
+            (listing as unknown as ListingShopInfo).shop_id ? (
+              <ListingShopCard shop={listing as unknown as ListingShopInfo} />
             ) : null}
 
             {!canManage ? (

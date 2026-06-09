@@ -1,9 +1,9 @@
-import type { UiLang } from "./claude-client";
+import { langText, type LangCopy, type UiLang } from "./claude-client";
 
 export type CategoryRoute = {
   id: string;
   keywords: RegExp;
-  reply: Record<UiLang, string>;
+  reply: LangCopy;
 };
 
 /**
@@ -211,7 +211,7 @@ export function matchCategoryRoute(text: string, lang: UiLang): string | null {
   if (!t) return null;
   for (const route of KETUJEMI_CATEGORY_ROUTES) {
     if (route.keywords.test(t)) {
-      return route.reply[lang] ?? route.reply.sq;
+      return langText(route.reply, lang);
     }
   }
   return null;

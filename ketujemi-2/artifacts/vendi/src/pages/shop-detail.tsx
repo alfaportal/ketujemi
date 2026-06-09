@@ -515,6 +515,11 @@ export default function ShopDetailPage() {
                 contact_name: shop.contact_name ?? "",
                 phone: shop.phone ?? "",
                 email: shop.email ?? "",
+                facebook: shop.facebook ?? null,
+                instagram: shop.instagram ?? null,
+                tiktok: shop.tiktok ?? null,
+                whatsapp: shop.whatsapp ?? null,
+                website: shop.website ?? null,
                 status: "approved",
               })}
               onSubmit={onSaveShopEdit}

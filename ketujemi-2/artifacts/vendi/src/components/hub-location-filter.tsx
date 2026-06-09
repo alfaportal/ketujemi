@@ -33,7 +33,7 @@ export function HubLocationFilter({ value, onChange, inputClass, areaId = "hub-a
   const [cityOpen, setCityOpen] = useState(false);
 
   const countryLabel = value.countryCode
-    ? (MARKETS.find((m) => m.code === value.countryCode)?.label ?? value.countryCode)
+    ? (MARKETS.find((m) => m.code === value.countryCode)?.name ?? value.countryCode)
     : "";
 
   const cityOptions = useMemo(
@@ -101,7 +101,7 @@ export function HubLocationFilter({ value, onChange, inputClass, areaId = "hub-a
                     return (
                       <CommandItem
                         key={code}
-                        value={`${code} ${m?.label ?? code}`}
+                        value={`${code} ${m?.name ?? code}`}
                         onSelect={() => selectCountry(code)}
                         className="min-h-11"
                       >
@@ -111,7 +111,7 @@ export function HubLocationFilter({ value, onChange, inputClass, areaId = "hub-a
                             value.countryCode === code ? "opacity-100" : "opacity-0",
                           )}
                         />
-                        {m?.label ?? code}
+                        {m?.name ?? code}
                       </CommandItem>
                     );
                   })}

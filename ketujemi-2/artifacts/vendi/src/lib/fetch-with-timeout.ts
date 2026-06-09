@@ -18,7 +18,7 @@ export function isFetchTimeoutError(error: unknown): error is FetchTimeoutError 
   return error instanceof FetchTimeoutError;
 }
 
-export function getFetchErrorMessage(error: unknown): string {
+export function getFetchErrorMessage(error: unknown, fallbackHint?: string): string {
   const en =
     typeof window !== "undefined" && localStorage.getItem("vendi_ui_lang") === "en";
   if (isFetchTimeoutError(error)) {
@@ -26,6 +26,7 @@ export function getFetchErrorMessage(error: unknown): string {
       ? "Request timed out. Please try again."
       : "Kërkesa vonoi shumë. Provoni përsëri.";
   }
+  if (fallbackHint) return fallbackHint;
   return en
     ? "Could not reach the server. Please try again."
     : "Lidhja me serverin dështoi. Provoni përsëri.";

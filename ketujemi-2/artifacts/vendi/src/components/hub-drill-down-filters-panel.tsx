@@ -11,6 +11,7 @@ import type { HubDrillDownRegistryKey } from "@/lib/hub-drill-down-registry";
 
 type CategoryRow = {
   id: number;
+  name: string;
   slug: string | null;
   parent_id: number | null;
 };

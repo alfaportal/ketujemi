@@ -63,7 +63,7 @@ export function validatePartnerRegistration(
   const email = normalizeEmail(String(raw.email ?? ""));
   const phone = normalizePhone(String(raw.phone ?? ""));
   const ibanRaw = String(raw.iban ?? "").trim();
-  const iban = ibanRaw ? normalizeIban(ibanRaw) : "";
+  const iban = ibanRaw ? (normalizeIban(ibanRaw) ?? "") : "";
   const pkg = normalizePackage(String(raw.package ?? ""));
   const logo_url =
     typeof raw.logo_url === "string" && raw.logo_url.trim()

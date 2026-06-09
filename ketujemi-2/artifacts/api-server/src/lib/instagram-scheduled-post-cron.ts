@@ -19,7 +19,7 @@ async function tick(): Promise<void> {
 
 /** Manual / admin trigger — same logic as the cron tick, with a result payload. */
 export async function runInstagramScheduledPostNow(): Promise<
-  Awaited<ReturnType<typeof runInstagramScheduledPost>> & { reason?: string }
+  Awaited<ReturnType<typeof runInstagramScheduledPost>> & { reason?: string; graphError?: string }
 > {
   if (!isInstagramScheduledPostEnabled()) {
     logger.info("instagram scheduled post skipped (INSTAGRAM_AUTO_POST_ENABLED is not true)");

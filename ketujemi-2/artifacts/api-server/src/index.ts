@@ -82,9 +82,9 @@ async function startServer(): Promise<void> {
     logger.info("Homepage partners schema verified (homepage_partners)");
     await ensureShopSchema(pool);
     logger.info("Shop schema verified (shop_applications, shops)");
-    const { SHOP_DIRECTORY_CATEGORIES } = await import("../../../lib/shop-directory-taxonomy.ts");
+    const { SHOP_DIRECTORY_CATEGORIES } = await import("../../../lib/shop-directory-taxonomy.js");
     const { SHOP_DIRECTORY_CATEGORY_IMAGE_URLS } = await import(
-      "../../../lib/shop-directory-category-images.ts"
+      "../../../lib/shop-directory-category-images.js"
     );
     await ensureShopDirectoryTaxonomy(
       pool,
