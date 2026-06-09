@@ -10,8 +10,9 @@ const cache = new Map<string, string>();
 const MAX_CACHE_ENTRIES = 5000;
 const BATCH_SIZE = 15;
 
-export function contentTranslationTarget(lang: UiLang): boolean {
-  return lang !== "sq";
+/** Always attempt translation when Claude is available — prompt keeps text unchanged if already in target language. */
+export function contentTranslationTarget(_lang: UiLang): boolean {
+  return true;
 }
 
 function cacheKey(lang: UiLang, text: string): string {
@@ -39,24 +40,28 @@ async function translateChunk(texts: string[], targetLang: UiLang): Promise<stri
 
   const target = langLabel(targetLang);
   const payload = texts.map((text, id) => ({ id, text }));
-  const result = await claudeJsonCompletion<{ translations: { id: number; text: string }[] }>({
-    system: [
-      `You translate user-written marketplace content into ${target}.`,
-      "Source text may be Albanian or another language.",
-      'Return ONLY valid JSON: {"translations":[{"id":0,"text":"..."},...]}.',
-      "Preserve meaning, tone, and paragraph breaks (use \\n in JSON strings).",
-      "Keep brand names, model numbers, URLs, phone numbers, and city names unchanged.",
-      `If a string is already fully in ${target}, return it unchanged.`,
-      "Do not add commentary or notes.",
-    ].join(" "),
-    user: JSON.stringify(payload),
-    maxTokens: maxTokensForTexts(texts),
-  });
+  try {
+    const result = await claudeJsonCompletion<{ translations: { id: number; text: string }[] }>({
+      system: [
+        `You translate user-written marketplace content into ${target}.`,
+        "Source text may be Albanian or another language.",
+        'Return ONLY valid JSON: {"translations":[{"id":0,"text":"..."},...]}.',
+        "Preserve meaning, tone, and paragraph breaks (use \\n in JSON strings).",
+        "Keep brand names, model numbers, URLs, phone numbers, and city names unchanged.",
+        `If a string is already fully in ${target}, return it unchanged.`,
+        "Do not add commentary or notes.",
+      ].join(" "),
+      user: JSON.stringify(payload),
+      maxTokens: maxTokensForTexts(texts),
+    });
 
-  if (!result?.translations?.length) return texts;
+    if (!result?.translations?.length) return texts;
 
-  const byId = new Map(result.translations.map((row) => [row.id, row.text.trim()]));
-  return texts.map((text, id) => byId.get(id) || text);
+    const byId = new Map(result.translations.map((row) => [row.id, row.text.trim()]));
+    return texts.map((text, id) => byId.get(id) || text);
+  } catch {
+    return texts;
+  }
 }
 
 /** Translate parallel user strings; empty strings are returned as-is without API calls. */

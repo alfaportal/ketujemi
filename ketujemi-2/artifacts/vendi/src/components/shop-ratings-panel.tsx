@@ -44,7 +44,7 @@ export function ShopRatingsPanel({ shopId }: Props) {
 
   useEffect(() => {
     setLoading(true);
-    void fetchWithTimeout(ratingsUrl)
+    void fetchWithTimeout(ratingsUrl, { cache: "no-store" })
       .then((r) => r.json() as Promise<RatingsPayload>)
       .then((payload) => {
         setData(payload);

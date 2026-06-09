@@ -119,6 +119,7 @@ export default function ShopDetailPage() {
     setLoading(true);
     void fetchWithTimeout(`/api/shops/${id}?lang=${encodeURIComponent(uiLang)}`, {
       credentials: "include",
+      cache: "no-store",
     })
       .then(async (r) => {
         if (!r.ok) throw new Error("not found");

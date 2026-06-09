@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useRoute, Link, useLocation } from "wouter";
+import { useRoute, Link } from "wouter";
 import { Loader2 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { StaticPageBackLink } from "@/components/static-page-back-link";
@@ -25,7 +25,6 @@ import { citiesForShopCountry } from "@/lib/shop-application-locations";
 import { singleShopHref } from "@/lib/shop-directory-nav";
 
 export default function ShopDirectorySubcategoryPage() {
-  const [, setLocation] = useLocation();
   const [, params] = useRoute("/dyqanet/:categorySlug/:subcategorySlug");
   const categorySlug = params?.categorySlug ?? "";
   const subcategorySlug = params?.subcategorySlug ?? "";
@@ -66,12 +65,6 @@ export default function ShopDirectorySubcategoryPage() {
       .finally(() => setLoading(false));
   }, [categorySlug, subcategorySlug, city, country]);
 
-  useEffect(() => {
-    if (loading || query.trim() || city || country) return;
-    const direct = singleShopHref(shops);
-    if (direct) setLocation(direct);
-  }, [loading, shops, query, city, country, setLocation]);
-
   const filteredShops = useMemo(
     () => filterShopsByQuery(shops, query, locale),
     [shops, query, locale],
@@ -79,6 +72,8 @@ export default function ShopDirectorySubcategoryPage() {
 
   const searchTerm = query.trim();
   const displayShops = searchTerm ? filteredShops : shops;
+  const singleShopLink = singleShopHref(displayShops);
+  const shopCountLabel = `${displayShops.length} ${d.shopsCount}`;
 
   const categoryImageUrl = cat ? shopDirectoryCategoryImageUrl(cat.slug) : undefined;
   const subImageUrl =
@@ -169,7 +164,17 @@ export default function ShopDirectorySubcategoryPage() {
             </p>
             <h1 className="text-2xl sm:text-3xl font-black text-gray-900">{subcategoryName}</h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              {displayShops.length} {d.shopsCount}
+              {singleShopLink ? (
+                <Link href={singleShopLink} className="font-bold text-orange-500 hover:text-orange-600 hover:underline">
+                  {shopCountLabel}
+                </Link>
+              ) : displayShops.length > 1 ? (
+                <a href="#shop-list" className="font-bold text-orange-500 hover:text-orange-600 hover:underline">
+                  {shopCountLabel}
+                </a>
+              ) : (
+                shopCountLabel
+              )}
             </p>
           </div>
         </div>
@@ -183,7 +188,7 @@ export default function ShopDirectorySubcategoryPage() {
             {searchTerm ? fuseNoResultsMessage(d, searchTerm) : d.noShops}
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div id="shop-list" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 scroll-mt-24">
             {displayShops.map((shop) => (
               <ShopDirectoryCard key={shop.id} shop={shop} viewLabel={d.viewShop} />
             ))}

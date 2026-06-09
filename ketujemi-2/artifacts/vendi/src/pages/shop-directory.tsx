@@ -18,7 +18,7 @@ import { useMarket } from "@/lib/market-context";
 import { SHOP_COUNTRY_CODES, useShopFormCopy } from "@/lib/shop-application-i18n";
 import { citiesForShopCountry } from "@/lib/shop-application-locations";
 import type { ShopDirectoryListItem } from "@/components/shop-directory-card";
-import { shopDirectoryCategoryHref } from "@/lib/shop-directory-nav";
+import { shopDirectoryMainGridCountHref } from "@/lib/shop-directory-nav";
 
 type DirectoryResponse = {
   shops: ShopDirectoryListItem[];
@@ -159,39 +159,53 @@ export default function ShopDirectoryPage() {
             {SHOP_DIRECTORY_CATEGORIES.map((cat) => {
               const count = categoryCounts[cat.slug] ?? 0;
               const imageUrl = shopDirectoryCategoryImageUrl(cat.slug);
-              const href = shopDirectoryCategoryHref(cat.slug, shops);
+              const countHref = shopDirectoryMainGridCountHref(cat.slug, shops, count);
+              const countLabel = `${count} ${d.shopsCount}`;
               return (
-                <Link
+                <div
                   key={cat.slug}
-                  href={href}
                   className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex flex-col"
                 >
-                  <div className="relative w-full aspect-[4/3] bg-gray-100">
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt=""
-                        loading="lazy"
-                        className="absolute inset-0 w-full h-full object-cover object-center"
-                      />
+                  <Link
+                    href={`/dyqanet/${cat.slug}`}
+                    className="flex flex-col flex-1 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  >
+                    <div className="relative w-full aspect-[4/3] bg-gray-100">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt=""
+                          loading="lazy"
+                          className="absolute inset-0 w-full h-full object-cover object-center"
+                        />
+                      ) : (
+                        <span className="absolute inset-0 flex items-center justify-center text-4xl" aria-hidden>
+                          {cat.emoji}
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-4 sm:p-5 flex flex-col gap-1.5 flex-1">
+                      <p className="font-bold text-gray-900 text-sm sm:text-base leading-snug">
+                        <span className="mr-1" aria-hidden>
+                          {cat.emoji}
+                        </span>
+                        {translateDirectoryCategory(cat, locale)}
+                      </p>
+                    </div>
+                  </Link>
+                  <div className="px-4 sm:px-5 pb-4 sm:pb-5 text-center mt-auto">
+                    {countHref ? (
+                      <Link
+                        href={countHref}
+                        className="text-xs sm:text-sm font-bold text-orange-500 hover:text-orange-600 hover:underline"
+                      >
+                        {countLabel}
+                      </Link>
                     ) : (
-                      <span className="absolute inset-0 flex items-center justify-center text-4xl" aria-hidden>
-                        {cat.emoji}
-                      </span>
+                      <p className="text-xs sm:text-sm font-bold text-orange-500">{countLabel}</p>
                     )}
                   </div>
-                  <div className="p-4 sm:p-5 flex flex-col gap-1.5 flex-1 text-center">
-                    <p className="font-bold text-gray-900 text-sm sm:text-base leading-snug">
-                      <span className="mr-1" aria-hidden>
-                        {cat.emoji}
-                      </span>
-                      {translateDirectoryCategory(cat, locale)}
-                    </p>
-                    <p className="text-xs sm:text-sm font-bold text-orange-500 mt-auto pt-1">
-                      {count} {d.shopsCount}
-                    </p>
-                  </div>
-                </Link>
+                </div>
               );
             })}
           </div>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useRoute, Link, useLocation } from "wouter";
+import { useRoute, Link } from "wouter";
 import { Loader2 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { StaticPageBackLink } from "@/components/static-page-back-link";
@@ -26,13 +26,9 @@ import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 import { SHOP_COUNTRY_CODES, useShopFormCopy } from "@/lib/shop-application-i18n";
 import { citiesForShopCountry } from "@/lib/shop-application-locations";
-import {
-  shopDirectorySubcategoryHref,
-  singleShopHref,
-} from "@/lib/shop-directory-nav";
+import { singleShopHref } from "@/lib/shop-directory-nav";
 
 export default function ShopDirectoryCategoryPage() {
-  const [, setLocation] = useLocation();
   const [, params] = useRoute("/dyqanet/:slug");
   const slug = params?.slug ?? "";
   const cat = directoryCategoryBySlug(slug);
@@ -72,12 +68,6 @@ export default function ShopDirectoryCategoryPage() {
       .finally(() => setLoading(false));
   }, [slug, subFilter, city, country]);
 
-  useEffect(() => {
-    if (loading || query.trim() || subFilter || city || country) return;
-    const direct = singleShopHref(shops);
-    if (direct) setLocation(direct);
-  }, [loading, shops, query, subFilter, city, country, setLocation]);
-
   const filteredShops = useMemo(
     () => filterShopsByQuery(shops, query, locale),
     [shops, query, locale],
@@ -87,6 +77,8 @@ export default function ShopDirectoryCategoryPage() {
   const displayShops = searchTerm ? filteredShops : shops;
   const title = cat ? translateDirectoryCategory(cat, locale) : d.docCategoryTitle;
   const categoryImageUrl = cat ? shopDirectoryCategoryImageUrl(cat.slug) : undefined;
+  const singleShopLink = singleShopHref(displayShops);
+  const shopCountLabel = `${displayShops.length} ${d.shopsCount}`;
 
   if (!cat) {
     return (
@@ -168,7 +160,17 @@ export default function ShopDirectoryCategoryPage() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-gray-900">{title}</h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              {displayShops.length} {d.shopsCount}
+              {singleShopLink ? (
+                <Link href={singleShopLink} className="font-bold text-orange-500 hover:text-orange-600 hover:underline">
+                  {shopCountLabel}
+                </Link>
+              ) : displayShops.length > 1 ? (
+                <a href="#shop-list" className="font-bold text-orange-500 hover:text-orange-600 hover:underline">
+                  {shopCountLabel}
+                </a>
+              ) : (
+                shopCountLabel
+              )}
             </p>
           </div>
         </div>
@@ -186,7 +188,7 @@ export default function ShopDirectoryCategoryPage() {
             <CategoryPhotoPickerCard
               key={sub.slug}
               selected={subFilter === sub.slug}
-              href={shopDirectorySubcategoryHref(cat.slug, sub.slug, shops)}
+              href={`/dyqanet/${cat.slug}/${sub.slug}`}
               imageSrc={shopDirectorySubcategoryImageUrl(cat.slug, sub.slug) ?? categoryImageUrl ?? ""}
               fallbackImageSrc={categoryImageUrl}
               label={translateDirectorySubcategory(sub, locale)}
@@ -204,7 +206,7 @@ export default function ShopDirectoryCategoryPage() {
             {searchTerm ? fuseNoResultsMessage(d, searchTerm) : d.noShops}
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div id="shop-list" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 scroll-mt-24">
             {displayShops.map((shop) => (
               <ShopDirectoryCard key={shop.id} shop={shop} viewLabel={d.viewShop} />
             ))}
