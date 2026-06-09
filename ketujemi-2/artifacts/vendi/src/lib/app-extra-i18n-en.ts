@@ -93,6 +93,8 @@ export const EN_EXTRA: Record<string, string> = {
   adm_nav_reports: "Raportet",
   adm_nav_settings: "Cilësimet",
   adm_nav_shops: "Shops",
+  adm_nav_social: "Facebook & Instagram",
+  adm_nav_followers: "Followers",
   adm_nav_users: "users",
   adm_password: "Fjalëkalimi",
   adm_recent_empty: "Ende nuk ka listings",
