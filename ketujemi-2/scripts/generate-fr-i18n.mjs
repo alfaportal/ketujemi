@@ -6,6 +6,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { englishToFrench, FR_KEY_FROM_SQ } from "./albanian-french.mjs";
+import { HUB_FR } from "./hub-i18n.mjs";
+import { FJ_FR } from "./fj-i18n.mjs";
 import { PAGE_I18N_FR } from "./page-i18n-fr-phrases.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -101,8 +103,13 @@ function translateEnText(text) {
   return translateEnLine(text);
 }
 
+const PANEL_FR = { ...HUB_FR, ...FJ_FR };
+
 function toFrenchFromEn(key, enValue) {
+  if (PANEL_FR[key]) return PANEL_FR[key];
   if (FR_KEY_FROM_SQ[key]) return FR_KEY_FROM_SQ[key];
+  if (key.endsWith("_from") && (enValue === "From" || enValue === "Nga")) return "De";
+  if (key.endsWith("_to") && (enValue === "To" || enValue === "Deri")) return "À";
   return translateEnText(enValue);
 }
 

@@ -251,7 +251,7 @@ export const CAT_FR_GENERATED: Record<string, string> = {
   "Qendra zhvillimore": "Centre de développement",
   "Quad & ATV": "Quad & ATV",
   "Renault": "Renault",
-  "Rimorkio": "Remorques",
+  "Rimorkio": "Trailers",
   "Riparim çatie & Izolim": "Réparation de toiture & isolation",
   "Riparim dritaresh & dyerve": "Réparation fenêtres & portes",
   "Riparim dyshemeje & Parket": "Réparation de sol & parquet",

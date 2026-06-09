@@ -9,6 +9,8 @@ import { applyEnglishPhrases } from "./english-phrases.mjs";
 import { wordTranslateSqToEn } from "./albanian-words.mjs";
 import { categoryEnglishFromKs } from "./category-en-from-ks.mjs";
 import { categorySqToEnglish } from "./category-sq-en.mjs";
+import { HUB_EN } from "./hub-i18n.mjs";
+import { FJ_EN } from "./fj-i18n.mjs";
 
 const ALBANIAN_CHARS = /[ëçËÇ]/;
 
@@ -261,6 +263,8 @@ const KEY_OVERRIDES = {
   shop_edit_gate_start: "Confirm and edit shop",
   so_intro_martial: "Paragliding, drones, helmets and safety straps.",
   so_intro_winter: "Ski, snowboard, thermal clothing and goggles.",
+  ...HUB_EN,
+  ...FJ_EN,
 };
 
 /** Keys where word-by-word replacement produces broken hybrid text. */
@@ -279,10 +283,12 @@ function mneToEnglish(mne) {
 
 function toEnglish(key, ks, mne) {
   if (KEY_OVERRIDES[key]) return KEY_OVERRIDES[key];
+  if (key.endsWith("_from") && (ks === "Nga" || ks === "Od")) return "From";
+  if (key.endsWith("_to") && (ks === "Deri" || ks === "Do")) return "To";
   let en = usesPhraseOnlyTranslation(key)
     ? translateStaticStringValue(ks)
     : translateStringValue(ks);
-  if (ALBANIAN_CHARS.test(en)) {
+  if (ALBANIAN_CHARS.test(en) && !/^(hub_|ap_|cat_|fj_)/.test(key)) {
     const fromMne = mneToEnglish(mne);
     if (fromMne) en = fromMne;
   }
