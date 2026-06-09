@@ -123,7 +123,7 @@ export const CAT_FR_GENERATED: Record<string, string> = {
   "Këpucë fëmijësh (sportive, çizme, sandale)": "Chaussures enfants (sport, bottes, sandales)",
   "Këpucë foshnjeje (hapat e parë)": "Chaussures premiers pas",
   "Kërkoj punë": "Recherche d'emploi",
-  "Kërkoj të Blej": "Je recherche à acheter",
+  "Kërkoj të Blej": "Vous cherchez quelque chose ? Publiez ici et trouvez",
   "Këshillim Akademik": "Conseil académique",
   "Klasike & Vintage": "Classic & Vintage",
   "Klimatizim & Ngrohje": "Chauffage & climatisation",

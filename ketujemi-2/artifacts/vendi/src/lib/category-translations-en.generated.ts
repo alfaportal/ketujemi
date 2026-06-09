@@ -32,7 +32,7 @@ export const CAT_EN_GENERATED: Record<string, string> = {
   "Arsim & Kurse": "Education & Courses",
   "Muzikë & Hobby": "Music & Hobbies",
   "Kafshë": "Pets & Animals",
-  "Kërkoj të Blej": "Wanted to Buy",
+  "Kërkoj të Blej": "Looking for something? Post here and find it",
   "Dhurata & Falas": "Free Gifts & Giveaways",
   "SUV & Jeep": "SUV & Jeep",
   "Kombi & Minivan": "Estate & Minivan",

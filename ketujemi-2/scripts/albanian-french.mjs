@@ -87,7 +87,7 @@ const SQ_FR_EXTRA = [
   ["Zgjidh kategorinë", "Choisir la catégorie"],
   ["Zgjidh nënkategorinë", "Choisir la sous-catégorie"],
   ["Kërkoj punë", "Recherche d'emploi"],
-  ["Kërkoj të Blej", "Je recherche à acheter"],
+  ["Kërkoj të Blej", "Vous cherchez quelque chose ? Publiez ici et trouvez"],
   ["PROGRAMI PARTNER", "PROGRAMME PARTENAIRE"],
   ["PËRFITIMET TUAJA", "VOS AVANTAGES"],
   ["FORMULARI I APLIKIMIT", "FORMULAIRE DE CANDIDATURE"],

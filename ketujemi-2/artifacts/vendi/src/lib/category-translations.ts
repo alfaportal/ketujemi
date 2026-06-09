@@ -45,7 +45,7 @@ export const CAT_TRANSLATIONS: Record<string, Record<MarketCode, string>> = {
   "Arsim & Kurse":        { ks: "Arsim & Kurse",        al: "Arsim & Kurse",        mk: "Образование & Курсеви",           mne: "Obrazovanje & Kursevi" },
   "Muzikë & Hobby":       { ks: "Muzikë & Hobby",       al: "Muzikë & Hobby",       mk: "Музика & Хоби",                   mne: "Muzika & Hobi" },
   "Kafshë":               { ks: "Kafshë",               al: "Kafshë",               mk: "Животни",                         mne: "Životinje" },
-  "Kërkoj të Blej":       { ks: "Kërkoj të Blej",       al: "Kërkoj të Blej",       mk: "Барам да купам",                  mne: "Tražim da kupim" },
+  "Kërkoj të Blej":       { ks: "Po kërkon diçka? Lajmëro këtu dhe gjeje", al: "Po kërkon diçka? Lajmëro këtu dhe gjeje", mk: "Барате нешто? Објавете тука и најдете", mne: "Tražite nešto? Objavite ovdje i pronađite" },
   "Dhurata & Falas":      { ks: "Dhurata & Falas",      al: "Dhurata & Falas",      mk: "Донации & Бесплатно",             mne: "Pokloni & Besplatno" },
 
   // ── Vetura subcategories ─────────────────────────────────────────────────────
