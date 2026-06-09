@@ -101,7 +101,7 @@ export function CategoryPhotoPickerCard({
 
   if (href) {
     return (
-      <Link href={href} className={className}>
+      <Link href={href} onClick={onClick} className={className}>
         {content}
       </Link>
     );

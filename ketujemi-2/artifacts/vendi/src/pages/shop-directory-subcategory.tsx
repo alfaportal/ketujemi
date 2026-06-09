@@ -5,6 +5,10 @@ import { SiteHeader } from "@/components/site-header";
 import { StaticPageBackLink } from "@/components/static-page-back-link";
 import { ShopDirectoryCard, type ShopDirectoryListItem } from "@/components/shop-directory-card";
 import { ShopDirectorySearchBar } from "@/components/shop-directory-search-bar";
+import {
+  CategoryPhotoPickerCard,
+  CategoryPhotoPickerGrid,
+} from "@/components/category-photo-picker";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { applyPageMeta } from "@/lib/page-meta";
 import { shopDirectoryCategoryImageUrl } from "@/lib/shop-directory-category-images";
@@ -162,7 +166,7 @@ export default function ShopDirectorySubcategoryPage() {
                 {categoryName}
               </Link>
             </p>
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-900">{subcategoryName}</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 break-words">{subcategoryName}</h1>
             <p className="text-sm text-gray-500 mt-0.5">
               {singleShopLink ? (
                 <Link href={singleShopLink} className="font-bold text-orange-500 hover:text-orange-600 hover:underline">
@@ -178,6 +182,27 @@ export default function ShopDirectorySubcategoryPage() {
             </p>
           </div>
         </div>
+
+        <CategoryPhotoPickerGrid spacious>
+          <CategoryPhotoPickerCard
+            href={`/dyqanet/${cat.slug}`}
+            imageSrc={categoryImageUrl ?? ""}
+            fallbackImageSrc={categoryImageUrl}
+            label={d.allSubcategories}
+            size="directory"
+          />
+          {cat.subcategories.map((item) => (
+            <CategoryPhotoPickerCard
+              key={item.slug}
+              selected={item.slug === subcategorySlug}
+              href={`/dyqanet/${cat.slug}/${item.slug}`}
+              imageSrc={shopDirectorySubcategoryImageUrl(cat.slug, item.slug) ?? categoryImageUrl ?? ""}
+              fallbackImageSrc={categoryImageUrl}
+              label={translateDirectorySubcategory(item, locale)}
+              size="directory"
+            />
+          ))}
+        </CategoryPhotoPickerGrid>
 
         {loading ? (
           <div className="flex justify-center py-16">

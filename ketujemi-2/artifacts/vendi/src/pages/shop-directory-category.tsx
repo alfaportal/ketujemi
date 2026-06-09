@@ -39,7 +39,6 @@ export default function ShopDirectoryCategoryPage() {
 
   const [loading, setLoading] = useState(true);
   const [shops, setShops] = useState<ShopDirectoryListItem[]>([]);
-  const [subFilter, setSubFilter] = useState("");
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
@@ -58,7 +57,6 @@ export default function ShopDirectoryCategoryPage() {
     if (!slug) return;
     setLoading(true);
     const params = new URLSearchParams({ category: slug });
-    if (subFilter) params.set("subcategory", subFilter);
     if (city) params.set("city", city);
     if (country) params.set("country", country);
     void fetchWithTimeout(`/api/shops/directory?${params}`, { cache: "no-store" })
@@ -66,7 +64,7 @@ export default function ShopDirectoryCategoryPage() {
       .then((data) => setShops(data.shops ?? []))
       .catch(() => setShops([]))
       .finally(() => setLoading(false));
-  }, [slug, subFilter, city, country]);
+  }, [slug, city, country]);
 
   const filteredShops = useMemo(
     () => filterShopsByQuery(shops, query, locale),
@@ -158,7 +156,7 @@ export default function ShopDirectoryCategoryPage() {
             </span>
           )}
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-900">{title}</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 break-words">{title}</h1>
             <p className="text-sm text-gray-500 mt-0.5">
               {singleShopLink ? (
                 <Link href={singleShopLink} className="font-bold text-orange-500 hover:text-orange-600 hover:underline">
@@ -177,8 +175,11 @@ export default function ShopDirectoryCategoryPage() {
 
         <CategoryPhotoPickerGrid spacious>
           <CategoryPhotoPickerCard
-            selected={!subFilter}
-            onClick={() => setSubFilter("")}
+            selected
+            href={`/dyqanet/${cat.slug}`}
+            onClick={() => {
+              document.getElementById("shop-list")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
             imageSrc={categoryImageUrl ?? ""}
             fallbackImageSrc={categoryImageUrl}
             label={d.allSubcategories}
