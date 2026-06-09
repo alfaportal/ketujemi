@@ -31,7 +31,8 @@
     "seed:femije-hub-photos": "tsx ./src/apply-femije-hub-subcategory-images.ts",
     "seed:truck-models": "tsx ./src/seed-truck-models.ts",
     "seed:motor-models": "tsx ./src/seed-motor-models.ts",
-    "sql:run": "tsx ./src/run-sql-file.ts"
+    "sql:run": "tsx ./src/run-sql-file.ts",
+    "migrate": "tsx ./src/run-migrations.ts"
   },
   "dependencies": {
     "dotenv": "^16.6.1",

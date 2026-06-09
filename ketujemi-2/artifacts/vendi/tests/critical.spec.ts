@@ -39,3 +39,31 @@ test("admin route shows login or dashboard without crash", async ({ page }) => {
   ).toBeVisible({ timeout: 20_000 });
   await expect(page.getByText(/Something went wrong/i)).toHaveCount(0);
 });
+
+test("shop directory page loads", async ({ page }) => {
+  await page.goto("/dyqanet");
+  await expect(page.getByTestId("button-language-selector")).toBeVisible({
+    timeout: 20_000,
+  });
+  await expect(page.locator("a[href^='/dyqanet/']").first()).toBeVisible({
+    timeout: 20_000,
+  });
+});
+
+test("listing detail opens from search results", async ({ page }) => {
+  await page.goto("/listings?q=Golf");
+  const card = page.locator('[data-testid^="card-listing-"]').first();
+  await expect(card).toBeVisible({ timeout: 30_000 });
+  await card.click();
+  await expect(page.getByTestId("button-back")).toBeVisible({ timeout: 20_000 });
+});
+
+test("MK language switch does not crash home page", async ({ page }) => {
+  await page.goto("/");
+  const langBtn = page.getByTestId("button-language-selector");
+  await expect(langBtn).toBeVisible({ timeout: 20_000 });
+  await langBtn.click();
+  await page.getByRole("button", { name: /MK|Macedonian|Македон/i }).first().click();
+  await expect(page.getByText(/Something went wrong/i)).toHaveCount(0);
+  await expect(langBtn).toBeVisible();
+});

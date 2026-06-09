@@ -413,19 +413,41 @@ for (const e of alEntries) allKeys.set(e.key, e.value);
 for (const e of [...akKs, ...soKs]) allKeys.set(e.key, e.value);
 
 const enEntries = [...allKeys.entries()]
+  .filter(([key]) => !key.startsWith("adm_"))
   .sort(([a], [b]) => a.localeCompare(b))
   .map(([key, ks]) => ({
     key,
     value: toEnglish(key, ks, mneMap[key] ?? soMne[key] ?? akMne[key]),
   }));
 
+function formatRecordBody(entries) {
+  return entries
+    .map(({ key, value }) => {
+      const v =
+        value.includes("\n") || value.length > 120
+          ? `\`${value.replace(/`/g, "\\`")}\``
+          : `"${escapeTs(value)}"`;
+      return `  ${key}: ${v},`;
+    })
+    .join("\n");
+}
+
 const enExtraPath = path.join(vendiLib, "app-extra-i18n-en.ts");
 fs.writeFileSync(
   enExtraPath,
-  `/** Auto-generated — run ketujemi-2/scripts/generate-en-i18n.mjs */\n\n${formatRecord("EN_EXTRA", enEntries)}`,
+  `/** Auto-generated — run ketujemi-2/scripts/generate-en-i18n.mjs */
+/** adm_* strings live in admin-en-i18n.ts (hand-maintained). */
+
+import { ADMIN_EN_EXTRA } from "./admin-en-i18n";
+
+export const EN_EXTRA: Record<string, string> = {
+  ...ADMIN_EN_EXTRA,
+${formatRecordBody(enEntries)}
+};
+`,
   "utf8",
 );
-console.log(`Wrote ${enExtraPath} (${enEntries.length} keys)`);
+console.log(`Wrote ${enExtraPath} (${enEntries.length} non-admin keys + ADMIN_EN_EXTRA)`);
 
 // ── arsim / sport EN consts ──────────────────────────────────────────────────
 const enAk = akKs.map(({ key, value }) => ({ key, value: toEnglish(key, value, akMne[key]) }));

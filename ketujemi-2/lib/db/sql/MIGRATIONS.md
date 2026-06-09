@@ -1,7 +1,16 @@
 # SQL migrations — run order
 
-Apply manually on Neon/Railway when a feature needs schema not yet covered by `drizzle-kit push`.
-Run each file **once** per environment; most use `IF NOT EXISTS`.
+Apply on Neon/Railway when a feature needs schema not yet covered by `drizzle-kit push`.
+
+**Automated (recommended):** from repo root:
+
+```bash
+pnpm db:migrate
+```
+
+Tracks applied files in `schema_migrations`. Options: `--dry-run`, or pass a single file e.g. `wallet-migration.sql`.
+
+**Manual:** run each file **once** per environment; most use `IF NOT EXISTS`.
 
 ## Core platform
 
