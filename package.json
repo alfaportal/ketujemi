@@ -23,6 +23,7 @@
     "db:migrate": "pnpm -C ketujemi-2 run db:migrate",
     "db:seed": "pnpm -C ketujemi-2 run db:seed",
     "typecheck": "pnpm -C ketujemi-2 run typecheck",
+    "test:smoke": "pnpm -C ketujemi-2 run test:smoke",
     "build": "node scripts/with-node-options.mjs pnpm --filter @workspace/vendi run build && node scripts/with-node-options.mjs pnpm --filter @workspace/api-server run build:vercel",
     "build:production": "pnpm -C ketujemi-2 run build:production",
     "start:production": "pnpm -C ketujemi-2 run start:production"
