@@ -251,7 +251,7 @@ export default function PartnerProfilePage() {
                 <div className="rounded-2xl overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100">
                   <iframe
                     title={`Harta — ${profile.business_name}`}
-                    src={`https://www.google.com/maps?q=${encodeURIComponent(profile.address)}&output=embed`}
+                    src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(profile.address)}`}
                     className="h-full w-full border-0"
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"

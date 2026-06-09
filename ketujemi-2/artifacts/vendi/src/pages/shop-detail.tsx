@@ -246,7 +246,7 @@ export default function ShopDetailPage() {
     );
   }
 
-  const mapQuery = encodeURIComponent(`${shop.address}, ${shop.city}, ${shop.country}`);
+  const mapQuery = `${shop.address}, ${shop.city}, ${shop.country}`;
   const hasEnrichedIg = Boolean(socialProfiles.instagram);
   const hasEnrichedTt = Boolean(socialProfiles.tiktok);
   const socials = [
@@ -353,7 +353,7 @@ export default function ShopDetailPage() {
             title={d.mapTitle}
             className="w-full h-64 sm:h-80 border-0"
             loading="lazy"
-            src={`https://maps.google.com/maps?q=${mapQuery}&output=embed`}
+            src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(mapQuery)}`}
           />
           <p className="px-4 py-3 text-sm text-gray-600">{shop.address}</p>
         </section>
