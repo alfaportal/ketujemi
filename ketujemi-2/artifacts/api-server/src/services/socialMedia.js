@@ -22,6 +22,10 @@ import { getAdminEmail, monitorEmailHtml, sendAdminMonitorEmail } from "../lib/a
 import { buildCategorySocialCaption } from "../lib/listing-category-social-caption.js";
 import { resolveSocialFlairLines } from "../lib/social-listing-caption.js";
 import {
+  isFacebookScheduledPostEnabled,
+  isInstagramScheduledPostEnabled,
+} from "../lib/social-post-flags.js";
+import {
   platformUspLine,
   socialFooterBlock,
 } from "../lib/social-post-captions.js";
@@ -360,13 +364,17 @@ function readInstagramBusinessAccountId() {
   return memoryInstagramBusinessAccountId || readInstagramBusinessAccountIdEnv();
 }
 
-function isInstagramAutoPostEnabled() {
-  const flag = process.env.INSTAGRAM_AUTO_POST_ENABLED?.trim().toLowerCase();
-  return flag !== "false" && flag !== "0" && flag !== "no";
+function isInstagramGraphReady() {
+  return !!readInstagramBusinessAccountId() && !!readPageAccessToken();
 }
 
 export function isInstagramAutoPostConfigured() {
-  return isInstagramAutoPostEnabled() && !!readInstagramBusinessAccountId() && !!readPageAccessToken();
+  return isInstagramScheduledPostEnabled() && isInstagramGraphReady();
+}
+
+/** Admin manual post — tokens only, ignores auto-post schedule flag. */
+export function isInstagramManualPostConfigured() {
+  return isInstagramGraphReady();
 }
 
 function graphUrl(pathAndQuery) {
@@ -795,7 +803,7 @@ export async function initializeFacebookPageAccessToken() {
   }
 
   const pageToken = readPageAccessToken();
-  if (pageId && pageToken && isInstagramAutoPostEnabled()) {
+  if (pageId && pageToken && isInstagramScheduledPostEnabled()) {
     memoryInstagramBusinessAccountId = await fetchInstagramBusinessAccountId(pageId, pageToken);
     if (memoryInstagramBusinessAccountId) {
       logger.info(
@@ -806,8 +814,10 @@ export async function initializeFacebookPageAccessToken() {
         "instagram auto-post ready (linked to Facebook Page)",
       );
     }
-  } else if (!isInstagramAutoPostEnabled()) {
-    logger.info("instagram auto-post disabled (INSTAGRAM_AUTO_POST_ENABLED=false)");
+  } else if (!isInstagramScheduledPostEnabled()) {
+    logger.info(
+      "instagram auto-post disabled (set INSTAGRAM_AUTO_POST_ENABLED=true to enable)",
+    );
   }
 }
 
@@ -819,8 +829,9 @@ export async function initializeFacebookPageAccessToken() {
  * }} listing
  * @returns {string | null} skip reason, or null if eligible
  */
-export function facebookPostSkipReason(listing) {
-  if (!isFacebookAutoPostConfigured()) {
+export function facebookPostSkipReason(listing, manual = false) {
+  const configured = manual ? isFacebookManualPostConfigured() : isFacebookAutoPostConfigured();
+  if (!configured) {
     return "not_configured";
   }
   const desc = String(listing.description ?? "").trim();
@@ -834,8 +845,17 @@ export function canPostListingToFacebook(listing) {
   return facebookPostSkipReason(listing) === null;
 }
 
-export function isFacebookAutoPostConfigured() {
+function isFacebookGraphReady() {
   return !!(readPageId() && readPageAccessToken());
+}
+
+export function isFacebookAutoPostConfigured() {
+  return isFacebookScheduledPostEnabled() && isFacebookGraphReady();
+}
+
+/** Admin manual post — tokens only, ignores auto-post schedule flag. */
+export function isFacebookManualPostConfigured() {
+  return isFacebookGraphReady();
 }
 
 /** @deprecated Use initializeFacebookPageAccessToken — kept for imports that only log status. */
@@ -870,15 +890,17 @@ export function logFacebookAutoPostReadiness() {
  * }} listing
  * @returns {Promise<{ postId: string | null; graphError?: string; graphStatus?: number; graphResponse?: unknown }>}
  */
-export async function postNewListingToFacebook(listing) {
+export async function postNewListingToFacebook(listing, options = {}) {
+  const manual = options.manual === true;
   console.log("[facebook] postNewListingToFacebook called", {
     listingId: listing?.id,
+    manual,
     at: new Date().toISOString(),
   });
 
   await refreshFacebookPageAccessTokenBeforePost("social_cron_facebook");
 
-  const skip = facebookPostSkipReason(listing);
+  const skip = facebookPostSkipReason(listing, manual);
   if (skip) {
     console.log("[facebook] post skipped", { listingId: listing.id, skip });
     logger.info({ listingId: listing.id, skip }, "facebook auto-post skipped");
@@ -1026,15 +1048,17 @@ export async function postNewListingToFacebook(listing) {
  * }} listing
  * @returns {Promise<string | null>} Instagram media id
  */
-export async function postNewListingToInstagram(listing) {
-  if (!isInstagramAutoPostConfigured()) {
-    logger.info({ listingId: listing.id }, "instagram auto-post skipped: not configured");
+export async function postNewListingToInstagram(listing, options = {}) {
+  const manual = options.manual === true;
+  const configured = manual ? isInstagramManualPostConfigured() : isInstagramAutoPostConfigured();
+  if (!configured) {
+    logger.info({ listingId: listing.id, manual }, "instagram auto-post skipped: not configured");
     return null;
   }
 
   await refreshFacebookPageAccessTokenBeforePost("social_cron_instagram");
 
-  const skip = facebookPostSkipReason(listing);
+  const skip = facebookPostSkipReason(listing, manual);
   if (skip) {
     logger.info({ listingId: listing.id, skip }, "instagram auto-post skipped");
     return null;

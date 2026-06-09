@@ -117,8 +117,11 @@ if (igId) {
 }
 
 console.log("[railway:env:facebook] Enabling automatic photo post schedules…");
-railway(["FB_SCHEDULED_POST_ENABLED=true", "--skip-deploys"]);
-railway(["INSTAGRAM_AUTO_POST_ENABLED=true", "--skip-deploys"]);
+// Automatic posts are opt-in — leave disabled unless you explicitly re-enable:
+// railway variables set FB_SCHEDULED_POST_ENABLED=true
+// railway variables set INSTAGRAM_AUTO_POST_ENABLED=true
+railway(["FB_SCHEDULED_POST_ENABLED=false", "--skip-deploys"]);
+railway(["INSTAGRAM_AUTO_POST_ENABLED=false", "--skip-deploys"]);
 railway(["LISTING_REEL_CRON_ENABLED=true", "--skip-deploys"]);
 
 console.log(

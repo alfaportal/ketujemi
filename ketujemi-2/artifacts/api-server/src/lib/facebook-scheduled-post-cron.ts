@@ -5,17 +5,13 @@ import {
 } from "../services/socialMedia.js";
 import { runFacebookScheduledPost } from "./facebook-scheduled-post-job";
 import { logger } from "./logger";
+import { isFacebookScheduledPostEnabled } from "./social-post-flags";
 
 /** 10:00, 14:00, 19:00, 22:00 Europe/Belgrade — four posts per day. */
 const CRON_SCHEDULE = "0 10,14,19,22 * * *";
 const DEFAULT_TZ = "Europe/Belgrade";
 
 let runInFlight = false;
-
-function isScheduledPostEnabled(): boolean {
-  const flag = process.env.FB_SCHEDULED_POST_ENABLED?.trim().toLowerCase();
-  return flag !== "false" && flag !== "0" && flag !== "no";
-}
 
 async function tick(): Promise<void> {
   await runFacebookScheduledPostNow();
@@ -25,6 +21,11 @@ async function tick(): Promise<void> {
 export async function runFacebookScheduledPostNow(): Promise<
   Awaited<ReturnType<typeof runFacebookScheduledPost>> & { reason?: string }
 > {
+  if (!isFacebookScheduledPostEnabled()) {
+    logger.info("facebook scheduled post skipped (FB_SCHEDULED_POST_ENABLED is not true)");
+    return { posted: false, reason: "disabled" };
+  }
+
   if (runInFlight) {
     logger.warn("facebook scheduled post: previous run still in flight, skipping");
     return { posted: false, reason: "in_flight" };
@@ -44,8 +45,10 @@ export async function runFacebookScheduledPostNow(): Promise<
 }
 
 export function startFacebookScheduledPostCron(): void {
-  if (!isScheduledPostEnabled()) {
-    logger.info("facebook scheduled post cron disabled (FB_SCHEDULED_POST_ENABLED=false)");
+  if (!isFacebookScheduledPostEnabled()) {
+    logger.info(
+      "facebook scheduled post cron disabled (set FB_SCHEDULED_POST_ENABLED=true to enable)",
+    );
     return;
   }
 

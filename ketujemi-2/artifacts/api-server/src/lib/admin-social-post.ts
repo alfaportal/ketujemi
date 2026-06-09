@@ -9,8 +9,8 @@ import {
   buildFacebookCaption,
   buildInstagramCaption,
   facebookPostSkipReason,
-  isFacebookAutoPostConfigured,
-  isInstagramAutoPostConfigured,
+  isFacebookManualPostConfigured,
+  isInstagramManualPostConfigured,
   listingSlug,
   postNewListingToFacebook,
   postNewListingToInstagram,
@@ -191,8 +191,8 @@ export async function listAdminSocialPostListings(opts?: {
     page,
     listings,
     configured: {
-      facebook: isFacebookAutoPostConfigured(),
-      instagram: isInstagramAutoPostConfigured(),
+      facebook: isFacebookManualPostConfigured(),
+      instagram: isInstagramManualPostConfigured(),
     },
   };
 }
@@ -334,7 +334,7 @@ export async function executeAdminSocialPost(
   }
 
   const { listing, integrity: integrityRow } = loaded;
-  const skip = facebookPostSkipReason(listing);
+  const skip = facebookPostSkipReason(listing, true);
   if (skip) {
     throw new Error(`INELIGIBLE:${skip}`);
   }
@@ -354,7 +354,7 @@ export async function executeAdminSocialPost(
   const postIg = platforms.instagram !== false;
 
   if (postFb) {
-    const fbResult = await postNewListingToFacebook(listing);
+    const fbResult = await postNewListingToFacebook(listing, { manual: true });
     if (fbResult.postId) {
       await markListingFbPosted(listingId);
       result.facebook = { ok: true, post_id: fbResult.postId };
@@ -367,10 +367,10 @@ export async function executeAdminSocialPost(
   }
 
   if (postIg) {
-    if (!isInstagramAutoPostConfigured()) {
+    if (!isInstagramManualPostConfigured()) {
       result.instagram = { ok: false, error: "not_configured" };
     } else {
-      const mediaId = await postNewListingToInstagram(listing);
+      const mediaId = await postNewListingToInstagram(listing, { manual: true });
       if (mediaId) {
         await markListingIgPosted(listingId);
         result.instagram = { ok: true, media_id: mediaId };

@@ -5,17 +5,13 @@ import {
 } from "../services/socialMedia.js";
 import { runInstagramScheduledPost } from "./instagram-scheduled-post-job";
 import { logger } from "./logger";
+import { isInstagramScheduledPostEnabled } from "./social-post-flags";
 
 /** 30 min after Facebook: 10:30, 14:30, 19:30, 22:30 Europe/Belgrade. */
 const CRON_SCHEDULE = "30 10,14,19,22 * * *";
 const DEFAULT_TZ = "Europe/Belgrade";
 
 let runInFlight = false;
-
-function isInstagramScheduledPostEnabled(): boolean {
-  const flag = process.env.INSTAGRAM_AUTO_POST_ENABLED?.trim().toLowerCase();
-  return flag !== "false" && flag !== "0" && flag !== "no";
-}
 
 async function tick(): Promise<void> {
   await runInstagramScheduledPostNow();
@@ -25,6 +21,11 @@ async function tick(): Promise<void> {
 export async function runInstagramScheduledPostNow(): Promise<
   Awaited<ReturnType<typeof runInstagramScheduledPost>> & { reason?: string }
 > {
+  if (!isInstagramScheduledPostEnabled()) {
+    logger.info("instagram scheduled post skipped (INSTAGRAM_AUTO_POST_ENABLED is not true)");
+    return { posted: false, reason: "disabled" };
+  }
+
   if (runInFlight) {
     logger.warn("instagram scheduled post: previous run still in flight, skipping");
     return { posted: false, reason: "in_flight" };
@@ -45,7 +46,9 @@ export async function runInstagramScheduledPostNow(): Promise<
 
 export function startInstagramScheduledPostCron(): void {
   if (!isInstagramScheduledPostEnabled()) {
-    logger.info("instagram scheduled post cron disabled (INSTAGRAM_AUTO_POST_ENABLED=false)");
+    logger.info(
+      "instagram scheduled post cron disabled (set INSTAGRAM_AUTO_POST_ENABLED=true to enable)",
+    );
     return;
   }
 
