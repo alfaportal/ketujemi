@@ -224,8 +224,8 @@ export function translateCategory(name: string, localeCode: UiCategoryLocale): s
   if (localeCode === "fr") {
     return (
       CAT_FR_GENERATED[name] ??
-      translateArsimKurseCategory(name, "en") ??
-      translateFemijeCategory(name, "en") ??
+      translateArsimKurseCategory(name, "fr") ??
+      translateFemijeCategory(name, "fr") ??
       CAT_EN_GENERATED[name] ??
       name
     );

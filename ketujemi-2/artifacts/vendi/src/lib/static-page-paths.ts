@@ -90,7 +90,7 @@ export type StaticPagePaths = {
 
 /** Footer / help links — localized slugs per UI language. */
 export function staticPagePaths(uiLang: UiLang): StaticPagePaths {
-  if (uiLang === "en") {
+  if (uiLang === "en" || uiLang === "fr") {
     return {
       contact: "/contact",
       faq: "/faq",
@@ -171,6 +171,17 @@ export type FooterMarketsStripCopy = {
 };
 
 export function footerMarketsStripCopy(uiLang: UiLang): FooterMarketsStripCopy {
+  if (uiLang === "fr") {
+    return {
+      title: "MARCHÉS OFFICIELS",
+      primary: [
+        { marketCode: "ks", name: "Kosovo", iso: "XK" },
+        { marketCode: "al", name: "Albanie", iso: "AL" },
+        { marketCode: "mk", name: "Macédoine du Nord", iso: "MK" },
+      ],
+      diasporaLabel: "+8 pays de la diaspora",
+    };
+  }
   if (uiLang === "en") {
     return {
       title: "OFFICIAL MARKETS",

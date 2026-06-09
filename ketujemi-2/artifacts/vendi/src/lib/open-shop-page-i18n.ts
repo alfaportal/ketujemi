@@ -625,12 +625,153 @@ const EN: OpenShopPageCopy = {
   ctaButton: "🏪 Open your shop for free →",
 };
 
+const FR: OpenShopPageCopy = {
+  ...KS,
+  partnership: {
+    title: "🤝 Become a KetuJemi Partenaire VIP",
+    intro: "Partenaireing avec KetuJemi is mutual cooperation — vous help us, we make vous famous.",
+    youGetTitle: "What vous get:",
+    youGetItems: [
+      "Votre logo on le ketujemi.com homepage — seen by thousands of visitors every day",
+      "Votre annonces et offers published daily on Instagram @jemi.ketu, Facebook KetuJemi.com et TikTok @ketujemi7",
+      "A dedicated profile avec adresse, map et tout votre contact details",
+      "Ongoing promotion — people learn about votre business every day",
+      "Growth in votre followers et customers — gratuit",
+    ],
+    weAskTitle: "What we ask de vous:",
+    weAskItems: [
+      "Follow us on Instagram @jemi.ketu, Facebook KetuJemi.com et TikTok @ketujemi7",
+      "Mention us to votre followers de time to time",
+    ],
+    promoTitle: "📢 How promotion works:",
+    promoText: "We publish et promote votre annonces every day on our social channels — but only if vous have annonces actives on ketujemi.com. An empty page has nothing to promote — publier votre products et offers, we deliver them to le audience. Le more vous publier → le more we promote vous → le more customers et sales vous get. 🚀",
+    coffeeTitle: "💡 A small but important detail:",
+    coffeeText: "Our cooperation is like coffee — it only works when both sides add sugar. 😄 We promote vous every day to our followers — but vous also need to follow us on our social channels. In short: follow us → we make vous known. Don't follow us → we both lose. 🤝",
+    closing: "Fill in le form et we will contact vous within 24 hours. 📩",
+  },
+  docTitle: "Open votre boutique — KetuJemi.com",
+  heroTitle: "Open Votre Digital Boutique — Gratuit",
+  heroSubtitle: "Create votre digital boutique on KetuJemi.com et reach thousands of buyers every day avec no commissions et no hidden fees.",
+  howItWorksTitle: "How it works",
+  howItWorksSteps: [
+    {
+      emoji: "📝",
+      stepLabel: "Étape 1",
+      title: "S'inscrire",
+      description: "Create votre gratuit account on KetuJemi.com — just 1 minute",
+    },
+    {
+      emoji: "🏪",
+      stepLabel: "Étape 2",
+      title: "Open votre boutique",
+      description: "Fill in le boutique form avec votre logo, adresse et social links. We approve within 24 hours.",
+    },
+    {
+      emoji: "📸",
+      stepLabel: "Étape 3",
+      title: "Publier une annonces",
+      description: "Envoyer photos of votre products ou services. Non limits, no fees — always gratuit.",
+    },
+    {
+      emoji: "🚀",
+      stepLabel: "Étape 4",
+      title: "Partager & sell",
+      description: "Partager annonces on Facebook, Instagram et TikTok avec one click. Customers find vous easily!",
+    },
+  ],
+  whyTitle: "WHY KETUJEMI?",
+  whyCards: [
+    {
+      emoji: "🆓",
+      title: "Completely gratuit",
+      description: "Non bank card, no hidden fees, no commissions",
+    },
+    {
+      emoji: "⚡",
+      title: "Actif within 24 hours",
+      description: "Appliquer today, votre boutique is live tomorrow",
+    },
+    {
+      emoji: "📱",
+      title: "De votre téléphone",
+      description: "Manage votre boutique anywhere, anytime",
+    },
+    {
+      emoji: "🔒",
+      title: "Secure",
+      description: "Registration et sign-in obligatoire to publier",
+    },
+    {
+      emoji: "📸",
+      title: "Unlimited photos + vidéo",
+      description: "Show votre product de every angle",
+    },
+    {
+      emoji: "🌍",
+      title: "Reach worldwide",
+      description: "Kosovo, Albanie, Macédoine du Nonrd, Monténégro et le diaspora",
+    },
+    {
+      emoji: "🔍",
+      title: "High visibility",
+      description: "Votre boutique appears in Google rechercher",
+    },
+    {
+      emoji: "🏪",
+      title: "Dedicated page",
+      description: "Votre boutique has its own adresse on KetuJemi",
+    },
+    {
+      emoji: "📍",
+      title: "Google Cartes",
+      description: "Customers find vous easily",
+    },
+    {
+      emoji: "📊",
+      title: "Non algorithm",
+      description: "Every annonce is shown equally, no extra fees",
+    },
+  ],
+  faqTitle: "QUESTIONS FRÉQUENTES",
+  faq: [
+    {
+      q: "Is it really gratuit?",
+      a: "Oui — posting is completely gratuit et unlimited pour everyone, avec no bank card et no hidden fees.",
+    },
+    {
+      q: "Do I need a registered business?",
+      a: "Non. Any private person can open a boutique et publier annonces pour gratuit.",
+    },
+    {
+      q: "Are there any fees?",
+      a: "Posting is gratuit. Le only paid option is Boost TOP — facultatif promotion to show votre annonce at le top of rechercher results.",
+    },
+    {
+      q: "How many photos can I envoyer par annonce?",
+      a: "Vous can envoyer unlimited photos et one vidéo up to 150MB par annonce.",
+    },
+    {
+      q: "Can I delete a annonce whenever I want?",
+      a: "Oui, anytime de Profile → My annonces.",
+    },
+    {
+      q: "How long does a annonce stay actif?",
+      a: "3 months (90 days) — then renews pour gratuit avec one click.",
+    },
+    {
+      q: "Can people de different cities et markets see my boutique?",
+      a: "Oui — votre boutique is visible to tout KetuJemi visitors, no matter where they are. A buyer in Pristina can find votre boutique in Ferizaj, Tirana, Skopje ou le Albanien diaspora in Toutemagne, Suisse, Italie et beyond. That means votre products reach thousands of potential buyers every day — no advertising costs, no commissions, no geographic limits. Le more annonces vous publier → le more people find vous → le more sales vous make.",
+    },
+  ],
+  ctaButton: "🏪 Open votre boutique pour gratuit →",
+};
+
 const OPEN_SHOP_PAGES: Record<UiTranslationLocale, OpenShopPageCopy> = {
   ks: KS,
   mk: MK,
   mne: MNE,
   en: EN,
-  fr: EN,
+  fr: FR,
 };
 
 export function openShopPageForLocale(locale: UiTranslationLocale): OpenShopPageCopy {

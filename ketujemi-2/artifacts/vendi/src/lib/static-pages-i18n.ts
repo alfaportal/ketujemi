@@ -1,4 +1,5 @@
 import { EN_STATIC_PAGES } from "@/lib/static-pages-i18n-en";
+import { FR_STATIC_PAGES } from "@/lib/static-pages-i18n-fr";
 import { useMarket } from "@/lib/market-context";
 import { translationKeyForUiLang, type UiTranslationLocale } from "@/lib/ui-languages";
 
@@ -1809,7 +1810,7 @@ export const STATIC_PAGES: Record<StaticPageLocaleKey, StaticPagesCopy> = {
   mk: MK,
   mne: MNE,
   en: EN_STATIC_PAGES,
-  fr: EN_STATIC_PAGES,
+  fr: FR_STATIC_PAGES,
 };
 
 export function staticPagesForLocale(locale: StaticPageLocaleKey): StaticPagesCopy {

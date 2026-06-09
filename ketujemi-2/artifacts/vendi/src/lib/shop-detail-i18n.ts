@@ -163,12 +163,42 @@ const EN: ShopDetailCopy = {
   shopDeleteError: "Error deleting shop.",
 };
 
+const FR: ShopDetailCopy = {
+  notFound: "Boutique introuvable",
+  backHome: "Retour à l'accueil",
+  aboutTitle: "À propos de la boutique",
+  mapTitle: "Carte",
+  listingsTitle: "Annonces de la boutique",
+  noListings: "Aucune annonce actif pour le moment.",
+  negotiable: "Négociable",
+  seoTitleInCity: "in {city} | KetuJemi.com",
+  activeListingsCount: "{count} annonces actives",
+  filterAll: "Tout",
+  postNewListing: "➕ Publier une nouvelle annonce",
+  editListing: "Modifier",
+  deleteListing: "Supprimer",
+  deleteListingTitle: "Supprimer l'annonce ?",
+  deleteListingDesc: "Cette action est irréversible. L'annonce sera définitivement supprimée.",
+  cancel: "Annuler",
+  ownerWelcomeEmpty: "👋 Bienvenue ! Votre boutique est prête — publiez votre première annonce et commencez à vendre !",
+  postFirstListing: "➕ Publiez votre première annonce →",
+  editShop: "⚙️ Modifier la boutique",
+  deleteShop: "🗑️ Supprimer la boutique",
+  deleteShopTitle: "Supprimer la boutique ?",
+  deleteShopDesc: "Êtes-vous sûr ? Cela supprimera votre boutique et toutes vos annonces.",
+  saveShop: "Enregistrer",
+  shopSaved: "Boutique mise à jour.",
+  shopSaveError: "Erreur lors de l'enregistrement de la boutique.",
+  shopDeleted: "Boutique supprimée.",
+  shopDeleteError: "Erreur lors de la suppression de la boutique.",
+};
+
 const PAGES: Record<UiTranslationLocale, ShopDetailCopy> = {
   ks: KS,
   mk: MK,
   mne: MNE,
   en: EN,
-  fr: EN,
+  fr: FR,
 };
 
 export function useShopDetailCopy(): ShopDetailCopy {

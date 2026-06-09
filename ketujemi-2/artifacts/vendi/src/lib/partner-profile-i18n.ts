@@ -56,12 +56,23 @@ const EN: PartnerProfileCopy = {
   mapTitle: "Map",
 };
 
+const FR: PartnerProfileCopy = {
+  back: "Retour",
+  notFoundTitle: "Partenaire introuvable",
+  notFoundSub: "Ce profil n'est pas disponible.",
+  standardBadge: "Partenaire",
+  vipBadge: "Partenaire VIP",
+  locationTitle: "Localisation",
+  contactTitle: "Contact et réseaux sociaux",
+  mapTitle: "Carte",
+};
+
 const PAGES: Record<UiTranslationLocale, PartnerProfileCopy> = {
   ks: KS,
   mk: MK,
   mne: MNE,
   en: EN,
-  fr: EN,
+  fr: FR,
 };
 
 export function usePartnerProfileCopy(): PartnerProfileCopy {

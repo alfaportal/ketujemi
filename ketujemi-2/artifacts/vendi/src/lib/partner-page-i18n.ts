@@ -315,12 +315,77 @@ Our cooperation is like coffee — it only works when both sides add sugar. 😄
 Fill in the form and we will contact you within 24 hours. 📩`,
 };
 
+const FR: PartnerPageCopy = {
+  docTitle: "Partenaire — KetuJemi.com",
+  heroBadge: "Partenaire program",
+  heroTitle: "Grow votre business avec KetuJemi.com",
+  heroSubtitle: "50,000+ potential customers every month",
+  benefitsTitle: "Votre benefits",
+  benefits: [
+    { icon: "📈", title: "Maximum visibility", desc: "featured listings at the top" },
+    { icon: "👥", title: "50,000+ active visitors", desc: "every month" },
+    { icon: "🎯", title: "Category targeting", desc: "and location" },
+    { icon: "📱", title: "Dedicated business panel", desc: "" },
+    { icon: "⭐", title: '"Verified Partner" badge', desc: "" },
+    { icon: "📊", title: "Detailed statistics", desc: "" },
+    { icon: "🚀", title: "Priority in search results", desc: "" },
+  ],
+  formTitle: "Application form",
+  formSubtitle: "Fill in votre details — our team will contact vous after review.",
+  labelBusinessName: "Business nom",
+  labelContactName: "Contact person",
+  labelEmail: "E-mail",
+  labelPhone: "Téléphone",
+  labelPackage: "Package",
+  packagePlaceholder: "Choose package",
+  packageStandard: "Partenaire",
+  packageVip: "Partenaire VIP",
+  labelLogo: "Business logo",
+  uploadLogo: "Envoyer logo",
+  logoHint: "JPEG, PNG, WebP — max 5 MB (facultatif)",
+  labelDescription: "Short business description",
+  descriptionPlaceholder: "E.g. what vous sell, where vous operate, why vous want to partner...",
+  submitButton: "Submit application",
+  errRequired: "Please fill in tout obligatoire fields.",
+  errLogoInvalid: "Please choose a valid image file.",
+  errLogoTooLarge: "Logo must be smaller than 5 MB.",
+  errSubmitFailed: "Application submission failed.",
+  errServer: "Could not reach le server. Please try again.",
+  successTitle: "Thank vous!",
+  successMessage: "Votre request was sent successfully! We will contact vous soon.",
+  successHome: "Retour à l'accueil",
+  landingCta: "Devenir partenaire",
+  landingCtaHint: "Complete le form below — no online payment.",
+  applicationIntro: `🤝 Become a KetuJemi VIP Partner
+
+Partnering with KetuJemi is mutual cooperation — you help us, we make you visible.
+
+What you get:
+- Your logo on the ketujemi.com homepage — seen by thousands of visitors every day
+- Your listings and offers posted daily on Instagram @jemi.ketu, Facebook KetuJemi.com and TikTok @ketujemi7
+- A dedicated profile with address, map and all your contacts
+- Ongoing promotion — people learn about your business every day
+- Growth in followers and customers — free
+
+What we ask from you:
+- Follow us on Instagram @jemi.ketu, Facebook KetuJemi.com and TikTok @ketujemi7
+- Mention us to your followers from time to time
+
+📢 How promotion works:
+We publish and promote your listings every day on our social channels — but only if you have active listings on ketujemi.com. An empty page has nothing to promote — post your products and offers, and we bring them to our audience. The more you post → the more we promote you → the more customers and sales you get. 🚀
+
+💡 A small but important detail:
+Our cooperation is like coffee — it only works when both sides add sugar. 😄 We promote you daily — but you should follow us too. In short: follow us → we make you known. Don't follow → we both lose. 🤝
+
+Fill in the form and we will contact you within 24 hours. 📩`,
+};
+
 const BY_LOCALE: Record<PartnerPageLocaleKey, PartnerPageCopy> = {
   ks: SQ,
   mk: MK,
   mne: MNE,
   en: EN,
-  fr: EN,
+  fr: FR,
 };
 
 type PartnerPageLocaleKey = UiTranslationLocale;

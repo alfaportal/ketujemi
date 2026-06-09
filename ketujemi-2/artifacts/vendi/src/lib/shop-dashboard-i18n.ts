@@ -146,12 +146,41 @@ const EN: ShopDashboardCopy = {
   filterAll: "All",
 };
 
+const FR: ShopDashboardCopy = {
+  verifiedBadge: "✓ Boutique vérifiée",
+  myShop: "Ma boutique",
+  statusApproved: "Approuvé",
+  statusPending: "En attente",
+  postListing: "Publier Annonce",
+  manageListings: "Gérer les annonces",
+  editShop: "Modifier la boutique",
+  totalListings: "Annonces au total",
+  totalViews: "Vues au total",
+  viewShop: "Voir la boutique →",
+  saveShop: "Enregistrer",
+  shopSaved: "Boutique mise à jour.",
+  shopName: "Nonm de la boutique",
+  logo: "Logo",
+  description: "Description",
+  address: "Adresse",
+  city: "Ville",
+  region: "Quartier",
+  facebook: "Facebook",
+  instagram: "Instagram",
+  tiktok: "TikTok",
+  whatsapp: "WhatsApp",
+  website: "Website",
+  noShopListings: "Aucune annonce actif de votre boutique.",
+  activeListingsCount: "{count} annonces actives",
+  filterAll: "Tout",
+};
+
 const PAGES: Record<UiTranslationLocale, ShopDashboardCopy> = {
   ks: KS,
   mk: MK,
   mne: MNE,
   en: EN,
-  fr: EN,
+  fr: FR,
 };
 
 export function useShopDashboardCopy(): ShopDashboardCopy {

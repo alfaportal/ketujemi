@@ -11,10 +11,10 @@ import { srLatn } from "date-fns/locale/sr-Latn";
 import { sq } from "date-fns/locale/sq";
 import { KS_AK_FORM, MK_AK_FORM, MNE_AK_FORM } from "@/lib/arsim-kurse-form-i18n";
 import { KS_SO_DEVICE, MK_SO_DEVICE, MNE_SO_DEVICE } from "@/lib/sport-outdoor-device-i18n";
-import { EN_AK_FORM } from "./arsim-kurse-form-i18n";
+import { EN_AK_FORM, FR_AK_FORM } from "./arsim-kurse-form-i18n";
 import { EN_EXTRA } from "./app-extra-i18n-en";
 import { FR_EXTRA } from "./app-extra-i18n-fr";
-import { EN_SO_DEVICE } from "./sport-outdoor-device-i18n";
+import { EN_SO_DEVICE, FR_SO_DEVICE } from "./sport-outdoor-device-i18n";
 import type { UiTranslationLocale } from "./ui-languages";
 
 export type AppExtraMarketCode = "ks" | "al" | "mk" | "mne";
@@ -6093,7 +6093,7 @@ export const EXTRA_TRANSLATIONS: Record<AppExtraLocaleKey, Record<string, string
   mk: MK_EXTRA,
   mne: MNE_EXTRA,
   en: { ...EN_EXTRA, ...EN_SO_DEVICE, ...EN_AK_FORM },
-  fr: { ...EN_EXTRA, ...EN_SO_DEVICE, ...EN_AK_FORM, ...FR_EXTRA },
+  fr: { ...FR_EXTRA, ...FR_SO_DEVICE, ...FR_AK_FORM },
 };
 
 export function fillCount(template: string, count: string): string {

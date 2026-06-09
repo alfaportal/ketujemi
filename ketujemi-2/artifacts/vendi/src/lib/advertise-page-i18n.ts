@@ -376,12 +376,97 @@ const EN: AdvertisePageCopy = {
   contactResponseNote: "We respond within 24 hours on business days.",
 };
 
+const FR: AdvertisePageCopy = {
+  docTitle: "Advertise — KetuJemi.com",
+  heroBadge: "ADVERTISE",
+  heroTitle: "Reach le right customers at le right time",
+  heroSubtitle: "Exclusive ad placements on KetuJemi.com — le leading Albanien classifieds platform avec 50,000+ actif visitors every month.",
+  adTypesTitle: "AD TYPES",
+  adTypes: [
+    {
+      title: "1. Main banner (Leaderboard)",
+      bullets: [
+        "Shown at le top of le homepage — le first thing visitors see",
+        "Dimensions: 728×90 px (desktop) / 320×50 px (mobile)",
+        "Targeting: tout platform visitors",
+        "Ideal pour: brand awareness, product launches, seasonal offers",
+      ],
+    },
+    {
+      title: "2. Sponsored annonces",
+      bullets: [
+        "Votre annonce appears at le top of le chosen catégorie — above everyone else",
+        'Marked as "Sponsored" — high visibility with trust preserved',
+        "Catégorie targeting: Vehicles, Electronics, Real estate, etc.",
+        "Ideal pour: specific product sales, boutique promotion",
+      ],
+    },
+    {
+      title: "3. Sidebar banner",
+      bullets: [
+        "Shown on le right side of catégorie et annonce pages",
+        "Dimensions: 300×250 px",
+        "Targeting by catégorie et location",
+        "Ideal pour: local businesses, regional services",
+      ],
+    },
+    {
+      title: "4. Custom package",
+      bullets: [
+        "A combination of ad placements tailored to votre needs",
+        "Detailed performance report — views, clicks, conversions",
+        "Dedicated ads manager",
+        "Ideal pour: larger businesses, long-term ad campaigns",
+      ],
+    },
+  ],
+  whyTitle: "WHY ADVERTISE Avec US?",
+  whyBullets: [
+    "👥 50,000+ actif visitors every month — a targeted audience",
+    "🎯 Catégorie et location targeting — reach le right customers",
+    "📱 Desktop et mobile — ads shown on tout devices",
+    "📊 Detailed reports — see exactly how votre ad performs",
+    "🔒 Verified audience — every user avec a verified téléphone number",
+    "⚡ Fast activation — ads go live within 24 hours",
+  ],
+  stepsTitle: "HOW IT WORKS",
+  steps: [
+    {
+      title: "Étape 1 — Nonus contacter",
+      body: "E-mail info@ketujemi.com avec votre business nom, ad type, et desired period.",
+    },
+    {
+      title: "Étape 2 — Receive votre quote",
+      body: "Within 24 hours we send a personalized quote avec prix et details.",
+    },
+    {
+      title: "Étape 3 — Send votre assets",
+      body: "Send us le banner ou sponsored annonce text in le obligatoire dimensions.",
+    },
+    {
+      title: "Étape 4 — Live",
+      body: "Ads go live within 24 hours.",
+    },
+  ],
+  contactTitle: "CONTACT US",
+  contactIntro: "Pour advertising quotes ou any questions:",
+  contactEmailLabel: "E-mail:",
+  contactEmail: "info@ketujemi.com",
+  contactSubjectLabel: "Subject:",
+  contactSubjectExample: "«Advertising request — [business nom]»",
+  contactPhoneLabel: "Téléphone:",
+  contactPhone: "+383 43 555 294",
+  contactHoursLabel: "Hours:",
+  contactHours: "Monday – Friday, 09:00 – 17:00",
+  contactResponseNote: "We respond within 24 hours on business days.",
+};
+
 const ADVERTISE_PAGES: Record<UiTranslationLocale, AdvertisePageCopy> = {
   ks: KS,
   mk: MK,
   mne: MNE,
   en: EN,
-  fr: EN,
+  fr: FR,
 };
 
 export function advertisePageForLocale(locale: UiTranslationLocale): AdvertisePageCopy {

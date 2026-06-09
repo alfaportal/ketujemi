@@ -1427,11 +1427,8 @@ export function MarketProvider({ children }: { children: ReactNode }) {
 
   const translationCode = translationKeyForUiLang(uiLang);
   const tMerged = useMemo(() => {
-    const useEnExtraFallback = translationCode === "fr";
     return {
-      ...(useEnExtraFallback ? TRANSLATIONS.en : {}),
       ...TRANSLATIONS[translationCode],
-      ...(useEnExtraFallback ? extraTranslations?.en ?? {} : {}),
       ...(extraTranslations?.[translationCode] ?? {}),
     };
   }, [translationCode, extraTranslations]);

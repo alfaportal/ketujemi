@@ -166,12 +166,33 @@ const EN: VipPackagesPageCopy = {
   ctaFinePrint: "No online payment — we will contact you after review.",
 };
 
+const FR: VipPackagesPageCopy = {
+  ...KS,
+  docTitle: "Forfaits entreprise — KetuJemi.com",
+  heroBadge: "FORFAITS ENTREPRISE",
+  heroTitle: "Choisissez le forfait adapté à votre activité",
+  heroSubtitle: "Grow visibility, reach more customers, et manage votre business professionally.",
+  packagesTitle: "PACKAGES — COMPARE",
+  standardCta: "Devenir partenaire",
+  vipCta: "Devenir partenaire VIP",
+  compareTitle: "FULL COMPARISON",
+  compareColFeature: "Feature",
+  compareColFree: "Gratuit",
+  compareColStandard: "Partenaire",
+  compareColVip: "Partenaire VIP",
+  faqTitle: "QUESTIONS FRÉQUENTES",
+  ctaTitle: "Prêt à développer votre activité ?",
+  ctaSubtitle: "Join our verified partners et reach thousands of customers every day.",
+  ctaButton: "Devenir partenaire",
+  ctaFinePrint: "Non online payment — we will contact vous after review.",
+};
+
 const VIP_PACKAGES_PAGES: Record<UiTranslationLocale, VipPackagesPageCopy> = {
   ks: KS,
   mk: MK,
   mne: MNE,
   en: EN,
-  fr: EN,
+  fr: FR,
 };
 
 export function vipPackagesPageForLocale(locale: UiTranslationLocale): VipPackagesPageCopy {
