@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
+import { fillPlaceholders } from "@/lib/app-extra-i18n";
 import { useMarket } from "@/lib/market-context";
 import { useToast } from "@/hooks/use-toast";
 import { AuthToolbar } from "@/components/auth-toolbar";
@@ -117,12 +118,12 @@ export default function ProfilePage() {
         .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId))
         .then(async () => {
           await refresh();
-          toast({ title: "Pagesa u konfirmua." });
+          toast({ title: t.profile_payment_confirmed });
         })
         .catch(() => {
           toast({
-            title: "Pagesa në proces",
-            description: "Rifreskoni faqen pas pak sekondash nëse pagesa nuk shfaqet.",
+            title: t.profile_payment_pending_title,
+            description: t.profile_payment_pending_desc,
           });
         })
         .finally(finish);
@@ -130,7 +131,7 @@ export default function ProfilePage() {
     }
 
     finish();
-  }, [loading, user, refresh, toast]);
+  }, [loading, user, refresh, toast, t]);
 
   useEffect(() => {
     if (loading) return;
@@ -227,7 +228,7 @@ export default function ProfilePage() {
     if (!user?.email) return;
     if (newPassword.length < 6) {
       toast({
-        title: "Fjalëkalimi i ri duhet të ketë të paktën 6 karaktere.",
+        title: fillPlaceholders(t.profile_password_min, { min: "6" }),
         variant: "destructive",
       });
       return;
@@ -353,7 +354,7 @@ export default function ProfilePage() {
                 <span className="font-medium text-gray-900 text-right">{user.display_name || "—"}</span>
               </div>
               <div className="flex justify-between gap-3">
-                <span className="text-gray-500">Email</span>
+                <span className="text-gray-500">{t.profile_email_label}</span>
                 <span className="font-medium text-gray-900 text-right break-all">{user.email || "—"}</span>
               </div>
               <div className="flex justify-between gap-3">
@@ -415,7 +416,7 @@ export default function ProfilePage() {
                   autoComplete="new-password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Min. 6 karaktere"
+                  placeholder={t.login_passPhReg}
                   className="min-h-12 h-12"
                 />
               </div>

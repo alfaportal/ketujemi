@@ -17,6 +17,7 @@ import {
 } from "@/components/recaptcha-v2";
 import { SocialOAuthButtons } from "@/components/social-oauth-buttons";
 import { showWelcomeToast } from "@/components/engagement-effects";
+import { fillPlaceholders } from "@/lib/app-extra-i18n";
 import { welcomeDisplayName } from "@/lib/engagement-i18n";
 import type { AuthUser } from "@/lib/auth-context";
 
@@ -51,18 +52,19 @@ function isValidEmailForSubmit(value: string): boolean {
 function validateEmailPassword(
   email: string,
   password: string,
+  copy: { login_email_invalid: string; login_password_min: string },
   toast: (opts: { title: string; variant?: "destructive" }) => void,
 ): boolean {
   if (!isValidEmailForSubmit(email)) {
     toast({
-      title: "Vendosni një adresë email të vlefshme.",
+      title: copy.login_email_invalid,
       variant: "destructive",
     });
     return false;
   }
   if (password.length < MIN_PASSWORD) {
     toast({
-      title: `Fjalëkalimi duhet të ketë të paktën ${MIN_PASSWORD} karaktere.`,
+      title: fillPlaceholders(copy.login_password_min, { min: String(MIN_PASSWORD) }),
       variant: "destructive",
     });
     return false;
@@ -232,7 +234,7 @@ export default function LoginPage() {
   function requireCaptcha(): boolean {
     if (!captchaRequired || recaptchaToken) return true;
     toast({
-      title: "Vendosni shenjën ✓ te «Nuk jam robot» para se të dërgoni SMS.",
+      title: t.login_captcha_required,
       variant: "destructive",
     });
     return false;
@@ -274,7 +276,7 @@ export default function LoginPage() {
   }
 
   async function submitEmailSignin(): Promise<boolean> {
-    if (!validateEmailPassword(email, password, toast)) return false;
+    if (!validateEmailPassword(email, password, t, toast)) return false;
     await clearAuthSessionBeforeRegister();
     const res = await fetchWithTimeout("/api/auth/register/email", {
       method: "POST",
@@ -318,7 +320,7 @@ export default function LoginPage() {
     e.preventDefault();
     if (!isValidEmailForSubmit(email)) {
       toast({
-        title: "Vendosni një adresë email të vlefshme.",
+        title: t.login_email_invalid,
         variant: "destructive",
       });
       return;
@@ -350,7 +352,7 @@ export default function LoginPage() {
     e.preventDefault();
     if (newPassword.length < MIN_PASSWORD) {
       toast({
-        title: `Fjalëkalimi i ri duhet të ketë të paktën ${MIN_PASSWORD} karaktere.`,
+        title: fillPlaceholders(t.login_new_password_min, { min: String(MIN_PASSWORD) }),
         variant: "destructive",
       });
       return;
@@ -395,7 +397,7 @@ export default function LoginPage() {
     }
     if (!isValidEmailForSubmit(email)) {
       toast({
-        title: "Vendosni një adresë email të vlefshme.",
+        title: t.login_email_invalid,
         variant: "destructive",
       });
       return;
