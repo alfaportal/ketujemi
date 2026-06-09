@@ -4,6 +4,7 @@ export const FR_PHRASES = [
   ["Register with email. You will receive a confirmation code by email", "Inscrivez-vous par e-mail. Vous recevrez un code de confirmation par e-mail"],
   ["New account: code by email. Already registered? Email + password — sign in immediately", "Nouveau compte : code par e-mail. Déjà inscrit ? E-mail + mot de passe — connexion immédiate"],
   ["Phone sign-in is not active. Register with email", "La connexion par téléphone n'est pas active. Inscrivez-vous par e-mail"],
+  ["Enter the code from SMS.", "Saisissez le code reçu par SMS."],
   ["Enter the code from SMS", "Saisissez le code reçu par SMS"],
   ["Have a phone account?", "Vous avez un compte téléphone ?"],
   ["New email account?", "Nouveau compte e-mail ?"],
@@ -231,12 +232,21 @@ export const FR_PHRASES = [
   ["Response time", "Délai de réponse"],
 ];
 
+function escapeRegExp(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export function applyFrenchPhrases(text) {
   if (!text || typeof text !== "string") return text;
   let s = text;
   const sorted = [...FR_PHRASES].sort((a, b) => b[0].length - a[0].length);
   for (const [en, fr] of sorted) {
-    if (s.includes(en)) s = s.split(en).join(fr);
+    if (!s.includes(en)) continue;
+    if (!en.includes(" ") && /^[A-Za-z'’-]+$/.test(en)) {
+      s = s.replace(new RegExp(`\\b${escapeRegExp(en)}\\b`, "g"), fr);
+    } else if (s.includes(en)) {
+      s = s.split(en).join(fr);
+    }
   }
   return s;
 }

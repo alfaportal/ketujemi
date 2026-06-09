@@ -1,177 +1,51 @@
+/**
+ * French category labels from Albanian (sq) — via categoryEnglishFromKs then en→fr.
+ */
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { englishToFrench } from "./albanian-french.mjs";
+import { categorySqToEnglish } from "./category-sq-en.mjs";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const enPath = join(root, "artifacts/vendi/src/lib/category-translations-en.generated.ts");
-const outPath = join(root, "artifacts/vendi/src/lib/category-translations-fr.generated.ts");
-
-const en = readFileSync(enPath, "utf8");
-const pairs = [...en.matchAll(/"([^"]+)": "([^"]+)"/g)];
-
-/** EN value → professional French (phase 1: translate known EN labels; brands unchanged). */
-const FR_BY_EN = {
-  "Cars": "Voitures",
-  "Motorcycles & Scooters": "Motos et scooters",
-  "Trucks & Vans": "Camions et fourgons",
-  "Auto Parts": "Pièces auto",
-  "Homes & Apartments": "Logements et appartements",
-  "Commercial & Office Space": "Locaux commerciaux et bureaux",
-  "Phones": "Téléphones",
-  "Computers & Laptops": "Ordinateurs et portables",
-  "Electronics & Home Appliances": "Électronique et électroménager",
-  "Furniture & Decor": "Meubles et décoration",
-  "Clothing & Shoes": "Vêtements et chaussures",
-  "Children": "Enfants",
-  "Sport & Outdoor": "Sport et plein air",
-  "Jobs & Services": "Emplois et services",
-  "Construction & Installations": "Construction et installations",
-  "Agriculture & Livestock": "Agriculture et élevage",
-  "Construction & Masonry": "Construction et maçonnerie",
-  "Drywall & Plastering": "Placo et enduits",
-  "Tiling & Mosaic": "Carrelage et mosaïque",
-  "Painting & Decoration": "Peinture et décoration",
-  "Roof Repair & Insulation": "Réparation de toiture et isolation",
-  "Floor Repair & Parquet": "Réparation de sol et parquet",
-  "Window & Door Repair": "Réparation de fenêtres et portes",
-  "Heating & AC Installation": "Installation chauffage et climatisation",
-  "Camera & Alarm Installation": "Installation caméras et alarmes",
-  "Solar Panel Installation": "Installation panneaux solaires",
-  "Furniture Moving & Transport": "Déménagement et transport de meubles",
-  "General Maintenance & Repairs": "Entretien et réparations générales",
-  "Education & Courses": "Éducation et cours",
-  "Music & Hobbies": "Musique et loisirs",
-  "Pets & Animals": "Animaux",
-  "Wanted to Buy": "Je recherche",
-  "Free Gifts & Giveaways": "Cadeaux et dons gratuits",
-  "SUV & Jeep": "SUV et 4x4",
-  "Estate & Minivan": "Break et monospace",
-  "Convertible & Sports": "Cabriolet et sportives",
-  "Electric & Hybrid": "Électrique et hybride",
-  "Classic & Vintage": "Classiques et vintage",
-  "Motorcycles": "Motos",
-  "Scooters": "Scooters",
-  "Quad & ATV": "Quad et ATV",
-  "Motorcycle Parts": "Pièces moto",
-  "Sport Motorcycles": "Motos sportives",
-  "Trucks": "Camions",
-  "Vans": "Fourgons",
-  "Truck Tractors": "Tracteurs routiers",
-  "Buses": "Autobus",
-  "Crane Trucks": "Camions-grues",
-  "Trailers & Semi-trailers": "Remorques et semi-remorques",
-  "Trailers": "Remorques",
-  "Tractors & Machinery": "Tracteurs et machines",
-  "Batteries": "Batteries",
-  "Shock Absorbers": "Amortisseurs",
-  "Suspension Parts": "Pièces de suspension",
-  "Lights & LED": "Feux et LED",
-  "Rims & Tyres": "Jantes et pneus",
-  "Cooling & A/C": "Refroidissement et climatisation",
-  "Engines": "Moteurs",
-  "Engines & Engine Parts": "Moteurs et pièces moteur",
-  "Electrical & Electronic Parts": "Pièces électriques et électroniques",
-  "Body Parts": "Pièces de carrosserie",
-  "Braking Systems": "Systèmes de freinage",
-  "Oils & Filters": "Huiles et filtres",
-  "Other Parts": "Autres pièces",
-  "Tyres & Wheels": "Pneus et roues",
-  "Body & Glass": "Carrosserie et vitres",
-  "Accessories": "Accessoires",
-  "Oils & Chemicals": "Huiles et produits chimiques",
-  "Apartments & Flats": "Appartements",
-  "Rooms for Rent": "Chambres à louer",
-  "Houses": "Maisons",
-  "Land & Plots": "Terrains et parcelles",
-  "Holiday Homes": "Résidences secondaires",
-  "Apartments for Rent": "Appartements à louer",
-  "Apartments for Sale": "Appartements à vendre",
-  "Houses & Villas": "Maisons et villas",
-  "Garages": "Garages",
-  "Commercial Units for Rent": "Locaux commerciaux à louer",
-  "Commercial Units for Sale": "Locaux commerciaux à vendre",
-  "Offices": "Bureaux",
-  "Warehouses & Storage": "Entrepôts et stockage",
-  "Industrial Buildings": "Bâtiments industriels",
-  "Other Phones": "Autres téléphones",
-  "Phone Accessories": "Accessoires téléphone",
-  "Laptops": "Ordinateurs portables",
-  "Desktop PCs": "Ordinateurs de bureau",
-  "Tablets": "Tablettes",
-  "Gaming & Consoles": "Jeux vidéo et consoles",
-  "Drones": "Drones",
-  "Large Home Appliances": "Gros électroménager",
-  "HVAC & Heating": "Chauffage et climatisation",
-  "TVs & Projectors": "Téléviseurs et projecteurs",
-  "Consoles & Gaming": "Consoles et jeux",
-  "Audio & Sound Equipment": "Audio et sonorisation",
-  "Televisions": "Téléviseurs",
-  "Fridges & Washing Machines": "Réfrigérateurs et lave-linge",
-  "Air Conditioners": "Climatiseurs",
-  "Cookers & Ovens": "Cuisinières et fours",
-  "Audio & Cameras": "Audio et appareils photo",
-  "Bedroom": "Chambre",
-  "Living Room": "Salon",
-  "Kitchen": "Cuisine",
-  "Bathroom & Sanitary": "Salle de bain et sanitaires",
-  "Decor": "Décoration",
-  "Building Materials": "Matériaux de construction",
-  "Women's Clothing": "Vêtements femme",
-  "Men's Clothing": "Vêtements homme",
-  "Shoes": "Chaussures",
-  "Bags & Accessories": "Sacs et accessoires",
-  "Jewellery & Watches": "Bijoux et montres",
-  "Perfumes": "Parfums",
-  "Toys": "Jouets",
-  "Children's Clothing": "Vêtements enfants",
-  "Strollers & Cribs": "Poussettes et lits bébé",
-  "School Books": "Manuels scolaires",
-  "Maternity Products": "Produits maternité",
-  "Sports Equipment": "Équipement sportif",
-  "Bicycles & E-bikes": "Vélos et vélos électriques",
-  "Hunting & Fishing": "Chasse et pêche",
-  "Camping & Outdoors": "Camping et plein air",
-  "Musical Instruments": "Instruments de musique",
-  "Job Offers": "Offres d'emploi",
-  "Looking for Work": "Recherche d'emploi",
-  "Professional Services": "Services professionnels",
-  "Cleaning & Maintenance": "Nettoyage et entretien",
-  "Construction & Renovation": "Construction et rénovation",
-  "Farm Animals": "Animaux de ferme",
-  "Farm Machinery": "Machines agricoles",
-  "Seeds & Seedlings": "Graines et plants",
-  "Farm Produce": "Produits agricoles",
-  "Private Tutoring": "Cours particuliers",
-  "Language Courses": "Cours de langues",
-  "IT Courses": "Cours informatiques",
-  "Books & Materials": "Livres et matériel",
-  "Instruments": "Instruments",
-  "Books & Magazines": "Livres et magazines",
-  "Collectibles": "Collections",
-  "Games & Toys": "Jeux et jouets",
-  "Dogs": "Chiens",
-  "Cats": "Chats",
-  "Birds": "Oiseaux",
-  "Other Animals": "Autres animaux",
-  "Pet Accessories": "Accessoires pour animaux",
-  "Homework Help": "Aide aux devoirs",
-  "Help with Applications": "Aide aux candidatures",
-};
-
-function toFrench(enValue) {
-  if (FR_BY_EN[enValue]) return FR_BY_EN[enValue];
-  // If EN file still has Albanian text, keep for phase 2 femije deep translate
-  return enValue;
+function categoryFrenchFromSq(sq) {
+  const en = categorySqToEnglish(sq);
+  return englishToFrench(en);
 }
 
-let out = "/** French category labels (generated from EN + FR map) */\n";
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const catPath = join(root, "artifacts/vendi/src/lib/category-translations.ts");
+const outPath = join(root, "artifacts/vendi/src/lib/category-translations-fr.generated.ts");
+
+const catSrc = readFileSync(catPath, "utf8");
+const catRe =
+  /"((?:\\.|[^"\\])+)":\s*\{\s*ks:\s*"((?:\\.|[^"\\])*)",\s*al:[^,]+,\s*mk:\s*"((?:\\.|[^"\\])*)",\s*mne:\s*"((?:\\.|[^"\\])*)"\s*\}/g;
+
+const catFr = {};
+let m;
+while ((m = catRe.exec(catSrc)) !== null) {
+  const name = m[1].replace(/\\"/g, '"');
+  const ks = m[2].replace(/\\"/g, '"');
+  catFr[name] = categoryFrenchFromSq(ks || name);
+}
+
+for (const file of ["femije-category-translations.ts", "arsim-kurse-category-translations.ts"]) {
+  const src = readFileSync(join(root, "artifacts/vendi/src/lib", file), "utf8");
+  const keyRe = /"((?:\\.|[^"\\])+)"\s*:\s*\{\s*mk:/g;
+  let km;
+  while ((km = keyRe.exec(src)) !== null) {
+    const name = km[1].replace(/\\"/g, '"');
+    if (!catFr[name]) catFr[name] = categoryFrenchFromSq(name);
+  }
+}
+
+let out = "/** French category labels — generated from Albanian (sq) */\n";
 out += "export const CAT_FR_GENERATED: Record<string, string> = {\n";
-for (const [, key, value] of pairs) {
-  const fr = toFrench(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+for (const [key, value] of Object.entries(catFr).sort(([a], [b]) => a.localeCompare(b))) {
   const k = key.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-  out += `  "${k}": "${fr}",\n`;
+  const v = value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  out += `  "${k}": "${v}",\n`;
 }
 out += "};\n";
 
 writeFileSync(outPath, out, "utf8");
-console.log(`Wrote ${pairs.length} entries to ${outPath}`);
+console.log(`Wrote ${Object.keys(catFr).length} entries to ${outPath}`);

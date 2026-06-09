@@ -317,10 +317,10 @@ Fill in the form and we will contact you within 24 hours. 📩`,
 
 const FR: PartnerPageCopy = {
   docTitle: "Partenaire — KetuJemi.com",
-  heroBadge: "Partenaire program",
-  heroTitle: "Grow your business with KetuJemi.com",
-  heroSubtitle: "50,000+ potential customers every month",
-  benefitsTitle: "Your benefits",
+  heroBadge: "Programme partenaire",
+  heroTitle: "Développez votre activité avec KetuJemi.com",
+  heroSubtitle: "Plus de 50 000 clients potentiels chaque mois",
+  benefitsTitle: "Vos avantages",
   benefits: [
     { icon: "📈", title: "Maximum visibility", desc: "featured listings at the top" },
     { icon: "👥", title: "50,000+ active visitors", desc: "every month" },
@@ -330,54 +330,54 @@ const FR: PartnerPageCopy = {
     { icon: "📊", title: "Detailed statistics", desc: "" },
     { icon: "🚀", title: "Priority in search results", desc: "" },
   ],
-  formTitle: "Application form",
-  formSubtitle: "Fill in your details — our team will contact you after review.",
-  labelBusinessName: "Business name",
-  labelContactName: "Contact person",
+  formTitle: "Formulaire de candidature",
+  formSubtitle: "Renseignez vos coordonnées — notre équipe vous contactera après examen.",
+  labelBusinessName: "Nom de l'entreprise",
+  labelContactName: "Personne de contact",
   labelEmail: "Email",
-  labelPhone: "Phone",
-  labelPackage: "Package",
-  packagePlaceholder: "Choose package",
+  labelPhone: "Téléphone",
+  labelPackage: "Forfait",
+  packagePlaceholder: "Choisir le forfait",
   packageStandard: "Partenaire",
   packageVip: "Partenaire VIP",
-  labelLogo: "Business logo",
-  uploadLogo: "Upload logo",
-  logoHint: "JPEG, PNG, WebP — max 5 MB (optional)",
-  labelDescription: "Short business description",
-  descriptionPlaceholder: "E.g. what you sell, where you operate, why you want to partner...",
-  submitButton: "Submit application",
-  errRequired: "Please fill in all required fields.",
-  errLogoInvalid: "Please choose a valid image file.",
-  errLogoTooLarge: "Logo must be smaller than 5 MB.",
-  errSubmitFailed: "Application submission failed.",
-  errServer: "Could not reach the server. Please try again.",
-  successTitle: "Thank you!",
-  successMessage: "Your request was sent successfully! We will contact you soon.",
+  labelLogo: "Logo de l'entreprise",
+  uploadLogo: "Téléverser le logo",
+  logoHint: "JPEG, PNG, WebP — max. 5 Mo (facultatif)",
+  labelDescription: "Brève description de l'activité",
+  descriptionPlaceholder: "Ex. ce que vous vendez, où vous opérez, pourquoi vous souhaitez devenir partenaire…",
+  submitButton: "Envoyer la candidature",
+  errRequired: "Veuillez remplir tous les champs obligatoires.",
+  errLogoInvalid: "Veuillez choisir un fichier image valide.",
+  errLogoTooLarge: "Le logo doit faire moins de 5 Mo.",
+  errSubmitFailed: "L'envoi de la candidature a échoué.",
+  errServer: "Impossible de joindre le serveur. Veuillez réessayer.",
+  successTitle: "Merci !",
+  successMessage: "Votre demande a été envoyée avec succès ! Nous vous contacterons bientôt.",
   successHome: "Retour à l'accueil",
   landingCta: "Devenir partenaire",
-  landingCtaHint: "Complete the form below — no online payment.",
-  applicationIntro: `🤝 Become a KetuJemi VIP Partner
+  landingCtaHint: "Remplissez le formulaire ci-dessous — sans paiement en ligne.",
+  applicationIntro: `🤝 Devenir partenaire VIP KetuJemi
 
-Partnering with KetuJemi is mutual cooperation — you help us, we make you visible.
+Le partenariat avec KetuJemi est une coopération mutuelle — vous nous aidez, nous vous rendons visible.
 
-What you get:
-- Your logo on the ketujemi.com homepage — seen by thousands of visitors every day
-- Your listings and offers posted daily on Instagram @jemi.ketu, Facebook KetuJemi.com and TikTok @ketujemi7
-- A dedicated profile with address, map and all your contacts
-- Ongoing promotion — people learn about your business every day
-- Growth in followers and customers — free
+Ce que vous obtenez :
+- Votre logo sur la page d'accueil ketujemi.com — vu par des milliers de visiteurs chaque jour
+- Vos annonces et offres publiées chaque jour sur Instagram @jemi.ketu, Facebook KetuJemi.com et TikTok @ketujemi7
+- Un profil dédié avec adresse, carte et toutes vos coordonnées
+- Promotion continue — les gens découvrent votre activité chaque jour
+- Croissance de vos abonnés et clients — gratuitement
 
-What we ask from you:
-- Follow us on Instagram @jemi.ketu, Facebook KetuJemi.com and TikTok @ketujemi7
-- Mention us to your followers from time to time
+Ce que nous vous demandons :
+- Suivez-nous sur Instagram @jemi.ketu, Facebook KetuJemi.com et TikTok @ketujemi7
+- Mentionnez-nous auprès de vos abonnés de temps en temps
 
-📢 How promotion works:
-We publish and promote your listings every day on our social channels — but only if you have active listings on ketujemi.com. An empty page has nothing to promote — post your products and offers, and we bring them to our audience. The more you post → the more we promote you → the more customers and sales you get. 🚀
+📢 Comment fonctionne la promotion :
+Nous publions et promouvons vos annonces chaque jour sur nos réseaux — mais seulement si vous avez des annonces actives sur ketujemi.com. Une page vide n'a rien à promouvoir — publiez vos produits et offres, nous les diffusons au public. Plus vous publiez → plus nous vous promouvons → plus de clients et de ventes. 🚀
 
-💡 A small but important detail:
-Our cooperation is like coffee — it only works when both sides add sugar. 😄 We promote you daily — but you should follow us too. In short: follow us → we make you known. Don't follow → we both lose. 🤝
+💡 Un petit détail important :
+Notre coopération est comme le café — elle ne fonctionne que si les deux côtés ajoutent du sucre. 😄 Nous vous promouvons chaque jour — mais vous devez aussi nous suivre. En bref : suivez-nous → nous vous rendons visible. Ne nous suivez pas → nous perdons tous les deux. 🤝
 
-Fill in the form and we will contact you within 24 hours. 📩`,
+Remplissez le formulaire et nous vous contacterons sous 24 heures. 📩`,
 };
 
 const BY_LOCALE: Record<PartnerPageLocaleKey, PartnerPageCopy> = {

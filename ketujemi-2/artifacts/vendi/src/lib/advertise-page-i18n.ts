@@ -380,7 +380,7 @@ const FR: AdvertisePageCopy = {
   docTitle: "Advertise — KetuJemi.com",
   heroBadge: "ADVERTISE",
   heroTitle: "Reach the right customers at the right time",
-  heroSubtitle: "Exclusive ad placements on KetuJemi.com — the leading Albanien classifieds platform with 50,000+ active visitors every month.",
+  heroSubtitle: "Exclusive ad placements on KetuJemi.com — the leading Albanian classifieds platform with 50,000+ active visitors every month.",
   adTypesTitle: "AD TYPES",
   adTypes: [
     {
@@ -432,7 +432,7 @@ const FR: AdvertisePageCopy = {
   stepsTitle: "HOW IT WORKS",
   steps: [
     {
-      title: "Step 1 — Nonus contacter",
+      title: "Step 1 — Nous contacter",
       body: "Email info@ketujemi.com with your business name, ad type, and desired period.",
     },
     {

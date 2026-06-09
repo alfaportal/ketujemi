@@ -1,6 +1,7 @@
 /** EN → FR for shop/partner/advertise page copy blocks. */
 export const PAGE_I18N_FR = {
   "🤝 Become a KetuJemi VIP Partner": "🤝 Devenir partenaire VIP KetuJemi",
+  "Become a KetuJemi VIP Partner": "Devenir partenaire VIP KetuJemi",
   "Partnering with KetuJemi is mutual cooperation — you help us, we make you famous.":
     "Le partenariat avec KetuJemi est une coopération mutuelle — vous nous aidez, nous vous rendons visible.",
   "What you get:": "Ce que vous obtenez :",
@@ -13,6 +14,8 @@ export const PAGE_I18N_FR = {
   "Ongoing promotion — people learn about your business every day":
     "Promotion continue — les gens découvrent votre activité chaque jour",
   "Growth in your followers and customers — free":
+    "Croissance de vos abonnés et clients — gratuitement",
+  "Growth in followers and customers — free":
     "Croissance de vos abonnés et clients — gratuitement",
   "What we ask from you:": "Ce que nous vous demandons :",
   "Follow us on Instagram @jemi.ketu, Facebook KetuJemi.com and TikTok @ketujemi7":
@@ -105,4 +108,56 @@ export const PAGE_I18N_FR = {
   "Ready to grow your business?": "Prêt à développer votre activité ?",
   "Advertise on KetuJemi.com": "Faire de la publicité sur KetuJemi.com",
   "Choose the package that fits your business": "Choisissez le forfait adapté à votre activité",
+  "Partner program": "Programme partenaire",
+  "Grow your business with KetuJemi.com": "Développez votre activité avec KetuJemi.com",
+  "50,000+ potential customers every month": "Plus de 50 000 clients potentiels chaque mois",
+  "Your benefits": "Vos avantages",
+  "Maximum visibility": "Visibilité maximale",
+  "featured listings at the top": "annonces mises en avant en tête de liste",
+  "50,000+ active visitors": "Plus de 50 000 visiteurs actifs",
+  "every month": "chaque mois",
+  "Category targeting": "Ciblage par catégorie",
+  "and location": "et localisation",
+  "Dedicated business panel": "Panneau professionnel dédié",
+  '"Verified Partner" badge': "Badge « Partenaire vérifié »",
+  "Phone": "Téléphone",
+  "Package": "Forfait",
+  "Detailed statistics": "Statistiques détaillées",
+  "Priority in search results": "Priorité dans les résultats de recherche",
+  "Application form": "Formulaire de candidature",
+  "Fill in your details — our team will contact you after review.":
+    "Renseignez vos coordonnées — notre équipe vous contactera après examen.",
+  "Business name": "Nom de l'entreprise",
+  "Contact person": "Personne de contact",
+  "Choose package": "Choisir le forfait",
+  "Business logo": "Logo de l'entreprise",
+  "Upload logo": "Téléverser le logo",
+  "JPEG, PNG, WebP — max 5 MB (optional)": "JPEG, PNG, WebP — max. 5 Mo (facultatif)",
+  "Short business description": "Brève description de l'activité",
+  "E.g. what you sell, where you operate, why you want to partner...":
+    "Ex. ce que vous vendez, où vous opérez, pourquoi vous souhaitez devenir partenaire…",
+  "Submit application": "Envoyer la candidature",
+  "Please fill in all required fields.": "Veuillez remplir tous les champs obligatoires.",
+  "Please choose a valid image file.": "Veuillez choisir un fichier image valide.",
+  "Logo must be smaller than 5 MB.": "Le logo doit faire moins de 5 Mo.",
+  "Application submission failed.": "L'envoi de la candidature a échoué.",
+  "Could not reach the server. Please try again.":
+    "Impossible de joindre le serveur. Veuillez réessayer.",
+  "Thank you!": "Merci !",
+  "Your request was sent successfully! We will contact you soon.":
+    "Votre demande a été envoyée avec succès ! Nous vous contacterons bientôt.",
+  "Complete the form below — no online payment.":
+    "Remplissez le formulaire ci-dessous — sans paiement en ligne.",
+  "Partnering with KetuJemi is mutual cooperation — you help us, we make you visible.":
+    "Le partenariat avec KetuJemi est une coopération mutuelle — vous nous aidez, nous vous rendons visible.",
+  "Your listings and offers posted daily on Instagram @jemi.ketu, Facebook KetuJemi.com and TikTok @ketujemi7":
+    "Vos annonces et offres publiées chaque jour sur Instagram @jemi.ketu, Facebook KetuJemi.com et TikTok @ketujemi7",
+  "A dedicated profile with address, map and all your contacts":
+    "Un profil dédié avec adresse, carte et toutes vos coordonnées",
+  "We publish and promote your listings every day on our social channels — but only if you have active listings on ketujemi.com. An empty page has nothing to promote — post your products and offers, and we bring them to our audience. The more you post → the more we promote you → the more customers and sales you get. 🚀":
+    "Nous publions et promouvons vos annonces chaque jour sur nos réseaux — mais seulement si vous avez des annonces actives sur ketujemi.com. Une page vide n'a rien à promouvoir — publiez vos produits et offres, nous les diffusons au public. Plus vous publiez → plus nous vous promouvons → plus de clients et de ventes. 🚀",
+  "Our cooperation is like coffee — it only works when both sides add sugar. 😄 We promote you daily — but you should follow us too. In short: follow us → we make you known. Don't follow → we both lose. 🤝":
+    "Notre coopération est comme le café — elle ne fonctionne que si les deux côtés ajoutent du sucre. 😄 Nous vous promouvons chaque jour — mais vous devez aussi nous suivre. En bref : suivez-nous → nous vous rendons visible. Ne nous suivez pas → nous perdons tous les deux. 🤝",
+  "This profile is not available.": "Ce profil n'est pas disponible.",
+  "Partner not found": "Partenaire introuvable",
 };

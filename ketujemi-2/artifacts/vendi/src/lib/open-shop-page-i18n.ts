@@ -626,7 +626,7 @@ const EN: OpenShopPageCopy = {
 };
 
 const FR: OpenShopPageCopy = {
-  ...EN,
+  ...KS,
   partnership: {
     title: "🤝 Devenir partenaire VIP KetuJemi",
     intro: "Le partenariat avec KetuJemi est une coopération mutuelle — vous nous aidez, nous vous rendons visible.",

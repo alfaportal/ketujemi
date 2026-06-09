@@ -391,12 +391,12 @@ const EN: OpenShopFormCopy = {
 };
 
 const FR: OpenShopFormCopy = {
-  ...EN,
+  ...KS,
   applyDocTitle: "Demander une boutique — KetuJemi.com",
   formImportant: "⚠️ Important: Your shop is activated only after we review your request within 24 hours. You can update the details later from your profile.",
   loginBtn: "Connexion / Inscription",
   section1Title: "Identité de la boutique",
-  shopName: "Nonm de la boutique",
+  shopName: "Nom de la boutique",
   logo: "Logo",
   description: "Description de l'activité",
   category: "Catégorie principale",
@@ -419,7 +419,7 @@ const FR: OpenShopFormCopy = {
   socialPhWhatsapp: "38344123456",
   socialPhWebsite: "www.yourshop.com",
   section4Title: "Contact",
-  contactName: "Nonm du contact",
+  contactName: "Nom du contact",
   phone: "Numéro de téléphone",
   email: "Email",
   submitBtn: "Envoyer la demande de boutique →",
@@ -435,9 +435,9 @@ const FR: OpenShopFormCopy = {
   countryLabels: {
     XK: "Kosovo",
     AL: "Albanie",
-    MK: "Macédoine du Nonrd",
+    MK: "Macédoine du Nord",
     MNE: "Monténégro",
-    DE: "Toutemagne",
+    DE: "Allemagne",
     CH: "Suisse",
     AT: "Autriche",
     FR: "France",

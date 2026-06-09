@@ -1,4 +1,4 @@
-/** Hand-built from static-pages-i18n-en.ts — run ketujemi-2/scripts/build-static-fr.mjs */
+/** Auto-generated — sq→en→fr via ketujemi-2/scripts/generate-fr-i18n.mjs */
 import type { StaticPagesCopy } from "./static-pages-i18n";
 
 export const FR_STATIC_PAGES: StaticPagesCopy = {
@@ -160,7 +160,7 @@ export const FR_STATIC_PAGES: StaticPagesCopy = {
       {
         title: "Applicable law and disputes",
         paragraphs: [
-          "These terms are governed by the laws of the Republic of Kosovo. Any dispute arising from use of the platform shall be resolved by the competent courts of Ferizaj, Republic of Kosovo. The Albanien-language version is the official and binding version in case of conflict with translations in other languages.",
+          "These terms are governed by the laws of the Republic of Kosovo. Any dispute arising from use of the platform shall be resolved by the competent courts of Ferizaj, Republic of Kosovo. The Albanian-language version is the official and binding version in case of conflict with translations in other languages.",
         ],
       },
       {
@@ -452,7 +452,7 @@ export const FR_STATIC_PAGES: StaticPagesCopy = {
         a: "Oui. Vous pouvez vous inscrire et vous connecter avec Google ou Facebook en un clic. Pour publier, vous devez être connecté — saisissez votre téléphone dans le formulaire d'annonce.",
       },
       {
-        q: "Combien de photos puis-je téléverser par annonce ?",
+        q: "Combien de photos par annonce ?",
         a: "Photos illimitées par annonce et une vidéo facultative jusqu'à 150 Mo. Nous recommandons des photos réelles de votre produit — pas d'images d'internet ou de catalogues.",
       },
       {
@@ -587,5 +587,3 @@ export const FR_STATIC_PAGES: StaticPagesCopy = {
     ],
   },
 };
-
-

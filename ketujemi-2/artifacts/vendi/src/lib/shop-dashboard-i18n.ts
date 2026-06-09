@@ -159,7 +159,7 @@ const FR: ShopDashboardCopy = {
   viewShop: "Voir la boutique →",
   saveShop: "Enregistrer",
   shopSaved: "Boutique mise à jour.",
-  shopName: "Nonm de la boutique",
+  shopName: "Nom de la boutique",
   logo: "Logo",
   description: "Description",
   address: "Adresse",

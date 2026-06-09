@@ -167,7 +167,7 @@ const EN: VipPackagesPageCopy = {
 };
 
 const FR: VipPackagesPageCopy = {
-  ...EN,
+  ...KS,
   docTitle: "Forfaits entreprise — KetuJemi.com",
   heroBadge: "FORFAITS ENTREPRISE",
   heroTitle: "Choisissez le forfait adapté à votre activité",
