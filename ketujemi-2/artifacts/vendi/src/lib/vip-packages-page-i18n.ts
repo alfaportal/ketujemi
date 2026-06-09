@@ -171,6 +171,7 @@ const VIP_PACKAGES_PAGES: Record<UiTranslationLocale, VipPackagesPageCopy> = {
   mk: MK,
   mne: MNE,
   en: EN,
+  fr: EN,
 };
 
 export function vipPackagesPageForLocale(locale: UiTranslationLocale): VipPackagesPageCopy {

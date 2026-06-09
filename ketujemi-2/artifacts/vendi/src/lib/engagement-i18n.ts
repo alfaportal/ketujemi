@@ -1,6 +1,6 @@
 import { translationKeyForUiLang, type UiLang } from "@/lib/ui-languages";
 
-export type EngagementLocale = "ks" | "mk" | "mne" | "en";
+export type EngagementLocale = "ks" | "mk" | "mne" | "en" | "fr";
 
 export type EngagementCopy = {
   welcomeToast: (name: string) => string;
@@ -116,6 +116,29 @@ const COPY: Record<EngagementLocale, EngagementCopy> = {
     notificationsEmpty: "You have no new notifications.",
     notificationsTitle: "Notifications",
     firstListingOk: "OK, thanks!",
+  },
+  fr: {
+    welcomeToast: (name) =>
+      `Bienvenue ${name} ! 🎉 Vous faites maintenant partie de la famille KetuJemi. Publiez vos annonces gratuitement — sans limite, sans frais.`,
+    firstListingTitle: "Félicitations ! 🎊",
+    firstListingBody:
+      "🎉 Félicitations ! Votre annonce est en ligne sur KëtuJemi.com et sera partagée automatiquement sur Facebook, Instagram et TikTok. Plus elle est vue, plus vite elle se vend ! 🚀",
+    subsequentListingToast:
+      "🎉 Félicitations ! Votre annonce est en ligne sur KëtuJemi.com et sera partagée automatiquement sur Facebook, Instagram et TikTok. Plus elle est vue, plus vite elle se vend ! 🚀",
+    listingFirstView: (title) =>
+      `👀 Quelqu'un a consulté votre annonce pour ${title} — vous êtes sur la bonne voie !`,
+    socialFollowTitle: "🔥 Votre annonce attire l'attention !",
+    socialFollowBody: "Suivez-nous pour nous aider à promouvoir encore plus vos annonces :",
+    socialFollowFacebook: "📘 Facebook — KetuJemi.com",
+    socialFollowInstagram: "📸 Instagram — @jemi.ketu",
+    socialFollowTikTok: "🎵 TikTok — @ketujemi7",
+    socialFollowFooter:
+      "Rejoignez des milliers de personnes qui achètent et vendent chaque jour ! 💪",
+    socialFollowOptIn: "✅ Oui, me notifier",
+    socialFollowOptOut: "❌ Non, merci",
+    notificationsEmpty: "Vous n'avez pas de nouvelles notifications.",
+    notificationsTitle: "Notifications",
+    firstListingOk: "D'accord, merci !",
   },
 };
 

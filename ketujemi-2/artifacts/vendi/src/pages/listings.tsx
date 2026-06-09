@@ -21,6 +21,7 @@ import { filterShopsByQuery } from "@/lib/shop-directory-fuse";
 import { ShopDirectoryCard, type ShopDirectoryListItem } from "@/components/shop-directory-card";
 import { useShopDirectoryCopy } from "@/lib/shop-directory-i18n";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
+import { translateCategory } from "@/lib/category-translations";
 
 // --- Skeleton Card ---
 function SkeletonCard() {
@@ -154,7 +155,7 @@ export default function Listings() {
             {data && (
               <p className="text-sm text-gray-500 mt-0.5">
                 {data.total.toLocaleString()} {t.total}
-                {selectedCategory ? ` ${t.in} ${selectedCategory.name}` : ""}
+                {selectedCategory ? ` ${t.in} ${translateCategory(selectedCategory.name, locale)}` : ""}
               </p>
             )}
           </div>
@@ -190,7 +191,9 @@ export default function Listings() {
                   <SelectContent className="!max-h-[300px]">
                     <SelectItem value="all">{t.all}</SelectItem>
                     {categories?.filter((cat) => !cat.parent_id).map((cat) => (
-                      <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
+                      <SelectItem key={cat.id} value={String(cat.id)}>
+                        {translateCategory(cat.name, locale)}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

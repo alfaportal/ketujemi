@@ -381,6 +381,7 @@ const ADVERTISE_PAGES: Record<UiTranslationLocale, AdvertisePageCopy> = {
   mk: MK,
   mne: MNE,
   en: EN,
+  fr: EN,
 };
 
 export function advertisePageForLocale(locale: UiTranslationLocale): AdvertisePageCopy {

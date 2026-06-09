@@ -61,6 +61,7 @@ const PAGES: Record<UiTranslationLocale, PartnerProfileCopy> = {
   mk: MK,
   mne: MNE,
   en: EN,
+  fr: EN,
 };
 
 export function usePartnerProfileCopy(): PartnerProfileCopy {

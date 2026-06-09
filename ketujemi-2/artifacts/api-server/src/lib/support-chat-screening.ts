@@ -7,6 +7,7 @@ export const INVALID_SUPPORT_REPLY: Record<UiLang, string> = {
   mk: "Ве молиме напишете валидно прашање за да добиете помош.",
   me: "Molimo vas napišite valjano pitanje da dobijete pomoć.",
   en: "Please write a valid question to get help.",
+  fr: "Veuillez poser une question valide pour obtenir de l'aide.",
 };
 
 export function invalidSupportQuestionReply(lang: UiLang): string {

@@ -1809,6 +1809,7 @@ export const STATIC_PAGES: Record<StaticPageLocaleKey, StaticPagesCopy> = {
   mk: MK,
   mne: MNE,
   en: EN_STATIC_PAGES,
+  fr: EN_STATIC_PAGES,
 };
 
 export function staticPagesForLocale(locale: StaticPageLocaleKey): StaticPagesCopy {

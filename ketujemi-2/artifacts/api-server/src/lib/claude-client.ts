@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-export type UiLang = "sq" | "mk" | "me" | "en";
+export type UiLang = "sq" | "mk" | "me" | "en" | "fr";
 
 /** sq/mk/me copy with optional English fallback. */
 export type LangCopy = { sq: string; mk: string; me: string; en?: string };
@@ -15,6 +15,7 @@ export function langText(copy: LangCopy | Record<UiLang, string>, lang: UiLang):
 
 export function parseUiLang(raw: unknown): UiLang {
   if (raw === "en") return "en";
+  if (raw === "fr") return "fr";
   if (raw === "mk" || raw === "me") return raw;
   if (raw === "mne") return "me";
   return "sq";
@@ -43,6 +44,7 @@ export function getAnthropicClient(): Anthropic {
 
 export function langLabel(lang: UiLang): string {
   if (lang === "en") return "English";
+  if (lang === "fr") return "French";
   if (lang === "mk") return "Macedonian";
   if (lang === "me") return "Montenegrin";
   return "Albanian";

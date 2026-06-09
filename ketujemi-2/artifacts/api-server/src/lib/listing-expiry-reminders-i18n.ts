@@ -83,6 +83,24 @@ const COPY: Record<UiLang, Record<ReminderKind, ReminderCopy>> = {
       footer: "KetuJemi.com — your local marketplace",
     },
   },
+  fr: {
+    "3d": {
+      subject: "Votre annonce expire bientôt — KetuJemi",
+      greeting: "Bonjour,",
+      body: (title, days, url) =>
+        `Votre annonce « ${title} » expire dans ${days}.\n\nAprès expiration, elle est supprimée automatiquement. Vous pouvez la renouveler en un clic :\n${url}\n\nBouton : « Renouveler l'annonce » — active à nouveau jusqu'à 3 mois.`,
+      cta: "Voir l'annonce",
+      footer: "KetuJemi.com — votre marketplace locale",
+    },
+    "1d": {
+      subject: "Votre annonce expire demain — KetuJemi",
+      greeting: "Bonjour,",
+      body: (title, _days, url) =>
+        `Votre annonce « ${title} » expire demain.\n\nPour la garder en ligne, renouvelez ou mettez à jour maintenant :\n${url}`,
+      cta: "Renouveler ou mettre à jour",
+      footer: "KetuJemi.com — votre marketplace locale",
+    },
+  },
 };
 
 const DAYS_LABEL: Record<UiLang, Record<ReminderKind, string>> = {
@@ -90,6 +108,7 @@ const DAYS_LABEL: Record<UiLang, Record<ReminderKind, string>> = {
   mk: { "3d": "3 дена", "1d": "1 ден" },
   me: { "3d": "3 dana", "1d": "1 dan" },
   en: { "3d": "3 days", "1d": "1 day" },
+  fr: { "3d": "3 jours", "1d": "1 jour" },
 };
 
 function escapeHtml(input: string): string {

@@ -6,6 +6,7 @@ import {
   translationKeyForUiLang,
   type UiLang,
 } from "./ui-languages";
+import { FR_TRANSLATIONS } from "./market-context-fr";
 
 export const MARKETS = [
   { code: "ks",  flag: "🇽🇰", name: "Kosovë",             currency: "EUR", symbol: "€",   prefix: "+383" },
@@ -1185,6 +1186,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     postQuotaExceeded: "You have reached the free posting limit for this category.",
     postQuotaRemaining: "Free posts remaining in this category: {n}",
   },
+  fr: FR_TRANSLATIONS,
 };
 
 // ─── Form option arrays per market ────────────────────────────────────────────
@@ -1195,6 +1197,7 @@ export const FORM_OPTIONS: Record<string, Record<string, string[]>> = {
     mk:  ["Бензин", "Дизел", "Електричен", "Хибрид", "Гас (ТНГ)", "Друго"],
     mne: ["Benzin", "Dizel", "Električni", "Hibrid", "Gas (LPG)", "Ostalo"],
     en:  ["Petrol", "Diesel", "Electric", "Hybrid", "LPG", "Other"],
+    fr:  ["Essence", "Diesel", "Électrique", "Hybride", "GPL", "Autre"],
   },
   transmission: {
     ks:  ["Manuale", "Automatike", "Gjysëm-automatike"],
@@ -1202,6 +1205,7 @@ export const FORM_OPTIONS: Record<string, Record<string, string[]>> = {
     mk:  ["Рачен", "Автоматски", "Полу-автоматски"],
     mne: ["Manuelni", "Automatski", "Poluautomatski"],
     en:  ["Manual", "Automatic", "Semi-automatic"],
+    fr:  ["Manuelle", "Automatique", "Semi-automatique"],
   },
   bodyType: {
     ks:  ["Sedan", "Hatchback", "SUV / Jeep", "Kombi", "Kabriolet", "Kupe", "Pikap", "Furgon"],
@@ -1209,6 +1213,7 @@ export const FORM_OPTIONS: Record<string, Record<string, string[]>> = {
     mk:  ["Седан", "Хечбек", "Теренец / Џип", "Комби", "Кабриолет", "Купе", "Пикап", "Фургон"],
     mne: ["Sedan", "Hatchback", "Terenac / Džip", "Kombi", "Kabriolet", "Kupe", "Pikap", "Kombi/Van"],
     en:  ["Sedan", "Hatchback", "SUV / Jeep", "Estate", "Convertible", "Coupe", "Pickup", "Van"],
+    fr:  ["Berline", "Citadine", "SUV / 4x4", "Break", "Cabriolet", "Coupé", "Pick-up", "Fourgon"],
   },
   color: {
     ks:  ["E zezë", "E bardhë", "Gri / Argjend", "E kaltër", "E kuqe", "E gjelbër", "E verdhë / Gold", "Kafe / Beige", "Portokalli", "Vjollcë", "Tjetër"],
@@ -1216,6 +1221,7 @@ export const FORM_OPTIONS: Record<string, Record<string, string[]>> = {
     mk:  ["Црна", "Бела", "Сива / Сребрена", "Сина", "Црвена", "Зелена", "Жолта / Злато", "Кафеава / Беж", "Портокалова", "Виолетова", "Друго"],
     mne: ["Crna", "Bijela", "Siva / Srebrna", "Plava", "Crvena", "Zelena", "Žuta / Zlatna", "Smeđa / Bež", "Narandžasta", "Ljubičasta", "Ostalo"],
     en:  ["Black", "White", "Grey / Silver", "Blue", "Red", "Green", "Yellow / Gold", "Brown / Beige", "Orange", "Purple", "Other"],
+    fr:  ["Noir", "Blanc", "Gris / Argent", "Bleu", "Rouge", "Vert", "Jaune / Or", "Marron / Beige", "Orange", "Violet", "Autre"],
   },
   techCondition: {
     ks:  ["E shkëlqyer", "Shumë e mirë", "E mirë", "E pranueshme", "Për riparim"],
@@ -1223,6 +1229,7 @@ export const FORM_OPTIONS: Record<string, Record<string, string[]>> = {
     mk:  ["Одлична", "Многу добра", "Добра", "Прифатлива", "За поправка"],
     mne: ["Odlično", "Veoma dobra", "Dobra", "Prihvatljivo", "Za popravku"],
     en:  ["Excellent", "Very good", "Good", "Acceptable", "For repair"],
+    fr:  ["Excellent", "Très bon", "Bon", "Acceptable", "À réparer"],
   },
   furnished: {
     ks:  ["I mobiluar", "Pjesërisht i mobiluar", "Pa mobilje"],
@@ -1230,6 +1237,7 @@ export const FORM_OPTIONS: Record<string, Record<string, string[]>> = {
     mk:  ["Наместено", "Делумно наместено", "Без мебел"],
     mne: ["Namješteno", "Djelimično namješteno", "Bez namještaja"],
     en:  ["Furnished", "Partly furnished", "Unfurnished"],
+    fr:  ["Meublé", "Partiellement meublé", "Non meublé"],
   },
 };
 
@@ -1239,6 +1247,7 @@ export function formOptionsForUiLang(
   uiLang: string,
 ): string[] {
   const opts = FORM_OPTIONS[field];
+  if (uiLang === "fr" && opts.fr?.length) return opts.fr;
   if (uiLang === "en" && opts.en?.length) return opts.en;
   return opts.ks;
 }
@@ -1417,13 +1426,15 @@ export function MarketProvider({ children }: { children: ReactNode }) {
   };
 
   const translationCode = translationKeyForUiLang(uiLang);
-  const tMerged = useMemo(
-    () => ({
+  const tMerged = useMemo(() => {
+    const useEnExtraFallback = translationCode === "fr";
+    return {
+      ...(useEnExtraFallback ? TRANSLATIONS.en : {}),
       ...TRANSLATIONS[translationCode],
+      ...(useEnExtraFallback ? extraTranslations?.en ?? {} : {}),
       ...(extraTranslations?.[translationCode] ?? {}),
-    }),
-    [translationCode, extraTranslations],
-  );
+    };
+  }, [translationCode, extraTranslations]);
 
   return (
     <MarketContext.Provider value={{ market, setMarket, uiLang, setUiLang, rates, t: tMerged }}>

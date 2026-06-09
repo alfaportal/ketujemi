@@ -395,6 +395,7 @@ const SHOP_FORM_PAGES: Record<UiTranslationLocale, OpenShopFormCopy> = {
   mk: MK,
   mne: MNE,
   en: EN,
+  fr: EN,
 };
 
 export function shopFormForLocale(locale: UiTranslationLocale): OpenShopFormCopy {

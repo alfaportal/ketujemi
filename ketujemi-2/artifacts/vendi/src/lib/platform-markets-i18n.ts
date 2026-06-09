@@ -34,6 +34,12 @@ const COPY: Record<UiTranslationLocale, PlatformMarketsCopy> = {
     availableIn:
       "Available in Kosovo, Albania, North Macedonia and 8 diaspora markets",
   },
+  fr: {
+    regionsShort:
+      "Kosovo, Albanie, Macédoine du Nord et 8 marchés de la diaspora (Allemagne, Suisse, Autriche, France, Italie, Royaume-Uni, États-Unis, Monténégro)",
+    availableIn:
+      "Disponible au Kosovo, en Albanie, en Macédoine du Nord et sur 8 marchés de la diaspora",
+  },
 };
 
 export function platformMarketsForLocale(locale: UiTranslationLocale): PlatformMarketsCopy {

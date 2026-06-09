@@ -320,6 +320,7 @@ const BY_LOCALE: Record<PartnerPageLocaleKey, PartnerPageCopy> = {
   mk: MK,
   mne: MNE,
   en: EN,
+  fr: EN,
 };
 
 type PartnerPageLocaleKey = UiTranslationLocale;

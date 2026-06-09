@@ -630,6 +630,7 @@ const OPEN_SHOP_PAGES: Record<UiTranslationLocale, OpenShopPageCopy> = {
   mk: MK,
   mne: MNE,
   en: EN,
+  fr: EN,
 };
 
 export function openShopPageForLocale(locale: UiTranslationLocale): OpenShopPageCopy {

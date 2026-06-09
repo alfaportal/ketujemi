@@ -151,6 +151,7 @@ const PAGES: Record<UiTranslationLocale, ShopDashboardCopy> = {
   mk: MK,
   mne: MNE,
   en: EN,
+  fr: EN,
 };
 
 export function useShopDashboardCopy(): ShopDashboardCopy {

@@ -71,11 +71,26 @@ const EN: ShopRatingCopy = {
   anonymousUser: "User",
 };
 
+const FR: ShopRatingCopy = {
+  noRatingYet: "Pas encore d'avis",
+  ratingsCount: "{score} — {count} avis",
+  ratingsTitle: "Avis des utilisateurs",
+  rateThisShop: "Noter cette boutique",
+  yourRating: "Votre avis",
+  commentPlaceholder: "Commentaire facultatif…",
+  submitRating: "Envoyer l'avis",
+  updateRating: "Mettre à jour l'avis",
+  loginToRate: "Connectez-vous pour noter",
+  ratingSaved: "Merci pour votre avis !",
+  anonymousUser: "Utilisateur",
+};
+
 const PAGES: Record<UiTranslationLocale, ShopRatingCopy> = {
   ks: KS,
   mk: MK,
   mne: MNE,
   en: EN,
+  fr: FR,
 };
 
 export function useShopRatingCopy(): ShopRatingCopy {

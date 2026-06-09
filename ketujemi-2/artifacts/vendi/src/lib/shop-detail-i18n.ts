@@ -168,6 +168,7 @@ const PAGES: Record<UiTranslationLocale, ShopDetailCopy> = {
   mk: MK,
   mne: MNE,
   en: EN,
+  fr: EN,
 };
 
 export function useShopDetailCopy(): ShopDetailCopy {

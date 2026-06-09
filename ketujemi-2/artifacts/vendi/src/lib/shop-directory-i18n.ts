@@ -66,6 +66,24 @@ const CATEGORY_MNE: Record<string, string> = {
   "shendetesi-bukuri": "Zdravlje i ljepota",
 };
 
+const CATEGORY_FR: Record<string, string> = {
+  "makina-transport": "Véhicules et transport",
+  patundshmeri: "Immobilier",
+  "elektronike-teknologji": "Électronique et technologie",
+  "shtepi-mobilje": "Maison et mobilier",
+  "moda-veshje": "Mode et vêtements",
+  "ndertim-instalime": "Construction et installations",
+  "biznes-sherbime": "Entreprises et services professionnels",
+  "femije-nena": "Enfants et mamans",
+  "sport-rekreacion": "Sport et loisirs",
+  "bujqesi-blegtori": "Agriculture et élevage",
+  "kafshe-shtepiake": "Animaux domestiques",
+  "arsim-kurse": "Éducation et cours",
+  "evente-dasma": "Événements et mariages",
+  "turizem-udhetimet": "Tourisme et voyages",
+  "shendetesi-bukuri": "Santé et beauté",
+};
+
 const CATEGORY_EN: Record<string, string> = {
   "makina-transport": "Vehicles & Transport",
   patundshmeri: "Real Estate",
@@ -207,11 +225,43 @@ const EN: ShopDirectoryCopy = {
   categoryNames: CATEGORY_EN,
 };
 
+const FR: ShopDirectoryCopy = {
+  ...EN,
+  docTitle: "Boutiques — KetuJemi.com",
+  seoTitle: "Boutiques en ligne | KetuJemi.com — Toutes les boutiques au même endroit",
+  seoDescription:
+    "Trouvez des boutiques locales partout. {count} catégories, des centaines de boutiques digitales.",
+  seoCategoryTitleSuffix: "Boutiques sur KetuJemi.com",
+  seoCategoryDescription:
+    "Trouvez des boutiques {category} au Kosovo, en Albanie et en Macédoine du Nord. Parcourez les offres et contactez directement.",
+  seoSubcategoryTitle: "{subcategory} dans {category} — KetuJemi.com",
+  fuseNoResults: "Aucune boutique trouvée pour «{term}»",
+  docCategoryTitle: "Boutiques",
+  navShops: "Boutiques",
+  navBuySell: "Acheter et vendre",
+  homeBannerTitle: "🏪 Boutiques — Toutes les boutiques au même endroit",
+  homeBannerSubtitle: "{count} catégories • Des centaines de boutiques locales • partout",
+  homeBannerBtn: "Voir toutes les boutiques →",
+  searchPlaceholder: "🔍 Rechercher une boutique... ex. mobilier, téléphone, chaussures",
+  searchBtn: "Rechercher",
+  filterCity: "Ville",
+  filterCountry: "Pays",
+  filterAll: "Tout",
+  shopsCount: "boutiques",
+  viewShop: "Voir la boutique →",
+  viewAllShops: "Voir toutes les boutiques →",
+  noShops: "Pas encore de boutique dans cette catégorie.",
+  noResults: "Aucune boutique trouvée.",
+  allSubcategories: "Tout",
+  categoryNames: CATEGORY_FR,
+};
+
 const PAGES: Record<UiTranslationLocale, ShopDirectoryCopy> = {
   ks: KS,
   mk: MK,
   mne: MNE,
   en: EN,
+  fr: FR,
 };
 
 export function shopDirectoryForLocale(locale: UiTranslationLocale): ShopDirectoryCopy {

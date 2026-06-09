@@ -5,9 +5,10 @@
 import { translateArsimKurseCategory } from "./arsim-kurse-category-translations";
 import { translateFemijeCategory } from "./femije-category-translations";
 import { CAT_EN_GENERATED } from "./category-translations-en.generated";
+import { CAT_FR_GENERATED } from "./category-translations-fr.generated";
 
 export type MarketCode = "ks" | "al" | "mk" | "mne";
-export type UiCategoryLocale = MarketCode | "en";
+export type UiCategoryLocale = MarketCode | "en" | "fr";
 
 export const CAT_TRANSLATIONS: Record<string, Record<MarketCode, string>> = {
   "Vetura":               { ks: "Vetura",               al: "Vetura",               mk: "Автомобили",                      mne: "Automobili" },
@@ -220,6 +221,15 @@ export const CAT_TRANSLATIONS: Record<string, Record<MarketCode, string>> = {
 };
 
 export function translateCategory(name: string, localeCode: UiCategoryLocale): string {
+  if (localeCode === "fr") {
+    return (
+      CAT_FR_GENERATED[name] ??
+      translateArsimKurseCategory(name, "en") ??
+      translateFemijeCategory(name, "en") ??
+      CAT_EN_GENERATED[name] ??
+      name
+    );
+  }
   if (localeCode === "en") {
     return (
       CAT_EN_GENERATED[name] ??

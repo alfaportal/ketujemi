@@ -27,6 +27,11 @@ export const ERROR_PAGE_COPY: Record<UiLang, ErrorPageCopy> = {
     hint: "Try refreshing the page. If the problem continues, clear your browser cache for ketujemi.com.",
     refresh: "Refresh",
   },
+  fr: {
+    title: "La page n'a pas pu se charger",
+    hint: "Essayez d'actualiser la page. Si le problème persiste, videz le cache du navigateur pour ketujemi.com.",
+    refresh: "Actualiser",
+  },
 };
 
 export function errorPageCopyForStoredLang(): ErrorPageCopy {

@@ -31,6 +31,11 @@ const SECTION_ERROR_COPY: Record<UiLang, SectionErrorCopy> = {
     hint: "Refresh the page.",
     refresh: "Refresh",
   },
+  fr: {
+    title: "Une erreur s'est produite",
+    hint: "Actualisez la page.",
+    refresh: "Actualiser",
+  },
 };
 
 const AUTO_RECOVER_KEY = "vendi_route_error_autorecover_path";
