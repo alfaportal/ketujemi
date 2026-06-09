@@ -23,6 +23,6 @@ export const VETURA_BODY_IMAGE_BY_SLUG: Record<string, string> = {
   "kabriolet-sportive": pexels(3752169, 1200),
   kupe: pexels(3764984, 1200),
   "elektrike-hibride": pexels(110844, 1200),
-  pickup: pexels(3422964, 1200),
+  pickup: pexels(14438397, 1200),
   "klasike-vintage": pexels(2127022, 1200),
 };

@@ -242,7 +242,7 @@ const CAT_PHOTOS: Record<string, string> = {
   "Klasike":   "https://images.pexels.com/photos/2127022/pexels-photo-2127022.jpeg?auto=compress&cs=tinysrgb&w=400",
   "Sedan":     "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&q=80",
   "Hatchback": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=400&q=80",
-  "Pickup":    "https://images.pexels.com/photos/3422964/pexels-photo-3422964.jpeg?auto=compress&cs=tinysrgb&w=400",
+  "Pickup":    "https://images.pexels.com/photos/14438397/pexels-photo-14438397.jpeg?auto=compress&cs=tinysrgb&w=400",
   "Furgon":    "https://images.pexels.com/photos/1178448/pexels-photo-1178448.jpeg?auto=compress&cs=tinysrgb&w=400",
   "Limuzin":   "https://images.pexels.com/photos/1007410/pexels-photo-1007410.jpeg?auto=compress&cs=tinysrgb&w=400",
   "Chopper":   "https://images.unsplash.com/photo-1609630875171-b1321377cdc0?w=400&q=80",

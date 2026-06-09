@@ -101,7 +101,8 @@ const BODY_CHIPS: {
     key: "pickup",
     labelKey: "hub_body_pickup",
     stored: "Pikap",
-    pexelsUrl: "https://images.pexels.com/photos/3422964/pexels-photo-3422964.jpeg?w=400",
+    pexelsUrl:
+      "https://images.pexels.com/photos/14438397/pexels-photo-14438397.jpeg?auto=compress&cs=tinysrgb&w=400",
   },
 ];
 
