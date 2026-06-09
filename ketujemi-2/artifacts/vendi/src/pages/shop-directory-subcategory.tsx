@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useRoute, Link } from "wouter";
+import { useRoute, Link, useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { StaticPageBackLink } from "@/components/static-page-back-link";
@@ -22,8 +22,10 @@ import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 import { SHOP_COUNTRY_CODES, useShopFormCopy } from "@/lib/shop-application-i18n";
 import { citiesForShopCountry } from "@/lib/shop-application-locations";
+import { singleShopHref } from "@/lib/shop-directory-nav";
 
 export default function ShopDirectorySubcategoryPage() {
+  const [, setLocation] = useLocation();
   const [, params] = useRoute("/dyqanet/:categorySlug/:subcategorySlug");
   const categorySlug = params?.categorySlug ?? "";
   const subcategorySlug = params?.subcategorySlug ?? "";
@@ -63,6 +65,12 @@ export default function ShopDirectorySubcategoryPage() {
       .catch(() => setShops([]))
       .finally(() => setLoading(false));
   }, [categorySlug, subcategorySlug, city, country]);
+
+  useEffect(() => {
+    if (loading || query.trim() || city || country) return;
+    const direct = singleShopHref(shops);
+    if (direct) setLocation(direct);
+  }, [loading, shops, query, city, country, setLocation]);
 
   const filteredShops = useMemo(
     () => filterShopsByQuery(shops, query, locale),

@@ -18,6 +18,7 @@ import { useMarket } from "@/lib/market-context";
 import { SHOP_COUNTRY_CODES, useShopFormCopy } from "@/lib/shop-application-i18n";
 import { citiesForShopCountry } from "@/lib/shop-application-locations";
 import type { ShopDirectoryListItem } from "@/components/shop-directory-card";
+import { shopDirectoryCategoryHref } from "@/lib/shop-directory-nav";
 
 type DirectoryResponse = {
   shops: ShopDirectoryListItem[];
@@ -158,10 +159,11 @@ export default function ShopDirectoryPage() {
             {SHOP_DIRECTORY_CATEGORIES.map((cat) => {
               const count = categoryCounts[cat.slug] ?? 0;
               const imageUrl = shopDirectoryCategoryImageUrl(cat.slug);
+              const href = shopDirectoryCategoryHref(cat.slug, shops);
               return (
                 <Link
                   key={cat.slug}
-                  href={`/dyqanet/${cat.slug}`}
+                  href={href}
                   className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex flex-col"
                 >
                   <div className="relative w-full aspect-[4/3] bg-gray-100">

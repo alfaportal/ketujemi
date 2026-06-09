@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useRoute, Link } from "wouter";
+import { useRoute, Link, useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { StaticPageBackLink } from "@/components/static-page-back-link";
@@ -26,8 +26,13 @@ import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 import { SHOP_COUNTRY_CODES, useShopFormCopy } from "@/lib/shop-application-i18n";
 import { citiesForShopCountry } from "@/lib/shop-application-locations";
+import {
+  shopDirectorySubcategoryHref,
+  singleShopHref,
+} from "@/lib/shop-directory-nav";
 
 export default function ShopDirectoryCategoryPage() {
+  const [, setLocation] = useLocation();
   const [, params] = useRoute("/dyqanet/:slug");
   const slug = params?.slug ?? "";
   const cat = directoryCategoryBySlug(slug);
@@ -66,6 +71,12 @@ export default function ShopDirectoryCategoryPage() {
       .catch(() => setShops([]))
       .finally(() => setLoading(false));
   }, [slug, subFilter, city, country]);
+
+  useEffect(() => {
+    if (loading || query.trim() || subFilter || city || country) return;
+    const direct = singleShopHref(shops);
+    if (direct) setLocation(direct);
+  }, [loading, shops, query, subFilter, city, country, setLocation]);
 
   const filteredShops = useMemo(
     () => filterShopsByQuery(shops, query, locale),
@@ -175,7 +186,7 @@ export default function ShopDirectoryCategoryPage() {
             <CategoryPhotoPickerCard
               key={sub.slug}
               selected={subFilter === sub.slug}
-              href={`/dyqanet/${cat.slug}/${sub.slug}`}
+              href={shopDirectorySubcategoryHref(cat.slug, sub.slug, shops)}
               imageSrc={shopDirectorySubcategoryImageUrl(cat.slug, sub.slug) ?? categoryImageUrl ?? ""}
               fallbackImageSrc={categoryImageUrl}
               label={translateDirectorySubcategory(sub, locale)}
