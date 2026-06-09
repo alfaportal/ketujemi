@@ -1,7 +1,6 @@
 /** Albanian category labels → English (Fëmijë leaves and other gaps). */
 import { applyEnglishPhrases } from "./english-phrases.mjs";
 import { categoryEnglishFromKs } from "./category-en-from-ks.mjs";
-import { shopSubcategoryToEnglish } from "./shop-subcategory-sq-en.mjs";
 import { CATEGORY_SQ_EN_EXTRA } from "./category-sq-en-extra.mjs";
 
 const ALBANIAN_CHARS = /[ëçËÇ]/;
@@ -131,6 +130,5 @@ export function categorySqToEnglish(sq) {
   for (const [token, en] of sorted) {
     if (s.includes(token)) s = s.split(token).join(en);
   }
-  if (ALBANIAN_CHARS.test(s) || s === sq) s = shopSubcategoryToEnglish(sq);
   return s;
 }

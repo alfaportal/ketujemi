@@ -1,5 +1,8 @@
 /** English shop-directory subcategory labels → French. */
 import { applyFrenchPhrases } from "./french-phrases.mjs";
+import { categoryToFrench } from "./category-en-fr.mjs";
+import { shopSubcategoryToEnglish } from "./shop-subcategory-sq-en.mjs";
+import { SHOP_PHRASES_EN } from "./shop-phrases-en.mjs";
 
 const EXACT = {
   "Mobile phones": "Téléphones mobiles",
@@ -52,15 +55,71 @@ const EXACT = {
   "Warehouses & Storage": "Entrepôts & stockage",
   "Industrial buildings & factories": "Bâtiments industriels & usines",
   "Investments & projects": "Investissements & projets",
-  "Accessories": "Accessoires",
-  "Phones": "Téléphones",
-  "Tablets": "Tablettes",
-  "Televisions": "Téléviseurs",
-  "Gaming & Consoles": "Gaming & consoles",
-  "Drones": "Drones",
+  "Real estate": "Immobilier",
+  "Electronics & technology": "Électronique & technologie",
+  "Vehicles & transport": "Véhicules & transport",
+  "Home & furniture": "Maison & mobilier",
+  "Living room furniture": "Meubles salon & séjour",
+  "Bedroom furniture": "Meubles chambre",
+  "Kitchen furniture": "Meubles cuisine",
+  "Bathroom furniture": "Meubles salle de bain",
+  "Office furniture": "Meubles bureau",
+  "Balcony & garden furniture": "Meubles balcon & jardin",
+  "Fashion & clothing": "Mode & vêtements",
+  "Construction & installations": "Construction & installations",
+  "Business & professional services": "Entreprise & services professionnels",
+  "Children & maternity": "Enfants & maternité",
+  "Sport & recreation": "Sport & loisirs",
+  "Agriculture & livestock": "Agriculture & élevage",
+  "Pets": "Animaux",
+  "Education & courses": "Éducation & cours",
+  "Events & weddings": "Événements & mariages",
+  "Tourism & travel": "Tourisme & voyages",
+  "Health & beauty": "Santé & beauté",
+  "Women's clothing": "Vêtements femme",
+  "Men's clothing": "Vêtements homme",
+  "Beds & mattresses": "Lits & matelas",
+  "Tables & chairs": "Tables & chaises",
+  "Wardrobes & safes": "Armoires & coffres-forts",
+  "Insurance": "Assurance",
+  "Cattle": "Bétail",
+  "Trailers": "Remorques",
+  "Pets": "Animaux",
+  "Construction & masonry": "Construction & maçonnerie",
 };
 
+let phraseFrCache;
+function phraseFrFromEnTable() {
+  if (!phraseFrCache) {
+    phraseFrCache = { ...EXACT };
+    for (const [, enLabel] of SHOP_PHRASES_EN) {
+      if (!phraseFrCache[enLabel]) {
+        const fr = categoryToFrench(enLabel);
+        phraseFrCache[enLabel] = fr !== enLabel ? fr : applyFrenchPhrases(enLabel);
+      }
+    }
+  }
+  return phraseFrCache;
+}
+
+function titleCaseEn(en) {
+  return en.replace(/(^|[\s&(/])([a-z])/g, (_, pre, c) => pre + c.toUpperCase());
+}
+
 export function shopSubcategoryToFrench(en) {
-  if (EXACT[en]) return EXACT[en];
-  return applyFrenchPhrases(en);
+  if (!en) return en;
+  const table = phraseFrFromEnTable();
+  if (table[en]) return table[en];
+  let fr = categoryToFrench(en);
+  if (fr !== en) return fr;
+  fr = applyFrenchPhrases(en);
+  if (fr !== en) return fr;
+  fr = categoryToFrench(titleCaseEn(en));
+  if (fr !== en) return fr;
+  return applyFrenchPhrases(titleCaseEn(en));
+}
+
+/** sq → fr in one step (for validation). */
+export function shopSubcategoryFrenchFromSq(sq) {
+  return shopSubcategoryToFrench(shopSubcategoryToEnglish(sq));
 }

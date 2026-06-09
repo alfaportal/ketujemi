@@ -1,6 +1,6 @@
 /** English category labels → French (listing + subcategories). */
 import { CAT_EN_EXACT } from "./category-en-from-ks.mjs";
-import { shopSubcategoryToFrench } from "./shop-subcategory-en-fr.mjs";
+import { applyFrenchPhrases } from "./french-phrases.mjs";
 import { CATEGORY_EN_FR_EXTRA } from "./category-en-fr-extra.mjs";
 
 /** Full-phrase overrides — avoid word-chop (e.g. Home → Accueil). */
@@ -139,12 +139,12 @@ const PHRASE_FR = {
 
 /** Auto FR for every hand-maintained EN exact label. */
 const AUTO_FR = Object.fromEntries(
-  Object.values(CAT_EN_EXACT).map((en) => [en, PHRASE_FR[en] ?? shopSubcategoryToFrench(en)]),
+  Object.values(CAT_EN_EXACT).map((en) => [en, PHRASE_FR[en] ?? applyFrenchPhrases(en)]),
 );
 
 export function categoryToFrench(en) {
   if (!en) return en;
   if (PHRASE_FR[en]) return PHRASE_FR[en];
   if (AUTO_FR[en]) return AUTO_FR[en];
-  return shopSubcategoryToFrench(en);
+  return applyFrenchPhrases(en);
 }
