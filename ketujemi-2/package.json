@@ -32,7 +32,9 @@
     "run:listing-reel": "pnpm --filter @workspace/api-server run run:listing-reel",
     "build": "node ./scripts/build-production.mjs",
     "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
+    "test:smoke": "pnpm --filter @workspace/vendi run test:smoke",
+    "test:integration": "pnpm --filter @workspace/vendi run test:integration"
   },
   "private": true,
   "devDependencies": {

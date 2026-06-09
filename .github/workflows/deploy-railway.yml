@@ -1,4 +1,4 @@
-# Verifikon build-in (frontend + API bundle për Vercel) në çdo push në master.
+# Verifikon typecheck, build dhe smoke E2E në çdo push në master.
 name: Build KetuJemi
 
 on:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,10 +22,23 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install and build (Vercel layout)
-        run: |
-          pnpm install --no-frozen-lockfile
-          pnpm run build
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
 
-      - name: Build OK
-        run: echo "Frontend + api/handler.mjs u build-uan. Deploy në Vercel nga GitHub."
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Production build
+        run: pnpm run build
+
+      - name: Install Playwright (Chromium)
+        run: pnpm exec playwright install chromium --with-deps
+        working-directory: ketujemi-2/artifacts/vendi
+
+      - name: Smoke E2E (static shell, no DB)
+        run: pnpm run test:smoke
+        env:
+          CI: true
+
+      - name: Verify OK
+        run: echo "typecheck + build + smoke E2E passed."

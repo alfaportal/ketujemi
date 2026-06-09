@@ -5,6 +5,8 @@ node_modules/
 # Environment & secrets
 .env
 **/.env
+.env.staging
+**/.env.staging
 !.env.example
 !**/.env.example
 
@@ -23,6 +25,10 @@ ketujemi-2/lib/db/drizzle/introspected/
 **/.turbo/
 **/.next/
 **/coverage/
+**/*.tsbuildinfo
+tsc-*.txt
+**/test-results/
+**/playwright-report/
 
 # Archives & duplicate project copies (not the deployed app)
 *.zip
