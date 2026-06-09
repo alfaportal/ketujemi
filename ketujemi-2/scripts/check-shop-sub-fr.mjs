@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { shopSubcategoryToEnglish } from "./shop-subcategory-sq-en.mjs";
 import { shopSubcategoryToFrench } from "./shop-subcategory-en-fr.mjs";
+import { SHOP_SQ_FR } from "./shop-phrases-fr.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const taxonomySrc = readFileSync(join(root, "lib/shop-directory-taxonomy.ts"), "utf8");
@@ -13,13 +14,13 @@ const ALB = /[ëçËÇ]/;
 
 const badAlb = subs.filter((sq) => {
   const en = shopSubcategoryToEnglish(sq);
-  const fr = shopSubcategoryToFrench(en);
+  const fr = SHOP_SQ_FR[sq] ?? shopSubcategoryToFrench(en);
   return ALB.test(en) || ALB.test(fr) || en === sq;
 });
 
 const badEnInFr = subs.filter((sq) => {
   const en = shopSubcategoryToEnglish(sq);
-  const fr = shopSubcategoryToFrench(en);
+  const fr = SHOP_SQ_FR[sq] ?? shopSubcategoryToFrench(en);
   return fr === en && /[A-Za-z]{4,}/.test(en);
 });
 

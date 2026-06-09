@@ -5,7 +5,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { englishToFrench, FR_KEY_FROM_SQ } from "./albanian-french.mjs";
+import { albanianToFrench, englishToFrench, FR_KEY_FROM_SQ } from "./albanian-french.mjs";
+import { AUTH_ACCOUNT_FR } from "./auth-account-i18n.mjs";
 import { PANEL_FR } from "./panel-i18n.mjs";
 import { SO_DEVICE_FR } from "./sport-device-i18n.mjs";
 import { PAGE_I18N_FR } from "./page-i18n-fr-phrases.mjs";
@@ -103,9 +104,13 @@ function translateEnText(text) {
   return translateEnLine(text);
 }
 
-function toFrenchFromEn(key, enValue) {
+const SQ_FR_DIRECT = /^(login_|delete_|profile_)/;
+
+function toFrenchFromEn(key, enValue, ksValue) {
   if (PANEL_FR[key]) return PANEL_FR[key];
+  if (AUTH_ACCOUNT_FR[key]) return AUTH_ACCOUNT_FR[key];
   if (FR_KEY_FROM_SQ[key]) return FR_KEY_FROM_SQ[key];
+  if (SQ_FR_DIRECT.test(key) && ksValue) return albanianToFrench(key, ksValue);
   if (key.endsWith("_from") && (enValue === "From" || enValue === "Nga")) return "De";
   if (key.endsWith("_to") && (enValue === "To" || enValue === "Deri")) return "À";
   return translateEnText(enValue);
@@ -149,6 +154,8 @@ function translateEnTsStringLiterals(chunk, { inlineProps = false } = {}) {
 }
 
 // ── app-extra-i18n-fr.ts (EN_EXTRA → fr, sq fallback) ────────────────────────
+const ksExtraEntries = parseConstObject(path.join(vendiLib, "app-extra-i18n.ts"), "KS_EXTRA");
+const ksExtraMap = Object.fromEntries(ksExtraEntries.map((e) => [e.key, e.value]));
 const enExtraEntries = parseConstObject(path.join(vendiLib, "app-extra-i18n-en.ts"), "EN_EXTRA");
 
 const enAk = parseConstObject(path.join(vendiLib, "arsim-kurse-form-i18n.ts"), "EN_AK");
@@ -164,7 +171,7 @@ for (const e of enSo) allEnKeys.set(e.key, e.value);
 const frEntries = [...allEnKeys.entries()]
   .filter(([key]) => !key.startsWith("adm_"))
   .sort(([a], [b]) => a.localeCompare(b))
-  .map(([key, en]) => ({ key, value: toFrenchFromEn(key, en) }));
+  .map(([key, en]) => ({ key, value: toFrenchFromEn(key, en, ksExtraMap[key]) }));
 
 const frExtraPath = path.join(vendiLib, "app-extra-i18n-fr.ts");
 fs.writeFileSync(

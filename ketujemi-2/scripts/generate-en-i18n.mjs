@@ -11,6 +11,7 @@ import { categoryEnglishFromKs } from "./category-en-from-ks.mjs";
 import { categorySqToEnglish } from "./category-sq-en.mjs";
 import { PANEL_EN } from "./panel-i18n.mjs";
 import { SO_DEVICE_EN } from "./sport-device-i18n.mjs";
+import { AUTH_ACCOUNT_EN } from "./auth-account-i18n.mjs";
 
 const ALBANIAN_CHARS = /[ëçËÇ]/;
 
@@ -264,6 +265,7 @@ const KEY_OVERRIDES = {
   so_intro_martial: "Paragliding, drones, helmets and safety straps.",
   so_intro_winter: "Ski, snowboard, thermal clothing and goggles.",
   ...PANEL_EN,
+  ...AUTH_ACCOUNT_EN,
 };
 
 /** Keys where word-by-word replacement produces broken hybrid text. */
@@ -280,15 +282,22 @@ function mneToEnglish(mne) {
   return tr;
 }
 
+const NO_MNE_FALLBACK = /^(login_|delete_|profile_)/;
+
 function toEnglish(key, ks, mne) {
   if (KEY_OVERRIDES[key]) return KEY_OVERRIDES[key];
   if (key.endsWith("_from") && (ks === "Nga" || ks === "Od")) return "From";
   if (key.endsWith("_to") && (ks === "Deri" || ks === "Do")) return "To";
-  let en = usesPhraseOnlyTranslation(key)
-    ? translateStaticStringValue(ks)
-    : translateStringValue(ks);
+  const phraseOnly =
+    usesPhraseOnlyTranslation(key) || /^(delete_|profile_)/.test(key);
+  let en = phraseOnly ? translateStaticStringValue(ks) : translateStringValue(ks);
+  if (ALBANIAN_CHARS.test(en)) {
+    const worded = wordTranslate(ks);
+    if (!ALBANIAN_CHARS.test(worded)) en = worded;
+  }
   if (
     ALBANIAN_CHARS.test(en) &&
+    !NO_MNE_FALLBACK.test(key) &&
     !/^(hub_|ap_|cat_|fj_|ak_|lz_|so_|mh_|ps_|rk_|ksh_|bb_|ep_|md_|ni_|kl_|tel_)/.test(key)
   ) {
     const fromMne = mneToEnglish(mne);

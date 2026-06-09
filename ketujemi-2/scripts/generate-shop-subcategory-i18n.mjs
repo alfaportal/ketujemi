@@ -7,6 +7,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { shopSubcategoryToEnglish } from "./shop-subcategory-sq-en.mjs";
 import { shopSubcategoryToFrench } from "./shop-subcategory-en-fr.mjs";
+import { SHOP_SQ_FR } from "./shop-phrases-fr.mjs";
 
 function titleCaseEn(en) {
   return en.replace(/(^|[\s&(/])([a-z])/g, (_, pre, c) => pre + c.toUpperCase());
@@ -56,7 +57,7 @@ const mneBySqOut = {};
 
 for (const { slug, nameSq } of subs) {
   const enLabel = shopSubcategoryToEnglish(nameSq);
-  const frLabel = shopLabelFr(enLabel);
+  const frLabel = SHOP_SQ_FR[nameSq] ?? shopLabelFr(enLabel);
   const mkLabel = mkBySq[nameSq] ?? enLabel;
   const mneLabel = mneBySq[nameSq] ?? enLabel;
   en[slug] = enLabel;
