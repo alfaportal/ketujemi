@@ -167,24 +167,24 @@ const EN: VipPackagesPageCopy = {
 };
 
 const FR: VipPackagesPageCopy = {
-  ...KS,
+  ...EN,
   docTitle: "Forfaits entreprise — KetuJemi.com",
   heroBadge: "FORFAITS ENTREPRISE",
   heroTitle: "Choisissez le forfait adapté à votre activité",
-  heroSubtitle: "Grow visibility, reach more customers, et manage votre business professionally.",
+  heroSubtitle: "Grow visibility, reach more customers, and manage your business professionally.",
   packagesTitle: "PACKAGES — COMPARE",
   standardCta: "Devenir partenaire",
   vipCta: "Devenir partenaire VIP",
   compareTitle: "FULL COMPARISON",
   compareColFeature: "Feature",
-  compareColFree: "Gratuit",
+  compareColFree: "Free",
   compareColStandard: "Partenaire",
   compareColVip: "Partenaire VIP",
   faqTitle: "QUESTIONS FRÉQUENTES",
   ctaTitle: "Prêt à développer votre activité ?",
-  ctaSubtitle: "Join our verified partners et reach thousands of customers every day.",
+  ctaSubtitle: "Join our verified partners and reach thousands of customers every day.",
   ctaButton: "Devenir partenaire",
-  ctaFinePrint: "Non online payment — we will contact vous after review.",
+  ctaFinePrint: "Non online payment — we will contact you after review.",
 };
 
 const VIP_PACKAGES_PAGES: Record<UiTranslationLocale, VipPackagesPageCopy> = {

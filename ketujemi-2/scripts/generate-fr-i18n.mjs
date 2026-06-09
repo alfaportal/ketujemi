@@ -6,6 +6,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { applyFrenchPhrases } from "./french-phrases.mjs";
+import { PAGE_I18N_FR } from "./page-i18n-fr-phrases.mjs";
+import { STATIC_PAGE_FR } from "./static-page-fr-phrases.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
@@ -80,6 +82,8 @@ const PLACEHOLDER_RE = /\{[a-zA-Z0-9_]+\}/g;
 
 function translateValue(raw) {
   const text = raw.replace(/\\n/g, "\n").replace(/\\"/g, '"');
+  if (PAGE_I18N_FR[text]) return PAGE_I18N_FR[text];
+  if (STATIC_PAGE_FR[text]) return STATIC_PAGE_FR[text];
   const tokens = [];
   const masked = text.replace(PLACEHOLDER_RE, (m) => {
     const id = `__PH${tokens.length}__`;
@@ -192,10 +196,36 @@ const FR_KEY_OVERRIDES = {
   ak_fld_category: "Choisir la catégorie",
   ak_fld_subcategory: "Choisir la sous-catégorie",
   ak_fld_city: "Ville",
+  ak_select_category_ph: "Choisir la catégorie…",
+  ak_select_subcategory_ph: "Choisir la sous-catégorie…",
+  ak_select_city_ph: "Choisir la ville…",
+  hub_banesa_sub:
+    "Sélectionnez le type de transaction, le type de bien et les filtres — les résultats se mettent à jour automatiquement dans la liste ci-dessous.",
+  hub_drill_pick_type:
+    "Choisissez la catégorie — chaque sélection ouvre une nouvelle page avec des filtres.",
+  so_type_pick_hint:
+    "Choisissez ce que vous recherchez — chaque option ouvre une page avec filtres et annonces.",
+  hub_pickBrandLbl: "Choisir la marque",
+  hub_pickModelLbl: "Choisir le modèle",
+  hub_model_pickBrandFirst: "Choisissez d'abord une marque",
+  hub_model_pickBrandOrBody: "Choisir la marque ou le type de carrosserie",
+  login_phoneIntro: "Saisissez le numéro au format international (p. ex. +383…).",
+  lz_panel_sub: "Rechercher locaux commerciaux, bureaux, entrepôts, locaux industriels et garages.",
+  lz_sec_office_count: "Nombre de bureaux",
+  profile_add_email_ok: "E-mail ajouté et vérifié.",
+  profile_add_phone_ok: "Téléphone ajouté et vérifié.",
+  ps_st_lirim_banesash: "Libération d'appartements et de bureaux",
+  reg_sellerGate_save: "Enregistrer et continuer",
+  shop_apply_gate_start: "Confirmer et continuer la demande",
+  shop_edit_gate_start: "Confirmer et modifier la boutique",
+  so_intro_martial: "Parapente, drones, casques et sangles de sécurité.",
+  so_intro_winter: "Ski, snowboard, vêtements thermiques et lunettes.",
 };
 
 function toFrench(key, enValue) {
   if (FR_KEY_OVERRIDES[key]) return FR_KEY_OVERRIDES[key];
+  if (PAGE_I18N_FR[enValue]) return PAGE_I18N_FR[enValue];
+  if (STATIC_PAGE_FR[enValue]) return STATIC_PAGE_FR[enValue];
   return translateValue(enValue);
 }
 
@@ -226,34 +256,11 @@ fs.writeFileSync(
 );
 console.log(`Wrote ${frExtraPath} (${frEntries.length} keys)`);
 
-// ── static-pages-i18n-fr.ts ──────────────────────────────────────────────────
-const enStaticPath = path.join(vendiLib, "static-pages-i18n-en.ts");
-const enStaticSrc = fs.readFileSync(enStaticPath, "utf8");
-const enStaticBlock = extractConstBlock(enStaticSrc, "EN_STATIC_PAGES");
-if (enStaticBlock) {
-  let frStaticBlock = enStaticBlock
-    .replace("export const EN_STATIC_PAGES", "export const FR_STATIC_PAGES")
-    .replace("const EN_STATIC_PAGES", "export const FR_STATIC_PAGES");
-  frStaticBlock = translateTsStringLiterals(frStaticBlock);
-  const frStaticPath = path.join(vendiLib, "static-pages-i18n-fr.ts");
-  fs.writeFileSync(
-    frStaticPath,
-    `/** Auto-generated — run ketujemi-2/scripts/generate-fr-i18n.mjs */\nimport type { StaticPagesCopy } from "./static-pages-i18n";\n\n${frStaticBlock}\n`,
-    "utf8",
-  );
-  console.log(`Wrote ${frStaticPath}`);
-
-  const staticPath = path.join(vendiLib, "static-pages-i18n.ts");
-  let staticSrc = fs.readFileSync(staticPath, "utf8");
-  if (!staticSrc.includes("FR_STATIC_PAGES")) {
-    staticSrc = staticSrc.replace(
-      /import \{ EN_STATIC_PAGES \} from ["']@\/lib\/static-pages-i18n-en["'];/,
-      'import { EN_STATIC_PAGES } from "@/lib/static-pages-i18n-en";\nimport { FR_STATIC_PAGES } from "@/lib/static-pages-i18n-fr";',
-    );
-  }
-  staticSrc = staticSrc.replace("fr: EN_STATIC_PAGES,", "fr: FR_STATIC_PAGES,");
-  fs.writeFileSync(staticPath, staticSrc, "utf8");
-  console.log("Updated static-pages-i18n.ts → fr: FR_STATIC_PAGES");
+// ── static-pages-i18n-fr.ts (hand-built via build-static-fr.mjs) ─────────────
+import { spawnSync } from "node:child_process";
+const buildStatic = path.join(__dirname, "build-static-fr.mjs");
+if (fs.existsSync(buildStatic)) {
+  spawnSync(process.execPath, [buildStatic], { stdio: "inherit" });
 }
 
 // ── arsim / sport FR consts ────────────────────────────────────────────────────
@@ -308,6 +315,7 @@ function patchPageI18n(fileName) {
   }
 
   let frBlock = enBlock.replace(/^((?:export )?)const EN:/, "$1const FR:");
+  frBlock = frBlock.replace(/\.\.\.KS,\s*/, "...EN,\n  ");
   frBlock = translateTsStringLiterals(frBlock);
 
   if (!src.includes("const FR:")) {

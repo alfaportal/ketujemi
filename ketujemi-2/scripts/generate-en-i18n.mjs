@@ -339,17 +339,58 @@ const KEY_OVERRIDES = {
   lz_country_any: "All countries",
   lz_country_lbl: "Country",
   lz_country_ph: "Select country",
+  hub_banesa_sub:
+    "Select transaction type, property type and filters — results update automatically in the list below.",
+  hub_drill_pick_type: "Choose category — each selection opens a new page with filters.",
+  so_type_pick_hint:
+    "Choose what you are looking for — each option opens a page with filters and listings.",
+  hub_pickBrandLbl: "Choose brand",
+  hub_pickModelLbl: "Select model",
+  hub_model_pickBrandFirst: "Select a brand first",
+  hub_model_pickBrandOrBody: "Choose brand or body type",
+  ak_select_category_ph: "Select category…",
+  ak_select_subcategory_ph: "Select subcategory…",
+  ak_select_city_ph: "Select city…",
+  ak_fld_category: "Select category",
+  ak_fld_subcategory: "Select subcategory",
+  ak_fld_city: "City",
+  login_phoneIntro: "Enter the phone number in international format (e.g. +383…).",
+  lz_panel_sub: "Search commercial premises, offices, warehouses, industrial units and garages.",
+  lz_sec_office_count: "Number of offices",
+  profile_add_email_ok: "Email added and verified.",
+  profile_add_phone_ok: "Phone added and verified.",
+  ps_st_lirim_banesash: "Apartment & office clearance",
+  reg_sellerGate_save: "Save and continue",
+  shop_apply_gate_start: "Confirm and continue with the application",
+  shop_edit_gate_start: "Confirm and edit shop",
+  so_intro_martial: "Paragliding, drones, helmets and safety straps.",
+  so_intro_winter: "Ski, snowboard, thermal clothing and goggles.",
 };
 
 /** Keys where word-by-word replacement produces broken hybrid text. */
 function usesPhraseOnlyTranslation(key) {
-  return /^(login_|nav_|toast_|reg_|nf_|home_ad)/.test(key);
+  return /^(login_|nav_|toast_|reg_|nf_|home_ad|hub_|so_|fj_|ap_|lz_|tel_|cat_|mh_|ps_|ep_|delete_|ak_|ui_)/.test(
+    key,
+  );
 }
 
-function toEnglish(key, ks, _mne) {
+function mneToEnglish(mne) {
+  if (!mne || CYRILLIC.test(mne)) return null;
+  const tr = translateStaticStringValue(mne);
+  if (ALBANIAN_CHARS.test(tr) || CYRILLIC.test(tr)) return null;
+  return tr;
+}
+
+function toEnglish(key, ks, mne) {
   if (KEY_OVERRIDES[key]) return KEY_OVERRIDES[key];
-  if (usesPhraseOnlyTranslation(key)) return translateStaticStringValue(ks);
-  return translateStringValue(ks);
+  let en = usesPhraseOnlyTranslation(key)
+    ? translateStaticStringValue(ks)
+    : translateStringValue(ks);
+  if (ALBANIAN_CHARS.test(en)) {
+    const fromMne = mneToEnglish(mne);
+    if (fromMne) en = fromMne;
+  }
+  return en;
 }
 
 function translateStringValue(value) {
@@ -475,22 +516,13 @@ if (!soSrc.includes("export const EN_SO_DEVICE")) {
   console.log("Updated sport-outdoor-device-i18n.ts with EN_SO_DEVICE");
 }
 
-// ── static-pages-i18n-en.ts (from MNE Latin — phrase map to English) ─────────────
-const staticPath = path.join(vendiLib, "static-pages-i18n.ts");
-const staticSrc = fs.readFileSync(staticPath, "utf8");
-const mneStaticStart = staticSrc.indexOf("const MNE: StaticPagesCopy = {");
-const mneStaticEnd = staticSrc.indexOf("export const STATIC_PAGES:");
-let mneStaticBlock = staticSrc.slice(mneStaticStart, mneStaticEnd);
-mneStaticBlock = translateTsStringLiterals(mneStaticBlock, true);
-mneStaticBlock = mneStaticBlock.replace("const MNE:", "export const EN_STATIC_PAGES:");
-
+// ── static-pages-i18n-en.ts (hand-maintained — do not auto-overwrite) ───────────
 const enStaticPath = path.join(vendiLib, "static-pages-i18n-en.ts");
-fs.writeFileSync(
-  enStaticPath,
-  `/** Auto-generated — run ketujemi-2/scripts/generate-en-i18n.mjs */\nimport type { StaticPagesCopy } from "./static-pages-i18n";\n\n${mneStaticBlock}`,
-  "utf8",
-);
-console.log(`Wrote ${enStaticPath}`);
+if (fs.existsSync(enStaticPath)) {
+  console.log(`Skipped ${enStaticPath} (hand-maintained)`);
+} else {
+  console.warn(`Missing hand-maintained ${enStaticPath}`);
+}
 
 // ── category-translations — full CAT_EN ───────────────────────────────────────
 const catPath = path.join(vendiLib, "category-translations.ts");

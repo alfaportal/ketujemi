@@ -151,7 +151,7 @@ const FR: ShopDashboardCopy = {
   myShop: "Ma boutique",
   statusApproved: "Approuvé",
   statusPending: "En attente",
-  postListing: "Publier Annonce",
+  postListing: "Post Listing",
   manageListings: "Gérer les annonces",
   editShop: "Modifier la boutique",
   totalListings: "Annonces au total",
@@ -170,7 +170,7 @@ const FR: ShopDashboardCopy = {
   tiktok: "TikTok",
   whatsapp: "WhatsApp",
   website: "Website",
-  noShopListings: "Aucune annonce actif de votre boutique.",
+  noShopListings: "Aucune annonce active de votre boutique.",
   activeListingsCount: "{count} annonces actives",
   filterAll: "Tout",
 };

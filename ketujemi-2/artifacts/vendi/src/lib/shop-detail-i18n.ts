@@ -169,7 +169,7 @@ const FR: ShopDetailCopy = {
   aboutTitle: "À propos de la boutique",
   mapTitle: "Carte",
   listingsTitle: "Annonces de la boutique",
-  noListings: "Aucune annonce actif pour le moment.",
+  noListings: "Aucune annonce active pour le moment.",
   negotiable: "Négociable",
   seoTitleInCity: "in {city} | KetuJemi.com",
   activeListingsCount: "{count} annonces actives",
