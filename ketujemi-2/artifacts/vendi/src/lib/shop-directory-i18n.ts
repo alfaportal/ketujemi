@@ -1,6 +1,12 @@
 import { useMarket } from "@/lib/market-context";
 import { translationKeyForUiLang, type UiTranslationLocale } from "@/lib/ui-languages";
 import type { ShopDirectoryCategory, ShopDirectorySubcategory } from "@/lib/shop-directory-taxonomy";
+import {
+  SHOP_SUB_EN,
+  SHOP_SUB_FR,
+  SHOP_SUB_MK,
+  SHOP_SUB_MNE,
+} from "@/lib/shop-directory-subcategory-i18n.generated";
 
 export type ShopDirectoryCopy = {
   docTitle: string;
@@ -282,12 +288,22 @@ export function translateDirectoryCategory(
   return copy.categoryNames[cat.slug] ?? cat.nameSq;
 }
 
+const SUB_BY_LOCALE: Record<
+  Exclude<UiTranslationLocale, "ks">,
+  Record<string, string>
+> = {
+  mk: SHOP_SUB_MK,
+  mne: SHOP_SUB_MNE,
+  en: SHOP_SUB_EN,
+  fr: SHOP_SUB_FR,
+};
+
 export function translateDirectorySubcategory(
   sub: Pick<ShopDirectorySubcategory, "slug" | "nameSq">,
   locale: UiTranslationLocale,
 ): string {
   if (locale === "ks") return sub.nameSq;
-  return sub.nameSq;
+  return SUB_BY_LOCALE[locale]?.[sub.slug] ?? sub.nameSq;
 }
 
 export function seoCategoryDescriptionFor(

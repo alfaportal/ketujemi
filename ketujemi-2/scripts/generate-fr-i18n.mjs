@@ -259,4 +259,7 @@ import { spawnSync } from "node:child_process";
 const catFrScript = path.join(__dirname, "generate-cat-fr.mjs");
 spawnSync(process.execPath, [catFrScript], { stdio: "inherit" });
 
+const shopSubScript = path.join(__dirname, "generate-shop-subcategory-i18n.mjs");
+spawnSync(process.execPath, [shopSubScript], { stdio: "inherit" });
+
 console.log("Done — French generated (sq → en → fr, separate bundles).");
