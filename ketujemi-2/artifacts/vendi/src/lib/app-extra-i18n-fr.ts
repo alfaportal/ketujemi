@@ -1746,7 +1746,7 @@ export const FR_EXTRA: Record<string, string> = {
   ui_paymentFailed: "Payment failed",
   ui_paymentMethodsAria: "Modes de paiement",
   ui_postGiftBtn: "🎁 Post gift →",
-  ui_postRequestBtn: "Post request",
+  ui_postRequestBtn: "Publier une demande",
   ui_reportProblemPh: "Décrivez le problème…",
   ui_sellLangBlocked: "Langage de vente non autorisé in \"Wanted to Buy\" (mot interdit: \"{word}\").",
   ui_streetAddressPh: "Rue, numéro…",

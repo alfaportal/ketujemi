@@ -116,6 +116,19 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Kërkoni diçka që nuk e gjeni? Shkruani çfarë ju duhet dhe postoni kërkesën këtu — personat që e kanë sendin e shohin dhe mund t'ju kontaktojnë shpejt.",
     kerkojEmptyTrust: "Shpallja juaj shfaqet këtu si çdo njoftim tjetër.",
     kerkojEmptyPost: "Posto Kërkesën",
+    kerkojFormBanner:
+      "Kjo është kërkesë blerjeje — shkruani çfarë po kërkoni. Kërkesa shfaqet në platformë dhe u shkon personave dhe dyqaneve që merren me atë send, që të gjeni më shpejt atë që ju duhet.",
+    kerkojFormPhotoHint:
+      "📸 Shtoni foto që tregojnë çfarë po kërkoni (model, ngjyrë, gjendje…) — shitësit e kuptojnë më lehtë dhe ju kontaktojnë më shpejt.",
+    kerkojFormTitlePh: "p.sh. Kërkoj BMW X5 dizel 2018+, iPhone 14 Pro 256GB, karrocë bebe...",
+    kerkojFormDescPh:
+      "Shkruani në detaje: çfarë po kërkoni, modeli, specifikimet, gjendja e dëshiruar, buxheti (opsional), nga ku mund ta merrni. Sa më e qartë kërkesa, aq më shpejt dikush që e ka sendin do t'ju kontaktojë.",
+    kerkojFormDescNote:
+      "Kërkesa juaj i shkon drejtpërdrejt personave dhe dyqaneve që merren me këtë lloj sendi — jo vetëm te lista publike.",
+    kerkojFormPostTitle: "Posto Kërkesën",
+    kerkojFormTitleLbl: "Titulli i kërkesës",
+    kerkojFormPhotosLbl: "Foto të kërkesës",
+    kerkojFormClickPhoto: "Kliko për të shtuar foto — tregoni çfarë po kërkoni",
     postFromAnywhere: "Mund të postoni nga kudo.",
     allListings: "Të gjitha njoftimet",
     listings: "Njoftimet",
@@ -349,6 +362,19 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Kërkoni diçka që nuk e gjeni? Shkruani çfarë ju duhet dhe postoni kërkesën këtu — personat që e kanë sendin e shohin dhe mund t'ju kontaktojnë shpejt.",
     kerkojEmptyTrust: "Shpallja juaj shfaqet këtu si çdo njoftim tjetër.",
     kerkojEmptyPost: "Posto Kërkesën",
+    kerkojFormBanner:
+      "Kjo është kërkesë blerjeje — shkruani çfarë po kërkoni. Kërkesa shfaqet në platformë dhe u shkon personave dhe dyqaneve që merren me atë send, që të gjeni më shpejt atë që ju duhet.",
+    kerkojFormPhotoHint:
+      "📸 Shtoni foto që tregojnë çfarë po kërkoni (model, ngjyrë, gjendje…) — shitësit e kuptojnë më lehtë dhe ju kontaktojnë më shpejt.",
+    kerkojFormTitlePh: "p.sh. Kërkoj BMW X5 dizel 2018+, iPhone 14 Pro 256GB, karrocë bebe...",
+    kerkojFormDescPh:
+      "Shkruani në detaje: çfarë po kërkoni, modeli, specifikimet, gjendja e dëshiruar, buxheti (opsional), nga ku mund ta merrni. Sa më e qartë kërkesa, aq më shpejt dikush që e ka sendin do t'ju kontaktojë.",
+    kerkojFormDescNote:
+      "Kërkesa juaj i shkon drejtpërdrejt personave dhe dyqaneve që merren me këtë lloj sendi — jo vetëm te lista publike.",
+    kerkojFormPostTitle: "Posto Kërkesën",
+    kerkojFormTitleLbl: "Titulli i kërkesës",
+    kerkojFormPhotosLbl: "Foto të kërkesës",
+    kerkojFormClickPhoto: "Kliko për të shtuar foto — tregoni çfarë po kërkoni",
     postFromAnywhere: "Mund të postoni nga kudo.",
     allListings: "Të gjitha njoftimet",
     listings: "Njoftimet",
@@ -581,6 +607,19 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Барате нешто што не можете да го најдете? Објавете барање овде — лицата што го имаат производот ќе ве видат и можат побрзо да ве контактираат.",
     kerkojEmptyTrust: "Вашиот оглас се прикажува овде како и сите други.",
     kerkojEmptyPost: "Објави барање",
+    kerkojFormBanner:
+      "Ова е барање за купување — опишете што барате. Барањето се објавува на платформата и им стигнува до луѓе и продавници што се занимаваат со тој производ, за побрзо да го најдете.",
+    kerkojFormPhotoHint:
+      "📸 Додајте фотографии што покажуваат што барате (модел, боја, состојба…) — продавачите полесно ќе ве разберат и ќе ве контактираат побрзо.",
+    kerkojFormTitlePh: "пр. Барам BMW X5 дизел 2018+, iPhone 14 Pro 256GB, количка за бебе...",
+    kerkojFormDescPh:
+      "Опишете детално: што барате, модел, спецификации, посакувана состојба, буџет (опционално), од каде можете да го земете. Колку е појасно барањето, толку побрзо некој што го има производот ќе ве контактира.",
+    kerkojFormDescNote:
+      "Вашето барање директно стигнува до луѓе и продавници што се занимаваат со ваков производ — не само на јавната листа.",
+    kerkojFormPostTitle: "Објави барање",
+    kerkojFormTitleLbl: "Наслов на барањето",
+    kerkojFormPhotosLbl: "Фотографии на барањето",
+    kerkojFormClickPhoto: "Кликнете за да додадете фото — покажете што барате",
     postFromAnywhere: "Можете да објавувате од каде било.",
     allListings: "Сите огласи",
     listings: "Огласи",
@@ -813,6 +852,19 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Tražite nešto što ne možete naći? Objavite tražnju ovdje — ljudi koji imaju taj artikal videće vas i mogu vas brže kontaktirati.",
     kerkojEmptyTrust: "Vaš oglas se prikazuje ovdje kao i svaki drugi.",
     kerkojEmptyPost: "Objavi tražnju",
+    kerkojFormBanner:
+      "Ovo je tražnja za kupovinu — napišite šta tražite. Tražnja se objavljuje na platformi i stiže ljudima i prodavnicama koje se bave tim artiklom, da brže pronađete ono što vam treba.",
+    kerkojFormPhotoHint:
+      "📸 Dodajte fotografije koje pokazuju šta tražite (model, boja, stanje…) — prodavci vas lakše razumiju i brže vas kontaktiraju.",
+    kerkojFormTitlePh: "npr. Tražim BMW X5 dizel 2018+, iPhone 14 Pro 256GB, kolica za bebe...",
+    kerkojFormDescPh:
+      "Opišite detaljno: šta tražite, model, specifikacije, željeno stanje, budžet (opciono), odakle možete preuzeti. Što je jasnija tražnja, brže će vas neko ko ima artikal kontaktirati.",
+    kerkojFormDescNote:
+      "Vaša tražnja ide direktno ljudima i prodavnicama koje se bave ovakvim artiklima — ne samo na javnu listu.",
+    kerkojFormPostTitle: "Objavi tražnju",
+    kerkojFormTitleLbl: "Naslov tražnje",
+    kerkojFormPhotosLbl: "Fotografije tražnje",
+    kerkojFormClickPhoto: "Kliknite da dodate foto — pokažite šta tražite",
     postFromAnywhere: "Možete objaviti odakle god.",
     allListings: "Svi oglasi",
     listings: "Oglasi",
@@ -1045,6 +1097,19 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Looking for something you cannot find? Post your request here — people who have the item will see it and can contact you quickly.",
     kerkojEmptyTrust: "Your listing appears here like any other listing.",
     kerkojEmptyPost: "Post request",
+    kerkojFormBanner:
+      "This is a buying request — describe what you are looking for. Your request is published on the platform and reaches people and shops who deal with that item, so you can find what you need faster.",
+    kerkojFormPhotoHint:
+      "📸 Add photos that show what you are looking for (model, colour, condition…) — sellers understand you more easily and contact you faster.",
+    kerkojFormTitlePh: "e.g. Looking for BMW X5 diesel 2018+, iPhone 14 Pro 256GB, baby stroller...",
+    kerkojFormDescPh:
+      "Describe in detail: what you need, model, specs, preferred condition, budget (optional), where you can pick it up. The clearer the request, the faster someone who has the item will contact you.",
+    kerkojFormDescNote:
+      "Your request goes directly to people and shops who deal with this type of item — not only the public listing.",
+    kerkojFormPostTitle: "Post request",
+    kerkojFormTitleLbl: "Request title",
+    kerkojFormPhotosLbl: "Request photos",
+    kerkojFormClickPhoto: "Tap to add photos — show what you are looking for",
     postFromAnywhere: "You can post from anywhere.",
     allListings: "All listings",
     listings: "Listings",

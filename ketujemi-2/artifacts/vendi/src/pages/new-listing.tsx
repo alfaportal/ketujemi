@@ -898,7 +898,9 @@ export default function NewListing() {
             <span className="hidden sm:inline">{t.back}</span>
           </button>
           <div className="flex-1 text-center">
-            <span className="font-bold text-lg text-gray-900">{t.postTitle}</span>
+            <span className="font-bold text-lg text-gray-900">
+              {isKerkojCategory ? t.kerkojFormPostTitle : t.postTitle}
+            </span>
           </div>
           <AuthToolbar variant="compact" />
         </div>
@@ -916,6 +918,11 @@ export default function NewListing() {
             </Link>
           </div>
         ) : null}
+        {isKerkojCategory ? (
+          <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3.5 text-sm text-gray-800 leading-relaxed">
+            {t.kerkojFormBanner}
+          </div>
+        ) : null}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)} className="space-y-4">
 
@@ -925,7 +932,8 @@ export default function NewListing() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <Label className="text-sm font-medium">
-                      {t.listingPhotos} <span className="text-red-500">*</span>
+                      {isKerkojCategory ? t.kerkojFormPhotosLbl : t.listingPhotos}{" "}
+                      <span className="text-red-500">*</span>
                       <span className="text-gray-400 font-normal ml-1">(min 1)</span>
                     </Label>
                     <span className="text-sm text-gray-400">{imageUrls.length}</span>
@@ -977,7 +985,9 @@ export default function NewListing() {
                       <div className="flex flex-col items-center gap-1.5 text-gray-400 hover:text-blue-500 transition-colors">
                         <ImagePlus size={30} />
                         <p className="text-sm font-semibold text-gray-600">{t.addPhoto}</p>
-                        <p className="text-sm">{t.clickToSelect}</p>
+                        <p className="text-sm">
+                          {isKerkojCategory ? t.kerkojFormClickPhoto : t.clickToSelect}
+                        </p>
                         <p className="text-sm text-gray-300">JPG, PNG, WEBP</p>
                       </div>
                     )}
@@ -996,7 +1006,11 @@ export default function NewListing() {
                   <ImagePreview urls={imageUrls} onRemove={isUploading ? () => {} : removeImage} mainLabel={t.mainPhotoLabel} />
 
                   <p className="text-sm text-gray-600 mt-3 leading-relaxed">
-                    {hasShop ? t.firstPhotoAiHintShop : t.firstPhotoAiHint}
+                    {isKerkojCategory
+                      ? t.kerkojFormPhotoHint
+                      : hasShop
+                        ? t.firstPhotoAiHintShop
+                        : t.firstPhotoAiHint}
                   </p>
                 </div>
 
@@ -1110,11 +1124,19 @@ export default function NewListing() {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t.listingTitle} <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel>
+                      {isKerkojCategory ? t.kerkojFormTitleLbl : t.listingTitle}{" "}
+                      <span className="text-red-500">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Input
                         data-testid="input-title"
-                        placeholder={tx.titlePlaceholderExample ?? "p.sh. BMW X5 2020, JBL 500, iPhone 14 Pro Max..."}
+                        placeholder={
+                          isKerkojCategory
+                            ? t.kerkojFormTitlePh
+                            : (tx.titlePlaceholderExample ??
+                              "p.sh. BMW X5 2020, JBL 500, iPhone 14 Pro Max...")
+                        }
                         {...field}
                       />
                     </FormControl>
@@ -1572,12 +1594,15 @@ export default function NewListing() {
                     <FormControl>
                       <Textarea
                         data-testid="input-description"
-                        placeholder={t.descPlaceholder}
-                        rows={5}
+                        placeholder={isKerkojCategory ? t.kerkojFormDescPh : t.descPlaceholder}
+                        rows={isKerkojCategory ? 7 : 5}
                         className="resize-none"
                         {...field}
                       />
                     </FormControl>
+                    {isKerkojCategory ? (
+                      <p className="text-sm text-blue-800/90 leading-relaxed">{t.kerkojFormDescNote}</p>
+                    ) : null}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -1799,7 +1824,7 @@ export default function NewListing() {
                     : isDhurataCategory
                       ? (tx.ui_postGiftBtn ?? "🎁 Posto Dhuratën →")
                       : isKerkojCategory
-                        ? (tx.ui_postRequestBtn ?? "Posto Kërkesën")
+                        ? t.kerkojFormPostTitle
                         : t.submitListing}
                 </Button>
               </div>
