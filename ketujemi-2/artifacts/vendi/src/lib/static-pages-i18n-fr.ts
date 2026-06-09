@@ -1,4 +1,4 @@
-/** Auto-generated — sq→en→fr via ketujemi-2/scripts/generate-fr-i18n.mjs */
+/** French static pages — hand-maintained (do not auto-overwrite). */
 import type { StaticPagesCopy } from "./static-pages-i18n";
 
 export const FR_STATIC_PAGES: StaticPagesCopy = {
@@ -92,104 +92,104 @@ export const FR_STATIC_PAGES: StaticPagesCopy = {
     tagline: "En utilisant KetuJemi.com, vous acceptez les conditions suivantes de l'opérateur légal de la plateforme.",
     sections: [
       {
-        title: "Legal entity and platform",
+        title: "Entité légale et plateforme",
         paragraphs: [
-          "KetuJemi.com (Acheter et vendre) is operated and offered by REVOLUTION INVEST Sh.p.k., based in Ferizaj, Republic of Kosovo.",
-          "Payments for optional platform services (Boost to Top, advertising, etc.) are made on behalf of this entity. KetuJemi.com is a trade name; the legal relationship with users is with REVOLUTION INVEST Sh.p.k.",
+          "KetuJemi.com (Acheter et vendre) est exploité et proposé par REVOLUTION INVEST Sh.p.k., basé à Ferizaj, République du Kosovo.",
+          "Les paiements pour les services optionnels de la plateforme (Boost to Top, publicité, etc.) sont effectués au nom de cette entité. KetuJemi.com est une dénomination commerciale ; la relation juridique avec les utilisateurs est avec REVOLUTION INVEST Sh.p.k.",
         ],
-        bulletsIntro: "Official operator details:",
+        bulletsIntro: "Coordonnées officielles de l'opérateur :",
         bullets: [
-          "Full legal name: REVOLUTION INVEST Sh.p.k.",
-          "NRB (business registration number): 811314567",
-          "Registered office: Ferizaj, Republic of Kosovo",
-          "Email: revolutionsinvest05@gmail.com",
-          "Phone: +383 43 555 294",
-          "Website: www.ketujemi.com",
+          "Raison sociale : REVOLUTION INVEST Sh.p.k.",
+          "NRB (numéro d'enregistrement) : 811314567",
+          "Siège social : Ferizaj, République du Kosovo",
+          "E-mail : revolutionsinvest05@gmail.com",
+          "Téléphone : +383 43 555 294",
+          "Site web : www.ketujemi.com",
         ],
       },
       {
-        title: "Role of the platform",
+        title: "Rôle de la plateforme",
         paragraphs: [
-          "KetuJemi.com is only an intermediary space between buyers and sellers. REVOLUTION INVEST Sh.p.k. is not a party to sales contracts between users.",
-          "The user bears full legal responsibility for the accuracy and legality of every listing they publish.",
+          "KetuJemi.com n'est qu'un espace intermédiaire entre acheteurs et vendeurs. REVOLUTION INVEST Sh.p.k. n'est pas partie aux contrats de vente entre utilisateurs.",
+          "L'utilisateur assume l'entière responsabilité juridique de l'exactitude et de la légalité de chaque annonce qu'il publie.",
         ],
       },
       {
-        title: "Limited liability for goods and services",
+        title: "Responsabilité limitée pour les biens et services",
         paragraphs: [
-          "KetuJemi.com does not buy, sell or own the products listed in ads. Every transaction (price, payment, delivery, warranty) is agreed directly between buyer and seller.",
-          "We do not guarantee the quality, condition, legality or availability of any goods or services advertised by other users.",
-          "We are not liable for direct or indirect damage arising from use of the platform, disputes between parties, off-platform payments, or third-party actions.",
-          "Our maximum liability, where the law allows, is limited to amounts paid for platform services (e.g. packages, VIP, TOP) in the last 12 months — not the value of goods sold between users.",
+          "KetuJemi.com n'achète, ne vend ni ne possède les produits listés dans les annonces. Chaque transaction (prix, paiement, livraison, garantie) est convenue directement entre acheteur et vendeur.",
+          "Nous ne garantissons pas la qualité, l'état, la légalité ou la disponibilité des biens ou services annoncés par d'autres utilisateurs.",
+          "Nous ne sommes pas responsables des dommages directs ou indirects liés à l'utilisation de la plateforme, aux litiges entre parties, aux paiements hors plateforme ou aux actions de tiers.",
+          "Notre responsabilité maximale, lorsque la loi le permet, est limitée aux montants payés pour les services de la plateforme (forfaits, VIP, TOP, etc.) au cours des 12 derniers mois — et non à la valeur des biens vendus entre utilisateurs.",
         ],
       },
       {
-        title: "Refunds and paid services",
+        title: "Remboursements et services payants",
         paragraphs: [
-          "Publication d'annonces is free and unlimited for all users.",
-          "The only optional paid service for listings is **Boost to Top** (featured homepage placement).",
-          "Payments for Boost to Top, advertising or other platform services are, as a rule, non-refundable, except where applicable law requires otherwise or we confirm in writing a verified technical error on our side.",
+          "La publication d'annonces est gratuite et illimitée pour tous les utilisateurs.",
+          "Le seul service payant optionnel pour les annonces est **Boost to Top** (mise en avant sur la page d'accueil).",
+          "Les paiements pour Boost to Top, la publicité ou d'autres services de la plateforme ne sont en règle générale pas remboursables, sauf si la loi applicable l'exige ou si nous confirmons par écrit une erreur technique vérifiée de notre côté.",
         ],
         bullets: [
-          "For disputes about a purchase between users, contact the other party; we can only help through content moderation.",
+          "Pour les litiges concernant un achat entre utilisateurs, contactez l'autre partie ; nous pouvons uniquement intervenir via la modération du contenu.",
         ],
       },
       {
-        title: "Account and posting",
+        title: "Compte et publication",
         bullets: [
-          "You must be registered and signed in to post listings",
-          "You are responsible for keeping your account credentials secure",
-          "Respect category rules and platform guidelines",
-          "Accounts cannot be transferred to another person",
+          "Vous devez être inscrit et connecté pour publier des annonces",
+          "Vous êtes responsable de la sécurité de vos identifiants de connexion",
+          "Respectez les règles de catégorie et les directives de la plateforme",
+          "Les comptes ne peuvent pas être transférés à une autre personne",
         ],
       },
       {
-        title: "Content",
+        title: "Contenu",
         bullets: [
-          "Do not post material that infringes copyright or breaks the law",
-          "The platform may remove or suspend listings that break the rules without prior notice",
-          "By posting, you grant KetuJemi.com the right to display your content on the platform",
+          "Ne publiez pas de contenu qui enfreint le droit d'auteur ou la loi",
+          "La plateforme peut supprimer ou suspendre les annonces qui enfreignent les règles sans préavis",
+          "En publiant, vous accordez à KetuJemi.com le droit d'afficher votre contenu sur la plateforme",
         ],
       },
       {
-        title: "Platform intellectual property",
+        title: "Propriété intellectuelle de la plateforme",
         paragraphs: [
-          "The KetuJemi.com logo, design, code and structure are the exclusive property of REVOLUTION INVEST Sh.p.k. Copying, reproduction or use without written permission is prohibited.",
+          "Le logo, le design, le code et la structure de KetuJemi.com sont la propriété exclusive de REVOLUTION INVEST Sh.p.k. Toute copie, reproduction ou utilisation sans autorisation écrite est interdite.",
         ],
       },
       {
-        title: "Applicable law and disputes",
+        title: "Droit applicable et litiges",
         paragraphs: [
-          "These terms are governed by the laws of the Republic of Kosovo. Any dispute arising from use of the platform shall be resolved by the competent courts of Ferizaj, Republic of Kosovo. The Albanian-language version is the official and binding version in case of conflict with translations in other languages.",
+          "Ces conditions sont régies par les lois de la République du Kosovo. Tout litige lié à l'utilisation de la plateforme sera tranché par les tribunaux compétents de Ferizaj, République du Kosovo. La version en langue albanaise fait foi en cas de conflit avec les traductions dans d'autres langues.",
         ],
       },
       {
-        title: "Service interruption",
+        title: "Interruption du service",
         paragraphs: [
-          "REVOLUTION INVEST Sh.p.k. reserves the right to interrupt, modify or suspend the platform or any part of it at any time, with or without prior notice, without legal liability to users.",
+          "REVOLUTION INVEST Sh.p.k. se réserve le droit d'interrompre, modifier ou suspendre la plateforme ou toute partie de celle-ci à tout moment, avec ou sans préavis, sans responsabilité juridique envers les utilisateurs.",
         ],
       },
       {
         title: "Force majeure",
         paragraphs: [
-          "We are not liable for interruptions or damage caused by events beyond our reasonable control, including cyber attacks, infrastructure outages, natural disasters or government decisions.",
+          "Nous ne sommes pas responsables des interruptions ou dommages causés par des événements hors de notre contrôle raisonnable, notamment les cyberattaques, pannes d'infrastructure, catastrophes naturelles ou décisions gouvernementales.",
         ],
       },
       {
-        title: "Contact information",
-        paragraphs: ["For legal questions, platform services, reports or support:"],
+        title: "Coordonnées",
+        paragraphs: ["Pour les questions juridiques, services de la plateforme, signalements ou assistance :"],
         bullets: [
           "REVOLUTION INVEST Sh.p.k., Ferizaj — NRB 811314567",
-          "Company email: revolutionsinvest05@gmail.com · Tel: +383 43 555 294",
-          "Platform: info@ketujemi.com · support@ketujemi.com",
-          "Form: www.ketujemi.com/kontakt",
-          "Working hours: Monday – Friday, 09:00 – 17:00",
+          "E-mail société : revolutionsinvest05@gmail.com · Tél. : +383 43 555 294",
+          "Plateforme : info@ketujemi.com · support@ketujemi.com",
+          "Formulaire : www.ketujemi.com/kontakt",
+          "Heures d'ouverture : lundi – vendredi, 09:00 – 17:00",
         ],
       },
       {
-        title: "Changes",
+        title: "Modifications",
         paragraphs: [
-          "These terms may be updated; the current version is always published on this page. Continued use after changes is considered acceptance.",
+          "Ces conditions peuvent être mises à jour ; la version en vigueur est toujours publiée sur cette page. L'utilisation continue après modification vaut acceptation.",
         ],
       },
     ],
@@ -199,54 +199,54 @@ export const FR_STATIC_PAGES: StaticPagesCopy = {
     tagline: "Comment nous traitons vos données — simplement et en toute transparence.",
     sections: [
       {
-        title: "What we collect",
+        title: "Ce que nous collectons",
         bullets: [
-          "Name and email (account and communication)",
-          "Numéro de téléphone (optional — for contact on listings or SMS sign-in, if you choose)",
-          "IP address (security and fraud prevention)",
-          "Listing data you post (text, photos, price, category)",
-          "Session data and technical cookies (see Cookies section below)",
+          "Nom et e-mail (compte et communication)",
+          "Numéro de téléphone (facultatif — pour le contact sur les annonces ou la connexion par SMS, si vous le choisissez)",
+          "Adresse IP (sécurité et prévention de la fraude)",
+          "Données d'annonce que vous publiez (texte, photos, prix, catégorie)",
+          "Données de session et cookies techniques (voir la section Cookies ci-dessous)",
         ],
       },
       {
-        title: "Sign in with Google or Facebook",
+        title: "Connexion avec Google ou Facebook",
         paragraphs: [
-          "If you choose to sign in with Google or Facebook, we only receive your name and email address from those services — nothing else. We do not have access to your posts, contacts, messages or any other data on your social account. We use this only to identify you on the platform.",
+          "Si vous choisissez de vous connecter avec Google ou Facebook, nous ne recevons de ces services que votre nom et votre adresse e-mail — rien d'autre. Nous n'avons pas accès à vos publications, contacts, messages ni à toute autre donnée de votre compte social. Nous utilisons ces informations uniquement pour vous identifier sur la plateforme.",
         ],
       },
       {
-        title: "Why we use them",
+        title: "Pourquoi nous les utilisons",
         bullets: [
-          "Authentication and user support",
-          "Spam and abuse prevention",
-          "Service improvement (aggregate statistics, no sale of personal data)",
-          "Phone verification via SMS (Vonage)",
-          "Storage of listing photos (Cloudinary — international servers)",
+          "Authentification et assistance utilisateur",
+          "Prévention du spam et des abus",
+          "Amélioration du service (statistiques agrégées, sans vente de données personnelles)",
+          "Vérification du téléphone par SMS (Vonage)",
+          "Stockage des photos d'annonces (Cloudinary — serveurs internationaux)",
         ],
       },
       {
         title: "Cookies",
         paragraphs: [
-          "We use technical cookies to keep your session active (e.g. stay signed in). We do not use advertising cookies and do not share data with ad platforms. You can disable cookies in your browser, but this may affect how the platform works.",
+          "Nous utilisons des cookies techniques pour maintenir votre session active (par ex. rester connecté). Nous n'utilisons pas de cookies publicitaires et ne partageons pas de données avec des plateformes publicitaires. Vous pouvez désactiver les cookies dans votre navigateur, mais cela peut affecter le fonctionnement de la plateforme.",
         ],
       },
       {
-        title: "Storage and your rights",
+        title: "Stockage et vos droits",
         paragraphs: [
-          "Data is stored encrypted. We do not sell it to third parties for marketing. Photos and listing data may be kept for up to 30 days after deletion for backup purposes, then permanently deleted. Inactive accounts for more than 24 months may be deleted after email notice.",
-          "You may request correction or deletion by contacting support@ketujemi.com.",
+          "Les données sont stockées de manière chiffrée. Nous ne les vendons pas à des tiers à des fins marketing. Les photos et données d'annonce peuvent être conservées jusqu'à 30 jours après suppression à des fins de sauvegarde, puis supprimées définitivement. Les comptes inactifs depuis plus de 24 mois peuvent être supprimés après notification par e-mail.",
+          "Vous pouvez demander la correction ou la suppression de vos données en contactant support@ketujemi.com.",
         ],
       },
       {
-        title: "International data transfers",
+        title: "Transferts internationaux de données",
         paragraphs: [
-          "Some services we use (Cloudinary for photos, Vonage for SMS) have servers outside Kosovo. Your data may be transferred and stored abroad, always in line with international security standards.",
+          "Certains services que nous utilisons (Cloudinary pour les photos, Vonage pour les SMS) disposent de serveurs en dehors du Kosovo. Vos données peuvent être transférées et stockées à l'étranger, toujours conformément aux normes internationales de sécurité.",
         ],
       },
       {
-        title: "Minimum age",
+        title: "Âge minimum",
         paragraphs: [
-          "The platform is for people aged 16 and over. If you are under this age, you may not create an account.",
+          "La plateforme est destinée aux personnes âgées de 16 ans et plus. Si vous avez moins de cet âge, vous ne pouvez pas créer de compte.",
         ],
       },
     ],
@@ -256,37 +256,37 @@ export const FR_STATIC_PAGES: StaticPagesCopy = {
     tagline: "Comment nous utilisons les cookies sur KetuJemi.com.",
     sections: [
       {
-        title: "What are cookies",
+        title: "Que sont les cookies",
         paragraphs: [
-          "Cookies are small text files stored on your device when you visit a website. We use them to ensure the platform works correctly and to improve your experience.",
+          "Les cookies sont de petits fichiers texte stockés sur votre appareil lorsque vous visitez un site web. Nous les utilisons pour assurer le bon fonctionnement de la plateforme et améliorer votre expérience.",
         ],
       },
       {
-        title: "Types of cookies we use",
+        title: "Types de cookies que nous utilisons",
         bullets: [
-          "Essential — required for basic operation: sign-in, session security, navigation. These cannot be disabled.",
-          "Functional — save your preferences such as selected market (Kosovo / Albanie / etc.) and language. Without them you would need to choose each time.",
-          "Analytics — Google Analytics 4: we collect anonymous data such as pages visited, visitor counts and approximate location (country/city). IP addresses are anonymised — we do not identify individuals.",
+          "Essentiels — nécessaires au fonctionnement de base : connexion, sécurité de session, navigation. Ils ne peuvent pas être désactivés.",
+          "Fonctionnels — enregistrent vos préférences telles que le marché sélectionné (Kosovo / Albanie / etc.) et la langue. Sans eux, vous devriez choisir à chaque visite.",
+          "Analytiques — Google Analytics 4 : nous collectons des données anonymes telles que les pages visitées, le nombre de visiteurs et la localisation approximative (pays/ville). Les adresses IP sont anonymisées — nous n'identifions pas les personnes.",
         ],
       },
       {
-        title: "What we do NOT do with cookies",
+        title: "Ce que nous ne faisons PAS avec les cookies",
         bullets: [
-          "We do not use advertising or third-party tracking cookies",
-          "We do not share cookie data with advertising companies",
-          "We do not build advertising profiles based on your behaviour",
+          "Nous n'utilisons pas de cookies publicitaires ou de suivi tiers",
+          "Nous ne partageons pas les données de cookies avec des sociétés publicitaires",
+          "Nous ne créons pas de profils publicitaires basés sur votre comportement",
         ],
       },
       {
-        title: "Your control",
+        title: "Votre contrôle",
         paragraphs: [
-          'You can turn off or delete cookies in your browser settings at any time. Some features (such as staying signed in) may not work without essential cookies. For browser-specific help: Chrome, Firefox, Safari, Edge — see "Settings → Privacy".',
+          'Vous pouvez désactiver ou supprimer les cookies dans les paramètres de votre navigateur à tout moment. Certaines fonctionnalités (comme rester connecté) peuvent ne pas fonctionner sans cookies essentiels. Aide par navigateur : Chrome, Firefox, Safari, Edge — voir « Paramètres → Confidentialité ».',
         ],
       },
       {
-        title: "Changes",
+        title: "Modifications",
         paragraphs: [
-          "This policy may be updated. The current version is always published on this page.",
+          "Cette politique peut être mise à jour. La version en vigueur est toujours publiée sur cette page.",
         ],
       },
     ],
@@ -343,8 +343,8 @@ export const FR_STATIC_PAGES: StaticPagesCopy = {
       {
         title: "Ce qui est bloqué automatiquement",
         bullets: [
-          'General ads ("contact us", "official page", etc.)',
-          'Price 0, "by agreement" or "contact us"',
+          'Annonces générales (« contactez-nous », « page officielle », etc.)',
+          'Prix 0, « sur accord » ou « contactez-nous »',
           "Photos stock (pexels, unsplash, etc.)",
           "Titre trop court ou non spécifique",
           "Même titre deux fois (doublon)",
@@ -369,10 +369,10 @@ export const FR_STATIC_PAGES: StaticPagesCopy = {
       {
         title: "Conséquences des infractions",
         table: [
-          { label: "1", value: "Warning email" },
-          { label: "2", value: "Listing removed" },
-          { label: "3", value: "30-day suspension" },
-          { label: "4+", value: "Permanent ban" },
+          { label: "1", value: "Avertissement par e-mail" },
+          { label: "2", value: "Annonce supprimée" },
+          { label: "3", value: "Suspension de 30 jours" },
+          { label: "4+", value: "Bannissement permanent" },
         ],
       },
       {
@@ -401,18 +401,18 @@ export const FR_STATIC_PAGES: StaticPagesCopy = {
     instagramLabel: "Instagram:",
     formTitle: "Formulaire de contact",
     nameLabel: "Votre nom",
-    emailFieldLabel: "Email",
+    emailFieldLabel: "E-mail",
     subjectLabel: "Objet",
     messageLabel: "Message",
     subjectPlaceholder: "Choisir un objet",
     subjects: [
-      { value: "pyetje", label: "General question" },
-      { value: "problem", label: "Technical problem" },
-      { value: "raportim", label: "Report a listing" },
-      { value: "partneritet", label: "Partnership and business" },
-      { value: "shtypi", label: "Press and media" },
-      { value: "ligjor", label: "Legal request" },
-      { value: "tjeter", label: "Other" },
+      { value: "pyetje", label: "Question générale" },
+      { value: "problem", label: "Problème technique" },
+      { value: "raportim", label: "Signaler une annonce" },
+      { value: "partneritet", label: "Partenariat et entreprise" },
+      { value: "shtypi", label: "Presse et médias" },
+      { value: "ligjor", label: "Demande juridique" },
+      { value: "tjeter", label: "Autre" },
     ],
     submitBtn: "Envoyer le message",
     toastRequired: "Veuillez remplir tous les champs obligatoires",
@@ -570,7 +570,7 @@ export const FR_STATIC_PAGES: StaticPagesCopy = {
       {
         title: "Délai de réponse",
         paragraphs: [
-          'Press requests are answered within 2–3 business days. For urgent matters, put «PRESS — URGENT» in the email subject.',
+          "Les demandes presse sont traitées sous 2 à 3 jours ouvrables. Pour les urgences, indiquez « PRESSE — URGENT » dans l'objet de l'e-mail.",
         ],
       },
       {

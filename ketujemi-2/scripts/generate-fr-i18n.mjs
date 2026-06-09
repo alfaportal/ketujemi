@@ -169,22 +169,13 @@ fs.writeFileSync(
 );
 console.log(`Wrote ${frExtraPath} (${frEntries.length} keys)`);
 
-// ── static-pages-i18n-fr.ts (EN → fr) ───────────────────────────────────────
-const enStaticPath = path.join(vendiLib, "static-pages-i18n-en.ts");
-const enStaticSrc = fs.readFileSync(enStaticPath, "utf8");
-const enStaticStart = enStaticSrc.indexOf("export const EN_STATIC_PAGES:");
-const enStaticEnd = enStaticSrc.indexOf("};", enStaticStart) + 2;
-let enStaticBlock = enStaticSrc.slice(enStaticStart, enStaticEnd);
-enStaticBlock = translateEnTsStringLiterals(enStaticBlock, { inlineProps: false });
-enStaticBlock = enStaticBlock.replace("export const EN_STATIC_PAGES:", "export const FR_STATIC_PAGES:");
-
+// ── static-pages-i18n-fr.ts (hand-maintained — do not auto-overwrite) ───────
 const frStaticPath = path.join(vendiLib, "static-pages-i18n-fr.ts");
-fs.writeFileSync(
-  frStaticPath,
-  `/** Auto-generated — sq→en→fr via ketujemi-2/scripts/generate-fr-i18n.mjs */\nimport type { StaticPagesCopy } from "./static-pages-i18n";\n\n${enStaticBlock}\n`,
-  "utf8",
-);
-console.log(`Wrote ${frStaticPath}`);
+if (fs.existsSync(frStaticPath)) {
+  console.log(`Skipped ${frStaticPath} (hand-maintained)`);
+} else {
+  console.warn(`Missing hand-maintained ${frStaticPath}`);
+}
 
 // ── arsim / sport FR from EN ─────────────────────────────────────────────────
 const frAk = enAk.map(({ key, value }) => ({ key, value: toFrenchFromEn(key, value) }));
