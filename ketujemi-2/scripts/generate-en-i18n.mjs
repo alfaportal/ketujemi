@@ -9,8 +9,8 @@ import { applyEnglishPhrases } from "./english-phrases.mjs";
 import { wordTranslateSqToEn } from "./albanian-words.mjs";
 import { categoryEnglishFromKs } from "./category-en-from-ks.mjs";
 import { categorySqToEnglish } from "./category-sq-en.mjs";
-import { HUB_EN } from "./hub-i18n.mjs";
-import { FJ_EN } from "./fj-i18n.mjs";
+import { PANEL_EN } from "./panel-i18n.mjs";
+import { SO_DEVICE_EN } from "./sport-device-i18n.mjs";
 
 const ALBANIAN_CHARS = /[ëçËÇ]/;
 
@@ -263,8 +263,7 @@ const KEY_OVERRIDES = {
   shop_edit_gate_start: "Confirm and edit shop",
   so_intro_martial: "Paragliding, drones, helmets and safety straps.",
   so_intro_winter: "Ski, snowboard, thermal clothing and goggles.",
-  ...HUB_EN,
-  ...FJ_EN,
+  ...PANEL_EN,
 };
 
 /** Keys where word-by-word replacement produces broken hybrid text. */
@@ -288,7 +287,10 @@ function toEnglish(key, ks, mne) {
   let en = usesPhraseOnlyTranslation(key)
     ? translateStaticStringValue(ks)
     : translateStringValue(ks);
-  if (ALBANIAN_CHARS.test(en) && !/^(hub_|ap_|cat_|fj_)/.test(key)) {
+  if (
+    ALBANIAN_CHARS.test(en) &&
+    !/^(hub_|ap_|cat_|fj_|ak_|lz_|so_|mh_|ps_|rk_|ksh_|bb_|ep_|md_|ni_|kl_|tel_)/.test(key)
+  ) {
     const fromMne = mneToEnglish(mne);
     if (fromMne) en = fromMne;
   }
@@ -393,30 +395,42 @@ ${formatRecordBody(enEntries)}
 console.log(`Wrote ${enExtraPath} (${enEntries.length} non-admin keys + ADMIN_EN_EXTRA)`);
 
 // ── arsim / sport EN consts ──────────────────────────────────────────────────
-const enAk = akKs.map(({ key, value }) => ({ key, value: toEnglish(key, value, akMne[key]) }));
-const enSo = soKs.map(({ key, value }) => ({ key, value: toEnglish(key, value, soMne[key]) }));
+const enAk = akKs.map(({ key, value }) => ({
+  key,
+  value: PANEL_EN[key] ?? toEnglish(key, value, akMne[key]),
+}));
+const enSo = soKs.map(({ key, value }) => ({
+  key,
+  value: SO_DEVICE_EN[key] ?? toEnglish(key, value, soMne[key]),
+}));
 
 const akPath = path.join(vendiLib, "arsim-kurse-form-i18n.ts");
 let akSrc = fs.readFileSync(akPath, "utf8");
-if (!akSrc.includes("export const EN_AK_FORM")) {
+const enAkBlock = `const EN_AK: Record<keyof typeof KS, string> = {\n${formatRecordBody(enAk)}\n};\nexport const EN_AK_FORM = EN_AK;\n`;
+if (akSrc.includes("export const EN_AK_FORM")) {
+  akSrc = akSrc.replace(/const EN_AK:[\s\S]*?export const EN_AK_FORM = EN_AK;\n/, enAkBlock);
+} else {
   akSrc = akSrc.replace(
     "export const MNE_AK_FORM = MNE;",
-    `${formatRecord("EN_AK", enAk).replace("Record<string, string>", "Record<keyof typeof KS, string>")}\nexport const EN_AK_FORM = EN_AK;\nexport const MNE_AK_FORM = MNE;`,
+    `${enAkBlock}export const MNE_AK_FORM = MNE;`,
   );
-  fs.writeFileSync(akPath, akSrc, "utf8");
-  console.log("Updated arsim-kurse-form-i18n.ts with EN_AK_FORM");
 }
+fs.writeFileSync(akPath, akSrc, "utf8");
+console.log("Updated arsim-kurse-form-i18n.ts EN_AK_FORM");
 
 const soPath = path.join(vendiLib, "sport-outdoor-device-i18n.ts");
 let soSrc = fs.readFileSync(soPath, "utf8");
-if (!soSrc.includes("export const EN_SO_DEVICE")) {
+const enSoBlock = `const EN_SO: Record<keyof typeof KS, string> = {\n${formatRecordBody(enSo)}\n};\nexport const EN_SO_DEVICE = EN_SO;\n`;
+if (soSrc.includes("export const EN_SO_DEVICE")) {
+  soSrc = soSrc.replace(/const EN_SO:[\s\S]*?export const EN_SO_DEVICE = EN_SO;\n/, enSoBlock);
+} else {
   soSrc = soSrc.replace(
     "export const MNE_SO_DEVICE = MNE;",
-    `${formatRecord("EN_SO", enSo).replace("Record<string, string>", "Record<keyof typeof KS, string>")}\nexport const EN_SO_DEVICE = EN_SO;\nexport const MNE_SO_DEVICE = MNE;`,
+    `${enSoBlock}export const MNE_SO_DEVICE = MNE;`,
   );
-  fs.writeFileSync(soPath, soSrc, "utf8");
-  console.log("Updated sport-outdoor-device-i18n.ts with EN_SO_DEVICE");
 }
+fs.writeFileSync(soPath, soSrc, "utf8");
+console.log("Updated sport-outdoor-device-i18n.ts EN_SO_DEVICE");
 
 // ── static-pages-i18n-en.ts (hand-maintained — do not auto-overwrite) ───────────
 const enStaticPath = path.join(vendiLib, "static-pages-i18n-en.ts");

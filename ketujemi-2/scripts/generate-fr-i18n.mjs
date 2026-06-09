@@ -6,8 +6,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { englishToFrench, FR_KEY_FROM_SQ } from "./albanian-french.mjs";
-import { HUB_FR } from "./hub-i18n.mjs";
-import { FJ_FR } from "./fj-i18n.mjs";
+import { PANEL_FR } from "./panel-i18n.mjs";
+import { SO_DEVICE_FR } from "./sport-device-i18n.mjs";
 import { PAGE_I18N_FR } from "./page-i18n-fr-phrases.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -103,8 +103,6 @@ function translateEnText(text) {
   return translateEnLine(text);
 }
 
-const PANEL_FR = { ...HUB_FR, ...FJ_FR };
-
 function toFrenchFromEn(key, enValue) {
   if (PANEL_FR[key]) return PANEL_FR[key];
   if (FR_KEY_FROM_SQ[key]) return FR_KEY_FROM_SQ[key];
@@ -185,8 +183,15 @@ if (fs.existsSync(frStaticPath)) {
 }
 
 // ── arsim / sport FR from EN ─────────────────────────────────────────────────
-const frAk = enAk.map(({ key, value }) => ({ key, value: toFrenchFromEn(key, value) }));
-const frSo = enSo.map(({ key, value }) => ({ key, value: toFrenchFromEn(key, value) }));
+const frAk = enAk.map(({ key, value }) => ({
+  key,
+  value: PANEL_FR[key] ?? toFrenchFromEn(key, value),
+}));
+const enSoMap = Object.fromEntries(enSo.map((e) => [e.key, e.value]));
+const frSo = soKs.map(({ key }) => ({
+  key,
+  value: SO_DEVICE_FR[key] ?? toFrenchFromEn(key, enSoMap[key] ?? ""),
+}));
 
 const akPath = path.join(vendiLib, "arsim-kurse-form-i18n.ts");
 let akSrc = fs.readFileSync(akPath, "utf8");

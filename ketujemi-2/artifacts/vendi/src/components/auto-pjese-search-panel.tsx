@@ -30,6 +30,7 @@ import { useMarket } from "@/lib/market-context";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { fillCount } from "@/lib/app-extra-i18n";
 import { translateCategory } from "@/lib/category-translations";
+import { translateAutoPjeseSubLabel } from "@/lib/auto-pjese-sub-i18n";
 import {
   AUTO_PJESE_BRANDS,
   AUTO_PJESE_PART_NAMES,
@@ -300,13 +301,13 @@ export function AutoPjeseSearchPanel({
                     >
                       <img
                         src={photo}
-                        alt={`${typeTitle} - ${group.label}`}
+                        alt={`${typeTitle} - ${translateAutoPjeseSubLabel(group.label, locale)}`}
                         className="h-24 w-full object-cover"
                         loading="lazy"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
                       <p className="absolute bottom-2 left-3 right-3 text-sm font-black text-white truncate">
-                        {group.label}
+                        {translateAutoPjeseSubLabel(group.label, locale)}
                       </p>
                     </button>
                   );
@@ -316,7 +317,7 @@ export function AutoPjeseSearchPanel({
               {partInfoGroup ? (
                 <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
                   <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">
-                    {partInfoGroup}
+                    {translateAutoPjeseSubLabel(partInfoGroup, locale)}
                   </p>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                     {(subcategoryGroups.find((g) => g.label === partInfoGroup)?.items ?? []).map((item) => (
@@ -324,7 +325,7 @@ export function AutoPjeseSearchPanel({
                         key={`part-detail-${partInfoGroup}-${item}`}
                         className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-sm font-medium text-slate-700"
                       >
-                        {item}
+                        {translateAutoPjeseSubLabel(item, locale)}
                       </li>
                     ))}
                   </ul>
@@ -336,7 +337,7 @@ export function AutoPjeseSearchPanel({
             {subcategoryGroups.map((group) => (
               <div key={group.label} className="space-y-2">
                 <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
-                  {group.label}
+                  {translateAutoPjeseSubLabel(group.label, locale)}
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   {group.items.map((item) => {
@@ -353,7 +354,7 @@ export function AutoPjeseSearchPanel({
                             : "border-gray-200 bg-white text-gray-800 hover:border-blue-200",
                         )}
                       >
-                        {item}
+                        {translateAutoPjeseSubLabel(item, locale)}
                       </button>
                     );
                   })}
