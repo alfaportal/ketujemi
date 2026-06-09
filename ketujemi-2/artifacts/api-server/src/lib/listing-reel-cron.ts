@@ -10,12 +10,17 @@ let runInFlight = false;
 
 function isListingReelCronEnabled(): boolean {
   const flag = process.env.LISTING_REEL_CRON_ENABLED?.trim().toLowerCase();
-  return flag !== "false" && flag !== "0" && flag !== "no";
+  return flag === "true" || flag === "1" || flag === "yes";
 }
 
 export async function runListingReelPostNow(): Promise<
   Awaited<ReturnType<typeof runListingReelPost>> & { reason?: string }
 > {
+  if (!isListingReelCronEnabled()) {
+    logger.info("listing reel skipped (LISTING_REEL_CRON_ENABLED is not true)");
+    return { posted: false, reason: "disabled" };
+  }
+
   if (runInFlight) {
     logger.warn("listing reel cron: previous run still in flight, skipping");
     return { posted: false, reason: "in_flight" };
@@ -35,7 +40,9 @@ export async function runListingReelPostNow(): Promise<
 
 export function startListingReelCron(): void {
   if (!isListingReelCronEnabled()) {
-    logger.info("listing reel cron disabled (LISTING_REEL_CRON_ENABLED=false)");
+    logger.info(
+      "listing reel cron disabled (set LISTING_REEL_CRON_ENABLED=true to enable)",
+    );
     return;
   }
 

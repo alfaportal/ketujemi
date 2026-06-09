@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
 import { ShopRatingStars } from "@/components/shop-rating-stars";
 import { ShopRatingBadge } from "@/components/shop-rating-badge";
@@ -30,6 +30,7 @@ type Props = {
 };
 
 export function ShopRatingsPanel({ shopId }: Props) {
+  const [location] = useLocation();
   const copy = useShopRatingCopy();
   const { uiLang } = useMarket();
   const { user } = useAuth();
@@ -134,7 +135,7 @@ export function ShopRatingsPanel({ shopId }: Props) {
             {saved ? <p className="text-sm text-green-700 font-medium">{copy.ratingSaved}</p> : null}
           </>
         ) : (
-          <Link href={loginUrlWithReturn()} className="text-sm font-semibold text-blue-600 hover:underline">
+          <Link href={loginUrlWithReturn(location)} className="text-sm font-semibold text-blue-600 hover:underline">
             {copy.loginToRate}
           </Link>
         )}

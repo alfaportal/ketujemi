@@ -6,6 +6,7 @@ import exchangeRatesRouter from "./exchange-rates";
 import adminRouter from "./admin";
 import contactRouter from "./contact";
 import cronSocialPostsRouter from "./cron-social-posts";
+import cronMaintenanceRouter from "./cron-maintenance";
 
 import authRouter from "./auth";
 import oauthRouter from "./oauth";
@@ -34,6 +35,7 @@ router.use(paymentsRouter);
 router.use(aiRouter);
 router.use(contactRouter);
 router.use(cronSocialPostsRouter);
+router.use(cronMaintenanceRouter);
 router.use(healthRouter);
 router.use(listingsRouter);
 router.use(categoriesRouter);

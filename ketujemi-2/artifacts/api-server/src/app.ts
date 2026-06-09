@@ -10,6 +10,7 @@ import { logger } from "./lib/logger";
 import { attachStaticFrontend } from "./lib/serve-static";
 import { canonicalHostRedirect } from "./lib/canonical-host";
 import { isCorsOriginAllowed } from "./lib/cors-config.js";
+import { globalApiLimiter } from "./lib/express-rate-limiters.js";
 
 const app: Express = express();
 
@@ -85,6 +86,7 @@ app.use(googleOAuthPublicRouter);
 app.use(facebookOAuthPublicRouter);
 app.use("/api", facebookOAuthPublicRouter);
 app.use(tiktokOAuthPublicRouter);
+app.use("/api", globalApiLimiter);
 app.use("/api", router);
 attachStaticFrontend(app);
 

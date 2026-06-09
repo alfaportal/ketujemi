@@ -11,11 +11,17 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
+function databasePoolMax(): number {
+  const raw = Number(process.env.DATABASE_POOL_MAX);
+  if (Number.isFinite(raw) && raw >= 2 && raw <= 30) return Math.floor(raw);
+  return process.env.NODE_ENV === "production" ? 8 : 10;
+}
+
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  max: 10,
+  max: databasePoolMax(),
   idleTimeoutMillis: 30_000,
-  connectionTimeoutMillis: 2_000,
+  connectionTimeoutMillis: 5_000,
 });
 export const db = drizzle(pool, { schema });
 

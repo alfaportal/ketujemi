@@ -36,8 +36,11 @@ export async function purgeExpiredListingById(listingId: number): Promise<boolea
   return deleteListingCascade(listingId, "expiry");
 }
 
-/** Background scheduler: every 1 minute on Railway. */
-const SCHEDULER_INTERVAL_MS = 60 * 1000;
+function expireListingsIntervalMs(): number {
+  const raw = Number(process.env.EXPIRE_LISTINGS_INTERVAL_MS);
+  if (Number.isFinite(raw) && raw >= 60_000) return Math.floor(raw);
+  return process.env.NODE_ENV === "production" ? 15 * 60 * 1000 : 60 * 1000;
+}
 
 /** Throttle on-demand purge when users browse listings (max once per 15s). */
 const ON_DEMAND_MIN_GAP_MS = 15 * 1000;
@@ -62,10 +65,12 @@ export function requestPurgeExpiredListings(): void {
 }
 
 export function startExpiredListingsScheduler(): void {
+  const intervalMs = expireListingsIntervalMs();
+  logger.info({ intervalMs }, "Expired listings scheduler started");
   void purgeExpiredListings();
   setInterval(() => {
     void purgeExpiredListings().catch((err) => {
       logger.error({ err }, "purgeExpiredListings failed");
     });
-  }, SCHEDULER_INTERVAL_MS);
+  }, intervalMs);
 }

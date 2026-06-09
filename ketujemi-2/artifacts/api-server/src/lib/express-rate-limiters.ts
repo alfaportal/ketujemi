@@ -1,5 +1,37 @@
 import rateLimit from "express-rate-limit";
+import type { Request } from "express";
 import { notifyAdminLoginRateLimited } from "./admin-login-alert.js";
+
+function clientIp(req: Request): string {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (typeof forwarded === "string" && forwarded.length > 0) {
+    return forwarded.split(",")[0]?.trim() || "unknown";
+  }
+  return req.ip || "unknown";
+}
+
+/** Broad protection for public API — does not block normal browsing. */
+export const globalApiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: clientIp,
+  skip: (req) => {
+    const p = req.path;
+    return (
+      p === "/healthz" ||
+      p.startsWith("/payments/webhook") ||
+      p.startsWith("/cron/")
+    );
+  },
+  handler: (_req, res) => {
+    res.status(429).json({
+      error: "RATE_LIMIT_GLOBAL",
+      message: "Shumë kërkesa. Prisni pak dhe provoni përsëri.",
+    });
+  },
+});
 
 /** Login & register: 10 requests / 15 min per IP */
 export const authLoginRegisterLimiter = rateLimit({

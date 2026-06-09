@@ -37,7 +37,14 @@ import { startShopSocialProfileEnrichCron } from "./lib/shop-social-profile-enri
 import { startListingReelCron } from "./lib/listing-reel-cron";
 import { purgeInvalidListingImagesOnStartup } from "./lib/purge-invalid-listing-images.js";
 import { startSystemMonitor } from "./lib/system-monitor.js";
-import { inlineCronsEnabled } from "./lib/inline-crons";
+import {
+  inlineHeavyCronsEnabled,
+  inlineMaintenanceCronsEnabled,
+} from "./lib/inline-crons";
+import {
+  isFacebookScheduledPostEnabled,
+  isInstagramScheduledPostEnabled,
+} from "./lib/social-post-flags";
 
 const rawPort = process.env["API_PORT"] ?? process.env["PORT"];
 
@@ -116,11 +123,23 @@ async function startServer(): Promise<void> {
     logger.info("Deletion feedback schema verified (deletion_feedback, users.deleted_at, shops.deleted_at)");
     await ensureFacebookDataDeletionSchema(pool);
     logger.info("Facebook data deletion schema verified (facebook_data_deletion_requests)");
-    await purgeInvalidListingImagesOnStartup();
+    if (process.env.NODE_ENV === "production") {
+      setTimeout(() => {
+        void purgeInvalidListingImagesOnStartup().catch((err) => {
+          logger.error({ err }, "purgeInvalidListingImagesOnStartup failed (deferred)");
+        });
+      }, 90_000);
+    } else {
+      await purgeInvalidListingImagesOnStartup();
+    }
     logPaymentStackReadiness(logger);
     logger.info(vonageConfigSummary(), "vonage sms config (masked)");
-    const { initializeFacebookPageAccessToken } = await import("./services/socialMedia.js");
-    await initializeFacebookPageAccessToken();
+    if (isFacebookScheduledPostEnabled() || isInstagramScheduledPostEnabled()) {
+      const { initializeFacebookPageAccessToken } = await import("./services/socialMedia.js");
+      await initializeFacebookPageAccessToken();
+    } else {
+      logger.info("Skipping Meta token init — FB/IG auto-post disabled");
+    }
     const { logFacebookOAuthStartupDiagnostics } = await import("./lib/facebook-oauth-health.js");
     await logFacebookOAuthStartupDiagnostics();
     const { startJobQueueWorkers } = await import("./queues/jobQueue.js");
@@ -143,18 +162,27 @@ async function startServer(): Promise<void> {
     }
 
     logger.info({ port }, "Server listening");
-    if (inlineCronsEnabled()) {
+    if (inlineMaintenanceCronsEnabled()) {
       startExpiredListingsScheduler();
       startExpiryReminderScheduler();
+      logger.info("Inline maintenance crons started (purge expired + expiry reminders)");
+    } else {
+      logger.info(
+        "Inline maintenance crons off — use POST /api/cron/maintenance with CRON_SECRET",
+      );
+    }
+    if (inlineHeavyCronsEnabled()) {
       startFacebookScheduledPostCron();
       startInstagramScheduledPostCron();
       startListingReelCron();
       startSocialFollowersCron();
       startShopSocialProfileEnrichCron();
       startSystemMonitor();
-      logger.info("Inline crons started (set INLINE_CRONS_ENABLED=false to disable on web dyno)");
+      logger.info("Inline heavy crons started (social, reel, monitor)");
     } else {
-      logger.info("Inline crons disabled — use Railway cron / CLI scripts for scheduled jobs");
+      logger.info(
+        "Inline heavy crons off in production — web API stays lean under traffic",
+      );
     }
   });
 }
