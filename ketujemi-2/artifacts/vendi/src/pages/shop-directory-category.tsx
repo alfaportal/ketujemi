@@ -188,7 +188,6 @@ export default function ShopDirectoryCategoryPage() {
           {cat.subcategories.map((sub) => (
             <CategoryPhotoPickerCard
               key={sub.slug}
-              selected={subFilter === sub.slug}
               href={`/dyqanet/${cat.slug}/${sub.slug}`}
               imageSrc={shopDirectorySubcategoryImageUrl(cat.slug, sub.slug) ?? categoryImageUrl ?? ""}
               fallbackImageSrc={categoryImageUrl}

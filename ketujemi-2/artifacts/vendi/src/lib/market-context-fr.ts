@@ -92,6 +92,11 @@ export const FR_TRANSLATIONS: Record<string, string> = {
   chooseBrand: "Choisir la marque",
   noListingsYet: "Aucune annonce pour le moment",
   beFirst: "Soyez le premier à publier dans cette catégorie !",
+  kerkojEmptyTitle: "Aucune demande pour le moment",
+  kerkojEmptySub:
+    "Vous cherchez quelque chose introuvable ailleurs ? Décrivez ce dont vous avez besoin et publiez votre demande ici — les personnes qui ont l'article vous verront et pourront vous contacter rapidement.",
+  kerkojEmptyTrust: "Votre annonce s'affiche ici comme toute autre annonce.",
+  kerkojEmptyPost: "Publier une demande",
   postFromAnywhere: "Vous pouvez publier depuis n'importe où.",
   allListings: "Toutes les annonces",
   listings: "Annonces",

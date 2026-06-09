@@ -40,6 +40,21 @@ export function isKerkojTeBlejSlug(slug: string | null | undefined): boolean {
   return slug?.trim() === KERKOJ_TE_BLEJ_SLUG;
 }
 
+/** True when `category` is kerkoj-te-blej or any descendant in the tree. */
+export function isUnderKerkojTeBlejCategory(
+  category: { slug?: string | null; parent_id?: number | null } | null | undefined,
+  all: ReadonlyArray<{ id: number; slug?: string | null; parent_id?: number | null }>,
+): boolean {
+  let cur = category;
+  while (cur) {
+    if (isKerkojTeBlejSlug(cur.slug)) return true;
+    const pid = cur.parent_id;
+    if (pid == null) break;
+    cur = all.find((c) => Number(c.id) === Number(pid)) ?? null;
+  }
+  return false;
+}
+
 export function isDhurataFalasSlug(slug: string | null | undefined): boolean {
   return slug?.trim() === DHURATA_FALAS_SLUG;
 }

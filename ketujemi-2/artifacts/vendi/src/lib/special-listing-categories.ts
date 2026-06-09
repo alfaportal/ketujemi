@@ -5,6 +5,7 @@ export {
   findDhurataBlockedWord,
   isDhurataFalasSlug,
   isKerkojTeBlejSlug,
+  isUnderKerkojTeBlejCategory,
   KERKOJ_MAX_PHOTOS,
   KERKOJ_TE_BLEJ_SLUG,
   LISTING_MAX_PHOTOS,

@@ -17,6 +17,7 @@ import {
   House,
   Smartphone,
   Laptop,
+  Search,
 } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
 import { getCategoryLucideIcon } from "@/lib/category-lucide-icon";
@@ -146,7 +147,11 @@ import { KafshetSearchPanel } from "@/components/kafshet-search-panel";
 import { getKafshetLeafCategoryIds } from "@/lib/kafshet-search-helpers";
 import { DhurataFalasHubIntro } from "@/components/dhurata-falas-hub-intro";
 import { DhurataFalasHeroSlideshow } from "@/components/dhurata-falas-hero-slideshow";
-import { isDhurataFalasSlug, isKerkojTeBlejSlug } from "@/lib/special-listing-categories";
+import {
+  isDhurataFalasSlug,
+  isKerkojTeBlejSlug,
+  isUnderKerkojTeBlejCategory,
+} from "@/lib/special-listing-categories";
 import { categoryEngine, type CategoryRow } from "@/services/CategoryEngine";
 import { TvElektronikeSearchPanel } from "@/components/tv-elektronike-search-panel";
 import { KompjuterLaptopHubPanel } from "@/components/kompjuter-laptop-hub-panel";
@@ -679,37 +684,66 @@ export default function CategoryPage() {
     setLocation(nextPath, { replace: true });
   }, [segment, categoryId, allCategories, setLocation, urlSearch]);
 
+  const currentCategory = allCategories?.find((c: any) => Number(c.id) === Number(categoryId));
+
+  const isInKerkojTeBlejTree = useMemo(
+    () =>
+      isUnderKerkojTeBlejCategory(
+        currentCategory as { slug?: string | null; parent_id?: number | null } | undefined,
+        (allCategories ?? []) as Array<{
+          id: number;
+          slug?: string | null;
+          parent_id?: number | null;
+        }>,
+      ),
+    [allCategories, currentCategory],
+  );
+
   const emptyListingsCopy = useMemo(() => {
+    if (isInKerkojTeBlejTree) {
+      return {
+        title: t.kerkojEmptyTitle,
+        sub: t.kerkojEmptySub,
+        trust: t.kerkojEmptyTrust,
+        post: t.kerkojEmptyPost,
+      };
+    }
     const subLong = (t as { ui_emptyListingsSubLong?: string }).ui_emptyListingsSubLong;
     if (uiLang === "en" && subLong) {
-      return { sub: subLong, trust: t.postFromAnywhere };
+      return { title: t.noListingsYet, sub: subLong, trust: t.postFromAnywhere, post: t.post };
     }
     switch (market.code) {
       case "ks":
       case "al":
         return {
+          title: t.noListingsYet,
           sub: subLong ?? "Bëhu i pari që posto në këtë kategori dhe arrij mijëra blerës potencialë!",
           trust: t.postFromAnywhere,
+          post: t.post,
         };
       case "mk":
         return {
+          title: t.noListingsYet,
           sub: "Биди прв кој ќе огласи во оваа категорија и достигни илјадници потенцијални купувачи!",
           trust: t.postFromAnywhere,
+          post: t.post,
         };
       case "mne":
         return {
+          title: t.noListingsYet,
           sub: "Budi prvi koji objavljuje u ovoj kategoriji i dođi do hiljada potencijalnih kupaca!",
           trust: t.postFromAnywhere,
+          post: t.post,
         };
       default:
         return {
+          title: t.noListingsYet,
           sub: t.beFirst,
           trust: t.postFromAnywhere,
+          post: t.post,
         };
     }
-  }, [market.code, uiLang, t]);
-
-  const currentCategory = allCategories?.find((c: any) => Number(c.id) === Number(categoryId));
+  }, [isInKerkojTeBlejTree, market.code, uiLang, t]);
   const children =
     allCategories?.filter((c: any) => Number(c.parent_id) === Number(categoryId)) ?? [];
 
@@ -1304,6 +1338,7 @@ export default function CategoryPage() {
     isKompjuterTypePage ||
     (KOMPJUTER_TYPE_ORDER as readonly string[]).includes(currentCategory?.name ?? "") ||
     (KOMPJUTER_BRAND_ORDER as readonly string[]).includes(currentCategory?.name ?? "");
+  const useKerkojEmptyListingIcon = isInKerkojTeBlejTree;
 
   const photo = isBanesaShtepiHub
     ? BANESA_HERO_PHOTO
@@ -1403,7 +1438,9 @@ export default function CategoryPage() {
         <div className="rounded-3xl bg-gradient-to-br from-sky-200/95 via-blue-100/85 to-[#2563eb]/45 p-[1.5px] shadow-sm shadow-blue-500/20">
           <div className="rounded-[calc(1.5rem-1.5px)] bg-[#f5f7fa] px-6 py-14 sm:px-10 sm:py-16 text-center">
             <div className="flex justify-center mb-5">
-              {useWrenchEmptyListingIcon ? (
+              {useKerkojEmptyListingIcon ? (
+                <Search size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
+              ) : useWrenchEmptyListingIcon ? (
                 <Wrench size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
               ) : useSmartphoneEmptyListingIcon ? (
                 <Smartphone size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
@@ -1419,7 +1456,7 @@ export default function CategoryPage() {
                 <Car size={52} strokeWidth={1.75} className="text-[#2563eb]" aria-hidden />
               )}
             </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2">{t.noListingsYet}</h3>
+            <h3 className="text-xl font-bold text-slate-800 mb-2">{emptyListingsCopy.title}</h3>
             <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-lg mx-auto mb-8">
               {emptyListingsCopy.sub}
             </p>
@@ -1428,7 +1465,7 @@ export default function CategoryPage() {
               onClick={goToPostListing}
               className="inline-flex items-center justify-center px-8 py-3.5 sm:px-10 sm:py-4 min-w-[200px] bg-[#2563eb] hover:bg-blue-700 text-white rounded-2xl text-base sm:text-lg font-semibold transition-all shadow-md shadow-blue-600/30"
             >
-              {t.post}
+              {emptyListingsCopy.post}
             </button>
             <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium tracking-wide">
               {emptyListingsCopy.trust}
