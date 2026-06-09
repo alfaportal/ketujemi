@@ -43,6 +43,12 @@ export type OpenShopFormCopy = {
   whatsapp: string;
   website: string;
   socialRequired: string;
+  socialUrlHint: string;
+  socialPhFacebook: string;
+  socialPhInstagram: string;
+  socialPhTiktok: string;
+  socialPhWhatsapp: string;
+  socialPhWebsite: string;
   section4Title: string;
   contactName: string;
   phone: string;
@@ -166,6 +172,13 @@ const KS: OpenShopFormCopy = {
   whatsapp: "WhatsApp",
   website: "Website URL",
   socialRequired: "Plotësoni të paktën një rrjet social",
+  socialUrlHint:
+    "Fillimi i linkut (https://…) është gati — shkruani vetëm emrin e faqes suaj, p.sh. cyberfoxferizaj",
+  socialPhFacebook: "cyberfoxferizaj",
+  socialPhInstagram: "emri_dyqanit",
+  socialPhTiktok: "emri_dyqanit",
+  socialPhWhatsapp: "38344123456",
+  socialPhWebsite: "www.dyqani-ime.com",
   section4Title: "Kontakti",
   contactName: "Emri i kontaktit",
   phone: "Nr. telefoni",
@@ -220,6 +233,13 @@ const MK: OpenShopFormCopy = {
   whatsapp: "WhatsApp",
   website: "Website URL",
   socialRequired: "Пополнете барем една социјална мрежа",
+  socialUrlHint:
+    "Почетокот на линкот (https://…) е веќе тука — внесете само го името на профилот, на пр. cyberfoxferizaj",
+  socialPhFacebook: "cyberfoxferizaj",
+  socialPhInstagram: "ime_prodavnica",
+  socialPhTiktok: "ime_prodavnica",
+  socialPhWhatsapp: "38970123456",
+  socialPhWebsite: "www.prodavnica.com",
   section4Title: "Контакт",
   contactName: "Име на контакт",
   phone: "Телефонски број",
@@ -273,6 +293,13 @@ const MNE: OpenShopFormCopy = {
   whatsapp: "WhatsApp",
   website: "Website URL",
   socialRequired: "Popunite barem jednu društvenu mrežu",
+  socialUrlHint:
+    "Početak linka (https://…) je već tu — upišite samo ime profila, npr. cyberfoxferizaj",
+  socialPhFacebook: "cyberfoxferizaj",
+  socialPhInstagram: "ime_prodavnice",
+  socialPhTiktok: "ime_prodavnice",
+  socialPhWhatsapp: "38267123456",
+  socialPhWebsite: "www.prodavnica.com",
   section4Title: "Kontakt",
   contactName: "Ime kontakta",
   phone: "Broj telefona",
@@ -326,6 +353,13 @@ const EN: OpenShopFormCopy = {
   whatsapp: "WhatsApp",
   website: "Website URL",
   socialRequired: "Fill in at least one social network",
+  socialUrlHint:
+    "The link prefix (https://…) is already filled — type only your page name, e.g. cyberfoxferizaj",
+  socialPhFacebook: "cyberfoxferizaj",
+  socialPhInstagram: "your_shop_name",
+  socialPhTiktok: "your_shop_name",
+  socialPhWhatsapp: "38344123456",
+  socialPhWebsite: "www.yourshop.com",
   section4Title: "Contact",
   contactName: "Contact name",
   phone: "Phone number",

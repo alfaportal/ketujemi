@@ -12,6 +12,12 @@ import { fetchShopDirectoryTaxonomy, type ShopDirectoryTaxonomyCategory } from "
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
+import { ShopSocialUrlFields } from "@/components/shop-social-url-fields";
+import {
+  shopSocialFieldsForSubmit,
+  shopSocialSuffix,
+  type ShopSocialField,
+} from "@/lib/shop-social-url-input";
 
 export type ShopEditFormValues = {
   shop_name: string;
@@ -102,7 +108,22 @@ export function ShopEditForm({
     const categoryName = cat
       ? (cat as { name: string }).name
       : values.category;
-    await onSubmit({ ...values, category: categoryName });
+    const social = shopSocialFieldsForSubmit({
+      facebook: values.facebook,
+      instagram: values.instagram,
+      tiktok: values.tiktok,
+      whatsapp: values.whatsapp,
+      website: values.website,
+    });
+    await onSubmit({
+      ...values,
+      category: categoryName,
+      facebook: social.facebook ?? "",
+      instagram: social.instagram ?? "",
+      tiktok: social.tiktok ?? "",
+      whatsapp: social.whatsapp ?? "",
+      website: social.website ?? "",
+    });
   }
 
   const saveLabel = labels?.save ?? c.submitBtn;
@@ -236,28 +257,16 @@ export function ShopEditForm({
         </div>
       )}
 
-      <div className="grid sm:grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <Label>{c.facebook}</Label>
-          <Input value={values.facebook} onChange={(e) => setField("facebook", e.target.value)} />
-        </div>
-        <div className="space-y-1.5">
-          <Label>{c.instagram}</Label>
-          <Input value={values.instagram} onChange={(e) => setField("instagram", e.target.value)} />
-        </div>
-        <div className="space-y-1.5">
-          <Label>{c.tiktok}</Label>
-          <Input value={values.tiktok} onChange={(e) => setField("tiktok", e.target.value)} />
-        </div>
-        <div className="space-y-1.5">
-          <Label>{c.whatsapp}</Label>
-          <Input value={values.whatsapp} onChange={(e) => setField("whatsapp", e.target.value)} />
-        </div>
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label>{c.website}</Label>
-          <Input value={values.website} onChange={(e) => setField("website", e.target.value)} />
-        </div>
-      </div>
+      <ShopSocialUrlFields
+        values={{
+          facebook: values.facebook,
+          instagram: values.instagram,
+          tiktok: values.tiktok,
+          whatsapp: values.whatsapp,
+          website: values.website,
+        }}
+        onChange={(field: ShopSocialField, v) => setField(field, v)}
+      />
 
       <div className="grid sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
@@ -348,11 +357,11 @@ export function adminRowToFormValues(row: {
     city: row.city,
     region: row.region,
     address: row.address,
-    facebook: row.facebook ?? "",
-    instagram: row.instagram ?? "",
-    tiktok: row.tiktok ?? "",
-    whatsapp: row.whatsapp ?? "",
-    website: row.website ?? "",
+    facebook: shopSocialSuffix(row.facebook, "facebook"),
+    instagram: shopSocialSuffix(row.instagram, "instagram"),
+    tiktok: shopSocialSuffix(row.tiktok, "tiktok"),
+    whatsapp: shopSocialSuffix(row.whatsapp, "whatsapp"),
+    website: shopSocialSuffix(row.website, "website"),
     contact_name: row.contact_name,
     phone: row.phone,
     email: row.email,

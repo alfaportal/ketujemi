@@ -18,6 +18,8 @@ import { openShopApplyPath } from "@/lib/static-page-paths";
 import { BRAND_BLUE, BRAND_ORANGE } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
 import { ShopDescriptionHelper } from "@/components/shop-description-helper";
+import { ShopSocialUrlFields } from "@/components/shop-social-url-fields";
+import { shopSocialFieldsForSubmit, type ShopSocialField } from "@/lib/shop-social-url-input";
 
 export function ShopApplicationForm() {
   const c = useShopFormCopy();
@@ -102,6 +104,14 @@ export function ShopApplicationForm() {
       return;
     }
 
+    const social = shopSocialFieldsForSubmit({
+      facebook,
+      instagram,
+      tiktok,
+      whatsapp,
+      website,
+    });
+
     setSubmitBusy(true);
     try {
       const res = await fetchWithTimeout("/api/shop-applications", {
@@ -118,11 +128,7 @@ export function ShopApplicationForm() {
           city,
           region,
           address,
-          facebook: facebook || null,
-          instagram: instagram || null,
-          tiktok: tiktok || null,
-          whatsapp: whatsapp || null,
-          website: website || null,
+          ...social,
           contact_name: contactName,
           phone,
           email,
@@ -280,29 +286,18 @@ export function ShopApplicationForm() {
 
         <section className="space-y-4">
           <h3 className="text-lg font-bold text-gray-900">{c.section3Title}</h3>
-          <p className="text-xs text-gray-500">{c.socialRequired}</p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>{c.facebook}</Label>
-              <Input value={facebook} onChange={(e) => setFacebook(e.target.value)} className="min-h-12" />
-            </div>
-            <div className="space-y-2">
-              <Label>{c.instagram}</Label>
-              <Input value={instagram} onChange={(e) => setInstagram(e.target.value)} className="min-h-12" />
-            </div>
-            <div className="space-y-2">
-              <Label>{c.tiktok}</Label>
-              <Input value={tiktok} onChange={(e) => setTiktok(e.target.value)} className="min-h-12" />
-            </div>
-            <div className="space-y-2">
-              <Label>{c.whatsapp}</Label>
-              <Input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className="min-h-12" />
-            </div>
-            <div className="space-y-2 sm:col-span-2">
-              <Label>{c.website}</Label>
-              <Input value={website} onChange={(e) => setWebsite(e.target.value)} className="min-h-12" />
-            </div>
-          </div>
+          <p className="text-xs text-amber-800/80">{c.socialRequired}</p>
+          <ShopSocialUrlFields
+            values={{ facebook, instagram, tiktok, whatsapp, website }}
+            onChange={(field: ShopSocialField, v) => {
+              if (field === "facebook") setFacebook(v);
+              if (field === "instagram") setInstagram(v);
+              if (field === "tiktok") setTiktok(v);
+              if (field === "whatsapp") setWhatsapp(v);
+              if (field === "website") setWebsite(v);
+            }}
+            inputClassName="min-h-12"
+          />
         </section>
 
         <section className="space-y-4">
