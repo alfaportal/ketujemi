@@ -36,6 +36,7 @@ import { applyPageMeta, truncateMetaDescription } from "@/lib/page-meta";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
+import { buildMapSearchQuery, googleMapsEmbedSrc } from "@/lib/google-maps-embed";
 import { shopDetailSeoTitle, useShopDetailCopy } from "@/lib/shop-detail-i18n";
 import { cn } from "@/lib/utils";
 import {
@@ -246,7 +247,11 @@ export default function ShopDetailPage() {
     );
   }
 
-  const mapQuery = `${shop.address}, ${shop.city}, ${shop.country}`;
+  const mapQuery = buildMapSearchQuery({
+    address: shop.address,
+    city: shop.city,
+    country: shop.country,
+  });
   const hasEnrichedIg = Boolean(socialProfiles.instagram);
   const hasEnrichedTt = Boolean(socialProfiles.tiktok);
   const socials = [
@@ -353,7 +358,7 @@ export default function ShopDetailPage() {
             title={d.mapTitle}
             className="w-full h-64 sm:h-80 border-0"
             loading="lazy"
-            src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(mapQuery)}`}
+            src={googleMapsEmbedSrc(mapQuery)}
           />
           <p className="px-4 py-3 text-sm text-gray-600">{shop.address}</p>
         </section>

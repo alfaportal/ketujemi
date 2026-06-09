@@ -15,7 +15,10 @@ import {
 import { SiteHeader } from "@/components/site-header";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { translateCategory } from "@/lib/category-translations";
+import { googleMapsEmbedSrc } from "@/lib/google-maps-embed";
+import { usePartnerProfileCopy } from "@/lib/partner-profile-i18n";
 import { useMarket } from "@/lib/market-context";
+import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { cn } from "@/lib/utils";
 import {
   ShopSocialProfiles,
@@ -110,6 +113,8 @@ function buildSocialLinks(
 export default function PartnerProfilePage() {
   const [, params] = useRoute("/partners/:id");
   const { uiLang } = useMarket();
+  const copy = usePartnerProfileCopy();
+  const locale = translationKeyForUiLang(uiLang);
   const id = Number(params?.id);
 
   const [profile, setProfile] = useState<PartnerPublicProfile | null>(null);
@@ -163,7 +168,7 @@ export default function PartnerProfilePage() {
   );
   const socialLinks = profile ? buildSocialLinks(profile, skipSocial) : [];
   const categoryLabel = profile?.category_name
-    ? translateCategory(profile.category_name, uiLang)
+    ? translateCategory(profile.category_name, locale)
     : null;
 
   return (
@@ -175,7 +180,7 @@ export default function PartnerProfilePage() {
           className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900 mb-6"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
-          Kthehu
+          {copy.back}
         </Link>
 
         {loading ? (
@@ -184,8 +189,8 @@ export default function PartnerProfilePage() {
           </div>
         ) : notFound || !profile ? (
           <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
-            <p className="font-bold text-gray-900">Partneri nuk u gjet</p>
-            <p className="mt-2 text-sm text-gray-600">Ky profil nuk është i disponueshëm.</p>
+            <p className="font-bold text-gray-900">{copy.notFoundTitle}</p>
+            <p className="mt-2 text-sm text-gray-600">{copy.notFoundSub}</p>
           </div>
         ) : (
           <article
@@ -206,12 +211,12 @@ export default function PartnerProfilePage() {
               {isVip ? (
                 <p className="inline-flex items-center gap-1.5 text-sm font-black text-white">
                   <Crown className="h-4 w-4" aria-hidden />
-                  VIP Partner
+                  {copy.vipBadge}
                 </p>
               ) : (
                 <p className="inline-flex items-center gap-1.5 text-sm font-black">
                   <Building2 className="h-4 w-4" aria-hidden />
-                  Partner
+                  {copy.standardBadge}
                 </p>
               )}
             </div>
@@ -247,11 +252,11 @@ export default function PartnerProfilePage() {
 
             {profile.address ? (
               <div className="px-5 sm:px-8 pb-8">
-                <h2 className="text-sm font-bold text-gray-900 mb-3">Lokacioni</h2>
+                <h2 className="text-sm font-bold text-gray-900 mb-3">{copy.locationTitle}</h2>
                 <div className="rounded-2xl overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100">
                   <iframe
-                    title={`Harta — ${profile.business_name}`}
-                    src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(profile.address)}`}
+                    title={`${copy.mapTitle} — ${profile.business_name}`}
+                    src={googleMapsEmbedSrc(profile.address)}
                     className="h-full w-full border-0"
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
@@ -269,7 +274,7 @@ export default function PartnerProfilePage() {
 
             {socialLinks.length > 0 ? (
               <div className="px-5 sm:px-8 pb-8">
-                <h2 className="text-sm font-bold text-gray-900 mb-3">Kontakt & rrjetet sociale</h2>
+                <h2 className="text-sm font-bold text-gray-900 mb-3">{copy.contactTitle}</h2>
                 <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                   {socialLinks.map((link) => {
                     const Icon = link.icon;

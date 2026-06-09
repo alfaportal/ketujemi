@@ -8,6 +8,8 @@ interface ImportMetaEnv {
   readonly VITE_STRIPE_PUBLISHABLE_KEY?: string;
   /** GA4 measurement ID (p.sh. G-XXXXXXXXXX) — vetëm prod. */
   readonly VITE_GA_MEASUREMENT_ID?: string;
+  /** Maps Embed API — shop & partner map iframes */
+  readonly VITE_GOOGLE_MAPS_API_KEY?: string;
 }
 
 interface ImportMeta {
