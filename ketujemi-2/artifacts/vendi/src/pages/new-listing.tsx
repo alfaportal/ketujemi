@@ -76,7 +76,7 @@ import {
   DhurataGiftPledge,
   DHURATA_PLEDGE_STORAGE_KEY,
 } from "@/components/dhurata-gift-pledge";
-import { DHURATA_FALAS_SLUG } from "@/lib/special-listing-categories";
+import { DHURATA_FALAS_SLUG, KERKOJ_POST_PATH, KERKOJ_TE_BLEJ_SLUG } from "@/lib/special-listing-categories";
 import { categoryEngine } from "@/services/CategoryEngine";
 import {
   collectFormValidationMessages,
@@ -150,6 +150,8 @@ function ImagePreview({ urls, onRemove, mainLabel }: { urls: string[]; onRemove:
 export default function NewListing() {
   const [pathname, setLocation] = useLocation();
   const isDhurataPostRoute = pathname === "/listings/new/dhurata-falas";
+  const isKerkojPostRoute = pathname === KERKOJ_POST_PATH;
+  const skipListingImageAutofill = isDhurataPostRoute || isKerkojPostRoute;
   const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -313,7 +315,7 @@ export default function NewListing() {
     () => catEngine.getFields(Number(parentCatId) || effectiveCategoryId, market.code),
     [catEngine, parentCatId, effectiveCategoryId, market.code],
   );
-  const isKerkojCategory = postFields.isKerkoj;
+  const isKerkojCategory = postFields.isKerkoj || isKerkojPostRoute;
   const isDhurataCategory = postFields.isDhurata;
   const hasBrands = brandCats.length > 0;
 
@@ -468,6 +470,16 @@ export default function NewListing() {
   }, [allCategories, isDhurataPostRoute, form]);
 
   useEffect(() => {
+    if (!allCategories || !isKerkojPostRoute) return;
+    const kerkoj = (allCategories as { id: number; slug?: string | null; parent_id?: number | null }[])
+      .find((c) => !c.parent_id && c.slug === KERKOJ_TE_BLEJ_SLUG);
+    if (kerkoj) {
+      form.setValue("parent_category_id", kerkoj.id);
+      form.setValue("category_id", kerkoj.id);
+    }
+  }, [allCategories, isKerkojPostRoute, form]);
+
+  useEffect(() => {
     if (!user) return;
     const { seller_name, seller_phone } = sellerContactFromUser(user);
     if (seller_name) form.setValue("seller_name", seller_name);
@@ -521,7 +533,7 @@ export default function NewListing() {
 
   const runListingVisionAnalysis = useCallback(
     async (vision: { data: string; mediaType: string }) => {
-      if (imageAnalyzedRef.current || isDhurataPostRoute) return false;
+      if (imageAnalyzedRef.current || skipListingImageAutofill) return false;
 
       const res = await fetchWithTimeout(
         "/api/ai/analyze-listing-image",
@@ -559,12 +571,12 @@ export default function NewListing() {
       toast(fail);
       return false;
     },
-    [applyImageAnalysis, isDhurataPostRoute, listingLang, myShop, toast, tx],
+    [applyImageAnalysis, skipListingImageAutofill, listingLang, myShop, toast, tx],
   );
 
   const analyzeFirstListingMedia = useCallback(
     async (file: File, source: "image" | "video") => {
-      if (imageAnalyzedRef.current || isDhurataPostRoute) return;
+      if (imageAnalyzedRef.current || skipListingImageAutofill) return;
       setIsAnalyzingImage(true);
       try {
         const vision =
@@ -592,7 +604,7 @@ export default function NewListing() {
         setIsAnalyzingImage(false);
       }
     },
-    [isDhurataPostRoute, runListingVisionAnalysis, toast, tx],
+    [skipListingImageAutofill, runListingVisionAnalysis, toast, tx],
   );
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1576,7 +1588,7 @@ export default function NewListing() {
             )}
 
             {/* ── 4. Description ── */}
-            <Section title={t.descField}>
+            <Section title={isKerkojCategory ? t.kerkojFormDescSection : t.descField}>
               <FormField
                 control={form.control}
                 name="description"
@@ -1584,12 +1596,15 @@ export default function NewListing() {
                   <FormItem>
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <FormLabel className="mb-0">
-                        {t.descField} <span className="text-red-500">*</span>
+                        {isKerkojCategory ? t.kerkojFormDescSection : t.descField}{" "}
+                        <span className="text-red-500">*</span>
                       </FormLabel>
-                      <ListingDescriptionHelper
-                        description={field.value ?? ""}
-                        onApplyDescription={(next) => field.onChange(next)}
-                      />
+                      {!isKerkojCategory ? (
+                        <ListingDescriptionHelper
+                          description={field.value ?? ""}
+                          onApplyDescription={(next) => field.onChange(next)}
+                        />
+                      ) : null}
                     </div>
                     <FormControl>
                       <Textarea

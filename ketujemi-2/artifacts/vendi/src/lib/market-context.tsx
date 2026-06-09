@@ -116,6 +116,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Kërkoni diçka që nuk e gjeni? Shkruani çfarë ju duhet dhe postoni kërkesën këtu — personat që e kanë sendin e shohin dhe mund t'ju kontaktojnë shpejt.",
     kerkojEmptyTrust: "Shpallja juaj shfaqet këtu si çdo njoftim tjetër.",
     kerkojEmptyPost: "Posto Kërkesën",
+    kerkojHubIntroTitle: "Kërkoj të Blej — postoni kërkesën tuaj",
     kerkojFormBanner:
       "Kjo është kërkesë blerjeje — shkruani çfarë po kërkoni. Kërkesa shfaqet në platformë dhe u shkon personave dhe dyqaneve që merren me atë send, që të gjeni më shpejt atë që ju duhet.",
     kerkojFormPhotoHint:
@@ -129,6 +130,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     kerkojFormTitleLbl: "Titulli i kërkesës",
     kerkojFormPhotosLbl: "Foto të kërkesës",
     kerkojFormClickPhoto: "Kliko për të shtuar foto — tregoni çfarë po kërkoni",
+    kerkojFormDescSection: "Përshkrimi i kërkesës",
     postFromAnywhere: "Mund të postoni nga kudo.",
     allListings: "Të gjitha njoftimet",
     listings: "Njoftimet",
@@ -362,6 +364,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Kërkoni diçka që nuk e gjeni? Shkruani çfarë ju duhet dhe postoni kërkesën këtu — personat që e kanë sendin e shohin dhe mund t'ju kontaktojnë shpejt.",
     kerkojEmptyTrust: "Shpallja juaj shfaqet këtu si çdo njoftim tjetër.",
     kerkojEmptyPost: "Posto Kërkesën",
+    kerkojHubIntroTitle: "Kërkoj të Blej — postoni kërkesën tuaj",
     kerkojFormBanner:
       "Kjo është kërkesë blerjeje — shkruani çfarë po kërkoni. Kërkesa shfaqet në platformë dhe u shkon personave dhe dyqaneve që merren me atë send, që të gjeni më shpejt atë që ju duhet.",
     kerkojFormPhotoHint:
@@ -375,6 +378,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     kerkojFormTitleLbl: "Titulli i kërkesës",
     kerkojFormPhotosLbl: "Foto të kërkesës",
     kerkojFormClickPhoto: "Kliko për të shtuar foto — tregoni çfarë po kërkoni",
+    kerkojFormDescSection: "Përshkrimi i kërkesës",
     postFromAnywhere: "Mund të postoni nga kudo.",
     allListings: "Të gjitha njoftimet",
     listings: "Njoftimet",
@@ -607,6 +611,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Барате нешто што не можете да го најдете? Објавете барање овде — лицата што го имаат производот ќе ве видат и можат побрзо да ве контактираат.",
     kerkojEmptyTrust: "Вашиот оглас се прикажува овде како и сите други.",
     kerkojEmptyPost: "Објави барање",
+    kerkojHubIntroTitle: "Барам да купам — објавете барање",
     kerkojFormBanner:
       "Ова е барање за купување — опишете што барате. Барањето се објавува на платформата и им стигнува до луѓе и продавници што се занимаваат со тој производ, за побрзо да го најдете.",
     kerkojFormPhotoHint:
@@ -620,6 +625,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     kerkojFormTitleLbl: "Наслов на барањето",
     kerkojFormPhotosLbl: "Фотографии на барањето",
     kerkojFormClickPhoto: "Кликнете за да додадете фото — покажете што барате",
+    kerkojFormDescSection: "Опис на барањето",
     postFromAnywhere: "Можете да објавувате од каде било.",
     allListings: "Сите огласи",
     listings: "Огласи",
@@ -852,6 +858,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Tražite nešto što ne možete naći? Objavite tražnju ovdje — ljudi koji imaju taj artikal videće vas i mogu vas brže kontaktirati.",
     kerkojEmptyTrust: "Vaš oglas se prikazuje ovdje kao i svaki drugi.",
     kerkojEmptyPost: "Objavi tražnju",
+    kerkojHubIntroTitle: "Tražim da kupim — objavite tražnju",
     kerkojFormBanner:
       "Ovo je tražnja za kupovinu — napišite šta tražite. Tražnja se objavljuje na platformi i stiže ljudima i prodavnicama koje se bave tim artiklom, da brže pronađete ono što vam treba.",
     kerkojFormPhotoHint:
@@ -865,6 +872,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     kerkojFormTitleLbl: "Naslov tražnje",
     kerkojFormPhotosLbl: "Fotografije tražnje",
     kerkojFormClickPhoto: "Kliknite da dodate foto — pokažite šta tražite",
+    kerkojFormDescSection: "Opis tražnje",
     postFromAnywhere: "Možete objaviti odakle god.",
     allListings: "Svi oglasi",
     listings: "Oglasi",
@@ -1097,6 +1105,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Looking for something you cannot find? Post your request here — people who have the item will see it and can contact you quickly.",
     kerkojEmptyTrust: "Your listing appears here like any other listing.",
     kerkojEmptyPost: "Post request",
+    kerkojHubIntroTitle: "Looking to buy — post your request",
     kerkojFormBanner:
       "This is a buying request — describe what you are looking for. Your request is published on the platform and reaches people and shops who deal with that item, so you can find what you need faster.",
     kerkojFormPhotoHint:
@@ -1110,6 +1119,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     kerkojFormTitleLbl: "Request title",
     kerkojFormPhotosLbl: "Request photos",
     kerkojFormClickPhoto: "Tap to add photos — show what you are looking for",
+    kerkojFormDescSection: "Request description",
     postFromAnywhere: "You can post from anywhere.",
     allListings: "All listings",
     listings: "Listings",

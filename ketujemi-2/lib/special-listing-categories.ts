@@ -1,5 +1,6 @@
 /** Special marketplace parent categories — keep slugs in sync across DB seed, API, and UI. */
 export const KERKOJ_TE_BLEJ_SLUG = "kerkoj-te-blej" as const;
+export const KERKOJ_POST_PATH = "/listings/new/kerkoj-te-blej" as const;
 export const DHURATA_FALAS_SLUG = "dhurata-falas" as const;
 
 export const KERKOJ_ACTIVE_LIFETIME_DAYS = 30;

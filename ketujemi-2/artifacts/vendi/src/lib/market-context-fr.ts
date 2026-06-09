@@ -97,6 +97,7 @@ export const FR_TRANSLATIONS: Record<string, string> = {
     "Vous cherchez quelque chose introuvable ailleurs ? Décrivez ce dont vous avez besoin et publiez votre demande ici — les personnes qui ont l'article vous verront et pourront vous contacter rapidement.",
   kerkojEmptyTrust: "Votre annonce s'affiche ici comme toute autre annonce.",
   kerkojEmptyPost: "Publier une demande",
+  kerkojHubIntroTitle: "Je cherche à acheter — publiez votre demande",
   kerkojFormBanner:
     "Ceci est une demande d'achat — décrivez ce que vous cherchez. Votre demande est publiée sur la plateforme et parvient aux personnes et boutiques qui traitent cet article, pour trouver plus vite ce dont vous avez besoin.",
   kerkojFormPhotoHint:
@@ -110,6 +111,7 @@ export const FR_TRANSLATIONS: Record<string, string> = {
   kerkojFormTitleLbl: "Titre de la demande",
   kerkojFormPhotosLbl: "Photos de la demande",
   kerkojFormClickPhoto: "Cliquez pour ajouter des photos — montrez ce que vous cherchez",
+  kerkojFormDescSection: "Description de la demande",
   postFromAnywhere: "Vous pouvez publier depuis n'importe où.",
   allListings: "Toutes les annonces",
   listings: "Annonces",

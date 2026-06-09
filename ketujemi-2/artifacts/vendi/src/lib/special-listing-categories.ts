@@ -7,6 +7,7 @@ export {
   isKerkojTeBlejSlug,
   isUnderKerkojTeBlejCategory,
   KERKOJ_MAX_PHOTOS,
+  KERKOJ_POST_PATH,
   KERKOJ_TE_BLEJ_SLUG,
   LISTING_MAX_PHOTOS,
   findKerkojBlockedWord,

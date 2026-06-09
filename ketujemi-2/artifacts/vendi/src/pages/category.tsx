@@ -48,7 +48,7 @@ import {
 } from "@/components/category-page-shell";
 import { VipPartnersSection } from "@/components/vip-partners-section";
 import { CategoryPartnersBanner } from "@/components/category-partners-banner";
-import { useGoToPostListing } from "@/hooks/use-go-to-post-listing";
+import { useGoToPostListing, useGoToKerkojPostListing } from "@/hooks/use-go-to-post-listing";
 import SharedListingCard from "@/components/listing-card";
 import { SiteHeader } from "@/components/site-header";
 import { getVeturaBrandLeafCategoryIds } from "@/lib/vetura-search-helpers";
@@ -146,6 +146,7 @@ import { getMuzikeHobbyLeafCategoryIds } from "@/lib/muzike-hobby-search-helpers
 import { KafshetSearchPanel } from "@/components/kafshet-search-panel";
 import { getKafshetLeafCategoryIds } from "@/lib/kafshet-search-helpers";
 import { DhurataFalasHubIntro } from "@/components/dhurata-falas-hub-intro";
+import { KerkojTeBlejHubIntro } from "@/components/kerkoj-te-blej-hub-intro";
 import { DhurataFalasHeroSlideshow } from "@/components/dhurata-falas-hero-slideshow";
 import {
   isDhurataFalasSlug,
@@ -650,6 +651,7 @@ export default function CategoryPage() {
   const urlSearch = useSearch();
   const [, routeParams] = useRoute("/categories/:id");
   const goToPostListing = useGoToPostListing();
+  const goToKerkojPost = useGoToKerkojPostListing();
   const { t, market, uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
   const segment = routeParams?.id ?? "";
@@ -1462,7 +1464,7 @@ export default function CategoryPage() {
             </p>
             <button
               type="button"
-              onClick={goToPostListing}
+              onClick={isInKerkojTeBlejTree ? goToKerkojPost : goToPostListing}
               className="inline-flex items-center justify-center px-8 py-3.5 sm:px-10 sm:py-4 min-w-[200px] bg-[#2563eb] hover:bg-blue-700 text-white rounded-2xl text-base sm:text-lg font-semibold transition-all shadow-md shadow-blue-600/30"
             >
               {emptyListingsCopy.post}
@@ -1626,6 +1628,7 @@ export default function CategoryPage() {
           <ArrowLeft size={16} /> {t.back}
         </button>
 
+        {isKerkojTeBlejHub ? <KerkojTeBlejHubIntro /> : null}
         {isDhurataFalasHub ? <DhurataFalasHubIntro /> : null}
 
         {isVeturaHub && veturaBrandLeafCsv ? (

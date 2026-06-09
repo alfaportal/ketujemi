@@ -270,6 +270,13 @@ export const APP_ROUTES: AppRouteDefinition[] = [
   },
   {
     id: "new-listing",
+    path: "/listings/new/kerkoj-te-blej",
+    requiresAuth: true,
+    marketPrefix: null,
+    fallbackPath: LOGIN_FALLBACK,
+  },
+  {
+    id: "new-listing",
     path: "/listings/new",
     requiresAuth: true,
     marketPrefix: null,
