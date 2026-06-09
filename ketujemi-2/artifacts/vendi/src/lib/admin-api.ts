@@ -465,10 +465,10 @@ export function updateModerationSettings(data: { enabled?: string; system_prompt
   });
 }
 
-export function runModerationCommand(command: string) {
+export function runModerationCommand(command: string, lang?: string) {
   return request<{ reply: string }>("/moderation/command", {
     method: "POST",
-    body: JSON.stringify({ command }),
+    body: JSON.stringify({ command, ...(lang ? { lang } : {}) }),
   });
 }
 

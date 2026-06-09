@@ -1327,7 +1327,12 @@ router.patch("/admin/moderation", requireAdmin, async (req, res) => {
 router.post("/admin/moderation/command", requireAdmin, async (req, res) => {
   try {
     const command = typeof req.body?.command === "string" ? req.body.command : "";
-    const { reply } = await runModerationCommand(command);
+    const rawLang = req.body?.lang;
+    const uiLang =
+      rawLang === "mk" || rawLang === "mne" || rawLang === "en" || rawLang === "sq"
+        ? rawLang
+        : undefined;
+    const { reply } = await runModerationCommand(command, uiLang);
     res.json({ reply });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Moderation failed";

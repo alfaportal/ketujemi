@@ -37,6 +37,7 @@ import { startShopSocialProfileEnrichCron } from "./lib/shop-social-profile-enri
 import { startListingReelCron } from "./lib/listing-reel-cron";
 import { purgeInvalidListingImagesOnStartup } from "./lib/purge-invalid-listing-images.js";
 import { startSystemMonitor } from "./lib/system-monitor.js";
+import { inlineCronsEnabled } from "./lib/inline-crons";
 
 const rawPort = process.env["API_PORT"] ?? process.env["PORT"];
 
@@ -142,14 +143,19 @@ async function startServer(): Promise<void> {
     }
 
     logger.info({ port }, "Server listening");
-    startExpiredListingsScheduler();
-    startExpiryReminderScheduler();
-    startFacebookScheduledPostCron();
-    startInstagramScheduledPostCron();
-    startListingReelCron();
-    startSocialFollowersCron();
-    startShopSocialProfileEnrichCron();
-    startSystemMonitor();
+    if (inlineCronsEnabled()) {
+      startExpiredListingsScheduler();
+      startExpiryReminderScheduler();
+      startFacebookScheduledPostCron();
+      startInstagramScheduledPostCron();
+      startListingReelCron();
+      startSocialFollowersCron();
+      startShopSocialProfileEnrichCron();
+      startSystemMonitor();
+      logger.info("Inline crons started (set INLINE_CRONS_ENABLED=false to disable on web dyno)");
+    } else {
+      logger.info("Inline crons disabled — use Railway cron / CLI scripts for scheduled jobs");
+    }
   });
 }
 

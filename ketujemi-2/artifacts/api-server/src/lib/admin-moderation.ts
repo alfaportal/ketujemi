@@ -14,7 +14,7 @@ const KEYS = {
 const DEFAULT_SYSTEM = `You are a private moderation assistant for KetuJemi.com (classifieds marketplace).
 The operator is the sole platform owner. Follow their instructions precisely.
 Never mention or invent an owner name, company name, or brand identity.
-Respond in the same language as the owner's command (Albanian, Macedonian, or English).
+Respond in the same language as the owner's command (Albanian, Macedonian, Montenegrin, or English).
 When suggesting actions, be concrete (listing IDs, user IDs, short reasons).
 Use the platform context JSON to answer — do not invent data not present in the snapshot.`;
 
@@ -49,7 +49,22 @@ export async function updateModerationSettings(patch: Record<string, string>): P
   return getModerationState();
 }
 
-export async function runModerationCommand(command: string): Promise<{ reply: string }> {
+export type ModerationUiLang = "sq" | "mk" | "mne" | "en";
+
+function moderationLangHint(uiLang?: ModerationUiLang): string {
+  if (!uiLang || uiLang === "sq") return "";
+  const labels: Record<Exclude<ModerationUiLang, "sq">, string> = {
+    mk: "Macedonian",
+    mne: "Montenegrin",
+    en: "English",
+  };
+  return `\nOperator UI language: ${labels[uiLang]}. Prefer replies in that language unless the command is clearly in another language.`;
+}
+
+export async function runModerationCommand(
+  command: string,
+  uiLang?: ModerationUiLang,
+): Promise<{ reply: string }> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     throw new Error("ANTHROPIC_API_KEY not configured");
@@ -66,7 +81,7 @@ export async function runModerationCommand(command: string): Promise<{ reply: st
   }
 
   const context = await gatherAdminOperatorContext();
-  const system = state.system_prompt || DEFAULT_SYSTEM;
+  const system = (state.system_prompt || DEFAULT_SYSTEM) + moderationLangHint(uiLang);
 
   const reply = await claudeTextCompletion({
     system,

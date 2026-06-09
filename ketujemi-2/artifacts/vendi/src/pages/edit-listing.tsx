@@ -4,8 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useGetListing, useUpdateListing, useGetCategories, getGetListingQueryKey, getGetListingsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowLeft, Loader2, Sparkles, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +27,19 @@ import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { userOwnsListing } from "@/lib/listing-ownership";
 import { AuthToolbar } from "@/components/auth-toolbar";
 import { CardPaymentsPanel } from "@/components/card-payments-panel";
+import {
+  fetchWithTimeout,
+  getFetchErrorMessage,
+  IMAGE_ANALYZE_TIMEOUT_MS,
+} from "@/lib/fetch-with-timeout";
+import {
+  fileToVisionBase64,
+  imageUrlToVisionBase64,
+  type ListingImageAnalysis,
+} from "@/lib/listing-image-vision";
+import { listingApiLangFromUi } from "@/lib/listing-api-lang";
+import { listingPhotoAnalyzeFailureToast } from "@/lib/listing-photo-analyze-toast";
+import { useListingImageUpload } from "@/lib/listing-image-upload";
 
 const schema = z.object({
   title: z.string().min(3),
@@ -46,11 +59,16 @@ export default function EditListing() {
   const id = Number(params?.id);
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { t, market } = useMarket();
+  const { t, market, uiLang } = useMarket();
   const { user, loading: authLoading } = useAuth();
+  const imageUpload = useListingImageUpload();
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [isAnalyzingPhoto, setIsAnalyzingPhoto] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [listingCountry, setListingCountry] = useState<ListingMarketCode>(() =>
     defaultListingMarketFromMarket(market.code),
   );
+  const listingLang = listingApiLangFromUi(uiLang);
 
   const { data: listing, isLoading } = useGetListing(id, {
     query: {
@@ -113,6 +131,98 @@ export default function EditListing() {
       }
     }
   });
+
+  const applyPhotoAnalysis = useCallback(
+    (analysis: ListingImageAnalysis) => {
+      const fieldOpts = { shouldDirty: true, shouldTouch: true, shouldValidate: true } as const;
+      form.setValue("title", analysis.title, fieldOpts);
+      form.setValue("description", analysis.description, fieldOpts);
+    },
+    [form],
+  );
+
+  const runPhotoAnalysis = useCallback(
+    async (vision: { data: string; mediaType: string }) => {
+      const res = await fetchWithTimeout(
+        "/api/ai/analyze-listing-image",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            image_base64: vision.data,
+            media_type: vision.mediaType,
+            lang: listingLang,
+          }),
+        },
+        IMAGE_ANALYZE_TIMEOUT_MS,
+      );
+      const body = (await res.json().catch(() => ({}))) as {
+        analysis?: ListingImageAnalysis | null;
+        error?: string;
+      };
+      if (!res.ok) {
+        const fail = listingPhotoAnalyzeFailureToast(res.status, t);
+        toast({ ...fail, variant: "destructive" });
+        return false;
+      }
+      if (body.analysis) {
+        applyPhotoAnalysis(body.analysis);
+        toast({ title: t.editPhotoAnalyzeOk });
+        return true;
+      }
+      const fail = listingPhotoAnalyzeFailureToast(422, t);
+      toast(fail);
+      return false;
+    },
+    [applyPhotoAnalysis, listingLang, t, toast],
+  );
+
+  const analyzeCurrentPhoto = useCallback(async () => {
+    const imageUrl = form.getValues("image_url")?.trim();
+    if (!imageUrl) {
+      toast({ title: t.addAtLeastPhoto, variant: "destructive" });
+      return;
+    }
+    setIsAnalyzingPhoto(true);
+    try {
+      const vision = await imageUrlToVisionBase64(imageUrl);
+      await runPhotoAnalysis(vision);
+    } catch (error) {
+      toast({
+        title: t.photoAnalyzeFailed,
+        description: getFetchErrorMessage(error),
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzingPhoto(false);
+    }
+  }, [form, runPhotoAnalysis, t, toast]);
+
+  const onPhotoFileSelected = useCallback(
+    async (file: File | undefined) => {
+      if (!file || !imageUpload.ready) return;
+      setIsUploadingPhoto(true);
+      try {
+        const url = await imageUpload.uploadFile(file);
+        form.setValue("image_url", url, { shouldDirty: true, shouldTouch: true });
+        setIsAnalyzingPhoto(true);
+        const vision = await fileToVisionBase64(file);
+        await runPhotoAnalysis(vision);
+      } catch (error) {
+        toast({
+          title: t.uploadFailed,
+          description: getFetchErrorMessage(error),
+          variant: "destructive",
+        });
+      } finally {
+        setIsUploadingPhoto(false);
+        setIsAnalyzingPhoto(false);
+        if (photoInputRef.current) photoInputRef.current.value = "";
+      }
+    },
+    [form, imageUpload, runPhotoAnalysis, t, toast],
+  );
 
   const onSubmit = (data: FormData) => {
     updateMutation.mutate({
@@ -310,6 +420,55 @@ export default function EditListing() {
                   <FormControl>
                     <Input data-testid="input-image-url" placeholder="https://..." {...field} />
                   </FormControl>
+                  {field.value ? (
+                    <img
+                      src={field.value}
+                      alt=""
+                      className="mt-2 h-32 w-full rounded-lg border border-border object-cover"
+                    />
+                  ) : null}
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <input
+                      ref={photoInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => void onPhotoFileSelected(e.target.files?.[0])}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={!imageUpload.ready || isUploadingPhoto || isAnalyzingPhoto}
+                      onClick={() => photoInputRef.current?.click()}
+                      data-testid="button-upload-edit-photo"
+                    >
+                      {isUploadingPhoto ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+                      ) : (
+                        <Upload className="h-4 w-4 mr-1.5" />
+                      )}
+                      {isUploadingPhoto ? t.saving : t.editUploadPhotoBtn}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={!field.value?.trim() || isAnalyzingPhoto || isUploadingPhoto}
+                      onClick={() => void analyzeCurrentPhoto()}
+                      data-testid="button-analyze-edit-photo"
+                    >
+                      {isAnalyzingPhoto ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+                      ) : (
+                        <Sparkles className="h-4 w-4 mr-1.5" />
+                      )}
+                      {isAnalyzingPhoto ? t.analyzingPhoto : t.editAnalyzePhotoBtn}
+                    </Button>
+                  </div>
+                  {isAnalyzingPhoto ? (
+                    <p className="text-xs text-muted-foreground">{t.analyzingPhotoHint}</p>
+                  ) : null}
                   <FormMessage />
                 </FormItem>
               )}

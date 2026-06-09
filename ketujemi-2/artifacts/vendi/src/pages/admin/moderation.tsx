@@ -9,7 +9,7 @@ import { Bot, Loader2, Send, Shield } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
 
 export default function AdminModeration() {
-  const { t } = useMarket();
+  const { t, uiLang } = useMarket();
   const [state, setState] = useState<ModerationState | null>(null);
   const [command, setCommand] = useState("");
   const [loading, setLoading] = useState(true);
@@ -20,7 +20,7 @@ export default function AdminModeration() {
     setLoading(true);
     getModerationState()
       .then(setState)
-      .catch((e) => setError(e instanceof Error ? e.message : "Failed"))
+      .catch((e) => setError(e instanceof Error ? e.message : t.adm_dash_fail))
       .finally(() => setLoading(false));
   }, []);
 
@@ -42,12 +42,12 @@ export default function AdminModeration() {
     setError("");
     setRunning(true);
     try {
-      const { reply } = await runModerationCommand(command);
+      const { reply } = await runModerationCommand(command, uiLang);
       setCommand("");
       const updated = await getModerationState();
       setState({ ...updated, last_reply: reply });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Command failed");
+      setError(err instanceof Error ? err.message : String(t.adm_dash_fail));
     } finally {
       setRunning(false);
     }
