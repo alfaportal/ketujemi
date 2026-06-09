@@ -1734,6 +1734,15 @@ export const EN_EXTRA: Record<string, string> = {
   ui_diasporaMarketsTitle: "Germany, Switzerland, Austria, France, Italy, UK, USA, Montenegro",
   ui_emptyListingsSubLong: "Be the first to post in this category and reach thousands of potential buyers!",
   ui_giftCategoryPriceNote: "In this category the price is always €0.",
+  ui_dhurataHubTitle: "A small item for you — a whole world for someone else",
+  ui_dhurataHubP1:
+    "Maybe it's a jacket you no longer wear. A toy your child has set aside. A book you've read sitting on the shelf. Furniture that doesn't fit your room.",
+  ui_dhurataHubP2:
+    "But somewhere today, a mother is looking for a warm jacket for her child. A child is dreaming of exactly that toy. A student cannot afford that book. A family needs exactly that piece of furniture.",
+  ui_dhurataHubP3:
+    "They don't know you have it. You don't know they need it. KetuJemi brings you together — free, with love, with dignity.",
+  ui_dhurataHubThanks: "Thank you for choosing to give. The world becomes better with people like you. ❤️",
+  ui_dhurataHubCta: "🎁 Give now — Free",
   ui_giftPledgeBack: "Back",
   ui_giftPledgeContinue: "✅ I understand & agree — Continue →",
   ui_giftPledgeIntro1: "This section is for kind-hearted people who want to help others.",

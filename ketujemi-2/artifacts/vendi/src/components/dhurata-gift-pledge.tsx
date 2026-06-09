@@ -14,6 +14,15 @@ const PLEDGE_ITEM_KEYS = [
   "ui_giftPledgeItem5",
 ] as const;
 
+/** Fallback when extra i18n has not loaded yet (KS copy). */
+const PLEDGE_ITEM_FALLBACKS_SQ = [
+  "Konfirmoj që sendi është plotësisht FALAS — nuk do të kërkoj asnjë kompensim, para, favor apo shërbim në këmbim",
+  "Konfirmoj që sendi ekziston fizikisht dhe është i disponueshëm — nuk është shpallje e rreme apo mashtruese",
+  "Konfirmoj që fotot janë reale dhe të sendit tim — jo foto nga interneti apo e dikujt tjetër",
+  "Kuptoj që çdo person që keqpërdor këtë seksion për mashtrim, reklamë ose qëllime të liga raportohet menjëherë dhe bllokohet përgjithmonë nga platforma",
+  "Kuptoj që KetuJemi monitoron çdo postim në këtë kategori dhe rezervon të drejtën ta heqë çdo shpallje pa paralajmërim",
+] as const;
+
 type Props = {
   onAccepted: () => void;
   onBack?: () => void;
@@ -22,7 +31,9 @@ type Props = {
 export function DhurataGiftPledge({ onAccepted, onBack }: Props) {
   const { t } = useMarket();
   const tx = t as Record<string, string | undefined>;
-  const pledgeItems = PLEDGE_ITEM_KEYS.map((key) => tx[key] ?? "");
+  const pledgeItems = PLEDGE_ITEM_KEYS.map(
+    (key, index) => tx[key]?.trim() || PLEDGE_ITEM_FALLBACKS_SQ[index],
+  );
   const [checked, setChecked] = useState<boolean[]>(() => pledgeItems.map(() => false));
   const allChecked = checked.every(Boolean);
 

@@ -1729,17 +1729,34 @@ export const FR_EXTRA: Record<string, string> = {
   ui_diasporaMarketsTitle: "Allemagne, Suisse, Autriche, France, Italie, UK, États-Unis, Monténégro",
   ui_emptyListingsSubLong: "Soyez le premier à publier dans cette catégorie et touchez des milliers d'acheteurs potentiels !",
   ui_giftCategoryPriceNote: "Dans cette catégorie le prix est toujours 0 €.",
+  ui_dhurataHubTitle: "Un petit objet pour vous — tout un monde pour quelqu'un d'autre",
+  ui_dhurataHubP1:
+    "Peut-être une veste que vous ne portez plus. Un jouet que votre enfant a mis de côté. Un livre que vous avez lu et qui reste sur l'étagère. Un meuble qui ne rentre pas dans votre pièce.",
+  ui_dhurataHubP2:
+    "Mais quelque part, aujourd'hui, une mère cherche une veste chaude pour son enfant. Un enfant rêve de ce jouet précisément. Un étudiant ne peut pas acheter ce livre. Une famille a besoin de ce meuble.",
+  ui_dhurataHubP3:
+    "Ils ne savent pas que vous l'avez. Vous ne savez pas qu'ils en ont besoin. KetuJemi vous réunit — gratuitement, avec amour et dignité.",
+  ui_dhurataHubThanks:
+    "Merci d'avoir choisi de donner. Le monde devient meilleur grâce à des personnes comme vous. ❤️",
+  ui_dhurataHubCta: "🎁 Donnez maintenant — Gratuit",
   ui_giftPledgeBack: "Retour",
-  ui_giftPledgeContinue: "✅ I understand & agree — Continue →",
-  ui_giftPledgeIntro1: "This section is for kind-hearted people who want to help others.",
-  ui_giftPledgeIntro2: "Any misuse is taken with the utmost seriousness.",
-  ui_giftPledgeItem1: "I confirm the item is completely FREE — I will not ask for any payment, favour or service in return",
-  ui_giftPledgeItem2: "I confirm the item exists physically and is available — this is not a fake or fraudulent listing",
-  ui_giftPledgeItem3: "I confirm the photos are real and of my item — not stock images or someone else's photos",
-  ui_giftPledgeItem4: `I understand anyone who misuses this section for fraud, advertising or harmful purposes is reported immediately and permanently banned`,
-  ui_giftPledgeItem5: "I understand KetuJemi monitors every post in this category and may remove any listing without warning",
-  ui_giftPledgeLegal: "En cliquant \"Continue\" vous acceptez l'entière responsabilité légale pour l'exactitude de votre annonce.",
-  ui_giftPledgeWarnTitle: "⚠️ READ CAREFULLY BEFORE YOU CONTINUE",
+  ui_giftPledgeContinue: "✅ J'ai compris & j'accepte — Continuer →",
+  ui_giftPledgeIntro1:
+    "Cette section est destinée aux personnes au grand cœur qui veulent aider les autres.",
+  ui_giftPledgeIntro2: "Toute utilisation abusive est traitée avec le plus grand sérieux.",
+  ui_giftPledgeItem1:
+    "Je confirme que l'objet est entièrement GRATUIT — je ne demanderai aucun paiement, service ou faveur en retour",
+  ui_giftPledgeItem2:
+    "Je confirme que l'objet existe physiquement et est disponible — ce n'est pas une annonce fausse ou frauduleuse",
+  ui_giftPledgeItem3:
+    "Je confirme que les photos sont réelles et de mon objet — pas des images internet ou d'autrui",
+  ui_giftPledgeItem4:
+    "Je comprends que toute personne qui abuse de cette section pour fraude, publicité ou fins nuisibles est signalée immédiatement et bannie définitivement",
+  ui_giftPledgeItem5:
+    "Je comprends que KetuJemi surveille chaque publication dans cette catégorie et peut retirer toute annonce sans préavis",
+  ui_giftPledgeLegal:
+    "En cliquant sur « Continuer », vous assumez l'entière responsabilité légale de l'exactitude de votre annonce.",
+  ui_giftPledgeWarnTitle: "⚠️ LISEZ ATTENTIVEMENT AVANT DE CONTINUER",
   ui_networkError: "Network error",
   ui_packagesContinuePost: "Vous pouvez continuer à publier votre annonce.",
   ui_payByCard: "Payer par carte",

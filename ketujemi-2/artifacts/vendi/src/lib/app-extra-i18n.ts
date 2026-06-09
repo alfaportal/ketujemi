@@ -2017,6 +2017,34 @@ const KS_EXTRA: Record<string, string> = {
   adm_set_maintWarn: "Kur mirëmbajtja është aktive, përdoruesit shohin faqe mirëmbajtjeje.",
   adm_set_saved: "Cilësimet u ruajtën!",
   adm_set_btn: "Ruaj cilësimet",
+  ui_dhurataHubTitle: "Një send i vogël për ju — një botë e tërë për dikë tjetër",
+  ui_dhurataHubP1:
+    "Ndoshta është një xhaketë që nuk e vesh më. Një lodër që fëmija juaj e ka lënë mënjanë. Një libër që e ke lexuar dhe po rri në raft. Një mobilje që nuk të hyn në dhomë.",
+  ui_dhurataHubP2:
+    "Por diku, sot, ka një nënë që kërkon një xhaketë të ngrohtë për fëmijën e saj. Ka një fëmijë që ëndërron pikërisht atë lodër. Ka një student që nuk mund ta blejë atë libër. Ka një familje që ka nevojë për pikërisht atë mobilje.",
+  ui_dhurataHubP3:
+    "Ata nuk dinë që ju e keni. Ju nuk dini që ata e kanë nevojë. KetuJemi i bashkon — falas, me dashuri, me dinjitet.",
+  ui_dhurataHubThanks:
+    "Faleminderit që zgjodhët të jepni. Bota bëhet më e mirë me njerëz si ju. ❤️",
+  ui_dhurataHubCta: "🎁 Dhurojë Tani — Falas",
+  ui_giftPledgeBack: "Kthehu",
+  ui_giftPledgeWarnTitle: "⚠️ LEXO ME KUJDES PARA SE TË VAZHDOSH",
+  ui_giftPledgeIntro1:
+    "Ky seksion është krijuar për njerëz me zemër të mirë që duan të ndihmojnë të tjerët.",
+  ui_giftPledgeIntro2: "Çdo keqpërdorim trajtohet me seriozitetin më të lartë.",
+  ui_giftPledgeItem1:
+    "Konfirmoj që sendi është plotësisht FALAS — nuk do të kërkoj asnjë kompensim, para, favor apo shërbim në këmbim",
+  ui_giftPledgeItem2:
+    "Konfirmoj që sendi ekziston fizikisht dhe është i disponueshëm — nuk është shpallje e rreme apo mashtruese",
+  ui_giftPledgeItem3:
+    "Konfirmoj që fotot janë reale dhe të sendit tim — jo foto nga interneti apo e dikujt tjetër",
+  ui_giftPledgeItem4:
+    "Kuptoj që çdo person që keqpërdor këtë seksion për mashtrim, reklamë ose qëllime të liga raportohet menjëherë dhe bllokohet përgjithmonë nga platforma",
+  ui_giftPledgeItem5:
+    "Kuptoj që KetuJemi monitoron çdo postim në këtë kategori dhe rezervon të drejtën ta heqë çdo shpallje pa paralajmërim",
+  ui_giftPledgeContinue: "✅ Kuptova & Jam Dakord — Vazhdo →",
+  ui_giftPledgeLegal:
+    'Duke klikuar "Vazhdo" ju merrni përgjegjësi të plotë ligjore për vërtetësinë e postimit tuaj.',
 };
 
 const AL_OVERRIDES: Record<string, string> = {
@@ -2076,22 +2104,6 @@ const AL_OVERRIDES: Record<string, string> = {
   ui_postRequestBtn: "Posto Kërkesën",
   ui_paymentMethodsAria: "Metodat e pagesës",
   ui_diasporaMarketsTitle: "Gjermani, Zvicër, Austri, Francë, Itali, Angli, SHBA, Mal i Zi",
-  ui_giftPledgeBack: "Kthehu",
-  ui_giftPledgeWarnTitle: "⚠️ LEXO ME KUJDES PARA SE TË VAZHDOSH",
-  ui_giftPledgeIntro1:
-    "Ky seksion është krijuar për njerëz me zemër të mirë që duan të ndihmojnë të tjerët.",
-  ui_giftPledgeIntro2: "Çdo keqpërdorim trajtohet me seriozitetin më të lartë.",
-  ui_giftPledgeItem1:
-    "Konfirmoj që sendi është plotësisht FALAS — nuk do të kërkojë asnjë kompensim, para, favor, apo shërbim në këmbim",
-  ui_giftPledgeItem2:
-    "Konfirmoj që sendi ekziston fizikisht dhe është i disponueshëm — nuk është shpallje e rreme apo mashtruese",
-  ui_giftPledgeItem3:
-    "Konfirmoj që fotot janë reale dhe të sendit tim — jo foto nga interneti apo e dikujt tjetër",
-  ui_giftPledgeItem4:
-    "Kuptoj që çdo person që keqpërdor këtë seksion për mashtrim, reklamë, ose qëllime të liga — raportohet menjëherë dhe bllokohet përgjithmonë nga platforma",
-  ui_giftPledgeItem5:
-    "Kuptoj që KetuJemi monitoron çdo postim në këtë kategori dhe rezervon të drejtën ta heqë çdo shpallje pa paralajmërim",
-  ui_giftPledgeContinue: "✅ Kuptova & Jam Dakord — Vazhdo →",
   ui_supportWelcome:
     "Përshëndetje! Pyetni shkurt — do t'ju udhëzoj ku të shkoni në KetuJemi.",
   ui_supportBusy: "Nuk u lidh me serverin. Provoni përsëri.",
@@ -4106,6 +4118,34 @@ const MK_EXTRA: Record<string, string> = {
     "Кога режимот на одржување е вклучен, корисниците гледаат страница за одржување.",
   adm_set_saved: "Поставките се зачувани!",
   adm_set_btn: "Зачувај поставки",
+  ui_dhurataHubTitle: "Мал подарок за вас — цел свет за некого друг",
+  ui_dhurataHubP1:
+    "Можеби е јакна што повеќе не ја носите. Играчка што вашето дете ја оставило на страна. Книга што сте ја прочитале и стои на полица. Мебел што не ви стои во собата.",
+  ui_dhurataHubP2:
+    "Но некаде, денес, има мајка што бара топла јакна за своето дете. Има дете што сонува токму таа играчка. Има студент што не може да ја купи таа книга. Има семејство кое има потреба токму од тој мебел.",
+  ui_dhurataHubP3:
+    "Тие не знаат дека вие го имате. Вие не знаете дека им треба. KetuJemi ги поврзува — бесплатно, со љубов, со достоинство.",
+  ui_dhurataHubThanks:
+    "Благодариме што избравте да дарувате. Светот станува подобар со луѓе како вас. ❤️",
+  ui_dhurataHubCta: "🎁 Донирај сега — Бесплатно",
+  ui_giftPledgeBack: "Назад",
+  ui_giftPledgeWarnTitle: "⚠️ ПРОЧИТАЈТЕ ВНИМАТЕЛНО ПРЕД ДА ПРОДОЛЖИТЕ",
+  ui_giftPledgeIntro1:
+    "Оваа секција е создадена за луѓе со добро срце кои сакаат да им помогнат на другите.",
+  ui_giftPledgeIntro2: "Секое злоупотреба се третира со најголема сериозност.",
+  ui_giftPledgeItem1:
+    "Потврдувам дека предметот е целосно БЕСПЛАТЕН — нема да побарам пари, услуга или накнада",
+  ui_giftPledgeItem2:
+    "Потврдувам дека предметот физички постои и е достапен — не е лажен или измамнички оглас",
+  ui_giftPledgeItem3:
+    "Потврдувам дека фотографиите се вистински и од мојот предмет — не од интернет или туѓи",
+  ui_giftPledgeItem4:
+    "Разбирам дека секој кој ја злоупотребува оваа секција за измама, реклама или штетни цели веднаш се пријавува и трајно се блокира",
+  ui_giftPledgeItem5:
+    "Разбирам дека KetuJemi го следи секој оглас во оваа категорија и може да го отстрани без предупредување",
+  ui_giftPledgeContinue: "✅ Разбрав & Се согласувам — Продолжи →",
+  ui_giftPledgeLegal:
+    'Со кликнување на „Продолжи“ ја преземате целосната правна одговорност за точноста на вашиот оглас.',
 };
 
 const MNE_EXTRA: Record<string, string> = {
@@ -6085,6 +6125,34 @@ const MNE_EXTRA: Record<string, string> = {
   adm_set_maintWarn: "U režimu održavanja korisnici vide stranicu za održavanje.",
   adm_set_saved: "Postavke sačuvane!",
   adm_set_btn: "Sačuvaj postavke",
+  ui_dhurataHubTitle: "Mali poklon za vas — čitav svijet za nekoga drugog",
+  ui_dhurataHubP1:
+    "Možda je jakna koju više ne nosite. Igračka koju je vaše dijete ostavilo po strani. Knjiga koju ste pročitali i stoji na polici. Namještaj koji vam ne odgovara u sobi.",
+  ui_dhurataHubP2:
+    "Ali negdje, danas, ima majka koja traži toplu jaknu za svoje dijete. Ima dijete koje sanja baš tu igračku. Ima student koji ne može kupiti tu knjigu. Ima porodica koja ima potrebu baš za tom namještajem.",
+  ui_dhurataHubP3:
+    "Oni ne znaju da vi to imate. Vi ne znate da im treba. KetuJemi ih spaja — besplatno, s ljubavlju, s dostojanstvom.",
+  ui_dhurataHubThanks:
+    "Hvala što ste odabrali da darujete. Svijet postaje bolji s ljudima poput vas. ❤️",
+  ui_dhurataHubCta: "🎁 Daruj sada — Besplatno",
+  ui_giftPledgeBack: "Nazad",
+  ui_giftPledgeWarnTitle: "⚠️ PAŽLJIVO PROČITAJTE PRIJE NEGO ŠTO NASTAVITE",
+  ui_giftPledgeIntro1:
+    "Ova sekcija je namijenjena ljudima dobrog srca koji žele pomoći drugima.",
+  ui_giftPledgeIntro2: "Svaka zloupotreba tretira se s najvećom ozbiljnošću.",
+  ui_giftPledgeItem1:
+    "Potvrđujem da je predmet potpuno BESPLATAN — neću tražiti novac, uslugu ili naknadu",
+  ui_giftPledgeItem2:
+    "Potvrđujem da predmet fizički postoji i dostupan je — nije lažan ili prevarantski oglas",
+  ui_giftPledgeItem3:
+    "Potvrđujem da su fotografije stvarne i mog predmeta — ne sa interneta ili tuđe",
+  ui_giftPledgeItem4:
+    "Razumijem da svako ko zloupotrijebi ovu sekciju za prevaru, reklamu ili štetne svrhe odmah se prijavljuje i trajno blokira",
+  ui_giftPledgeItem5:
+    "Razumijem da KetuJemi prati svaki oglas u ovoj kategoriji i može ga ukloniti bez upozorenja",
+  ui_giftPledgeContinue: "✅ Razumijem & Slažem se — Nastavi →",
+  ui_giftPledgeLegal:
+    'Klikom na „Nastavi“ preuzimate punu pravnu odgovornost za tačnost vašeg oglasa.',
 };
 
 export const EXTRA_TRANSLATIONS: Record<AppExtraLocaleKey, Record<string, string>> = {
