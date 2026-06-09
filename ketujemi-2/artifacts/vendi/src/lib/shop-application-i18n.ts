@@ -173,8 +173,8 @@ const KS: OpenShopFormCopy = {
   website: "Website URL",
   socialRequired: "Plotësoni të paktën një rrjet social",
   socialUrlHint:
-    "Fillimi i linkut (https://…) është gati — shkruani vetëm emrin e faqes suaj, p.sh. cyberfoxferizaj",
-  socialPhFacebook: "cyberfoxferizaj",
+    "Fillimi i linkut (https://…) është gati — shkruani vetëm emrin e faqes suaj, p.sh. emri_dyqanit",
+  socialPhFacebook: "emri_dyqanit",
   socialPhInstagram: "emri_dyqanit",
   socialPhTiktok: "emri_dyqanit",
   socialPhWhatsapp: "38344123456",
@@ -234,8 +234,8 @@ const MK: OpenShopFormCopy = {
   website: "Website URL",
   socialRequired: "Пополнете барем една социјална мрежа",
   socialUrlHint:
-    "Почетокот на линкот (https://…) е веќе тука — внесете само го името на профилот, на пр. cyberfoxferizaj",
-  socialPhFacebook: "cyberfoxferizaj",
+    "Почетокот на линкот (https://…) е веќе тука — внесете само го името на профилот, на пр. ime_prodavnica",
+  socialPhFacebook: "ime_prodavnica",
   socialPhInstagram: "ime_prodavnica",
   socialPhTiktok: "ime_prodavnica",
   socialPhWhatsapp: "38970123456",
@@ -294,8 +294,8 @@ const MNE: OpenShopFormCopy = {
   website: "Website URL",
   socialRequired: "Popunite barem jednu društvenu mrežu",
   socialUrlHint:
-    "Početak linka (https://…) je već tu — upišite samo ime profila, npr. cyberfoxferizaj",
-  socialPhFacebook: "cyberfoxferizaj",
+    "Početak linka (https://…) je već tu — upišite samo ime profila, npr. ime_prodavnice",
+  socialPhFacebook: "ime_prodavnice",
   socialPhInstagram: "ime_prodavnice",
   socialPhTiktok: "ime_prodavnice",
   socialPhWhatsapp: "38267123456",
@@ -354,8 +354,8 @@ const EN: OpenShopFormCopy = {
   website: "Website URL",
   socialRequired: "Fill in at least one social network",
   socialUrlHint:
-    "The link prefix (https://…) is already filled — type only your page name, e.g. cyberfoxferizaj",
-  socialPhFacebook: "cyberfoxferizaj",
+    "The link prefix (https://…) is already filled — type only your page name, e.g. your_shop_name",
+  socialPhFacebook: "your_shop_name",
   socialPhInstagram: "your_shop_name",
   socialPhTiktok: "your_shop_name",
   socialPhWhatsapp: "38344123456",
