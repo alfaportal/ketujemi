@@ -8,6 +8,15 @@ import { fileURLToPath } from "node:url";
 import { applyEnglishPhrases } from "./english-phrases.mjs";
 import { wordTranslateSqToEn } from "./albanian-words.mjs";
 import { categoryEnglishFromKs } from "./category-en-from-ks.mjs";
+import { categorySqToEnglish } from "./category-sq-en.mjs";
+
+const ALBANIAN_CHARS = /[ëçËÇ]/;
+
+function categoryEnFromSq(sq) {
+  let en = categoryEnglishFromKs(sq);
+  if (en === sq || ALBANIAN_CHARS.test(en)) en = categorySqToEnglish(sq);
+  return en;
+}
 
 function wordTranslate(text) {
   return wordTranslateSqToEn(text, applyEnglishPhrases);
@@ -17,7 +26,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
 const vendiLib = path.join(root, "artifacts", "vendi", "src", "lib");
 
-const ALBANIAN_CHARS = /[ëçËÇ]/;
 const CYRILLIC = /[\u0400-\u04FF]/;
 
 function extractObjectBlock(source, startMarker, endMarker) {
@@ -422,7 +430,7 @@ let cm;
 while ((cm = catRe.exec(catBody)) !== null) {
   const name = cm[1];
   const ks = cm[2];
-  catEn[name] = categoryEnglishFromKs(ks);
+  catEn[name] = categoryEnFromSq(ks || name);
 }
 
 const extraCatKeyRe = /"((?:\\.|[^"\\])+)"\s*:\s*\{\s*mk:/g;
@@ -431,7 +439,7 @@ for (const file of ["femije-category-translations.ts", "arsim-kurse-category-tra
   let km;
   while ((km = extraCatKeyRe.exec(src)) !== null) {
     const name = km[1];
-    if (!catEn[name]) catEn[name] = categoryEnglishFromKs(name);
+    if (!catEn[name]) catEn[name] = categoryEnFromSq(name);
   }
 }
 

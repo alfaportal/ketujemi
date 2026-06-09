@@ -1,15 +1,23 @@
 /**
- * French category labels from Albanian (sq) — via categoryEnglishFromKs then en→fr.
+ * French listing category labels: Albanian (sq) → English → French.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { englishToFrench } from "./albanian-french.mjs";
+import { categoryEnglishFromKs } from "./category-en-from-ks.mjs";
 import { categorySqToEnglish } from "./category-sq-en.mjs";
+import { categoryToFrench } from "./category-en-fr.mjs";
+
+const ALBANIAN_CHARS = /[ëçËÇ]/;
+
+function categoryEnFromSq(sq) {
+  let en = categoryEnglishFromKs(sq);
+  if (en === sq || ALBANIAN_CHARS.test(en)) en = categorySqToEnglish(sq);
+  return en;
+}
 
 function categoryFrenchFromSq(sq) {
-  const en = categorySqToEnglish(sq);
-  return englishToFrench(en);
+  return categoryToFrench(categoryEnFromSq(sq));
 }
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");

@@ -1,10 +1,13 @@
 /** Albanian category labels → English (Fëmijë leaves and other gaps). */
 import { applyEnglishPhrases } from "./english-phrases.mjs";
 import { categoryEnglishFromKs } from "./category-en-from-ks.mjs";
+import { shopSubcategoryToEnglish } from "./shop-subcategory-sq-en.mjs";
+import { CATEGORY_SQ_EN_EXTRA } from "./category-sq-en-extra.mjs";
 
 const ALBANIAN_CHARS = /[ëçËÇ]/;
 
 const SQ_EN_WORDS = [
+  ...CATEGORY_SQ_EN_EXTRA,
   ["Aksesorë (kapele, doreza, shall, çanta shkolle)", "Accessories (hats, gloves, scarf, school bag)"],
   ["Aksesorë karroce (çadra, mbulesë shiu, çanta)", "Stroller accessories (umbrella, rain cover, bag)"],
   ["Aktivitet & Sport Fëmijësh", "Children's Activity & Sport"],
@@ -104,22 +107,30 @@ const SQ_EN_WORDS = [
   ["binjakë", "twins"],
   ["Mbrojtëse", "Protectors"],
   ["Kaskë", "Helmet"],
+  ["Muzikë Edukative", "Educational music"],
+  ["Rroba & Këpucë Fëmijësh", "Children's clothing & shoes"],
+  ["Rroba foshnjeje (0-12 muaj)", "Baby clothing (0-12 months)"],
+  ["Rroba vegjëlish (1-5 vjeç)", "Toddler clothing (1-5 years)"],
+  ["Rroba shkollore (6-14 vjeç)", "School clothing (6-14 years)"],
+  ["Mobilje (dollap, komodë pelene, rafte lodra)", "Furniture (wardrobes, changing tables, toy shelves)"],
+  ["Çerdhe & Kopshte", "Nurseries & kindergartens"],
+  ["Çanta & Aksesorë Nënë", "Bags & maternity accessories"],
 ];
 
 export function categorySqToEnglish(sq) {
-  const fromKs = categoryEnglishFromKs(sq);
-  if (!ALBANIAN_CHARS.test(fromKs)) return fromKs;
+  const exact = SQ_EN_WORDS.find(([k]) => k === sq);
+  if (exact) return exact[1];
 
-  if (SQ_EN_WORDS.some(([k]) => k === sq)) {
-    return SQ_EN_WORDS.find(([k]) => k === sq)[1];
-  }
+  const fromKs = categoryEnglishFromKs(sq);
+  if (fromKs !== sq && !ALBANIAN_CHARS.test(fromKs)) return fromKs;
 
   let s = applyEnglishPhrases(sq);
-  if (!ALBANIAN_CHARS.test(s)) return s;
+  if (!ALBANIAN_CHARS.test(s) && s !== sq) return s;
 
   const sorted = [...SQ_EN_WORDS].sort((a, b) => b[0].length - a[0].length);
   for (const [token, en] of sorted) {
     if (s.includes(token)) s = s.split(token).join(en);
   }
+  if (ALBANIAN_CHARS.test(s) || s === sq) s = shopSubcategoryToEnglish(sq);
   return s;
 }

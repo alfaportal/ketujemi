@@ -123,6 +123,19 @@ const EXACT = {
   "Kërkoj punë": "Looking for Work",
   "Shërbime profesionale": "Professional Services",
   "Pastrimi & Mirëmbajtja": "Cleaning & Maintenance",
+  "Ndërtim & Instalime": "Construction & Installations",
+  "Ndërtim & Muraturë": "Construction & Masonry",
+  "Gipsi & Suvatime": "Plaster & Finishing",
+  "Pllakosje & Mozaik": "Tiling & Mosaic",
+  "Bojatisje & Dekorim": "Painting & Decor",
+  "Riparim çatie & Izolim": "Roof repair & insulation",
+  "Riparim dyshemeje & Parket": "Floor repair & parquet",
+  "Riparim dritaresh & dyerve": "Window & door repair",
+  "Instalime ngrohje & Klima": "Heating & A/C installation",
+  "Instalime kamera & Alarme": "Camera & alarm installation",
+  "Instalime solar & Panele diellore": "Solar panel installation",
+  "Lëvizje furniture & Transport": "Furniture moving & transport",
+  "Mirëmbajtje & Riparime të përgjithshme": "General maintenance & repairs",
   "Ndërtim & Rinovim": "Construction & Renovation",
   "Kafshë bujqësore": "Farm Animals",
   "Makineri bujqësore": "Farm Machinery",
@@ -144,6 +157,8 @@ const EXACT = {
   "Ndihmë për detyra": "Homework Help",
   "Ndihmë për aplikime": "Help with Applications",
 };
+
+export const CAT_EN_EXACT = EXACT;
 
 export function categoryEnglishFromKs(ks) {
   if (EXACT[ks]) return EXACT[ks];
