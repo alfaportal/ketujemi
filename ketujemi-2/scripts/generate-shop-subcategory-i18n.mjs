@@ -49,13 +49,24 @@ const en = {};
 const fr = {};
 const mk = {};
 const mne = {};
+const enBySq = {};
+const frBySq = {};
+const mkBySqOut = {};
+const mneBySqOut = {};
 
 for (const { slug, nameSq } of subs) {
   const enLabel = shopSubcategoryToEnglish(nameSq);
+  const frLabel = shopLabelFr(enLabel);
+  const mkLabel = mkBySq[nameSq] ?? enLabel;
+  const mneLabel = mneBySq[nameSq] ?? enLabel;
   en[slug] = enLabel;
-  fr[slug] = shopLabelFr(enLabel);
-  mk[slug] = mkBySq[nameSq] ?? enLabel;
-  mne[slug] = mneBySq[nameSq] ?? enLabel;
+  fr[slug] = frLabel;
+  mk[slug] = mkLabel;
+  mne[slug] = mneLabel;
+  enBySq[nameSq] = enLabel;
+  frBySq[nameSq] = frLabel;
+  mkBySqOut[nameSq] = mkLabel;
+  mneBySqOut[nameSq] = mneLabel;
 }
 
 function emitRecord(name, obj) {
@@ -65,7 +76,16 @@ function emitRecord(name, obj) {
   return `export const ${name}: Record<string, string> = {\n${lines.join("\n")}\n};\n`;
 }
 
-const out = `/** Auto-generated — run ketujemi-2/scripts/generate-shop-subcategory-i18n.mjs */\n${emitRecord("SHOP_SUB_EN", en)}${emitRecord("SHOP_SUB_FR", fr)}${emitRecord("SHOP_SUB_MK", mk)}${emitRecord("SHOP_SUB_MNE", mne)}`;
+const out =
+  `/** Auto-generated — run ketujemi-2/scripts/generate-shop-subcategory-i18n.mjs */\n` +
+  `${emitRecord("SHOP_SUB_EN", en)}` +
+  `${emitRecord("SHOP_SUB_FR", fr)}` +
+  `${emitRecord("SHOP_SUB_MK", mk)}` +
+  `${emitRecord("SHOP_SUB_MNE", mne)}` +
+  `${emitRecord("SHOP_SUB_EN_BY_SQ", enBySq)}` +
+  `${emitRecord("SHOP_SUB_FR_BY_SQ", frBySq)}` +
+  `${emitRecord("SHOP_SUB_MK_BY_SQ", mkBySqOut)}` +
+  `${emitRecord("SHOP_SUB_MNE_BY_SQ", mneBySqOut)}`;
 
 writeFileSync(outPath, out, "utf8");
 console.log(`Wrote ${subs.length} shop subcategory labels to ${outPath}`);

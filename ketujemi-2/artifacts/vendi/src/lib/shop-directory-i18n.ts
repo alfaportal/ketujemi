@@ -3,9 +3,13 @@ import { translationKeyForUiLang, type UiTranslationLocale } from "@/lib/ui-lang
 import type { ShopDirectoryCategory, ShopDirectorySubcategory } from "@/lib/shop-directory-taxonomy";
 import {
   SHOP_SUB_EN,
+  SHOP_SUB_EN_BY_SQ,
   SHOP_SUB_FR,
+  SHOP_SUB_FR_BY_SQ,
   SHOP_SUB_MK,
+  SHOP_SUB_MK_BY_SQ,
   SHOP_SUB_MNE,
+  SHOP_SUB_MNE_BY_SQ,
 } from "@/lib/shop-directory-subcategory-i18n.generated";
 
 export type ShopDirectoryCopy = {
@@ -298,12 +302,26 @@ const SUB_BY_LOCALE: Record<
   fr: SHOP_SUB_FR,
 };
 
+const SUB_BY_SQ_LOCALE: Record<
+  Exclude<UiTranslationLocale, "ks">,
+  Record<string, string>
+> = {
+  mk: SHOP_SUB_MK_BY_SQ,
+  mne: SHOP_SUB_MNE_BY_SQ,
+  en: SHOP_SUB_EN_BY_SQ,
+  fr: SHOP_SUB_FR_BY_SQ,
+};
+
 export function translateDirectorySubcategory(
   sub: Pick<ShopDirectorySubcategory, "slug" | "nameSq">,
   locale: UiTranslationLocale,
 ): string {
   if (locale === "ks") return sub.nameSq;
-  return SUB_BY_LOCALE[locale]?.[sub.slug] ?? sub.nameSq;
+  const bySlug = SUB_BY_LOCALE[locale]?.[sub.slug];
+  if (bySlug) return bySlug;
+  const bySq = SUB_BY_SQ_LOCALE[locale]?.[sub.nameSq];
+  if (bySq) return bySq;
+  return sub.nameSq;
 }
 
 export function seoCategoryDescriptionFor(
