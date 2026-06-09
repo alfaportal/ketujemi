@@ -6072,10 +6072,10 @@ export function fillCount(template: string, count: string): string {
 }
 
 export function fillPlaceholders(
-  template: string,
+  template: string | undefined,
   vars: Record<string, string | number>,
 ): string {
-  let s = template;
+  let s = template ?? "";
   for (const [k, v] of Object.entries(vars)) {
     s = s.split(`{${k}}`).join(String(v));
   }
