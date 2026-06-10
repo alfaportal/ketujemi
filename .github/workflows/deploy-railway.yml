@@ -1,9 +1,7 @@
-# Verifikon typecheck, build dhe smoke E2E në çdo push në master.
+# Extended verify (typecheck + smoke E2E). Run manually; basic gate is ci.yml on push to master.
 name: Build KetuJemi
 
 on:
-  push:
-    branches: [master, main]
   workflow_dispatch:
 
 jobs:

@@ -1,0 +1,46 @@
+# Basic CI gate for master: build + i18n audits.
+# To block merges when this fails: GitHub → Settings → Branches → master →
+# require status check "CI / verify" (direct pushes to master still land; use PRs + protection to enforce).
+name: CI
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Production build
+        run: pnpm run build
+
+      - name: Albanian leak audit
+        run: node ketujemi-2/artifacts/vendi/scripts/audit-albanian-leaks.mjs
+
+      - name: i18n key parity check
+        run: node ketujemi-2/artifacts/vendi/scripts/check-i18n-keys.mjs
