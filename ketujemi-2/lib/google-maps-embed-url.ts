@@ -127,12 +127,15 @@ export function shopMapEmbedSrc(
   if (hasShopCoordinates(input.latitude, input.longitude)) {
     return googleMapsEmbedFromCoords(input.latitude!, input.longitude!, apiKey);
   }
-  const cityQuery = buildCityMapQuery({
-    city: input.city,
-    country: input.country,
-    region: input.region,
-  });
-  return googleMapsCityEmbedSrc(cityQuery, apiKey);
+  return googleMapsEmbedSrc(
+    buildMapSearchQuery({
+      address: input.address,
+      city: input.city,
+      country: input.country,
+      region: input.region,
+    }),
+    apiKey,
+  );
 }
 
 export function googleMapsOpenUrl(query: string): string {

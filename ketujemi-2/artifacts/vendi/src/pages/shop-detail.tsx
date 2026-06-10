@@ -37,11 +37,9 @@ import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 import {
-  buildCityMapQuery,
   buildMapSearchQuery,
   fetchShopMapEmbedSrc,
   googleMapsOpenUrl,
-  hasShopCoordinates,
   shopMapEmbedSrc,
 } from "@/lib/google-maps-embed";
 import { shopDetailSeoTitle, useShopDetailCopy } from "@/lib/shop-detail-i18n";
@@ -292,18 +290,12 @@ export default function ShopDetailPage() {
     );
   }
 
-  const mapExternalQuery = hasShopCoordinates(shop.latitude, shop.longitude)
-    ? buildMapSearchQuery({
-        address: shop.address,
-        city: shop.city,
-        region: shop.region,
-        country: shop.country,
-      })
-    : buildCityMapQuery({
-        city: shop.city,
-        region: shop.region,
-        country: shop.country,
-      });
+  const mapExternalQuery = buildMapSearchQuery({
+    address: shop.address,
+    city: shop.city,
+    region: shop.region,
+    country: shop.country,
+  });
   const mapExternalUrl = googleMapsOpenUrl(mapExternalQuery);
   const hasEnrichedIg = Boolean(socialProfiles.instagram);
   const hasEnrichedTt = Boolean(socialProfiles.tiktok);
