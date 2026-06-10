@@ -15,17 +15,64 @@ export function listingVideoTooLargeMessage(uiLang: string): { title: string; de
   return listingVideoShortenMessage(uiLang);
 }
 
+export function listingVideoLabel(uiLang: string): string {
+  switch (uiLang) {
+    case "mk":
+      return "Едно видео за оглас";
+    case "mne":
+      return "Jedan video za oglas";
+    case "en":
+      return "One video for your listing";
+    case "fr":
+      return "Une vidéo pour l'annonce";
+    default:
+      return "Një video për shpallje";
+  }
+}
+
 export function listingVideoFormatsHint(uiLang: string): string {
   const mb = String(LISTING_VIDEO_MAX_MB);
   switch (uiLang) {
     case "mk":
-      return `(MP4, MOV, AVI • Full HD • автоматски до ${mb} MB)`;
+      return `(MP4, MOV, AVI • Full HD • автоматски се оптимизира до ${mb} MB)`;
     case "mne":
-      return `(MP4, MOV, AVI • Full HD • automatski do ${mb} MB)`;
+      return `(MP4, MOV, AVI • Full HD • automatski se optimizuje do ${mb} MB)`;
     case "en":
-      return `(MP4, MOV, AVI • Full HD • auto-optimized to ${mb} MB)`;
+      return `(MP4, MOV, AVI • Full HD • auto-optimized up to ${mb} MB)`;
+    case "fr":
+      return `(MP4, MOV, AVI • Full HD • optimisé automatiquement jusqu'à ${mb} Mo)`;
     default:
       return `(MP4, MOV, AVI • Full HD • optimizohet automatikisht deri në ${mb} MB)`;
+  }
+}
+
+export function listingVideoAddLabel(uiLang: string): string {
+  switch (uiLang) {
+    case "mk":
+      return "Додај видео";
+    case "mne":
+      return "Dodaj video";
+    case "en":
+      return "Add video";
+    case "fr":
+      return "Ajouter une vidéo";
+    default:
+      return "Shto video";
+  }
+}
+
+export function listingVideoRemoveLabel(uiLang: string): string {
+  switch (uiLang) {
+    case "mk":
+      return "Отстрани видео";
+    case "mne":
+      return "Ukloni video";
+    case "en":
+      return "Remove video";
+    case "fr":
+      return "Supprimer la vidéo";
+    default:
+      return "Hiq videon";
   }
 }
 

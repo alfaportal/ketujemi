@@ -60,8 +60,11 @@ import { listingPhotoAnalyzeFailureToast } from "@/lib/listing-photo-analyze-toa
 import { useListingImageUpload } from "@/lib/listing-image-upload";
 import {
   isAllowedListingVideoFile,
+  listingVideoAddLabel,
   listingVideoErrorMessage,
   listingVideoFormatsHint,
+  listingVideoLabel,
+  listingVideoRemoveLabel,
   useListingVideoUpload,
   type ListingVideoUploadPhase,
 } from "@/lib/listing-video-upload";
@@ -1039,7 +1042,7 @@ export default function NewListing() {
 
                 <div className="border-t border-gray-100 pt-4">
                   <Label className="text-sm font-medium text-gray-700">
-                    {tx.ui_listingVideoLabel ?? "Një video për shpallje"}{" "}
+                    {listingVideoLabel(uiLang)}{" "}
                     <span className="text-gray-400 font-normal">{listingVideoFormatsHint(uiLang)}</span>
                   </Label>
 
@@ -1070,7 +1073,7 @@ export default function NewListing() {
                         <div className="flex flex-col items-center gap-1.5 text-gray-500">
                           <Video size={28} className="text-gray-400" />
                           <p className="text-sm font-semibold text-gray-600">
-                            {tx.ui_listingVideoAdd ?? "Shto video"}
+                            {listingVideoAddLabel(uiLang)}
                           </p>
                         </div>
                       </button>
@@ -1103,8 +1106,8 @@ export default function NewListing() {
                         </p>
                       ) : videoUploadPhase === "preparing" ? (
                         <p className="text-xs text-gray-500 text-center max-w-xs px-4">
-                          {tx.videoPreparingHint ??
-                            "Video optimizohet automatikisht për shpallje (max 100 MB)."}
+                          {t.videoPreparingHint ??
+                            "Video optimizohet automatikisht për shpallje (max 100 MB). Mos e mbyll faqen."}
                           {videoPreparePct > 0 ? ` ${videoPreparePct}%` : ""}
                         </p>
                       ) : null}
@@ -1130,7 +1133,7 @@ export default function NewListing() {
                           }
                         }}
                         className="absolute top-2 right-2 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors"
-                        aria-label={tx.ui_listingVideoRemove ?? "Hiq videon"}
+                        aria-label={listingVideoRemoveLabel(uiLang)}
                       >
                         <X size={14} className="text-white" />
                       </button>
