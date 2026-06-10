@@ -185,13 +185,17 @@ export default function NewListing() {
   const videoUpload = useListingVideoUpload();
   const [hasShop, setHasShop] = useState<boolean | null>(null);
   const [myShop, setMyShop] = useState<{ shop_name: string; category: string } | null>(null);
-  const [dhurataPledgeOk, setDhurataPledgeOk] = useState(() => {
+  /** Must accept Dhurata pledge on every visit — no sessionStorage bypass. */
+  const [dhurataPledgeOk, setDhurataPledgeOk] = useState(false);
+
+  useEffect(() => {
+    if (!isDhurataPostRoute) return;
     try {
-      return sessionStorage.getItem(DHURATA_PLEDGE_STORAGE_KEY) === "1";
+      sessionStorage.removeItem(DHURATA_PLEDGE_STORAGE_KEY);
     } catch {
-      return false;
+      /* ignore */
     }
-  });
+  }, [isDhurataPostRoute]);
 
   const fuelOpts = formOptionsForUiLang("fuel", uiLang);
   const transmissionOpts = formOptionsForUiLang("transmission", uiLang);
@@ -724,6 +728,13 @@ export default function NewListing() {
   };
 
   const onSubmit = (data: FormData) => {
+    if (isDhurataPostRoute && !dhurataPledgeOk) {
+      refusePost(
+        tx.ui_giftPledgeUncheckedBlocked ??
+          "Duhet të pranoni të 5 kushtet para se të postoni dhuratën.",
+      );
+      return;
+    }
     setPostBlockMessage(null);
     const rawPrice = Number.isFinite(Number(data.price)) ? Number(data.price) : 0;
     const priceByAgreement = !!data.price_agreement || rawPrice <= 0;
