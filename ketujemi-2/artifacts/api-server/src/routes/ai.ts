@@ -219,7 +219,9 @@ router.post("/ai/support-chat", aiSupportChatLimiter, async (req, res) => {
     return;
   }
 
-  const lang = parseUiLang(body.lang);
+  const lang = parseUiLang(
+    (body as { ui_lang?: string }).ui_lang ?? body.lang,
+  );
   let reply: string;
   try {
     reply = await runSupportChat(valid, lang);

@@ -27,10 +27,22 @@ export function inferSupportLang(userText: string, hint: UiLang = "sq"): UiLang 
     lower,
     /\b(si\s+mund|ku\s+mund|posto|postim|njoftim|faleminderit|pershendetje|përshëndetje|dua|blej|shit|kategori|telefononi|kontaktoni)\b/giu,
   );
+  const enScore = countMatches(
+    lower,
+    /\b(hello|hi|how|where|what|help|please|thanks|thank\s+you|buy|sell|post|listing|category|contact|phone|register|account)\b/giu,
+  );
+  const frScore = countMatches(
+    lower,
+    /\b(bonjour|salut|comment|où|ou|aide|merci|acheter|vendre|annonce|compte|inscription)\b/giu,
+  );
 
-  if (meScore > sqScore && meScore >= mkLatinScore && meScore > 0) return "me";
-  if (mkLatinScore > sqScore && mkLatinScore > 0) return "mk";
-  if (sqScore > 0) return "sq";
+  const best = Math.max(meScore, mkLatinScore, sqScore, enScore, frScore);
+  if (best === 0) return hint;
+  if (enScore === best) return "en";
+  if (frScore === best) return "fr";
+  if (meScore === best) return "me";
+  if (mkLatinScore === best) return "mk";
+  if (sqScore === best) return "sq";
 
   return hint;
 }

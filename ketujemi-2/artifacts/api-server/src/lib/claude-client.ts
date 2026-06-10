@@ -14,7 +14,7 @@ export function langText(copy: LangCopy | Record<UiLang, string>, lang: UiLang):
 }
 
 export function parseUiLang(raw: unknown): UiLang {
-  if (raw === "en") return "en";
+  if (raw === "en" || raw === "de" || raw === "it") return "en";
   if (raw === "fr") return "fr";
   if (raw === "mk" || raw === "me") return raw;
   if (raw === "mne") return "me";

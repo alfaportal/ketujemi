@@ -1,10 +1,14 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { MessageCircle, X, Send, Loader2, Mic } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
 import { useSecretAdminTap } from "@/lib/secret-admin-tap";
 import { cn } from "@/lib/utils";
 import { getFetchErrorMessage } from "@/lib/fetch-with-timeout";
+import {
+  mergeSupportChatCopy,
+  supportApiLang,
+} from "@/lib/support-chat-defaults";
 import {
   isDesktopVoiceInputAvailable,
   isMobileUserAgent,
@@ -17,9 +21,9 @@ import {
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 export function SupportChatWidget() {
-  const { market, t } = useMarket();
-  const tx = t as Record<string, string>;
-  const welcome = tx.ui_supportWelcome;
+  const { market, t, uiLang } = useMarket();
+  const copy = useMemo(() => mergeSupportChatCopy(uiLang, t), [uiLang, t]);
+  const apiLang = supportApiLang(uiLang, market.code);
   const { registerTap } = useSecretAdminTap();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -34,11 +38,10 @@ export function SupportChatWidget() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const messagesRef = useRef(messages);
   const busyRef = useRef(busy);
-  const welcomeRef = useRef("");
+  const welcomeRef = useRef(copy.welcome);
   const inputRef = useRef(input);
 
-  const lang = market.code === "mk" ? "mk" : market.code === "mne" ? "me" : "sq";
-  welcomeRef.current = welcome;
+  welcomeRef.current = copy.welcome;
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -53,10 +56,21 @@ export function SupportChatWidget() {
   }, [input]);
 
   useEffect(() => {
-    if (open && messages.length === 0) {
-      setMessages([{ role: "assistant", content: welcome }]);
-    }
-  }, [open, messages.length, welcome]);
+    if (!open || !copy.welcome) return;
+    setMessages((prev) => {
+      if (prev.length === 0) {
+        return [{ role: "assistant", content: copy.welcome }];
+      }
+      if (
+        prev.length === 1 &&
+        prev[0]?.role === "assistant" &&
+        (!prev[0].content.trim() || prev[0].content === welcomeRef.current)
+      ) {
+        return [{ role: "assistant", content: copy.welcome }];
+      }
+      return prev;
+    });
+  }, [open, copy.welcome]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -109,7 +123,8 @@ export function SupportChatWidget() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            lang,
+            lang: apiLang,
+            ui_lang: uiLang,
             messages: next.filter(
               (m) => m.role === "user" || m.content !== welcomeRef.current,
             ),
@@ -122,7 +137,7 @@ export function SupportChatWidget() {
             ...prev,
             {
               role: "assistant",
-              content: tx.ui_supportBusy,
+              content: copy.busy,
             },
           ]);
           return;
@@ -141,7 +156,7 @@ export function SupportChatWidget() {
         busyRef.current = false;
       }
     },
-    [lang, market.code],
+    [apiLang, copy.busy, uiLang],
   );
 
   const startWebSpeech = useCallback(() => {
@@ -161,8 +176,8 @@ export function SupportChatWidget() {
             {
               role: "assistant",
               content: !isSecurePageContext()
-                ? tx.ui_supportVoiceHttps
-                : tx.ui_supportVoiceError,
+                ? copy.voiceHttps
+                : copy.voiceError,
             },
           ]);
           return;
@@ -171,7 +186,7 @@ export function SupportChatWidget() {
           ...prev,
           {
             role: "assistant",
-            content: tx.ui_supportVoiceUnsupported,
+            content: copy.voiceUnsupported,
           },
         ]);
       },
@@ -189,13 +204,13 @@ export function SupportChatWidget() {
         ...prev,
         {
           role: "assistant",
-          content: tx.ui_supportVoiceUnsupported,
+          content: copy.voiceUnsupported,
         },
       ]);
       return;
     }
     webSpeechRef.current = controller;
-  }, [market.code, sendMessage]);
+  }, [copy.voiceError, copy.voiceHttps, copy.voiceUnsupported, market.code, sendMessage]);
 
   function toggleVoiceInput() {
     if (!voiceAvailable || busy) return;
@@ -205,7 +220,7 @@ export function SupportChatWidget() {
         ...prev,
         {
           role: "assistant",
-          content: tx.ui_supportVoiceMobile,
+          content: copy.voiceMobile,
         },
       ]);
       return;
@@ -216,7 +231,7 @@ export function SupportChatWidget() {
         ...prev,
         {
           role: "assistant",
-          content: tx.ui_supportVoiceUnsupported,
+          content: copy.voiceUnsupported,
         },
       ]);
       return;
@@ -237,15 +252,18 @@ export function SupportChatWidget() {
           style={{ maxHeight: "min(420px, 70vh)" }}
         >
           <div className="flex items-center justify-between px-4 py-3 bg-[#1A56A0] text-white">
-            <span className="font-bold text-sm">💬 {tx.ui_supportChatTitle}</span>
+            <div className="min-w-0">
+              <p className="font-bold text-sm truncate">💬 {copy.title}</p>
+              <p className="text-[11px] text-white/85 truncate">{copy.subtitle}</p>
+            </div>
             <button
               type="button"
-              className="p-1 rounded-lg hover:bg-white/15 min-h-9 min-w-9 flex items-center justify-center"
+              className="p-1 rounded-lg hover:bg-white/15 min-h-9 min-w-9 flex items-center justify-center shrink-0"
               onClick={() => {
                 if (listening) stopListening();
                 setOpen(false);
               }}
-              aria-label={tx.ui_supportCloseAria}
+              aria-label={copy.closeAria}
             >
               <X className="h-5 w-5" />
             </button>
@@ -255,7 +273,7 @@ export function SupportChatWidget() {
               <div
                 key={i}
                 className={cn(
-                  "rounded-xl px-3 py-2 max-w-[92%]",
+                  "rounded-xl px-3 py-2 max-w-[92%] whitespace-pre-wrap",
                   m.role === "user"
                     ? "ml-auto bg-[#1A56A0] text-white"
                     : "mr-auto bg-white border border-gray-100 text-gray-800",
@@ -266,24 +284,24 @@ export function SupportChatWidget() {
             ))}
             {voiceNeedsHttps ? (
               <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
-                {tx.ui_supportVoiceHttps}
+                {copy.voiceHttps}
               </p>
             ) : null}
             {showMobileVoiceHint ? (
               <p className="text-xs text-gray-600 bg-gray-100 border border-gray-200 rounded-lg px-2 py-1.5">
-                {tx.ui_supportVoiceMobile}
+                {copy.voiceMobile}
               </p>
             ) : null}
             {busy ? (
               <div className="flex items-center gap-2 text-gray-500 text-xs px-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                {tx.ui_supportTyping}
+                {copy.typing}
               </div>
             ) : null}
             {listening ? (
               <div className="flex items-center gap-2 text-red-600 text-xs px-2 font-medium">
                 <span className="inline-block h-2 w-2 rounded-full bg-red-600 animate-pulse" />
-                {tx.ui_supportListening}
+                {copy.listening}
               </div>
             ) : null}
             <div ref={bottomRef} />
@@ -298,7 +316,7 @@ export function SupportChatWidget() {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={listening ? tx.ui_supportListeningPh : tx.ui_supportInputPh}
+              placeholder={listening ? copy.listeningPh : copy.inputPh}
               className="flex-1 min-w-0 w-0 min-h-10 sm:min-h-11 rounded-xl border border-gray-200 px-2.5 sm:px-3 text-sm"
               disabled={busy || listening}
               readOnly={listening}
@@ -315,7 +333,7 @@ export function SupportChatWidget() {
                     ? "bg-red-600 animate-pulse ring-2 ring-red-400 ring-offset-1"
                     : "bg-[#1A56A0] hover:bg-[#164a8c]",
                 )}
-                aria-label={listening ? tx.ui_supportVoiceStopAria : tx.ui_supportVoiceStartAria}
+                aria-label={listening ? copy.voiceStopAria : copy.voiceStartAria}
                 aria-pressed={listening}
               >
                 <Mic className={cn("h-4 w-4", listening && "scale-110")} />
@@ -342,7 +360,7 @@ export function SupportChatWidget() {
         data-testid="button-support-chat"
       >
         <MessageCircle className="h-5 w-5" />
-        {tx.ui_supportFab}
+        {copy.fab}
       </button>
     </>
   );
