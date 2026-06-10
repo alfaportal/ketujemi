@@ -43,14 +43,14 @@ function partnerHref(partner: PartnerSlotData): string {
   return `/partners/${partner.id}`;
 }
 
-/** Logo mbush 100% të zonës së bardhë — VIP dhe Partner. */
+/** Logo i plotë brenda zonës së bardhë — pa prerje, sa më i madh që lejon korniza. */
 function PartnerLogoImage({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="relative min-h-0 w-full flex-1 overflow-hidden bg-white">
+    <div className="relative min-h-0 w-full flex-1 overflow-hidden bg-white flex items-center justify-center">
       <img
         src={src}
         alt={alt}
-        className="absolute inset-0 h-full w-full object-contain object-center"
+        className="max-h-[98%] max-w-[98%] object-contain"
         loading="lazy"
         decoding="async"
       />

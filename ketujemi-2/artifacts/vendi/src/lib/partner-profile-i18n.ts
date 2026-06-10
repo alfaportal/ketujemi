@@ -10,6 +10,7 @@ export type PartnerProfileCopy = {
   locationTitle: string;
   contactTitle: string;
   mapTitle: string;
+  openInMaps: string;
 };
 
 const KS: PartnerProfileCopy = {
@@ -21,6 +22,7 @@ const KS: PartnerProfileCopy = {
   locationTitle: "Lokacioni",
   contactTitle: "Kontakt & rrjetet sociale",
   mapTitle: "Harta",
+  openInMaps: "Hap në Google Maps",
 };
 
 const MK: PartnerProfileCopy = {
@@ -32,6 +34,7 @@ const MK: PartnerProfileCopy = {
   locationTitle: "Локација",
   contactTitle: "Контакт и социјални мрежи",
   mapTitle: "Мапа",
+  openInMaps: "Отвори во Google Maps",
 };
 
 const MNE: PartnerProfileCopy = {
@@ -43,6 +46,7 @@ const MNE: PartnerProfileCopy = {
   locationTitle: "Lokacija",
   contactTitle: "Kontakt i društvene mreže",
   mapTitle: "Mapa",
+  openInMaps: "Otvori u Google Maps",
 };
 
 const EN: PartnerProfileCopy = {
@@ -54,6 +58,7 @@ const EN: PartnerProfileCopy = {
   locationTitle: "Location",
   contactTitle: "Contact & social",
   mapTitle: "Map",
+  openInMaps: "Open in Google Maps",
 };
 
 const IT: PartnerProfileCopy = {
@@ -65,6 +70,7 @@ const IT: PartnerProfileCopy = {
   locationTitle: "Posizione",
   contactTitle: "Contatto e social",
   mapTitle: "Mappa",
+  openInMaps: "Apri in Google Maps",
 };
 
 const DE: PartnerProfileCopy = {
@@ -76,6 +82,7 @@ const DE: PartnerProfileCopy = {
   locationTitle: "Standort",
   contactTitle: "Kontakt & soziale Medien",
   mapTitle: "Karte",
+  openInMaps: "In Google Maps öffnen",
 };
 
 const FR: PartnerProfileCopy = {
@@ -87,6 +94,7 @@ const FR: PartnerProfileCopy = {
   locationTitle: "Localisation",
   contactTitle: "Contact et réseaux sociaux",
   mapTitle: "Carte",
+  openInMaps: "Ouvrir dans Google Maps",
 };
 
 const PAGES: Record<UiTranslationLocale, PartnerProfileCopy> = {

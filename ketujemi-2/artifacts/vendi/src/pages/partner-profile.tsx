@@ -15,7 +15,7 @@ import {
 import { SiteHeader } from "@/components/site-header";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { translateCategory } from "@/lib/category-translations";
-import { googleMapsEmbedSrc } from "@/lib/google-maps-embed";
+import { fetchShopMapEmbedSrc, googleMapsEmbedSrc, googleMapsOpenUrl } from "@/lib/google-maps-embed";
 import { usePartnerProfileCopy } from "@/lib/partner-profile-i18n";
 import { useMarket } from "@/lib/market-context";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
@@ -120,6 +120,7 @@ export default function PartnerProfilePage() {
   const [profile, setProfile] = useState<PartnerPublicProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [mapEmbedSrc, setMapEmbedSrc] = useState("");
 
   useEffect(() => {
     if (!Number.isFinite(id) || id === 0) {
@@ -160,6 +161,24 @@ export default function PartnerProfilePage() {
       document.title = `${profile.business_name} — KetuJemi.com`;
     }
   }, [profile?.business_name]);
+
+  useEffect(() => {
+    const address = profile?.address?.trim();
+    if (!address) {
+      setMapEmbedSrc("");
+      return;
+    }
+    const mapInput = { address };
+    setMapEmbedSrc(googleMapsEmbedSrc(address));
+
+    let cancelled = false;
+    void fetchShopMapEmbedSrc(mapInput).then((url) => {
+      if (!cancelled && url) setMapEmbedSrc(url);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.address]);
 
   const isVip = profile?.tier === "vip";
   const enrichedSocial = profile?.social_profiles ?? {};
@@ -223,7 +242,7 @@ export default function PartnerProfilePage() {
 
             <div className="px-5 sm:px-8 py-8 text-center">
               {profile.logo_url ? (
-                <div className="mx-auto mb-6 h-32 w-32 sm:h-40 sm:w-40 rounded-2xl border border-gray-100 bg-white shadow-md overflow-hidden flex items-center justify-center p-3">
+                <div className="mx-auto mb-6 h-36 w-48 sm:h-44 sm:w-60 rounded-2xl border border-gray-100 bg-white shadow-md overflow-hidden flex items-center justify-center p-2">
                   <img
                     src={profile.logo_url}
                     alt={profile.business_name}
@@ -254,15 +273,30 @@ export default function PartnerProfilePage() {
               <div className="px-5 sm:px-8 pb-8">
                 <h2 className="text-sm font-bold text-gray-900 mb-3">{copy.locationTitle}</h2>
                 <div className="rounded-2xl overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100">
-                  <iframe
-                    title={`${copy.mapTitle} — ${profile.business_name}`}
-                    src={googleMapsEmbedSrc(profile.address)}
-                    className="h-full w-full border-0"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
+                  {mapEmbedSrc ? (
+                    <iframe
+                      title={`${copy.mapTitle} — ${profile.business_name}`}
+                      src={mapEmbedSrc}
+                      className="h-full w-full border-0"
+                      loading="lazy"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <div className="h-full w-full animate-pulse bg-gray-200" aria-hidden />
+                  )}
                 </div>
-                <p className="mt-2 text-sm text-gray-600">{profile.address}</p>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm text-gray-600">{profile.address}</p>
+                  <a
+                    href={googleMapsOpenUrl(profile.address)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-semibold text-blue-600 hover:text-blue-800 whitespace-nowrap"
+                  >
+                    {copy.openInMaps}
+                  </a>
+                </div>
               </div>
             ) : null}
 
