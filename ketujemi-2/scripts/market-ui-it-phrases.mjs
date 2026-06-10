@@ -1,5 +1,5 @@
-/** Italian UI strings — merged into TRANSLATIONS.it in market-context.tsx */
-export const IT_TRANSLATIONS: Record<string, string> = {
+/** UI key → Italian (market-context IT_TRANSLATIONS). */
+export const MARKET_KEY_IT = {
   title: "Annunci",
   search: "Cerca annunci...",
   searchBtn: "Cerca",
@@ -15,7 +15,8 @@ export const IT_TRANSLATIONS: Record<string, string> = {
   noResultsSub: "Modifica i filtri o pubblica un nuovo annuncio",
   post: "Pubblica un annuncio",
   postFree: "Pubblica gratuitamente",
-  shopSuggestBanner: `💡 Hai un negozio? Apri il tuo negozio digitale gratuito e raggruppa tutti i tuoi annunci in un unico posto!`,
+  shopSuggestBanner:
+    "💡 Hai un negozio? Apri il tuo negozio digitale gratuito e raggruppa tutti i tuoi annunci in un unico posto!",
   shopSuggestBannerBtn: "Apri un negozio →",
   all: "Tutti",
   today: "Oggi",
@@ -25,7 +26,8 @@ export const IT_TRANSLATIONS: Record<string, string> = {
   page: "Pagina",
   of: "di",
   hero: "KetuJemi — Compra e vendi",
-  heroSub: "Compra e vendi nei Balcani — piattaforma di annunci gratuita",
+  heroSub:
+    "Compra e vendi nei Balcani — piattaforma di annunci gratuita",
   categories: "Categorie",
   viewAll: "Vedi tutto",
   trust1: "Verifica SMS ed e-mail",
@@ -48,7 +50,8 @@ export const IT_TRANSLATIONS: Record<string, string> = {
   callSeller: "Chiama",
   whatsapp: "Messaggio WhatsApp",
   share_sectionTitle: "Condividi questo annuncio",
-  share_motivation: "💡 Condividi il tuo annuncio — ogni clic porta nuovi clienti al tuo negozio gratuitamente!",
+  share_motivation:
+    "💡 Condividi il tuo annuncio — ogni clic porta nuovi clienti al tuo negozio gratuitamente!",
   share_facebook: "Facebook",
   share_whatsapp: "WhatsApp",
   share_instagram: "Instagram",
@@ -56,15 +59,20 @@ export const IT_TRANSLATIONS: Record<string, string> = {
   share_instagramCopyTooltip: "Incolla nella story di Instagram",
   share_tiktokCopyTooltip: "Copia il link per TikTok",
   share_socialPostedTitle: "Annuncio pubblicato sui social network",
-  share_socialPostedHint: "Condividi di nuovo con i tuoi amici — ogni condivisione aumenta le visualizzazioni del tuo annuncio.",
+  share_socialPostedHint:
+    "Condividi di nuovo con i tuoi amici — ogni condivisione aumenta le visualizzazioni del tuo annuncio.",
   share_socialPostedIgDialogTitle: "Condividi su Instagram",
-  share_socialPostedIgDialogBody: "Copia il link dell'annuncio e incollalo nella tua story, reel o post su Instagram.",
-  share_socialPostedIgCopied: "✓ Link copiato! Apri Instagram e condividilo nella tua story o nel tuo post.",
+  share_socialPostedIgDialogBody:
+    "Copia il link dell'annuncio e incollalo nella tua story, reel o post su Instagram.",
+  share_socialPostedIgCopied:
+    "✓ Link copiato! Apri Instagram e condividilo nella tua story o nel tuo post.",
   share_socialPostedOpenInstagram: "Apri Instagram",
   share_copyLink: "🔗 Copia il link",
-  share_copied: "✓ Link copiato! Pubblicalo su Instagram o TikTok per più clienti 🚀",
+  share_copied:
+    "✓ Link copiato! Pubblicalo su Instagram o TikTok per più clienti 🚀",
   share_socialApps: "📲 Instagram / TikTok",
-  share_toastSocial: "✓ Link copiato! Apri Instagram o TikTok e pubblicalo nella tua story o nel tuo feed 📲",
+  share_toastSocial:
+    "✓ Link copiato! Apri Instagram o TikTok e pubblicalo nella tua story o nel tuo feed 📲",
   share_compactLabel: "Condividi",
   caution: "⚠ Attenzione",
   cautionTip1: "Incontra il venditore di persona",
@@ -72,11 +80,13 @@ export const IT_TRANSLATIONS: Record<string, string> = {
   cautionTip3: "Non inviare denaro in anticipo",
   cautionTip4: "Segnala qualsiasi comportamento sospetto",
   deleteTitle: "Eliminare l'annuncio?",
-  deleteDesc: "Questa azione è irreversibile. L'annuncio verrà eliminato definitivamente.",
+  deleteDesc:
+    "Questa azione è irreversibile. L'annuncio verrà eliminato definitivamente.",
   deleteSuccess: "Annuncio eliminato con successo",
   deleteError: "Errore durante l'eliminazione",
   listingNotFound: "Annuncio non trovato",
-  listingNotFoundSub: "Potrebbe essere stato eliminato o il link non è corretto.",
+  listingNotFoundSub:
+    "Potrebbe essere stato eliminato o il link non è corretto.",
   backToListings: "Torna agli annunci",
   conditionNew: "Nuovo",
   conditionGood: "Ottime condizioni",
@@ -87,19 +97,27 @@ export const IT_TRANSLATIONS: Record<string, string> = {
   noListingsYet: "Nessun annuncio per ora",
   beFirst: "Sii il primo a pubblicare in questa categoria!",
   kerkojEmptyTitle: "Nessuna richiesta per ora",
-  kerkojEmptySub: `Cerchi qualcosa che non riesci a trovare altrove? Descrivi cosa ti serve e pubblica la tua richiesta qui — le persone che hanno l'articolo la vedranno e potranno contattarti rapidamente.`,
-  kerkojEmptyTrust: "Il tuo annuncio appare qui come qualsiasi altro annuncio.",
+  kerkojEmptySub:
+    "Cerchi qualcosa che non riesci a trovare altrove? Descrivi cosa ti serve e pubblica la tua richiesta qui — le persone che hanno l'articolo la vedranno e potranno contattarti rapidamente.",
+  kerkojEmptyTrust:
+    "Il tuo annuncio appare qui come qualsiasi altro annuncio.",
   kerkojEmptyPost: "Pubblica una richiesta",
   kerkojHubIntroTitle: "Voglio comprare — pubblica la tua richiesta",
-  kerkojFormBanner: `Questa è una richiesta d'acquisto — descrivi cosa stai cercando. La tua richiesta viene pubblicata sulla piattaforma e raggiunge le persone e i negozi che trattano questo articolo, per trovare più velocemente ciò di cui hai bisogno.`,
-  kerkojFormPhotoHint: `📸 Aggiungi foto che mostrano cosa stai cercando (modello, colore, condizioni…) — i venditori ti capiscono meglio e ti contattano più in fretta.`,
-  kerkojFormTitlePh: "es. Cerco BMW X5 diesel 2018+, iPhone 14 Pro 256GB, passeggino...",
-  kerkojFormDescPh: `Descrivi in dettaglio: cosa cerchi, modello, specifiche, condizioni desiderate, budget (opzionale), da dove puoi ritirarlo. Più la richiesta è chiara, più velocemente qualcuno che ha l'articolo ti contatterà.`,
-  kerkojFormDescNote: `La tua richiesta arriva direttamente alle persone e ai negozi che trattano questo tipo di articolo — non solo alla lista pubblica.`,
+  kerkojFormBanner:
+    "Questa è una richiesta d'acquisto — descrivi cosa stai cercando. La tua richiesta viene pubblicata sulla piattaforma e raggiunge le persone e i negozi che trattano questo articolo, per trovare più velocemente ciò di cui hai bisogno.",
+  kerkojFormPhotoHint:
+    "📸 Aggiungi foto che mostrano cosa stai cercando (modello, colore, condizioni…) — i venditori ti capiscono meglio e ti contattano più in fretta.",
+  kerkojFormTitlePh:
+    "es. Cerco BMW X5 diesel 2018+, iPhone 14 Pro 256GB, passeggino...",
+  kerkojFormDescPh:
+    "Descrivi in dettaglio: cosa cerchi, modello, specifiche, condizioni desiderate, budget (opzionale), da dove puoi ritirarlo. Più la richiesta è chiara, più velocemente qualcuno che ha l'articolo ti contatterà.",
+  kerkojFormDescNote:
+    "La tua richiesta arriva direttamente alle persone e ai negozi che trattano questo tipo di articolo — non solo alla lista pubblica.",
   kerkojFormPostTitle: "Pubblica una richiesta",
   kerkojFormTitleLbl: "Titolo della richiesta",
   kerkojFormPhotosLbl: "Foto della richiesta",
-  kerkojFormClickPhoto: "Clicca per aggiungere foto — mostra cosa stai cercando",
+  kerkojFormClickPhoto:
+    "Clicca per aggiungere foto — mostra cosa stai cercando",
   kerkojFormDescSection: "Descrizione della richiesta",
   postFromAnywhere: "Puoi pubblicare da qualsiasi luogo.",
   allListings: "Tutti gli annunci",
@@ -119,38 +137,51 @@ export const IT_TRANSLATIONS: Record<string, string> = {
   chooseType: "Scegli il tipo...",
   chooseMark: "Scegli la marca...",
   chooseSubcategory: "Scegli la sottocategoria...",
-  subcategoryTitleMinHint: `Inserisci un titolo (min. 5 caratteri) — poi scegli o la sottocategoria verrà impostata automaticamente.`,
+  subcategoryTitleMinHint:
+    "Inserisci un titolo (min. 5 caratteri) — poi scegli o la sottocategoria verrà impostata automaticamente.",
   subcategoryAutoSetting: "Impostazione della sottocategoria…",
-  titlePlaceholderExample: "es. BMW X5 2020, JBL 500, iPhone 14 Pro Max...",
-  postErrTitleForSubcategory: "Inserisci un titolo (almeno 5 caratteri) affinché il sistema imposti la sottocategoria.",
-  postErrChooseSubcategory: "Scegli una sottocategoria dall'elenco o aspetta un momento dopo aver inserito il titolo.",
+  titlePlaceholderExample:
+    "es. BMW X5 2020, JBL 500, iPhone 14 Pro Max...",
+  postErrTitleForSubcategory:
+    "Inserisci un titolo (almeno 5 caratteri) affinché il sistema imposti la sottocategoria.",
+  postErrChooseSubcategory:
+    "Scegli una sottocategoria dall'elenco o aspetta un momento dopo aver inserito il titolo.",
   postErrChooseBrand: "Scegli la marca / il modello del prodotto.",
   photoAnalyzeFailed: "Compilazione automatica non disponibile",
-  photoAnalyzeFailedHint: "Continua manualmente con categoria, titolo e descrizione — o prova una foto più nitida.",
+  photoAnalyzeFailedHint:
+    "Continua manualmente con categoria, titolo e descrizione — o prova una foto più nitida.",
   photoAnalyzeLoginRequired: "Devi essere connesso",
-  photoAnalyzeLoginRequiredHint: "Accedi e riprova a inviare la foto.",
-  photoAnalyzeUnavailable: "L'analisi foto è temporaneamente non disponibile",
-  photoAnalyzeUnavailableHint: "Compila manualmente la categoria, il titolo e la descrizione.",
+  photoAnalyzeLoginRequiredHint:
+    "Accedi e riprova a inviare la foto.",
+  photoAnalyzeUnavailable:
+    "L'analisi foto è temporaneamente non disponibile",
+  photoAnalyzeUnavailableHint:
+    "Compila manualmente la categoria, il titolo e la descrizione.",
   choose: "Scegli...",
   chooseYear: "Scegli l'anno...",
   chooseCity: "Scegli la città...",
   zodParentCategory: "Scegli una categoria principale.",
   zodTitleMin: "Il titolo deve contenere almeno 5 caratteri.",
-  zodDescriptionMin: "La descrizione deve contenere almeno 15 caratteri.",
+  zodDescriptionMin:
+    "La descrizione deve contenere almeno 15 caratteri.",
   zodLocation: "Scegli una città.",
   zodPhoneMin: "Il numero di telefono deve contenere almeno 5 cifre.",
   zodSellerName: "Inserisci il nome del venditore.",
-  formInvalidSummary: `Compila tutti i campi obbligatori (categoria, titolo min. 5, descrizione min. 15, foto, prezzo, città).`,
+  formInvalidSummary:
+    "Compila tutti i campi obbligatori (categoria, titolo min. 5, descrizione min. 15, foto, prezzo, città).",
   videoInvalidFormatTitle: "Formato non valido",
   videoInvalidFormatDesc: "Sono accettati solo MP4, MOV e AVI.",
   videoPreparingTitle: "Preparazione del video...",
-  videoPreparingHint: "Il video viene ottimizzato per il tuo annuncio (max. 100 MB). Non chiudere questa pagina.",
-  videoAnalyzeFrameHint: `Impossibile leggere un fotogramma dal video. Prova una clip più breve con buona illuminazione o aggiungi una foto.`,
+  videoPreparingHint:
+    "Il video viene ottimizzato per il tuo annuncio (max. 100 MB). Non chiudere questa pagina.",
+  videoAnalyzeFrameHint:
+    "Impossibile leggere un fotogramma dal video. Prova una clip più breve con buona illuminazione o aggiungi una foto.",
   similarListingsHeading: "Potrebbe interessarti anche",
   titleField: "Titolo",
   listingTitle: "Titolo dell'annuncio",
   descField: "Descrizione",
-  descPlaceholder: "Descrivi il tuo prodotto o servizio in dettaglio...",
+  descPlaceholder:
+    "Descrivi il tuo prodotto o servizio in dettaglio...",
   priceField: "Prezzo",
   priceEur: "Prezzo (EUR)",
   agreementToggle: "Trattabile (prezzo aperto alle offerte)",
@@ -170,9 +201,12 @@ export const IT_TRANSLATIONS: Record<string, string> = {
   uploading: "Caricamento in corso...",
   waitPlease: "Attendere prego",
   analyzingPhoto: "Foto in analisi dal nostro sistema...",
-  analyzingPhotoHint: "Categoria, titolo e descrizione vengono compilati automaticamente.",
-  firstPhotoAiHint: `📸 Carica la tua prima foto e il nostro sistema compilerà automaticamente categoria, titolo e descrizione — risparmia tempo e pubblica più facilmente!`,
-  firstPhotoAiHintShop: `📸 Carica una foto del prodotto — il nostro sistema compilerà automaticamente categoria, titolo e descrizione per il tuo negozio. Vendi più in fretta!`,
+  analyzingPhotoHint:
+    "Categoria, titolo e descrizione vengono compilati automaticamente.",
+  firstPhotoAiHint:
+    "📸 Carica la tua prima foto e il nostro sistema compilerà automaticamente categoria, titolo e descrizione — risparmia tempo e pubblica più facilmente!",
+  firstPhotoAiHintShop:
+    "📸 Carica una foto del prodotto — il nostro sistema compilerà automaticamente categoria, titolo e descrizione per il tuo negozio. Vendi più in fretta!",
   systemHelpBtn: "Assistenza del nostro sistema",
   descriptionHelperAccept: "Accetta",
   descriptionHelperIgnore: "Ignora",
@@ -221,8 +255,10 @@ export const IT_TRANSLATIONS: Record<string, string> = {
   conditionNewSub: "Mai usato",
   conditionUsedSub: "Già usato",
   conditionDamagedSub: "Difettoso / incidentato",
-  marketsTagline: "Kosovo · Albania · Macedonia del Nord · Montenegro",
-  marketsBannerLine: `Kosovo - Albania - Macedonia del Nord - Montenegro - Germania - Svizzera - Austria - Francia - Italia - Regno Unito - Stati Uniti`,
+  marketsTagline:
+    "Kosovo · Albania · Macedonia del Nord · Montenegro",
+  marketsBannerLine:
+    "Kosovo - Albania - Macedonia del Nord - Montenegro - Germania - Svizzera - Austria - Francia - Italia - Regno Unito - Stati Uniti",
   terms: "Termini",
   businessRules: "Aziende",
   privacy: "Privacy",
@@ -253,9 +289,12 @@ export const IT_TRANSLATIONS: Record<string, string> = {
   authLogin: "Accedi",
   authLogout: "Esci",
   contactRequiresLogin: "Accedi per contattare il venditore",
-  listingAccessDenied: "Non hai il permesso di modificare questo annuncio",
+  listingAccessDenied:
+    "Non hai il permesso di modificare questo annuncio",
   loginToViewPhone: "Accedi per vedere il numero di telefono",
   sendSms: "Invia SMS",
-  postQuotaExceeded: "Hai raggiunto il limite di pubblicazioni gratuite per questa categoria.",
-  postQuotaRemaining: "Pubblicazioni gratuite rimanenti in questa categoria: {n}",
+  postQuotaExceeded:
+    "Hai raggiunto il limite di pubblicazioni gratuite per questa categoria.",
+  postQuotaRemaining:
+    "Pubblicazioni gratuite rimanenti in questa categoria: {n}",
 };

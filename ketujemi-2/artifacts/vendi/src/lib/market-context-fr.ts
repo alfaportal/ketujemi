@@ -180,6 +180,7 @@ export const FR_TRANSLATIONS: Record<string, string> = {
   mainPhotoLabel: "Principale",
   photosSection: "Photos",
   listingPhotos: "Photos de l'annonce",
+  listingPhotosMinHint: "(min. 1)",
   addPhoto: "Ajouter une photo",
   photoCameraBtn: "Prendre une photo avec l'appareil",
   videoCameraBtn: "Enregistrer une vidéo avec l'appareil",

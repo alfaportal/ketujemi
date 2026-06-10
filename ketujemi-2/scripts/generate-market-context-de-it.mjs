@@ -1,11 +1,14 @@
 /**
- * Generates market-context-de.ts and market-context-it.ts from EN translations block.
+ * Generates market-context-de.ts and market-context-it.ts.
+ * Uses curated per-key maps (MARKET_KEY_DE/IT) with EN phrase fallback.
  */
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { englishToGerman } from "./albanian-german.mjs";
 import { englishToItalian } from "./albanian-italian.mjs";
+import { MARKET_KEY_DE } from "./market-ui-de-phrases.mjs";
+import { MARKET_KEY_IT } from "./market-ui-it-phrases.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const vendiLib = path.join(__dirname, "..", "artifacts", "vendi", "src", "lib");
@@ -17,36 +20,6 @@ const frStart = src.indexOf("\n  fr: FR_TRANSLATIONS");
 if (enStart < 0 || frStart < 0) throw new Error("EN or FR block not found in market-context.tsx");
 
 const enBody = src.slice(enStart + "\n  en: {".length, frStart);
-const MARKET_OVERRIDES_DE = {
-  markets: "KetuJemi auf 11 Märkten",
-  footer_colHelp: "HILFE",
-  footer_colInfo: "INFO",
-  footer_colBusiness: "UNTERNEHMEN",
-  footer_colMarkets: "MÄRKTE",
-  footer_press: "Presse",
-  footer_aboutKetuJemi: "Über KetuJemi",
-  footer_rules: "Regeln",
-  footer_openShop: "Shop eröffnen",
-  footer_vipPackages: "VIP-Pakete",
-  footer_advertise: "Werbung",
-  footer_partnership: "Partnerschaft",
-  footer_operatedBy: "Betrieben von REVOLUTION INVEST SH.P.K.",
-};
-const MARKET_OVERRIDES_IT = {
-  markets: "KetuJemi in 11 mercati",
-  footer_colHelp: "AIUTO",
-  footer_colInfo: "INFO",
-  footer_colBusiness: "AZIENDE",
-  footer_colMarkets: "MERCATI",
-  footer_press: "Stampa",
-  footer_aboutKetuJemi: "Informazioni su KetuJemi",
-  footer_rules: "Regole",
-  footer_openShop: "Apri un negozio",
-  footer_vipPackages: "Pacchetti VIP",
-  footer_advertise: "Pubblicità",
-  footer_partnership: "Collaborazione",
-  footer_operatedBy: "Gestito da REVOLUTION INVEST SH.P.K.",
-};
 
 const entries = [...enBody.matchAll(/(\w+):\s*(?:"((?:\\.|[^"\\])*)"|`([\s\S]*?)`)/g)].map((m) => ({
   key: m[1],
@@ -62,10 +35,9 @@ function escapeTs(str) {
     .replace(/\r?\n/g, "\\n");
 }
 
-function formatBlock(locale, trFn) {
-  const overrides = locale === "de" ? MARKET_OVERRIDES_DE : MARKET_OVERRIDES_IT;
+function formatBlock(locale, keyMap, trFn) {
   const lines = entries.map(({ key, value }) => {
-    const translated = overrides[key] ?? trFn(value);
+    const translated = keyMap[key] ?? trFn(value);
     const v =
       translated.includes("\n") || translated.length > 100
         ? `\`${translated.replace(/`/g, "\\`")}\``
@@ -76,6 +48,14 @@ function formatBlock(locale, trFn) {
   return `/** ${locale === "de" ? "German" : "Italian"} UI strings — merged into TRANSLATIONS.${locale} in market-context.tsx */\nexport const ${constName}: Record<string, string> = {\n${lines.join("\n")}\n};\n`;
 }
 
-fs.writeFileSync(path.join(vendiLib, "market-context-de.ts"), formatBlock("de", englishToGerman), "utf8");
-fs.writeFileSync(path.join(vendiLib, "market-context-it.ts"), formatBlock("it", englishToItalian), "utf8");
+fs.writeFileSync(
+  path.join(vendiLib, "market-context-de.ts"),
+  formatBlock("de", MARKET_KEY_DE, englishToGerman),
+  "utf8",
+);
+fs.writeFileSync(
+  path.join(vendiLib, "market-context-it.ts"),
+  formatBlock("it", MARKET_KEY_IT, englishToItalian),
+  "utf8",
+);
 console.log(`Wrote market-context-de.ts + market-context-it.ts (${entries.length} keys each)`);

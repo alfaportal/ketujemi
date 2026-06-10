@@ -962,7 +962,7 @@ export default function NewListing() {
                     <Label className="text-sm font-medium">
                       {isKerkojCategory ? t.kerkojFormPhotosLbl : t.listingPhotos}{" "}
                       <span className="text-red-500">*</span>
-                      <span className="text-gray-400 font-normal ml-1">(min 1)</span>
+                      <span className="text-gray-400 font-normal ml-1">{t.listingPhotosMinHint}</span>
                     </Label>
                     <span className="text-sm text-gray-400">{imageUrls.length}</span>
                   </div>

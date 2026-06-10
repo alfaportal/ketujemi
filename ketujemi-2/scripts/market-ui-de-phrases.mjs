@@ -1,5 +1,5 @@
-/** German UI strings — merged into TRANSLATIONS.de in market-context.tsx */
-export const DE_TRANSLATIONS: Record<string, string> = {
+/** UI key → German (market-context DE_TRANSLATIONS). */
+export const MARKET_KEY_DE = {
   title: "Anzeigen",
   search: "Anzeigen suchen...",
   searchBtn: "Suchen",
@@ -15,7 +15,8 @@ export const DE_TRANSLATIONS: Record<string, string> = {
   noResultsSub: "Filter ändern oder eine neue Anzeige aufgeben",
   post: "Anzeige aufgeben",
   postFree: "Kostenlos inserieren",
-  shopSuggestBanner: `💡 Haben Sie einen Shop? Eröffnen Sie Ihren kostenlosen digitalen Shop und bündeln Sie alle Ihre Anzeigen an einem Ort!`,
+  shopSuggestBanner:
+    "💡 Haben Sie einen Shop? Eröffnen Sie Ihren kostenlosen digitalen Shop und bündeln Sie alle Ihre Anzeigen an einem Ort!",
   shopSuggestBannerBtn: "Shop eröffnen →",
   all: "Alle",
   today: "Heute",
@@ -48,7 +49,8 @@ export const DE_TRANSLATIONS: Record<string, string> = {
   callSeller: "Anrufen",
   whatsapp: "WhatsApp-Nachricht",
   share_sectionTitle: "Diese Anzeige teilen",
-  share_motivation: "💡 Teilen Sie Ihre Anzeige — jeder Klick bringt kostenlos neue Kunden in Ihren Shop!",
+  share_motivation:
+    "💡 Teilen Sie Ihre Anzeige — jeder Klick bringt kostenlos neue Kunden in Ihren Shop!",
   share_facebook: "Facebook",
   share_whatsapp: "WhatsApp",
   share_instagram: "Instagram",
@@ -56,15 +58,20 @@ export const DE_TRANSLATIONS: Record<string, string> = {
   share_instagramCopyTooltip: "In Instagram-Story einfügen",
   share_tiktokCopyTooltip: "Link für TikTok kopieren",
   share_socialPostedTitle: "Anzeige in sozialen Netzwerken geteilt",
-  share_socialPostedHint: "Erneut mit Ihren Freunden teilen — jedes Teilen erhöht die Aufrufe Ihrer Anzeige.",
+  share_socialPostedHint:
+    "Erneut mit Ihren Freunden teilen — jedes Teilen erhöht die Aufrufe Ihrer Anzeige.",
   share_socialPostedIgDialogTitle: "Auf Instagram teilen",
-  share_socialPostedIgDialogBody: `Kopieren Sie den Anzeigenlink und fügen Sie ihn in Ihre Instagram-Story, Ihren Reel oder Beitrag ein.`,
-  share_socialPostedIgCopied: "✓ Link kopiert! Öffnen Sie Instagram und teilen Sie ihn in Ihrer Story oder Ihrem Beitrag.",
+  share_socialPostedIgDialogBody:
+    "Kopieren Sie den Anzeigenlink und fügen Sie ihn in Ihre Instagram-Story, Ihren Reel oder Beitrag ein.",
+  share_socialPostedIgCopied:
+    "✓ Link kopiert! Öffnen Sie Instagram und teilen Sie ihn in Ihrer Story oder Ihrem Beitrag.",
   share_socialPostedOpenInstagram: "Instagram öffnen",
   share_copyLink: "🔗 Link kopieren",
-  share_copied: "✓ Link kopiert! Posten Sie ihn auf Instagram oder TikTok für mehr Kunden 🚀",
+  share_copied:
+    "✓ Link kopiert! Posten Sie ihn auf Instagram oder TikTok für mehr Kunden 🚀",
   share_socialApps: "📲 Instagram / TikTok",
-  share_toastSocial: `✓ Link kopiert! Öffnen Sie Instagram oder TikTok und posten Sie ihn in Ihrer Story oder Ihrem Feed 📲`,
+  share_toastSocial:
+    "✓ Link kopiert! Öffnen Sie Instagram oder TikTok und posten Sie ihn in Ihrer Story oder Ihrem Feed 📲",
   share_compactLabel: "Teilen",
   caution: "⚠ Achtung",
   cautionTip1: "Treffen Sie den Verkäufer persönlich",
@@ -72,11 +79,13 @@ export const DE_TRANSLATIONS: Record<string, string> = {
   cautionTip3: "Kein Geld im Voraus überweisen",
   cautionTip4: "Verdächtiges Verhalten melden",
   deleteTitle: "Anzeige löschen?",
-  deleteDesc: "Diese Aktion ist unwiderruflich. Die Anzeige wird dauerhaft gelöscht.",
+  deleteDesc:
+    "Diese Aktion ist unwiderruflich. Die Anzeige wird dauerhaft gelöscht.",
   deleteSuccess: "Anzeige erfolgreich gelöscht",
   deleteError: "Fehler beim Löschen",
   listingNotFound: "Anzeige nicht gefunden",
-  listingNotFoundSub: "Sie wurde möglicherweise gelöscht oder der Link ist fehlerhaft.",
+  listingNotFoundSub:
+    "Sie wurde möglicherweise gelöscht oder der Link ist fehlerhaft.",
   backToListings: "Zurück zu den Anzeigen",
   conditionNew: "Neu",
   conditionGood: "Sehr guter Zustand",
@@ -87,19 +96,27 @@ export const DE_TRANSLATIONS: Record<string, string> = {
   noListingsYet: "Noch keine Anzeigen",
   beFirst: "Seien Sie der Erste, der in dieser Kategorie inseriert!",
   kerkojEmptyTitle: "Noch keine Gesuche",
-  kerkojEmptySub: `Suchen Sie etwas, das Sie anderswo nicht finden? Beschreiben Sie, was Sie brauchen, und veröffentlichen Sie Ihr Gesuch hier — Personen, die den Artikel haben, sehen es und können sich schnell bei Ihnen melden.`,
-  kerkojEmptyTrust: "Ihr Gesuch wird hier wie jede andere Anzeige angezeigt.",
+  kerkojEmptySub:
+    "Suchen Sie etwas, das Sie anderswo nicht finden? Beschreiben Sie, was Sie brauchen, und veröffentlichen Sie Ihr Gesuch hier — Personen, die den Artikel haben, sehen es und können sich schnell bei Ihnen melden.",
+  kerkojEmptyTrust:
+    "Ihr Gesuch wird hier wie jede andere Anzeige angezeigt.",
   kerkojEmptyPost: "Gesuch aufgeben",
   kerkojHubIntroTitle: "Ich möchte kaufen — Gesuch aufgeben",
-  kerkojFormBanner: `Dies ist ein Kaufgesuch — beschreiben Sie, was Sie suchen. Ihr Gesuch wird auf der Plattform veröffentlicht und erreicht Personen und Shops, die diesen Artikel führen, damit Sie schneller finden, was Sie brauchen.`,
-  kerkojFormPhotoHint: `📸 Fügen Sie Fotos hinzu, die zeigen, was Sie suchen (Modell, Farbe, Zustand…) — Verkäufer verstehen Sie besser und melden sich schneller.`,
-  kerkojFormTitlePh: "z.B. Suche BMW X5 Diesel 2018+, iPhone 14 Pro 256GB, Kinderwagen...",
-  kerkojFormDescPh: `Beschreiben Sie ausführlich: was Sie suchen, Modell, Spezifikationen, gewünschten Zustand, Budget (optional), woher Sie es abholen können. Je klarer das Gesuch, desto schneller meldet sich jemand.`,
-  kerkojFormDescNote: `Ihr Gesuch gelangt direkt an Personen und Shops, die diese Art von Artikel führen — nicht nur an die öffentliche Liste.`,
+  kerkojFormBanner:
+    "Dies ist ein Kaufgesuch — beschreiben Sie, was Sie suchen. Ihr Gesuch wird auf der Plattform veröffentlicht und erreicht Personen und Shops, die diesen Artikel führen, damit Sie schneller finden, was Sie brauchen.",
+  kerkojFormPhotoHint:
+    "📸 Fügen Sie Fotos hinzu, die zeigen, was Sie suchen (Modell, Farbe, Zustand…) — Verkäufer verstehen Sie besser und melden sich schneller.",
+  kerkojFormTitlePh:
+    "z.B. Suche BMW X5 Diesel 2018+, iPhone 14 Pro 256GB, Kinderwagen...",
+  kerkojFormDescPh:
+    "Beschreiben Sie ausführlich: was Sie suchen, Modell, Spezifikationen, gewünschten Zustand, Budget (optional), woher Sie es abholen können. Je klarer das Gesuch, desto schneller meldet sich jemand.",
+  kerkojFormDescNote:
+    "Ihr Gesuch gelangt direkt an Personen und Shops, die diese Art von Artikel führen — nicht nur an die öffentliche Liste.",
   kerkojFormPostTitle: "Gesuch aufgeben",
   kerkojFormTitleLbl: "Titel des Gesuchs",
   kerkojFormPhotosLbl: "Fotos des Gesuchs",
-  kerkojFormClickPhoto: "Klicken, um Fotos hinzuzufügen — zeigen Sie, was Sie suchen",
+  kerkojFormClickPhoto:
+    "Klicken, um Fotos hinzuzufügen — zeigen Sie, was Sie suchen",
   kerkojFormDescSection: "Beschreibung des Gesuchs",
   postFromAnywhere: "Sie können von überall aus inserieren.",
   allListings: "Alle Anzeigen",
@@ -119,33 +136,45 @@ export const DE_TRANSLATIONS: Record<string, string> = {
   chooseType: "Typ auswählen...",
   chooseMark: "Marke auswählen...",
   chooseSubcategory: "Unterkategorie auswählen...",
-  subcategoryTitleMinHint: `Geben Sie einen Titel ein (min. 5 Zeichen) — dann wählen Sie oder die Unterkategorie wird automatisch festgelegt.`,
+  subcategoryTitleMinHint:
+    "Geben Sie einen Titel ein (min. 5 Zeichen) — dann wählen Sie oder die Unterkategorie wird automatisch festgelegt.",
   subcategoryAutoSetting: "Unterkategorie wird festgelegt…",
-  titlePlaceholderExample: "z.B. BMW X5 2020, JBL 500, iPhone 14 Pro Max...",
-  postErrTitleForSubcategory: "Geben Sie einen Titel (mindestens 5 Zeichen) ein, damit das System die Unterkategorie festlegt.",
-  postErrChooseSubcategory: "Wählen Sie eine Unterkategorie aus der Liste, oder warten Sie einen Moment nach der Titeleingabe.",
+  titlePlaceholderExample:
+    "z.B. BMW X5 2020, JBL 500, iPhone 14 Pro Max...",
+  postErrTitleForSubcategory:
+    "Geben Sie einen Titel (mindestens 5 Zeichen) ein, damit das System die Unterkategorie festlegt.",
+  postErrChooseSubcategory:
+    "Wählen Sie eine Unterkategorie aus der Liste, oder warten Sie einen Moment nach der Titeleingabe.",
   postErrChooseBrand: "Wählen Sie die Marke / das Modell des Produkts.",
   photoAnalyzeFailed: "Automatisches Ausfüllen nicht möglich",
-  photoAnalyzeFailedHint: `Fahren Sie manuell mit Kategorie, Titel und Beschreibung fort — oder versuchen Sie ein schärferes Foto.`,
+  photoAnalyzeFailedHint:
+    "Fahren Sie manuell mit Kategorie, Titel und Beschreibung fort — oder versuchen Sie ein schärferes Foto.",
   photoAnalyzeLoginRequired: "Sie müssen angemeldet sein",
-  photoAnalyzeLoginRequiredHint: "Melden Sie sich an und versuchen Sie erneut, das Foto zu senden.",
-  photoAnalyzeUnavailable: "Fotoanalyse ist vorübergehend nicht verfügbar",
-  photoAnalyzeUnavailableHint: "Füllen Sie Kategorie, Titel und Beschreibung manuell aus.",
+  photoAnalyzeLoginRequiredHint:
+    "Melden Sie sich an und versuchen Sie erneut, das Foto zu senden.",
+  photoAnalyzeUnavailable:
+    "Fotoanalyse ist vorübergehend nicht verfügbar",
+  photoAnalyzeUnavailableHint:
+    "Füllen Sie Kategorie, Titel und Beschreibung manuell aus.",
   choose: "Auswählen...",
   chooseYear: "Jahr auswählen...",
   chooseCity: "Stadt auswählen...",
   zodParentCategory: "Wählen Sie eine Hauptkategorie.",
   zodTitleMin: "Der Titel muss mindestens 5 Zeichen enthalten.",
-  zodDescriptionMin: "Die Beschreibung muss mindestens 15 Zeichen enthalten.",
+  zodDescriptionMin:
+    "Die Beschreibung muss mindestens 15 Zeichen enthalten.",
   zodLocation: "Wählen Sie eine Stadt.",
   zodPhoneMin: "Die Telefonnummer muss mindestens 5 Ziffern enthalten.",
   zodSellerName: "Geben Sie den Namen des Verkäufers ein.",
-  formInvalidSummary: `Füllen Sie alle Pflichtfelder aus (Kategorie, Titel min. 5, Beschreibung min. 15, Foto, Preis, Stadt).`,
+  formInvalidSummary:
+    "Füllen Sie alle Pflichtfelder aus (Kategorie, Titel min. 5, Beschreibung min. 15, Foto, Preis, Stadt).",
   videoInvalidFormatTitle: "Ungültiges Format",
   videoInvalidFormatDesc: "Nur MP4, MOV und AVI werden akzeptiert.",
   videoPreparingTitle: "Video wird vorbereitet...",
-  videoPreparingHint: "Das Video wird für Ihre Anzeige optimiert (max. 100 MB). Schließen Sie diese Seite nicht.",
-  videoAnalyzeFrameHint: `Ein Bild aus dem Video konnte nicht gelesen werden. Versuchen Sie einen kürzeren Clip mit guter Beleuchtung oder fügen Sie ein Foto hinzu.`,
+  videoPreparingHint:
+    "Das Video wird für Ihre Anzeige optimiert (max. 100 MB). Schließen Sie diese Seite nicht.",
+  videoAnalyzeFrameHint:
+    "Ein Bild aus dem Video konnte nicht gelesen werden. Versuchen Sie einen kürzeren Clip mit guter Beleuchtung oder fügen Sie ein Foto hinzu.",
   similarListingsHeading: "Das könnte Ihnen auch gefallen",
   titleField: "Titel",
   listingTitle: "Titel der Anzeige",
@@ -170,9 +199,12 @@ export const DE_TRANSLATIONS: Record<string, string> = {
   uploading: "Wird hochgeladen...",
   waitPlease: "Bitte warten",
   analyzingPhoto: "Foto wird von unserem System analysiert...",
-  analyzingPhotoHint: "Kategorie, Titel und Beschreibung werden automatisch ausgefüllt.",
-  firstPhotoAiHint: `📸 Laden Sie Ihr erstes Foto hoch und unser System füllt automatisch Kategorie, Titel und Beschreibung aus — spart Zeit und vereinfacht die Veröffentlichung!`,
-  firstPhotoAiHintShop: `📸 Laden Sie ein Produktfoto hoch — unser System füllt automatisch Kategorie, Titel und Beschreibung für Ihren Shop aus. Verkaufen Sie schneller!`,
+  analyzingPhotoHint:
+    "Kategorie, Titel und Beschreibung werden automatisch ausgefüllt.",
+  firstPhotoAiHint:
+    "📸 Laden Sie Ihr erstes Foto hoch und unser System füllt automatisch Kategorie, Titel und Beschreibung aus — spart Zeit und vereinfacht die Veröffentlichung!",
+  firstPhotoAiHintShop:
+    "📸 Laden Sie ein Produktfoto hoch — unser System füllt automatisch Kategorie, Titel und Beschreibung für Ihren Shop aus. Verkaufen Sie schneller!",
   systemHelpBtn: "Hilfe von unserem System",
   descriptionHelperAccept: "Übernehmen",
   descriptionHelperIgnore: "Ignorieren",
@@ -221,8 +253,10 @@ export const DE_TRANSLATIONS: Record<string, string> = {
   conditionNewSub: "Nie benutzt",
   conditionUsedSub: "Bereits benutzt",
   conditionDamagedSub: "Defekt / Unfallschaden",
-  marketsTagline: "Kosovo · Albanien · Nordmazedonien · Montenegro",
-  marketsBannerLine: `Kosovo - Albanien - Nordmazedonien - Montenegro - Deutschland - Schweiz - Österreich - Frankreich - Italien - Vereinigtes Königreich - USA`,
+  marketsTagline:
+    "Kosovo · Albanien · Nordmazedonien · Montenegro",
+  marketsBannerLine:
+    "Kosovo - Albanien - Nordmazedonien - Montenegro - Deutschland - Schweiz - Österreich - Frankreich - Italien - Vereinigtes Königreich - USA",
   terms: "Nutzungsbedingungen",
   businessRules: "Unternehmen",
   privacy: "Datenschutz",
@@ -253,9 +287,13 @@ export const DE_TRANSLATIONS: Record<string, string> = {
   authLogin: "Anmelden",
   authLogout: "Abmelden",
   contactRequiresLogin: "Melden Sie sich an, um den Verkäufer zu kontaktieren",
-  listingAccessDenied: "Sie haben keine Berechtigung, diese Anzeige zu bearbeiten",
-  loginToViewPhone: "Melden Sie sich an, um die Telefonnummer zu sehen",
+  listingAccessDenied:
+    "Sie haben keine Berechtigung, diese Anzeige zu bearbeiten",
+  loginToViewPhone:
+    "Melden Sie sich an, um die Telefonnummer zu sehen",
   sendSms: "SMS senden",
-  postQuotaExceeded: "Sie haben das Limit für kostenlose Veröffentlichungen in dieser Kategorie erreicht.",
-  postQuotaRemaining: "Verbleibende kostenlose Veröffentlichungen in dieser Kategorie: {n}",
+  postQuotaExceeded:
+    "Sie haben das Limit für kostenlose Veröffentlichungen in dieser Kategorie erreicht.",
+  postQuotaRemaining:
+    "Verbleibende kostenlose Veröffentlichungen in dieser Kategorie: {n}",
 };
