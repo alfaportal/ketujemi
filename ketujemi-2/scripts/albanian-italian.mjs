@@ -4,10 +4,12 @@
  */
 import { applyEnglishPhrases, EN_PHRASES } from "./english-phrases.mjs";
 import { applyItalianPhrases, SQ_IT_EXTRA, IT_KEY_FROM_SQ } from "./italian-phrases.mjs";
+import { STATIC_PAGE_IT } from "./static-page-it-phrases.mjs";
 
 const ALBANIAN_CHARS = /[ëçËÇ]/;
 
 export function englishToItalian(en) {
+  if (STATIC_PAGE_IT[en]) return STATIC_PAGE_IT[en];
   return applyItalianPhrases(en);
 }
 

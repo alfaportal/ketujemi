@@ -1,37 +1,46 @@
 /**
- * Generates static-pages-i18n-de.ts and static-pages-i18n-it.ts from EN static pages.
+ * Generates static-pages-i18n-de.ts and static-pages-i18n-it.ts from FR template
+ * (hand-maintained quality) by swapping French strings for DE/IT via phrase maps.
  */
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { englishToGerman } from "./albanian-german.mjs";
-import { englishToItalian } from "./albanian-italian.mjs";
+import { STATIC_PAGE_FR } from "./static-page-fr-phrases.mjs";
+import { STATIC_PAGE_DE } from "./static-page-de-phrases.mjs";
+import { STATIC_PAGE_IT } from "./static-page-it-phrases.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const vendiLib = path.join(__dirname, "..", "artifacts", "vendi", "src", "lib");
-const enPath = path.join(vendiLib, "static-pages-i18n-en.ts");
-let enSrc = fs.readFileSync(enPath, "utf8");
+const frPath = path.join(vendiLib, "static-pages-i18n-fr.ts");
+const frSrc = fs.readFileSync(frPath, "utf8");
 
-function translateSrc(src, trFn) {
-  return src.replace(/"((?:\\.|[^"\\])*)"/g, (_, inner) => {
-    const decoded = inner.replace(/\\n/g, "\n").replace(/\\"/g, '"');
-    if (!/[A-Za-z]/.test(decoded)) return `"${inner}"`;
-    return `"${trFn(decoded).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n")}"`;
-  }).replace(/`([\s\S]*?)`/g, (_, inner) => {
-    const tr = trFn(inner);
-    return `\`${tr.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$/g, "\\$")}\``;
-  });
+function buildFromFr(targetMap, exportName, localeComment) {
+  let out = frSrc
+    .replace(
+      "/** French static pages — hand-maintained (do not auto-overwrite). */",
+      `/** ${localeComment} static pages — generated from FR template + phrase map. */`,
+    )
+    .replace("export const FR_STATIC_PAGES", `export const ${exportName}`);
+
+  const pairs = Object.entries(STATIC_PAGE_FR)
+    .map(([en, fr]) => [fr, targetMap[en] ?? en])
+    .filter(([fr, tr]) => fr !== tr)
+    .sort((a, b) => b[0].length - a[0].length);
+
+  for (const [fr, tr] of pairs) {
+    out = out.split(fr).join(tr);
+  }
+  return out;
 }
 
-const deSrc = translateSrc(
-  enSrc.replace("export const EN_STATIC_PAGES", "export const DE_STATIC_PAGES"),
-  englishToGerman,
+fs.writeFileSync(
+  path.join(vendiLib, "static-pages-i18n-de.ts"),
+  buildFromFr(STATIC_PAGE_DE, "DE_STATIC_PAGES", "German"),
+  "utf8",
 );
-const itSrc = translateSrc(
-  enSrc.replace("export const EN_STATIC_PAGES", "export const IT_STATIC_PAGES"),
-  englishToItalian,
+fs.writeFileSync(
+  path.join(vendiLib, "static-pages-i18n-it.ts"),
+  buildFromFr(STATIC_PAGE_IT, "IT_STATIC_PAGES", "Italian"),
+  "utf8",
 );
-
-fs.writeFileSync(path.join(vendiLib, "static-pages-i18n-de.ts"), deSrc, "utf8");
-fs.writeFileSync(path.join(vendiLib, "static-pages-i18n-it.ts"), itSrc, "utf8");
-console.log("Wrote static-pages-i18n-de.ts + static-pages-i18n-it.ts");
+console.log("Wrote static-pages-i18n-de.ts + static-pages-i18n-it.ts (from FR template)");

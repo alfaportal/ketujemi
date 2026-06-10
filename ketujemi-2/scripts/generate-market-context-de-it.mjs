@@ -19,9 +19,33 @@ if (enStart < 0 || frStart < 0) throw new Error("EN or FR block not found in mar
 const enBody = src.slice(enStart + "\n  en: {".length, frStart);
 const MARKET_OVERRIDES_DE = {
   markets: "KetuJemi auf 11 Märkten",
+  footer_colHelp: "HILFE",
+  footer_colInfo: "INFO",
+  footer_colBusiness: "UNTERNEHMEN",
+  footer_colMarkets: "MÄRKTE",
+  footer_press: "Presse",
+  footer_aboutKetuJemi: "Über KetuJemi",
+  footer_rules: "Regeln",
+  footer_openShop: "Shop eröffnen",
+  footer_vipPackages: "VIP-Pakete",
+  footer_advertise: "Werbung",
+  footer_partnership: "Partnerschaft",
+  footer_operatedBy: "Betrieben von REVOLUTION INVEST SH.P.K.",
 };
 const MARKET_OVERRIDES_IT = {
   markets: "KetuJemi in 11 mercati",
+  footer_colHelp: "AIUTO",
+  footer_colInfo: "INFO",
+  footer_colBusiness: "AZIENDE",
+  footer_colMarkets: "MERCATI",
+  footer_press: "Stampa",
+  footer_aboutKetuJemi: "Informazioni su KetuJemi",
+  footer_rules: "Regole",
+  footer_openShop: "Apri un negozio",
+  footer_vipPackages: "Pacchetti VIP",
+  footer_advertise: "Pubblicità",
+  footer_partnership: "Collaborazione",
+  footer_operatedBy: "Gestito da REVOLUTION INVEST SH.P.K.",
 };
 
 const entries = [...enBody.matchAll(/(\w+):\s*(?:"((?:\\.|[^"\\])*)"|`([\s\S]*?)`)/g)].map((m) => ({
