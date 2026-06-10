@@ -20,6 +20,9 @@ function urlEntry(origin: string, path: string, lastmod?: string, priority?: str
   return `<url><loc>${xmlEscape(loc)}</loc>${last}${pri}</url>`;
 }
 
+/** Google allows at most 50_000 URLs per sitemap file. */
+const MAX_SITEMAP_URLS = 50_000;
+
 const STATIC_PATHS = [
   "/",
   "/listings",
@@ -65,18 +68,22 @@ export async function buildSitemapXml(): Promise<string> {
     }
   }
 
-  const activeListings = await db
-    .select({ id: listingsTable.id, listed_at: listingsTable.listed_at })
-    .from(listingsTable)
-    .where(
-      and(
-        eq(listingsTable.status, "active"),
-        eq(listingsTable.moderation_status, "approved"),
-        gt(listingsTable.expires_at, sql`now()`),
-      ),
-    )
-    .orderBy(listingsTable.listed_at)
-    .limit(50000);
+  const listingBudget = Math.max(0, MAX_SITEMAP_URLS - urls.length);
+  const activeListings =
+    listingBudget > 0
+      ? await db
+          .select({ id: listingsTable.id, listed_at: listingsTable.listed_at })
+          .from(listingsTable)
+          .where(
+            and(
+              eq(listingsTable.status, "active"),
+              eq(listingsTable.moderation_status, "approved"),
+              gt(listingsTable.expires_at, sql`now()`),
+            ),
+          )
+          .orderBy(listingsTable.listed_at)
+          .limit(listingBudget)
+      : [];
 
   for (const row of activeListings) {
     const lastmod = row.listed_at

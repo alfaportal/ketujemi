@@ -31,6 +31,9 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+/** /sitemap.xml + /robots.txt — before cookies / API rate limits; no authentication. */
+app.use(sitemapRouter);
+
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret || sessionSecret.length < 16) {
   throw new Error(
@@ -89,7 +92,6 @@ app.use("/api", facebookOAuthPublicRouter);
 app.use(tiktokOAuthPublicRouter);
 app.use("/api", globalApiLimiter);
 app.use("/api", router);
-app.use(sitemapRouter);
 attachStaticFrontend(app);
 
 export default app;
