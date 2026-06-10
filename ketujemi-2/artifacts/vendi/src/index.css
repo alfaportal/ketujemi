@@ -304,6 +304,40 @@
   }
 }
 
+@keyframes shop-directory-stores-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.shop-directory-stores-marquee-track {
+  animation: shop-directory-stores-marquee var(--shop-marquee-duration, 40s) linear infinite;
+}
+
+.shop-directory-stores-marquee:hover .shop-directory-stores-marquee-track {
+  animation-play-state: paused;
+}
+
+.shop-directory-stores-marquee-mask {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8%,
+    black 92%,
+    transparent
+  );
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shop-directory-stores-marquee-track {
+    animation: none;
+  }
+}
+
 /* Mobile sticky headers — below iOS status bar / notch (main site + admin) */
 @media (max-width: 767px) {
   .mobile-safe-top {

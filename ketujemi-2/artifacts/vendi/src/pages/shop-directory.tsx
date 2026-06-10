@@ -4,6 +4,7 @@ import { Loader2, Search } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { ShopDirectoryHubIntro } from "@/components/shop-directory-hub-intro";
 import { ShopDirectorySearchBar } from "@/components/shop-directory-search-bar";
+import { ShopDirectoryStoresBanner } from "@/components/shop-directory-stores-banner";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { applyPageMeta } from "@/lib/page-meta";
 import { shopDirectoryCategoryImageUrl } from "@/lib/shop-directory-category-images";
@@ -89,6 +90,8 @@ export default function ShopDirectoryPage() {
       <SiteHeader />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         <ShopDirectoryHubIntro />
+
+        <ShopDirectoryStoresBanner shops={shops} loading={loading} />
 
         <div className="space-y-3">
           <ShopDirectorySearchBar
