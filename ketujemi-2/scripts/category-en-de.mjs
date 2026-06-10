@@ -31,6 +31,8 @@ const MANUAL_DE = {
   "Music & Hobbies": "Musik & Hobbys",
   "Pets & Animals": "Haustiere & Tiere",
   "Wanted to Buy": "Gesucht",
+  "Looking for something? Post here and find it":
+    "Suchst du etwas? Hier veröffentlichen und finden",
   "Free Gifts & Giveaways": "Gratisgeschenke & Verschenken — Von guten Menschen!",
   "Free Gifts & Giveaways — From kind people!": "Gratisgeschenke & Verschenken — Von guten Menschen!",
   "Cars": "Autos",

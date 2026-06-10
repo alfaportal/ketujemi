@@ -2,10 +2,14 @@ import { useMarket } from "@/lib/market-context";
 import { translationKeyForUiLang, type UiTranslationLocale } from "@/lib/ui-languages";
 import type { ShopDirectoryCategory, ShopDirectorySubcategory } from "@/lib/shop-directory-taxonomy";
 import {
+  SHOP_SUB_DE,
+  SHOP_SUB_DE_BY_SQ,
   SHOP_SUB_EN,
   SHOP_SUB_EN_BY_SQ,
   SHOP_SUB_FR,
   SHOP_SUB_FR_BY_SQ,
+  SHOP_SUB_IT,
+  SHOP_SUB_IT_BY_SQ,
   SHOP_SUB_MK,
   SHOP_SUB_MK_BY_SQ,
   SHOP_SUB_MNE,
@@ -415,8 +419,8 @@ const SUB_BY_LOCALE: Record<
   mne: SHOP_SUB_MNE,
   en: SHOP_SUB_EN,
   fr: SHOP_SUB_FR,
-  de: SHOP_SUB_EN,
-  it: SHOP_SUB_EN,
+  de: SHOP_SUB_DE,
+  it: SHOP_SUB_IT,
 };
 
 const SUB_BY_SQ_LOCALE: Record<
@@ -427,8 +431,8 @@ const SUB_BY_SQ_LOCALE: Record<
   mne: SHOP_SUB_MNE_BY_SQ,
   en: SHOP_SUB_EN_BY_SQ,
   fr: SHOP_SUB_FR_BY_SQ,
-  de: SHOP_SUB_EN_BY_SQ,
-  it: SHOP_SUB_EN_BY_SQ,
+  de: SHOP_SUB_DE_BY_SQ,
+  it: SHOP_SUB_IT_BY_SQ,
 };
 
 export function translateDirectorySubcategory(

@@ -182,6 +182,28 @@ export function footerMarketsStripCopy(uiLang: UiLang): FooterMarketsStripCopy {
       diasporaLabel: "+8 pays de la diaspora",
     };
   }
+  if (uiLang === "de") {
+    return {
+      title: "OFFIZIELLE MÄRKTE",
+      primary: [
+        { marketCode: "ks", name: "Kosovo", iso: "XK" },
+        { marketCode: "al", name: "Albanien", iso: "AL" },
+        { marketCode: "mk", name: "Nordmazedonien", iso: "MK" },
+      ],
+      diasporaLabel: "+8 Diaspora-Märkte",
+    };
+  }
+  if (uiLang === "it") {
+    return {
+      title: "MERCATI UFFICIALI",
+      primary: [
+        { marketCode: "ks", name: "Kosovo", iso: "XK" },
+        { marketCode: "al", name: "Albania", iso: "AL" },
+        { marketCode: "mk", name: "Macedonia del Nord", iso: "MK" },
+      ],
+      diasporaLabel: "+8 mercati della diaspora",
+    };
+  }
   if (uiLang === "en") {
     return {
       title: "OFFICIAL MARKETS",

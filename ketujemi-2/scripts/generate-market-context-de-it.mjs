@@ -17,7 +17,14 @@ const frStart = src.indexOf("\n  fr: FR_TRANSLATIONS");
 if (enStart < 0 || frStart < 0) throw new Error("EN or FR block not found in market-context.tsx");
 
 const enBody = src.slice(enStart + "\n  en: {".length, frStart);
-const entries = [...enBody.matchAll(/^\s+(\w+):\s*(?:"((?:\\.|[^"\\])*)"|`([\s\S]*?)`)/gm)].map((m) => ({
+const MARKET_OVERRIDES_DE = {
+  markets: "KetuJemi auf 11 Märkten",
+};
+const MARKET_OVERRIDES_IT = {
+  markets: "KetuJemi in 11 mercati",
+};
+
+const entries = [...enBody.matchAll(/(\w+):\s*(?:"((?:\\.|[^"\\])*)"|`([\s\S]*?)`)/g)].map((m) => ({
   key: m[1],
   value: (m[2] ?? m[3] ?? "").replace(/\\n/g, "\n").replace(/\\"/g, '"'),
 }));
@@ -32,8 +39,9 @@ function escapeTs(str) {
 }
 
 function formatBlock(locale, trFn) {
+  const overrides = locale === "de" ? MARKET_OVERRIDES_DE : MARKET_OVERRIDES_IT;
   const lines = entries.map(({ key, value }) => {
-    const translated = trFn(value);
+    const translated = overrides[key] ?? trFn(value);
     const v =
       translated.includes("\n") || translated.length > 100
         ? `\`${translated.replace(/`/g, "\\`")}\``

@@ -17,6 +17,16 @@ function categoryEnFromSq(sq) {
   return en;
 }
 
+/** Prefer canonical key (DB name) over ks marketing copy for EN lookup. */
+function categoryEnForName(name, ks) {
+  let en = categoryEnFromSq(name);
+  if ((en === name || ALBANIAN_CHARS.test(en)) && ks && ks !== name) {
+    const alt = categoryEnFromSq(ks);
+    if (alt !== ks && !ALBANIAN_CHARS.test(alt)) en = alt;
+  }
+  return en;
+}
+
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const catPath = join(root, "artifacts/vendi/src/lib/category-translations.ts");
 
@@ -30,7 +40,7 @@ let m;
 while ((m = catRe.exec(catSrc)) !== null) {
   const name = m[1].replace(/\\"/g, '"');
   const ks = m[2].replace(/\\"/g, '"');
-  const en = categoryEnFromSq(ks || name);
+  const en = categoryEnForName(name, ks);
   catDe[name] = categoryToGerman(en);
   catIt[name] = categoryToItalian(en);
 }
@@ -42,7 +52,7 @@ for (const file of ["femije-category-translations.ts", "arsim-kurse-category-tra
   while ((km = keyRe.exec(src)) !== null) {
     const name = km[1].replace(/\\"/g, '"');
     if (!catDe[name]) {
-      const en = categoryEnFromSq(name);
+      const en = categoryEnForName(name, name);
       catDe[name] = categoryToGerman(en);
       catIt[name] = categoryToItalian(en);
     }

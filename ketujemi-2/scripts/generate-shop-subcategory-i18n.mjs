@@ -8,6 +8,8 @@ import { fileURLToPath } from "node:url";
 import { shopSubcategoryToEnglish } from "./shop-subcategory-sq-en.mjs";
 import { shopSubcategoryToFrench } from "./shop-subcategory-en-fr.mjs";
 import { SHOP_SQ_FR } from "./shop-phrases-fr.mjs";
+import { categoryToGerman } from "./category-en-de.mjs";
+import { categoryToItalian } from "./category-en-it.mjs";
 
 function titleCaseEn(en) {
   return en.replace(/(^|[\s&(/])([a-z])/g, (_, pre, c) => pre + c.toUpperCase());
@@ -48,24 +50,34 @@ while ((m = catRe.exec(catSrc)) !== null) {
 
 const en = {};
 const fr = {};
+const de = {};
+const it = {};
 const mk = {};
 const mne = {};
 const enBySq = {};
 const frBySq = {};
+const deBySq = {};
+const itBySq = {};
 const mkBySqOut = {};
 const mneBySqOut = {};
 
 for (const { slug, nameSq } of subs) {
   const enLabel = shopSubcategoryToEnglish(nameSq);
   const frLabel = SHOP_SQ_FR[nameSq] ?? shopLabelFr(enLabel);
+  const deLabel = categoryToGerman(enLabel);
+  const itLabel = categoryToItalian(enLabel);
   const mkLabel = mkBySq[nameSq] ?? enLabel;
   const mneLabel = mneBySq[nameSq] ?? enLabel;
   en[slug] = enLabel;
   fr[slug] = frLabel;
+  de[slug] = deLabel;
+  it[slug] = itLabel;
   mk[slug] = mkLabel;
   mne[slug] = mneLabel;
   enBySq[nameSq] = enLabel;
   frBySq[nameSq] = frLabel;
+  deBySq[nameSq] = deLabel;
+  itBySq[nameSq] = itLabel;
   mkBySqOut[nameSq] = mkLabel;
   mneBySqOut[nameSq] = mneLabel;
 }
@@ -81,10 +93,14 @@ const out =
   `/** Auto-generated — run ketujemi-2/scripts/generate-shop-subcategory-i18n.mjs */\n` +
   `${emitRecord("SHOP_SUB_EN", en)}` +
   `${emitRecord("SHOP_SUB_FR", fr)}` +
+  `${emitRecord("SHOP_SUB_DE", de)}` +
+  `${emitRecord("SHOP_SUB_IT", it)}` +
   `${emitRecord("SHOP_SUB_MK", mk)}` +
   `${emitRecord("SHOP_SUB_MNE", mne)}` +
   `${emitRecord("SHOP_SUB_EN_BY_SQ", enBySq)}` +
   `${emitRecord("SHOP_SUB_FR_BY_SQ", frBySq)}` +
+  `${emitRecord("SHOP_SUB_DE_BY_SQ", deBySq)}` +
+  `${emitRecord("SHOP_SUB_IT_BY_SQ", itBySq)}` +
   `${emitRecord("SHOP_SUB_MK_BY_SQ", mkBySqOut)}` +
   `${emitRecord("SHOP_SUB_MNE_BY_SQ", mneBySqOut)}`;
 
