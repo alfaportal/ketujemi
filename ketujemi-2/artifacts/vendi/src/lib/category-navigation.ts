@@ -1,4 +1,5 @@
 import { useLayoutEffect } from "react";
+import { seoCategoryPath } from "@/lib/category-seo";
 import { PARENT_CATEGORY_SLUG_ORDER } from "@/lib/parent-category-slugs";
 import {
   getScrollPosition,
@@ -108,22 +109,23 @@ function resolveAliasSlug(segment: string): string {
   return CATEGORY_SLUG_ALIASES[lower] ?? lower;
 }
 
-/** Build a client route path for a category (prefer slug for stable URLs). */
+/** Build a client route path for a category (prefer SEO slug URL /shpallje/:slug). */
 export function categoryPath(
   categoryOrId: number | CategoryRef,
   slugOverride?: string | null,
+  citySlug?: string | null,
 ): string {
   if (typeof categoryOrId === "object" && categoryOrId != null) {
     const id = Number(categoryOrId.id);
     const slug = (slugOverride ?? categoryOrId.slug)?.trim();
-    if (slug) return `/categories/${encodeURIComponent(slug)}`;
+    if (slug) return seoCategoryPath(slug, citySlug ?? undefined);
     if (Number.isFinite(id) && id > 0) return `/categories/${id}`;
     return "/";
   }
 
   const id = Number(categoryOrId);
   const slug = slugOverride?.trim();
-  if (slug) return `/categories/${encodeURIComponent(slug)}`;
+  if (slug) return seoCategoryPath(slug, citySlug ?? undefined);
   if (Number.isFinite(id) && id > 0) return `/categories/${id}`;
   return "/";
 }

@@ -39,6 +39,8 @@ import { recordListingView } from "@/lib/record-listing-view";
 import { ListingShareButtons } from "@/components/listing-share-buttons";
 import { ListingSocialPostedShare } from "@/components/listing-social-posted-share";
 import { ListingShopCard, type ListingShopInfo } from "@/components/listing-shop-card";
+import { applyPageMeta, truncateMetaDescription } from "@/lib/page-meta";
+import { injectJsonLd, listingProductJsonLd } from "@/lib/schema-org";
 
 // ─── Spec parser ─────────────────────────────────────────────────────────────
 interface ParsedDesc { specs: Record<string, string>; body: string }
@@ -211,6 +213,36 @@ export default function ListingDetail() {
     if (!listing) return { specs: {} as Record<string, string>, body: "" };
     return parseDescription(listing.description ?? "");
   }, [listing]);
+
+  useEffect(() => {
+    if (!listing) return;
+    const path = `/listings/${listing.id}`;
+    const images = parseListingImageUrls(listing.image_url);
+    const firstImage = images[0];
+    const description = truncateMetaDescription(parsed.body || listing.title, 155);
+    const locationBit = listing.location?.trim() ? ` — ${listing.location.trim()}` : "";
+    const title = `${listing.title}${locationBit} | KetuJemi`;
+    applyPageMeta({
+      title,
+      description,
+      canonicalPath: path,
+      ogImage: firstImage,
+      ogType: "product",
+    });
+    return injectJsonLd(
+      `listing-${listing.id}`,
+      listingProductJsonLd({
+        id: listing.id,
+        title: listing.title,
+        description: parsed.body || listing.description || listing.title,
+        imageUrl: firstImage,
+        price: listing.price,
+        location: listing.location,
+        urlPath: path,
+        sellerName: listing.seller_name,
+      }),
+    );
+  }, [listing, parsed.body]);
 
   const canManage = !!(
     user &&

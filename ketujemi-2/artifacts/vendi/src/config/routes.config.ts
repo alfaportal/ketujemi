@@ -28,6 +28,7 @@ export type RouteId =
   | "home"
   | "legacy-category-redirect"
   | "category-hub-redirect"
+  | "category-seo"
   | "category"
   | "new-listing"
   | "edit-listing"
@@ -253,6 +254,14 @@ export const APP_ROUTES: AppRouteDefinition[] = [
       fallbackPath: HOME_FALLBACK,
     }),
   ),
+  {
+    id: "category-seo",
+    path: "/shpallje/:categorySlug/:citySlug?",
+    requiresAuth: false,
+    marketPrefix: null,
+    fallbackPath: HOME_FALLBACK,
+    errorBoundary: true,
+  },
   {
     id: "category",
     path: "/categories/:id",

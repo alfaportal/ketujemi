@@ -9,6 +9,7 @@ import tiktokOAuthPublicRouter from "./routes/tiktok-oauth-public";
 import { logger } from "./lib/logger";
 import { attachStaticFrontend } from "./lib/serve-static";
 import { canonicalHostRedirect } from "./lib/canonical-host";
+import sitemapRouter from "./routes/sitemap";
 import { isCorsOriginAllowed } from "./lib/cors-config.js";
 import { globalApiLimiter } from "./lib/express-rate-limiters.js";
 
@@ -88,6 +89,7 @@ app.use("/api", facebookOAuthPublicRouter);
 app.use(tiktokOAuthPublicRouter);
 app.use("/api", globalApiLimiter);
 app.use("/api", router);
+app.use(sitemapRouter);
 attachStaticFrontend(app);
 
 export default app;

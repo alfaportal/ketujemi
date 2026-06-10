@@ -83,6 +83,7 @@ const ROUTE_COMPONENTS: Record<Exclude<RouteId, "category-hub-redirect">, Compon
   advertise: AdvertisePage,
   home: Home,
   "legacy-category-redirect": LegacyCategoryRouteRedirect,
+  "category-seo": CategoryPage,
   category: CategoryPage,
   "new-listing": NewListing,
   "edit-listing": EditListing,

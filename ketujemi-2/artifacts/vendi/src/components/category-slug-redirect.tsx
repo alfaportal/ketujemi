@@ -2,7 +2,9 @@ import { useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
 import { RouteLoading } from "@/components/route-loading";
 
-/** Redirect legacy /category/:segment and short /:hubSlug URLs to /categories/:segment. */
+import { seoCategoryPath } from "@/lib/category-seo";
+
+/** Redirect legacy /category/:segment and short /:hubSlug URLs to /shpallje/:segment. */
 export function CategorySlugRedirect({ segment }: { segment: string }) {
   const [, setLocation] = useLocation();
 
@@ -12,7 +14,7 @@ export function CategorySlugRedirect({ segment }: { segment: string }) {
       setLocation("/");
       return;
     }
-    setLocation(`/categories/${encodeURIComponent(raw)}`);
+    setLocation(seoCategoryPath(raw));
   }, [segment, setLocation]);
 
   return <RouteLoading />;

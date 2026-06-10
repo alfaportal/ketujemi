@@ -3,3 +3,4 @@ Allow: /
 
 # Canonical site: https://ketujemi.com (www redirects to non-www)
 Host: ketujemi.com
+Sitemap: https://ketujemi.com/sitemap.xml

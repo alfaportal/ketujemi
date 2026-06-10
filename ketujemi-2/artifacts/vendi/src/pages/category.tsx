@@ -42,6 +42,15 @@ import {
   type CategoryRef,
 } from "@/lib/category-navigation";
 import {
+  buildCategorySeoMeta,
+  CANONICAL_SITE_ORIGIN,
+  cityNameFromSlug,
+  resolveSeoCitySlug,
+  seoCategoryPath,
+} from "@/lib/category-seo";
+import { applyPageMeta } from "@/lib/page-meta";
+import { breadcrumbJsonLd, injectJsonLd } from "@/lib/schema-org";
+import {
   CategoryPageLoading,
   CategoryPageLoadError,
   CategoryPageNotFound,
@@ -649,13 +658,20 @@ function Breadcrumb({ items }: { items: { label: string; href?: string }[] }) {
 export default function CategoryPage() {
   const [, setLocation] = useLocation();
   const urlSearch = useSearch();
-  const [, routeParams] = useRoute("/categories/:id");
+  const [, legacyRouteParams] = useRoute("/categories/:id");
+  const [, seoRouteParams] = useRoute("/shpallje/:categorySlug/:citySlug?");
+  const segment = seoRouteParams?.categorySlug ?? legacyRouteParams?.id ?? "";
+  const citySlug = seoRouteParams?.citySlug;
+  const seoCityName = useMemo(
+    () => (citySlug ? cityNameFromSlug(citySlug) : undefined),
+    [citySlug],
+  );
+  const seoCitySlugResolved = useMemo(() => resolveSeoCitySlug(citySlug), [citySlug]);
   const goToPostListing = useGoToPostListing();
   const goToKerkojPost = useGoToKerkojPostListing();
   const { t, market, uiLang } = useMarket();
   const tx = t as Record<string, string>;
   const locale = translationKeyForUiLang(uiLang);
-  const segment = routeParams?.id ?? "";
   const resultsAnchorRef = useRef<HTMLDivElement | null>(null);
 
   const {
@@ -679,15 +695,37 @@ export default function CategoryPage() {
   useEffect(() => {
     if (!allCategories?.length || !Number.isFinite(categoryId)) return;
     const canonical = canonicalCategorySegment(segment, allCategories as CategoryRef[]);
-    if (!canonical) return;
-    const raw = segment.trim();
-    if (raw === canonical) return;
+    const slug = canonical ?? segment.trim();
+    if (!slug) return;
     const qs = (urlSearch ?? "").trim();
-    const nextPath = qs ? `${categoryPath(categoryId, canonical)}?${qs}` : categoryPath(categoryId, canonical);
-    setLocation(nextPath, { replace: true });
-  }, [segment, categoryId, allCategories, setLocation, urlSearch]);
+    const cityPart = seoCitySlugResolved;
+    const base = cityPart ? seoCategoryPath(slug, cityPart) : seoCategoryPath(slug);
+    const nextPath = qs ? `${base}?${qs}` : base;
+    const onLegacy = !!legacyRouteParams?.id;
+    const wrongSlug = canonical && segment.trim() !== canonical;
+    if (onLegacy || wrongSlug) {
+      setLocation(nextPath, { replace: true });
+    }
+  }, [
+    segment,
+    categoryId,
+    allCategories,
+    setLocation,
+    urlSearch,
+    legacyRouteParams?.id,
+    seoCitySlugResolved,
+  ]);
 
   const currentCategory = allCategories?.find((c: any) => Number(c.id) === Number(categoryId));
+
+  const categoryOgImage = useMemo(() => {
+    if (!currentCategory) return undefined;
+    const raw =
+      resolveCategoryImageUrl(currentCategory as Parameters<typeof resolveCategoryImageUrl>[0]) ||
+      getCatPhoto(currentCategory.name ?? "") ||
+      "";
+    return raw ? heroBannerImageUrl(raw) : undefined;
+  }, [currentCategory]);
 
   const isInKerkojTeBlejTree = useMemo(
     () =>
@@ -748,6 +786,25 @@ export default function CategoryPage() {
     () => catEngine.getFilters(Number(categoryId)),
     [catEngine, categoryId],
   );
+
+  const categoryBreadcrumbLd = useMemo(() => {
+    if (!Number.isFinite(categoryId) || !currentCategory?.slug) return null;
+    const crumbs = catEngine.getBreadcrumb(Number(categoryId), locale);
+    const items: { name: string; url?: string }[] = [
+      { name: "KetuJemi", url: CANONICAL_SITE_ORIGIN },
+      ...crumbs.map((c) => ({
+        name: c.label,
+        ...(c.href ? { url: `${CANONICAL_SITE_ORIGIN}${c.href}` } : {}),
+      })),
+    ];
+    if (seoCityName && seoCitySlugResolved) {
+      items.push({
+        name: seoCityName,
+        url: `${CANONICAL_SITE_ORIGIN}${seoCategoryPath(currentCategory.slug, seoCitySlugResolved)}`,
+      });
+    }
+    return breadcrumbJsonLd(items);
+  }, [categoryId, currentCategory?.slug, catEngine, locale, seoCityName, seoCitySlugResolved]);
 
   const {
     isFemijeGroupPage,
@@ -992,7 +1049,7 @@ export default function CategoryPage() {
   const [kompjuterListParams, setKompjuterListParams] =
     useState<GetListingsParams | null>(null);
 
-  const listingsQueryParams: GetListingsParams = useMemo(() => {
+  const listingsQueryParamsBase: GetListingsParams = useMemo(() => {
     if (isVeturaHub && veturaBrandLeafCsv) {
       return veturaListParams ?? { category_ids: veturaBrandLeafCsv, page: 1, limit: 20 };
     }
@@ -1160,6 +1217,36 @@ export default function CategoryPage() {
     kompjuterListParams,
     categoryId,
   ]);
+
+  const listingsQueryParams: GetListingsParams = useMemo(() => {
+    if (!seoCityName) return listingsQueryParamsBase;
+    return { ...listingsQueryParamsBase, location_search: seoCityName };
+  }, [listingsQueryParamsBase, seoCityName]);
+
+  const categorySeoMeta = useMemo(() => {
+    if (!currentCategory?.slug) return null;
+    const displayName = translateCategory(currentCategory.name, locale);
+    return buildCategorySeoMeta(
+      displayName,
+      currentCategory.slug,
+      locale,
+      seoCitySlugResolved,
+    );
+  }, [currentCategory?.name, currentCategory?.slug, locale, seoCitySlugResolved]);
+
+  useEffect(() => {
+    if (!categorySeoMeta) return;
+    applyPageMeta({
+      title: categorySeoMeta.title,
+      description: categorySeoMeta.description,
+      canonicalPath: categorySeoMeta.canonicalPath,
+      ogImage: categoryOgImage,
+    });
+    const cleanupLd = categoryBreadcrumbLd
+      ? injectJsonLd("category-breadcrumb", categoryBreadcrumbLd)
+      : () => {};
+    return cleanupLd;
+  }, [categorySeoMeta, categoryOgImage, categoryBreadcrumbLd]);
 
   const listingsQueryEnabled =
     Number.isFinite(categoryId) &&
@@ -2074,6 +2161,14 @@ export default function CategoryPage() {
             isLoading ||
             (listingsData != null && listingsData.listings.length > 0)) &&
           renderListingsSection()}
+
+        {categorySeoMeta?.footerHtml ? (
+          <section
+            className="mt-12 pt-8 border-t border-gray-200 text-sm text-gray-600 leading-relaxed [&_p]:mb-4 [&_strong]:text-gray-800"
+            aria-label="Info"
+            dangerouslySetInnerHTML={{ __html: categorySeoMeta.footerHtml }}
+          />
+        ) : null}
       </div>
     </div>
   );
