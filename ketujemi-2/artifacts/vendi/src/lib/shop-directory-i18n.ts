@@ -26,6 +26,10 @@ export type ShopDirectoryCopy = {
   homeBannerTitle: string;
   homeBannerSubtitle: string;
   homeBannerBtn: string;
+  introTitle: string;
+  introP1: string;
+  introP2: string;
+  introP3: string;
   searchPlaceholder: string;
   searchBtn: string;
   filterCity: string;
@@ -128,6 +132,13 @@ const KS: ShopDirectoryCopy = {
   homeBannerTitle: "Bizneset Dixhitale — Bli direkt nga bizneset me një klikim",
   homeBannerSubtitle: "{count} kategori • Qindra dyqane lokale • në çdo vend",
   homeBannerBtn: "Shiko të gjitha dyqanet →",
+  introTitle: "🏪 Dyqani Dixhital — E ardhmja e tregtisë!",
+  introP1:
+    "Dyqani Dixhital në KetuJemi.com është prania online e çdo biznesi dhe dyqani fizik — nga dyqani i lagjës deri te kompanitë e mëdha. Çdo dyqan ka faqen e vet të personalizuar me produktet, çmimet, fotot dhe kontaktin e drejtpërdrejtë me shitësin.",
+  introP2:
+    "Ti nuk ke nevojë të ecësh nëpër treg, të telefonosh pa fund, apo të humbasësh kohë — me një kërkim të shpejtë gjen dyqanin që të duhet, sheh produktet që ofron, dhe kontakton direkt me pronarin — pa ndërmjetës, pa komision, pa vonesë!",
+  introP3:
+    "Të gjitha dyqanet në KetuJemi janë të verifikuara nga stafi ynë — kështu që ti mund të blesh me besim dhe siguri të plotë! ✅",
   searchPlaceholder: "🔍 Kërko dyqan... p.sh. mobilje, telefon, këpucë",
   searchBtn: "Kërko",
   filterCity: "Qyteti",
@@ -159,6 +170,13 @@ const MK: ShopDirectoryCopy = {
   homeBannerTitle: "Дигитални бизниси — Купувајте директно од бизнисите со еден клик",
   homeBannerSubtitle: "{count} категории • Стотици локални продавници • на секое место",
   homeBannerBtn: "Види ги сите продавници →",
+  introTitle: "🏪 Дигитална продавница — Иднината на трговијата!",
+  introP1:
+    "Дигиталната продавница на KetuJemi.com е онлајн присуство на секој бизнис и физичка продавница — од продавницата во маалото до големите компании. Секоја продавница има сопствена персонализирана страница со производи, цени, фотографии и директен контакт со продавачот.",
+  introP2:
+    "Не мора да шеташ низ пазарот, бесконечно да телефонираш или да губиш време — со едно брзо пребарување го наоѓаш продавницата што ти треба, ги гледаш понудените производи и директно контактираш со сопственикот — без посредник, без провизија, без доцнење!",
+  introP3:
+    "Сите продавници на KetuJemi се верификувани од нашиот тим — така што можеш да купуваш со целосно доверба и сигурност! ✅",
   searchPlaceholder: "🔍 Пребарај продавница... нпр. мебел, телефон, обувки",
   searchBtn: "Пребарај",
   filterCity: "Град",
@@ -190,6 +208,13 @@ const MNE: ShopDirectoryCopy = {
   homeBannerTitle: "Digitalni biznisi — Kupujte direktno od biznisa jednim klikom",
   homeBannerSubtitle: "{count} kategorija • Stotine lokalnih prodavnica • na svakom mjestu",
   homeBannerBtn: "Pogledaj sve prodavnice →",
+  introTitle: "🏪 Digitalna prodavnica — Budućnost trgovine!",
+  introP1:
+    "Digitalna prodavnica na KetuJemi.com je online prisustvo svakog biznisa i fizičke prodavnice — od prodavnice u komšiluku do velikih kompanija. Svaka prodavnica ima svoju personalizovanu stranicu sa proizvodima, cijenama, fotografijama i direktnim kontaktom sa prodavcem.",
+  introP2:
+    "Ne moraš šetati pijacu, beskonačno zvati ili gubiti vrijeme — jednom brzom pretragom nalaziš prodavnicu koja ti treba, vidiš proizvode koje nudi i direktno kontaktiraš vlasnika — bez posrednika, bez provizije, bez čekanja!",
+  introP3:
+    "Sve prodavnice na KetuJemi su verifikovane od strane našeg tima — tako da možeš kupovati sa potpunim povjerenjem i sigurnošću! ✅",
   searchPlaceholder: "🔍 Pretraži prodavnicu... npr. namještaj, telefon, cipele",
   searchBtn: "Pretraži",
   filterCity: "Grad",
@@ -221,6 +246,13 @@ const EN: ShopDirectoryCopy = {
   homeBannerTitle: "Digital Businesses — Buy directly from businesses in one click",
   homeBannerSubtitle: "{count} categories • Hundreds of local shops • everywhere",
   homeBannerBtn: "View all shops →",
+  introTitle: "🏪 Digital Shop — The future of commerce!",
+  introP1:
+    "The Digital Shop on KetuJemi.com is the online presence of every business and physical store — from the corner shop to major companies. Each shop has its own personalised page with products, prices, photos, and direct contact with the seller.",
+  introP2:
+    "You don't need to walk through markets, make endless calls, or waste time — with one quick search you find the shop you need, see what they offer, and contact the owner directly — no middleman, no commission, no delay!",
+  introP3:
+    "All shops on KetuJemi are verified by our team — so you can buy with full confidence and peace of mind! ✅",
   searchPlaceholder: "🔍 Search shops... e.g. furniture, phone, shoes",
   searchBtn: "Search",
   filterCity: "City",
@@ -252,6 +284,13 @@ const FR: ShopDirectoryCopy = {
   homeBannerTitle: "Entreprises digitales — Achetez directement auprès des entreprises en un clic",
   homeBannerSubtitle: "{count} catégories • Des centaines de boutiques locales • partout",
   homeBannerBtn: "Voir toutes les boutiques →",
+  introTitle: "🏪 Boutique digitale — L'avenir du commerce !",
+  introP1:
+    "La boutique digitale sur KetuJemi.com est la présence en ligne de chaque entreprise et magasin physique — de l'épicerie du quartier aux grandes entreprises. Chaque boutique dispose de sa propre page personnalisée avec produits, prix, photos et contact direct avec le vendeur.",
+  introP2:
+    "Pas besoin de parcourir les marchés, d'appeler sans fin ou de perdre du temps — une recherche rapide suffit pour trouver la boutique qu'il vous faut, voir ses produits et contacter directement le propriétaire — sans intermédiaire, sans commission, sans attente !",
+  introP3:
+    "Toutes les boutiques sur KetuJemi sont vérifiées par notre équipe — achetez donc en toute confiance ! ✅",
   searchPlaceholder: "🔍 Rechercher une boutique... ex. mobilier, téléphone, chaussures",
   searchBtn: "Rechercher",
   filterCity: "Ville",

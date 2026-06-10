@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { Loader2, Search } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import { ShopDirectoryHubIntro } from "@/components/shop-directory-hub-intro";
 import { ShopDirectorySearchBar } from "@/components/shop-directory-search-bar";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { applyPageMeta } from "@/lib/page-meta";
@@ -87,6 +88,8 @@ export default function ShopDirectoryPage() {
     <div className="min-h-screen bg-[#f0f4f9]">
       <SiteHeader />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+        <ShopDirectoryHubIntro />
+
         <div className="space-y-3">
           <ShopDirectorySearchBar
             value={query}
