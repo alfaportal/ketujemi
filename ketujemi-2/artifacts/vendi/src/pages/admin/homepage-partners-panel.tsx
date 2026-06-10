@@ -261,8 +261,9 @@ export function AdminHomepagePartnersPanel() {
           className="w-full min-h-11 rounded-xl border border-gray-200 px-3 text-base"
         />
         <input
-          type="url"
+          type="text"
           required
+          pattern="https://.+"
           value={logoUrl}
           onChange={(e) => setLogoUrl(e.target.value)}
           placeholder="URL e logos (https://…)"
@@ -397,8 +398,9 @@ export function AdminHomepagePartnersPanel() {
               className="w-full min-h-11 rounded-xl border border-gray-200 px-3 text-base"
             />
             <input
-              type="url"
+              type="text"
               required
+              pattern="https://.+"
               value={editLogo}
               onChange={(e) => setEditLogo(e.target.value)}
               placeholder="URL e logos"
