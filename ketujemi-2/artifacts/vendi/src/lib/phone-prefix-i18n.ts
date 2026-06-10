@@ -7,6 +7,8 @@ const LABELS: Record<string, Record<UiTranslationLocale, string>> = {
     mne: "Kosovo",
     en: "Kosovo",
     fr: "Kosovo",
+    de: "Kosovo",
+    it: "Kosovo",
   },
   "355": {
     ks: "Shqipëri",
@@ -14,6 +16,8 @@ const LABELS: Record<string, Record<UiTranslationLocale, string>> = {
     mne: "Albanija",
     en: "Albania",
     fr: "Albanie",
+    de: "Albanien",
+    it: "Albania",
   },
   "389": {
     ks: "Maqedoni e Veriut",
@@ -21,6 +25,8 @@ const LABELS: Record<string, Record<UiTranslationLocale, string>> = {
     mne: "Sjeverna Makedonija",
     en: "North Macedonia",
     fr: "Macédoine du Nord",
+    de: "Nordmazedonien",
+    it: "Macedonia del Nord",
   },
   "382": {
     ks: "Mal i Zi",
@@ -28,6 +34,8 @@ const LABELS: Record<string, Record<UiTranslationLocale, string>> = {
     mne: "Crna Gora",
     en: "Montenegro",
     fr: "Monténégro",
+    de: "Montenegro",
+    it: "Montenegro",
   },
 };
 

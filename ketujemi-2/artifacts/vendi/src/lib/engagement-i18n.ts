@@ -1,6 +1,6 @@
 import { translationKeyForUiLang, type UiLang } from "@/lib/ui-languages";
 
-export type EngagementLocale = "ks" | "mk" | "mne" | "en" | "fr";
+export type EngagementLocale = "ks" | "mk" | "mne" | "en" | "fr" | "de" | "it";
 
 export type EngagementCopy = {
   welcomeToast: (name: string) => string;
@@ -19,6 +19,46 @@ export type EngagementCopy = {
   notificationsEmpty: string;
   notificationsTitle: string;
   firstListingOk: string;
+  de: {
+    welcomeToast: (name) =>
+      `Welcome ${name}! 🎉 You're now part of the KetuJemi family. Post your listings for free — no limits, no fees.`,
+    firstListingTitle: "Congrats! 🎊",
+    firstListingBody: "🎉 Congrats! Your listing is live on KëtuJemi.com and will be shared automatically on Facebook, Instagram, and TikTok. The more people see it, the faster it sells! 🚀",
+    subsequentListingToast: "🎉 Congrats! Your listing is live on KëtuJemi.com and will be shared automatically on Facebook, Instagram, and TikTok. The more people see it, the faster it sells! 🚀",
+    listingFirstView: (title) =>
+      `👀 Someone viewed your listing for ${title} — you're on the right track!`,
+    socialFollowTitle: "🔥 Your listing is getting attention!",
+    socialFollowBody: "Follow us to help us promote your listings even more:",
+    socialFollowFacebook: "📘 Facebook — KetuJemi.com",
+    socialFollowInstagram: "📸 Instagram — @jemi.ketu",
+    socialFollowTikTok: "🎵 TikTok — @ketujemi7",
+    socialFollowFooter: "Join thousands of people buying and selling every day! 💪",
+    socialFollowOptIn: "✅ Ja, notify me",
+    socialFollowOptOut: "❌ Nein, thanks",
+    notificationsEmpty: "You have no new notifications.",
+    notificationsTitle: "Notifications",
+    firstListingOk: "OK, thanks!",
+  },
+  it: {
+    welcomeToast: (name) =>
+      `Welcome ${name}! 🎉 You're now part of the KetuJemi family. Post your listings for free — no limits, no fees.`,
+    firstListingTitle: "Congrats! 🎊",
+    firstListingBody: "🎉 Congrats! Your listing is live on KëtuJemi.com and will be shared automatically on Facebook, Instagram, and TikTok. The more people see it, the faster it sells! 🚀",
+    subsequentListingToast: "🎉 Congrats! Your listing is live on KëtuJemi.com and will be shared automatically on Facebook, Instagram, and TikTok. The more people see it, the faster it sells! 🚀",
+    listingFirstView: (title) =>
+      `👀 Someone viewed your listing for ${title} — you're on the right track!`,
+    socialFollowTitle: "🔥 Your listing is getting attention!",
+    socialFollowBody: "Follow us to help us promote your listings even more:",
+    socialFollowFacebook: "📘 Facebook — KetuJemi.com",
+    socialFollowInstagram: "📸 Instagram — @jemi.ketu",
+    socialFollowTikTok: "🎵 TikTok — @ketujemi7",
+    socialFollowFooter: "Join thousands of people buying and selling every day! 💪",
+    socialFollowOptIn: "✅ Sì, notify me",
+    socialFollowOptOut: "❌ No, thanks",
+    notificationsEmpty: "You have no new notifications.",
+    notificationsTitle: "Notifications",
+    firstListingOk: "OK, thanks!",
+  },
 };
 
 const COPY: Record<EngagementLocale, EngagementCopy> = {

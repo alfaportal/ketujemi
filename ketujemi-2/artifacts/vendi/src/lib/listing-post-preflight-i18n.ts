@@ -116,6 +116,46 @@ const EN: ListingPostPreflightCopy = {
     `Free posts (${used}/${limit}) for this month are used up. Next post: €0.30 — top up wallet from Profile.`,
 };
 
+const IT: ListingPostPreflightCopy = {
+  selectMainCategory: "Choose the main category.",
+  titleForSubcategory: "Enter the title (min. 5 characters) to determine the subcategory.",
+  chooseSubcategory: "Choose the subcategory from the list.",
+  chooseBrand: "Choose the product brand / model.",
+  titleMinLength: "Title must be at least 5 characters.",
+  descriptionMinLength: "Descrizione must be at least 15 characters.",
+  chooseCity: "Choose the city (location).",
+  sellerNameRequired: "Enter the seller's name.",
+  phoneMinDigits: "Phone must have at least 5 digits.",
+  waitForUpload: "Wait until photo upload finishes.",
+  addPhoto: "Add at least one photo.",
+  freeQuotaRemaining: (used, limit, remaining) =>
+    `Free posts this month for this category: ${used}/${limit} (${remaining} remaining).`,
+  freeQuotaExhaustedCanWallet: (used, limit) =>
+    `Free posts (${used}/${limit}) for this month are used up. You can still post — €0.30/listing from wallet.`,
+  freeQuotaExhaustedTopUp: (used, limit) =>
+    `Free posts (${used}/${limit}) for this month are used up. Next post: €0.30 — top up wallet from Profile.`,
+};
+
+const DE: ListingPostPreflightCopy = {
+  selectMainCategory: "Choose the main category.",
+  titleForSubcategory: "Enter the title (min. 5 characters) to determine the subcategory.",
+  chooseSubcategory: "Choose the subcategory from the list.",
+  chooseBrand: "Choose the product brand / model.",
+  titleMinLength: "Title must be at least 5 characters.",
+  descriptionMinLength: "Beschreibung must be at least 15 characters.",
+  chooseCity: "Choose the city (location).",
+  sellerNameRequired: "Enter the seller's name.",
+  phoneMinDigits: "Phone must have at least 5 digits.",
+  waitForUpload: "Wait until photo upload finishes.",
+  addPhoto: "Add at least one photo.",
+  freeQuotaRemaining: (used, limit, remaining) =>
+    `Free posts this month for this category: ${used}/${limit} (${remaining} remaining).`,
+  freeQuotaExhaustedCanWallet: (used, limit) =>
+    `Free posts (${used}/${limit}) for this month are used up. You can still post — €0.30/listing from wallet.`,
+  freeQuotaExhaustedTopUp: (used, limit) =>
+    `Free posts (${used}/${limit}) for this month are used up. Next post: €0.30 — top up wallet from Profile.`,
+};
+
 const FR: ListingPostPreflightCopy = {
   selectMainCategory: "Choisissez la catégorie principale.",
   titleForSubcategory: "Saisissez le titre (min. 5 caractères) pour déterminer la sous-catégorie.",
@@ -142,6 +182,8 @@ const PAGES: Record<UiTranslationLocale, ListingPostPreflightCopy> = {
   mne: MNE,
   en: EN,
   fr: FR,
+  it: IT,
+  de: DE,
 };
 
 function copyForLocale(locale: UiTranslationLocale): ListingPostPreflightCopy {

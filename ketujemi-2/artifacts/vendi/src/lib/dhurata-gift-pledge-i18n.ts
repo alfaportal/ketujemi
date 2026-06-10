@@ -83,6 +83,42 @@ const EN: DhurataGiftPledgeCopy = {
   uncheckedHint: "Check all 5 conditions to continue.",
 };
 
+const IT: DhurataGiftPledgeCopy = {
+  back: "Indietro",
+  warnTitle: "⚠️ READ CAREFULLY BEFORE YOU CONTINUE",
+  intro1: "This section is for kind-hearted people who want to help others.",
+  intro2: "Any misuse is taken with the utmost seriousness.",
+  items: [
+    "I confirm the item is completely FREE — I will not ask for any payment, favour or service in return",
+    "I confirm the item exists physically and is available — this is not a fake or fraudulent listing",
+    "I confirm the photos are real and of my item — not stock images or someone else's photos",
+    "I understand anyone who misuses this section for fraud, advertising or harmful purposes is reported immediately and permanently banned",
+    "I understand KetuJemi monitors every post in this category and may remove any listing without warning",
+  ],
+  legal:
+    'By clicking "Continue" you accept full legal responsibility for the accuracy of your listing.',
+  continueBtn: "✅ I understand & agree — Continue →",
+  uncheckedHint: "Check all 5 conditions to continue.",
+};
+
+const DE: DhurataGiftPledgeCopy = {
+  back: "Zurück",
+  warnTitle: "⚠️ READ CAREFULLY BEFORE YOU CONTINUE",
+  intro1: "This section is for kind-hearted people who want to help others.",
+  intro2: "Any misuse is taken with the utmost seriousness.",
+  items: [
+    "I confirm the item is completely FREE — I will not ask for any payment, favour or service in return",
+    "I confirm the item exists physically and is available — this is not a fake or fraudulent listing",
+    "I confirm the photos are real and of my item — not stock images or someone else's photos",
+    "I understand anyone who misuses this section for fraud, advertising or harmful purposes is reported immediately and permanently banned",
+    "I understand KetuJemi monitors every post in this category and may remove any listing without warning",
+  ],
+  legal:
+    'By clicking "Continue" you accept full legal responsibility for the accuracy of your listing.',
+  continueBtn: "✅ I understand & agree — Continue →",
+  uncheckedHint: "Check all 5 conditions to continue.",
+};
+
 const FR: DhurataGiftPledgeCopy = {
   back: "Retour",
   warnTitle: "⚠️ LISEZ ATTENTIVEMENT AVANT DE CONTINUER",
@@ -108,6 +144,8 @@ const BY_LANG: Record<UiLang, DhurataGiftPledgeCopy> = {
   mne: MNE,
   en: EN,
   fr: FR,
+  it: IT,
+  de: DE,
 };
 
 export function dhurataGiftPledgeCopy(uiLang: UiLang): DhurataGiftPledgeCopy {

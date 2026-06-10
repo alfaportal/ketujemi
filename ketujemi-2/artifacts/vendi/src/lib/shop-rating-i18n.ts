@@ -71,6 +71,34 @@ const EN: ShopRatingCopy = {
   anonymousUser: "User",
 };
 
+const IT: ShopRatingCopy = {
+  noRatingYet: "No ratings yet",
+  ratingsCount: "{score} — {count} ratings",
+  ratingsTitle: "User ratings",
+  rateThisShop: "Rate this shop",
+  yourRating: "Your rating",
+  commentPlaceholder: "Optional comment…",
+  submitRating: "Submit rating",
+  updateRating: "Update rating",
+  loginToRate: "Accedi to rate",
+  ratingSaved: "Thanks for your rating!",
+  anonymousUser: "User",
+};
+
+const DE: ShopRatingCopy = {
+  noRatingYet: "Nein ratings yet",
+  ratingsCount: "{score} — {count} ratings",
+  ratingsTitle: "User ratings",
+  rateThisShop: "Rate this shop",
+  yourRating: "Your rating",
+  commentPlaceholder: "Optional comment…",
+  submitRating: "Submit rating",
+  updateRating: "Update rating",
+  loginToRate: "Anmelden to rate",
+  ratingSaved: "Thanks for your rating!",
+  anonymousUser: "User",
+};
+
 const FR: ShopRatingCopy = {
   noRatingYet: "Pas encore d'avis",
   ratingsCount: "{score} — {count} avis",
@@ -91,6 +119,8 @@ const PAGES: Record<UiTranslationLocale, ShopRatingCopy> = {
   mne: MNE,
   en: EN,
   fr: FR,
+  it: IT,
+  de: DE,
 };
 
 export function useShopRatingCopy(): ShopRatingCopy {

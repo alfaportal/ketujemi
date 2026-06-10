@@ -71,6 +71,34 @@ const EN: ListingLimitCopy = {
   cancel: "Cancel",
 };
 
+const IT: ListingLimitCopy = {
+  title: "Free posting limit",
+  closeAria: "Close",
+  intro: "You have used all free posts this month for the category:",
+  usedLabel: "Used this month",
+  resetLabel: "Limit resets on",
+  balanceLabel: "Wallet balance",
+  priceLabel: "Price for a new post",
+  perListing: "/ listing",
+  body: "You can keep posting by topping up your wallet. Each listing after the free limit costs only €0.30.",
+  addBalance: "Add wallet balance",
+  cancel: "Annulla",
+};
+
+const DE: ListingLimitCopy = {
+  title: "Free posting limit",
+  closeAria: "Close",
+  intro: "You have used all free posts this month for the category:",
+  usedLabel: "Used this month",
+  resetLabel: "Limit resets on",
+  balanceLabel: "Wallet balance",
+  priceLabel: "Price for a new post",
+  perListing: "/ listing",
+  body: "You can keep posting by topping up your wallet. Each listing after the free limit costs only €0.30.",
+  addBalance: "Add wallet balance",
+  cancel: "Abbrechen",
+};
+
 const FR: ListingLimitCopy = {
   title: "Limite de publications gratuites",
   closeAria: "Fermer",
@@ -91,6 +119,8 @@ const PAGES: Record<UiTranslationLocale, ListingLimitCopy> = {
   mne: MNE,
   en: EN,
   fr: FR,
+  it: IT,
+  de: DE,
 };
 
 export function useListingLimitCopy(): ListingLimitCopy {

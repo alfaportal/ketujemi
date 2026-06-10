@@ -388,7 +388,11 @@ export default function ListingDetail() {
           ? "en-GB"
           : uiLang === "fr"
             ? "fr-FR"
-            : "sq-AL";
+            : uiLang === "de"
+              ? "de-DE"
+              : uiLang === "it"
+                ? "it-IT"
+                : "sq-AL";
   const postedAt = listingMeta.listed_at ?? listing.created_at;
   const postedLabel = new Date(postedAt).toLocaleString(intlLocale, {
     day: "2-digit",

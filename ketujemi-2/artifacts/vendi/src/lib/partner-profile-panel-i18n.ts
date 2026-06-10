@@ -120,6 +120,52 @@ const EN: PartnerProfilePanelCopy = {
   maxBanners: "Maximum 5 photos for the VIP banner",
 };
 
+const IT: PartnerProfilePanelCopy = {
+  pendingTitle: "Application pending",
+  pendingBody: "Your account will be activated by an administrator after payment verification. Then you can add your link and (for VIP) sliding banners.",
+  blockedTitle: "Account blocked",
+  blockedBody: "Contatto the administrator for more information.",
+  title: "Partner profile",
+  subtitle: "One link — opens when visitors click your logo or banner.",
+  activationCode: "Activation code:",
+  linkTypeLabel: "Link type",
+  linkLabel: "Link",
+  websitePh: "https://yourcompany.com",
+  instagramPh: "https://instagram.com/name or @name",
+  facebookPh: "https://facebook.com/page",
+  vipBannerTitle: "VIP sliding banner (up to 5 photos)",
+  photoLabel: "Photo",
+  vipHint: "If you add photos here, the sliding banner appears instead of the single logo.",
+  save: "Salva partner profile",
+  saved: "Saved!",
+  error: "Error",
+  linkRequired: "Add a link (website, Instagram, or Facebook)",
+  maxBanners: "Maximum 5 photos for the VIP banner",
+};
+
+const DE: PartnerProfilePanelCopy = {
+  pendingTitle: "Application pending",
+  pendingBody: "Your account will be activated by an administrator after payment verification. Then you can add your link and (for VIP) sliding banners.",
+  blockedTitle: "Account blocked",
+  blockedBody: "Kontakt the administrator for more information.",
+  title: "Partner profile",
+  subtitle: "One link — opens when visitors click your logo or banner.",
+  activationCode: "Activation code:",
+  linkTypeLabel: "Link type",
+  linkLabel: "Link",
+  websitePh: "https://yourcompany.com",
+  instagramPh: "https://instagram.com/name or @name",
+  facebookPh: "https://facebook.com/page",
+  vipBannerTitle: "VIP sliding banner (up to 5 photos)",
+  photoLabel: "Photo",
+  vipHint: "If you add photos here, the sliding banner appears instead of the single logo.",
+  save: "Speichern partner profile",
+  saved: "Saved!",
+  error: "Error",
+  linkRequired: "Add a link (website, Instagram, or Facebook)",
+  maxBanners: "Maximum 5 photos for the VIP banner",
+};
+
 const FR: PartnerProfilePanelCopy = {
   pendingTitle: "Demande en attente",
   pendingBody:
@@ -150,6 +196,8 @@ const PAGES: Record<UiTranslationLocale, PartnerProfilePanelCopy> = {
   mne: MNE,
   en: EN,
   fr: FR,
+  it: IT,
+  de: DE,
 };
 
 export function usePartnerProfilePanelCopy(): PartnerProfilePanelCopy {

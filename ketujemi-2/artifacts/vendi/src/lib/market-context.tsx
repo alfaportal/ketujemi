@@ -6,7 +6,9 @@ import {
   translationKeyForUiLang,
   type UiLang,
 } from "./ui-languages";
+import { DE_TRANSLATIONS } from "./market-context-de";
 import { FR_TRANSLATIONS } from "./market-context-fr";
+import { IT_TRANSLATIONS } from "./market-context-it";
 
 export const MARKETS = [
   { code: "ks",  flag: "🇽🇰", name: "Kosovë",             currency: "EUR", symbol: "€",   prefix: "+383" },
@@ -1287,6 +1289,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     postQuotaRemaining: "Free posts remaining in this category: {n}",
   },
   fr: FR_TRANSLATIONS,
+  de: DE_TRANSLATIONS,
+  it: IT_TRANSLATIONS,
 };
 
 // ─── Form option arrays per market ────────────────────────────────────────────
@@ -1298,6 +1302,8 @@ export const FORM_OPTIONS: Record<string, Record<string, string[]>> = {
     mne: ["Benzin", "Dizel", "Električni", "Hibrid", "Gas (LPG)", "Ostalo"],
     en:  ["Petrol", "Diesel", "Electric", "Hybrid", "LPG", "Other"],
     fr:  ["Essence", "Diesel", "Électrique", "Hybride", "GPL", "Autre"],
+    de:  ["Benzin", "Diesel", "Elektro", "Hybrid", "LPG", "Sonstige"],
+    it:  ["Benzina", "Diesel", "Elettrico", "Ibrido", "GPL", "Altro"],
   },
   transmission: {
     ks:  ["Manuale", "Automatike", "Gjysëm-automatike"],
@@ -1306,6 +1312,8 @@ export const FORM_OPTIONS: Record<string, Record<string, string[]>> = {
     mne: ["Manuelni", "Automatski", "Poluautomatski"],
     en:  ["Manual", "Automatic", "Semi-automatic"],
     fr:  ["Manuelle", "Automatique", "Semi-automatique"],
+    de:  ["Manuell", "Automatik", "Halbautomatik"],
+    it:  ["Manuale", "Automatico", "Semiautomatico"],
   },
   bodyType: {
     ks:  ["Sedan", "Hatchback", "SUV / Jeep", "Kombi", "Kabriolet", "Kupe", "Pikap", "Furgon"],
@@ -1314,6 +1322,8 @@ export const FORM_OPTIONS: Record<string, Record<string, string[]>> = {
     mne: ["Sedan", "Hatchback", "Terenac / Džip", "Kombi", "Kabriolet", "Kupe", "Pikap", "Kombi/Van"],
     en:  ["Sedan", "Hatchback", "SUV / Jeep", "Estate", "Convertible", "Coupe", "Pickup", "Van"],
     fr:  ["Berline", "Citadine", "SUV / 4x4", "Break", "Cabriolet", "Coupé", "Pick-up", "Fourgon"],
+    de:  ["Limousine", "Kleinwagen", "SUV / Geländewagen", "Kombi", "Cabrio", "Coupé", "Pick-up", "Transporter"],
+    it:  ["Berlina", "City car", "SUV / Fuoristrada", "Station wagon", "Cabrio", "Coupé", "Pick-up", "Furgone"],
   },
   color: {
     ks:  ["E zezë", "E bardhë", "Gri / Argjend", "E kaltër", "E kuqe", "E gjelbër", "E verdhë / Gold", "Kafe / Beige", "Portokalli", "Vjollcë", "Tjetër"],
@@ -1322,6 +1332,8 @@ export const FORM_OPTIONS: Record<string, Record<string, string[]>> = {
     mne: ["Crna", "Bijela", "Siva / Srebrna", "Plava", "Crvena", "Zelena", "Žuta / Zlatna", "Smeđa / Bež", "Narandžasta", "Ljubičasta", "Ostalo"],
     en:  ["Black", "White", "Grey / Silver", "Blue", "Red", "Green", "Yellow / Gold", "Brown / Beige", "Orange", "Purple", "Other"],
     fr:  ["Noir", "Blanc", "Gris / Argent", "Bleu", "Rouge", "Vert", "Jaune / Or", "Marron / Beige", "Orange", "Violet", "Autre"],
+    de:  ["Schwarz", "Weiß", "Grau / Silber", "Blau", "Rot", "Grün", "Gelb / Gold", "Braun / Beige", "Orange", "Violett", "Sonstige"],
+    it:  ["Nero", "Bianco", "Grigio / Argento", "Blu", "Rosso", "Verde", "Giallo / Oro", "Marrone / Beige", "Arancione", "Viola", "Altro"],
   },
   techCondition: {
     ks:  ["E shkëlqyer", "Shumë e mirë", "E mirë", "E pranueshme", "Për riparim"],
@@ -1330,6 +1342,8 @@ export const FORM_OPTIONS: Record<string, Record<string, string[]>> = {
     mne: ["Odlično", "Veoma dobra", "Dobra", "Prihvatljivo", "Za popravku"],
     en:  ["Excellent", "Very good", "Good", "Acceptable", "For repair"],
     fr:  ["Excellent", "Très bon", "Bon", "Acceptable", "À réparer"],
+    de:  ["Ausgezeichnet", "Sehr gut", "Gut", "Akzeptabel", "Zur Reparatur"],
+    it:  ["Eccellente", "Molto buono", "Buono", "Accettabile", "Da riparare"],
   },
   furnished: {
     ks:  ["I mobiluar", "Pjesërisht i mobiluar", "Pa mobilje"],
@@ -1338,6 +1352,8 @@ export const FORM_OPTIONS: Record<string, Record<string, string[]>> = {
     mne: ["Namješteno", "Djelimično namješteno", "Bez namještaja"],
     en:  ["Furnished", "Partly furnished", "Unfurnished"],
     fr:  ["Meublé", "Partiellement meublé", "Non meublé"],
+    de:  ["Möbliert", "Teilmöbliert", "Unmöbliert"],
+    it:  ["Arredato", "Parzialmente arredato", "Non arredato"],
   },
 };
 
@@ -1347,6 +1363,8 @@ export function formOptionsForUiLang(
   uiLang: string,
 ): string[] {
   const opts = FORM_OPTIONS[field];
+  if (uiLang === "de" && opts.de?.length) return opts.de;
+  if (uiLang === "it" && opts.it?.length) return opts.it;
   if (uiLang === "fr" && opts.fr?.length) return opts.fr;
   if (uiLang === "en" && opts.en?.length) return opts.en;
   return opts.ks;

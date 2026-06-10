@@ -17,7 +17,7 @@ function extractObjectKeys(filePath, startMarker) {
     i++;
   }
   const body = src.slice(start, i);
-  const LOCALE_KEYS = new Set(["ks", "al", "mk", "mne", "en", "fr"]);
+  const LOCALE_KEYS = new Set(["ks", "al", "mk", "mne", "en", "fr", "de", "it"]);
   const keys = [...body.matchAll(/^\s+([a-zA-Z0-9_]+):/gm)]
     .map((m) => m[1])
     .filter((k) => !LOCALE_KEYS.has(k));
@@ -47,6 +47,15 @@ if (ksExtra && mkExtra && mneExtra) {
   issues += compareSets("KS_EXTRA", ksExtra, mneExtra, "MNE_EXTRA");
 }
 
+const enExtraPath = path.join(root, "src/lib/app-extra-i18n-en.ts");
+const deExtraPath = path.join(root, "src/lib/app-extra-i18n-de.ts");
+const itExtraPath = path.join(root, "src/lib/app-extra-i18n-it.ts");
+const enExtra = extractObjectKeys(enExtraPath, "export const EN_EXTRA: Record<string, string> = {");
+const deExtra = extractObjectKeys(deExtraPath, "export const DE_EXTRA: Record<string, string> = {");
+const itExtra = extractObjectKeys(itExtraPath, "export const IT_EXTRA: Record<string, string> = {");
+if (enExtra && deExtra) issues += compareSets("EN_EXTRA", enExtra, deExtra, "DE_EXTRA");
+if (enExtra && itExtra) issues += compareSets("EN_EXTRA", enExtra, itExtra, "IT_EXTRA");
+
 // market-context base translations
 const mcPath = path.join(root, "src/lib/market-context.tsx");
 const mc = fs.readFileSync(mcPath, "utf8");
@@ -68,10 +77,14 @@ const akPath = path.join(root, "src/lib/arsim-kurse-form-i18n.ts");
 const ksAk = extractObjectKeys(akPath, "const KS: Record<string, string> = {");
 const mkAk = extractObjectKeys(akPath, "const MK: Record<string, string> = {");
 const mneAk = extractObjectKeys(akPath, "const MNE: Record<string, string> = {");
+const deAk = extractObjectKeys(akPath, "const DE_AK:");
+const itAk = extractObjectKeys(akPath, "const IT_AK:");
 if (ksAk && mkAk && mneAk) {
   issues += compareSets("AK_FORM KS", ksAk, mkAk, "MK");
   issues += compareSets("AK_FORM KS", ksAk, mneAk, "MNE");
 }
+if (ksAk && deAk) issues += compareSets("AK_FORM KS", ksAk, deAk, "DE_AK");
+if (ksAk && itAk) issues += compareSets("AK_FORM KS", ksAk, itAk, "IT_AK");
 
 console.log(issues === 0 ? "\n✓ All checked bundles in sync." : `\n✗ ${issues} bundle gaps found.`);
 process.exit(issues > 0 ? 1 : 0);

@@ -95,6 +95,42 @@ const EN: WalletBankPaymentCopy = {
   copyFailed: "Copy failed",
 };
 
+const IT: WalletBankPaymentCopy = {
+  loginRequired: "Sign in to view payment instructions.",
+  loginBtn: "Sign in",
+  notFound: "Pagamento non trovato or bank transfer is not active.",
+  backProfile: "Indietro to profile",
+  pageTitle: "Bank payment (Kosovo)",
+  pageSubtitle: "Bonifico bancario for wallet",
+  amount: "Amount",
+  bank: "Bank",
+  beneficiary: "Beneficiario",
+  iban: "IBAN",
+  reference: "Reference (required)",
+  referenceHint: "Without the reference in the description, payment may be delayed. After confirmation, refresh your balance in profile.",
+  backWallet: "Indietro to wallet",
+  copied: "copied",
+  copyFailed: "Copy failed",
+};
+
+const DE: WalletBankPaymentCopy = {
+  loginRequired: "Sign in to view payment instructions.",
+  loginBtn: "Sign in",
+  notFound: "Zahlung nicht gefunden or bank transfer is not active.",
+  backProfile: "Zurück to profile",
+  pageTitle: "Bank payment (Kosovo)",
+  pageSubtitle: "Banküberweisung for wallet",
+  amount: "Amount",
+  bank: "Bank",
+  beneficiary: "Empfänger",
+  iban: "IBAN",
+  reference: "Reference (required)",
+  referenceHint: "Without the reference in the description, payment may be delayed. After confirmation, refresh your balance in profile.",
+  backWallet: "Zurück to wallet",
+  copied: "copied",
+  copyFailed: "Copy failed",
+};
+
 const FR: WalletBankPaymentCopy = {
   loginRequired: "Connectez-vous pour voir les instructions de paiement.",
   loginBtn: "Connexion",
@@ -120,6 +156,8 @@ const PAGES: Record<UiTranslationLocale, WalletBankPaymentCopy> = {
   mne: MNE,
   en: EN,
   fr: FR,
+  it: IT,
+  de: DE,
 };
 
 export function useWalletBankPaymentCopy(): WalletBankPaymentCopy {

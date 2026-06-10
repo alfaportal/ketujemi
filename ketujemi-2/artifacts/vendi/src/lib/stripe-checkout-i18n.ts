@@ -9,6 +9,8 @@ const MESSAGES: Record<StripeCheckoutErrorKey, Record<UiTranslationLocale, strin
     mne: "Plaćanje karticom nije uspjelo",
     en: "Card payment failed",
     fr: "Le paiement par carte a échoué",
+    de: "Kartenzahlung fehlgeschlagen",
+    it: "Pagamento con carta non riuscito",
   },
   confirm_failed: {
     ks: "Konfirmimi i pagesës dështoi",
@@ -16,6 +18,8 @@ const MESSAGES: Record<StripeCheckoutErrorKey, Record<UiTranslationLocale, strin
     mne: "Potvrda plaćanja nije uspjela",
     en: "Payment confirmation failed",
     fr: "La confirmation du paiement a échoué",
+    de: "Zahlungsbestätigung fehlgeschlagen",
+    it: "Conferma del pagamento non riuscita",
   },
   session_failed: {
     ks: "Nuk u krijua sesioni i pagesës",
@@ -23,6 +27,8 @@ const MESSAGES: Record<StripeCheckoutErrorKey, Record<UiTranslationLocale, strin
     mne: "Sesija plaćanja nije kreirana",
     en: "Payment session was not created",
     fr: "La session de paiement n'a pas été créée",
+    de: "Zahlungssitzung wurde nicht erstellt",
+    it: "Sessione di pagamento non creata",
   },
 };
 

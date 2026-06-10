@@ -90,7 +90,7 @@ export type StaticPagePaths = {
 
 /** Footer / help links — localized slugs per UI language. */
 export function staticPagePaths(uiLang: UiLang): StaticPagePaths {
-  if (uiLang === "en" || uiLang === "fr") {
+  if (uiLang === "en" || uiLang === "fr" || uiLang === "de" || uiLang === "it") {
     return {
       contact: "/contact",
       faq: "/faq",

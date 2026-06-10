@@ -5,16 +5,18 @@
  */
 
 import type { Locale } from "date-fns";
-import { enUS } from "date-fns/locale";
+import { de, enUS, it } from "date-fns/locale";
 import { mk } from "date-fns/locale/mk";
 import { srLatn } from "date-fns/locale/sr-Latn";
 import { sq } from "date-fns/locale/sq";
 import { KS_AK_FORM, MK_AK_FORM, MNE_AK_FORM } from "@/lib/arsim-kurse-form-i18n";
 import { KS_SO_DEVICE, MK_SO_DEVICE, MNE_SO_DEVICE } from "@/lib/sport-outdoor-device-i18n";
-import { EN_AK_FORM, FR_AK_FORM } from "./arsim-kurse-form-i18n";
+import { DE_AK_FORM, EN_AK_FORM, FR_AK_FORM, IT_AK_FORM } from "./arsim-kurse-form-i18n";
+import { DE_EXTRA } from "./app-extra-i18n-de";
 import { EN_EXTRA } from "./app-extra-i18n-en";
 import { FR_EXTRA } from "./app-extra-i18n-fr";
-import { EN_SO_DEVICE, FR_SO_DEVICE } from "./sport-outdoor-device-i18n";
+import { IT_EXTRA } from "./app-extra-i18n-it";
+import { DE_SO_DEVICE, EN_SO_DEVICE, FR_SO_DEVICE, IT_SO_DEVICE } from "./sport-outdoor-device-i18n";
 import type { UiTranslationLocale } from "./ui-languages";
 
 export type AppExtraMarketCode = "ks" | "al" | "mk" | "mne";
@@ -6437,6 +6439,8 @@ export const EXTRA_TRANSLATIONS: Record<AppExtraLocaleKey, Record<string, string
   mne: MNE_EXTRA,
   en: { ...EN_EXTRA, ...EN_SO_DEVICE, ...EN_AK_FORM },
   fr: { ...FR_EXTRA, ...FR_SO_DEVICE, ...FR_AK_FORM },
+  de: { ...DE_EXTRA, ...DE_SO_DEVICE, ...DE_AK_FORM },
+  it: { ...IT_EXTRA, ...IT_SO_DEVICE, ...IT_AK_FORM },
 };
 
 export function fillCount(template: string, count: string): string {
@@ -6457,6 +6461,8 @@ export function fillPlaceholders(
 /** Relative time strings (`formatDistanceToNow`) follow the active market. */
 export function dateFnsLocale(marketCode: string, uiLang?: string): Locale {
   if (uiLang === "en" || uiLang === "fr") return enUS;
+  if (uiLang === "de") return de;
+  if (uiLang === "it") return it;
   switch (marketCode) {
     case "mk":
       return mk;

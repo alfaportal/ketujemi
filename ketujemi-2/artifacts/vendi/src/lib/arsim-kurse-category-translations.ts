@@ -1,5 +1,7 @@
+import { CAT_DE_GENERATED } from "./category-translations-de.generated";
 import { CAT_EN_GENERATED } from "./category-translations-en.generated";
 import { CAT_FR_GENERATED } from "./category-translations-fr.generated";
+import { CAT_IT_GENERATED } from "./category-translations-it.generated";
 
 /** Arsim & Kurse taxonomy names (sq base from DB) → mk / mne. */
 
@@ -96,12 +98,14 @@ export const ARSIM_CAT_TRANSLATIONS: Record<string, { mk: string; mne: string }>
 
 export function translateArsimKurseCategory(
   name: string,
-  localeCode: "mk" | "mne" | "ks" | "al" | "en" | "fr",
+  localeCode: "mk" | "mne" | "ks" | "al" | "en" | "fr" | "de" | "it",
 ): string | undefined {
   const row = ARSIM_CAT_TRANSLATIONS[name];
   if (!row) return undefined;
   if (localeCode === "en") return CAT_EN_GENERATED[name] ?? name;
   if (localeCode === "fr") return CAT_FR_GENERATED[name] ?? CAT_EN_GENERATED[name] ?? name;
+  if (localeCode === "de") return CAT_DE_GENERATED[name] ?? CAT_EN_GENERATED[name] ?? name;
+  if (localeCode === "it") return CAT_IT_GENERATED[name] ?? CAT_EN_GENERATED[name] ?? name;
   if (localeCode !== "mk" && localeCode !== "mne") return undefined;
   return row[localeCode];
 }

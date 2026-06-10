@@ -5,6 +5,8 @@ export const UI_LANGUAGES = [
   { code: "mne", flag: "🇲🇪", label: "Malazisht", displayCode: "ME" },
   { code: "en", flag: "🇬🇧", label: "English", displayCode: "EN" },
   { code: "fr", flag: "🇫🇷", label: "Français", displayCode: "FR" },
+  { code: "de", flag: "🇩🇪", label: "Deutsch", displayCode: "DE" },
+  { code: "it", flag: "🇮🇹", label: "Italiano", displayCode: "IT" },
 ] as const;
 
 export type UiLang = (typeof UI_LANGUAGES)[number]["code"];
@@ -12,7 +14,7 @@ export type UiLang = (typeof UI_LANGUAGES)[number]["code"];
 export const DEFAULT_UI_LANG: UiLang = "sq";
 
 /** UI language → translation bundle keys in `market-context` / `app-extra-i18n`. */
-export type UiTranslationLocale = "ks" | "mk" | "mne" | "en" | "fr";
+export type UiTranslationLocale = "ks" | "mk" | "mne" | "en" | "fr" | "de" | "it";
 
 /** Maps UI language → translation bundle keys in `market-context` / `app-extra-i18n`. */
 export function translationKeyForUiLang(uiLang: UiLang): UiTranslationLocale {
@@ -20,6 +22,8 @@ export function translationKeyForUiLang(uiLang: UiLang): UiTranslationLocale {
   if (uiLang === "mne") return "mne";
   if (uiLang === "en") return "en";
   if (uiLang === "fr") return "fr";
+  if (uiLang === "de") return "de";
+  if (uiLang === "it") return "it";
   return "ks";
 }
 

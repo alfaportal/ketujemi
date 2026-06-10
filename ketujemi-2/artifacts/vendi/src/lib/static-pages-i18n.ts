@@ -1,5 +1,7 @@
+import { DE_STATIC_PAGES } from "@/lib/static-pages-i18n-de";
 import { EN_STATIC_PAGES } from "@/lib/static-pages-i18n-en";
 import { FR_STATIC_PAGES } from "@/lib/static-pages-i18n-fr";
+import { IT_STATIC_PAGES } from "@/lib/static-pages-i18n-it";
 import { useMarket } from "@/lib/market-context";
 import { translationKeyForUiLang, type UiTranslationLocale } from "@/lib/ui-languages";
 
@@ -1811,6 +1813,8 @@ export const STATIC_PAGES: Record<StaticPageLocaleKey, StaticPagesCopy> = {
   mne: MNE,
   en: EN_STATIC_PAGES,
   fr: FR_STATIC_PAGES,
+  de: DE_STATIC_PAGES,
+  it: IT_STATIC_PAGES,
 };
 
 export function staticPagesForLocale(locale: StaticPageLocaleKey): StaticPagesCopy {

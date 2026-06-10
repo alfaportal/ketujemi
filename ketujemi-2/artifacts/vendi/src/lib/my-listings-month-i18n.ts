@@ -51,6 +51,26 @@ const EN: MyListingsMonthCopy = {
   genericError: "Error.",
 };
 
+const IT: MyListingsMonthCopy = {
+  sectionTitle: "My Annunci This Month",
+  loadError: "Could not load history.",
+  freeLimitNote: "Free limit ({limit} per category) resets on {date} (00:00 UTC).",
+  resetsOn: "Resets on",
+  emptyCategory: "No posts this month in this category.",
+  usedLabel: "used",
+  genericError: "Error.",
+};
+
+const DE: MyListingsMonthCopy = {
+  sectionTitle: "My Anzeigen This Month",
+  loadError: "Could not load history.",
+  freeLimitNote: "Free limit ({limit} per category) resets on {date} (00:00 UTC).",
+  resetsOn: "Resets on",
+  emptyCategory: "Nein posts this month in this category.",
+  usedLabel: "used",
+  genericError: "Error.",
+};
+
 const FR: MyListingsMonthCopy = {
   sectionTitle: "Mes annonces ce mois-ci",
   loadError: "Impossible de charger l'historique.",
@@ -67,6 +87,8 @@ const PAGES: Record<UiTranslationLocale, MyListingsMonthCopy> = {
   mne: MNE,
   en: EN,
   fr: FR,
+  it: IT,
+  de: DE,
 };
 
 export function useMyListingsMonthCopy(): MyListingsMonthCopy {

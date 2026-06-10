@@ -349,6 +349,20 @@ const EN: ListingPostFeedbackCopy = {
   rateLimitFallback: "Too many attempts. Wait a bit and try again.",
 };
 
+const IT: ListingPostFeedbackCopy = {
+  fieldLabels: FIELD_LABELS_EN,
+  errorDefaults: ERROR_DEFAULTS_EN,
+  badRequestFallback: "Fill in all required fields correctly and try again.",
+  rateLimitFallback: "Too many attempts. Wait a bit and try again.",
+};
+
+const DE: ListingPostFeedbackCopy = {
+  fieldLabels: FIELD_LABELS_EN,
+  errorDefaults: ERROR_DEFAULTS_EN,
+  badRequestFallback: "Fill in all required fields correctly and try again.",
+  rateLimitFallback: "Too many attempts. Wait a bit and try again.",
+};
+
 const FR: ListingPostFeedbackCopy = {
   fieldLabels: FIELD_LABELS_FR,
   errorDefaults: ERROR_DEFAULTS_FR,
@@ -362,6 +376,8 @@ const PAGES: Record<UiTranslationLocale, ListingPostFeedbackCopy> = {
   mne: MNE,
   en: EN,
   fr: FR,
+  it: IT,
+  de: DE,
 };
 
 const PACKAGE_ERRORS = new Set([

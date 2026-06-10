@@ -625,6 +625,288 @@ const EN: OpenShopPageCopy = {
   ctaButton: "🏪 Open your shop for free →",
 };
 
+const IT: OpenShopPageCopy = {
+  ...KS,
+  partnership: {
+    title: "🤝 Become a KetuJemi Partner VIP",
+    intro: "Partnering with KetuJemi is mutual cooperation — you help us, we make you famous.",
+    youGetTitle: "What you get:",
+    youGetItems: [
+      "Your logo on the ketujemi.com homepage — seen by thousands of visitors every day",
+      "Your listings and offers published daily on Instagram @jemi.ketu, Facebook KetuJemi.com and TikTok @ketujemi7",
+      "A dedicated profile with address, map and all your contact details",
+      "Ongoing promotion — people learn about your business every day",
+      "Growth in your followers and customers — free",
+    ],
+    weAskTitle: "What we ask from you:",
+    weAskItems: [
+      "Follow us on Instagram @jemi.ketu, Facebook KetuJemi.com and TikTok @ketujemi7",
+      "Mention us to your followers from time to time",
+    ],
+    promoTitle: "📢 How promotion works:",
+    promoText: "We publish and promote your listings every day on our social channels — but only if you have annunci attivi on ketujemi.com. An empty page has nothing to promote — post your products and offers, we deliver them to the audience. The more you post → the more we promote you → the more customers and sales you get. 🚀",
+    coffeeTitle: "💡 A small but important detail:",
+    coffeeText: "Our cooperation is like coffee — it only works when both sides add sugar. 😄 We promote you every day to our followers — but you also need to follow us on our social channels. In short: follow us → we make you known. Don't follow us → we both lose. 🤝",
+    closing: "Fill in the form and we will contact you within 24 hours. 📩",
+  },
+  docTitle: "Apri il tuo negozio — KetuJemi.com",
+  heroTitle: "Open Your Digital Shop — Free",
+  heroSubtitle: "Create your digital shop on KetuJemi.com and reach thousands of buyers every day with no commissions and no hidden fees.",
+  howItWorksTitle: "How it works",
+  howItWorksSteps: [
+    {
+      emoji: "📝",
+      stepLabel: "Step 1",
+      title: "Registrati",
+      description: "Create your free account on KetuJemi.com — just 1 minute",
+    },
+    {
+      emoji: "🏪",
+      stepLabel: "Step 2",
+      title: "Apri il tuo negozio",
+      description: "Fill in the shop form with your logo, address and social links. We approve within 24 hours.",
+    },
+    {
+      emoji: "📸",
+      stepLabel: "Step 3",
+      title: "Pubblica annuncios",
+      description: "Upload photos of your products or services. No limits, no fees — always free.",
+    },
+    {
+      emoji: "🚀",
+      stepLabel: "Step 4",
+      title: "Condividi & sell",
+      description: "Condividi listings on Facebook, Instagram and TikTok with one click. Customers find you easily!",
+    },
+  ],
+  whyTitle: "WHY KETUJEMI?",
+  whyCards: [
+    {
+      emoji: "🆓",
+      title: "Completely free",
+      description: "No bank card, no hidden fees, no commissions",
+    },
+    {
+      emoji: "⚡",
+      title: "Active within 24 hours",
+      description: "Applica today, your shop is live tomorrow",
+    },
+    {
+      emoji: "📱",
+      title: "From your phone",
+      description: "Manage your shop anywhere, anytime",
+    },
+    {
+      emoji: "🔒",
+      title: "Secure",
+      description: "Registrazione and sign-in required to post",
+    },
+    {
+      emoji: "📸",
+      title: "Unlimited photos + video",
+      description: "Show your product from every angle",
+    },
+    {
+      emoji: "🌍",
+      title: "Reach worldwide",
+      description: "Kosovo, Albania, Macedonia del Nord, Montenegro and the diaspora",
+    },
+    {
+      emoji: "🔍",
+      title: "High visibility",
+      description: "Your shop appears in Google search",
+    },
+    {
+      emoji: "🏪",
+      title: "Dedicated page",
+      description: "Your shop has its own address on KetuJemi",
+    },
+    {
+      emoji: "📍",
+      title: "Google Maps",
+      description: "Customers find you easily",
+    },
+    {
+      emoji: "📊",
+      title: "No algorithm",
+      description: "Every listing is shown equally, no extra fees",
+    },
+  ],
+  faqTitle: "DOMANDE FREQUENTI",
+  faq: [
+    {
+      q: "Is it really free?",
+      a: "Sì — posting is completely free and unlimited for everyone, with no bank card and no hidden fees.",
+    },
+    {
+      q: "Do I need a registered business?",
+      a: "No. Any private person can open a shop and post listings for free.",
+    },
+    {
+      q: "Are there any fees?",
+      a: "Pubblicazione is free. The only paid option is Boost TOP — optional promotion to show your listing at the top of search results.",
+    },
+    {
+      q: "How many photos can I upload per annuncio?",
+      a: "You can upload unlimited photos and one video up to 150MB per annuncio.",
+    },
+    {
+      q: "Can I delete a listing whenever I want?",
+      a: "Sì, anytime from Profile → My listings.",
+    },
+    {
+      q: "How long does a listing stay active?",
+      a: "3 months (90 days) — then renews for free with one click.",
+    },
+    {
+      q: "Can people from different cities and markets see my shop?",
+      a: "Sì — your shop is visible to all KetuJemi visitors, no matter where they are. A buyer in Pristina can find your shop in Ferizaj, Tirana, Skopje or the Albanian diaspora in Germania, Svizzera, Italia and beyond. That means your products reach thousands of potential buyers every day — no advertising costs, no commissions, no geographic limits. The more listings you post → the more people find you → the more sales you make.",
+    },
+  ],
+  ctaButton: "🏪 Apri il tuo negozio for free →",
+};
+
+const DE: OpenShopPageCopy = {
+  ...KS,
+  partnership: {
+    title: "🤝 Become a KetuJemi VIP-Partner",
+    intro: "Partnering with KetuJemi is mutual cooperation — you help us, we make you famous.",
+    youGetTitle: "What you get:",
+    youGetItems: [
+      "Your logo on the ketujemi.com homepage — seen by thousands of visitors every day",
+      "Your listings and offers published daily on Instagram @jemi.ketu, Facebook KetuJemi.com and TikTok @ketujemi7",
+      "A dedicated profile with address, map and all your contact details",
+      "Ongoing promotion — people learn about your business every day",
+      "Growth in your followers and customers — free",
+    ],
+    weAskTitle: "What we ask from you:",
+    weAskItems: [
+      "Follow us on Instagram @jemi.ketu, Facebook KetuJemi.com and TikTok @ketujemi7",
+      "Mention us to your followers from time to time",
+    ],
+    promoTitle: "📢 How promotion works:",
+    promoText: "We publish and promote your listings every day on our social channels — but only if you have aktive Anzeigen on ketujemi.com. An empty page has nothing to promote — post your products and offers, we deliver them to the audience. The more you post → the more we promote you → the more customers and sales you get. 🚀",
+    coffeeTitle: "💡 A small but important detail:",
+    coffeeText: "Our cooperation is like coffee — it only works when both sides add sugar. 😄 We promote you every day to our followers — but you also need to follow us on our social channels. In short: follow us → we make you known. Don't follow us → we both lose. 🤝",
+    closing: "Fill in the form and we will contact you within 24 hours. 📩",
+  },
+  docTitle: "Shop eröffnen — KetuJemi.com",
+  heroTitle: "Open Your Digital Shop — Free",
+  heroSubtitle: "Create your digital shop on KetuJemi.com and reach thousands of buyers every day with no commissions and no hidden fees.",
+  howItWorksTitle: "How it works",
+  howItWorksSteps: [
+    {
+      emoji: "📝",
+      stepLabel: "Step 1",
+      title: "Registrieren",
+      description: "Create your free account on KetuJemi.com — just 1 minute",
+    },
+    {
+      emoji: "🏪",
+      stepLabel: "Step 2",
+      title: "Shop eröffnen",
+      description: "Fill in the shop form with your logo, address and social links. We approve within 24 hours.",
+    },
+    {
+      emoji: "📸",
+      stepLabel: "Step 3",
+      title: "Anzeige aufgebens",
+      description: "Upload photos of your products or services. Nein limits, no fees — always free.",
+    },
+    {
+      emoji: "🚀",
+      stepLabel: "Step 4",
+      title: "Teilen & sell",
+      description: "Teilen listings on Facebook, Instagram and TikTok with one click. Customers find you easily!",
+    },
+  ],
+  whyTitle: "WHY KETUJEMI?",
+  whyCards: [
+    {
+      emoji: "🆓",
+      title: "Completely free",
+      description: "Nein bank card, no hidden fees, no commissions",
+    },
+    {
+      emoji: "⚡",
+      title: "Active within 24 hours",
+      description: "Anwenden today, your shop is live tomorrow",
+    },
+    {
+      emoji: "📱",
+      title: "From your phone",
+      description: "Manage your shop anywhere, anytime",
+    },
+    {
+      emoji: "🔒",
+      title: "Secure",
+      description: "Registrierung and sign-in required to post",
+    },
+    {
+      emoji: "📸",
+      title: "Unlimited photos + video",
+      description: "Show your product from every angle",
+    },
+    {
+      emoji: "🌍",
+      title: "Reach worldwide",
+      description: "Kosovo, Albanien, Nordmazedonien, Montenegro and the diaspora",
+    },
+    {
+      emoji: "🔍",
+      title: "High visibility",
+      description: "Your shop appears in Google search",
+    },
+    {
+      emoji: "🏪",
+      title: "Dedicated page",
+      description: "Your shop has its own address on KetuJemi",
+    },
+    {
+      emoji: "📍",
+      title: "Google Maps",
+      description: "Customers find you easily",
+    },
+    {
+      emoji: "📊",
+      title: "Nein algorithm",
+      description: "Every listing is shown equally, no extra fees",
+    },
+  ],
+  faqTitle: "HÄUFIG GESTELLTE FRAGEN",
+  faq: [
+    {
+      q: "Is it really free?",
+      a: "Ja — posting is completely free and unlimited for everyone, with no bank card and no hidden fees.",
+    },
+    {
+      q: "Do I need a registered business?",
+      a: "Nein. Any private person can open a shop and post listings for free.",
+    },
+    {
+      q: "Are there any fees?",
+      a: "Veröffentlichung is free. The only paid option is Boost TOP — optional promotion to show your listing at the top of search results.",
+    },
+    {
+      q: "How many photos can I upload pro Anzeige?",
+      a: "You can upload unlimited photos and one video up to 150MB pro Anzeige.",
+    },
+    {
+      q: "Can I delete a listing whenever I want?",
+      a: "Ja, anytime from Profile → My listings.",
+    },
+    {
+      q: "How long does a listing stay active?",
+      a: "3 months (90 days) — then renews for free with one click.",
+    },
+    {
+      q: "Can people from different cities and markets see my shop?",
+      a: "Ja — your shop is visible to all KetuJemi visitors, no matter where they are. A buyer in Pristina can find your shop in Ferizaj, Tirana, Skopje or the Albanian diaspora in Deutschland, Schweiz, Italien and beyond. That means your products reach thousands of potential buyers every day — no advertising costs, no commissions, no geographic limits. The more listings you post → the more people find you → the more sales you make.",
+    },
+  ],
+  ctaButton: "🏪 Shop eröffnen for free →",
+};
+
 const FR: OpenShopPageCopy = {
   ...KS,
   partnership: {
@@ -772,6 +1054,8 @@ const OPEN_SHOP_PAGES: Record<UiTranslationLocale, OpenShopPageCopy> = {
   mne: MNE,
   en: EN,
   fr: FR,
+  it: IT,
+  de: DE,
 };
 
 export function openShopPageForLocale(locale: UiTranslationLocale): OpenShopPageCopy {

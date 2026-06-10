@@ -166,6 +166,48 @@ const EN: VipPackagesPageCopy = {
   ctaFinePrint: "No online payment — we will contact you after review.",
 };
 
+const IT: VipPackagesPageCopy = {
+  ...KS,
+  docTitle: "Pacchetti business — KetuJemi.com",
+  heroBadge: "PACCHETTI BUSINESS",
+  heroTitle: "Scegli il pacchetto adatto alla tua attività",
+  heroSubtitle: "Grow visibility, reach more customers, and manage your business professionally.",
+  packagesTitle: "PACKAGES — COMPARE",
+  standardCta: "Candidati come partner",
+  vipCta: "Candidati come partner VIP",
+  compareTitle: "FULL COMPARISON",
+  compareColFeature: "Feature",
+  compareColFree: "Free",
+  compareColStandard: "Partner",
+  compareColVip: "Partner VIP",
+  faqTitle: "DOMANDE FREQUENTI",
+  ctaTitle: "Pronto a far crescere la tua attività?",
+  ctaSubtitle: "Join our verified partners and reach thousands of customers every day.",
+  ctaButton: "Candidati come partner",
+  ctaFinePrint: "No online payment — we will contact you after review.",
+};
+
+const DE: VipPackagesPageCopy = {
+  ...KS,
+  docTitle: "Geschäftspakete — KetuJemi.com",
+  heroBadge: "GESCHÄFTSPAKETE",
+  heroTitle: "Wählen Sie das Paket, das zu Ihrem Geschäft passt",
+  heroSubtitle: "Grow visibility, reach more customers, and manage your business professionally.",
+  packagesTitle: "PACKAGES — COMPARE",
+  standardCta: "Als Partner bewerben",
+  vipCta: "Als VIP-Partner bewerben",
+  compareTitle: "FULL COMPARISON",
+  compareColFeature: "Feature",
+  compareColFree: "Free",
+  compareColStandard: "Partner",
+  compareColVip: "VIP-Partner",
+  faqTitle: "HÄUFIG GESTELLTE FRAGEN",
+  ctaTitle: "Bereit, Ihr Geschäft auszubauen?",
+  ctaSubtitle: "Join our verified partners and reach thousands of customers every day.",
+  ctaButton: "Als Partner bewerben",
+  ctaFinePrint: "Nein online payment — we will contact you after review.",
+};
+
 const FR: VipPackagesPageCopy = {
   ...KS,
   docTitle: "Forfaits entreprise — KetuJemi.com",
@@ -193,6 +235,8 @@ const VIP_PACKAGES_PAGES: Record<UiTranslationLocale, VipPackagesPageCopy> = {
   mne: MNE,
   en: EN,
   fr: FR,
+  it: IT,
+  de: DE,
 };
 
 export function vipPackagesPageForLocale(locale: UiTranslationLocale): VipPackagesPageCopy {

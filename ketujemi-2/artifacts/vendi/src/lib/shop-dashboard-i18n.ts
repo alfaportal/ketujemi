@@ -146,6 +146,64 @@ const EN: ShopDashboardCopy = {
   filterAll: "All",
 };
 
+const IT: ShopDashboardCopy = {
+  verifiedBadge: "✓ Negozio verificato",
+  myShop: "Il mio negozio",
+  statusApproved: "Approvato",
+  statusPending: "In attesa",
+  postListing: "Post Listing",
+  manageListings: "Gestisci annunci",
+  editShop: "Modifica negozio",
+  totalListings: "Annunci totali",
+  totalViews: "Visualizzazioni totali",
+  viewShop: "Vedi negozio →",
+  saveShop: "Salva",
+  shopSaved: "Negozio aggiornato.",
+  shopName: "Nome del negozio",
+  logo: "Logo",
+  description: "Descrizione",
+  address: "Indirizzo",
+  city: "Città",
+  region: "Quartiere",
+  facebook: "Facebook",
+  instagram: "Instagram",
+  tiktok: "TikTok",
+  whatsapp: "WhatsApp",
+  website: "Website",
+  noShopListings: "Nessun annuncio attivo dal tuo negozio.",
+  activeListingsCount: "{count} annunci attivi",
+  filterAll: "Tutto",
+};
+
+const DE: ShopDashboardCopy = {
+  verifiedBadge: "✓ Verifizierter Shop",
+  myShop: "Mein Shop",
+  statusApproved: "Genehmigt",
+  statusPending: "Ausstehend",
+  postListing: "Post Listing",
+  manageListings: "Anzeigen verwalten",
+  editShop: "Shop bearbeiten",
+  totalListings: "Anzeigen gesamt",
+  totalViews: "Aufrufe gesamt",
+  viewShop: "Shop ansehen →",
+  saveShop: "Speichern",
+  shopSaved: "Shop aktualisiert.",
+  shopName: "Shop-Name",
+  logo: "Logo",
+  description: "Beschreibung",
+  address: "Adresse",
+  city: "Stadt",
+  region: "Stadtteil",
+  facebook: "Facebook",
+  instagram: "Instagram",
+  tiktok: "TikTok",
+  whatsapp: "WhatsApp",
+  website: "Website",
+  noShopListings: "Keine aktiven Anzeigen aus Ihrem Shop.",
+  activeListingsCount: "{count} aktive Anzeigen",
+  filterAll: "Alle",
+};
+
 const FR: ShopDashboardCopy = {
   verifiedBadge: "✓ Boutique vérifiée",
   myShop: "Ma boutique",
@@ -181,6 +239,8 @@ const PAGES: Record<UiTranslationLocale, ShopDashboardCopy> = {
   mne: MNE,
   en: EN,
   fr: FR,
+  it: IT,
+  de: DE,
 };
 
 export function useShopDashboardCopy(): ShopDashboardCopy {

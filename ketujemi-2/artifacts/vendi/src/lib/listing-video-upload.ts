@@ -25,6 +25,10 @@ export function listingVideoLabel(uiLang: string): string {
       return "One video for your listing";
     case "fr":
       return "Une vidéo pour l'annonce";
+    case "de":
+      return "Ein Video für Ihre Anzeige";
+    case "it":
+      return "Un video per il tuo annuncio";
     default:
       return "Një video për shpallje";
   }
@@ -41,6 +45,10 @@ export function listingVideoFormatsHint(uiLang: string): string {
       return `(MP4, MOV, AVI • Full HD • auto-optimized up to ${mb} MB)`;
     case "fr":
       return `(MP4, MOV, AVI • Full HD • optimisé automatiquement jusqu'à ${mb} Mo)`;
+    case "de":
+      return `(MP4, MOV, AVI • Full HD • automatisch optimiert bis ${mb} MB)`;
+    case "it":
+      return `(MP4, MOV, AVI • Full HD • ottimizzato automaticamente fino a ${mb} MB)`;
     default:
       return `(MP4, MOV, AVI • Full HD • optimizohet automatikisht deri në ${mb} MB)`;
   }
@@ -56,6 +64,10 @@ export function listingVideoAddLabel(uiLang: string): string {
       return "Add video";
     case "fr":
       return "Ajouter une vidéo";
+    case "de":
+      return "Video hinzufügen";
+    case "it":
+      return "Aggiungi video";
     default:
       return "Shto video";
   }
@@ -71,6 +83,10 @@ export function listingVideoRemoveLabel(uiLang: string): string {
       return "Remove video";
     case "fr":
       return "Supprimer la vidéo";
+    case "de":
+      return "Video entfernen";
+    case "it":
+      return "Rimuovi video";
     default:
       return "Hiq videon";
   }
@@ -114,6 +130,16 @@ export function listingVideoErrorMessage(
           title: "Format non valide",
           description: "Choisissez une vidéo (MP4, MOV, AVI ou depuis l'appareil photo/galerie).",
         };
+      case "de":
+        return {
+          title: "Ungültiges Format",
+          description: "Wählen Sie ein Video (MP4, MOV, AVI oder von Kamera/Galerie).",
+        };
+      case "it":
+        return {
+          title: "Formato non valido",
+          description: "Scegli un video (MP4, MOV, AVI o da fotocamera/galleria).",
+        };
       default:
         return {
           title: "Format i pavlefshëm",
@@ -147,6 +173,16 @@ export function listingVideoErrorMessage(
         return {
           title: "Impossible de lire la vidéo",
           description: `Essayez une vidéo MP4 plus courte sous ${mb} Mo.`,
+        };
+      case "de":
+        return {
+          title: "Video konnte nicht gelesen werden",
+          description: `Versuchen Sie ein kürzeres MP4-Video unter ${mb} MB.`,
+        };
+      case "it":
+        return {
+          title: "Impossibile leggere il video",
+          description: `Prova un video MP4 più corto sotto ${mb} MB.`,
         };
       default:
         return {

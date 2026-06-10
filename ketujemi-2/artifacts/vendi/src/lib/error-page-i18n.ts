@@ -32,6 +32,16 @@ export const ERROR_PAGE_COPY: Record<UiLang, ErrorPageCopy> = {
     hint: "Essayez d'actualiser la page. Si le problème persiste, videz le cache du navigateur pour ketujemi.com.",
     refresh: "Actualiser",
   },
+  de: {
+    title: "Seite konnte nicht geladen werden",
+    hint: "Versuchen Sie, die Seite zu aktualisieren. Wenn das Problem weiterhin besteht, leeren Sie den Browser-Cache für ketujemi.com.",
+    refresh: "Aktualisieren",
+  },
+  it: {
+    title: "Impossibile caricare la pagina",
+    hint: "Prova ad aggiornare la pagina. Se il problema persiste, svuota la cache del browser per ketujemi.com.",
+    refresh: "Aggiorna",
+  },
 };
 
 export function errorPageCopyForStoredLang(): ErrorPageCopy {

@@ -6,9 +6,11 @@ import { translateArsimKurseCategory } from "./arsim-kurse-category-translations
 import { translateFemijeCategory } from "./femije-category-translations";
 import { CAT_EN_GENERATED } from "./category-translations-en.generated";
 import { CAT_FR_GENERATED } from "./category-translations-fr.generated";
+import { CAT_DE_GENERATED } from "./category-translations-de.generated";
+import { CAT_IT_GENERATED } from "./category-translations-it.generated";
 
 export type MarketCode = "ks" | "al" | "mk" | "mne";
-export type UiCategoryLocale = MarketCode | "en" | "fr";
+export type UiCategoryLocale = MarketCode | "en" | "fr" | "de" | "it";
 
 export const CAT_TRANSLATIONS: Record<string, Record<MarketCode, string>> = {
   "Vetura":               { ks: "Vetura",               al: "Vetura",               mk: "Автомобили",                      mne: "Automobili" },
@@ -226,6 +228,24 @@ export function translateCategory(name: string, localeCode: UiCategoryLocale): s
       CAT_FR_GENERATED[name] ??
       translateArsimKurseCategory(name, "fr") ??
       translateFemijeCategory(name, "fr") ??
+      CAT_EN_GENERATED[name] ??
+      name
+    );
+  }
+  if (localeCode === "de") {
+    return (
+      CAT_DE_GENERATED[name] ??
+      translateArsimKurseCategory(name, "de") ??
+      translateFemijeCategory(name, "de") ??
+      CAT_EN_GENERATED[name] ??
+      name
+    );
+  }
+  if (localeCode === "it") {
+    return (
+      CAT_IT_GENERATED[name] ??
+      translateArsimKurseCategory(name, "it") ??
+      translateFemijeCategory(name, "it") ??
       CAT_EN_GENERATED[name] ??
       name
     );

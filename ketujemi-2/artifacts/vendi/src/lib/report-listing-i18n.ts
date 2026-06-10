@@ -119,6 +119,56 @@ const EN: ReportListingCopy = {
   ],
 };
 
+const IT: ReportListingCopy = {
+  trigger: "Report",
+  title: "Report listing",
+  description: "Tell us the problem. Our team reviews reports within 24 hours.",
+  reasonLabel: "Reason",
+  reasonPlaceholder: "Choose…",
+  detailLabel: "Dettagli (optional)",
+  detailPlaceholder: "Descrivi il problema…",
+  nameLabel: "Your name (optional)",
+  cancel: "Annulla",
+  submit: "Send report",
+  submitting: "Sending…",
+  success: "Report submitted.",
+  error: "Error",
+  minLength: "Enter a reason (min. 10 characters)",
+  reasons: [
+    "Scam / fake",
+    "Counterfeit product",
+    "Inappropriate content",
+    "Spam / advertising",
+    "False information",
+    "Other",
+  ],
+};
+
+const DE: ReportListingCopy = {
+  trigger: "Report",
+  title: "Report listing",
+  description: "Tell us the problem. Our team reviews reports within 24 hours.",
+  reasonLabel: "Reason",
+  reasonPlaceholder: "Choose…",
+  detailLabel: "Details (optional)",
+  detailPlaceholder: "Beschreiben Sie das Problem…",
+  nameLabel: "Your name (optional)",
+  cancel: "Abbrechen",
+  submit: "Send report",
+  submitting: "Sending…",
+  success: "Report submitted.",
+  error: "Error",
+  minLength: "Enter a reason (min. 10 characters)",
+  reasons: [
+    "Scam / fake",
+    "Counterfeit product",
+    "Inappropriate content",
+    "Spam / advertising",
+    "False information",
+    "Other",
+  ],
+};
+
 const FR: ReportListingCopy = {
   trigger: "Signaler",
   title: "Signaler l'annonce",
@@ -150,6 +200,8 @@ const PAGES: Record<UiTranslationLocale, ReportListingCopy> = {
   mne: MNE,
   en: EN,
   fr: FR,
+  it: IT,
+  de: DE,
 };
 
 export function reportListingForLocale(locale: UiTranslationLocale): ReportListingCopy {

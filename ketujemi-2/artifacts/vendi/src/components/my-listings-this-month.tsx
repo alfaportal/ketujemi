@@ -45,7 +45,11 @@ export function MyListingsThisMonth() {
           ? "en-GB"
           : uiLang === "fr"
             ? "fr-FR"
-            : "sq-AL";
+            : uiLang === "de"
+              ? "de-DE"
+              : uiLang === "it"
+                ? "it-IT"
+                : "sq-AL";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

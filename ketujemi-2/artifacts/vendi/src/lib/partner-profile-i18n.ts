@@ -56,6 +56,28 @@ const EN: PartnerProfileCopy = {
   mapTitle: "Map",
 };
 
+const IT: PartnerProfileCopy = {
+  back: "Indietro",
+  notFoundTitle: "Partner non trovato",
+  notFoundSub: "Questo profilo non è disponibile.",
+  standardBadge: "Partner",
+  vipBadge: "Partner VIP",
+  locationTitle: "Posizione",
+  contactTitle: "Contatto e social",
+  mapTitle: "Mappa",
+};
+
+const DE: PartnerProfileCopy = {
+  back: "Zurück",
+  notFoundTitle: "Partner nicht gefunden",
+  notFoundSub: "Dieses Profil ist nicht verfügbar.",
+  standardBadge: "Partner",
+  vipBadge: "VIP-Partner",
+  locationTitle: "Standort",
+  contactTitle: "Kontakt & soziale Medien",
+  mapTitle: "Karte",
+};
+
 const FR: PartnerProfileCopy = {
   back: "Retour",
   notFoundTitle: "Partenaire introuvable",
@@ -73,6 +95,8 @@ const PAGES: Record<UiTranslationLocale, PartnerProfileCopy> = {
   mne: MNE,
   en: EN,
   fr: FR,
+  it: IT,
+  de: DE,
 };
 
 export function usePartnerProfileCopy(): PartnerProfileCopy {

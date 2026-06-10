@@ -51,6 +51,26 @@ const EN: BusinessProfileCopy = {
   noActiveListings: "This business has no active listings at the moment.",
 };
 
+const IT: BusinessProfileCopy = {
+  refresh: "Aggiorna",
+  notFound: "Business not found.",
+  viewAllListings: "Vedi tutto listings",
+  activeListingOne: "active listing",
+  activeListingMany: "annunci attivi",
+  activeListingsHeading: "Active listings",
+  noActiveListings: "This business has no annunci attivi at the moment.",
+};
+
+const DE: BusinessProfileCopy = {
+  refresh: "Aktualisieren",
+  notFound: "Business not found.",
+  viewAllListings: "Alle anzeigen listings",
+  activeListingOne: "active listing",
+  activeListingMany: "aktive Anzeigen",
+  activeListingsHeading: "Active listings",
+  noActiveListings: "This business has no aktive Anzeigen at the moment.",
+};
+
 const FR: BusinessProfileCopy = {
   refresh: "Actualiser",
   notFound: "Entreprise introuvable.",
@@ -67,6 +87,8 @@ const PAGES: Record<UiTranslationLocale, BusinessProfileCopy> = {
   mne: MNE,
   en: EN,
   fr: FR,
+  it: IT,
+  de: DE,
 };
 
 export function useBusinessProfileCopy(): BusinessProfileCopy {
