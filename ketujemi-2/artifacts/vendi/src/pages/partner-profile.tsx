@@ -242,7 +242,7 @@ export default function PartnerProfilePage() {
 
             <div className="px-5 sm:px-8 py-8 text-center">
               {profile.logo_url ? (
-                <div className="mx-auto mb-6 h-36 w-48 sm:h-44 sm:w-60 rounded-2xl border border-gray-100 bg-white shadow-md overflow-hidden flex items-center justify-center p-2">
+                <div className="mx-auto mb-6 h-32 w-32 sm:h-40 sm:w-40 rounded-2xl border border-gray-100 bg-white shadow-md overflow-hidden flex items-center justify-center p-3">
                   <img
                     src={profile.logo_url}
                     alt={profile.business_name}

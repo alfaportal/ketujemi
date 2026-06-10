@@ -43,14 +43,40 @@ function partnerHref(partner: PartnerSlotData): string {
   return `/partners/${partner.id}`;
 }
 
-/** Logo i plotë brenda zonës së bardhë — pa prerje, sa më i madh që lejon korniza. */
-function PartnerLogoImage({ src, alt }: { src: string; alt: string }) {
+/** Vetëm logot horizontale (p.sh. Mobileria Rinia) — contain; të tjerët mbulojnë kornizën si më parë. */
+function partnerLogoUsesContain(businessName: string): boolean {
+  return /mobileria\s+rinia/i.test(businessName.trim());
+}
+
+function PartnerLogoImage({
+  src,
+  alt,
+  businessName,
+}: {
+  src: string;
+  alt: string;
+  businessName: string;
+}) {
+  if (partnerLogoUsesContain(businessName)) {
+    return (
+      <div className="relative min-h-0 w-full flex-1 overflow-hidden bg-white flex items-center justify-center">
+        <img
+          src={src}
+          alt={alt}
+          className="max-h-full max-w-full object-contain"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="relative min-h-0 w-full flex-1 overflow-hidden bg-white flex items-center justify-center">
+    <div className="relative min-h-0 w-full flex-1 overflow-hidden bg-white">
       <img
         src={src}
         alt={alt}
-        className="max-h-[98%] max-w-[98%] object-contain"
+        className="absolute inset-0 h-full w-full object-cover object-center"
         loading="lazy"
         decoding="async"
       />
@@ -151,7 +177,7 @@ export function PartnerSlot({ partner, frameClass, variant = "grid" }: PartnerSl
     <div className="grid h-full w-full min-h-0 grid-rows-[minmax(0,1fr)_auto]">
       <PartnerBadge tier={partner.tier} />
       {img ? (
-        <PartnerLogoImage src={img} alt={partner.business_name} />
+        <PartnerLogoImage src={img} alt={partner.business_name} businessName={partner.business_name} />
       ) : (
         <div
           className={cn(
