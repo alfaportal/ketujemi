@@ -140,6 +140,7 @@ export default function ListingDetail() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { t, market, uiLang } = useMarket();
+  const tx = t as Record<string, string>;
   const { user } = useAuth();
 
   const { data: listing, isLoading } = useGetListing(id, {
@@ -178,19 +179,19 @@ export default function ListingDetail() {
     };
     if (sessionId?.startsWith("cs_")) {
       void import("@/lib/stripe-checkout")
-        .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId))
+        .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId, uiLang))
         .then(() => {
           void queryClient.invalidateQueries({ queryKey: getGetListingQueryKey(id) });
           notifyTopListingsRefresh(id);
           toast({
-            title: "TOP u aktivizua!",
-            description: "Njoftimi juaj shfaqet në karuselin TOP në kryefaqe.",
+            title: tx.ui_topActivatedTitle,
+            description: tx.ui_topActivatedDesc,
           });
         })
         .catch(() => {
           toast({
-            title: "Pagesa TOP në proces",
-            description: "Rifreskoni faqen pas pak sekondash.",
+            title: tx.ui_topPaymentPendingTitle,
+            description: tx.ui_topPaymentPendingDesc,
           });
         })
         .finally(finish);
@@ -198,8 +199,8 @@ export default function ListingDetail() {
     }
     finish();
     notifyTopListingsRefresh(id);
-    toast({ title: "Faleminderit! TOP do të shfaqet së shpejti." });
-  }, [user, id, queryClient, toast]);
+    toast({ title: tx.ui_topThanksSoon });
+  }, [user, id, queryClient, toast, t, uiLang]);
 
   const [listingShareUrl, setListingShareUrl] = useState("");
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -282,12 +283,12 @@ export default function ListingDetail() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         toast({
-          title: (data as { message?: string }).message ?? "Gabim",
+          title: (data as { message?: string }).message ?? tx.ui_genericError,
           variant: "destructive",
         });
         return;
       }
-      toast({ title: (data as { message?: string }).message ?? "Njoftimi u rifillua!" });
+      toast({ title: (data as { message?: string }).message ?? tx.ui_repostSuccess });
       queryClient.invalidateQueries({ queryKey: getGetListingQueryKey(listing.id) });
       void queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
     } finally {
@@ -308,7 +309,7 @@ export default function ListingDetail() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         toast({
-          title: (data as { message?: string }).message ?? (data as { error?: string }).error ?? "Gabim",
+          title: (data as { message?: string }).message ?? (data as { error?: string }).error ?? tx.ui_genericError,
           variant: "destructive",
         });
         return;

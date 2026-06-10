@@ -653,6 +653,7 @@ export default function CategoryPage() {
   const goToPostListing = useGoToPostListing();
   const goToKerkojPost = useGoToKerkojPostListing();
   const { t, market, uiLang } = useMarket();
+  const tx = t as Record<string, string>;
   const locale = translationKeyForUiLang(uiLang);
   const segment = routeParams?.id ?? "";
   const resultsAnchorRef = useRef<HTMLDivElement | null>(null);
@@ -710,42 +711,14 @@ export default function CategoryPage() {
         post: t.kerkojEmptyPost,
       };
     }
-    const subLong = (t as { ui_emptyListingsSubLong?: string }).ui_emptyListingsSubLong;
-    if (uiLang === "en" && subLong) {
-      return { title: t.noListingsYet, sub: subLong, trust: t.postFromAnywhere, post: t.post };
-    }
-    switch (market.code) {
-      case "ks":
-      case "al":
-        return {
-          title: t.noListingsYet,
-          sub: subLong ?? "Bëhu i pari që posto në këtë kategori dhe arrij mijëra blerës potencialë!",
-          trust: t.postFromAnywhere,
-          post: t.post,
-        };
-      case "mk":
-        return {
-          title: t.noListingsYet,
-          sub: "Биди прв кој ќе огласи во оваа категорија и достигни илјадници потенцијални купувачи!",
-          trust: t.postFromAnywhere,
-          post: t.post,
-        };
-      case "mne":
-        return {
-          title: t.noListingsYet,
-          sub: "Budi prvi koji objavljuje u ovoj kategoriji i dođi do hiljada potencijalnih kupaca!",
-          trust: t.postFromAnywhere,
-          post: t.post,
-        };
-      default:
-        return {
-          title: t.noListingsYet,
-          sub: t.beFirst,
-          trust: t.postFromAnywhere,
-          post: t.post,
-        };
-    }
-  }, [isInKerkojTeBlejTree, market.code, uiLang, t]);
+    const subLong = tx.ui_emptyListingsSubLong;
+    return {
+      title: t.noListingsYet,
+      sub: subLong,
+      trust: t.postFromAnywhere,
+      post: t.post,
+    };
+  }, [isInKerkojTeBlejTree, t]);
   const children =
     allCategories?.filter((c: any) => Number(c.parent_id) === Number(categoryId)) ?? [];
 

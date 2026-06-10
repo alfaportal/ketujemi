@@ -23,19 +23,22 @@ function formatDate(isoString: string): string {
   return `${day}.${month}.${year} · ${hours}:${mins}`;
 }
 
+import { fillPlaceholders } from "@/lib/app-extra-i18n";
+
 // ─── Expiry countdown ─────────────────────────────────────────────────────────
-function getDaysLeft(expiresAt: string | null | undefined, marketCode: string): { text: string; urgent: boolean } | null {
+function getDaysLeft(
+  expiresAt: string | null | undefined,
+  tx: Record<string, string>,
+): { text: string; urgent: boolean } | null {
   if (!expiresAt) return null;
   const days = Math.ceil((new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   if (days <= 0) return null;
   const urgent = days <= 3;
-  const labels: Record<string, string> = {
-    ks:  days === 1 ? "Skadon nesër" : `Skadon për ${days} ditë`,
-    al:  days === 1 ? "Skadon nesër" : `Skadon për ${days} ditë`,
-    mk:  days === 1 ? "Истекува утре" : `Истекува за ${days} дена`,
-    mne: days === 1 ? "Ističe sutra"  : `Ističe za ${days} dana`,
-  };
-  return { text: labels[marketCode] ?? `${days}d`, urgent };
+  const text =
+    days === 1
+      ? tx.ui_listingExpiresTomorrow
+      : fillPlaceholders(tx.ui_listingExpiresInDays, { days });
+  return { text, urgent };
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -154,6 +157,7 @@ function DhurataGiftListingCard({ listing }: ListingCardProps) {
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function ListingCard({ listing }: ListingCardProps) {
   const { market, rates, t, uiLang } = useMarket();
+  const tx = t as Record<string, string>;
   const shopCopy = useShopDashboardCopy();
   const [, navigate] = useLocation();
   const isDhurata =
@@ -165,7 +169,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
   }
 
   const isToday = new Date(listing.created_at).toDateString() === new Date().toDateString();
-  const daysLeft = getDaysLeft(listing.expires_at, market.code);
+  const daysLeft = getDaysLeft(listing.expires_at, tx);
   const catName = translateCategory(listing.category_name ?? "", translationKeyForUiLang(uiLang));
   const isVipSeller = !!listing.is_vip_seller;
   const isShopVerified = !!listing.shop_verified && !!listing.shop_id;

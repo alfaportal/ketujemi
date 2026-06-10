@@ -40,7 +40,7 @@ function StatusBadge({ posted, label }: { posted: boolean; label: string }) {
 }
 
 function formatAdminPrice(price: number, t: Record<string, string>): string {
-  if (!Number.isFinite(price) || price <= 0) return t.adm_social_price_agreement ?? "Me marrëveshje";
+  if (!Number.isFinite(price) || price <= 0) return t.adm_social_price_agreement;
   return `${price}€`;
 }
 

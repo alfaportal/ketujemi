@@ -39,7 +39,7 @@ export function HubTypePicker<T extends string>({
             {t[config.titleI18nKey] ?? config.titleI18nKey}
           </h2>
           <p className="text-sm text-gray-500 mt-1">
-            {t[config.hintI18nKey] ?? "Zgjidh kategorinë — hapet faqe e re."}
+            {t[config.hintI18nKey]}
           </p>
         </div>
         <CategoryPhotoPickerGrid>

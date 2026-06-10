@@ -16,15 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
-
-const REASONS = [
-  "Mashtrim / fake",
-  "Produkt i falsifikuar",
-  "Përmbajtje e papërshtatshme",
-  "Spam / reklamë",
-  "Informacion i rremë",
-  "Tjetër",
-] as const;
+import { useReportListingCopy } from "@/lib/report-listing-i18n";
 
 type Props = {
   listingId: number;
@@ -32,6 +24,7 @@ type Props = {
 };
 
 export function ReportListingDialog({ listingId, className }: Props) {
+  const c = useReportListingCopy();
   const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -44,7 +37,7 @@ export function ReportListingDialog({ listingId, className }: Props) {
     const text = [reason, detail.trim()].filter(Boolean).join(" — ");
     if (text.length < 10) {
       toast({
-        title: "Shkruani arsyen (min. 10 karaktere)",
+        title: c.minLength,
         variant: "destructive",
       });
       return;
@@ -63,13 +56,13 @@ export function ReportListingDialog({ listingId, className }: Props) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         toast({
-          title: (data as { message?: string }).message ?? (data as { error?: string }).error ?? "Gabim",
+          title: (data as { message?: string }).message ?? (data as { error?: string }).error ?? c.error,
           variant: "destructive",
         });
         return;
       }
       toast({
-        title: (data as { message?: string }).message ?? "Raportimi u dërgua.",
+        title: (data as { message?: string }).message ?? c.success,
       });
       setOpen(false);
       setReason("");
@@ -89,26 +82,24 @@ export function ReportListingDialog({ listingId, className }: Props) {
           data-testid="button-report-listing"
         >
           <Flag className="h-4 w-4 mr-2" aria-hidden />
-          Raporto
+          {c.trigger}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Raporto shpalljen</DialogTitle>
-          <DialogDescription>
-            Na tregoni problemin. Ekipi shqyrton raportimet brenda 24 orëve.
-          </DialogDescription>
+          <DialogTitle>{c.title}</DialogTitle>
+          <DialogDescription>{c.description}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Arsyeja</Label>
+            <Label>{c.reasonLabel}</Label>
             <select
               className="w-full min-h-12 rounded-xl border border-gray-200 px-3 text-sm"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
             >
-              <option value="">Zgjidhni…</option>
-              {REASONS.map((r) => (
+              <option value="">{c.reasonPlaceholder}</option>
+              {c.reasons.map((r) => (
                 <option key={r} value={r}>
                   {r}
                 </option>
@@ -116,28 +107,28 @@ export function ReportListingDialog({ listingId, className }: Props) {
             </select>
           </div>
           <div className="space-y-2">
-            <Label>Detaje (opsionale)</Label>
+            <Label>{c.detailLabel}</Label>
             <Textarea
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
               rows={3}
-              placeholder="Përshkruani problemin…"
+              placeholder={c.detailPlaceholder}
               className="text-[16px]"
             />
           </div>
           {!user ? (
             <div className="space-y-2">
-              <Label>Emri juaj (opsional)</Label>
+              <Label>{c.nameLabel}</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} className="min-h-12" />
             </div>
           ) : null}
         </div>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-            Anulo
+            {c.cancel}
           </Button>
           <Button type="button" onClick={() => void submit()} disabled={busy}>
-            {busy ? "Duke dërguar…" : "Dërgo raportin"}
+            {busy ? c.submitting : c.submit}
           </Button>
         </DialogFooter>
       </DialogContent>

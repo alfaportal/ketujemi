@@ -54,7 +54,7 @@ function syncFormFromUser(
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
   const { user, loading, refresh } = useAuth();
-  const { t } = useMarket();
+  const { t, uiLang } = useMarket();
   const { toast } = useToast();
 
   const [displayName, setDisplayName] = useState("");
@@ -115,7 +115,7 @@ export default function ProfilePage() {
 
     if (sessionId?.startsWith("cs_")) {
       void import("@/lib/stripe-checkout")
-        .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId))
+        .then(({ confirmStripeCheckoutSession }) => confirmStripeCheckoutSession(sessionId, uiLang))
         .then(async () => {
           await refresh();
           toast({ title: t.profile_payment_confirmed });

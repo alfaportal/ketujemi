@@ -274,7 +274,7 @@ export default function Listings() {
             )}
             {selectedCategory && (
               <span className="flex items-center gap-1.5 bg-purple-50 text-purple-700 text-sm font-semibold px-3 py-1.5 rounded-full border border-purple-200">
-                {selectedCategory.name}
+                {translateCategory(selectedCategory.name, locale)}
                 <X size={12} className="cursor-pointer hover:text-purple-900" onClick={() => { setCategoryId(""); setAppliedCategory(""); setPage(1); }} />
               </span>
             )}

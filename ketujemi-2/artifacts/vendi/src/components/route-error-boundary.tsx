@@ -1,5 +1,6 @@
 import { Component, type ComponentType, type ErrorInfo, type ReactNode } from "react";
-import { DEFAULT_UI_LANG, isUiLang, type UiLang } from "@/lib/ui-languages";
+import { EXTRA_TRANSLATIONS } from "@/lib/app-extra-i18n";
+import { DEFAULT_UI_LANG, isUiLang, translationKeyForUiLang } from "@/lib/ui-languages";
 
 type Props = { children: ReactNode };
 type State = { error: Error | null };
@@ -8,34 +9,6 @@ type SectionErrorCopy = {
   title: string;
   hint: string;
   refresh: string;
-};
-
-const SECTION_ERROR_COPY: Record<UiLang, SectionErrorCopy> = {
-  sq: {
-    title: "Diçka shkoi keq",
-    hint: "Rifresko faqen.",
-    refresh: "Rifresko",
-  },
-  mk: {
-    title: "Нешто тргна наопаку",
-    hint: "Освежете ја страницата.",
-    refresh: "Освежи",
-  },
-  mne: {
-    title: "Nešto je pošlo po zlu",
-    hint: "Osvježite stranicu.",
-    refresh: "Osvježi",
-  },
-  en: {
-    title: "Something went wrong",
-    hint: "Refresh the page.",
-    refresh: "Refresh",
-  },
-  fr: {
-    title: "Une erreur s'est produite",
-    hint: "Actualisez la page.",
-    refresh: "Actualiser",
-  },
 };
 
 const AUTO_RECOVER_KEY = "vendi_route_error_autorecover_path";
@@ -73,14 +46,21 @@ function clearAutoRecoveryAttempt(): void {
 }
 
 function sectionErrorCopyForStoredLang(): SectionErrorCopy {
-  if (typeof window === "undefined") return SECTION_ERROR_COPY[DEFAULT_UI_LANG];
-  try {
-    const saved = localStorage.getItem("vendi_ui_lang");
-    if (saved && isUiLang(saved)) return SECTION_ERROR_COPY[saved];
-  } catch {
-    /* ignore */
+  let uiLang = DEFAULT_UI_LANG;
+  if (typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem("vendi_ui_lang");
+      if (saved && isUiLang(saved)) uiLang = saved;
+    } catch {
+      /* ignore */
+    }
   }
-  return SECTION_ERROR_COPY[DEFAULT_UI_LANG];
+  const bundle = EXTRA_TRANSLATIONS[translationKeyForUiLang(uiLang)];
+  return {
+    title: bundle.ui_routeErrorTitle,
+    hint: bundle.ui_routeErrorHint,
+    refresh: bundle.ui_routeErrorRefresh,
+  };
 }
 
 /** Scoped fallback for category, search, and listing detail routes. */

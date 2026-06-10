@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { TOP_PACKAGES_PUBLIC, type TopListingPurpose } from "@/lib/top-packages";
 import { redirectToStripeCheckout } from "@/lib/stripe-checkout";
 import { useToast } from "@/hooks/use-toast";
+import { useMarket } from "@/lib/market-context";
 
 export function TopListingPackages({
   listingId,
@@ -19,6 +20,8 @@ export function TopListingPackages({
   paymentsReady?: boolean;
 }) {
   const { toast } = useToast();
+  const { t, uiLang } = useMarket();
+  const tx = t as Record<string, string>;
   const [busyPurpose, setBusyPurpose] = useState<TopListingPurpose | null>(null);
 
   const blocked = disabled || !phase2Enabled || !paymentsReady;
@@ -27,10 +30,10 @@ export function TopListingPackages({
     if (blocked) return;
     setBusyPurpose(purpose);
     try {
-      await redirectToStripeCheckout({ purpose, listing_id: listingId });
+      await redirectToStripeCheckout({ purpose, listing_id: listingId }, uiLang);
     } catch (e) {
       toast({
-        title: e instanceof Error ? e.message : "Pagesa TOP dështoi",
+        title: e instanceof Error ? e.message : tx.ui_topPaymentFailed,
         variant: "destructive",
       });
       setBusyPurpose(null);

@@ -26,7 +26,7 @@ const GREEN_TOAST_CLASS = "border-green-200 bg-green-50 text-green-900";
 export function ListingSocialPostedShare({ url, fbPosted, igPosted, title }: Props) {
   const { t } = useMarket();
   const { toast } = useToast();
-  const tx = t as Record<string, string | undefined>;
+  const tx = t as Record<string, string>;
   const [igDialogOpen, setIgDialogOpen] = useState(false);
 
   const copyToClipboard = useCallback(async () => {
@@ -64,9 +64,7 @@ export function ListingSocialPostedShare({ url, fbPosted, igPosted, title }: Pro
     void copyToClipboard().then((ok) => {
       if (ok) {
         toast({
-          title:
-            tx.share_socialPostedIgCopied
-            ?? "✓ Linku u kopjua! Hape Instagram dhe shpërndaje te historia ose postimi yt.",
+          title: tx.share_socialPostedIgCopied,
           className: GREEN_TOAST_CLASS,
         });
       }
@@ -75,19 +73,14 @@ export function ListingSocialPostedShare({ url, fbPosted, igPosted, title }: Pro
 
   if (!url || (!fbPosted && !igPosted)) return null;
 
-  const sectionTitle =
-    tx.share_socialPostedTitle ?? "Shpallja u publikua në rrjetet sociale";
-  const sectionHint =
-    tx.share_socialPostedHint
-    ?? "Shpërndaje përsëri te miqtë e tu — çdo ndarje sjell më shumë shikues te shpallja.";
-  const facebookLabel = tx.share_facebook ?? "Facebook";
-  const instagramLabel = tx.share_instagram ?? "Instagram";
-  const igDialogTitle = tx.share_socialPostedIgDialogTitle ?? "Shpërndaje në Instagram";
-  const igDialogBody =
-    tx.share_socialPostedIgDialogBody
-    ?? "Kopjo linkun e shpalljes dhe ngjite te historia, reels ose postimi yt në Instagram.";
-  const copyLinkLabel = tx.share_copyLink ?? "Kopjo linkun";
-  const openInstagramLabel = tx.share_socialPostedOpenInstagram ?? "Hape Instagram";
+  const sectionTitle = tx.share_socialPostedTitle;
+  const sectionHint = tx.share_socialPostedHint;
+  const facebookLabel = tx.share_facebook;
+  const instagramLabel = tx.share_instagram;
+  const igDialogTitle = tx.share_socialPostedIgDialogTitle;
+  const igDialogBody = tx.share_socialPostedIgDialogBody;
+  const copyLinkLabel = tx.share_copyLink;
+  const openInstagramLabel = tx.share_socialPostedOpenInstagram;
 
   const btnClass =
     "inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-colors touch-manipulation shadow-sm";

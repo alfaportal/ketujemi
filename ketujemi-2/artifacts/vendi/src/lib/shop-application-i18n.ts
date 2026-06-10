@@ -31,6 +31,10 @@ export type OpenShopFormCopy = {
   logo: string;
   description: string;
   category: string;
+  directoryCategory: string;
+  directorySubcategory: string;
+  adminNotesLabel: string;
+  adminNotesPlaceholder: string;
   section2Title: string;
   country: string;
   city: string;
@@ -57,6 +61,9 @@ export type OpenShopFormCopy = {
   successMsg: string;
   loginRequired: string;
   uploadingLogo: string;
+  logoUploadFailed: string;
+  submitError: string;
+  submitNetworkError: string;
   aiHelpBtn: string;
   aiBusinessTypePrompt: string;
   aiBusinessTypePlaceholder: string;
@@ -160,6 +167,10 @@ const KS: OpenShopFormCopy = {
   logo: "Logo",
   description: "Përshkrimi i biznesit",
   category: "Kategoria kryesore",
+  directoryCategory: "Kategoria e direktorisë",
+  directorySubcategory: "Nënkategoria",
+  adminNotesLabel: "Shënime të brendshme (admin)",
+  adminNotesPlaceholder: "Shënime vetëm për ekipin e moderimit…",
   section2Title: "Lokacioni",
   country: "Shteti",
   city: "Qyteti",
@@ -187,6 +198,9 @@ const KS: OpenShopFormCopy = {
   successMsg: "✅ Kërkesa juaj u dërgua! Do të kontaktoheni brenda 24 orëve.",
   loginRequired: "Për të dërguar kërkesën, duhet të jeni i regjistruar dhe i kyçur në llogarinë tuaj.",
   uploadingLogo: "Duke ngarkuar logon...",
+  logoUploadFailed: "Ngarkimi i logos dështoi.",
+  submitError: "Gabim.",
+  submitNetworkError: "Gabim gjatë dërgimit.",
   aiHelpBtn: "✨ Ndihmë nga sistemi jonë",
   aiBusinessTypePrompt:
     "Çfarë lloj biznesi keni? (p.sh. dyqan rrobash, agjenci patundshmërie, servis makine...)",
@@ -221,6 +235,10 @@ const MK: OpenShopFormCopy = {
   logo: "Лого",
   description: "Опис на бизнисот",
   category: "Главна категорија",
+  directoryCategory: "Категорија во директориумот",
+  directorySubcategory: "Поткатегорија",
+  adminNotesLabel: "Внатрешни белешки (админ)",
+  adminNotesPlaceholder: "Белешки само за тимот за модерација…",
   section2Title: "Локација",
   country: "Држава",
   city: "Град",
@@ -248,6 +266,9 @@ const MK: OpenShopFormCopy = {
   successMsg: "✅ Вашето барање е испратено! Ќе бидете контактирани во рок од 24 часа.",
   loginRequired: "За да го испратите барањето, мора да сте регистрирани и најавени.",
   uploadingLogo: "Се прикачува логото...",
+  logoUploadFailed: "Прикачувањето на логото не успеа.",
+  submitError: "Грешка.",
+  submitNetworkError: "Грешка при испраќање.",
   aiHelpBtn: "✨ Помош од нашиот систем",
   aiBusinessTypePrompt:
     "Каков вид на бизнис имате? (на пр. продавница за облека, агенција за недвижности, сервис за автомобили...)",
@@ -281,6 +302,10 @@ const MNE: OpenShopFormCopy = {
   logo: "Logo",
   description: "Opis poslovanja",
   category: "Glavna kategorija",
+  directoryCategory: "Kategorija u direktoriju",
+  directorySubcategory: "Potkategorija",
+  adminNotesLabel: "Interne bilješke (admin)",
+  adminNotesPlaceholder: "Bilješke samo za moderatorski tim…",
   section2Title: "Lokacija",
   country: "Država",
   city: "Grad",
@@ -308,6 +333,9 @@ const MNE: OpenShopFormCopy = {
   successMsg: "✅ Vaš zahtjev je poslan! Bićete kontaktirani u roku od 24 sata.",
   loginRequired: "Da biste poslali zahtjev, morate biti registrovani i prijavljeni.",
   uploadingLogo: "Otpremanje loga...",
+  logoUploadFailed: "Otpremanje loga nije uspjelo.",
+  submitError: "Greška.",
+  submitNetworkError: "Greška pri slanju.",
   aiHelpBtn: "✨ Pomoć našeg sistema",
   aiBusinessTypePrompt:
     "Kakav tip poslovanja imate? (npr. prodavnica odjeće, agencija za nekretnine, servis automobila...)",
@@ -341,6 +369,10 @@ const EN: OpenShopFormCopy = {
   logo: "Logo",
   description: "Business description",
   category: "Main category",
+  directoryCategory: "Directory category",
+  directorySubcategory: "Subcategory",
+  adminNotesLabel: "Internal notes (admin)",
+  adminNotesPlaceholder: "Notes for the moderation team only…",
   section2Title: "Location",
   country: "Country",
   city: "City",
@@ -368,6 +400,9 @@ const EN: OpenShopFormCopy = {
   successMsg: "✅ Your request was sent! We will contact you within 24 hours.",
   loginRequired: "You must be registered and signed in to submit a shop request.",
   uploadingLogo: "Uploading logo...",
+  logoUploadFailed: "Logo upload failed.",
+  submitError: "Error.",
+  submitNetworkError: "Error while submitting.",
   aiHelpBtn: "✨ Help from our system",
   aiBusinessTypePrompt:
     "What type of business do you have? (e.g. clothing shop, real estate agency, car service...)",
@@ -400,6 +435,10 @@ const FR: OpenShopFormCopy = {
   logo: "Logo",
   description: "Description de l'activité",
   category: "Catégorie principale",
+  directoryCategory: "Catégorie annuaire",
+  directorySubcategory: "Sous-catégorie",
+  adminNotesLabel: "Notes internes (admin)",
+  adminNotesPlaceholder: "Notes réservées à l'équipe de modération…",
   section2Title: "Localisation",
   country: "Pays",
   city: "Ville",
@@ -426,6 +465,9 @@ const FR: OpenShopFormCopy = {
   successMsg: "✅ Your request was sent! We will contact you within 24 hours.",
   loginRequired: "You must be registered and signed in to submit a shop request.",
   uploadingLogo: "Envoi du logo...",
+  logoUploadFailed: "Échec du téléversement du logo.",
+  submitError: "Erreur.",
+  submitNetworkError: "Erreur lors de l'envoi.",
   aiHelpBtn: "✨ Aide de notre système",
   aiBusinessTypePrompt: "What type of business do you have? (e.g. clothing shop, real estate agency, car service...)",
   aiBusinessTypePlaceholder: "e.g. clothing shop",

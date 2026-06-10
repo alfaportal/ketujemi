@@ -241,21 +241,21 @@ export function SiteFooter() {
   }, []);
 
   const helpColumn = {
-    title: t.footer_colHelp ?? "NDIHMË",
+    title: t.footer_colHelp,
     links: [
-      { href: paths.contact, label: t.footer_contactUs ?? "Na kontaktoni" },
-      { href: paths.faq, label: t.faq ?? "FAQ" },
-      { href: paths.security, label: t.footer_onlineSecurity ?? "Siguria online" },
-      { href: paths.press, label: t.footer_press ?? "Shtypi" },
+      { href: paths.contact, label: t.footer_contactUs },
+      { href: paths.faq, label: t.faq },
+      { href: paths.security, label: t.footer_onlineSecurity },
+      { href: paths.press, label: t.footer_press },
     ],
   };
 
   const infoColumn = {
-    title: t.footer_colInfo ?? "INFORMATA",
+    title: t.footer_colInfo,
     links: [
-      { href: paths.about, label: t.footer_aboutKetuJemi ?? "Rreth KetuJemi" },
-      { href: paths.rules, label: t.footer_rules ?? "Rregullat" },
-      { href: paths.privacy, label: t.privacy ?? "Privatësia" },
+      { href: paths.about, label: t.footer_aboutKetuJemi },
+      { href: paths.rules, label: t.footer_rules },
+      { href: paths.privacy, label: t.privacy },
       { href: paths.cookies, label: t.footer_cookies ?? "Cookies" },
       { href: paths.terms, label: t.terms ?? "Kushtet" },
     ],

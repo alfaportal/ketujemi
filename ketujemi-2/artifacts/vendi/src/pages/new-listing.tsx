@@ -239,12 +239,12 @@ export default function NewListing() {
   const formSchema = useMemo(
     () =>
       buildNewListingSchema({
-        parentCategory: tx.zodParentCategory ?? "Zgjidhni kategorinë kryesore.",
-        titleMin: tx.zodTitleMin ?? "Titulli duhet të ketë të paktën 5 karaktere.",
-        descriptionMin: tx.zodDescriptionMin ?? "Përshkrimi duhet të ketë të paktën 15 karaktere.",
-        location: tx.zodLocation ?? "Zgjidhni qytetin.",
-        phoneMin: tx.zodPhoneMin ?? "Telefoni duhet të ketë të paktën 5 shifra.",
-        sellerName: tx.zodSellerName ?? "Shkruani emrin e shitësit.",
+        parentCategory: t.zodParentCategory,
+        titleMin: t.zodTitleMin,
+        descriptionMin: t.zodDescriptionMin,
+        location: t.zodLocation,
+        phoneMin: t.zodPhoneMin,
+        sellerName: t.zodSellerName,
       }),
     [
       tx.zodParentCategory,
@@ -290,7 +290,7 @@ export default function NewListing() {
   const [postBlockMessage, setPostBlockMessage] = useState<string | null>(null);
   const postBlockRef = useRef<HTMLDivElement>(null);
   const postRefusedTitle =
-    (t as { postRefusedTitle?: string }).postRefusedTitle ?? "Nuk u postua";
+    t.postRefusedTitle;
 
   const refusePost = useCallback(
     (message: string) => {
@@ -600,7 +600,7 @@ export default function NewListing() {
             code === "video_frame_blank" ||
             code === "video_frame_encode_failed");
         toast({
-          title: tx.photoAnalyzeFailed ?? "Nuk u plotësua automatikisht",
+          title: t.photoAnalyzeFailed,
           description: isVideoFrame
             ? (tx.videoAnalyzeFrameHint ??
               "Nuk u lexua korniza e videos. Provoni video më të shkurtër me dritë të mirë, ose shtoni një foto.")
@@ -660,8 +660,8 @@ export default function NewListing() {
     if (!isAllowedListingVideoFile(file)) {
       const msg = listingVideoErrorMessage(new Error("invalid_video_format"), uiLang);
       toast({
-        title: msg?.title ?? (tx.videoInvalidFormatTitle ?? "Format i pavlefshëm"),
-        description: msg?.description ?? (tx.videoInvalidFormatDesc ?? "Lejohen vetëm MP4, MOV dhe AVI."),
+        title: msg?.title ?? t.videoInvalidFormatTitle,
+        description: msg?.description ?? t.videoInvalidFormatDesc,
         variant: "destructive",
       });
       return;
@@ -681,7 +681,7 @@ export default function NewListing() {
         } catch (error) {
           const code = error instanceof Error ? error.message : "";
           toast({
-            title: tx.photoAnalyzeFailed ?? "Nuk u plotësua automatikisht",
+            title: t.photoAnalyzeFailed,
             description:
               code === "video_frame_blank" || code.startsWith("video_frame")
                 ? (tx.videoAnalyzeFrameHint ??
@@ -724,8 +724,7 @@ export default function NewListing() {
     refusePost(
       formatFormValidationSummary(
         messages,
-        tx.formInvalidSummary ??
-          "Plotësoni të gjitha fushat e detyrueshme (kategori, titull min. 5, përshkrim min. 15, foto, çmim, qytet).",
+        t.formInvalidSummary,
       ),
     );
   };
@@ -733,8 +732,7 @@ export default function NewListing() {
   const onSubmit = (data: FormData) => {
     if (isDhurataPostRoute && !dhurataPledgeOk) {
       refusePost(
-        tx.ui_giftPledgeUncheckedBlocked ??
-          "Duhet të pranoni të 5 kushtet para se të postoni dhuratën.",
+        tx.ui_giftPledgeUncheckedBlocked!,
       );
       return;
     }
@@ -748,24 +746,27 @@ export default function NewListing() {
     };
     const parentId = Number(listingData.parent_category_id);
     const children = (allCategories ?? []).filter((c: { parent_id?: number | null }) => c.parent_id === parentId);
-    const preflight = collectListingPostPreflightIssues({
-      parentCategoryId: parentId,
-      categoryId: Number(listingData.category_id),
-      brandCategoryId: Number(listingData.brand_category_id) || 0,
-      hasBrands,
-      subcategoryCount: children.length,
-      title: listingData.title,
-      description: listingData.description,
-      price: listingData.price,
-      priceAgreement: listingData.price_agreement,
-      location: listingData.location,
-      sellerName: listingData.seller_name,
-      sellerPhone: listingData.seller_phone,
-      imageCount: imageUrls.length,
-      isKerkoj: isKerkojCategory,
-      isDhurata: isDhurataCategory,
-      isUploading,
-    });
+    const preflight = collectListingPostPreflightIssues(
+      {
+        parentCategoryId: parentId,
+        categoryId: Number(listingData.category_id),
+        brandCategoryId: Number(listingData.brand_category_id) || 0,
+        hasBrands,
+        subcategoryCount: children.length,
+        title: listingData.title,
+        description: listingData.description,
+        price: listingData.price,
+        priceAgreement: listingData.price_agreement,
+        location: listingData.location,
+        sellerName: listingData.seller_name,
+        sellerPhone: listingData.seller_phone,
+        imageCount: imageUrls.length,
+        isKerkoj: isKerkojCategory,
+        isDhurata: isDhurataCategory,
+        isUploading,
+      },
+      categoryLocale,
+    );
     if (preflight.length > 0) {
       refusePost(formatPreflightSummary(preflight));
       return;
@@ -782,10 +783,8 @@ export default function NewListing() {
       } else {
         refusePost(
           watchTitle.trim().length < 5
-            ? (tx.postErrTitleForSubcategory ??
-                "Shkruani titullin (të paktën 5 shkronja) që sistemi të caktojë nënkategorinë.")
-            : (tx.postErrChooseSubcategory ??
-                "Zgjidhni nënkategorinë nga lista, ose prisni një sekondë pas titullit."),
+            ? t.postErrTitleForSubcategory
+            : t.postErrChooseSubcategory,
         );
         return;
       }
@@ -793,7 +792,7 @@ export default function NewListing() {
 
     const resolvedBrandId = Number(listingData.brand_category_id) || 0;
     if (hasBrands && resolvedBrandId < 1) {
-      refusePost(tx.postErrChooseBrand ?? "Zgjidhni markën / modelin e produktit.");
+      refusePost(t.postErrChooseBrand);
       return;
     }
     const partCat = subCats.find((c: any) => c.id === resolvedCategoryId);
@@ -869,6 +868,7 @@ export default function NewListing() {
             body.message?.trim() ||
               tx.ui_contentModerationFail?.trim() ||
               t.postError,
+            categoryLocale,
           );
           refusePost(message);
           return;
@@ -940,7 +940,7 @@ export default function NewListing() {
               href={staticPagePaths(uiLang).openShop}
               className="inline-flex font-bold text-blue-700 hover:text-blue-900 underline-offset-2 hover:underline whitespace-nowrap"
             >
-              {tx.shopSuggestBannerBtn ?? "Hap Dyqanin →"}
+              {t.shopSuggestBannerBtn}
             </Link>
           </div>
         ) : null}
@@ -985,7 +985,7 @@ export default function NewListing() {
                   {(isAnalyzingImage || isUploading) && (
                     <p className="text-sm text-blue-600 font-medium mb-2 flex items-center gap-2" role="status">
                       <Loader2 size={14} className="animate-spin shrink-0" />
-                      {isUploading ? t.uploading : (tx.analyzingPhoto ?? "Duke analizuar foton me sistemin tonë...")}
+                      {isUploading ? t.uploading : t.analyzingPhoto}
                     </p>
                   )}
 
@@ -1004,8 +1004,8 @@ export default function NewListing() {
                     ) : isAnalyzingImage ? (
                       <div className="flex flex-col items-center gap-1.5 text-blue-500">
                         <Loader2 size={30} className="animate-spin" />
-                        <p className="text-sm font-semibold">{tx.analyzingPhoto ?? "Duke analizuar foton me sistemin tonë..."}</p>
-                        <p className="text-sm text-gray-400">{tx.analyzingPhotoHint ?? "Kategoria, titulli dhe përshkrimi plotësohen automatikisht."}</p>
+                        <p className="text-sm font-semibold">{t.analyzingPhoto}</p>
+                        <p className="text-sm text-gray-400">{t.analyzingPhotoHint}</p>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center gap-1.5 text-gray-400 hover:text-blue-500 transition-colors">
@@ -1026,7 +1026,7 @@ export default function NewListing() {
                     className="mt-2 w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 hover:border-blue-400 hover:bg-blue-50 py-3 px-4 text-sm font-semibold text-gray-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
                   >
                     <Camera size={20} className="text-blue-600 shrink-0" />
-                    {tx.photoCameraBtn ?? "Foto me kamerë"}
+                    {t.photoCameraBtn}
                   </button>
 
                   <ImagePreview urls={imageUrls} onRemove={isUploading ? () => {} : removeImage} mainLabel={t.mainPhotoLabel} />
@@ -1084,7 +1084,7 @@ export default function NewListing() {
                         className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 hover:border-blue-400 hover:bg-blue-50 py-3 px-4 text-sm font-semibold text-gray-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
                       >
                         <Video size={20} className="text-blue-600 shrink-0" />
-                        {tx.videoCameraBtn ?? "Video me kamerë"}
+                        {t.videoCameraBtn}
                       </button>
                     </div>
                   ) : null}
@@ -1094,9 +1094,9 @@ export default function NewListing() {
                       <Loader2 size={28} className="animate-spin" />
                       <p className="text-sm font-semibold">
                         {isAnalyzingImage && !isVideoUploading
-                          ? (tx.analyzingPhoto ?? "Duke analizuar me sistemin tonë...")
+                          ? t.analyzingPhoto
                           : videoUploadPhase === "preparing"
-                            ? (tx.videoPreparingTitle ?? "Duke përgatitur videon...")
+                            ? t.videoPreparingTitle
                             : t.uploading}
                       </p>
                       {isAnalyzingImage && !isVideoUploading ? (
@@ -1106,8 +1106,7 @@ export default function NewListing() {
                         </p>
                       ) : videoUploadPhase === "preparing" ? (
                         <p className="text-xs text-gray-500 text-center max-w-xs px-4">
-                          {t.videoPreparingHint ??
-                            "Video optimizohet automatikisht për shpallje (max 100 MB). Mos e mbyll faqen."}
+                          {t.videoPreparingHint}
                           {videoPreparePct > 0 ? ` ${videoPreparePct}%` : ""}
                         </p>
                       ) : null}
@@ -1233,7 +1232,7 @@ export default function NewListing() {
                             >
                               <FormControl>
                                 <SelectTrigger data-testid="select-subcategory">
-                                  <SelectValue placeholder={tx.chooseSubcategory ?? "..."} />
+                                  <SelectValue placeholder={t.chooseSubcategory} />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent className="max-h-[min(70vh,360px)]">
@@ -1257,7 +1256,7 @@ export default function NewListing() {
                     )}
                     {subCats.length === 1 && !bodyCatId && (
                       <p className="text-sm mt-1 text-amber-700" role="status">
-                        {tx.subcategoryAutoSetting ?? "Duke caktuar nënkategorinë…"}
+                        {t.subcategoryAutoSetting}
                       </p>
                     )}
                   </FormItem>
@@ -1706,7 +1705,7 @@ export default function NewListing() {
                         </div>
                       </FormControl>
                       {isDhurataCategory && (
-                        <p className="text-sm text-gray-500">{tx.ui_giftCategoryPriceNote ?? "Në këtë kategori çmimi është gjithmonë 0 €."}</p>
+                        <p className="text-sm text-gray-500">{tx.ui_giftCategoryPriceNote}</p>
                       )}
                       <FormMessage />
                     </FormItem>
@@ -1851,7 +1850,7 @@ export default function NewListing() {
                   {isSubmitting
                     ? t.posting
                     : isDhurataCategory
-                      ? (tx.ui_postGiftBtn ?? "🎁 Posto Dhuratën →")
+                      ? tx.ui_postGiftBtn
                       : isKerkojCategory
                         ? t.kerkojFormPostTitle
                         : t.submitListing}

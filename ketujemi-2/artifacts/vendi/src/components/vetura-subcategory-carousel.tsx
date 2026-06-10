@@ -62,7 +62,7 @@ export function VeturaSubcategoryCarousel({ categories }: Props) {
     <section className="bg-white border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-5">
         <h2 className="text-base sm:text-lg font-black text-gray-900 mb-3">
-          {t.categories} — Vetura
+          {t.categories} — {translateCategory("Vetura", locale)}
         </h2>
         <div className="relative overflow-hidden rounded-2xl bg-slate-900 aspect-[21/9] sm:aspect-[2.4/1]">
           <Link

@@ -27,7 +27,7 @@ type WalletData = {
 
 export function WalletPanel({ className = "" }: { className?: string }) {
   const { t } = useMarket();
-  const tx = t as Record<string, string | undefined>;
+  const tx = t as Record<string, string>;
   const { user, refresh } = useAuth();
   const { toast } = useToast();
   const [data, setData] = useState<WalletData | null>(null);
@@ -42,7 +42,7 @@ export function WalletPanel({ className = "" }: { className?: string }) {
       const res = await fetchWithTimeout("/api/wallet", { credentials: "include" });
       if (!res.ok) {
         setData(null);
-        setLoadError(tx.ui_networkError ?? "Gabim rrjeti");
+        setLoadError(tx.ui_networkError);
         return;
       }
       const j = (await res.json()) as WalletData;
@@ -75,7 +75,7 @@ export function WalletPanel({ className = "" }: { className?: string }) {
       };
       if (!res.ok || !body.url) {
         toast({
-          title: body.message ?? body.error ?? (tx.ui_paymentFailed ?? "Pagesa dështoi"),
+          title: body.message ?? body.error ?? tx.ui_paymentFailed,
           variant: "destructive",
         });
         return;
@@ -102,14 +102,8 @@ export function WalletPanel({ className = "" }: { className?: string }) {
           <Wallet className="text-emerald-700" size={20} />
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className="font-bold text-gray-900">{tx.ui_walletTitle ?? "Portofoli"}</h2>
-          <p className="text-sm text-gray-600 mt-0.5">
-            {tx.ui_walletPerListing ?? (
-              <>
-                1 shpallje = <span className="font-semibold">€0.30</span> nga balanca
-              </>
-            )}
-          </p>
+          <h2 className="font-bold text-gray-900">{tx.ui_walletTitle}</h2>
+          <p className="text-sm text-gray-600 mt-0.5">{tx.ui_walletPerListing}</p>
         </div>
       </div>
 
@@ -126,25 +120,21 @@ export function WalletPanel({ className = "" }: { className?: string }) {
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-white border border-emerald-100 px-4 py-3">
               <p className="text-xs text-gray-500 uppercase tracking-wide">
-                {tx.ui_walletBalanceLabel ?? "Balanca"}
+                {tx.ui_walletBalanceLabel}
               </p>
               <p className="text-2xl font-black text-emerald-700">€{balance}</p>
             </div>
             <div className="rounded-xl bg-white border border-emerald-100 px-4 py-3">
               <p className="text-xs text-gray-500 uppercase tracking-wide">
-                {tx.ui_walletListingsRemaining ?? "Shpallje të mbetura"}
+                {tx.ui_walletListingsRemaining}
               </p>
               <p className="text-2xl font-black text-gray-900">{remaining}</p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm font-semibold text-gray-800">
-              {tx.ui_walletTopupTitle ?? "Mbush portofolin (S / M / L)"}
-            </p>
-            <p className="text-xs text-gray-500">
-              {tx.ui_walletCreditHint ?? "Kredi pa afat — deri sa ta harxhoni (@ €0.30/shpallje)"}
-            </p>
+            <p className="text-sm font-semibold text-gray-800">{tx.ui_walletTopupTitle}</p>
+            <p className="text-xs text-gray-500">{tx.ui_walletCreditHint}</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {(data?.topups ?? [
                 { id: "s", price_eur: 5, listings: 16, label: "Paketa S — €5 (~16)" },
@@ -165,7 +155,7 @@ export function WalletPanel({ className = "" }: { className?: string }) {
                     <>
                       <span className="font-bold">{pkg.label}</span>
                       <span className="text-xs text-gray-500 font-normal">
-                        {tx.ui_walletPayOnline ?? "Pagesa online"}
+                        {tx.ui_walletPayOnline}
                       </span>
                     </>
                   )}
@@ -173,15 +163,9 @@ export function WalletPanel({ className = "" }: { className?: string }) {
               ))}
             </div>
             {!canPay ? (
-              <p className="text-xs text-amber-700">
-                {tx.ui_walletStripeNotConfigured ??
-                  "Pagesa online nuk është konfiguruar ende në server (Stripe ose bankë KS)."}
-              </p>
+              <p className="text-xs text-amber-700">{tx.ui_walletStripeNotConfigured}</p>
             ) : data?.kosovoStripe ? (
-              <p className="text-xs text-gray-500">
-                {tx.ui_walletStripeHint ??
-                  "Paguani me kartë (Visa/Mastercard) përmes Stripe — e disponueshme nga Kosova dhe diaspora."}
-              </p>
+              <p className="text-xs text-gray-500">{tx.ui_walletStripeHint}</p>
             ) : null}
           </div>
 
@@ -195,7 +179,7 @@ export function WalletPanel({ className = "" }: { className?: string }) {
               void refresh();
             }}
           >
-            {tx.ui_walletRefresh ?? "Rifresko balancën"}
+            {tx.ui_walletRefresh}
           </Button>
         </>
       )}

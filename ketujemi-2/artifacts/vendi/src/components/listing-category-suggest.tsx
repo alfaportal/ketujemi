@@ -110,11 +110,11 @@ export function ListingCategorySuggest({
         ) : (
           <Sparkles className="h-4 w-4 shrink-0 text-violet-600" aria-hidden />
         )}
-        {tx.ui_categorySuggestTitle ?? "Këshillë nga sistemi për kategori"}
+        {tx.ui_categorySuggestTitle}
       </div>
       {loading && !suggestion ? (
         <p className="text-emerald-800 text-xs">
-          {tx.ui_categorySuggestAnalyzing ?? "Duke analizuar titullin tuaj…"}
+          {tx.ui_categorySuggestAnalyzing}
         </p>
       ) : suggestion ? (
         <>
@@ -122,9 +122,8 @@ export function ListingCategorySuggest({
             {encouragementMessage(
               title,
               suggestion,
-              tx.ui_categorySuggestMsg ??
-                "{product} i përket kategorisë «{category}» — duke zgjedhur kategorinë e duhur do të arrish 3x më shumë blerës!",
-              tx.ui_categorySuggestDefaultProduct ?? "Artikulli juaj",
+              tx.ui_categorySuggestMsg,
+              tx.ui_categorySuggestDefaultProduct,
             )}
           </p>
           <p className="text-xs text-gray-500">
@@ -139,7 +138,7 @@ export function ListingCategorySuggest({
               onClick={() => onApply(suggestion)}
             >
               <TrendingUp className="h-4 w-4 mr-1.5" aria-hidden />
-              {tx.ui_categorySuggestPick ?? "Zgjidh këtë kategori"}
+              {tx.ui_categorySuggestPick}
             </Button>
             <Button
               type="button"
@@ -148,7 +147,7 @@ export function ListingCategorySuggest({
               className="min-h-11 text-gray-600"
               onClick={() => setDismissedId(suggestionKey)}
             >
-              {tx.ui_categorySuggestDismiss ?? "Faleminderit, e di"}
+              {tx.ui_categorySuggestDismiss}
             </Button>
           </div>
         </>

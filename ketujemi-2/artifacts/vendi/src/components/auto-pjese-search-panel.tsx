@@ -250,7 +250,7 @@ export function AutoPjeseSearchPanel({
             className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800"
           >
             <ArrowLeft size={16} aria-hidden />
-            Kthehu te llojet e pjesëve
+            {t.ap_back_part_types}
           </button>
           <h2 className="text-lg font-black text-gray-900">
             {translateCategory(partPageName ?? "", locale)}

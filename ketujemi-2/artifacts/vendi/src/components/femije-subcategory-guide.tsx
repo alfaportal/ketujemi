@@ -12,11 +12,8 @@ export function FemijeSubcategoryGuide({ slug, locale }: Props) {
   const guide = getFemijeSubcategoryGuide(slug, locale);
   if (!guide) return null;
 
-  const includesTitle =
-    (t as { fj_guide_includes?: string }).fj_guide_includes ?? "Çfarë përfshin kjo kategori";
-  const conditionTitle =
-    (t as { fj_guide_conditions?: string }).fj_guide_conditions ??
-    "Si ta përshkruani gjendjen në shpallje";
+  const includesTitle = t.fj_guide_includes;
+  const conditionTitle = t.fj_guide_conditions;
 
   return (
     <section
@@ -46,7 +43,7 @@ export function FemijeSubcategoryGuide({ slug, locale }: Props) {
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
                   <th className="px-3 py-2 font-semibold text-gray-800 whitespace-nowrap">
-                    {(t as { fj_guide_col_state?: string }).fj_guide_col_state ?? "Gjendja"}
+                    {t.fj_guide_col_state}
                   </th>
                   <th className="px-3 py-2 font-semibold text-gray-800">
                     {(t as { fj_guide_col_meaning?: string }).fj_guide_col_meaning ??

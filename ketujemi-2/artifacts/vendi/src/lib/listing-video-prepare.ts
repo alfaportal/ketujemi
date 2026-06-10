@@ -274,6 +274,11 @@ export function listingVideoShortenMessage(uiLang: string): { title: string; des
         title: "Video is too long",
         description: `It cannot be compressed below ${mb} MB. Shorten the video on your phone and try again.`,
       };
+    case "fr":
+      return {
+        title: "Vidéo trop longue",
+        description: `Impossible de la compresser sous ${mb} Mo. Raccourcissez la vidéo sur votre téléphone et réessayez.`,
+      };
     default:
       return {
         title: "Videoja është shumë e gjatë",

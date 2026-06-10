@@ -10,6 +10,11 @@ import { useShopFormCopy } from "@/lib/shop-application-i18n";
 import { citiesForShopCountry } from "@/lib/shop-application-locations";
 import { fetchShopDirectoryTaxonomy, type ShopDirectoryTaxonomyCategory } from "@/lib/shop-directory-api";
 import { translateCategory } from "@/lib/category-translations";
+import {
+  translateDirectoryCategory,
+  translateDirectorySubcategory,
+} from "@/lib/shop-directory-i18n";
+import { SHOP_DIRECTORY_CATEGORIES } from "@/lib/shop-directory-taxonomy";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 import { ShopSocialUrlFields } from "@/components/shop-social-url-fields";
@@ -127,7 +132,7 @@ export function ShopEditForm({
   }
 
   const saveLabel = labels?.save ?? c.submitBtn;
-  const cancelLabel = labels?.cancel ?? "Anulo";
+  const cancelLabel = labels?.cancel ?? c.aiCancelBtn;
 
   return (
     <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
@@ -218,7 +223,7 @@ export function ShopEditForm({
       ) : (
         <div className="grid sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label>{labels?.directoryCategory ?? "Kategoria e direktorisë"}</Label>
+            <Label>{labels?.directoryCategory ?? c.directoryCategory}</Label>
             <select
               className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
               value={values.directory_category_id ?? ""}
@@ -233,15 +238,21 @@ export function ShopEditForm({
                 }));
               }}
             >
-              {taxonomy.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.emoji} {cat.name}
-                </option>
-              ))}
+              {taxonomy.map((cat) => {
+                const catDef = SHOP_DIRECTORY_CATEGORIES.find((c) => c.slug === cat.slug);
+                const label = catDef
+                  ? translateDirectoryCategory(catDef, locale)
+                  : cat.name;
+                return (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.emoji} {label}
+                  </option>
+                );
+              })}
             </select>
           </div>
           <div className="space-y-1.5">
-            <Label>{labels?.directorySubcategory ?? "Nënkategoria"}</Label>
+            <Label>{labels?.directorySubcategory ?? c.directorySubcategory}</Label>
             <select
               className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
               value={values.directory_subcategory_id ?? ""}
@@ -249,7 +260,7 @@ export function ShopEditForm({
             >
               {subcategories.map((sub) => (
                 <option key={sub.id} value={sub.id}>
-                  {sub.name}
+                  {translateDirectorySubcategory({ slug: sub.slug, nameSq: sub.name }, locale)}
                 </option>
               ))}
             </select>
@@ -300,12 +311,12 @@ export function ShopEditForm({
 
       {showAdminNotes ? (
         <div className="space-y-1.5">
-          <Label>{labels?.adminNotes ?? "Shënime të brendshme (admin)"}</Label>
+          <Label>{labels?.adminNotes ?? c.adminNotesLabel}</Label>
           <Textarea
             value={values.admin_notes ?? ""}
             onChange={(e) => setField("admin_notes", e.target.value)}
             className="min-h-[80px]"
-            placeholder="Shënime vetëm për ekipin e moderimit…"
+            placeholder={c.adminNotesPlaceholder}
           />
         </div>
       ) : null}

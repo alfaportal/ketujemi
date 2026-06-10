@@ -23,7 +23,7 @@ import { shopSocialFieldsForSubmit, type ShopSocialField } from "@/lib/shop-soci
 
 export function ShopApplicationForm() {
   const c = useShopFormCopy();
-  const { uiLang, t } = useMarket();
+  const { uiLang } = useMarket();
   const { user } = useAuth();
   const cloudinary = useCloudinaryConfig();
   const { data: categories } = useGetCategories();
@@ -75,7 +75,7 @@ export function ShopApplicationForm() {
       const url = await uploadImageToCloudinary(file, cloudinary, "shop");
       setLogoUrl(url);
     } catch {
-      setError("Logo upload failed.");
+      setError(c.logoUploadFailed);
     } finally {
       setLogoBusy(false);
       if (logoRef.current) logoRef.current.value = "";
@@ -136,12 +136,12 @@ export function ShopApplicationForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError((data as { message?: string }).message ?? "Gabim.");
+        setError((data as { message?: string }).message ?? c.submitError);
         return;
       }
       setSuccess(true);
     } catch {
-      setError("Gabim gjatë dërgimit.");
+      setError(c.submitNetworkError);
     } finally {
       setSubmitBusy(false);
     }
@@ -171,7 +171,7 @@ export function ShopApplicationForm() {
               window.location.href = loginUrlWithReturn(openShopApplyPath(uiLang));
             }}
           >
-            {t.authLogin ?? "Hyni në llogari"}
+            {c.loginBtn}
           </Button>
         </div>
       </div>

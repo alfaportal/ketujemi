@@ -8,6 +8,8 @@ import {
 } from "@/lib/top-packages";
 import { fetchPaymentsStatus, redirectToStripeCheckout } from "@/lib/stripe-checkout";
 import { useToast } from "@/hooks/use-toast";
+import { useMarket } from "@/lib/market-context";
+import { fillPlaceholders } from "@/lib/app-extra-i18n";
 
 type ListingDetailTopPackagesProps = {
   listingId: number;
@@ -15,6 +17,8 @@ type ListingDetailTopPackagesProps = {
 
 /** TOP boost accordion — listing detail page only (owner). */
 export function ListingDetailTopPackages({ listingId }: ListingDetailTopPackagesProps) {
+  const { t, uiLang } = useMarket();
+  const tx = t as Record<string, string>;
   const { toast } = useToast();
   const [openId, setOpenId] = useState<TopPackageId | null>(null);
   const [busyPurpose, setBusyPurpose] = useState<TopListingPurpose | null>(null);
@@ -48,10 +52,10 @@ export function ListingDetailTopPackages({ listingId }: ListingDetailTopPackages
     if (blocked) return;
     setBusyPurpose(purpose);
     try {
-      await redirectToStripeCheckout({ purpose, listing_id: listingId });
+      await redirectToStripeCheckout({ purpose, listing_id: listingId }, uiLang);
     } catch (e) {
       toast({
-        title: e instanceof Error ? e.message : "Pagesa TOP dështoi",
+        title: e instanceof Error ? e.message : tx.ui_topPaymentFailed,
         variant: "destructive",
       });
       setBusyPurpose(null);
@@ -63,16 +67,13 @@ export function ListingDetailTopPackages({ listingId }: ListingDetailTopPackages
   return (
     <section
       className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50/80 to-white p-4 sm:p-5 space-y-4"
-      aria-label="Paketat TOP"
+      aria-label={tx.ui_topPackagesAria}
     >
-      <p className="text-sm sm:text-base text-gray-800 leading-snug">
-        Dëshiron shpalljen tënde në krye të faqes kryesore? Me paketën TOP shfaqeni para të gjithëve.
-      </p>
+      <p className="text-sm sm:text-base text-gray-800 leading-snug">{tx.ui_topPackagesIntro}</p>
 
       {!paymentsReady ? (
         <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-          Pagesa me kartë nuk është aktivizuar ende në server. Kontaktoni administratorin ose provoni
-          më vonë.
+          {tx.ui_cardPaymentsNotConfigured}
         </p>
       ) : null}
 
@@ -103,20 +104,18 @@ export function ListingDetailTopPackages({ listingId }: ListingDetailTopPackages
         <div className="rounded-xl border-2 border-violet-200 bg-white p-4 space-y-3">
           <p className="text-xs font-bold text-violet-900 flex items-center gap-1.5">
             <Sparkles className="h-4 w-4" aria-hidden />
-            Zgjidh paketën TOP
+            {tx.ui_topPackagesSelectTitle}
           </p>
-          <p className="text-[11px] sm:text-xs text-gray-600 leading-snug">
-            Njoftimi shfaqet në karuselin «TOP Njoftime» në kryefaqe (poshtë partnerëve VIP). Zgjidh
-            paketën — pas pagesës me kartë vlen për ditët e shënuara.
-          </p>
-          <p className="text-xs text-gray-500">
-            Visa, Mastercard dhe kartat e tjera përmes Stripe — e sigurt, pa ruajtje të të dhënave të
-            kartës në faqen tonë.
-          </p>
+          <p className="text-[11px] sm:text-xs text-gray-600 leading-snug">{tx.ui_topPackagesCarouselDesc}</p>
+          <p className="text-xs text-gray-500">{tx.ui_cardPaymentsDesc}</p>
           <div>
             <p className="text-2xl font-black text-violet-900">€{openPkg.priceEur}</p>
-            <p className="text-sm font-bold text-gray-800">{openPkg.label} në kryefaqe</p>
-            <p className="text-xs text-gray-500 mt-0.5">Vlen {openPkg.days} ditë nga pagesa</p>
+            <p className="text-sm font-bold text-gray-800">
+              {fillPlaceholders(tx.ui_topPackagesHomepageLabel, { label: openPkg.label })}
+            </p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {fillPlaceholders(tx.ui_topPackagesValidDays, { days: openPkg.days })}
+            </p>
           </div>
           <button
             type="button"
@@ -134,11 +133,11 @@ export function ListingDetailTopPackages({ listingId }: ListingDetailTopPackages
             ) : (
               <CreditCard className="h-4 w-4" aria-hidden />
             )}
-            Paguaj me kartë
+            {tx.ui_payWithCard}
           </button>
           {!phase2Enabled ? (
             <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-              TOP aktivizohet së shpejti (Faza 2).
+              {tx.ui_topPackagesPhase2Soon}
             </p>
           ) : null}
         </div>

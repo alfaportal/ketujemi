@@ -1,5 +1,7 @@
 import { loadStripe, type Stripe } from "@stripe/stripe-js";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { stripeCheckoutErrorMessage } from "@/lib/stripe-checkout-i18n";
+import { translationKeyForUiLang, type UiTranslationLocale } from "@/lib/ui-languages";
 
 const BUILD_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.trim() ?? "";
 
@@ -74,6 +76,7 @@ export async function fetchPaymentsStatus(): Promise<PaymentsStatus> {
 /** Create a Stripe Checkout session on the server. */
 export async function createCheckoutSession(
   body: CreateCheckoutSessionBody,
+  locale: UiTranslationLocale = "ks",
 ): Promise<CreateCheckoutSessionResponse> {
   const res = await fetchWithTimeout("/api/create-checkout-session", {
     method: "POST",
@@ -85,7 +88,9 @@ export async function createCheckoutSession(
     message?: string;
   };
   if (!res.ok) {
-    throw new Error(data.message ?? data.error ?? "Pagesa me kartë dështoi");
+    throw new Error(
+      data.message ?? data.error ?? stripeCheckoutErrorMessage("card_failed", locale),
+    );
   }
   return data;
 }
@@ -110,8 +115,12 @@ type StripeWithLegacyCheckout = Stripe & {
  * Uses `session.url` (Stripe.js v9+). If an older Stripe.js build exposes
  * `redirectToCheckout({ sessionId })`, that path is tried when URL is missing.
  */
-export async function redirectToStripeCheckout(body: CreateCheckoutSessionBody): Promise<void> {
-  const session = await createCheckoutSession(body);
+export async function redirectToStripeCheckout(
+  body: CreateCheckoutSessionBody,
+  uiLang?: string,
+): Promise<void> {
+  const locale = translationKeyForUiLang(uiLang ?? "sq");
+  const session = await createCheckoutSession(body, locale);
 
   if (session.url) {
     window.location.href = session.url;
@@ -129,7 +138,7 @@ export async function redirectToStripeCheckout(body: CreateCheckoutSessionBody):
     }
   }
 
-  throw new Error("Nuk u krijua sesioni i pagesës");
+  throw new Error(stripeCheckoutErrorMessage("session_failed", locale));
 }
 
 export type ConfirmStripeSessionResult = {
@@ -143,7 +152,9 @@ export type ConfirmStripeSessionResult = {
 /** Confirm payment after Stripe redirect (backup when webhook is slow). */
 export async function confirmStripeCheckoutSession(
   sessionId: string,
+  uiLang?: string,
 ): Promise<ConfirmStripeSessionResult> {
+  const locale = translationKeyForUiLang(uiLang ?? "sq");
   const res = await fetchWithTimeout("/api/payments/confirm-session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -154,7 +165,7 @@ export async function confirmStripeCheckoutSession(
     error?: string;
   };
   if (!res.ok) {
-    throw new Error(data.error ?? "Konfirmimi i pagesës dështoi");
+    throw new Error(data.error ?? stripeCheckoutErrorMessage("confirm_failed", locale));
   }
   return data;
 }

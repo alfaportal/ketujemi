@@ -3,6 +3,7 @@ import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Loader2 } from "lucide-react";
 import { formatQuotaResetLabel } from "@/components/listing-limit-reached-modal";
 import { useMarket } from "@/lib/market-context";
+import { useMyListingsMonthCopy } from "@/lib/my-listings-month-i18n";
 import { translateCategory, type UiCategoryLocale } from "@/lib/category-translations";
 
 type PostRow = { id: number; title: string; created_at: string };
@@ -33,6 +34,7 @@ function formatPostDateTime(iso: string, locale: string): string {
 }
 
 export function MyListingsThisMonth() {
+  const m = useMyListingsMonthCopy();
   const { uiLang } = useMarket();
   const locale =
     uiLang === "mk" ? "mk-MK" : uiLang === "mne" ? "sr-ME" : uiLang === "en" ? "en-GB" : "sq-AL";
@@ -47,7 +49,7 @@ export function MyListingsThisMonth() {
       .then(async (r) => {
         if (!r.ok) {
           const j = (await r.json().catch(() => ({}))) as { message?: string };
-          throw new Error(j.message ?? "Nuk u ngarkua historiku.");
+          throw new Error(j.message ?? m.loadError);
         }
         return r.json() as Promise<HistoryResponse>;
       })
@@ -103,14 +105,14 @@ export function MyListingsThisMonth() {
             <div className="px-3 py-2.5 border-b border-gray-100 bg-white flex flex-wrap items-center justify-between gap-2">
               <p className="font-bold text-gray-900 text-sm">{name}</p>
               <p className="text-sm font-semibold text-blue-800">
-                {cat.used} / {cat.limit} used
+                {cat.used} / {cat.limit} {m.usedLabel}
               </p>
             </div>
             <div className="px-3 py-2 text-xs text-gray-500">
-              Riniset më {catReset}
+              {m.resetsOn} {catReset}
             </div>
             {cat.posts.length === 0 ? (
-              <p className="px-3 pb-3 text-sm text-gray-400">Asnjë postim këtë muaj në këtë kategori.</p>
+              <p className="px-3 pb-3 text-sm text-gray-400">{m.emptyCategory}</p>
             ) : (
               <ul className="divide-y divide-gray-100 border-t border-gray-100 bg-white">
                 {cat.posts.map((p) => (

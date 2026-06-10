@@ -7,6 +7,7 @@ import {
   redirectToStripeCheckout,
   type StripeCheckoutPurpose,
 } from "@/lib/stripe-checkout";
+import { useMarket } from "@/lib/market-context";
 
 export type PayWithCardButtonProps = Omit<ButtonProps, "onClick"> & {
   purpose: StripeCheckoutPurpose;
@@ -16,7 +17,6 @@ export type PayWithCardButtonProps = Omit<ButtonProps, "onClick"> & {
   hideWhenUnavailable?: boolean;
 };
 
-/** Reusable «Paguaj me kartë» — VIP Biznes. */
 export function PayWithCardButton({
   purpose,
   listingId,
@@ -27,6 +27,8 @@ export function PayWithCardButton({
   variant,
   ...rest
 }: PayWithCardButtonProps) {
+  const { t, uiLang } = useMarket();
+  const tx = t as Record<string, string>;
   const { toast } = useToast();
   const [available, setAvailable] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
@@ -57,15 +59,18 @@ export function PayWithCardButton({
       variant={variant ?? "default"}
       className={className}
       disabled={disabled || busy || paymentsOff || statusLoading}
-      title={paymentsOff ? "Pagesa me kartë nuk është e aktivizuar ende" : undefined}
+      title={paymentsOff ? tx.ui_cardPaymentDisabled : undefined}
       onClick={() => {
         setBusy(true);
-        void redirectToStripeCheckout({
-          purpose,
-          ...(listingId != null ? { listing_id: listingId } : {}),
-        }).catch((e) => {
+        void redirectToStripeCheckout(
+          {
+            purpose,
+            ...(listingId != null ? { listing_id: listingId } : {}),
+          },
+          uiLang,
+        ).catch((e) => {
           toast({
-            title: e instanceof Error ? e.message : "Pagesa me kartë nuk është e disponueshme",
+            title: e instanceof Error ? e.message : tx.ui_cardPaymentUnavailable,
             variant: "destructive",
           });
         }).finally(() => setBusy(false));

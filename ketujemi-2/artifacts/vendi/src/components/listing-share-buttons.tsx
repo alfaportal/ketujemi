@@ -39,7 +39,7 @@ function whatsAppShareUrl(title: string, url: string): string {
 export function ListingShareButtons({ url, title = "", variant = "full" }: Props) {
   const { t } = useMarket();
   const { toast } = useToast();
-  const tx = t as Record<string, string | undefined>;
+  const tx = t as Record<string, string>;
 
   const copyToClipboard = useCallback(async () => {
     try {
@@ -66,9 +66,7 @@ export function ListingShareButtons({ url, title = "", variant = "full" }: Props
     void copyToClipboard().then((ok) => {
       if (ok) {
         toast({
-          title:
-            tx.share_copied ??
-            "✓ Linku u kopjua! Ngarkoje në Instagram ose TikTok për më shumë klientë 🚀",
+          title: tx.share_copied,
           className: GREEN_TOAST_CLASS,
         });
       }
@@ -77,15 +75,14 @@ export function ListingShareButtons({ url, title = "", variant = "full" }: Props
 
   if (!url) return null;
 
-  const facebookLabel = tx.share_facebook ?? "Facebook";
-  const whatsappLabel = tx.share_whatsapp ?? "WhatsApp";
-  const instagramLabel = tx.share_instagram ?? "Instagram";
-  const tiktokLabel = tx.share_tiktok ?? "TikTok";
-  const copyLinkLabel = tx.share_copyLink ?? "Kopjo linkun";
-  const instagramTooltip =
-    tx.share_instagramCopyTooltip ?? "Ngjit në Instagram Story";
-  const tiktokTooltip = tx.share_tiktokCopyTooltip ?? "Kopjo linkun për TikTok";
-  const compactLabel = tx.share_compactLabel ?? "Shpërndaje";
+  const facebookLabel = tx.share_facebook;
+  const whatsappLabel = tx.share_whatsapp;
+  const instagramLabel = tx.share_instagram;
+  const tiktokLabel = tx.share_tiktok;
+  const copyLinkLabel = tx.share_copyLink;
+  const instagramTooltip = tx.share_instagramCopyTooltip;
+  const tiktokTooltip = tx.share_tiktokCopyTooltip;
+  const compactLabel = tx.share_compactLabel;
 
   const iconBtn =
     "inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors touch-manipulation";
@@ -168,10 +165,8 @@ export function ListingShareButtons({ url, title = "", variant = "full" }: Props
     );
   }
 
-  const sectionTitle = tx.share_sectionTitle ?? "Shpërndaje këtë shpallje";
-  const motivation =
-    tx.share_motivation ??
-    "💡 Shpërndaje shpalljen tënde — çdo klik sjell klientë të rinj te dyqani yt falas!";
+  const sectionTitle = tx.share_sectionTitle;
+  const motivation = tx.share_motivation;
 
   return (
     <TooltipProvider delayDuration={200}>

@@ -70,7 +70,7 @@ export function ListingDescriptionHelper({ description, onApplyDescription }: Pr
         ) : (
           <Sparkles className="h-4 w-4" aria-hidden />
         )}
-        {t.systemHelpBtn ?? "Ndihmë nga sistemi jonë"}
+        {t.systemHelpBtn}
       </Button>
 
       {polished ? (
@@ -86,7 +86,7 @@ export function ListingDescriptionHelper({ description, onApplyDescription }: Pr
                 setPolished(null);
               }}
             >
-              {t.descriptionHelperAccept ?? "Prano"}
+              {t.descriptionHelperAccept}
             </Button>
             <Button
               type="button"
@@ -95,7 +95,7 @@ export function ListingDescriptionHelper({ description, onApplyDescription }: Pr
               className="min-h-10 text-gray-600"
               onClick={() => setPolished(null)}
             >
-              {t.descriptionHelperIgnore ?? "Injoro"}
+              {t.descriptionHelperIgnore}
             </Button>
           </div>
         </div>

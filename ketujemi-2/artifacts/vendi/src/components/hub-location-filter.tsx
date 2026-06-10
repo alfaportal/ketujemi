@@ -29,6 +29,7 @@ type Props = {
 
 export function HubLocationFilter({ value, onChange, inputClass, areaId = "hub-area" }: Props) {
   const { t } = useMarket();
+  const tx = t as Record<string, string>;
   const [countryOpen, setCountryOpen] = useState(false);
   const [cityOpen, setCityOpen] = useState(false);
 
@@ -51,9 +52,9 @@ export function HubLocationFilter({ value, onChange, inputClass, areaId = "hub-a
     setCityOpen(false);
   };
 
-  const countryLbl = (t as { lz_country_lbl?: string }).lz_country_lbl ?? "Shteti";
-  const countryPh = (t as { lz_country_ph?: string }).lz_country_ph ?? "Zgjidh shtetin";
-  const countryAny = (t as { lz_country_any?: string }).lz_country_any ?? "Të gjitha shtetet";
+  const countryLbl = tx.lz_country_lbl;
+  const countryPh = tx.lz_country_ph;
+  const countryAny = tx.lz_country_any;
 
   return (
     <div className="space-y-4">
@@ -199,10 +200,7 @@ export function HubLocationFilter({ value, onChange, inputClass, areaId = "hub-a
         />
       </div>
 
-      <p className="text-xs text-gray-500 leading-relaxed">
-        {(t as { fj_search_location_hint?: string }).fj_search_location_hint ??
-          "Kërkoni sipas vendit ku është njoftimi. Postimi mund të bëhet nga çdo shtet — kategoria tregon vetëm llojin e produktit."}
-      </p>
+      <p className="text-xs text-gray-500 leading-relaxed">{tx.fj_search_location_hint}</p>
     </div>
   );
 }

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, type AuthUser } from "@/lib/auth-context";
+import { usePartnerProfilePanelCopy } from "@/lib/partner-profile-panel-i18n";
 
 type LinkType = "website" | "instagram" | "facebook";
 
@@ -29,6 +30,7 @@ function parseBannerUrls(raw: string | null | undefined): string[] {
 }
 
 export function PartnerProfilePanel({ user }: { user: AuthUser }) {
+  const c = usePartnerProfilePanelCopy();
   const { refresh } = useAuth();
   const { toast } = useToast();
   const isActive = user.business_status === "active";
@@ -52,11 +54,8 @@ export function PartnerProfilePanel({ user }: { user: AuthUser }) {
   if (user.business_status === "pending") {
     return (
       <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5 text-sm text-amber-900">
-        <p className="font-bold">Aplikimi në pritje</p>
-        <p className="mt-1 text-amber-800/90">
-          Llogaria juaj do të aktivizohet nga administratori pas verifikimit të pagesës. Pastaj mund
-          të shtoni linkun dhe (për VIP) bannerët lëvizës.
-        </p>
+        <p className="font-bold">{c.pendingTitle}</p>
+        <p className="mt-1 text-amber-800/90">{c.pendingBody}</p>
       </div>
     );
   }
@@ -64,8 +63,8 @@ export function PartnerProfilePanel({ user }: { user: AuthUser }) {
   if (user.business_status === "blocked") {
     return (
       <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800">
-        <p className="font-bold">Llogaria e bllokuar</p>
-        <p className="mt-1">Kontaktoni administratorin për më shumë informacion.</p>
+        <p className="font-bold">{c.blockedTitle}</p>
+        <p className="mt-1">{c.blockedBody}</p>
       </div>
     );
   }
@@ -74,11 +73,11 @@ export function PartnerProfilePanel({ user }: { user: AuthUser }) {
 
   async function savePartnerSettings() {
     if (!linkUrl.trim()) {
-      toast({ title: "Shtoni një link (website, Instagram ose Facebook)", variant: "destructive" });
+      toast({ title: c.linkRequired, variant: "destructive" });
       return;
     }
     if (isVip && filledBanners.length > 5) {
-      toast({ title: "Maksimumi 5 foto për bannerin VIP", variant: "destructive" });
+      toast({ title: c.maxBanners, variant: "destructive" });
       return;
     }
     setBusy(true);
@@ -95,13 +94,13 @@ export function PartnerProfilePanel({ user }: { user: AuthUser }) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         toast({
-          title: (data as { message?: string }).message ?? (data as { error?: string }).error ?? "Gabim",
+          title: (data as { message?: string }).message ?? (data as { error?: string }).error ?? c.error,
           variant: "destructive",
         });
         return;
       }
       await refresh();
-      toast({ title: "U ruajt!" });
+      toast({ title: c.saved });
     } finally {
       setBusy(false);
     }
@@ -116,22 +115,23 @@ export function PartnerProfilePanel({ user }: { user: AuthUser }) {
     });
   }
 
+  const linkPlaceholder =
+    linkType === "website" ? c.websitePh : linkType === "instagram" ? c.instagramPh : c.facebookPh;
+
   return (
     <div className="rounded-2xl border border-[#1A56A0]/25 bg-blue-50/30 p-5 space-y-4">
       <div>
-        <h2 className="font-bold text-gray-900">Profili partner</h2>
-        <p className="text-sm text-gray-600 mt-1">
-          Një link i vetëm — hapet kur vizitorët klikojnë logon ose bannerin tuaj.
-        </p>
+        <h2 className="font-bold text-gray-900">{c.title}</h2>
+        <p className="text-sm text-gray-600 mt-1">{c.subtitle}</p>
         {user.partner_activation_code ? (
           <p className="mt-2 text-sm font-mono bg-white/80 border border-blue-100 rounded-lg px-3 py-2">
-            Kodi i aktivizimit: <strong>{user.partner_activation_code}</strong>
+            {c.activationCode} <strong>{user.partner_activation_code}</strong>
           </p>
         ) : null}
       </div>
 
       <div className="space-y-2">
-        <Label>Lloji i linkut</Label>
+        <Label>{c.linkTypeLabel}</Label>
         <Select value={linkType} onValueChange={(v) => setLinkType(v as LinkType)}>
           <SelectTrigger className="bg-white min-h-12">
             <SelectValue />
@@ -145,18 +145,12 @@ export function PartnerProfilePanel({ user }: { user: AuthUser }) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="partner-link-url">Linku</Label>
+        <Label htmlFor="partner-link-url">{c.linkLabel}</Label>
         <Input
           id="partner-link-url"
           value={linkUrl}
           onChange={(e) => setLinkUrl(e.target.value)}
-          placeholder={
-            linkType === "website"
-              ? "https://kompaniajuaj.com"
-              : linkType === "instagram"
-                ? "https://instagram.com/emri ose @emri"
-                : "https://facebook.com/faqja"
-          }
+          placeholder={linkPlaceholder}
           className="min-h-12 bg-white"
         />
       </div>
@@ -165,12 +159,14 @@ export function PartnerProfilePanel({ user }: { user: AuthUser }) {
         <div className="space-y-3 pt-2 border-t border-amber-200/60">
           <div className="flex items-center gap-2 text-amber-800">
             <Star className="h-4 w-4 fill-amber-500 text-amber-500" aria-hidden />
-            <span className="text-sm font-bold">Banner lëvizës VIP (deri në 5 foto)</span>
+            <span className="text-sm font-bold">{c.vipBannerTitle}</span>
           </div>
           {bannerUrls.map((url, i) =>
             i < 5 ? (
               <div key={i} className="space-y-1">
-                <Label htmlFor={`banner-${i}`}>Foto {i + 1}</Label>
+                <Label htmlFor={`banner-${i}`}>
+                  {c.photoLabel} {i + 1}
+                </Label>
                 <Input
                   id={`banner-${i}`}
                   type="url"
@@ -182,9 +178,7 @@ export function PartnerProfilePanel({ user }: { user: AuthUser }) {
               </div>
             ) : null,
           )}
-          <p className="text-xs text-gray-500">
-            Nëse shtoni foto këtu, banneri lëvizës shfaqet në vend të logos së vetme.
-          </p>
+          <p className="text-xs text-gray-500">{c.vipHint}</p>
         </div>
       ) : null}
 
@@ -194,7 +188,7 @@ export function PartnerProfilePanel({ user }: { user: AuthUser }) {
         disabled={busy}
         onClick={() => void savePartnerSettings()}
       >
-        {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : "Ruaj profilin partner"}
+        {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : c.save}
       </Button>
     </div>
   );

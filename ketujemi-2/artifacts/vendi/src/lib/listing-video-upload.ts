@@ -109,6 +109,11 @@ export function listingVideoErrorMessage(
           title: "Invalid format",
           description: "Choose a video (MP4, MOV, AVI, or from camera/gallery).",
         };
+      case "fr":
+        return {
+          title: "Format non valide",
+          description: "Choisissez une vidéo (MP4, MOV, AVI ou depuis l'appareil photo/galerie).",
+        };
       default:
         return {
           title: "Format i pavlefshëm",
@@ -137,6 +142,11 @@ export function listingVideoErrorMessage(
         return {
           title: "Could not read video",
           description: `Try a shorter MP4 video under ${mb} MB.`,
+        };
+      case "fr":
+        return {
+          title: "Impossible de lire la vidéo",
+          description: `Essayez une vidéo MP4 plus courte sous ${mb} Mo.`,
         };
       default:
         return {
