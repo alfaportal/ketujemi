@@ -3,7 +3,9 @@ import { MobileSafeTopSpacer } from "@/components/mobile-safe-top-spacer";
 import { SiteLogo } from "@/components/site-logo";
 import { LanguageSelector } from "@/components/language-selector";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
+import { useMarket } from "@/lib/market-context";
 import { useShopDirectoryCopy } from "@/lib/shop-directory-i18n";
+import { staticPagePaths } from "@/lib/static-page-paths";
 import { cn } from "@/lib/utils";
 
 const navLinkClass =
@@ -23,6 +25,8 @@ type SiteHeaderProps = {
  */
 function MainNavLinks({ className }: { className?: string }) {
   const d = useShopDirectoryCopy();
+  const { uiLang } = useMarket();
+  const contactPath = staticPagePaths(uiLang).contact;
   return (
     <nav className={cn("flex items-center gap-1 sm:gap-2", className)} aria-label="Main">
       <Link href="/listings" className={navLinkClass}>
@@ -30,6 +34,9 @@ function MainNavLinks({ className }: { className?: string }) {
       </Link>
       <Link href="/dyqanet" className={navLinkClass}>
         {d.navShops}
+      </Link>
+      <Link href={contactPath} className={navLinkClass}>
+        {d.navHelp}
       </Link>
     </nav>
   );

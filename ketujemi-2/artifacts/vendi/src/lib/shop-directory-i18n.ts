@@ -23,6 +23,7 @@ export type ShopDirectoryCopy = {
   docCategoryTitle: string;
   navShops: string;
   navBuySell: string;
+  navHelp: string;
   homeBannerTitle: string;
   homeBannerSubtitle: string;
   homeBannerBtn: string;
@@ -129,6 +130,7 @@ const KS: ShopDirectoryCopy = {
   docCategoryTitle: "Dyqanet",
   navShops: "Dyqanet",
   navBuySell: "Bli & Shit",
+  navHelp: "Ndihmë",
   homeBannerTitle: "Bizneset Dixhitale — Bli direkt nga bizneset me një klikim",
   homeBannerSubtitle: "{count} kategori • Qindra dyqane lokale • në çdo vend",
   homeBannerBtn: "Shiko të gjitha dyqanet →",
@@ -167,6 +169,7 @@ const MK: ShopDirectoryCopy = {
   docCategoryTitle: "Продавници",
   navShops: "Продавници",
   navBuySell: "Купи и продавај",
+  navHelp: "Помош",
   homeBannerTitle: "Дигитални бизниси — Купувајте директно од бизнисите со еден клик",
   homeBannerSubtitle: "{count} категории • Стотици локални продавници • на секое место",
   homeBannerBtn: "Види ги сите продавници →",
@@ -205,6 +208,7 @@ const MNE: ShopDirectoryCopy = {
   docCategoryTitle: "Prodavnice",
   navShops: "Prodavnice",
   navBuySell: "Kupi i prodaj",
+  navHelp: "Pomoć",
   homeBannerTitle: "Digitalni biznisi — Kupujte direktno od biznisa jednim klikom",
   homeBannerSubtitle: "{count} kategorija • Stotine lokalnih prodavnica • na svakom mjestu",
   homeBannerBtn: "Pogledaj sve prodavnice →",
@@ -243,6 +247,7 @@ const EN: ShopDirectoryCopy = {
   docCategoryTitle: "Shops",
   navShops: "Shops",
   navBuySell: "Buy & Sell",
+  navHelp: "Help",
   homeBannerTitle: "Digital Businesses — Buy directly from businesses in one click",
   homeBannerSubtitle: "{count} categories • Hundreds of local shops • everywhere",
   homeBannerBtn: "View all shops →",
@@ -281,6 +286,7 @@ const FR: ShopDirectoryCopy = {
   docCategoryTitle: "Boutiques",
   navShops: "Boutiques",
   navBuySell: "Acheter et vendre",
+  navHelp: "Aide",
   homeBannerTitle: "Entreprises digitales — Achetez directement auprès des entreprises en un clic",
   homeBannerSubtitle: "{count} catégories • Des centaines de boutiques locales • partout",
   homeBannerBtn: "Voir toutes les boutiques →",
