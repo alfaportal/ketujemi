@@ -19,46 +19,6 @@ export type EngagementCopy = {
   notificationsEmpty: string;
   notificationsTitle: string;
   firstListingOk: string;
-  de: {
-    welcomeToast: (name) =>
-      `Welcome ${name}! 🎉 You're now part of the KetuJemi family. Post your listings for free — no limits, no fees.`,
-    firstListingTitle: "Congrats! 🎊",
-    firstListingBody: "🎉 Congrats! Your listing is live on KëtuJemi.com and will be shared automatically on Facebook, Instagram, and TikTok. The more people see it, the faster it sells! 🚀",
-    subsequentListingToast: "🎉 Congrats! Your listing is live on KëtuJemi.com and will be shared automatically on Facebook, Instagram, and TikTok. The more people see it, the faster it sells! 🚀",
-    listingFirstView: (title) =>
-      `👀 Someone viewed your listing for ${title} — you're on the right track!`,
-    socialFollowTitle: "🔥 Your listing is getting attention!",
-    socialFollowBody: "Follow us to help us promote your listings even more:",
-    socialFollowFacebook: "📘 Facebook — KetuJemi.com",
-    socialFollowInstagram: "📸 Instagram — @jemi.ketu",
-    socialFollowTikTok: "🎵 TikTok — @ketujemi7",
-    socialFollowFooter: "Join thousands of people buying and selling every day! 💪",
-    socialFollowOptIn: "✅ Ja, notify me",
-    socialFollowOptOut: "❌ Nein, thanks",
-    notificationsEmpty: "You have no new notifications.",
-    notificationsTitle: "Notifications",
-    firstListingOk: "OK, thanks!",
-  },
-  it: {
-    welcomeToast: (name) =>
-      `Welcome ${name}! 🎉 You're now part of the KetuJemi family. Post your listings for free — no limits, no fees.`,
-    firstListingTitle: "Congrats! 🎊",
-    firstListingBody: "🎉 Congrats! Your listing is live on KëtuJemi.com and will be shared automatically on Facebook, Instagram, and TikTok. The more people see it, the faster it sells! 🚀",
-    subsequentListingToast: "🎉 Congrats! Your listing is live on KëtuJemi.com and will be shared automatically on Facebook, Instagram, and TikTok. The more people see it, the faster it sells! 🚀",
-    listingFirstView: (title) =>
-      `👀 Someone viewed your listing for ${title} — you're on the right track!`,
-    socialFollowTitle: "🔥 Your listing is getting attention!",
-    socialFollowBody: "Follow us to help us promote your listings even more:",
-    socialFollowFacebook: "📘 Facebook — KetuJemi.com",
-    socialFollowInstagram: "📸 Instagram — @jemi.ketu",
-    socialFollowTikTok: "🎵 TikTok — @ketujemi7",
-    socialFollowFooter: "Join thousands of people buying and selling every day! 💪",
-    socialFollowOptIn: "✅ Sì, notify me",
-    socialFollowOptOut: "❌ No, thanks",
-    notificationsEmpty: "You have no new notifications.",
-    notificationsTitle: "Notifications",
-    firstListingOk: "OK, thanks!",
-  },
 };
 
 const COPY: Record<EngagementLocale, EngagementCopy> = {
@@ -180,10 +140,56 @@ const COPY: Record<EngagementLocale, EngagementCopy> = {
     notificationsTitle: "Notifications",
     firstListingOk: "D'accord, merci !",
   },
+  de: {
+    welcomeToast: (name) =>
+      `Willkommen ${name}! 🎉 Du bist jetzt Teil der KetuJemi-Familie. Veröffentliche deine Anzeigen kostenlos — ohne Limits, ohne Gebühren.`,
+    firstListingTitle: "Glückwunsch! 🎊",
+    firstListingBody:
+      "🎉 Glückwunsch! Deine Anzeige ist live auf KëtuJemi.com und wird automatisch auf Facebook, Instagram und TikTok geteilt. Je mehr Menschen sie sehen, desto schneller verkauft sie sich! 🚀",
+    subsequentListingToast:
+      "🎉 Glückwunsch! Deine Anzeige ist live auf KëtuJemi.com und wird automatisch auf Facebook, Instagram und TikTok geteilt. Je mehr Menschen sie sehen, desto schneller verkauft sie sich! 🚀",
+    listingFirstView: (title) =>
+      `👀 Jemand hat deine Anzeige für ${title} angesehen — du bist auf dem richtigen Weg!`,
+    socialFollowTitle: "🔥 Deine Anzeige zieht Aufmerksamkeit auf sich!",
+    socialFollowBody: "Folge uns, damit wir deine Anzeigen noch besser promoten können:",
+    socialFollowFacebook: "📘 Facebook — KetuJemi.com",
+    socialFollowInstagram: "📸 Instagram — @jemi.ketu",
+    socialFollowTikTok: "🎵 TikTok — @ketujemi7",
+    socialFollowFooter:
+      "Schließe dich Tausenden von Menschen an, die jeden Tag kaufen und verkaufen! 💪",
+    socialFollowOptIn: "✅ Ja, benachrichtige mich",
+    socialFollowOptOut: "❌ Nein, danke",
+    notificationsEmpty: "Du hast keine neuen Benachrichtigungen.",
+    notificationsTitle: "Benachrichtigungen",
+    firstListingOk: "OK, danke!",
+  },
+  it: {
+    welcomeToast: (name) =>
+      `Benvenuto ${name}! 🎉 Ora fai parte della famiglia KetuJemi. Pubblica i tuoi annunci gratis — senza limiti, senza costi.`,
+    firstListingTitle: "Congratulazioni! 🎊",
+    firstListingBody:
+      "🎉 Congratulazioni! Il tuo annuncio è online su KëtuJemi.com e verrà condiviso automaticamente su Facebook, Instagram e TikTok. Più persone lo vedono, più velocemente si vende! 🚀",
+    subsequentListingToast:
+      "🎉 Congratulazioni! Il tuo annuncio è online su KëtuJemi.com e verrà condiviso automaticamente su Facebook, Instagram e TikTok. Più persone lo vedono, più velocemente si vende! 🚀",
+    listingFirstView: (title) =>
+      `👀 Qualcuno ha visto il tuo annuncio per ${title} — sei sulla strada giusta!`,
+    socialFollowTitle: "🔥 Il tuo annuncio sta attirando attenzione!",
+    socialFollowBody: "Seguici per aiutarci a promuovere ancora di più i tuoi annunci:",
+    socialFollowFacebook: "📘 Facebook — KetuJemi.com",
+    socialFollowInstagram: "📸 Instagram — @jemi.ketu",
+    socialFollowTikTok: "🎵 TikTok — @ketujemi7",
+    socialFollowFooter:
+      "Unisciti a migliaia di persone che comprano e vendono ogni giorno! 💪",
+    socialFollowOptIn: "✅ Sì, avvisami",
+    socialFollowOptOut: "❌ No, grazie",
+    notificationsEmpty: "Non hai nuove notifiche.",
+    notificationsTitle: "Notifiche",
+    firstListingOk: "OK, grazie!",
+  },
 };
 
 export function engagementCopyForUiLang(uiLang: UiLang): EngagementCopy {
-  return COPY[translationKeyForUiLang(uiLang)];
+  return COPY[translationKeyForUiLang(uiLang)] ?? COPY.ks;
 }
 
 export function welcomeDisplayName(user: {

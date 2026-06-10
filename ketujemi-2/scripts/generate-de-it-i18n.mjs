@@ -318,18 +318,21 @@ function patchEngagement(locale) {
     /export type EngagementLocale = "ks" \| "mk" \| "mne" \| "en" \| "fr";/,
     'export type EngagementLocale = "ks" | "mk" | "mne" | "en" | "fr" | "de" | "it";',
   );
-  const enStart = src.indexOf("\n  en: {");
-  const frStart = src.indexOf("\n  fr: {");
+  const copyStart = src.indexOf("const COPY: Record<EngagementLocale, EngagementCopy> = {");
+  if (copyStart < 0) return;
+  const enStart = src.indexOf("\n  en: {", copyStart);
+  const frStart = src.indexOf("\n  fr: {", copyStart);
   if (enStart < 0 || frStart < 0) return;
   const enBlock = src.slice(enStart, frStart);
   let locBlock = enBlock.replace(/\n  en: \{/, `\n  ${locUpper}: {`);
   locBlock = translateEnTsStringLiterals(locBlock, locale);
-  const oldStart = src.indexOf(`\n  ${locUpper}: {`);
+  const oldStart = src.indexOf(`\n  ${locUpper}: {`, copyStart);
   if (oldStart >= 0) {
     const oldEnd = src.indexOf("\n};", oldStart);
     src = src.slice(0, oldStart) + locBlock + src.slice(oldEnd);
   } else {
-    src = src.replace("\n};", `${locBlock}\n};`);
+    const copyEnd = src.indexOf("\n};", frStart);
+    src = src.slice(0, copyEnd) + locBlock + src.slice(copyEnd);
   }
   fs.writeFileSync(filePath, src, "utf8");
   console.log(`Patched engagement-i18n.ts (${locale})`);

@@ -96,10 +96,12 @@ function TopListingsCarousel({
   listings,
   loaded,
   priceFor,
+  agreementLabel,
 }: {
   listings: TopListingCarouselItem[];
   loaded: boolean;
   priceFor: (eur: number) => string;
+  agreementLabel: string;
 }) {
   const slideCount = listings.length > 0 ? listings.length : TOP_EMPTY_SLOT_COUNT;
   const { intervalMs, scrollDuration } = topCarouselTiming(Math.max(slideCount, 1));
@@ -145,7 +147,7 @@ function TopListingsCarousel({
                 <div key={`${l.id}-${i}`} className={SLIDE_BASIS}>
                   <TopListingSlot
                     listing={l}
-                    priceLabel={l.price === 0 ? t.agreement : priceFor(Number(l.price))}
+                    priceLabel={l.price === 0 ? agreementLabel : priceFor(Number(l.price))}
                   />
                 </div>
               ))
@@ -261,7 +263,12 @@ export function TopListingsHomeRow({ className }: { className?: string }) {
           {(t as Record<string, string>).home_topListingsRowLabel}
         </span>
       </p>
-      <TopListingsCarousel listings={listings} loaded={loaded} priceFor={priceFor} />
+      <TopListingsCarousel
+        listings={listings}
+        loaded={loaded}
+        priceFor={priceFor}
+        agreementLabel={t.agreement}
+      />
     </div>
   );
 }

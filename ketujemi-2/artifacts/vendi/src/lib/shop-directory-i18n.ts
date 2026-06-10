@@ -415,6 +415,8 @@ const SUB_BY_LOCALE: Record<
   mne: SHOP_SUB_MNE,
   en: SHOP_SUB_EN,
   fr: SHOP_SUB_FR,
+  de: SHOP_SUB_EN,
+  it: SHOP_SUB_EN,
 };
 
 const SUB_BY_SQ_LOCALE: Record<
@@ -425,6 +427,8 @@ const SUB_BY_SQ_LOCALE: Record<
   mne: SHOP_SUB_MNE_BY_SQ,
   en: SHOP_SUB_EN_BY_SQ,
   fr: SHOP_SUB_FR_BY_SQ,
+  de: SHOP_SUB_EN_BY_SQ,
+  it: SHOP_SUB_EN_BY_SQ,
 };
 
 export function translateDirectorySubcategory(
