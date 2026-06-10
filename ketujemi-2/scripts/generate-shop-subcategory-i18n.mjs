@@ -7,9 +7,11 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { shopSubcategoryToEnglish } from "./shop-subcategory-sq-en.mjs";
 import { shopSubcategoryToFrench } from "./shop-subcategory-en-fr.mjs";
+import { shopSubcategoryToGerman } from "./shop-subcategory-en-de.mjs";
+import { shopSubcategoryToItalian } from "./shop-subcategory-en-it.mjs";
+import { SHOP_SQ_DE } from "./shop-phrases-de.mjs";
 import { SHOP_SQ_FR } from "./shop-phrases-fr.mjs";
-import { categoryToGerman } from "./category-en-de.mjs";
-import { categoryToItalian } from "./category-en-it.mjs";
+import { SHOP_SQ_IT } from "./shop-phrases-it.mjs";
 
 function titleCaseEn(en) {
   return en.replace(/(^|[\s&(/])([a-z])/g, (_, pre, c) => pre + c.toUpperCase());
@@ -64,8 +66,8 @@ const mneBySqOut = {};
 for (const { slug, nameSq } of subs) {
   const enLabel = shopSubcategoryToEnglish(nameSq);
   const frLabel = SHOP_SQ_FR[nameSq] ?? shopLabelFr(enLabel);
-  const deLabel = categoryToGerman(enLabel);
-  const itLabel = categoryToItalian(enLabel);
+  const deLabel = SHOP_SQ_DE[nameSq] ?? shopSubcategoryToGerman(enLabel);
+  const itLabel = SHOP_SQ_IT[nameSq] ?? shopSubcategoryToItalian(enLabel);
   const mkLabel = mkBySq[nameSq] ?? enLabel;
   const mneLabel = mneBySq[nameSq] ?? enLabel;
   en[slug] = enLabel;
