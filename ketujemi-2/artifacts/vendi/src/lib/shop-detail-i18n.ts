@@ -5,6 +5,7 @@ export type ShopDetailCopy = {
   notFound: string;
   backHome: string;
   aboutTitle: string;
+  socialContactTitle: string;
   mapTitle: string;
   mapOpenGoogle: string;
   listingsTitle: string;
@@ -40,6 +41,7 @@ const KS: ShopDetailCopy = {
   notFound: "Dyqani nuk u gjet",
   backHome: "Kthehu në kryefaqe",
   aboutTitle: "Rreth dyqanit",
+  socialContactTitle: "Kontakt & rrjetet sociale",
   mapTitle: "Harta",
   mapOpenGoogle: "Hap në Google Maps",
   listingsTitle: "Shpalljet e dyqanit",
@@ -73,6 +75,7 @@ const MK: ShopDetailCopy = {
   notFound: "Продавницата не е пронајдена",
   backHome: "Назад на почетна",
   aboutTitle: "За продавницата",
+  socialContactTitle: "Контакт и социјални мрежи",
   mapTitle: "Мапа",
   mapOpenGoogle: "Отвори во Google Maps",
   listingsTitle: "Огласи на продавницата",
@@ -106,6 +109,7 @@ const MNE: ShopDetailCopy = {
   notFound: "Prodavnica nije pronađena",
   backHome: "Nazad na početnu",
   aboutTitle: "O prodavnici",
+  socialContactTitle: "Kontakt i društvene mreže",
   mapTitle: "Mapa",
   mapOpenGoogle: "Otvori u Google Maps",
   listingsTitle: "Oglasi prodavnice",
@@ -139,6 +143,7 @@ const EN: ShopDetailCopy = {
   notFound: "Shop not found",
   backHome: "Back to home",
   aboutTitle: "About the shop",
+  socialContactTitle: "Contact & social",
   mapTitle: "Map",
   mapOpenGoogle: "Open in Google Maps",
   listingsTitle: "Shop listings",
@@ -172,6 +177,7 @@ const IT: ShopDetailCopy = {
   notFound: "Negozio non trovato",
   backHome: "Torna alla home",
   aboutTitle: "Informazioni sul negozio",
+  socialContactTitle: "Contatto e social",
   mapTitle: "Mappa",
   mapOpenGoogle: "Apri in Google Maps",
   listingsTitle: "Annunci del negozio",
@@ -203,6 +209,7 @@ const DE: ShopDetailCopy = {
   notFound: "Shop nicht gefunden",
   backHome: "Zurück zur Startseite",
   aboutTitle: "Über den Shop",
+  socialContactTitle: "Kontakt & soziale Netzwerke",
   mapTitle: "Karte",
   mapOpenGoogle: "In Google Maps öffnen",
   listingsTitle: "Shop-Anzeigen",
@@ -234,6 +241,7 @@ const FR: ShopDetailCopy = {
   notFound: "Boutique introuvable",
   backHome: "Retour à l'accueil",
   aboutTitle: "À propos de la boutique",
+  socialContactTitle: "Contact & réseaux sociaux",
   mapTitle: "Carte",
   mapOpenGoogle: "Ouvrir dans Google Maps",
   listingsTitle: "Annonces de la boutique",

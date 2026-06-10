@@ -1,5 +1,4 @@
 import { Link } from "wouter";
-import { Facebook, Globe, Instagram, ExternalLink } from "lucide-react";
 import { ShopRatingBadge } from "@/components/shop-rating-badge";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { translateDirectoryCategory, translateDirectorySubcategory } from "@/lib/shop-directory-i18n";
@@ -7,7 +6,7 @@ import { directoryCategoryBySlug, directorySubcategoryBySlug } from "@/lib/shop-
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 import { SHOP_COUNTRY_CODES, useShopFormCopy } from "@/lib/shop-application-i18n";
-import { shopWhatsappHref } from "@/lib/shop-social-url-input";
+import { ShopSocialLinks } from "@/components/shop-social-links";
 
 export type ShopDirectoryListItem = {
   id: number;
@@ -45,15 +44,6 @@ export function ShopDirectoryCard({ shop, viewLabel }: Props) {
       ? directorySubcategoryBySlug(shop.directory_category_slug, shop.directory_subcategory_slug)
       : undefined;
 
-  const whatsappHref = shopWhatsappHref(shop.whatsapp);
-  const socials = [
-    shop.facebook?.trim() ? { href: shop.facebook, icon: Facebook } : null,
-    shop.instagram?.trim() ? { href: shop.instagram, icon: Instagram } : null,
-    shop.website?.trim() ? { href: shop.website, icon: Globe } : null,
-    shop.tiktok?.trim() ? { href: shop.tiktok, icon: ExternalLink } : null,
-    whatsappHref ? { href: whatsappHref, icon: ExternalLink } : null,
-  ].filter(Boolean) as { href: string; icon: React.ElementType }[];
-
   const countryLabel =
     SHOP_COUNTRY_CODES.includes(shop.country as (typeof SHOP_COUNTRY_CODES)[number])
       ? formCopy.countryLabels[shop.country as (typeof SHOP_COUNTRY_CODES)[number]]
@@ -88,22 +78,16 @@ export function ShopDirectoryCard({ shop, viewLabel }: Props) {
           </div>
         </div>
       </div>
-      {socials.length > 0 ? (
-        <div className="flex flex-wrap gap-2">
-          {socials.map((s) => (
-            <a
-              key={s.href}
-              href={s.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-700"
-              aria-label="Social"
-            >
-              <s.icon size={14} />
-            </a>
-          ))}
-        </div>
-      ) : null}
+      <ShopSocialLinks
+        compact
+        fields={{
+          facebook: shop.facebook,
+          instagram: shop.instagram,
+          tiktok: shop.tiktok,
+          whatsapp: shop.whatsapp,
+          website: shop.website,
+        }}
+      />
       <Link
         href={`/dyqani/${shop.id}`}
         className="mt-auto inline-flex items-center justify-center min-h-11 rounded-xl px-4 text-sm font-bold text-white"

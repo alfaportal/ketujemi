@@ -1,15 +1,12 @@
 import { Link } from "wouter";
-import { MapPin, Facebook, Instagram, Globe, ExternalLink } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 import { useShopDashboardCopy } from "@/lib/shop-dashboard-i18n";
 import { BRAND_BLUE } from "@/lib/brand-colors";
-import {
-  ShopSocialProfiles,
-  type ShopSocialProfileData,
-} from "@/components/shop-social-profiles";
-import { shopWhatsappHref } from "@/lib/shop-social-url-input";
+import { ShopSocialLinks } from "@/components/shop-social-links";
+import type { ShopSocialProfileData } from "@/components/shop-social-profiles";
 
 export type ListingShopInfo = {
   shop_id: number;
@@ -38,27 +35,6 @@ export function ListingShopCard({ shop }: Props) {
   if (!shop.shop_verified || !shop.shop_id) return null;
 
   const enriched = shop.shop_social_profiles ?? {};
-  const hasEnrichedIg = Boolean(enriched.instagram);
-  const hasEnrichedTt = Boolean(enriched.tiktok);
-
-  const whatsappHref = shopWhatsappHref(shop.shop_whatsapp);
-  const socials = [
-    shop.shop_facebook?.trim() ? { href: shop.shop_facebook, icon: Facebook, label: "Facebook" } : null,
-    shop.shop_instagram?.trim() && !hasEnrichedIg
-      ? { href: shop.shop_instagram, icon: Instagram, label: "Instagram" }
-      : null,
-    shop.shop_website?.trim() ? { href: shop.shop_website, icon: Globe, label: "Web" } : null,
-    shop.shop_tiktok?.trim() && !hasEnrichedTt
-      ? { href: shop.shop_tiktok, icon: ExternalLink, label: "TikTok" }
-      : null,
-    whatsappHref
-      ? {
-          href: whatsappHref,
-          icon: ExternalLink,
-          label: "WhatsApp",
-        }
-      : null,
-  ].filter(Boolean) as { href: string; icon: React.ElementType; label: string }[];
 
   return (
     <div
@@ -89,30 +65,21 @@ export function ListingShopCard({ shop }: Props) {
               {shop.shop_city}
             </p>
           ) : null}
-          {socials.length > 0 ? (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {socials.map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100"
-                  aria-label={s.label}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <s.icon size={14} />
-                </a>
-              ))}
-            </div>
-          ) : null}
         </div>
       </div>
-      {hasEnrichedIg || hasEnrichedTt ? (
-        <div className="mt-3">
-          <ShopSocialProfiles profiles={enriched} compact />
-        </div>
-      ) : null}
+      <ShopSocialLinks
+        compact
+        enriched={enriched}
+        fields={{
+          facebook: shop.shop_facebook,
+          instagram: shop.shop_instagram,
+          tiktok: shop.shop_tiktok,
+          whatsapp: shop.shop_whatsapp,
+          website: shop.shop_website,
+        }}
+        className="mt-3"
+        onLinkClick={(e) => e.stopPropagation()}
+      />
       <Link
         href={`/dyqani/${shop.shop_id}`}
         className="mt-4 flex items-center justify-center w-full rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-colors hover:opacity-90"

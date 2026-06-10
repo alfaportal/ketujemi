@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useProfileEditGate } from "@/hooks/use-profile-edit-gate";
 import { ProfileEditGateFlow } from "@/components/profile-edit-gate-flow";
 import { DeletionExitSurveyModal } from "@/components/deletion-exit-survey-modal";
-import { Loader2, MapPin, Facebook, Instagram, Globe, ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { Loader2, MapPin, Pencil, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useDeleteListing,
@@ -55,11 +55,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  ShopSocialProfiles,
-  type ShopSocialProfileData,
-} from "@/components/shop-social-profiles";
-import { shopWhatsappHref } from "@/lib/shop-social-url-input";
+import { ShopSocialLinks } from "@/components/shop-social-links";
+import type { ShopSocialProfileData } from "@/components/shop-social-profiles";
 
 type ShopData = {
   id: number;
@@ -297,21 +294,6 @@ export default function ShopDetailPage() {
     country: shop.country,
   });
   const mapExternalUrl = googleMapsOpenUrl(mapExternalQuery);
-  const hasEnrichedIg = Boolean(socialProfiles.instagram);
-  const hasEnrichedTt = Boolean(socialProfiles.tiktok);
-  const whatsappHref = shopWhatsappHref(shop.whatsapp);
-  const socials = [
-    shop.facebook?.trim() ? { href: shop.facebook, label: "Facebook", icon: Facebook } : null,
-    shop.instagram?.trim() && !hasEnrichedIg
-      ? { href: shop.instagram, label: "Instagram", icon: Instagram }
-      : null,
-    shop.website?.trim() ? { href: shop.website, label: "Website", icon: Globe } : null,
-    shop.tiktok?.trim() && !hasEnrichedTt
-      ? { href: shop.tiktok, label: "TikTok", icon: ExternalLink }
-      : null,
-    whatsappHref ? { href: whatsappHref, label: "WhatsApp", icon: ExternalLink } : null,
-  ].filter(Boolean) as { href: string; label: string; icon: React.ElementType }[];
-
   return (
     <div className="min-h-screen bg-gray-50">
       <SiteHeader />
@@ -375,27 +357,17 @@ export default function ShopDetailPage() {
 
         <ShopRatingsPanel shopId={shop.id} />
 
-        {hasEnrichedIg || hasEnrichedTt ? (
-          <ShopSocialProfiles profiles={socialProfiles} />
-        ) : null}
-
-        {socials.length > 0 ? (
-          <section className="flex flex-wrap gap-3">
-            {socials.map((s) => (
-              <a
-                key={s.label}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white min-h-11"
-                style={{ backgroundColor: BRAND_BLUE }}
-              >
-                <s.icon size={16} />
-                {s.label}
-              </a>
-            ))}
-          </section>
-        ) : null}
+        <ShopSocialLinks
+          fields={{
+            facebook: shop.facebook,
+            instagram: shop.instagram,
+            tiktok: shop.tiktok,
+            whatsapp: shop.whatsapp,
+            website: shop.website,
+          }}
+          enriched={socialProfiles}
+          title={d.socialContactTitle}
+        />
 
         <section className="rounded-2xl overflow-hidden border border-gray-100 bg-white shadow-sm">
           {mapEmbedSrc ? (

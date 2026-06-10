@@ -1,17 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Link, useRoute } from "wouter";
-import {
-  ArrowLeft,
-  Building2,
-  Crown,
-  ExternalLink,
-  Facebook,
-  Globe,
-  Instagram,
-  Loader2,
-  MessageCircle,
-} from "lucide-react";
+import { ArrowLeft, Building2, Crown, Loader2 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { translateCategory } from "@/lib/category-translations";
@@ -20,10 +10,8 @@ import { usePartnerProfileCopy } from "@/lib/partner-profile-i18n";
 import { useMarket } from "@/lib/market-context";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { cn } from "@/lib/utils";
-import {
-  ShopSocialProfiles,
-  type ShopSocialProfileData,
-} from "@/components/shop-social-profiles";
+import { ShopSocialLinks } from "@/components/shop-social-links";
+import type { ShopSocialProfileData } from "@/components/shop-social-profiles";
 
 type PartnerPublicProfile = {
   id: number;
@@ -40,75 +28,6 @@ type PartnerPublicProfile = {
   shop_id: number | null;
   social_profiles?: Partial<Record<"instagram" | "tiktok", ShopSocialProfileData>>;
 };
-
-type SocialLink = {
-  key: string;
-  label: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  className: string;
-};
-
-function TikTokIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
-      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z" />
-    </svg>
-  );
-}
-
-function buildSocialLinks(
-  profile: PartnerPublicProfile,
-  skipKeys: Set<string> = new Set(),
-): SocialLink[] {
-  const links: SocialLink[] = [];
-  if (profile.facebook_url) {
-    links.push({
-      key: "facebook",
-      label: "Facebook",
-      href: profile.facebook_url,
-      icon: Facebook,
-      className: "bg-[#1877F2] hover:bg-[#166fe5] text-white",
-    });
-  }
-  if (profile.instagram_url && !skipKeys.has("instagram")) {
-    links.push({
-      key: "instagram",
-      label: "Instagram",
-      href: profile.instagram_url,
-      icon: Instagram,
-      className: "bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-95 text-white",
-    });
-  }
-  if (profile.whatsapp_url) {
-    links.push({
-      key: "whatsapp",
-      label: "WhatsApp",
-      href: profile.whatsapp_url,
-      icon: MessageCircle,
-      className: "bg-[#25D366] hover:bg-[#20bd5a] text-white",
-    });
-  }
-  if (profile.tiktok_url && !skipKeys.has("tiktok")) {
-    links.push({
-      key: "tiktok",
-      label: "TikTok",
-      href: profile.tiktok_url,
-      icon: TikTokIcon,
-      className: "bg-black hover:bg-gray-900 text-white",
-    });
-  }
-  if (profile.website_url) {
-    links.push({
-      key: "website",
-      label: "Website",
-      href: profile.website_url,
-      icon: Globe,
-      className: "bg-[#1A56A0] hover:bg-[#154a8c] text-white",
-    });
-  }
-  return links;
-}
 
 export default function PartnerProfilePage() {
   const [, params] = useRoute("/partners/:id");
@@ -182,10 +101,6 @@ export default function PartnerProfilePage() {
 
   const isVip = profile?.tier === "vip";
   const enrichedSocial = profile?.social_profiles ?? {};
-  const skipSocial = new Set(
-    (["instagram", "tiktok"] as const).filter((p) => enrichedSocial[p]),
-  );
-  const socialLinks = profile ? buildSocialLinks(profile, skipSocial) : [];
   const categoryLabel = profile?.category_name
     ? translateCategory(profile.category_name, locale)
     : null;
@@ -300,38 +215,20 @@ export default function PartnerProfilePage() {
               </div>
             ) : null}
 
-            {skipSocial.size > 0 ? (
-              <div className="px-5 sm:px-8 pb-4">
-                <ShopSocialProfiles profiles={enrichedSocial} />
-              </div>
-            ) : null}
-
-            {socialLinks.length > 0 ? (
-              <div className="px-5 sm:px-8 pb-8">
-                <h2 className="text-sm font-bold text-gray-900 mb-3">{copy.contactTitle}</h2>
-                <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                  {socialLinks.map((link) => {
-                    const Icon = link.icon;
-                    return (
-                      <a
-                        key={link.key}
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={cn(
-                          "inline-flex items-center gap-2 min-h-11 px-4 rounded-xl text-sm font-bold transition-colors",
-                          link.className,
-                        )}
-                      >
-                        <Icon className="h-4 w-4 shrink-0" />
-                        {link.label}
-                        <ExternalLink className="h-3.5 w-3.5 opacity-80" aria-hidden />
-                      </a>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
+            <div className="px-5 sm:px-8 pb-8">
+              <ShopSocialLinks
+                fields={{
+                  facebook: profile.facebook_url,
+                  instagram: profile.instagram_url,
+                  tiktok: profile.tiktok_url,
+                  whatsapp: profile.whatsapp_url,
+                  website: profile.website_url,
+                }}
+                enriched={enrichedSocial}
+                title={copy.contactTitle}
+                className="border-0 bg-transparent p-0 shadow-none"
+              />
+            </div>
           </article>
         )}
       </div>
