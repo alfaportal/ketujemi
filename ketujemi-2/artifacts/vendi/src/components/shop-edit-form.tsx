@@ -23,6 +23,7 @@ import {
   shopSocialSuffix,
   type ShopSocialField,
 } from "@/lib/shop-social-url-input";
+import { ShopAddressAutocomplete } from "@/components/shop-address-autocomplete";
 
 export type ShopEditFormValues = {
   shop_name: string;
@@ -36,6 +37,8 @@ export type ShopEditFormValues = {
   city: string;
   region: string;
   address: string;
+  latitude: number | null;
+  longitude: number | null;
   facebook: string;
   instagram: string;
   tiktok: string;
@@ -212,7 +215,33 @@ export function ShopEditForm({
         </div>
         <div className="space-y-1.5 sm:col-span-2">
           <Label>{c.address}</Label>
-          <Input value={values.address} onChange={(e) => setField("address", e.target.value)} required />
+          <ShopAddressAutocomplete
+            value={values.address}
+            country={values.country}
+            placeholder={c.addressAutocompleteHint}
+            required
+            onChange={(address) =>
+              setValues((prev) => ({
+                ...prev,
+                address,
+                latitude: null,
+                longitude: null,
+              }))
+            }
+            onPlaceSelect={(place) => {
+              setValues((prev) => ({
+                ...prev,
+                address: place.address,
+                latitude: place.latitude,
+                longitude: place.longitude,
+                ...(place.city ? { city: place.city } : {}),
+                ...(place.region ? { region: place.region } : {}),
+              }));
+            }}
+          />
+          {c.addressAutocompleteHint ? (
+            <p className="text-xs text-gray-500">{c.addressAutocompleteHint}</p>
+          ) : null}
         </div>
       </div>
 
@@ -345,6 +374,8 @@ export function adminRowToFormValues(row: {
   city: string;
   region: string;
   address: string;
+  latitude?: number | null;
+  longitude?: number | null;
   facebook: string | null;
   instagram: string | null;
   tiktok: string | null;
@@ -368,6 +399,8 @@ export function adminRowToFormValues(row: {
     city: row.city,
     region: row.region,
     address: row.address,
+    latitude: row.latitude ?? null,
+    longitude: row.longitude ?? null,
     facebook: shopSocialSuffix(row.facebook, "facebook"),
     instagram: shopSocialSuffix(row.instagram, "instagram"),
     tiktok: shopSocialSuffix(row.tiktok, "tiktok"),

@@ -16,6 +16,8 @@ import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import ListingCard from "@/components/listing-card";
 import { ListingShareButtons, listingPublicUrl } from "@/components/listing-share-buttons";
+import { ShopAddressAutocomplete } from "@/components/shop-address-autocomplete";
+import { useShopFormCopy } from "@/lib/shop-application-i18n";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
 
@@ -25,9 +27,12 @@ type ShopMe = {
   logo_url: string;
   description: string;
   category: string;
+  country: string;
   city: string;
   region: string;
   address: string;
+  latitude?: number | null;
+  longitude?: number | null;
   facebook?: string | null;
   instagram?: string | null;
   tiktok?: string | null;
@@ -46,6 +51,7 @@ type ShopListing = Parameters<typeof ListingCard>[0]["listing"];
 
 export function ProfileShopDashboard() {
   const c = useShopDashboardCopy();
+  const formCopy = useShopFormCopy();
   const { uiLang, t } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
   const { toast } = useToast();
@@ -65,6 +71,9 @@ export function ProfileShopDashboard() {
   const [logoUrl, setLogoUrl] = useState("");
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [shopCountry, setShopCountry] = useState("XK");
   const [city, setCity] = useState("");
   const [region, setRegion] = useState("");
   const [facebook, setFacebook] = useState("");
@@ -87,6 +96,9 @@ export function ProfileShopDashboard() {
           setLogoUrl(res.shop.logo_url);
           setDescription(res.shop.description);
           setAddress(res.shop.address);
+          setLatitude(res.shop.latitude ?? null);
+          setLongitude(res.shop.longitude ?? null);
+          setShopCountry(res.shop.country ?? "XK");
           setCity(res.shop.city);
           setRegion(res.shop.region);
           setFacebook(res.shop.facebook ?? "");
@@ -153,6 +165,8 @@ export function ProfileShopDashboard() {
           logo_url: logoUrl,
           description,
           address,
+          latitude,
+          longitude,
           city,
           region,
           facebook,
@@ -304,7 +318,24 @@ export function ProfileShopDashboard() {
             </div>
             <div className="space-y-1">
               <Label htmlFor="shop-edit-address">{c.address}</Label>
-              <Input id="shop-edit-address" value={address} onChange={(e) => setAddress(e.target.value)} />
+              <ShopAddressAutocomplete
+                id="shop-edit-address"
+                value={address}
+                country={shopCountry}
+                onChange={(next) => {
+                  setAddress(next);
+                  setLatitude(null);
+                  setLongitude(null);
+                }}
+                onPlaceSelect={(place) => {
+                  setAddress(place.address);
+                  setLatitude(place.latitude);
+                  setLongitude(place.longitude);
+                  if (place.city) setCity(place.city);
+                  if (place.region) setRegion(place.region);
+                }}
+              />
+              <p className="text-xs text-gray-500">{formCopy.addressAutocompleteHint}</p>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">

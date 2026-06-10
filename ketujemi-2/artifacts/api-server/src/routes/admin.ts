@@ -1517,6 +1517,8 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
       city: app.city,
       region: app.region,
       address: app.address,
+      latitude: app.latitude,
+      longitude: app.longitude,
       facebook: app.facebook,
       instagram: app.instagram,
       tiktok: app.tiktok,

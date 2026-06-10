@@ -40,6 +40,7 @@ export type OpenShopFormCopy = {
   city: string;
   region: string;
   address: string;
+  addressAutocompleteHint: string;
   section3Title: string;
   facebook: string;
   instagram: string;
@@ -176,6 +177,7 @@ const KS: OpenShopFormCopy = {
   city: "Qyteti",
   region: "Rajoni/Lagja",
   address: "Adresa e saktë",
+  addressAutocompleteHint: "Filloni të shkruani adresën — zgjidhni nga sugjerimet e Google Maps",
   section3Title: "Rrjetet sociale",
   facebook: "Facebook URL",
   instagram: "Instagram URL",
@@ -244,6 +246,7 @@ const MK: OpenShopFormCopy = {
   city: "Град",
   region: "Регион/Населба",
   address: "Точна адреса",
+  addressAutocompleteHint: "Почнете да ја пишувате адресата — изберете од предлозите на Google Maps",
   section3Title: "Социјални мрежи",
   facebook: "Facebook URL",
   instagram: "Instagram URL",
@@ -311,6 +314,7 @@ const MNE: OpenShopFormCopy = {
   city: "Grad",
   region: "Region/Kvart",
   address: "Tačna adresa",
+  addressAutocompleteHint: "Počnite da kucate adresu — izaberite iz Google Maps prijedloga",
   section3Title: "Društvene mreže",
   facebook: "Facebook URL",
   instagram: "Instagram URL",
@@ -378,6 +382,7 @@ const EN: OpenShopFormCopy = {
   city: "City",
   region: "Region/Neighbourhood",
   address: "Full address",
+  addressAutocompleteHint: "Start typing your address — pick a suggestion from Google Maps",
   section3Title: "Social media",
   facebook: "Facebook URL",
   instagram: "Instagram URL",
@@ -444,6 +449,7 @@ const IT: OpenShopFormCopy = {
   city: "Città",
   region: "Regione/Quartiere",
   address: "Indirizzo completo",
+  addressAutocompleteHint: "Inizia a digitare l'indirizzo — scegli un suggerimento da Google Maps",
   section3Title: "Social media",
   facebook: "Facebook URL",
   instagram: "Instagram URL",
@@ -508,6 +514,7 @@ const DE: OpenShopFormCopy = {
   city: "Stadt",
   region: "Region/Stadtteil",
   address: "Vollständige Adresse",
+  addressAutocompleteHint: "Adresse eingeben — Vorschlag aus Google Maps auswählen",
   section3Title: "Soziale Medien",
   facebook: "Facebook URL",
   instagram: "Instagram URL",
@@ -572,6 +579,7 @@ const FR: OpenShopFormCopy = {
   city: "Ville",
   region: "Région/Quartier",
   address: "Adresse complète",
+  addressAutocompleteHint: "Commencez à saisir l'adresse — choisissez une suggestion Google Maps",
   section3Title: "Réseaux sociaux",
   facebook: "Facebook URL",
   instagram: "Instagram URL",

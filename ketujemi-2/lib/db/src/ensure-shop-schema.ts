@@ -70,6 +70,10 @@ ALTER TABLE shops ADD COLUMN IF NOT EXISTS directory_category_slug text;
 ALTER TABLE shops ADD COLUMN IF NOT EXISTS directory_subcategory_slug text;
 CREATE INDEX IF NOT EXISTS shops_directory_category_idx ON shops (directory_category_slug, is_active);
 CREATE INDEX IF NOT EXISTS shops_directory_city_idx ON shops (city, country);
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS latitude double precision;
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS longitude double precision;
+ALTER TABLE shop_applications ADD COLUMN IF NOT EXISTS latitude double precision;
+ALTER TABLE shop_applications ADD COLUMN IF NOT EXISTS longitude double precision;
 `;
 
 const SHOP_RATINGS_SQL = `

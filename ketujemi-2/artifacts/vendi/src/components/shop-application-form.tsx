@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { ShopDescriptionHelper } from "@/components/shop-description-helper";
 import { ShopSocialUrlFields } from "@/components/shop-social-url-fields";
 import { shopSocialFieldsForSubmit, type ShopSocialField } from "@/lib/shop-social-url-input";
+import { ShopAddressAutocomplete } from "@/components/shop-address-autocomplete";
 
 export function ShopApplicationForm() {
   const c = useShopFormCopy();
@@ -37,6 +38,8 @@ export function ShopApplicationForm() {
   const [city, setCity] = useState("");
   const [region, setRegion] = useState("");
   const [address, setAddress] = useState("");
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
   const [facebook, setFacebook] = useState("");
   const [instagram, setInstagram] = useState("");
   const [tiktok, setTiktok] = useState("");
@@ -128,6 +131,8 @@ export function ShopApplicationForm() {
           city,
           region,
           address,
+          latitude,
+          longitude,
           ...social,
           contact_name: contactName,
           phone,
@@ -280,7 +285,25 @@ export function ShopApplicationForm() {
           </div>
           <div className="space-y-2">
             <Label>{c.address} *</Label>
-            <Input value={address} onChange={(e) => setAddress(e.target.value)} required className="min-h-12" />
+            <ShopAddressAutocomplete
+              value={address}
+              country={country}
+              required
+              className="min-h-12"
+              onChange={(next) => {
+                setAddress(next);
+                setLatitude(null);
+                setLongitude(null);
+              }}
+              onPlaceSelect={(place) => {
+                setAddress(place.address);
+                setLatitude(place.latitude);
+                setLongitude(place.longitude);
+                if (place.city) setCity(place.city);
+                if (place.region) setRegion(place.region);
+              }}
+            />
+            <p className="text-xs text-gray-500">{c.addressAutocompleteHint}</p>
           </div>
         </section>
 

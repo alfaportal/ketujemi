@@ -1,4 +1,4 @@
-import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { doublePrecision, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { shopDirectoryCategoriesTable } from "./shop_directory_categories";
 import { shopDirectorySubcategoriesTable } from "./shop_directory_subcategories";
 import { usersTable } from "./users";
@@ -25,6 +25,8 @@ export const shopApplicationsTable = pgTable("shop_applications", {
   city: text("city").notNull(),
   region: text("region").notNull(),
   address: text("address").notNull(),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
   facebook: text("facebook"),
   instagram: text("instagram"),
   tiktok: text("tiktok"),

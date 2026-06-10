@@ -15,7 +15,7 @@ import { getSessionUser } from "../lib/session-user";
 import { sendShopApplicationEmail, sendShopRatingEmail } from "../lib/send-shop-application-email";
 import { formatListingsBatch } from "../lib/format-listings-batch";
 import { resolveDirectoryFields } from "../lib/shop-directory-patch";
-import { ownerShopFieldPatch } from "../lib/shop-field-patch";
+import { ownerShopFieldPatch, parseLatitude, parseLongitude } from "../lib/shop-field-patch";
 import { parseDeletionSurveyBody } from "../lib/deletion-feedback.js";
 import { softDeleteShopWithFeedback } from "../lib/soft-delete-shop.js";
 import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxonomy.js";
@@ -106,6 +106,8 @@ router.post("/shop-applications", async (req, res) => {
       city: String(body.city).trim(),
       region: String(body.region).trim(),
       address: String(body.address).trim(),
+      latitude: parseLatitude(body.latitude),
+      longitude: parseLongitude(body.longitude),
       facebook,
       instagram,
       tiktok,
@@ -189,6 +191,8 @@ function shopDirectoryRow(
     city: shop.city,
     region: shop.region,
     address: shop.address,
+    latitude: shop.latitude,
+    longitude: shop.longitude,
     facebook: shop.facebook,
     instagram: shop.instagram,
     tiktok: shop.tiktok,
@@ -362,6 +366,8 @@ router.get("/shops/me", async (req, res) => {
           city: shop.city,
           region: shop.region,
           address: shop.address,
+          latitude: shop.latitude,
+          longitude: shop.longitude,
           facebook: shop.facebook,
           instagram: shop.instagram,
           tiktok: shop.tiktok,
@@ -758,6 +764,8 @@ router.get("/shops/:id", async (req, res) => {
       city: shop.city,
       region: shop.region,
       address,
+      latitude: shop.latitude,
+      longitude: shop.longitude,
       facebook: shop.facebook,
       instagram: shop.instagram,
       tiktok: shop.tiktok,

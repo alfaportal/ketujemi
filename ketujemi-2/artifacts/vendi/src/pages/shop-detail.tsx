@@ -36,7 +36,7 @@ import { applyPageMeta, truncateMetaDescription } from "@/lib/page-meta";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
-import { buildMapSearchQuery, googleMapsEmbedSrc } from "@/lib/google-maps-embed";
+import { shopMapEmbedSrc } from "@/lib/google-maps-embed";
 import { shopDetailSeoTitle, useShopDetailCopy } from "@/lib/shop-detail-i18n";
 import { cn } from "@/lib/utils";
 import {
@@ -68,6 +68,8 @@ type ShopData = {
   city: string;
   region: string;
   address: string;
+  latitude?: number | null;
+  longitude?: number | null;
   contact_name?: string;
   phone?: string;
   email?: string;
@@ -248,7 +250,9 @@ export default function ShopDetailPage() {
     );
   }
 
-  const mapQuery = buildMapSearchQuery({
+  const mapEmbedSrc = shopMapEmbedSrc({
+    latitude: shop.latitude,
+    longitude: shop.longitude,
     address: shop.address,
     city: shop.city,
     country: shop.country,
@@ -359,7 +363,7 @@ export default function ShopDetailPage() {
             title={d.mapTitle}
             className="w-full h-64 sm:h-80 border-0"
             loading="lazy"
-            src={googleMapsEmbedSrc(mapQuery)}
+            src={mapEmbedSrc}
           />
           <p className="px-4 py-3 text-sm text-gray-600">{shop.address}</p>
         </section>

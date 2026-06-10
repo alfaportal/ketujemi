@@ -6,6 +6,18 @@ function trimOrNull(v: unknown): string | null {
   return t || null;
 }
 
+export function parseLatitude(v: unknown): number | null {
+  if (v === null || v === undefined || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) && n >= -90 && n <= 90 ? n : null;
+}
+
+export function parseLongitude(v: unknown): number | null {
+  if (v === null || v === undefined || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) && n >= -180 && n <= 180 ? n : null;
+}
+
 type ShopInsert = typeof shopsTable.$inferInsert;
 type AppInsert = typeof shopApplicationsTable.$inferInsert;
 
@@ -32,6 +44,8 @@ export function buildShopFieldPatch(body: Record<string, unknown>): Partial<Shop
   if (region) patch.region = region;
   const address = trimOrNull(body.address);
   if (address) patch.address = address;
+  if ("latitude" in body) patch.latitude = parseLatitude(body.latitude);
+  if ("longitude" in body) patch.longitude = parseLongitude(body.longitude);
   if ("facebook" in body) patch.facebook = trimOrNull(body.facebook);
   if ("instagram" in body) patch.instagram = trimOrNull(body.instagram);
   if ("tiktok" in body) patch.tiktok = trimOrNull(body.tiktok);
