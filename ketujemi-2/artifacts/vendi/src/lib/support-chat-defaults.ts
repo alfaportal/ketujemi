@@ -24,7 +24,7 @@ const KS: SupportChatUiCopy = {
   subtitle: "Asistenti KetuJemi",
   welcome: "Përshëndetje! Pyetni shkurt — do t'ju udhëzoj ku të shkoni në KetuJemi.",
   fab: "Ndihmë",
-  inputPh: "Shkruani pyetjen…",
+  inputPh: "Shkruani pyetjen tuaj...",
   listeningPh: "Po dëgjohet zëri…",
   typing: "Duke shkruar…",
   listening: "Po dëgjoj… flisni tani",
@@ -42,9 +42,9 @@ const MK: SupportChatUiCopy = {
   ...KS,
   title: "Помош",
   subtitle: "Асистент KetuJemi",
-  welcome: "Здраво! Поставете кратко прашање — ќе ве водам низ KetuJemi.",
+  welcome: "Здраво! Поставете прашање — ќе ве упатам на KetuJemi.",
   fab: "Помош",
-  inputPh: "Напишете го прашањето…",
+  inputPh: "Внесете го вашето прашање...",
   listeningPh: "Се слуша глас…",
   typing: "Пишува…",
   listening: "Слушам… зборувајте сега",
@@ -62,9 +62,9 @@ const MNE: SupportChatUiCopy = {
   ...KS,
   title: "Pomoć",
   subtitle: "Asistent KetuJemi",
-  welcome: "Zdravo! Postavite kratko pitanje — vodim vas kroz KetuJemi.",
+  welcome: "Zdravo! Postavite pitanje — vodim vas kroz KetuJemi.",
   fab: "Pomoć",
-  inputPh: "Upišite pitanje…",
+  inputPh: "Unesite vaše pitanje...",
   listeningPh: "Sluša se glas…",
   typing: "Kucanje…",
   listening: "Slušam… govorite sada",
@@ -82,9 +82,9 @@ const EN: SupportChatUiCopy = {
   ...KS,
   title: "Help",
   subtitle: "KetuJemi assistant",
-  welcome: "Hello! Ask briefly — I will guide you around KetuJemi.",
+  welcome: "Hello! Ask me anything — I'll guide you around KetuJemi.",
   fab: "Help",
-  inputPh: "Type your question…",
+  inputPh: "Type your question...",
   listeningPh: "Listening to voice…",
   typing: "Typing…",
   listening: "Listening… speak now",
@@ -102,9 +102,9 @@ const FR: SupportChatUiCopy = {
   ...EN,
   title: "Aide",
   subtitle: "Assistant KetuJemi",
-  welcome: "Bonjour ! Posez une question courte — je vous guide sur KetuJemi.",
+  welcome: "Bonjour! Posez une question — je vous guide sur KetuJemi.",
   fab: "Aide",
-  inputPh: "Posez votre question…",
+  inputPh: "Posez votre question...",
   listeningPh: "Écoute de la voix…",
   typing: "Saisie…",
   listening: "J'écoute… parlez maintenant",
@@ -118,9 +118,9 @@ const DE: SupportChatUiCopy = {
   ...EN,
   title: "Hilfe",
   subtitle: "KetuJemi-Assistent",
-  welcome: "Hallo! Stellen Sie kurz eine Frage — ich leite Sie durch KetuJemi.",
+  welcome: "Hallo! Stellen Sie mir eine Frage — ich helfe Ihnen auf KetuJemi.",
   fab: "Hilfe",
-  inputPh: "Frage eingeben…",
+  inputPh: "Ihre Frage eingeben...",
   listeningPh: "Sprache wird erkannt…",
   typing: "Schreibt…",
   listening: "Ich höre zu… sprechen Sie jetzt",
@@ -132,9 +132,9 @@ const IT: SupportChatUiCopy = {
   ...EN,
   title: "Aiuto",
   subtitle: "Assistente KetuJemi",
-  welcome: "Ciao! Fai una domanda breve — ti guido su KetuJemi.",
+  welcome: "Ciao! Fai una domanda — ti guido su KetuJemi.",
   fab: "Aiuto",
-  inputPh: "Scrivi la domanda…",
+  inputPh: "Scrivi la tua domanda...",
   listeningPh: "Ascolto la voce…",
   typing: "Sta scrivendo…",
   listening: "Sto ascoltando… parla ora",
@@ -166,13 +166,20 @@ export function supportApiLang(uiLang: UiLang, marketCode: string): string {
   return "sq";
 }
 
+/** Keys that must follow {@link uiLang} — not a stale/wrong async bundle value. */
+const UI_LANG_LOCKED_KEYS = new Set<keyof SupportChatUiCopy>(["welcome", "inputPh"]);
+
 export function mergeSupportChatCopy(
   uiLang: UiLang,
   t: Record<string, string>,
 ): SupportChatUiCopy {
   const fb = supportChatDefaults(uiLang);
-  const pick = (key: keyof SupportChatUiCopy, txKey: string) =>
-    t[txKey]?.trim() || fb[key];
+  const pick = (key: keyof SupportChatUiCopy, txKey: string) => {
+    const fromBundle = t[txKey]?.trim();
+    const fromDefaults = fb[key];
+    if (UI_LANG_LOCKED_KEYS.has(key)) return fromDefaults || fromBundle || "";
+    return fromBundle || fromDefaults;
+  };
   return {
     title: pick("title", "ui_supportChatTitle"),
     subtitle: pick("subtitle", "ui_supportChatSubtitle") || fb.subtitle,

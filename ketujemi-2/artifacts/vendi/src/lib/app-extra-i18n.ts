@@ -2128,7 +2128,7 @@ const AL_OVERRIDES: Record<string, string> = {
     "Ky shfletues nuk mbështet zërin. Përdorni Chrome ose Edge në desktop.",
   ui_supportTyping: "Duke shkruar…",
   ui_supportListening: "Po dëgjoj… flisni tani",
-  ui_supportInputPh: "Shkruani pyetjen…",
+  ui_supportInputPh: "Shkruani pyetjen tuaj...",
   ui_supportListeningPh: "Po dëgjohet zëri…",
   ui_supportVoiceStopAria: "Ndalo dhe dërgo",
   ui_supportVoiceStartAria: "Fol me zë",
@@ -4238,7 +4238,7 @@ const MK_EXTRA: Record<string, string> = {
   ui_walletExtraPostCost:
     "Го достигнавте бесплатниот лимит. Секој дополнителен оглас чини €{price} од портфелот.",
   ui_supportWelcome:
-    "Здраво! Поставете кратко прашање — ќе ве водам низ KetuJemi.",
+    "Здраво! Поставете прашање — ќе ве упатам на KetuJemi.",
   ui_supportBusy: "Не се поврза со серверот. Обидете се повторно.",
   ui_supportVoiceError:
     "Микрофонот не се активираше. Дозволете микрофон во прелистувачот и обидете се повторно.",
@@ -4248,7 +4248,7 @@ const MK_EXTRA: Record<string, string> = {
     "Овој прелистувач не поддржува глас. Користете Chrome или Edge на desktop.",
   ui_supportTyping: "Пишува…",
   ui_supportListening: "Слушам… зборувајте сега",
-  ui_supportInputPh: "Напишете го прашањето…",
+  ui_supportInputPh: "Внесете го вашето прашање...",
   ui_supportListeningPh: "Се слуша глас…",
   ui_supportVoiceStopAria: "Стоп и испрати",
   ui_supportVoiceStartAria: "Зборувај со глас",
@@ -6352,7 +6352,7 @@ const MNE_EXTRA: Record<string, string> = {
   ui_walletPostSuccess: "Oglas objavljen. Saldo: €{balance} — {remaining} preostalih oglasa.",
   ui_walletExtraPostCost:
     "Dostigli ste besplatni limit. Svaki dodatni oglas košta €{price} iz novčanika.",
-  ui_supportWelcome: "Zdravo! Postavite kratko pitanje — vodim vas kroz KetuJemi.",
+  ui_supportWelcome: "Zdravo! Postavite pitanje — vodim vas kroz KetuJemi.",
   ui_supportBusy: "Nije moguće povezati se sa serverom. Pokušajte ponovo.",
   ui_supportVoiceError:
     "Mikrofon nije aktiviran. Dozvolite mikrofon u pregledaču i pokušajte ponovo.",
@@ -6362,7 +6362,7 @@ const MNE_EXTRA: Record<string, string> = {
     "Ovaj pregledač ne podržava glas. Koristite Chrome ili Edge na desktopu.",
   ui_supportTyping: "Kucanje…",
   ui_supportListening: "Slušam… govorite sada",
-  ui_supportInputPh: "Upišite pitanje…",
+  ui_supportInputPh: "Unesite vaše pitanje...",
   ui_supportListeningPh: "Sluša se glas…",
   ui_supportVoiceStopAria: "Zaustavi i pošalji",
   ui_supportVoiceStartAria: "Govori glasom",
