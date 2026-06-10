@@ -5,6 +5,7 @@ import { TOP_PACKAGES_PUBLIC, type TopListingPurpose } from "@/lib/top-packages"
 import { redirectToStripeCheckout } from "@/lib/stripe-checkout";
 import { useToast } from "@/hooks/use-toast";
 import { useMarket } from "@/lib/market-context";
+import { fillPlaceholders } from "@/lib/app-extra-i18n";
 
 export function TopListingPackages({
   listingId,
@@ -57,9 +58,9 @@ export function TopListingPackages({
             )}
             title={
               !phase2Enabled
-                ? "TOP aktivizohet në Fazën 2"
+                ? tx.ui_topPhase2Compact
                 : !paymentsReady
-                  ? "Stripe nuk është konfiguruar"
+                  ? tx.ui_cardPaymentsNotConfigured
                   : `TOP ${pkg.label} — €${pkg.priceEur}`
             }
           >
@@ -79,12 +80,9 @@ export function TopListingPackages({
     <div className="space-y-2">
       <p className="text-xs font-bold text-violet-900 flex items-center gap-1.5">
         <Sparkles className="h-4 w-4" aria-hidden />
-        Zgjidh paketën TOP
+        {tx.ui_topPackagesSelectTitle}
       </p>
-      <p className="text-[11px] text-gray-600 leading-snug">
-        Njoftimi shfaqet në karuselin «TOP Njoftime» në kryefaqe (poshtë partnerëve VIP). Zgjidh
-        paketën — pas pagesës me kartë vlen për ditët e shënuara.
-      </p>
+      <p className="text-[11px] text-gray-600 leading-snug">{tx.ui_topPackagesCarouselDesc}</p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         {TOP_PACKAGES_PUBLIC.map((pkg) => {
           const busy = busyPurpose === pkg.purpose;
@@ -103,8 +101,12 @@ export function TopListingPackages({
             >
               <div>
                 <p className="text-lg font-black text-violet-900">€{pkg.priceEur}</p>
-                <p className="text-sm font-bold text-gray-800">{pkg.label} në kryefaqe</p>
-                <p className="text-[11px] text-gray-500 mt-0.5">Vlen {pkg.days} ditë nga pagesa</p>
+                <p className="text-sm font-bold text-gray-800">
+                  {fillPlaceholders(tx.ui_topPackagesHomepageLabel, { label: pkg.label })}
+                </p>
+                <p className="text-[11px] text-gray-500 mt-0.5">
+                  {fillPlaceholders(tx.ui_topPackagesValidDays, { days: pkg.days })}
+                </p>
               </div>
               <span className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-violet-800">
                 {busy ? (
@@ -112,7 +114,7 @@ export function TopListingPackages({
                 ) : (
                   <CreditCard className="h-3.5 w-3.5" />
                 )}
-                Paguaj me kartë
+                {tx.ui_payWithCard}
               </span>
             </button>
           );
@@ -120,7 +122,7 @@ export function TopListingPackages({
       </div>
       {!phase2Enabled ? (
         <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-          TOP aktivizohet së shpejti (Faza 2).
+          {tx.ui_topPackagesPhase2Soon}
         </p>
       ) : null}
     </div>

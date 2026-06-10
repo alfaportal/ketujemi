@@ -272,7 +272,7 @@ export function RrobaKepuceSearchPanel({
       if (clothMat) searchBits.push(RK_CLOTH_MAT_SEARCH[clothMat]);
     } else if (typeKey === "kepuce") {
       if (shoeGender) searchBits.push(RK_GENDER_SEARCH[shoeGender]);
-      if (shoeSize) searchBits.push(`Numër ${shoeSize}`);
+      if (shoeSize) searchBits.push(shoeSize);
       if (shoeMat) searchBits.push(RK_SHOE_MAT_SEARCH[shoeMat]);
     } else if (typeKey === "aksesore") {
       if (accGender) searchBits.push(RK_GENDER_SEARCH[accGender]);

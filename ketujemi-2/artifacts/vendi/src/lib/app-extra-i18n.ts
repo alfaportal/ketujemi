@@ -2100,6 +2100,7 @@ const AL_OVERRIDES: Record<string, string> = {
   ui_bankPaymentSub: "Transfer bankar për portofolin",
   ui_beneficiaryLabel: "Përfituesi",
   ui_reportProblemPh: "Përshkruani problemin…",
+  ui_streetAddressLabel: "Adresa",
   ui_streetAddressPh: "Rruga, nr. shtëpisë...",
   ui_postGiftBtn: "🎁 Posto Dhuratën →",
   ui_postRequestBtn: "Posto Kërkesën",
@@ -2111,6 +2112,7 @@ const AL_OVERRIDES: Record<string, string> = {
   ui_topThanksSoon: "Faleminderit! TOP do të shfaqet së shpejti.",
   ui_repostSuccess: "Njoftimi u rifillua!",
   ui_genericError: "Gabim",
+  ui_socialNetworksAria: "Rrjetet sociale",
   ui_paymentMethodsAria: "Metodat e pagesës",
   ui_diasporaMarketsTitle: "Gjermani, Zvicër, Austri, Francë, Itali, Angli, SHBA, Mal i Zi",
   ui_supportWelcome:
@@ -2184,9 +2186,23 @@ const AL_OVERRIDES: Record<string, string> = {
   ui_routeErrorTitle: "Diçka shkoi keq",
   ui_routeErrorHint: "Rifresko faqen.",
   ui_routeErrorRefresh: "Rifresko",
+  ui_listingExpiredBannerBefore: "Ky njoftim ka skaduar. Klikoni",
+  ui_repostListingBtn: "🔄 Rifillo njoftimin",
+  ui_repostListingLink: "Rifillo njoftimin",
+  ui_listingExpiredBannerAfter: "për ta shfaqur përsëri në listë.",
+  ui_listingLifetimeMonths: "3 muaj",
+  ui_listingLifetimeNote:
+    "Çdo njoftim qëndron online deri {months} nga data e postimit, pastaj hiqet automatikisht (nëse nuk e fshini vetë). Postimi është falas dhe i pakufizuar — opsioni i vetëm me pagesë është Boost TOP.",
+  ui_postedAtLabel: "Postuar:",
+  ui_expiresAtLabel: "Skadon:",
+  ui_sellerNoResponse: "Shitësi nuk përgjigjet",
+  ui_sellerNoResponseBusy: "Duke dërguar…",
+  ui_topPhase2Compact: "TOP aktivizohet në Fazën 2",
 };
 
 const MK_EXTRA: Record<string, string> = {
+  home_categoriesLoadError: "Категориите не се вчитаа. Освежете ја страницата.",
+  lz_sec_types: "Тип на имот",
   nav_menuAria: "Отвори мени",
   nav_menuTitle: "Мени",
   nav_home: "Почетна",
@@ -4204,6 +4220,9 @@ const MK_EXTRA: Record<string, string> = {
   ui_topThanksSoon: "Благодариме! TOP наскоро ќе се прикаже.",
   ui_repostSuccess: "Огласот е обновен!",
   ui_genericError: "Грешка",
+  ui_socialNetworksAria: "Социјални мрежи",
+  ui_paymentMethodsAria: "Начини на плаќање",
+  ui_diasporaMarketsTitle: "Германија, Швајцарија, Австрија, Франција, Италија, Велика Британија, САД, Црна Гора",
   ui_emptyListingsSubLong:
     "Биди прв кој ќе огласи во оваа категорија и достигни илјадници потенцијални купувачи!",
   ui_walletPerListing: "1 оглас = €0.30 од салдото",
@@ -4281,9 +4300,25 @@ const MK_EXTRA: Record<string, string> = {
   ui_routeErrorTitle: "Нешто тргна наопаку",
   ui_routeErrorHint: "Освежете ја страницата.",
   ui_routeErrorRefresh: "Освежи",
+  ui_listingExpiredBannerBefore: "Овој оглас е истечен. Кликнете",
+  ui_repostListingBtn: "🔄 Обнови го огласот",
+  ui_repostListingLink: "Обнови го огласот",
+  ui_listingExpiredBannerAfter: "за повторно да се појави во листата.",
+  ui_listingLifetimeMonths: "3 месеци",
+  ui_listingLifetimeNote:
+    "Секој оглас останува онлајн до {months} од датумот на објавување, потоа се отстранува автоматски (освен ако не го избришете сами). Објавувањето е бесплатно и неограничено — единствената платена опција е Boost TOP.",
+  ui_postedAtLabel: "Објавено:",
+  ui_expiresAtLabel: "Истекува:",
+  ui_sellerNoResponse: "Продавачот не одговара",
+  ui_sellerNoResponseBusy: "Се испраќа…",
+  ui_topPhase2Compact: "TOP се активира во Фаза 2",
+  ui_streetAddressLabel: "Адреса",
+  ui_streetAddressPh: "Улица, број…",
 };
 
 const MNE_EXTRA: Record<string, string> = {
+  home_categoriesLoadError: "Kategorije nisu učitane. Osvježite stranicu.",
+  lz_sec_types: "Vrsta nekretnine",
   nav_menuAria: "Otvori meni",
   nav_menuTitle: "Meni",
   nav_home: "Početna",
@@ -6300,6 +6335,9 @@ const MNE_EXTRA: Record<string, string> = {
   ui_topThanksSoon: "Hvala! TOP će se uskoro prikazati.",
   ui_repostSuccess: "Oglas je obnovljen!",
   ui_genericError: "Greška",
+  ui_socialNetworksAria: "Društvene mreže",
+  ui_paymentMethodsAria: "Načini plaćanja",
+  ui_diasporaMarketsTitle: "Njemačka, Švicarska, Austrija, Francuska, Italija, UK, SAD, Crna Gora",
   ui_emptyListingsSubLong:
     "Budi prvi koji objavljuje u ovoj kategoriji i dođi do hiljada potencijalnih kupaca!",
   ui_walletPerListing: "1 oglas = €0.30 sa salda",
@@ -6376,6 +6414,20 @@ const MNE_EXTRA: Record<string, string> = {
   ui_routeErrorTitle: "Nešto je pošlo po zlu",
   ui_routeErrorHint: "Osvježite stranicu.",
   ui_routeErrorRefresh: "Osvježi",
+  ui_listingExpiredBannerBefore: "Ovaj oglas je istekao. Kliknite",
+  ui_repostListingBtn: "🔄 Obnovi oglas",
+  ui_repostListingLink: "Obnovi oglas",
+  ui_listingExpiredBannerAfter: "da se ponovo pojavi na listi.",
+  ui_listingLifetimeMonths: "3 mjeseca",
+  ui_listingLifetimeNote:
+    "Svaki oglas ostaje online do {months} od datuma objave, zatim se automatski uklanja (osim ako ga sami ne obrišete). Objavljivanje je besplatno i neograničeno — jedina plaćena opcija je Boost TOP.",
+  ui_postedAtLabel: "Objavljeno:",
+  ui_expiresAtLabel: "Ističe:",
+  ui_sellerNoResponse: "Prodavac ne odgovara",
+  ui_sellerNoResponseBusy: "Šalje se…",
+  ui_topPhase2Compact: "TOP se aktivira u Fazi 2",
+  ui_streetAddressLabel: "Adresa",
+  ui_streetAddressPh: "Ulica, broj…",
 };
 
 export const EXTRA_TRANSLATIONS: Record<AppExtraLocaleKey, Record<string, string>> = {

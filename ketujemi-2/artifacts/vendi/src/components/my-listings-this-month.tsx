@@ -3,7 +3,7 @@ import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Loader2 } from "lucide-react";
 import { formatQuotaResetLabel } from "@/components/listing-limit-reached-modal";
 import { useMarket } from "@/lib/market-context";
-import { useMyListingsMonthCopy } from "@/lib/my-listings-month-i18n";
+import { fillMyListingsPlaceholders, useMyListingsMonthCopy } from "@/lib/my-listings-month-i18n";
 import { translateCategory, type UiCategoryLocale } from "@/lib/category-translations";
 
 type PostRow = { id: number; title: string; created_at: string };
@@ -37,7 +37,15 @@ export function MyListingsThisMonth() {
   const m = useMyListingsMonthCopy();
   const { uiLang } = useMarket();
   const locale =
-    uiLang === "mk" ? "mk-MK" : uiLang === "mne" ? "sr-ME" : uiLang === "en" ? "en-GB" : "sq-AL";
+    uiLang === "mk"
+      ? "mk-MK"
+      : uiLang === "mne"
+        ? "sr-ME"
+        : uiLang === "en"
+          ? "en-GB"
+          : uiLang === "fr"
+            ? "fr-FR"
+            : "sq-AL";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +65,7 @@ export function MyListingsThisMonth() {
         if (!cancelled) setData(j);
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Gabim.");
+        if (!cancelled) setError(e instanceof Error ? e.message : m.genericError);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -75,11 +83,14 @@ export function MyListingsThisMonth() {
     <section className="space-y-3 pt-4 border-t border-gray-100" aria-labelledby="my-listings-month-title">
       <div>
         <h2 id="my-listings-month-title" className="text-base font-bold text-gray-900">
-          My Listings This Month
+          {m.sectionTitle}
         </h2>
         {data ? (
           <p className="text-xs text-gray-500 mt-1">
-            Limiti falas (10 për kategori) riniset më <strong>{resetLabel}</strong> (ora 00:00 UTC).
+            {fillMyListingsPlaceholders(m.freeLimitNote, {
+              limit: data.free_limit_per_category,
+              date: resetLabel,
+            })}
           </p>
         ) : null}
       </div>

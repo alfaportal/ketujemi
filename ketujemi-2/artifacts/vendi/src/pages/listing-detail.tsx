@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useMarket } from "@/lib/market-context";
-import { dateFnsLocale } from "@/lib/app-extra-i18n";
+import { dateFnsLocale, fillPlaceholders } from "@/lib/app-extra-i18n";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { userOwnsListing } from "@/lib/listing-ownership";
 import { sellerFirstName } from "@/lib/seller-display";
@@ -379,8 +379,18 @@ export default function ListingDetail() {
     listed_at?: string;
     expires_at?: string | null;
   };
+  const intlLocale =
+    uiLang === "mk"
+      ? "mk-MK"
+      : uiLang === "mne"
+        ? "sr-ME"
+        : uiLang === "en"
+          ? "en-GB"
+          : uiLang === "fr"
+            ? "fr-FR"
+            : "sq-AL";
   const postedAt = listingMeta.listed_at ?? listing.created_at;
-  const postedLabel = new Date(postedAt).toLocaleString("sq-AL", {
+  const postedLabel = new Date(postedAt).toLocaleString(intlLocale, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -388,12 +398,15 @@ export default function ListingDetail() {
     minute: "2-digit",
   });
   const expiresLabel = listingMeta.expires_at
-    ? new Date(listingMeta.expires_at).toLocaleDateString("sq-AL", {
+    ? new Date(listingMeta.expires_at).toLocaleDateString(intlLocale, {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
       })
     : null;
+  const lifetimeNote = fillPlaceholders(tx.ui_listingLifetimeNote, {
+    months: tx.ui_listingLifetimeMonths,
+  });
 
   const sellerDigits = user ? (listing.seller_phone ?? "").replace(/\D/g, "") : "";
   const smsHref = user ? smsUriFromDigits(sellerDigits) : "sms:";
@@ -451,7 +464,7 @@ export default function ListingDetail() {
                 disabled={repostBusy}
                 onClick={() => void repostListing()}
               >
-                {repostBusy ? "…" : "🔄 Rifillo njoftimin"}
+                {repostBusy ? "…" : tx.ui_repostListingBtn}
               </Button>
             ) : null}
           </div>
@@ -461,7 +474,8 @@ export default function ListingDetail() {
       <div className="max-w-4xl mx-auto px-4 py-6">
         {isExpired && canManage ? (
           <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            Ky njoftim ka skaduar. Klikoni <strong>Rifillo njoftimin</strong> për ta shfaqur përsëri në listë.
+            {tx.ui_listingExpiredBannerBefore}{" "}
+            <strong>{tx.ui_repostListingLink}</strong> {tx.ui_listingExpiredBannerAfter}
           </div>
         ) : null}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -630,18 +644,17 @@ export default function ListingDetail() {
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-sm bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full font-medium">
                   <Clock size={11} />
-                  Postuar: {postedLabel}
+                  {tx.ui_postedAtLabel} {postedLabel}
                 </span>
                 {expiresLabel ? (
                   <span className="inline-flex items-center gap-1.5 text-sm bg-amber-50 text-amber-800 border border-amber-100 px-3 py-1.5 rounded-full font-medium">
                     <Clock size={11} />
-                    Skadon: {expiresLabel}
+                    {tx.ui_expiresAtLabel} {expiresLabel}
                   </span>
                 ) : null}
               </div>
               <p className="text-xs text-gray-500 mt-3 leading-relaxed">
-                Çdo njoftim qëndron online deri <strong>3 muaj</strong> nga data e postimit, pastaj hiqet automatikisht
-                (nëse nuk e fshini vetë). Postimi është falas dhe i pakufizuar — opsioni i vetëm me pagesë është Boost TOP.
+                {lifetimeNote}
               </p>
             </div>
 
@@ -785,7 +798,7 @@ export default function ListingDetail() {
                     disabled={complaintBusy}
                     onClick={() => void submitNoResponseComplaint()}
                   >
-                    {complaintBusy ? "Duke dërguar…" : "Shitësi nuk përgjigjet"}
+                    {complaintBusy ? tx.ui_sellerNoResponseBusy : tx.ui_sellerNoResponse}
                   </Button>
                 ) : null}
               </div>

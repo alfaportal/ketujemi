@@ -44,6 +44,7 @@ const ERROR_DEFAULTS_KS: Record<string, string> = {
   DUPLICATE_LISTING: "Ky njoftim ekziston tashmë. Nuk mund të postoni të njëjtën gjë dy herë.",
   DUPLICATE_LISTING_SELF: "Keni një njoftim të ngjashëm aktiv. Ndryshoni titullin ose përshkrimin.",
   BLACKLIST_WORD: "Përmbajtja përmban fjalë të ndaluara. Ndryshoni titullin ose përshkrimin.",
+  CLIENT_BLOCKED_WORD: 'Përmbajtja përmban fjalë të ndaluara: "{word}".',
   PHONE_IN_DESCRIPTION:
     "Numri i telefonit nuk lejohet në përshkrim. Vendoseni vetëm në fushën e telefonit.",
   EXTERNAL_LINK_IN_DESCRIPTION: "Linqet e jashtme nuk lejohen në përshkrim.",
@@ -102,6 +103,7 @@ const ERROR_DEFAULTS_MK: Record<string, string> = {
   DUPLICATE_LISTING: "Овој оглас веќе постои. Не можете да објавите истото двапати.",
   DUPLICATE_LISTING_SELF: "Имате сличен активен оглас. Променете го насловот или описот.",
   BLACKLIST_WORD: "Содржината содржи забранети зборови. Променете го насловот или описот.",
+  CLIENT_BLOCKED_WORD: 'Содржината содржи забранета збор: "{word}".',
   PHONE_IN_DESCRIPTION:
     "Телефонскиот број не е дозволен во описот. Внесете го само во полето за телефон.",
   EXTERNAL_LINK_IN_DESCRIPTION: "Надворешни линкови не се дозволени во описот.",
@@ -161,6 +163,7 @@ const ERROR_DEFAULTS_MNE: Record<string, string> = {
   DUPLICATE_LISTING: "Ovaj oglas već postoji. Ne možete objaviti isto dvaput.",
   DUPLICATE_LISTING_SELF: "Imate sličan aktivan oglas. Promijenite naslov ili opis.",
   BLACKLIST_WORD: "Sadržaj sadrži zabranjene riječi. Promijenite naslov ili opis.",
+  CLIENT_BLOCKED_WORD: 'Sadržaj sadrži zabranjenu riječ: "{word}".',
   PHONE_IN_DESCRIPTION:
     "Broj telefona nije dozvoljen u opisu. Unesite ga samo u polje za telefon.",
   EXTERNAL_LINK_IN_DESCRIPTION: "Vanjski linkovi nisu dozvoljeni u opisu.",
@@ -220,6 +223,7 @@ const ERROR_DEFAULTS_EN: Record<string, string> = {
   DUPLICATE_LISTING: "This listing already exists. You cannot post the same thing twice.",
   DUPLICATE_LISTING_SELF: "You have a similar active listing. Change the title or description.",
   BLACKLIST_WORD: "Content contains blocked words. Change the title or description.",
+  CLIENT_BLOCKED_WORD: 'Content contains a blocked word: "{word}".',
   PHONE_IN_DESCRIPTION:
     "Phone number is not allowed in the description. Enter it only in the phone field.",
   EXTERNAL_LINK_IN_DESCRIPTION: "External links are not allowed in the description.",
@@ -278,6 +282,7 @@ const ERROR_DEFAULTS_FR: Record<string, string> = {
   DUPLICATE_LISTING: "Cette annonce existe déjà. Vous ne pouvez pas publier la même chose deux fois.",
   DUPLICATE_LISTING_SELF: "Vous avez une annonce active similaire. Modifiez le titre ou la description.",
   BLACKLIST_WORD: "Le contenu contient des mots interdits. Modifiez le titre ou la description.",
+  CLIENT_BLOCKED_WORD: 'Le contenu contient un mot interdit : « {word} ».',
   PHONE_IN_DESCRIPTION:
     "Le numéro de téléphone n'est pas autorisé dans la description. Saisissez-le uniquement dans le champ téléphone.",
   EXTERNAL_LINK_IN_DESCRIPTION: "Les liens externes ne sont pas autorisés dans la description.",
@@ -394,6 +399,27 @@ function formatApiValidationDetails(
     })
     .filter(Boolean);
   return parts.length ? parts.join(" · ") : null;
+}
+
+export function clientValidationMessage(
+  code: string,
+  locale: UiTranslationLocale,
+  opts?: { blockedWord?: string },
+): string | null {
+  const { errorDefaults } = copyForLocale(locale);
+  if (code === "CLIENT_BLOCKED_WORD") {
+    if (opts?.blockedWord && errorDefaults.CLIENT_BLOCKED_WORD) {
+      return errorDefaults.CLIENT_BLOCKED_WORD.replace("{word}", opts.blockedWord);
+    }
+    return errorDefaults.BLACKLIST_WORD ?? null;
+  }
+  if (code === "PHONE_IN_DESCRIPTION") {
+    return errorDefaults.PHONE_IN_DESCRIPTION ?? null;
+  }
+  if (code === "EXTERNAL_LINK") {
+    return errorDefaults.EXTERNAL_LINK_IN_DESCRIPTION ?? null;
+  }
+  return defaultForErrorCode(code, errorDefaults);
 }
 
 export function fieldLabel(path: string, locale: UiTranslationLocale): string {

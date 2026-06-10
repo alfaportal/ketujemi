@@ -82,6 +82,7 @@ import {
 import { DHURATA_FALAS_SLUG, KERKOJ_POST_PATH, KERKOJ_TE_BLEJ_SLUG } from "@/lib/special-listing-categories";
 import { categoryEngine } from "@/services/CategoryEngine";
 import {
+  clientValidationMessage,
   collectFormValidationMessages,
   formatFormValidationSummary,
   resolveListingPostApiError,
@@ -602,8 +603,7 @@ export default function NewListing() {
         toast({
           title: t.photoAnalyzeFailed,
           description: isVideoFrame
-            ? (tx.videoAnalyzeFrameHint ??
-              "Nuk u lexua korniza e videos. Provoni video më të shkurtër me dritë të mirë, ose shtoni një foto.")
+            ? t.videoAnalyzeFrameHint
             : getFetchErrorMessage(error, tx.photoAnalyzeFailedHint),
           variant: "destructive",
         });
@@ -684,8 +684,7 @@ export default function NewListing() {
             title: t.photoAnalyzeFailed,
             description:
               code === "video_frame_blank" || code.startsWith("video_frame")
-                ? (tx.videoAnalyzeFrameHint ??
-                  "Nuk u lexua korniza e videos. Provoni video më të shkurtër me dritë të mirë, ose shtoni një foto.")
+                ? t.videoAnalyzeFrameHint
                 : getFetchErrorMessage(error, tx.photoAnalyzeFailedHint),
             variant: "destructive",
           });
@@ -810,6 +809,7 @@ export default function NewListing() {
     });
     if (!validation.ok) {
       const issue = validation.issues[0]!;
+      const fbLocale = translationKeyForUiLang(uiLang);
       const title =
         issue.code === "NO_PHOTOS"
           ? t.addAtLeastPhoto
@@ -817,7 +817,9 @@ export default function NewListing() {
             ? t.ap_post_err_part
             : issue.code === "AP_COMPAT_REQUIRED"
               ? t.ap_post_err_compat
-              : issue.message;
+              : clientValidationMessage(issue.code, fbLocale, {
+                  blockedWord: issue.blockedWord,
+                }) ?? issue.message;
       refusePost(title);
       return;
     }
@@ -1101,8 +1103,7 @@ export default function NewListing() {
                       </p>
                       {isAnalyzingImage && !isVideoUploading ? (
                         <p className="text-xs text-gray-500 text-center max-w-xs px-4">
-                          {tx.analyzingPhotoHint ??
-                            "Kategoria, titulli dhe përshkrimi plotësohen automatikisht."}
+                          {t.analyzingPhotoHint}
                         </p>
                       ) : videoUploadPhase === "preparing" ? (
                         <p className="text-xs text-gray-500 text-center max-w-xs px-4">
@@ -1250,8 +1251,7 @@ export default function NewListing() {
                     )}
                     {subCats.length > 1 && !bodyCatId && watchTitle.trim().length < 5 && (
                       <p className="text-sm mt-1 text-amber-700" role="status">
-                        {tx.subcategoryTitleMinHint ??
-                          "Shkruani titullin (min. 5 karaktere) — pastaj zgjidhni ose caktohet nënkategoria."}
+                        {t.subcategoryTitleMinHint}
                       </p>
                     )}
                     {subCats.length === 1 && !bodyCatId && (
@@ -1812,9 +1812,9 @@ export default function NewListing() {
                   name="xSellerAddress"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Adresa</FormLabel>
+                      <FormLabel>{tx.ui_streetAddressLabel}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Rruga, nr. shtëpisë..." {...field} value={field.value as string} />
+                        <Input placeholder={tx.ui_streetAddressPh} {...field} value={field.value as string} />
                       </FormControl>
                     </FormItem>
                   )}

@@ -290,10 +290,7 @@ export function SiteFooter() {
           market={market}
           setMarket={setMarket}
           uiLang={uiLang}
-          diasporaMarketsTitle={
-            (t as { ui_diasporaMarketsTitle?: string }).ui_diasporaMarketsTitle ??
-            "Gjermani, Zvicër, Austri, Francë, Itali, Angli, SHBA, Mal i Zi"
-          }
+          diasporaMarketsTitle={(t as Record<string, string>).ui_diasporaMarketsTitle}
         />
 
         <div
@@ -304,7 +301,7 @@ export function SiteFooter() {
         >
           <div
             className="flex flex-wrap items-center justify-center gap-2 sm:absolute sm:left-1/2 sm:-translate-x-1/2"
-            aria-label="Rrjetet sociale"
+            aria-label={(t as Record<string, string>).ui_socialNetworksAria}
           >
             {socialLinks.map(({ href, label, Icon, external, iconClass }) => (
               <a
@@ -322,7 +319,7 @@ export function SiteFooter() {
           <div className="flex flex-col items-center sm:items-end gap-1 sm:gap-1.5">
             <div
               className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5 sm:gap-3"
-              aria-label="Metodat e pagesës"
+              aria-label={(t as Record<string, string>).ui_paymentMethodsAria}
             >
               {PAYMENT_METHODS.map(({ label, Icon, className }) => (
                 <Icon

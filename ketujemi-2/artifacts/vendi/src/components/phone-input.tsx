@@ -8,6 +8,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useMarket } from "@/lib/market-context";
+import { translationKeyForUiLang } from "@/lib/ui-languages";
+import { smsPhonePrefixLabel } from "@/lib/phone-prefix-i18n";
 import {
   SMS_PHONE_PREFIXES,
   buildPhoneDigits,
@@ -35,6 +38,8 @@ export function PhoneInput({
   className,
   nationalPlaceholder = "XX XXX XXX",
 }: PhoneInputProps) {
+  const { uiLang } = useMarket();
+  const locale = translationKeyForUiLang(uiLang);
   const parsed = useMemo(() => parsePhoneDigits(value), [value]);
   const [dial, setDial] = useState(parsed?.dial ?? defaultDial);
   const [national, setNational] = useState(parsed?.national ?? "");
@@ -87,7 +92,7 @@ export function PhoneInput({
                 <span className="text-lg leading-none" aria-hidden>
                   {p.flag}
                 </span>
-                <span className="font-medium">{p.label}</span>
+                <span className="font-medium">{smsPhonePrefixLabel(p.dial, locale)}</span>
                 <span className="text-gray-500">+{p.dial}</span>
               </span>
             </SelectItem>

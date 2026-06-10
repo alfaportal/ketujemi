@@ -145,7 +145,7 @@ function TopListingsCarousel({
                 <div key={`${l.id}-${i}`} className={SLIDE_BASIS}>
                   <TopListingSlot
                     listing={l}
-                    priceLabel={l.price === 0 ? "Me marrëveshje" : priceFor(Number(l.price))}
+                    priceLabel={l.price === 0 ? t.agreement : priceFor(Number(l.price))}
                   />
                 </div>
               ))
@@ -258,7 +258,7 @@ export function TopListingsHomeRow({ className }: { className?: string }) {
       >
         <span className="inline-flex items-center gap-1.5">
           <Sparkles className="h-3.5 w-3.5 text-[#1A56A0]" aria-hidden />
-          {t.home_topListingsRowLabel ?? "TOP Njoftime"}
+          {(t as Record<string, string>).home_topListingsRowLabel}
         </span>
       </p>
       <TopListingsCarousel listings={listings} loaded={loaded} priceFor={priceFor} />

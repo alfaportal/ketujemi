@@ -160,9 +160,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
   const tx = t as Record<string, string>;
   const shopCopy = useShopDashboardCopy();
   const [, navigate] = useLocation();
-  const isDhurata =
-    isDhurataFalasSlug(listing.category_root_slug) ||
-    listing.category_name === "Dhurata & Falas";
+  const isDhurata = isDhurataFalasSlug(listing.category_root_slug);
 
   if (isDhurata) {
     return <DhurataGiftListingCard listing={listing} />;

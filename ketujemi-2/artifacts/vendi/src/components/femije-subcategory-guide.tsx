@@ -46,8 +46,7 @@ export function FemijeSubcategoryGuide({ slug, locale }: Props) {
                     {t.fj_guide_col_state}
                   </th>
                   <th className="px-3 py-2 font-semibold text-gray-800">
-                    {(t as { fj_guide_col_meaning?: string }).fj_guide_col_meaning ??
-                      "Çfarë të shkruani"}
+                    {t.fj_guide_col_meaning}
                   </th>
                 </tr>
               </thead>

@@ -1,7 +1,11 @@
 /** User-visible reasons when a new listing cannot be posted (client + API). */
 
 export type { ListingPostApiBody } from "@/lib/listing-post-feedback-i18n";
-export { fieldLabel, resolveListingPostApiError } from "@/lib/listing-post-feedback-i18n";
+export {
+  clientValidationMessage,
+  fieldLabel,
+  resolveListingPostApiError,
+} from "@/lib/listing-post-feedback-i18n";
 
 /** Collect react-hook-form / Zod field messages for toast + banner. */
 export function collectFormValidationMessages(

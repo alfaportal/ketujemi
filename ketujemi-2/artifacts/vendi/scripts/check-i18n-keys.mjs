@@ -17,7 +17,10 @@ function extractObjectKeys(filePath, startMarker) {
     i++;
   }
   const body = src.slice(start, i);
-  const keys = [...body.matchAll(/^\s+([a-zA-Z0-9_]+):/gm)].map((m) => m[1]);
+  const LOCALE_KEYS = new Set(["ks", "al", "mk", "mne", "en", "fr"]);
+  const keys = [...body.matchAll(/^\s+([a-zA-Z0-9_]+):/gm)]
+    .map((m) => m[1])
+    .filter((k) => !LOCALE_KEYS.has(k));
   return new Set(keys);
 }
 

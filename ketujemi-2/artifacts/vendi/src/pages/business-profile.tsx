@@ -5,6 +5,7 @@ import { ArrowLeft, Building2, Crown, Loader2, MapPin } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import SharedListingCard from "@/components/listing-card";
 import { useMarket } from "@/lib/market-context";
+import { useBusinessProfileCopy } from "@/lib/business-profile-i18n";
 import { getFetchErrorMessage } from "@/lib/fetch-with-timeout";
 
 type BusinessProfile = {
@@ -40,6 +41,7 @@ function profileLogoUrl(p: BusinessProfile): string | null {
 export default function BusinessProfilePage() {
   const [, params] = useRoute("/biznes/:id");
   const { t } = useMarket();
+  const bp = useBusinessProfileCopy();
   const id = Number(params?.id);
 
   const [profile, setProfile] = useState<BusinessProfile | null>(null);
@@ -126,16 +128,16 @@ export default function BusinessProfilePage() {
               className="text-blue-600 font-medium"
               onClick={() => window.location.reload()}
             >
-              Rifresko
+              {bp.refresh}
             </button>
           </div>
         ) : null}
 
         {!loading && !loadError && notFound ? (
           <div className="mt-12 text-center">
-            <p className="text-lg font-semibold text-gray-800">Biznesi nuk u gjet.</p>
+            <p className="text-lg font-semibold text-gray-800">{bp.notFound}</p>
             <Link href="/listings" className="text-blue-600 font-medium mt-4 inline-block">
-              Shiko të gjitha njoftimet
+              {bp.viewAllListings}
             </Link>
           </div>
         ) : null}
@@ -172,15 +174,15 @@ export default function BusinessProfilePage() {
                 ) : null}
                 <p className="mt-3 text-sm font-medium text-gray-500">
                   {profile.active_listing_count}{" "}
-                  {profile.active_listing_count === 1 ? "njoftim aktiv" : "njoftime aktive"}
+                  {profile.active_listing_count === 1 ? bp.activeListingOne : bp.activeListingMany}
                 </p>
               </div>
             </div>
 
-            <h2 className="mt-8 text-lg font-bold text-gray-900">Njoftimet aktive</h2>
+            <h2 className="mt-8 text-lg font-bold text-gray-900">{bp.activeListingsHeading}</h2>
             {listings.length === 0 ? (
               <p className="mt-4 text-gray-600 text-sm">
-                Ky biznes nuk ka njoftime aktive për momentin.
+                {bp.noActiveListings}
               </p>
             ) : (
               <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

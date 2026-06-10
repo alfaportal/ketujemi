@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { BRAND_BLUE, BRAND_ORANGE } from "@/lib/brand-colors";
 import { useShopDirectoryCopy } from "@/lib/shop-directory-i18n";
+import { useMarket } from "@/lib/market-context";
+import { translationKeyForUiLang } from "@/lib/ui-languages";
+import { translateCategory } from "@/lib/category-translations";
 import { SHOP_DIRECTORY_CATEGORIES } from "@/lib/shop-directory-taxonomy";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +43,8 @@ const SLIDE_INTERVAL_MS = 3000;
 
 export function ShopDirectoryHomeBanner() {
   const d = useShopDirectoryCopy();
+  const { uiLang } = useMarket();
+  const locale = translationKeyForUiLang(uiLang);
   const categoryCount = SHOP_DIRECTORY_CATEGORIES.length;
   const [activeSlide, setActiveSlide] = useState(0);
 
@@ -93,7 +98,7 @@ export function ShopDirectoryHomeBanner() {
               <button
                 key={slide.url}
                 type="button"
-                aria-label={slide.label}
+                aria-label={translateCategory(slide.label, locale)}
                 aria-current={index === activeSlide ? "true" : undefined}
                 onClick={() => setActiveSlide(index)}
                 className={cn(
