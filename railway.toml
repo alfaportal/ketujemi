@@ -2,6 +2,7 @@
 # Required: DATABASE_URL (Neon — use ?sslmode=require only; avoid &channel_binding in Railway Variables),
 # SESSION_SECRET (16+ chars), PUBLIC_APP_ORIGIN=https://ketujemi.com
 # VITE_* vars must be set before build (Cloudinary, reCAPTCHA, Stripe publishable, GA4 VITE_GA_MEASUREMENT_ID).
+# GOOGLE_MAPS_API_KEY (runtime) or VITE_GOOGLE_MAPS_API_KEY (build) — shop map embed + Places autocomplete; enable Maps Embed API in Google Cloud.
 
 [build]
 builder = "NIXPACKS"

@@ -19,9 +19,11 @@ import listingPackagesRouter from "./listing-packages";
 import walletRouter from "./wallet";
 import notificationsRouter from "./notifications";
 import shopApplicationsRouter from "./shop-applications";
+import mapsEmbedRouter from "./maps-embed";
 
 const router: IRouter = Router();
 
+router.use(mapsEmbedRouter);
 router.use(configRouter);
 router.use(uploadsRouter);
 router.use(partnersRouter);

@@ -6,6 +6,7 @@ export type ShopDetailCopy = {
   backHome: string;
   aboutTitle: string;
   mapTitle: string;
+  mapOpenGoogle: string;
   listingsTitle: string;
   noListings: string;
   negotiable: string;
@@ -40,6 +41,7 @@ const KS: ShopDetailCopy = {
   backHome: "Kthehu në kryefaqe",
   aboutTitle: "Rreth dyqanit",
   mapTitle: "Harta",
+  mapOpenGoogle: "Hap në Google Maps",
   listingsTitle: "Shpalljet e dyqanit",
   noListings: "Nuk ka shpallje aktive për momentin.",
   negotiable: "Me marrëveshje",
@@ -72,6 +74,7 @@ const MK: ShopDetailCopy = {
   backHome: "Назад на почетна",
   aboutTitle: "За продавницата",
   mapTitle: "Мапа",
+  mapOpenGoogle: "Отвори во Google Maps",
   listingsTitle: "Огласи на продавницата",
   noListings: "Моментално нема активни огласи.",
   negotiable: "По договор",
@@ -104,6 +107,7 @@ const MNE: ShopDetailCopy = {
   backHome: "Nazad na početnu",
   aboutTitle: "O prodavnici",
   mapTitle: "Mapa",
+  mapOpenGoogle: "Otvori u Google Maps",
   listingsTitle: "Oglasi prodavnice",
   noListings: "Trenutno nema aktivnih oglasa.",
   negotiable: "Po dogovoru",
@@ -136,6 +140,7 @@ const EN: ShopDetailCopy = {
   backHome: "Back to home",
   aboutTitle: "About the shop",
   mapTitle: "Map",
+  mapOpenGoogle: "Open in Google Maps",
   listingsTitle: "Shop listings",
   noListings: "No active listings at the moment.",
   negotiable: "Negotiable",
@@ -168,6 +173,7 @@ const IT: ShopDetailCopy = {
   backHome: "Torna alla home",
   aboutTitle: "Informazioni sul negozio",
   mapTitle: "Mappa",
+  mapOpenGoogle: "Apri in Google Maps",
   listingsTitle: "Annunci del negozio",
   noListings: "Nessun annuncio attivo al momento.",
   negotiable: "Trattabile",
@@ -198,6 +204,7 @@ const DE: ShopDetailCopy = {
   backHome: "Zurück zur Startseite",
   aboutTitle: "Über den Shop",
   mapTitle: "Karte",
+  mapOpenGoogle: "In Google Maps öffnen",
   listingsTitle: "Shop-Anzeigen",
   noListings: "Derzeit keine aktiven Anzeigen.",
   negotiable: "Verhandelbar",
@@ -228,6 +235,7 @@ const FR: ShopDetailCopy = {
   backHome: "Retour à l'accueil",
   aboutTitle: "À propos de la boutique",
   mapTitle: "Carte",
+  mapOpenGoogle: "Ouvrir dans Google Maps",
   listingsTitle: "Annonces de la boutique",
   noListings: "Aucune annonce active pour le moment.",
   negotiable: "Négociable",

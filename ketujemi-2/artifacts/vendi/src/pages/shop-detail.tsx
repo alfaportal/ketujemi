@@ -36,7 +36,7 @@ import { applyPageMeta, truncateMetaDescription } from "@/lib/page-meta";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
-import { shopMapEmbedSrc } from "@/lib/google-maps-embed";
+import { buildMapSearchQuery, fetchShopMapEmbedSrc, googleMapsOpenUrl } from "@/lib/google-maps-embed";
 import { shopDetailSeoTitle, useShopDetailCopy } from "@/lib/shop-detail-i18n";
 import { cn } from "@/lib/utils";
 import {
@@ -111,10 +111,40 @@ export default function ShopDetailPage() {
   const [socialProfiles, setSocialProfiles] = useState<
     Partial<Record<"instagram" | "tiktok", ShopSocialProfileData>>
   >({});
+  const [mapEmbedSrc, setMapEmbedSrc] = useState("");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const gate = useProfileEditGate(user, refresh);
+
+  useEffect(() => {
+    if (!shop) {
+      setMapEmbedSrc("");
+      return;
+    }
+    let cancelled = false;
+    void fetchShopMapEmbedSrc({
+      latitude: shop.latitude,
+      longitude: shop.longitude,
+      address: shop.address,
+      city: shop.city,
+      region: shop.region,
+      country: shop.country,
+    }).then((url) => {
+      if (!cancelled) setMapEmbedSrc(url);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    shop?.id,
+    shop?.latitude,
+    shop?.longitude,
+    shop?.address,
+    shop?.city,
+    shop?.region,
+    shop?.country,
+  ]);
 
   function loadShop() {
     if (!id) return;
@@ -250,13 +280,13 @@ export default function ShopDetailPage() {
     );
   }
 
-  const mapEmbedSrc = shopMapEmbedSrc({
-    latitude: shop.latitude,
-    longitude: shop.longitude,
+  const mapSearchQuery = buildMapSearchQuery({
     address: shop.address,
     city: shop.city,
+    region: shop.region,
     country: shop.country,
   });
+  const mapExternalUrl = googleMapsOpenUrl(mapSearchQuery);
   const hasEnrichedIg = Boolean(socialProfiles.instagram);
   const hasEnrichedTt = Boolean(socialProfiles.tiktok);
   const socials = [
@@ -359,13 +389,29 @@ export default function ShopDetailPage() {
         ) : null}
 
         <section className="rounded-2xl overflow-hidden border border-gray-100 bg-white shadow-sm">
-          <iframe
-            title={d.mapTitle}
-            className="w-full h-64 sm:h-80 border-0"
-            loading="lazy"
-            src={mapEmbedSrc}
-          />
-          <p className="px-4 py-3 text-sm text-gray-600">{shop.address}</p>
+          {mapEmbedSrc ? (
+            <iframe
+              title={d.mapTitle}
+              className="w-full h-64 sm:h-80 border-0"
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+              src={mapEmbedSrc}
+            />
+          ) : (
+            <div className="w-full h-64 sm:h-80 bg-gray-100 animate-pulse" aria-hidden />
+          )}
+          <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-gray-600">{shop.address}</p>
+            <a
+              href={mapExternalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-semibold text-blue-600 hover:text-blue-800 whitespace-nowrap"
+            >
+              {d.mapOpenGoogle}
+            </a>
+          </div>
         </section>
 
         <section>
