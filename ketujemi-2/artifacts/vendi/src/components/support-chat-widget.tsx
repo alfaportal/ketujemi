@@ -5,10 +5,7 @@ import { useMarket } from "@/lib/market-context";
 import { useSecretAdminTap } from "@/lib/secret-admin-tap";
 import { cn } from "@/lib/utils";
 import { getFetchErrorMessage } from "@/lib/fetch-with-timeout";
-import {
-  mergeSupportChatCopy,
-  supportApiLang,
-} from "@/lib/support-chat-defaults";
+import { mergeSupportChatCopy } from "@/lib/support-chat-defaults";
 import {
   isDesktopVoiceInputAvailable,
   isMobileUserAgent,
@@ -23,7 +20,6 @@ type ChatMessage = { role: "user" | "assistant"; content: string };
 export function SupportChatWidget() {
   const { market, t, uiLang } = useMarket();
   const copy = useMemo(() => mergeSupportChatCopy(uiLang, t), [uiLang, t]);
-  const apiLang = supportApiLang(uiLang, market.code);
   const { registerTap } = useSecretAdminTap();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -123,8 +119,9 @@ export function SupportChatWidget() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            lang: apiLang,
+            lang: uiLang,
             ui_lang: uiLang,
+            site_locale: uiLang,
             messages: next.filter(
               (m) => m.role === "user" || m.content !== welcomeRef.current,
             ),
@@ -156,7 +153,7 @@ export function SupportChatWidget() {
         busyRef.current = false;
       }
     },
-    [apiLang, copy.busy, uiLang],
+    [copy.busy, uiLang],
   );
 
   const startWebSpeech = useCallback(() => {
@@ -314,6 +311,7 @@ export function SupportChatWidget() {
             }}
           >
             <input
+              key={uiLang}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={listening ? copy.listeningPh : copy.inputPh}

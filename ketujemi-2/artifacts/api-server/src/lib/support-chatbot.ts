@@ -30,14 +30,18 @@ export type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const SUPPORT_PHONE = getSupportPhoneDisplay();
 
-function buildSupportSystem(replyLang: UiLang): string {
+function buildSupportSystem(siteLang: UiLang, replyLang: UiLang): string {
   const fallback = supportFallbackLine(replyLang);
 
-  return `Ti je eksperti zyrtar i mbështetjes së KetuJemi.com — enciklopedi e plotë e platformës (kategoritë, tregjet, regjistrimi, postimi, pagesat, siguria).
+  return `You are the official KetuJemi.com support assistant — full encyclopedia of the platform (categories, markets, registration, posting, payments, security).
 
-GJUHËT (obligativ)
-• Mbështet: shqip (sq), maqedonisht (mk), malazezisht (me), anglisht (en), frëngjisht (fr).
-• Përgjigju GJITHMONË në të njëjtën gjuhë si mesazhi i fundit të përdoruesit (edhe kur flet me zë).
+LANGUAGE (mandatory)
+• You are an assistant for KetuJemi.com. Always respond in the same language the user writes in.
+• If the user's message is short or ambiguous, respond in the site language.
+• Current site language: ${langLabel(siteLang)} (locale: ${siteLang}).
+• Reply language for this turn: ${langLabel(replyLang)} (locale: ${replyLang}).
+• Supported locales: Albanian (sq), Macedonian (mk), Montenegrin (me), English (en), French (fr).
+• Match the user's language from their latest message (including voice input).
 • Emrat e UI si në faqe: «Posto Falas», «Njoftimet», «Hyr», «Muzikë & Hobby», «Profili».
 
 STILI (obligativ — bisedë chat, JO artikull)
@@ -150,16 +154,16 @@ function clampSupportReply(
   return compactSupportReply(text);
 }
 
-function resolveReplyLang(messages: ChatMessage[], hint: UiLang): UiLang {
-  return inferSupportLang(getLastUserMessage(messages), hint);
+function resolveReplyLang(messages: ChatMessage[], siteLang: UiLang): UiLang {
+  return inferSupportLang(getLastUserMessage(messages), siteLang);
 }
 
 export async function runSupportChat(
   messages: ChatMessage[],
-  langHint: UiLang = "sq",
+  siteLang: UiLang = "sq",
 ): Promise<string> {
   const lastUser = getLastUserMessage(messages);
-  const replyLang = resolveReplyLang(messages, langHint);
+  const replyLang = resolveReplyLang(messages, siteLang);
 
   if (screenSupportUserMessage(lastUser) === "invalid") {
     return invalidSupportQuestionReply(replyLang);
@@ -168,18 +172,18 @@ export async function runSupportChat(
   if (isSupportContactQuestion(lastUser)) {
     const contactReply = tryPrioritySupportAnswer(
       [{ role: "user", content: lastUser }],
-      langHint,
+      siteLang,
     );
     if (contactReply) return compactSupportReply(contactReply);
   }
 
   if (!isClaudeConfigured()) {
-    const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, langHint);
+    const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, siteLang);
     if (offlineOrBrowse) return compactSupportReply(offlineOrBrowse);
     if (supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser)) {
       return escalateToEmailReply(replyLang);
     }
-    return supportUnknownQueryReply(messages, langHint);
+    return supportUnknownQueryReply(messages, siteLang);
   }
 
   const client = getAnthropicClient();
@@ -188,7 +192,7 @@ export async function runSupportChat(
   const response = await client.messages.create({
     model: getClaudeModel(),
     max_tokens: 256,
-    system: `${buildSupportSystem(replyLang)}\n\nGjuha: ${langLabel(replyLang)}. Përgjigju SHKURT (max 3 fjali). Pyetja: «${lastUser.slice(0, 500)}»`,
+    system: `${buildSupportSystem(siteLang, replyLang)}\n\nKeep the reply short (max 3 sentences). User question: «${lastUser.slice(0, 500)}»`,
     messages: trimmed.map((m) => ({
       role: m.role,
       content: m.content.slice(0, 2000),
@@ -202,35 +206,35 @@ export async function runSupportChat(
     .trim();
 
   if (text) {
-    return clampSupportReply(text, lastUser, replyLang, messages, langHint);
+    return clampSupportReply(text, lastUser, replyLang, messages, siteLang);
   }
 
-  const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, langHint);
+  const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, siteLang);
   if (offlineOrBrowse) return compactSupportReply(offlineOrBrowse);
   if (supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser)) {
     return escalateToEmailReply(replyLang);
   }
-  return supportUnknownQueryReply(messages, langHint);
+  return supportUnknownQueryReply(messages, siteLang);
 }
 
 export function supportChatFallbackReply(
   messages: ChatMessage[],
-  langHint: UiLang = "sq",
+  siteLang: UiLang = "sq",
 ): string {
   const lastUser = getLastUserMessage(messages);
-  const replyLang = resolveReplyLang(messages, langHint);
+  const replyLang = resolveReplyLang(messages, siteLang);
 
   if (screenSupportUserMessage(lastUser) === "invalid") {
     return invalidSupportQuestionReply(replyLang);
   }
 
-  const priorityAnswer = tryPrioritySupportAnswer(messages, langHint);
+  const priorityAnswer = tryPrioritySupportAnswer(messages, siteLang);
   if (priorityAnswer) return compactSupportReply(priorityAnswer);
 
-  const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, langHint);
+  const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, siteLang);
   if (offlineOrBrowse) return compactSupportReply(offlineOrBrowse);
   if (supportsEmailEscalation(lastUser) || isSupportContactQuestion(lastUser)) {
     return escalateToEmailReply(replyLang);
   }
-  return supportUnknownQueryReply(messages, langHint);
+  return supportUnknownQueryReply(messages, siteLang);
 }

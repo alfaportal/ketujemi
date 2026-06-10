@@ -18,6 +18,7 @@ export function parseUiLang(raw: unknown): UiLang {
   if (raw === "fr") return "fr";
   if (raw === "mk" || raw === "me") return raw;
   if (raw === "mne") return "me";
+  if (raw === "sq" || raw === "al" || raw === "ks") return "sq";
   return "sq";
 }
 

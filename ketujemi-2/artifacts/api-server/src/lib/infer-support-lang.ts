@@ -4,7 +4,14 @@ import type { UiLang } from "./claude-client";
  * Picks reply language from the user's last message (sq / mk / me).
  * Market hint (ks/al/mk/mne) is fallback when text is ambiguous.
  */
-export function inferSupportLang(userText: string, hint: UiLang = "sq"): UiLang {
+/** Minimum keyword hits before overriding the site-language hint. */
+const MIN_SCORE_TO_OVERRIDE_SITE = 2;
+
+export function inferSupportLang(
+  userText: string,
+  hint: UiLang = "sq",
+  minScoreToOverride = MIN_SCORE_TO_OVERRIDE_SITE,
+): UiLang {
   const t = userText.trim();
   if (!t) return hint;
 
@@ -17,7 +24,7 @@ export function inferSupportLang(userText: string, hint: UiLang = "sq"): UiLang 
 
   const meScore = countMatches(
     lower,
-    /\b(pitajte|pitam|objavu|objavite|molim|hvala|kako|gdje|gde|želite|zelite|ćete|cete|što|sto|treba|prije|poslije|trebam|možete|mozete|kupujem|prodajem|oglasi|oglas|kontaktirajte|pomoc|pomoć)\b/giu,
+    /\b(pitajte|pitam|objavu|objavite|molim|hvala|kako|gdje|gde|želite|zelite|ćete|cete|što|treba|prije|poslije|trebam|možete|mozete|kupujem|prodajem|oglasi|oglas|kontaktirajte|pomoc|pomoć)\b/giu,
   );
   const mkLatinScore = countMatches(
     lower,
@@ -33,11 +40,23 @@ export function inferSupportLang(userText: string, hint: UiLang = "sq"): UiLang 
   );
   const frScore = countMatches(
     lower,
-    /\b(bonjour|salut|comment|où|ou|aide|merci|acheter|vendre|annonce|compte|inscription)\b/giu,
+    /\b(bonjour|salut|comment|où|aide|merci|acheter|vendre|annonce|compte|inscription)\b/giu,
   );
 
-  const best = Math.max(meScore, mkLatinScore, sqScore, enScore, frScore);
-  if (best === 0) return hint;
+  const scores: Record<UiLang, number> = {
+    sq: sqScore,
+    mk: mkLatinScore,
+    me: meScore,
+    en: enScore,
+    fr: frScore,
+  };
+
+  const best = Math.max(sqScore, mkLatinScore, meScore, enScore, frScore);
+  if (best < minScoreToOverride) return hint;
+
+  const hintScore = scores[hint] ?? 0;
+  if (hintScore === best) return hint;
+
   if (enScore === best) return "en";
   if (frScore === best) return "fr";
   if (meScore === best) return "me";
