@@ -53,7 +53,7 @@ export const CAT_FR_GENERATED: Record<string, string> = {
   "Dhoma me qera": "Chambres à louer",
   "Dhoma me Qira": "Chambres à louer",
   "Dhoma ndenje": "Salon",
-  "Dhurata & Falas": "Cadeaux & dons gratuits",
+  "Dhurata & Falas": "Cadeaux & dons gratuits — De bonnes personnes !",
   "Dizajn & Media": "Design & médias",
   "Dizajn Grafik": "Design graphique",
   "Drita & LED": "Lights & LED",
