@@ -8,16 +8,40 @@ export const SHOP_SOCIAL_PREFIX: Record<ShopSocialField, string> = {
   website: "https://",
 };
 
+/** E.164 digits for wa.me (handles stored URLs, plain numbers, and 0xx local Kosovo). */
+export function shopWhatsappDigits(raw: string | null | undefined): string | null {
+  const trimmed = String(raw ?? "").trim();
+  if (!trimmed) return null;
+
+  const waInline = trimmed.match(/wa\.me\/([^\s?#/]+)/i);
+  if (waInline) {
+    const digits = waInline[1]!.replace(/\D/g, "");
+    if (digits.length >= 8 && digits.length <= 15) return digits;
+  }
+
+  let digits = trimmed.replace(/\D/g, "");
+  if (!digits) return null;
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (digits.startsWith("0") && digits.length >= 9 && digits.length <= 11) {
+    digits = `383${digits.slice(1)}`;
+  }
+  if (digits.length < 8 || digits.length > 15) return null;
+  return digits;
+}
+
+/** Canonical https://wa.me/… link for shop WhatsApp buttons. */
+export function shopWhatsappHref(raw: string | null | undefined): string | null {
+  const digits = shopWhatsappDigits(raw);
+  return digits ? `${SHOP_SOCIAL_PREFIX.whatsapp}${digits}` : null;
+}
+
 /** Strip stored URL down to the part the user types after the prefix. */
 export function shopSocialSuffix(value: string | null | undefined, field: ShopSocialField): string {
   const raw = String(value ?? "").trim();
   if (!raw) return "";
 
   if (field === "whatsapp") {
-    const wa = raw.match(/wa\.me\/(\+?\d+)/i);
-    if (wa) return wa[1]!.replace(/\D/g, "");
-    const digits = raw.replace(/\D/g, "");
-    return digits;
+    return shopWhatsappDigits(raw) ?? "";
   }
 
   if (field === "website") {
@@ -61,8 +85,7 @@ export function shopSocialFullUrl(suffix: string, field: ShopSocialField): strin
   if (!s) return "";
 
   if (field === "whatsapp") {
-    const digits = s.replace(/\D/g, "");
-    return digits ? `${SHOP_SOCIAL_PREFIX.whatsapp}${digits}` : "";
+    return shopWhatsappHref(s) ?? "";
   }
 
   if (field === "website") {

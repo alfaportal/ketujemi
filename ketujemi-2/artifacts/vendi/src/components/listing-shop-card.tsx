@@ -9,6 +9,7 @@ import {
   ShopSocialProfiles,
   type ShopSocialProfileData,
 } from "@/components/shop-social-profiles";
+import { shopWhatsappHref } from "@/lib/shop-social-url-input";
 
 export type ListingShopInfo = {
   shop_id: number;
@@ -40,6 +41,7 @@ export function ListingShopCard({ shop }: Props) {
   const hasEnrichedIg = Boolean(enriched.instagram);
   const hasEnrichedTt = Boolean(enriched.tiktok);
 
+  const whatsappHref = shopWhatsappHref(shop.shop_whatsapp);
   const socials = [
     shop.shop_facebook?.trim() ? { href: shop.shop_facebook, icon: Facebook, label: "Facebook" } : null,
     shop.shop_instagram?.trim() && !hasEnrichedIg
@@ -49,9 +51,9 @@ export function ListingShopCard({ shop }: Props) {
     shop.shop_tiktok?.trim() && !hasEnrichedTt
       ? { href: shop.shop_tiktok, icon: ExternalLink, label: "TikTok" }
       : null,
-    shop.shop_whatsapp?.trim()
+    whatsappHref
       ? {
-          href: `https://wa.me/${shop.shop_whatsapp.replace(/\D/g, "")}`,
+          href: whatsappHref,
           icon: ExternalLink,
           label: "WhatsApp",
         }

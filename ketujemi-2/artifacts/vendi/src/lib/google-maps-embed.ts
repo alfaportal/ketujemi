@@ -1,13 +1,21 @@
 import {
+  buildCityMapQuery,
   buildMapSearchQuery,
   googleMapsEmbedFromCoords as embedFromCoordsCore,
   googleMapsEmbedSrc as embedSrcCore,
   googleMapsOpenUrl,
+  hasShopCoordinates,
   looksLikeStreetAddress,
   shopMapEmbedSrc as shopMapEmbedSrcCore,
 } from "../../../../lib/google-maps-embed-url.ts";
 
-export { buildMapSearchQuery, looksLikeStreetAddress, googleMapsOpenUrl };
+export {
+  buildCityMapQuery,
+  buildMapSearchQuery,
+  hasShopCoordinates,
+  looksLikeStreetAddress,
+  googleMapsOpenUrl,
+};
 
 function clientApiKey(): string {
   return import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() ?? "";
@@ -32,17 +40,15 @@ export function shopMapEmbedSrc(
 export async function fetchShopMapEmbedSrc(
   input: Parameters<typeof shopMapEmbedSrcCore>[0],
 ): Promise<string> {
-  const q = buildMapSearchQuery({
-    address: input.address,
-    city: input.city,
-    country: input.country,
-    region: input.region,
-  });
-  const params = new URLSearchParams({ q });
-  if (input.latitude != null && input.longitude != null) {
+  const params = new URLSearchParams();
+  if (hasShopCoordinates(input.latitude, input.longitude)) {
     params.set("lat", String(input.latitude));
     params.set("lng", String(input.longitude));
   }
+  if (input.city?.trim()) params.set("city", input.city.trim());
+  if (input.region?.trim()) params.set("region", input.region.trim());
+  if (input.country?.trim()) params.set("country", input.country.trim());
+  if (input.address?.trim()) params.set("address", input.address.trim());
   try {
     const res = await fetch(`/api/maps/embed?${params.toString()}`);
     if (res.ok) {

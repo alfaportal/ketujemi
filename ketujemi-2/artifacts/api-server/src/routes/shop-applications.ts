@@ -16,6 +16,7 @@ import { sendShopApplicationEmail, sendShopRatingEmail } from "../lib/send-shop-
 import { formatListingsBatch } from "../lib/format-listings-batch";
 import { resolveDirectoryFields } from "../lib/shop-directory-patch";
 import { ownerShopFieldPatch, parseLatitude, parseLongitude } from "../lib/shop-field-patch";
+import { normalizeShopWhatsappStored } from "../lib/shop-whatsapp-url";
 import { parseDeletionSurveyBody } from "../lib/deletion-feedback.js";
 import { softDeleteShopWithFeedback } from "../lib/soft-delete-shop.js";
 import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxonomy.js";
@@ -81,7 +82,7 @@ router.post("/shop-applications", async (req, res) => {
   const facebook = trimOrNull(body.facebook);
   const instagram = trimOrNull(body.instagram);
   const tiktok = trimOrNull(body.tiktok);
-  const whatsapp = trimOrNull(body.whatsapp);
+  const whatsapp = normalizeShopWhatsappStored(body.whatsapp);
   const website = trimOrNull(body.website);
   if (!facebook && !instagram && !tiktok && !whatsapp && !website) {
     errors.push("Plotësoni të paktën një rrjet social.");

@@ -20,6 +20,7 @@ import { ShopAddressAutocomplete } from "@/components/shop-address-autocomplete"
 import { useShopFormCopy } from "@/lib/shop-application-i18n";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
+import { shopSocialFieldsForSubmit, shopSocialSuffix } from "@/lib/shop-social-url-input";
 
 type ShopMe = {
   id: number;
@@ -101,11 +102,11 @@ export function ProfileShopDashboard() {
           setShopCountry(res.shop.country ?? "XK");
           setCity(res.shop.city);
           setRegion(res.shop.region);
-          setFacebook(res.shop.facebook ?? "");
-          setInstagram(res.shop.instagram ?? "");
-          setTiktok(res.shop.tiktok ?? "");
-          setWhatsapp(res.shop.whatsapp ?? "");
-          setWebsite(res.shop.website ?? "");
+          setFacebook(shopSocialSuffix(res.shop.facebook, "facebook"));
+          setInstagram(shopSocialSuffix(res.shop.instagram, "instagram"));
+          setTiktok(shopSocialSuffix(res.shop.tiktok, "tiktok"));
+          setWhatsapp(shopSocialSuffix(res.shop.whatsapp, "whatsapp"));
+          setWebsite(shopSocialSuffix(res.shop.website, "website"));
         }
       })
       .catch(() => setData(null))
@@ -155,6 +156,13 @@ export function ProfileShopDashboard() {
     if (!data?.shop || !gate.changeToken) return;
     setSaving(true);
     try {
+      const social = shopSocialFieldsForSubmit({
+        facebook,
+        instagram,
+        tiktok,
+        whatsapp,
+        website,
+      });
       const res = await fetchWithTimeout(`/api/shops/${data.shop.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -169,11 +177,11 @@ export function ProfileShopDashboard() {
           longitude,
           city,
           region,
-          facebook,
-          instagram,
-          tiktok,
-          whatsapp,
-          website,
+          facebook: social.facebook,
+          instagram: social.instagram,
+          tiktok: social.tiktok,
+          whatsapp: social.whatsapp,
+          website: social.website,
         }),
       });
       if (!res.ok) throw new Error("fail");

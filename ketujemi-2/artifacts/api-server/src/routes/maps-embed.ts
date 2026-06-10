@@ -3,6 +3,10 @@ import { shopMapEmbedSrc } from "../../../../lib/google-maps-embed-url.js";
 
 const router = Router();
 
+function queryString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
 /** Public embed URL for shop maps — uses server GOOGLE_MAPS_API_KEY (runtime, not Vite build). */
 router.get("/maps/embed", (req, res) => {
   const apiKey =
@@ -13,13 +17,15 @@ router.get("/maps/embed", (req, res) => {
 
   const lat = Number(req.query.lat);
   const lng = Number(req.query.lng);
-  const q = typeof req.query.q === "string" ? req.query.q : "";
 
   const url = shopMapEmbedSrc(
     {
       latitude: Number.isFinite(lat) ? lat : null,
       longitude: Number.isFinite(lng) ? lng : null,
-      address: q || undefined,
+      address: queryString(req.query.address) || undefined,
+      city: queryString(req.query.city) || undefined,
+      region: queryString(req.query.region) || undefined,
+      country: queryString(req.query.country) || undefined,
     },
     apiKey,
   );

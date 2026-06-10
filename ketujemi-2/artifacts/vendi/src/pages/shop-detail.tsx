@@ -36,7 +36,14 @@ import { applyPageMeta, truncateMetaDescription } from "@/lib/page-meta";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
-import { buildMapSearchQuery, fetchShopMapEmbedSrc, googleMapsOpenUrl } from "@/lib/google-maps-embed";
+import {
+  buildCityMapQuery,
+  buildMapSearchQuery,
+  fetchShopMapEmbedSrc,
+  googleMapsOpenUrl,
+  hasShopCoordinates,
+  shopMapEmbedSrc,
+} from "@/lib/google-maps-embed";
 import { shopDetailSeoTitle, useShopDetailCopy } from "@/lib/shop-detail-i18n";
 import { cn } from "@/lib/utils";
 import {
@@ -54,6 +61,7 @@ import {
   ShopSocialProfiles,
   type ShopSocialProfileData,
 } from "@/components/shop-social-profiles";
+import { shopWhatsappHref } from "@/lib/shop-social-url-input";
 
 type ShopData = {
   id: number;
@@ -122,16 +130,20 @@ export default function ShopDetailPage() {
       setMapEmbedSrc("");
       return;
     }
-    let cancelled = false;
-    void fetchShopMapEmbedSrc({
+    const mapInput = {
       latitude: shop.latitude,
       longitude: shop.longitude,
       address: shop.address,
       city: shop.city,
       region: shop.region,
       country: shop.country,
-    }).then((url) => {
-      if (!cancelled) setMapEmbedSrc(url);
+    };
+    // Show city map immediately when coordinates are missing (avoid blank iframe).
+    setMapEmbedSrc(shopMapEmbedSrc(mapInput));
+
+    let cancelled = false;
+    void fetchShopMapEmbedSrc(mapInput).then((url) => {
+      if (!cancelled && url) setMapEmbedSrc(url);
     });
     return () => {
       cancelled = true;
@@ -280,15 +292,22 @@ export default function ShopDetailPage() {
     );
   }
 
-  const mapSearchQuery = buildMapSearchQuery({
-    address: shop.address,
-    city: shop.city,
-    region: shop.region,
-    country: shop.country,
-  });
-  const mapExternalUrl = googleMapsOpenUrl(mapSearchQuery);
+  const mapExternalQuery = hasShopCoordinates(shop.latitude, shop.longitude)
+    ? buildMapSearchQuery({
+        address: shop.address,
+        city: shop.city,
+        region: shop.region,
+        country: shop.country,
+      })
+    : buildCityMapQuery({
+        city: shop.city,
+        region: shop.region,
+        country: shop.country,
+      });
+  const mapExternalUrl = googleMapsOpenUrl(mapExternalQuery);
   const hasEnrichedIg = Boolean(socialProfiles.instagram);
   const hasEnrichedTt = Boolean(socialProfiles.tiktok);
+  const whatsappHref = shopWhatsappHref(shop.whatsapp);
   const socials = [
     shop.facebook?.trim() ? { href: shop.facebook, label: "Facebook", icon: Facebook } : null,
     shop.instagram?.trim() && !hasEnrichedIg
@@ -298,9 +317,7 @@ export default function ShopDetailPage() {
     shop.tiktok?.trim() && !hasEnrichedTt
       ? { href: shop.tiktok, label: "TikTok", icon: ExternalLink }
       : null,
-    shop.whatsapp?.trim()
-      ? { href: `https://wa.me/${shop.whatsapp.replace(/\D/g, "")}`, label: "WhatsApp", icon: ExternalLink }
-      : null,
+    whatsappHref ? { href: whatsappHref, label: "WhatsApp", icon: ExternalLink } : null,
   ].filter(Boolean) as { href: string; label: string; icon: React.ElementType }[];
 
   return (
@@ -314,7 +331,7 @@ export default function ShopDetailPage() {
           <img
             src={shop.logo_url}
             alt={shop.shop_name}
-            className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl object-cover border-4 border-white/30 shadow-lg"
+            className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl object-contain border-4 border-white/30 shadow-lg"
           />
           <div className="text-center sm:text-left">
             <h1 className="text-2xl sm:text-3xl font-black">{shop.shop_name}</h1>

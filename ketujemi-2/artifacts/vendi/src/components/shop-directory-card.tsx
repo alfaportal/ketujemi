@@ -7,6 +7,7 @@ import { directoryCategoryBySlug, directorySubcategoryBySlug } from "@/lib/shop-
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 import { SHOP_COUNTRY_CODES, useShopFormCopy } from "@/lib/shop-application-i18n";
+import { shopWhatsappHref } from "@/lib/shop-social-url-input";
 
 export type ShopDirectoryListItem = {
   id: number;
@@ -44,14 +45,13 @@ export function ShopDirectoryCard({ shop, viewLabel }: Props) {
       ? directorySubcategoryBySlug(shop.directory_category_slug, shop.directory_subcategory_slug)
       : undefined;
 
+  const whatsappHref = shopWhatsappHref(shop.whatsapp);
   const socials = [
     shop.facebook?.trim() ? { href: shop.facebook, icon: Facebook } : null,
     shop.instagram?.trim() ? { href: shop.instagram, icon: Instagram } : null,
     shop.website?.trim() ? { href: shop.website, icon: Globe } : null,
     shop.tiktok?.trim() ? { href: shop.tiktok, icon: ExternalLink } : null,
-    shop.whatsapp?.trim()
-      ? { href: `https://wa.me/${shop.whatsapp.replace(/\D/g, "")}`, icon: ExternalLink }
-      : null,
+    whatsappHref ? { href: whatsappHref, icon: ExternalLink } : null,
   ].filter(Boolean) as { href: string; icon: React.ElementType }[];
 
   const countryLabel =

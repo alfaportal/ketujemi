@@ -31,6 +31,31 @@ export function looksLikeStreetAddress(address: string): boolean {
   return text.length > 48;
 }
 
+export function hasShopCoordinates(
+  latitude?: number | null,
+  longitude?: number | null,
+): boolean {
+  return (
+    latitude != null &&
+    longitude != null &&
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude)
+  );
+}
+
+/** City-level map query — used when shop has no saved lat/lng. */
+export function buildCityMapQuery(parts: {
+  city?: string | null;
+  country?: string | null;
+  region?: string | null;
+}): string {
+  const city = parts.city?.trim() ?? "";
+  const region = parts.region?.trim() ?? "";
+  const country = normalizeCountryForMaps(parts.country);
+  const locality = city || region;
+  return [locality, country].filter(Boolean).join(", ") || country || "Kosovo";
+}
+
 export function buildMapSearchQuery(parts: {
   address?: string | null;
   city?: string | null;
@@ -43,9 +68,9 @@ export function buildMapSearchQuery(parts: {
   const country = normalizeCountryForMaps(parts.country);
   const locality = [city, region].filter(Boolean).join(", ");
 
-  if (!address) return [locality, country].filter(Boolean).join(", ") || "Kosovo";
+  if (!address) return buildCityMapQuery(parts);
   if (!looksLikeStreetAddress(address)) {
-    return [locality, country].filter(Boolean).join(", ") || address;
+    return buildCityMapQuery(parts) || address;
   }
   return [address, locality, country].filter(Boolean).join(", ");
 }
@@ -63,6 +88,15 @@ export function googleMapsEmbedSrc(query: string, apiKey: string): string {
     return `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(apiKey)}&q=${q}`;
   }
   return `https://maps.google.com/maps?q=${q}&hl=sq&z=15&ie=UTF8&iwloc=&output=embed`;
+}
+
+/** City overview when exact coordinates are unavailable. */
+export function googleMapsCityEmbedSrc(query: string, apiKey: string): string {
+  const q = encodeURIComponent(query.trim() || "Kosovo");
+  if (apiKey) {
+    return `https://www.google.com/maps/embed/v1/search?key=${encodeURIComponent(apiKey)}&q=${q}`;
+  }
+  return `https://maps.google.com/maps?q=${q}&hl=sq&z=12&ie=UTF8&iwloc=&output=embed`;
 }
 
 export function googleMapsEmbedFromCoords(
@@ -90,20 +124,15 @@ export function shopMapEmbedSrc(
   },
   apiKey: string,
 ): string {
-  const lat = input.latitude;
-  const lng = input.longitude;
-  if (lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng)) {
-    return googleMapsEmbedFromCoords(lat, lng, apiKey);
+  if (hasShopCoordinates(input.latitude, input.longitude)) {
+    return googleMapsEmbedFromCoords(input.latitude!, input.longitude!, apiKey);
   }
-  return googleMapsEmbedSrc(
-    buildMapSearchQuery({
-      address: input.address,
-      city: input.city,
-      country: input.country,
-      region: input.region,
-    }),
-    apiKey,
-  );
+  const cityQuery = buildCityMapQuery({
+    city: input.city,
+    country: input.country,
+    region: input.region,
+  });
+  return googleMapsCityEmbedSrc(cityQuery, apiKey);
 }
 
 export function googleMapsOpenUrl(query: string): string {

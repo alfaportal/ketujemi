@@ -1,4 +1,5 @@
 import type { shopApplicationsTable, shopsTable } from "@workspace/db";
+import { normalizeShopWhatsappStored } from "./shop-whatsapp-url";
 
 function trimOrNull(v: unknown): string | null {
   if (typeof v !== "string") return null;
@@ -49,7 +50,7 @@ export function buildShopFieldPatch(body: Record<string, unknown>): Partial<Shop
   if ("facebook" in body) patch.facebook = trimOrNull(body.facebook);
   if ("instagram" in body) patch.instagram = trimOrNull(body.instagram);
   if ("tiktok" in body) patch.tiktok = trimOrNull(body.tiktok);
-  if ("whatsapp" in body) patch.whatsapp = trimOrNull(body.whatsapp);
+  if ("whatsapp" in body) patch.whatsapp = normalizeShopWhatsappStored(body.whatsapp);
   if ("website" in body) patch.website = trimOrNull(body.website);
   const contactName = trimOrNull(body.contact_name);
   if (contactName) patch.contact_name = contactName;
