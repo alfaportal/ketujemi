@@ -94,8 +94,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const query = useQuery({
     queryKey: ["auth", "me"],
     queryFn: fetchMe,
-    staleTime: 30_000,
+    staleTime: 5 * 60_000,
     retry: 1,
+    refetchOnWindowFocus: false,
+    placeholderData: (previous) => previous,
   });
 
   const refresh = useCallback(

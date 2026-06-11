@@ -73,6 +73,7 @@ import {
   loginUrlWithReturn,
   sellerContactFromUser,
   userNeedsSellerProfile,
+  type AuthUser,
 } from "@/lib/auth-context";
 import { AuthToolbar } from "@/components/auth-toolbar";
 import { SellerProfileGate } from "@/components/seller-profile-gate";
@@ -174,6 +175,9 @@ export default function NewListing() {
   const isKerkojPostRoute = pathname === KERKOJ_POST_PATH;
   const skipListingImageAutofill = isDhurataPostRoute || isKerkojPostRoute;
   const { user, loading: authLoading } = useAuth();
+  const lastUserRef = useRef<AuthUser | null>(null);
+  if (user) lastUserRef.current = user;
+  const activeUser = user ?? lastUserRef.current;
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { market, t, uiLang } = useMarket();
@@ -235,7 +239,7 @@ export default function NewListing() {
   const parentCats = (allCategories ?? []).filter((c: any) => !c.parent_id);
 
   useEffect(() => {
-    if (!user) return;
+    if (!activeUser) return;
     void fetchWithTimeout("/api/shops/me", { credentials: "include" })
       .then(async (res) => {
         if (!res.ok) throw new Error("fail");
@@ -259,7 +263,7 @@ export default function NewListing() {
         setHasShop(null);
         setMyShop(null);
       });
-  }, [user]);
+  }, [activeUser]);
 
   const formSchema = useMemo(
     () =>
@@ -544,18 +548,18 @@ export default function NewListing() {
   }, []);
 
   useEffect(() => {
-    if (!user) return;
-    const { seller_name, seller_phone } = sellerContactFromUser(user);
+    if (!activeUser) return;
+    const { seller_name, seller_phone } = sellerContactFromUser(activeUser);
     if (seller_name && !form.getValues("seller_name")?.trim()) {
       form.setValue("seller_name", seller_name);
     }
     if (seller_phone && !form.getValues("seller_phone")?.trim()) {
       form.setValue("seller_phone", seller_phone);
     }
-    if (user.email && !form.getValues("xSellerEmail")?.trim()) {
-      form.setValue("xSellerEmail", user.email);
+    if (activeUser.email && !form.getValues("xSellerEmail")?.trim()) {
+      form.setValue("xSellerEmail", activeUser.email);
     }
-  }, [user, form]);
+  }, [activeUser, form]);
 
   const applyImageAnalysis = useCallback(
     (analysis: ListingImageAnalysis) => {
@@ -908,7 +912,7 @@ export default function NewListing() {
     const formName = listingData.seller_name?.trim() ?? "";
     const formPhone = listingData.seller_phone?.trim() ?? "";
 
-    if (userNeedsSellerProfile(user)) {
+    if (activeUser && userNeedsSellerProfile(activeUser)) {
       setIsSubmitting(true);
       try {
         const bootRes = await fetchWithTimeout("/api/auth/profile/seller-bootstrap", {
@@ -937,7 +941,7 @@ export default function NewListing() {
       }
     }
 
-    const profileContact = sellerContactFromUser(user);
+    const profileContact = activeUser ? sellerContactFromUser(activeUser) : { seller_name: "", seller_phone: "" };
     const contact = {
       seller_name: formName || profileContact.seller_name,
       seller_phone: formPhone || profileContact.seller_phone,
@@ -1006,7 +1010,15 @@ export default function NewListing() {
 
   const cityList = locationsForListingMarket(listingCountry);
 
-  if (!user) {
+  if (authLoading && !lastUserRef.current) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-3">
+        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (!activeUser) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-3">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
@@ -1026,11 +1038,11 @@ export default function NewListing() {
     );
   }
 
-  const canEditSellerPhone = !userHasSellerPhone(user);
+  const canEditSellerPhone = !userHasSellerPhone(activeUser);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {userNeedsSellerProfile(user) && <SellerProfileGate onReady={() => undefined} />}
+      {userNeedsSellerProfile(activeUser) && <SellerProfileGate onReady={() => undefined} />}
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">
         <MobileSafeTopSpacer />
@@ -1886,8 +1898,8 @@ export default function NewListing() {
                         <Input
                           data-testid="input-seller-name"
                           placeholder="Arben Krasniqi"
-                          readOnly={!!user}
-                          className={user ? "bg-gray-50 cursor-not-allowed" : undefined}
+                          readOnly={!!activeUser}
+                          className={activeUser ? "bg-gray-50 cursor-not-allowed" : undefined}
                           {...field}
                         />
                       </FormControl>
@@ -1927,8 +1939,8 @@ export default function NewListing() {
                         <Input
                           placeholder="kontakt@email.com"
                           type="email"
-                          readOnly={!!user?.email}
-                          className={user?.email ? "bg-gray-50 cursor-not-allowed" : undefined}
+                          readOnly={!!activeUser.email}
+                          className={activeUser.email ? "bg-gray-50 cursor-not-allowed" : undefined}
                           {...field}
                           value={field.value as string}
                         />

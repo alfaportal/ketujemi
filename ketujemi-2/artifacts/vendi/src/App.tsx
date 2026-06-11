@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ComponentType } from "react";
-import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MarketProvider } from "@/lib/market-context";
 
@@ -120,11 +120,9 @@ const queryClient = new QueryClient({
 });
 
 function Router() {
-  const [pathname] = useLocation();
-
   return (
     <AppLayout>
-      <main key={pathname}>
+      <main>
         <Suspense fallback={<RouteLoading />}>
           <Switch>
             {APP_ROUTES.map((route) => (

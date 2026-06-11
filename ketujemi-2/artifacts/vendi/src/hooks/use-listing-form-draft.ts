@@ -95,16 +95,9 @@ export function useListingFormDraft({
   useEffect(() => {
     const draft = readListingFormDraft(pathname);
     if (!listingDraftHasContent(draft)) return;
-    const apply = () => applyDraftRef.current(draft!);
-    apply();
+    applyDraftRef.current(draft!);
     setDraftRestored(true);
     setShowBanner(true);
-    const t1 = window.setTimeout(apply, 150);
-    const t2 = window.setTimeout(apply, 600);
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-    };
   }, [pathname]);
 
   const syncDraft = useCallback(() => {
@@ -130,7 +123,7 @@ export function useListingFormDraft({
   useEffect(() => {
     const onPageShow = (event: PageTransitionEvent) => {
       if (!event.persisted) return;
-      restoreFromStorage();
+      void restoreFromStorage();
     };
     window.addEventListener("pageshow", onPageShow);
     return () => window.removeEventListener("pageshow", onPageShow);
