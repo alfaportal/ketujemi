@@ -98,6 +98,11 @@ import { engagementCopyForUiLang } from "@/lib/engagement-i18n";
 import { queueFirstListingCelebration } from "@/components/engagement-effects";
 import { staticPagePaths } from "@/lib/static-page-paths";
 import { buildNewListingSchema, type NewListingFormData } from "@/lib/listing-form-schema";
+import {
+  clearListingFormDraft,
+  readListingFormDraft,
+  saveListingFormDraft,
+} from "@/lib/listing-form-draft";
 
 type FormData = NewListingFormData;
 
@@ -201,6 +206,7 @@ export default function NewListing() {
   const [myShop, setMyShop] = useState<{ shop_name: string; category: string } | null>(null);
   /** Must accept Dhurata pledge on every visit — no sessionStorage bypass. */
   const [dhurataPledgeOk, setDhurataPledgeOk] = useState(false);
+  const draftRestoredRef = useRef(false);
 
   useEffect(() => {
     if (!isDhurataPostRoute) return;
@@ -498,12 +504,45 @@ export default function NewListing() {
   }, [allCategories, isKerkojPostRoute, form]);
 
   useEffect(() => {
+    if (draftRestoredRef.current) return;
+    draftRestoredRef.current = true;
+    const draft = readListingFormDraft(pathname);
+    if (!draft) return;
+    form.reset({ ...form.getValues(), ...draft.form });
+    if (draft.imageUrls.length > 0) {
+      setImageUrls(draft.imageUrls);
+      imageAnalyzedRef.current = true;
+    }
+    if (draft.videoUrl) setVideoUrl(draft.videoUrl);
+    if (draft.listingCountry) setListingCountry(draft.listingCountry);
+  }, [pathname, form]);
+
+  useEffect(() => {
     if (!user) return;
     const { seller_name, seller_phone } = sellerContactFromUser(user);
-    if (seller_name) form.setValue("seller_name", seller_name);
-    if (seller_phone) form.setValue("seller_phone", seller_phone);
-    if (user.email) form.setValue("xSellerEmail", user.email);
+    if (seller_name && !form.getValues("seller_name")?.trim()) {
+      form.setValue("seller_name", seller_name);
+    }
+    if (seller_phone && !form.getValues("seller_phone")?.trim()) {
+      form.setValue("seller_phone", seller_phone);
+    }
+    if (user.email && !form.getValues("xSellerEmail")?.trim()) {
+      form.setValue("xSellerEmail", user.email);
+    }
   }, [user, form]);
+
+  useEffect(() => {
+    const sub = form.watch(() => {
+      saveListingFormDraft(pathname, {
+        form: form.getValues(),
+        imageUrls,
+        videoUrl,
+        listingCountry,
+        savedAt: Date.now(),
+      });
+    });
+    return () => sub.unsubscribe();
+  }, [form, pathname, imageUrls, videoUrl, listingCountry]);
 
   const applyImageAnalysis = useCallback(
     (analysis: ListingImageAnalysis) => {
@@ -926,6 +965,7 @@ export default function NewListing() {
         } else {
           toast({ title: engagement.subsequentListingToast });
         }
+        clearListingFormDraft(pathname);
         setLocation(`/listings/${(body as { id: number }).id}?posted=1`);
       })
       .catch((e) => refusePost(getFetchErrorMessage(e)))
@@ -934,7 +974,7 @@ export default function NewListing() {
 
   const cityList = locationsForListingMarket(listingCountry);
 
-  if (authLoading || !user) {
+  if (!user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-3">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
@@ -958,7 +998,7 @@ export default function NewListing() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {userNeedsSellerProfile(user) && <SellerProfileGate onReady={() => { void refresh(); }} />}
+      {userNeedsSellerProfile(user) && <SellerProfileGate onReady={() => undefined} />}
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">
         <MobileSafeTopSpacer />

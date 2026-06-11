@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { checkForAppUpdate } from "@/lib/pwa-updates";
+import { isListingPostPath } from "@/lib/listing-form-draft";
 
 import { lastRouteChangeWasPop } from "@/lib/scroll-restoration";
 
@@ -14,7 +15,7 @@ export function useFreshPageOnRoute() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!lastRouteChangeWasPop) {
+    if (!lastRouteChangeWasPop && !isListingPostPath(pathname)) {
       void queryClient.invalidateQueries();
     }
     void checkForAppUpdate();
