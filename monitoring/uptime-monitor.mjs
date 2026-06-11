@@ -15,6 +15,9 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 const TIMEOUT_MS = 10_000;
 // Sa shpesh të ri-njoftojë në Telegram nëse problemi vazhdon
 const ALERT_COOLDOWN_MS = 30 * 60 * 1000;
+// Kur zbulohet problem, sa kontrolle konfirmuese (1 mesazh secili) me interval mes tyre
+const CONFIRM_ATTEMPTS = 3;
+const CONFIRM_INTERVAL_MS = 60 * 1000;
 
 const TARGETS = [
   { name: "Faqja kryesore", url: "https://ketujemi.com/" },
@@ -34,6 +37,15 @@ function loadState() {
 
 function saveState(state) {
   writeFileSync(STATE_FILE, `${JSON.stringify(state, null, 2)}\n`);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function checkAll() {
+  const results = await Promise.all(TARGETS.map(checkTarget));
+  return { results, failed: results.filter((r) => !r.ok) };
 }
 
 async function checkTarget(target) {
@@ -100,38 +112,73 @@ function formatDuration(ms) {
   return `${m}min`;
 }
 
+// p.sh. "• Faqja kryesore: HTTP 503 (412ms)" — emri = problemi, "HTTP 503" / mesazhi i gabimit = error code
+function formatTargetLines(failed) {
+  return failed.map((f) => `• <b>${f.target.name}</b>: ${f.reason} (${f.ms}ms)`);
+}
+
+function formatProblemMessage(failed, attempt, total) {
+  return [
+    `🔴 <b>KetuJemi.com — PROBLEM</b> (konfirmim ${attempt}/${total})`,
+    `Ora: ${fmtTime(new Date())}`,
+    "",
+    ...formatTargetLines(failed),
+  ].join("\n");
+}
+
 async function main() {
-  const results = await Promise.all(TARGETS.map(checkTarget));
-  const failed = results.filter((r) => !r.ok);
-  const now = Date.now();
+  let { results, failed } = await checkAll();
+  const detectedAt = Date.now();
   const state = loadState();
   const wasDown = state.status === "down";
-  const isDown = failed.length > 0;
+  let isDown = failed.length > 0;
 
   if (isDown && !wasDown) {
-    const lines = failed.map((f) => `• <b>${f.target.name}</b>: ${f.reason} (${f.ms}ms)`);
-    await sendTelegram(
-      ["🔴 <b>KetuJemi.com — PROBLEM</b>", `Koha: ${fmtTime(new Date(now))}`, "", ...lines].join("\n"),
-    );
-    state.status = "down";
-    state.since = now;
-    state.lastAlertAt = now;
+    // Problem i ri — konfirmo me disa kontrolle të njëpasnjëshme me interval 1 min,
+    // duke dërguar nga një mesazh Telegram për secilin, para se ta shënojmë "down".
+    for (let attempt = 1; attempt <= CONFIRM_ATTEMPTS; attempt++) {
+      await sendTelegram(formatProblemMessage(failed, attempt, CONFIRM_ATTEMPTS));
+      if (attempt === CONFIRM_ATTEMPTS) break;
+      await sleep(CONFIRM_INTERVAL_MS);
+      ({ results, failed } = await checkAll());
+      isDown = failed.length > 0;
+      if (!isDown) break;
+    }
+
+    if (isDown) {
+      state.status = "down";
+      state.since = detectedAt;
+      state.lastAlertAt = Date.now();
+    } else {
+      const downtimeMs = Date.now() - detectedAt;
+      await sendTelegram(
+        [
+          "🟢 <b>KetuJemi.com — u rikthye</b>",
+          `Ora: ${fmtTime(new Date())}`,
+          `Kohëzgjatja e problemit: ${formatDuration(downtimeMs)}`,
+        ].join("\n"),
+      );
+      state.status = "up";
+      state.since = Date.now();
+      state.lastAlertAt = 0;
+    }
   } else if (isDown && wasDown) {
+    const now = Date.now();
     if (now - (state.lastAlertAt ?? 0) >= ALERT_COOLDOWN_MS) {
       const downSince = state.since ? new Date(state.since) : new Date(now);
-      const lines = failed.map((f) => `• <b>${f.target.name}</b>: ${f.reason} (${f.ms}ms)`);
       await sendTelegram(
         [
           "🔴 <b>KetuJemi.com — vazhdon problemi</b>",
           `Jashtë funksionimit që nga: ${fmtTime(downSince)}`,
-          `Koha: ${fmtTime(new Date(now))}`,
+          `Ora: ${fmtTime(new Date(now))}`,
           "",
-          ...lines,
+          ...formatTargetLines(failed),
         ].join("\n"),
       );
       state.lastAlertAt = now;
     }
   } else if (!isDown && wasDown) {
+    const now = Date.now();
     const downtimeMs = state.since ? now - state.since : null;
     await sendTelegram(
       [
@@ -147,10 +194,10 @@ async function main() {
     state.lastAlertAt = 0;
   } else {
     state.status = "up";
-    if (!state.since) state.since = now;
+    if (!state.since) state.since = detectedAt;
   }
 
-  console.log(JSON.stringify({ now: fmtTime(new Date(now)), results }, null, 2));
+  console.log(JSON.stringify({ now: fmtTime(new Date()), results }, null, 2));
   saveState(state);
 }
 
