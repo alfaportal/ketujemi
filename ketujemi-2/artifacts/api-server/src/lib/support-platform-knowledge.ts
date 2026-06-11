@@ -94,7 +94,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 7) Publikoni — **moderim automatik** → njoftim aktiv deri **3 muaj**.
 8) Menaxhim: **Profili** → njoftimet e mia → ndrysho / fshi / **«Rifillo njoftimin»** pas skadimit (+3 muaj).
 9) **TOP** (opsional): **€2 = 4 ditë**, **€5 = 15 ditë**, **€8 = 30 ditë** në krye të listës (zgjidhni paketën → Stripe).
-10) Mos postoni duplikat të njëjtë titull+përshkrim aktiv.
+10) Mos postoni të njëjtin send dy herë brenda 1 muaji — sistemi bllokon shpallje të ngjashme (titull, përshkrim, foto, kategori).
 
 === NJOFTIME FALAS (përdorues privat) ===
 • **10 postime falas në muaj** për çdo **kategori kryesore** (rrënja + të gjitha nën-kategoritë; numërohen postimet e këtij muaji kalendarik).

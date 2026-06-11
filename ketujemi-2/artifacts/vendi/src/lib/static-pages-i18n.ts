@@ -200,7 +200,8 @@ const KS: StaticPagesCopy = {
       {
         title: "Dublikatët",
         paragraphs: [
-          "Nëse postoni përsëri të njëjtin njoftim (titull dhe përshkrim identik), versioni i vjetër fshihet automatikisht dhe mbetet vetëm i riu.",
+          "**Nuk mund të postoni të njëjtin send dy herë brenda 1 muaji.** Sistemi bllokon automatikisht shpallje të ngjashme (titull, përshkrim, foto, kategori) ndaj një shpalljeje aktive ose të postuar në 30 ditët e fundit.",
+          "Një produkt = një shpallje. Nëse dëshironi të ndryshoni çmimin ose detajet, **ndryshoni shpalljen ekzistuese** (Edito) — mos krijoni të re.",
           "Mes dy postimeve radhazi duhet të paktën 30 sekonda pritje.",
         ],
       },
@@ -515,7 +516,7 @@ const KS: StaticPagesCopy = {
           "Çmim 0, “me marrëveshje” ose “na kontaktoni”",
           "Foto nga faqe stock (pexels, unsplash, etj.)",
           "Titull shumë i shkurtër ose jo specifik",
-          "I njëjti titull dy herë (dublikatë)",
+          "I njëjti send dy herë brenda 1 muaji (dublikatë)",
         ],
       },
       {
@@ -809,7 +810,8 @@ const MK: StaticPagesCopy = {
       {
         title: "Дупликати",
         paragraphs: [
-          "Ако повторно објавите ист оглас (ист наслов и опис), стариот се брише автоматски и останува само новиот.",
+          "**Не можете да објавите ист производ двапати во рок од 1 месец.** Системот автоматски ги блокира слични огласи (наслов, опис, фотографија, категорија) спрема активен оглас или оглас објавен во последните 30 дена.",
+          "Еден производ = еден оглас. Ако сакате да промените цена или детали, **уредете го постоечкиот оглас** (Уреди) — не креирајте нов.",
           "Потребни се најмалку 30 секунди меѓу две последователни објави.",
         ],
       },
@@ -1332,7 +1334,8 @@ const MNE: StaticPagesCopy = {
       {
         title: "Duplikati",
         paragraphs: [
-          "Ako ponovo objavite isti oglas (isti naslov i opis), stari se automatski briše i ostaje samo novi.",
+          "**Ne možete objaviti isti proizvod dvaput u roku od 1 mjeseca.** Sistem automatski blokira slične oglase (naslov, opis, fotografija, kategorija) u odnosu na aktivan oglas ili oglas objavljen u posljednjih 30 dana.",
+          "Jedan proizvod = jedan oglas. Ako želite promijeniti cijenu ili detalje, **uredite postojeći oglas** (Uredi) — ne kreirajte novi.",
           "Potrebno je najmanje 30 sekundi između dvije uzastopne objave.",
         ],
       },
@@ -1579,7 +1582,7 @@ const MNE: StaticPagesCopy = {
           "Cijena 0, „po dogovoru“ ili „kontaktirajte nas“",
           "Stock fotografije (pexels, unsplash, itd.)",
           "Prekratak ili nespecifičan naslov",
-          "Isti naslov dva puta (duplikat)",
+          "Isti proizvod dvaput u roku od 1 mjeseca (duplikat)",
         ],
       },
       {

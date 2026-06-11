@@ -42,7 +42,8 @@ const ERROR_DEFAULTS_KS: Record<string, string> = {
   "Account suspended": "Llogaria juaj është pezulluar. Kontaktoni mbështetjen.",
   "Invalid request body": "Të dhënat e formularit nuk janë të vlefshme.",
   DUPLICATE_LISTING: "Ky njoftim ekziston tashmë. Nuk mund të postoni të njëjtën gjë dy herë.",
-  DUPLICATE_LISTING_SELF: "Keni një njoftim të ngjashëm aktiv. Ndryshoni titullin ose përshkrimin.",
+  DUPLICATE_LISTING_SELF:
+    "Nuk mund të postoni të njëjtin send dy herë brenda 1 muaji. Keni tashmë një shpallje të ngjashme aktive — përdorni Edito ose prisni 1 muaj.",
   BLACKLIST_WORD: "Përmbajtja përmban fjalë të ndaluara. Ndryshoni titullin ose përshkrimin.",
   CLIENT_BLOCKED_WORD: 'Përmbajtja përmban fjalë të ndaluara: "{word}".',
   PHONE_IN_DESCRIPTION:
@@ -101,7 +102,8 @@ const ERROR_DEFAULTS_MK: Record<string, string> = {
   "Account suspended": "Вашата сметка е суспендирана. Контактирајте ја поддршката.",
   "Invalid request body": "Податоците од формуларот не се валидни.",
   DUPLICATE_LISTING: "Овој оглас веќе постои. Не можете да објавите истото двапати.",
-  DUPLICATE_LISTING_SELF: "Имате сличен активен оглас. Променете го насловот или описот.",
+  DUPLICATE_LISTING_SELF:
+    "Не можете да објавите истиот производ двапати во рок од 1 месец. Веќе имате сличен активен оглас — уредете го или почекајте 1 месец.",
   BLACKLIST_WORD: "Содржината содржи забранети зборови. Променете го насловот или описот.",
   CLIENT_BLOCKED_WORD: 'Содржината содржи забранета збор: "{word}".',
   PHONE_IN_DESCRIPTION:
@@ -161,7 +163,8 @@ const ERROR_DEFAULTS_MNE: Record<string, string> = {
   "Account suspended": "Vaš nalog je suspendovan. Kontaktirajte podršku.",
   "Invalid request body": "Podaci formulara nisu validni.",
   DUPLICATE_LISTING: "Ovaj oglas već postoji. Ne možete objaviti isto dvaput.",
-  DUPLICATE_LISTING_SELF: "Imate sličan aktivan oglas. Promijenite naslov ili opis.",
+  DUPLICATE_LISTING_SELF:
+    "Ne možete objaviti isti proizvod dvaput u roku od 1 mjeseca. Već imate sličan aktivan oglas — uredite ga ili sačekajte 1 mjesec.",
   BLACKLIST_WORD: "Sadržaj sadrži zabranjene riječi. Promijenite naslov ili opis.",
   CLIENT_BLOCKED_WORD: 'Sadržaj sadrži zabranjenu riječ: "{word}".',
   PHONE_IN_DESCRIPTION:
@@ -221,7 +224,8 @@ const ERROR_DEFAULTS_EN: Record<string, string> = {
   "Account suspended": "Your account is suspended. Contact support.",
   "Invalid request body": "Form data is not valid.",
   DUPLICATE_LISTING: "This listing already exists. You cannot post the same thing twice.",
-  DUPLICATE_LISTING_SELF: "You have a similar active listing. Change the title or description.",
+  DUPLICATE_LISTING_SELF:
+    "You cannot post the same item twice within 1 month. You already have a similar active listing — edit it or wait 1 month.",
   BLACKLIST_WORD: "Content contains blocked words. Change the title or description.",
   CLIENT_BLOCKED_WORD: 'Content contains a blocked word: "{word}".',
   PHONE_IN_DESCRIPTION:
@@ -280,7 +284,8 @@ const ERROR_DEFAULTS_FR: Record<string, string> = {
   "Account suspended": "Votre compte est suspendu. Contactez le support.",
   "Invalid request body": "Les données du formulaire ne sont pas valides.",
   DUPLICATE_LISTING: "Cette annonce existe déjà. Vous ne pouvez pas publier la même chose deux fois.",
-  DUPLICATE_LISTING_SELF: "Vous avez une annonce active similaire. Modifiez le titre ou la description.",
+  DUPLICATE_LISTING_SELF:
+    "Vous ne pouvez pas publier le même article deux fois en 1 mois. Vous avez déjà une annonce similaire active — modifiez-la ou attendez 1 mois.",
   BLACKLIST_WORD: "Le contenu contient des mots interdits. Modifiez le titre ou la description.",
   CLIENT_BLOCKED_WORD: 'Le contenu contient un mot interdit : « {word} ».',
   PHONE_IN_DESCRIPTION:

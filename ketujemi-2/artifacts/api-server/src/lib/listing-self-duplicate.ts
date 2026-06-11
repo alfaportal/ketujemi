@@ -4,7 +4,7 @@ import {
   listingsTable,
   type User,
 } from "@workspace/db";
-import { and, eq, gt, isNull } from "drizzle-orm";
+import { and, eq, gt, gte, isNull, or } from "drizzle-orm";
 import { canonListingPair, pairsEqual } from "./listing-duplicate-guard";
 import { listingImagesMatch } from "./listing-image-url-compare";
 import { userOwnsListing } from "./listing-ownership";
@@ -14,14 +14,23 @@ import { sendTransactionalEmail } from "./send-transactional-email";
 import { getPublicAppOrigin } from "./listing-expiry-reminders";
 import { normalizeSmsPhoneDigits, vonageSendSms } from "./vonage-sms";
 
+/** Same or similar item cannot be reposted within this window. */
+export const SELF_DUPLICATE_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
+
 export const SELF_DUPLICATE_SCREEN_MESSAGE =
-  "Ke tentuar të postosh të njëjtën shpallje dy herë. Shpallja jote është aktive tashmë. KetuJemi është platformë serioze — mos riposto të njëjtat sende.";
+  "Nuk mund të postoni të njëjtin send dy herë brenda 1 muaji. Keni tashmë një shpallje të ngjashme aktive. Fshini atë ose prisni derisa të kalojë 1 muaj nga postimi i fundit.";
 
 const SELF_DUPLICATE_SMS =
-  "KetuJemi: Ke tentuar te postosh te njejten shpallje dy here. Platforma eshte serioze - mos riposto te njejtat sende.";
+  "KetuJemi: Nuk mund te postoni te njejtin send dy here brenda 1 muaji. Shpallja e ngjashme eshte aktive.";
 
 function activeListingCondition() {
   return and(eq(listingsTable.status, "active"), gt(listingsTable.expires_at, new Date()));
+}
+
+/** Active listing or any listing posted in the last 30 days (1-month cooldown). */
+function selfDuplicateListingCondition() {
+  const cooldownSince = new Date(Date.now() - SELF_DUPLICATE_COOLDOWN_MS);
+  return or(activeListingCondition(), gte(listingsTable.created_at, cooldownSince));
 }
 
 export type SelfDuplicateLookupOpts = {
@@ -72,7 +81,7 @@ export async function findSelfDuplicateActiveListingId(
       image_url: listingsTable.image_url,
     })
     .from(listingsTable)
-    .where(and(eq(listingsTable.user_id, userId), activeListingCondition()));
+    .where(and(eq(listingsTable.user_id, userId), selfDuplicateListingCondition()));
 
   for (const row of ownedByUserId) {
     if (rowMatchesSelfDuplicate(title, description, opts, row)) {
@@ -90,7 +99,7 @@ export async function findSelfDuplicateActiveListingId(
       seller_phone: listingsTable.seller_phone,
     })
     .from(listingsTable)
-    .where(and(isNull(listingsTable.user_id), activeListingCondition()));
+    .where(and(isNull(listingsTable.user_id), selfDuplicateListingCondition()));
 
   for (const row of legacyRows) {
     if (!userOwnsListing(user, row)) continue;
@@ -157,7 +166,7 @@ async function sendSelfDuplicateNotifyOnce(user: User, listingId: number): Promi
       <p>Përshëndetje <strong>${displayName}</strong>,</p>
       <p><strong>${SELF_DUPLICATE_SCREEN_MESSAGE}</strong></p>
       <p><a href="${url}">Shiko shpalljen tënde aktive</a></p>
-      <p style="color:#666;font-size:13px">KetuJemi është platformë serioze — mos ripostoni të njëjtat sende.</p>
+      <p style="color:#666;font-size:13px">Rregulli i platformës: i njëjti send nuk postohet dy herë brenda 1 muaji.</p>
     `;
 
     try {
