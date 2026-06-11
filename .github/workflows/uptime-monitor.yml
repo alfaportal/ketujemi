@@ -1,0 +1,41 @@
+# Kontrollon ketujemi.com çdo 5 minuta dhe njofton në Telegram kur ka problem
+# (ose kur faqja rikthehet). Shih monitoring/README.md për setup.
+name: Uptime Monitor (KetuJemi.com)
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: uptime-monitor
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run uptime check
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: node monitoring/uptime-monitor.mjs
+
+      - name: Save monitor state
+        run: |
+          if ! git diff --quiet -- monitoring/state.json; then
+            git config user.name "ketujemi-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add monitoring/state.json
+            git commit -m "chore: update uptime monitor state [skip ci]"
+            git push
+          fi
