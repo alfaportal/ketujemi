@@ -1840,6 +1840,12 @@ export const EN_EXTRA: Record<string, string> = {
   ui_routeErrorTitle: "Something went wrong",
   ui_routeErrorHint: "Refresh the page.",
   ui_routeErrorRefresh: "Refresh",
+  ui_listingDraftRestored: "Your listing draft was restored automatically.",
+  ui_listingDraftRestoredHint:
+    "Form and photos are saved continuously. If the page refreshes, tap Restore or keep editing.",
+  ui_listingDraftSaved: "Your draft is saved automatically as you fill in the form.",
+  ui_listingDraftRestoreBtn: "Restore",
+  ui_listingDraftDismiss: "Close",
   ui_listingExpiredBannerBefore: "This listing has expired. Click",
   ui_repostListingBtn: "🔄 Repost listing",
   ui_repostListingLink: "Repost listing",

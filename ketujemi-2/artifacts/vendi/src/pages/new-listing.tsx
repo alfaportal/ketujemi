@@ -100,9 +100,11 @@ import { staticPagePaths } from "@/lib/static-page-paths";
 import { buildNewListingSchema, type NewListingFormData } from "@/lib/listing-form-schema";
 import {
   clearListingFormDraft,
+  flushListingFormDraft,
   readListingFormDraft,
-  saveListingFormDraft,
 } from "@/lib/listing-form-draft";
+import { ListingFormDraftBanner } from "@/components/listing-form-draft-banner";
+import { useListingFormDraft } from "@/hooks/use-listing-form-draft";
 
 type FormData = NewListingFormData;
 
@@ -178,11 +180,15 @@ export default function NewListing() {
   const tx = t as Record<string, string | undefined>;
   const categoryLocale = translationKeyForUiLang(uiLang);
   const listingLang = listingApiLangFromUi(uiLang);
-  const [listingCountry, setListingCountry] = useState<ListingMarketCode>(() =>
-    defaultListingMarketFromMarket(market.code),
-  );
+  const [listingCountry, setListingCountry] = useState<ListingMarketCode>(() => {
+    const draft = readListingFormDraft(pathname);
+    return draft?.listingCountry ?? defaultListingMarketFromMarket(market.code);
+  });
   const { data: allCategories } = useGetCategories();
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>(() => {
+    const draft = readListingFormDraft(pathname);
+    return draft?.imageUrls ?? [];
+  });
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const imageAnalyzedRef = useRef(false);
@@ -196,7 +202,10 @@ export default function NewListing() {
   const cameraPhotoRef = useRef<HTMLInputElement>(null);
   const cameraVideoRef = useRef<HTMLInputElement>(null);
   const imageUpload = useListingImageUpload();
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(() => {
+    const draft = readListingFormDraft(pathname);
+    return draft?.videoUrl ?? null;
+  });
   const [videoUploadPhase, setVideoUploadPhase] = useState<ListingVideoUploadPhase | null>(null);
   const [videoPreparePct, setVideoPreparePct] = useState(0);
   const isVideoUploading = videoUploadPhase !== null;
@@ -206,7 +215,6 @@ export default function NewListing() {
   const [myShop, setMyShop] = useState<{ shop_name: string; category: string } | null>(null);
   /** Must accept Dhurata pledge on every visit — no sessionStorage bypass. */
   const [dhurataPledgeOk, setDhurataPledgeOk] = useState(false);
-  const draftRestoredRef = useRef(false);
 
   useEffect(() => {
     if (!isDhurataPostRoute) return;
@@ -293,6 +301,7 @@ export default function NewListing() {
       xSellerEmail: "", xSellerAddress: "",
       xSiperfaqja: "", xKati: "", xDhomat: "", xFurnished: "",
       xTelMarka: "", xTelModeli: "", xKapaciteti: "", xNgjyra: "",
+      ...(readListingFormDraft(pathname)?.form ?? {}),
     },
   });
 
@@ -503,19 +512,36 @@ export default function NewListing() {
     }
   }, [allCategories, isKerkojPostRoute, form]);
 
+  const skipCategoryCascade = useCallback(() => {
+    skipCategoryCascadeRef.current = true;
+    skipBrandCascadeRef.current = true;
+    skipTitleSuggestRef.current = true;
+    window.setTimeout(() => {
+      skipTitleSuggestRef.current = false;
+    }, 3000);
+  }, []);
+
+  const markImagesAnalyzed = useCallback(() => {
+    imageAnalyzedRef.current = true;
+  }, []);
+
+  const { draftRestored, showBanner, setShowBanner, restoreFromStorage, persistNow } =
+    useListingFormDraft({
+      pathname,
+      form,
+      imageUrls,
+      videoUrl,
+      listingCountry,
+      setImageUrls,
+      setVideoUrl,
+      setListingCountry,
+      markImagesAnalyzed,
+      skipCategoryCascade,
+    });
+
   useEffect(() => {
-    if (draftRestoredRef.current) return;
-    draftRestoredRef.current = true;
-    const draft = readListingFormDraft(pathname);
-    if (!draft) return;
-    form.reset({ ...form.getValues(), ...draft.form });
-    if (draft.imageUrls.length > 0) {
-      setImageUrls(draft.imageUrls);
-      imageAnalyzedRef.current = true;
-    }
-    if (draft.videoUrl) setVideoUrl(draft.videoUrl);
-    if (draft.listingCountry) setListingCountry(draft.listingCountry);
-  }, [pathname, form]);
+    if (imageUrls.length > 0) imageAnalyzedRef.current = true;
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -530,19 +556,6 @@ export default function NewListing() {
       form.setValue("xSellerEmail", user.email);
     }
   }, [user, form]);
-
-  useEffect(() => {
-    const sub = form.watch(() => {
-      saveListingFormDraft(pathname, {
-        form: form.getValues(),
-        imageUrls,
-        videoUrl,
-        listingCountry,
-        savedAt: Date.now(),
-      });
-    });
-    return () => sub.unsubscribe();
-  }, [form, pathname, imageUrls, videoUrl, listingCountry]);
 
   const applyImageAnalysis = useCallback(
     (analysis: ListingImageAnalysis) => {
@@ -673,12 +686,23 @@ export default function NewListing() {
     const shouldAnalyze = imageUrls.length === 0 && !imageAnalyzedRef.current;
     const firstFile = shouldAnalyze ? files[0] : null;
     setIsUploading(true);
+    persistNow();
     try {
       const [, urls] = await Promise.all([
         firstFile ? analyzeFirstListingMedia(firstFile, "image") : Promise.resolve(),
         Promise.all(files.map((file) => imageUpload.uploadFile(file))),
       ]);
-      setImageUrls((prev) => [...prev, ...urls]);
+      setImageUrls((prev) => {
+        const next = [...prev, ...urls];
+        flushListingFormDraft(pathname, {
+          form: form.getValues(),
+          imageUrls: next,
+          videoUrl,
+          listingCountry,
+          savedAt: Date.now(),
+        });
+        return next;
+      });
     } catch {
       toast({ title: t.uploadFailed, variant: "destructive" });
     } finally {
@@ -721,6 +745,7 @@ export default function NewListing() {
       (!imageAnalyzedRef.current || lastVideoAnalyzeKeyRef.current !== videoFileKey);
     setVideoUploadPhase("preparing");
     setVideoPreparePct(0);
+    persistNow();
     try {
       let vision: { data: string; mediaType: string } | null = null;
       if (shouldAnalyze) {
@@ -751,6 +776,13 @@ export default function NewListing() {
       }
 
       setVideoUrl(url);
+      flushListingFormDraft(pathname, {
+        form: form.getValues(),
+        imageUrls,
+        videoUrl: url,
+        listingCountry,
+        savedAt: Date.now(),
+      });
     } catch (err) {
       const msg = listingVideoErrorMessage(err, uiLang);
       if (msg) {
@@ -998,6 +1030,14 @@ export default function NewListing() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {(showBanner || draftRestored) ? (
+        <ListingFormDraftBanner
+          pathname={pathname}
+          restored={draftRestored}
+          onRestore={() => restoreFromStorage()}
+          onDismiss={() => setShowBanner(false)}
+        />
+      ) : null}
       {userNeedsSellerProfile(user) && <SellerProfileGate onReady={() => undefined} />}
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">

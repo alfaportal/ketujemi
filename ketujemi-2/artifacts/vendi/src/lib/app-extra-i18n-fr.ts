@@ -1843,6 +1843,12 @@ export const FR_EXTRA: Record<string, string> = {
   ui_routeErrorTitle: "Une erreur s'est produite",
   ui_routeErrorHint: "Actualisez la page.",
   ui_routeErrorRefresh: "Actualiser",
+  ui_listingDraftRestored: "Votre brouillon d'annonce a été restauré automatiquement.",
+  ui_listingDraftRestoredHint:
+    "Le formulaire et les photos sont enregistrés en continu. Si la page se recharge, appuyez sur Restaurer ou continuez.",
+  ui_listingDraftSaved: "Votre brouillon est enregistré automatiquement pendant que vous remplissez le formulaire.",
+  ui_listingDraftRestoreBtn: "Restaurer",
+  ui_listingDraftDismiss: "Fermer",
   ui_listingExpiredBannerBefore: "Cette annonce a expiré. Cliquez sur",
   ui_repostListingBtn: "🔄 Republier l'annonce",
   ui_repostListingLink: "Republier l'annonce",

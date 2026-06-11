@@ -16,7 +16,9 @@ export function RefetchOnVisible() {
     };
 
     const onPageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) refresh();
+      if (!event.persisted) return;
+      if (isListingPostPath(pathname)) return;
+      refresh();
     };
 
     document.addEventListener("visibilitychange", refresh);

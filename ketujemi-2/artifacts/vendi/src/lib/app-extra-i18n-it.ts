@@ -1844,6 +1844,12 @@ export const IT_EXTRA: Record<string, string> = {
   ui_routeErrorHint: "Aggiorna the page.",
   ui_routeErrorRefresh: "Aggiorna",
   ui_routeErrorTitle: "Something went wrong",
+  ui_listingDraftRestored: "La bozza dell'annuncio è stata ripristinata automaticamente.",
+  ui_listingDraftRestoredHint:
+    "Modulo e foto vengono salvati in modo continuo. Se la pagina si ricarica, tocca Ripristina o continua.",
+  ui_listingDraftSaved: "La bozza viene salvata automaticamente mentre compili il modulo.",
+  ui_listingDraftRestoreBtn: "Ripristina",
+  ui_listingDraftDismiss: "Chiudi",
   ui_sellerNoResponse: "Venditore not responding",
   ui_sellerNoResponseBusy: "Sending…",
   ui_sellLangBlocked: "Linguaggio commerciale non consentito in \"Wanted to Buy\" (parola bloccata: \"{word}\").",

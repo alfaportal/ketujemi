@@ -1,5 +1,6 @@
 import { Component, type ComponentType, type ErrorInfo, type ReactNode } from "react";
 import { EXTRA_TRANSLATIONS } from "@/lib/app-extra-i18n";
+import { isListingPostPath } from "@/lib/listing-form-draft";
 import { DEFAULT_UI_LANG, isUiLang, translationKeyForUiLang } from "@/lib/ui-languages";
 
 type Props = { children: ReactNode };
@@ -86,6 +87,7 @@ export class RouteErrorBoundary extends Component<Props, State> {
 
     const pathKey = currentRouteKey();
     if (!pathKey || wasAutoRecoveryAttempted(pathKey)) return;
+    if (isListingPostPath(pathKey.split("?")[0] ?? "")) return;
     markAutoRecoveryAttempt(pathKey);
     window.setTimeout(() => window.location.reload(), 120);
   }

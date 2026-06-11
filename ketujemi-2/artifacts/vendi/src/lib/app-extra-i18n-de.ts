@@ -1844,6 +1844,12 @@ export const DE_EXTRA: Record<string, string> = {
   ui_routeErrorHint: "Aktualisieren the page.",
   ui_routeErrorRefresh: "Aktualisieren",
   ui_routeErrorTitle: "Something went wrong",
+  ui_listingDraftRestored: "Ihr Anzeigenentwurf wurde automatisch wiederhergestellt.",
+  ui_listingDraftRestoredHint:
+    "Formular und Fotos werden laufend gespeichert. Bei einem Neuladen auf Wiederherstellen tippen oder weiter ausfüllen.",
+  ui_listingDraftSaved: "Ihr Entwurf wird automatisch gespeichert, während Sie das Formular ausfüllen.",
+  ui_listingDraftRestoreBtn: "Wiederherstellen",
+  ui_listingDraftDismiss: "Schließen",
   ui_sellerNoResponse: "Verkäufer not responding",
   ui_sellerNoResponseBusy: "Sending…",
   ui_sellLangBlocked: "Verkaufssprache ist nicht erlaubt in \"Wanted to Buy\" (gesperrtes Wort: \"{word}\").",
