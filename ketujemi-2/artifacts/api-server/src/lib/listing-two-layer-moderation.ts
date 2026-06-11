@@ -1,5 +1,6 @@
 import { db, listingsTable, moderationLogTable, type User } from "@workspace/db";
 import { and, desc, eq, gte } from "drizzle-orm";
+import { hasDisallowedPhoneInUserText } from "../../../../lib/listing-phone-in-text.js";
 import { listingBelongsToUser } from "./listing-ownership";
 import { listingTextSimilarity, SELF_DUPLICATE_SCAN_THRESHOLD } from "./listing-text-similarity";
 
@@ -102,7 +103,7 @@ function findBlockedWord(text: string): string | null {
 }
 
 function hasPhoneInDescription(description: string): boolean {
-  return /(?:\+?\d[\d\s\-()]{6,}\d)/.test(description);
+  return hasDisallowedPhoneInUserText(description);
 }
 
 function hasExternalLink(description: string): boolean {

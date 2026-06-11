@@ -72,8 +72,10 @@ import {
   useAuth,
   loginUrlWithReturn,
   sellerContactFromUser,
+  userNeedsSellerProfile,
 } from "@/lib/auth-context";
 import { AuthToolbar } from "@/components/auth-toolbar";
+import { SellerProfileGate } from "@/components/seller-profile-gate";
 import { translateCategory } from "@/lib/category-translations";
 import {
   DhurataGiftPledge,
@@ -98,6 +100,14 @@ import { staticPagePaths } from "@/lib/static-page-paths";
 import { buildNewListingSchema, type NewListingFormData } from "@/lib/listing-form-schema";
 
 type FormData = NewListingFormData;
+
+function userHasSellerPhone(user: {
+  contact_phone?: string | null;
+  phone_e164_digits?: string | null;
+}): boolean {
+  const digits = (user.contact_phone ?? user.phone_e164_digits ?? "").replace(/\D/g, "");
+  return digits.length >= 8;
+}
 
 // ─── Step badge ───────────────────────────────────────────────────────────────
 function StepBadge({ n, label, active, done }: { n: number; label: string; active: boolean; done: boolean }) {
@@ -728,7 +738,7 @@ export default function NewListing() {
     );
   };
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     if (isDhurataPostRoute && !dhurataPledgeOk) {
       refusePost(
         tx.ui_giftPledgeUncheckedBlocked!,
@@ -824,9 +834,42 @@ export default function NewListing() {
       return;
     }
     const finalDescription = validation.extraDescriptionPrefix + listingData.description;
-    const contact = user ? sellerContactFromUser(user) : {
-      seller_name: listingData.seller_name,
-      seller_phone: listingData.seller_phone,
+    const formName = listingData.seller_name?.trim() ?? "";
+    const formPhone = listingData.seller_phone?.trim() ?? "";
+
+    if (userNeedsSellerProfile(user)) {
+      setIsSubmitting(true);
+      try {
+        const bootRes = await fetchWithTimeout("/api/auth/profile/seller-bootstrap", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            display_name: formName,
+            contact_phone: formPhone,
+          }),
+        });
+        const bootBody = (await bootRes.json().catch(() => ({}))) as {
+          error?: string;
+          message?: string;
+        };
+        if (!bootRes.ok) {
+          refusePost(bootBody.message ?? bootBody.error ?? t.toast_reqFail);
+          return;
+        }
+        await refresh();
+      } catch (e) {
+        refusePost(getFetchErrorMessage(e));
+        return;
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+
+    const profileContact = sellerContactFromUser(user);
+    const contact = {
+      seller_name: formName || profileContact.seller_name,
+      seller_phone: formPhone || profileContact.seller_phone,
     };
 
     const payload: Record<string, unknown> = {
@@ -911,8 +954,11 @@ export default function NewListing() {
     );
   }
 
+  const canEditSellerPhone = !userHasSellerPhone(user);
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {userNeedsSellerProfile(user) && <SellerProfileGate onReady={() => { void refresh(); }} />}
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">
         <MobileSafeTopSpacer />
@@ -1779,11 +1825,14 @@ export default function NewListing() {
                         <Input
                           data-testid="input-phone"
                           placeholder={`${market.prefix} 44 123 456`}
-                          readOnly={!!user}
-                          className={user ? "bg-gray-50 cursor-not-allowed" : undefined}
+                          readOnly={!canEditSellerPhone}
+                          className={!canEditSellerPhone ? "bg-gray-50 cursor-not-allowed" : undefined}
                           {...field}
                         />
                       </FormControl>
+                      {canEditSellerPhone && (
+                        <p className="text-xs text-gray-500">{t.reg_sellerGate_sub}</p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}

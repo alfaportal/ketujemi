@@ -23,6 +23,7 @@ import { getTelefonaHubChildCategoryIds } from "@/lib/telefona-search-helpers";
 import { getTvElektronikeLeafCategoryIds } from "@/lib/tv-elektronike-search-helpers";
 import { getVeturaBrandLeafCategoryIds } from "@/lib/vetura-search-helpers";
 import { isKompjuterHubTypeName } from "@/lib/kompjuter-laptop-search-helpers";
+import { hasDisallowedPhoneInUserText } from "../../../../lib/listing-phone-in-text.ts";
 import {
   DHURATA_FALAS_SLUG,
   LISTING_MAX_PHOTOS,
@@ -213,10 +214,6 @@ function findBlockedWordClient(text: string): string | null {
     if (normalized.includes(word.toLowerCase().normalize("NFC"))) return word;
   }
   return null;
-}
-
-function hasPhoneInDescriptionClient(description: string): boolean {
-  return /(?:\+?\d[\d\s\-()]{6,}\d)/.test(description);
 }
 
 function hasExternalLinkClient(description: string): boolean {
@@ -644,7 +641,7 @@ export class CategoryEngine {
         blockedWord,
       });
     }
-    if (hasPhoneInDescriptionClient(finalDescription)) {
+    if (hasDisallowedPhoneInUserText(data.description)) {
       issues.push({
         code: "PHONE_IN_DESCRIPTION",
         message:

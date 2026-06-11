@@ -28,6 +28,29 @@ export function userHasPostableContact(
   return seller_name.length >= 2 && seller_phone.replace(/\D/g, "").length >= 8;
 }
 
+/** When profile lacks seller contact, persist name/phone from the listing form before posting. */
+export async function syncSellerContactFromListingIfNeeded(
+  user: User,
+  submitted: { seller_name: string; seller_phone: string },
+): Promise<User> {
+  if (userHasPostableContact(user)) return user;
+
+  const name = submitted.seller_name.trim();
+  const digits = submitted.seller_phone.replace(/\D/g, "");
+  if (name.length < 2 || digits.length < 8) return user;
+
+  const [row] = await db
+    .update(usersTable)
+    .set({
+      display_name: name.slice(0, 120),
+      contact_phone: digits.slice(0, 20),
+    })
+    .where(eq(usersTable.id, user.id))
+    .returning();
+
+  return row ?? user;
+}
+
 export type ContactImpersonationCheck = {
   impersonation: boolean;
   reason: string;

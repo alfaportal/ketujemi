@@ -17,6 +17,7 @@ import {
   detectContactImpersonation,
   recordListingOwnershipViolation,
   sanitizeListingDescriptionEmail,
+  syncSellerContactFromListingIfNeeded,
   userHasPostableContact,
   verifyListingOwnerIntegrity,
 } from "../lib/listing-ownership-guard";
@@ -328,7 +329,7 @@ router.get("/listings", searchLimiter, async (req, res) => {
 
 // ─── POST /listings ───────────────────────────────────────────────────────────
 router.post("/listings", postListingLimiter, async (req, res) => {
-  const viewer = await getSessionUser(req);
+  let viewer = await getSessionUser(req);
   if (!viewer) {
     res.status(401).json({
       error: "Authentication required",
@@ -350,6 +351,11 @@ router.post("/listings", postListingLimiter, async (req, res) => {
 
   const safeImageUrl = sanitizeListingImageUrlField(parsed.data.image_url) ?? undefined;
   const safeVideoUrl = sanitizeListingVideoUrl(parsed.data.video_url) ?? undefined;
+
+  viewer = await syncSellerContactFromListingIfNeeded(viewer, {
+    seller_name: parsed.data.seller_name,
+    seller_phone: parsed.data.seller_phone,
+  });
 
   if (!userHasPostableContact(viewer)) {
     res.status(400).json({
