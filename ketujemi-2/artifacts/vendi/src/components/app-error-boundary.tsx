@@ -1,6 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { errorPageCopyForStoredLang } from "@/lib/error-page-i18n";
-import { isListingPostPath } from "@/lib/listing-form-draft";
+import { isListingPostPath } from "@/lib/listing-post-path";
 
 type Props = { children: ReactNode };
 type State = { error: Error | null };

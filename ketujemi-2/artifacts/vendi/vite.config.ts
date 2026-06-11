@@ -42,7 +42,7 @@ export default defineConfig(async ({ command }) => {
     buildStampPlugin(),
     VitePWA({
       injectRegister: null,
-      registerType: "autoUpdate",
+      registerType: "prompt",
       includeAssets: [
         "logo.png",
         "logo-app.png",

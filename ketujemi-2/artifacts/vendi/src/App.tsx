@@ -28,7 +28,7 @@ const Listings = lazy(() => import("@/pages/listings"));
 const CategoryPage = lazy(() => import("@/pages/category"));
 const ListingDetail = lazy(() => import("@/pages/listing-detail"));
 
-const NewListing = lazy(() => import("@/pages/new-listing"));
+import NewListing from "@/pages/new-listing";
 const LoginPage = lazy(() => import("@/pages/login"));
 const ProfilePage = lazy(() => import("@/pages/profile"));
 const MyListingsPage = lazy(() => import("@/pages/my-listings"));
@@ -104,6 +104,7 @@ function resolveRouteComponent(route: AppRouteDefinition): ComponentType {
   if (route.id === "category-hub-redirect" && route.hubSlug) {
     return withRouteErrorBoundary(categoryHubRedirectComponent(route.hubSlug));
   }
+  if (route.id === "new-listing") return NewListing;
   return SAFE_ROUTE_COMPONENTS[route.id as Exclude<RouteId, "category-hub-redirect">];
 }
 
@@ -111,10 +112,10 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      staleTime: 0,
-      refetchOnMount: true,
-      refetchOnWindowFocus: true,
-      refetchOnReconnect: true,
+      staleTime: 60_000,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
     },
   },
 });

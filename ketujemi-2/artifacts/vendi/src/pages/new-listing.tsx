@@ -54,7 +54,8 @@ import { ListingCountryPicker } from "@/components/listing-country-picker";
 import { ListingCategorySuggest } from "@/components/listing-category-suggest";
 import { ListingDescriptionHelper } from "@/components/listing-description-helper";
 import { joinListingImageUrls } from "@/lib/listing-images";
-import { fileToVisionBase64, type ListingImageAnalysis } from "@/lib/listing-image-vision";
+import { imageUrlToVisionBase64, type ListingImageAnalysis } from "@/lib/listing-image-vision";
+import { stabilizeListingPostPage } from "@/lib/listing-post-stable-mode";
 import { videoFileToVisionBase64 } from "@/lib/listing-video-frame";
 import { listingPhotoAnalyzeFailureToast } from "@/lib/listing-photo-analyze-toast";
 import { useListingImageUpload } from "@/lib/listing-image-upload";
@@ -99,12 +100,6 @@ import { engagementCopyForUiLang } from "@/lib/engagement-i18n";
 import { queueFirstListingCelebration } from "@/components/engagement-effects";
 import { staticPagePaths } from "@/lib/static-page-paths";
 import { buildNewListingSchema, type NewListingFormData } from "@/lib/listing-form-schema";
-import {
-  clearListingFormDraft,
-  flushListingFormDraft,
-  readListingFormDraft,
-} from "@/lib/listing-form-draft";
-import { useListingFormDraft } from "@/hooks/use-listing-form-draft";
 
 type FormData = NewListingFormData;
 
@@ -183,15 +178,11 @@ export default function NewListing() {
   const tx = t as Record<string, string | undefined>;
   const categoryLocale = translationKeyForUiLang(uiLang);
   const listingLang = listingApiLangFromUi(uiLang);
-  const [listingCountry, setListingCountry] = useState<ListingMarketCode>(() => {
-    const draft = readListingFormDraft(pathname);
-    return draft?.listingCountry ?? defaultListingMarketFromMarket(market.code);
-  });
+  const [listingCountry, setListingCountry] = useState<ListingMarketCode>(() =>
+    defaultListingMarketFromMarket(market.code),
+  );
   const { data: allCategories } = useGetCategories();
-  const [imageUrls, setImageUrls] = useState<string[]>(() => {
-    const draft = readListingFormDraft(pathname);
-    return draft?.imageUrls ?? [];
-  });
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const imageAnalyzedRef = useRef(false);
@@ -205,10 +196,7 @@ export default function NewListing() {
   const cameraPhotoRef = useRef<HTMLInputElement>(null);
   const cameraVideoRef = useRef<HTMLInputElement>(null);
   const imageUpload = useListingImageUpload();
-  const [videoUrl, setVideoUrl] = useState<string | null>(() => {
-    const draft = readListingFormDraft(pathname);
-    return draft?.videoUrl ?? null;
-  });
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoUploadPhase, setVideoUploadPhase] = useState<ListingVideoUploadPhase | null>(null);
   const [videoPreparePct, setVideoPreparePct] = useState(0);
   const isVideoUploading = videoUploadPhase !== null;
@@ -218,6 +206,10 @@ export default function NewListing() {
   const [myShop, setMyShop] = useState<{ shop_name: string; category: string } | null>(null);
   /** Must accept Dhurata pledge on every visit — no sessionStorage bypass. */
   const [dhurataPledgeOk, setDhurataPledgeOk] = useState(false);
+
+  useEffect(() => {
+    void stabilizeListingPostPage();
+  }, []);
 
   useEffect(() => {
     if (!isDhurataPostRoute) return;
@@ -304,7 +296,6 @@ export default function NewListing() {
       xSellerEmail: "", xSellerAddress: "",
       xSiperfaqja: "", xKati: "", xDhomat: "", xFurnished: "",
       xTelMarka: "", xTelModeli: "", xKapaciteti: "", xNgjyra: "",
-      ...(readListingFormDraft(pathname)?.form ?? {}),
     },
   });
 
@@ -528,18 +519,6 @@ export default function NewListing() {
     imageAnalyzedRef.current = true;
   }, []);
 
-  const { persistNow } = useListingFormDraft({
-    pathname,
-    form,
-    imageUrls,
-    videoUrl,
-    listingCountry,
-  });
-
-  useEffect(() => {
-    if (imageUrls.length > 0) imageAnalyzedRef.current = true;
-  }, []);
-
   useEffect(() => {
     if (!activeUser) return;
     const { seller_name, seller_phone } = sellerContactFromUser(activeUser);
@@ -641,24 +620,40 @@ export default function NewListing() {
     [applyImageAnalysis, skipListingImageAutofill, listingLang, myShop, toast, tx],
   );
 
-  const analyzeFirstListingMedia = useCallback(
-    async (file: File, source: "image" | "video") => {
+  const analyzeUploadedImageUrl = useCallback(
+    async (url: string) => {
       if (imageAnalyzedRef.current || skipListingImageAutofill) return;
       setIsAnalyzingImage(true);
       try {
-        const vision =
-          source === "video"
-            ? await videoFileToVisionBase64(file)
-            : await fileToVisionBase64(file);
+        const vision = await imageUrlToVisionBase64(url);
         await runListingVisionAnalysis(vision);
+      } catch (error) {
+        toast({
+          title: t.photoAnalyzeFailed,
+          description: getFetchErrorMessage(error, tx.photoAnalyzeFailedHint),
+          variant: "destructive",
+        });
+      } finally {
+        setIsAnalyzingImage(false);
+      }
+    },
+    [skipListingImageAutofill, runListingVisionAnalysis, toast, t.photoAnalyzeFailed, tx],
+  );
+
+  const analyzeVideoFile = useCallback(
+    async (file: File): Promise<boolean> => {
+      if (imageAnalyzedRef.current || skipListingImageAutofill) return false;
+      setIsAnalyzingImage(true);
+      try {
+        const vision = await videoFileToVisionBase64(file);
+        return await runListingVisionAnalysis(vision);
       } catch (error) {
         const code = error instanceof Error ? error.message : "";
         const isVideoFrame =
-          source === "video" &&
-          (code === "video_frame_failed" ||
-            code === "video_frame_timeout" ||
-            code === "video_frame_blank" ||
-            code === "video_frame_encode_failed");
+          code === "video_frame_failed" ||
+          code === "video_frame_timeout" ||
+          code === "video_frame_blank" ||
+          code === "video_frame_encode_failed";
         toast({
           title: t.photoAnalyzeFailed,
           description: isVideoFrame
@@ -666,11 +661,12 @@ export default function NewListing() {
             : getFetchErrorMessage(error, tx.photoAnalyzeFailedHint),
           variant: "destructive",
         });
+        return false;
       } finally {
         setIsAnalyzingImage(false);
       }
     },
-    [skipListingImageAutofill, runListingVisionAnalysis, toast, tx],
+    [skipListingImageAutofill, runListingVisionAnalysis, toast, t.photoAnalyzeFailed, t.videoAnalyzeFrameHint, tx],
   );
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -681,25 +677,13 @@ export default function NewListing() {
       return;
     }
     const shouldAnalyze = imageUrls.length === 0 && !imageAnalyzedRef.current;
-    const firstFile = shouldAnalyze ? files[0] : null;
     setIsUploading(true);
-    persistNow();
     try {
-      const [, urls] = await Promise.all([
-        firstFile ? analyzeFirstListingMedia(firstFile, "image") : Promise.resolve(),
-        Promise.all(files.map((file) => imageUpload.uploadFile(file))),
-      ]);
-      setImageUrls((prev) => {
-        const next = [...prev, ...urls];
-        flushListingFormDraft(pathname, {
-          form: form.getValues(),
-          imageUrls: next,
-          videoUrl,
-          listingCountry,
-          savedAt: Date.now(),
-        });
-        return next;
-      });
+      const urls = await Promise.all(files.map((file) => imageUpload.uploadFile(file)));
+      setImageUrls((prev) => [...prev, ...urls]);
+      if (shouldAnalyze && urls[0]) {
+        void analyzeUploadedImageUrl(urls[0]);
+      }
     } catch {
       toast({ title: t.uploadFailed, variant: "destructive" });
     } finally {
@@ -742,44 +726,16 @@ export default function NewListing() {
       (!imageAnalyzedRef.current || lastVideoAnalyzeKeyRef.current !== videoFileKey);
     setVideoUploadPhase("preparing");
     setVideoPreparePct(0);
-    persistNow();
     try {
-      let vision: { data: string; mediaType: string } | null = null;
-      if (shouldAnalyze) {
-        setIsAnalyzingImage(true);
-        try {
-          vision = await videoFileToVisionBase64(file);
-        } catch (error) {
-          const code = error instanceof Error ? error.message : "";
-          toast({
-            title: t.photoAnalyzeFailed,
-            description:
-              code === "video_frame_blank" || code.startsWith("video_frame")
-                ? t.videoAnalyzeFrameHint
-                : getFetchErrorMessage(error, tx.photoAnalyzeFailedHint),
-            variant: "destructive",
-          });
-        }
-      }
-
       const url = await videoUpload.uploadFile(file, {
         onPhase: setVideoUploadPhase,
         onPrepareProgress: setVideoPreparePct,
       });
-
-      if (vision) {
-        const ok = await runListingVisionAnalysis(vision);
+      setVideoUrl(url);
+      if (shouldAnalyze) {
+        const ok = await analyzeVideoFile(file);
         if (ok) lastVideoAnalyzeKeyRef.current = videoFileKey;
       }
-
-      setVideoUrl(url);
-      flushListingFormDraft(pathname, {
-        form: form.getValues(),
-        imageUrls,
-        videoUrl: url,
-        listingCountry,
-        savedAt: Date.now(),
-      });
     } catch (err) {
       const msg = listingVideoErrorMessage(err, uiLang);
       if (msg) {
@@ -994,7 +950,6 @@ export default function NewListing() {
         } else {
           toast({ title: engagement.subsequentListingToast });
         }
-        clearListingFormDraft(pathname);
         setLocation(`/listings/${(body as { id: number }).id}?posted=1`);
       })
       .catch((e) => refusePost(getFetchErrorMessage(e)))

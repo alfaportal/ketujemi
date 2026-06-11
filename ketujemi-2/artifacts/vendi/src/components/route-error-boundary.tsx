@@ -1,6 +1,6 @@
 import { Component, type ComponentType, type ErrorInfo, type ReactNode } from "react";
 import { EXTRA_TRANSLATIONS } from "@/lib/app-extra-i18n";
-import { isListingPostPath } from "@/lib/listing-form-draft";
+import { isListingPostPath } from "@/lib/listing-post-path";
 import { DEFAULT_UI_LANG, isUiLang, translationKeyForUiLang } from "@/lib/ui-languages";
 
 type Props = { children: ReactNode };

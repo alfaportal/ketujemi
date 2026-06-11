@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { checkForAppUpdate } from "@/lib/pwa-updates";
-import { isListingPostPath } from "@/lib/listing-form-draft";
+import { isListingPostPath } from "@/lib/listing-post-path";
 
 import { lastRouteChangeWasPop } from "@/lib/scroll-restoration";
 
