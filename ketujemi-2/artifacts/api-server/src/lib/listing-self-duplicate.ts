@@ -6,7 +6,9 @@ import {
 } from "@workspace/db";
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { canonListingPair, pairsEqual } from "./listing-duplicate-guard";
-import { listingBelongsToUser, userOwnsListing } from "./listing-ownership";
+import { listingImagesMatch } from "./listing-image-url-compare";
+import { userOwnsListing } from "./listing-ownership";
+import { isSelfDuplicateListingMatch } from "./listing-text-similarity";
 import { logger } from "./logger";
 import { sendTransactionalEmail } from "./send-transactional-email";
 import { getPublicAppOrigin } from "./listing-expiry-reminders";
@@ -22,8 +24,36 @@ function activeListingCondition() {
   return and(eq(listingsTable.status, "active"), gt(listingsTable.expires_at, new Date()));
 }
 
+export type SelfDuplicateLookupOpts = {
+  categoryId?: number;
+  imageUrl?: string | null;
+};
+
+function rowMatchesSelfDuplicate(
+  title: string,
+  description: string,
+  opts: SelfDuplicateLookupOpts,
+  row: {
+    title: string;
+    description: string;
+    category_id: number | null;
+    image_url: string | null;
+  },
+): boolean {
+  const incoming = canonListingPair(title, description);
+  const existing = canonListingPair(row.title, row.description);
+  if (pairsEqual(incoming, existing)) return true;
+
+  if (listingImagesMatch(opts.imageUrl, row.image_url)) return true;
+
+  return isSelfDuplicateListingMatch(
+    { title, description, categoryId: opts.categoryId },
+    { title: row.title, description: row.description, categoryId: row.category_id },
+  );
+}
+
 /**
- * Active listing by this user_id with identical title + description (exact match).
+ * Active listing by this user with identical or near-duplicate content.
  * Falls back to phone/email ownership for legacy rows without user_id.
  */
 export async function findSelfDuplicateActiveListingId(
@@ -31,20 +61,21 @@ export async function findSelfDuplicateActiveListingId(
   user: User,
   title: string,
   description: string,
+  opts: SelfDuplicateLookupOpts = {},
 ): Promise<number | null> {
-  const incoming = canonListingPair(title, description);
-
   const ownedByUserId = await db
     .select({
       id: listingsTable.id,
       title: listingsTable.title,
       description: listingsTable.description,
+      category_id: listingsTable.category_id,
+      image_url: listingsTable.image_url,
     })
     .from(listingsTable)
     .where(and(eq(listingsTable.user_id, userId), activeListingCondition()));
 
   for (const row of ownedByUserId) {
-    if (pairsEqual(incoming, canonListingPair(row.title, row.description))) {
+    if (rowMatchesSelfDuplicate(title, description, opts, row)) {
       return row.id;
     }
   }
@@ -54,6 +85,8 @@ export async function findSelfDuplicateActiveListingId(
       id: listingsTable.id,
       title: listingsTable.title,
       description: listingsTable.description,
+      category_id: listingsTable.category_id,
+      image_url: listingsTable.image_url,
       seller_phone: listingsTable.seller_phone,
     })
     .from(listingsTable)
@@ -61,7 +94,7 @@ export async function findSelfDuplicateActiveListingId(
 
   for (const row of legacyRows) {
     if (!userOwnsListing(user, row)) continue;
-    if (pairsEqual(incoming, canonListingPair(row.title, row.description))) {
+    if (rowMatchesSelfDuplicate(title, description, opts, row)) {
       return row.id;
     }
   }
@@ -147,15 +180,16 @@ export type SelfDuplicateBlockResult = {
 };
 
 /**
- * Block repost of identical active listing by same user (user_id).
+ * Block repost of identical or near-duplicate active listing by same user.
  * SMS/email at most once per (user, existing listing).
  */
 export async function blockSelfDuplicateListingIfNeeded(
   user: User,
   title: string,
   description: string,
+  opts: SelfDuplicateLookupOpts = {},
 ): Promise<SelfDuplicateBlockResult | null> {
-  const existingId = await findSelfDuplicateActiveListingId(user.id, user, title, description);
+  const existingId = await findSelfDuplicateActiveListingId(user.id, user, title, description, opts);
   if (existingId == null) return null;
 
   const notified = await alreadyNotifiedSelfDuplicate(user.id, existingId);

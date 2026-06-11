@@ -1,6 +1,10 @@
 import { db, listingsTable, moderationLogTable, type User } from "@workspace/db";
 import { and, desc, eq, gte } from "drizzle-orm";
 import { hasDisallowedPhoneInUserText } from "../../../../lib/listing-phone-in-text.js";
+import {
+  findSelfDuplicateActiveListingId,
+  SELF_DUPLICATE_SCREEN_MESSAGE,
+} from "./listing-self-duplicate";
 import { listingBelongsToUser } from "./listing-ownership";
 import { listingTextSimilarity, SELF_DUPLICATE_SCAN_THRESHOLD } from "./listing-text-similarity";
 
@@ -145,6 +149,24 @@ export async function runTwoLayerModeration(input: ModerationInput): Promise<Mod
       code: "EXTERNAL_LINK_IN_DESCRIPTION",
       reason,
       message: "Linqet e jashtme nuk lejohen në përshkrim.",
+    };
+  }
+
+  const selfDupId = await findSelfDuplicateActiveListingId(
+    input.userId,
+    input.user,
+    title,
+    description,
+    { categoryId: input.categoryId, imageUrl: input.imageUrl },
+  );
+  if (selfDupId != null) {
+    const reason = `SELF_DUPLICATE_ACTIVE:${selfDupId}`;
+    await logModerationDecision(reason, "blocked", selfDupId);
+    return {
+      ok: false,
+      code: "DUPLICATE_LISTING_SELF",
+      reason,
+      message: SELF_DUPLICATE_SCREEN_MESSAGE,
     };
   }
 

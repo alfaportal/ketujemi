@@ -406,6 +406,10 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     viewer,
     parsed.data.title,
     listingDescription,
+    {
+      categoryId: parsed.data.category_id,
+      imageUrl: safeImageUrl ?? null,
+    },
   );
   if (selfDuplicate) {
     res.status(409).json({
