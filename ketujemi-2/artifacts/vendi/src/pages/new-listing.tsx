@@ -104,7 +104,6 @@ import {
   flushListingFormDraft,
   readListingFormDraft,
 } from "@/lib/listing-form-draft";
-import { ListingFormDraftBanner } from "@/components/listing-form-draft-banner";
 import { useListingFormDraft } from "@/hooks/use-listing-form-draft";
 
 type FormData = NewListingFormData;
@@ -529,19 +528,13 @@ export default function NewListing() {
     imageAnalyzedRef.current = true;
   }, []);
 
-  const { draftRestored, showBanner, setShowBanner, restoreFromStorage, persistNow } =
-    useListingFormDraft({
-      pathname,
-      form,
-      imageUrls,
-      videoUrl,
-      listingCountry,
-      setImageUrls,
-      setVideoUrl,
-      setListingCountry,
-      markImagesAnalyzed,
-      skipCategoryCascade,
-    });
+  const { persistNow } = useListingFormDraft({
+    pathname,
+    form,
+    imageUrls,
+    videoUrl,
+    listingCountry,
+  });
 
   useEffect(() => {
     if (imageUrls.length > 0) imageAnalyzedRef.current = true;
@@ -1065,14 +1058,6 @@ export default function NewListing() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
-        {(showBanner || draftRestored) ? (
-          <ListingFormDraftBanner
-            pathname={pathname}
-            restored={draftRestored}
-            onRestore={() => restoreFromStorage()}
-            onDismiss={() => setShowBanner(false)}
-          />
-        ) : null}
         {hasShop === false && tx.shopSuggestBanner ? (
           <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-gray-800 leading-relaxed flex flex-wrap items-center gap-x-2 gap-y-1">
             <span>{tx.shopSuggestBanner}</span>
