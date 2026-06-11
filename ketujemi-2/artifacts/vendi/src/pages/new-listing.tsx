@@ -1030,14 +1030,6 @@ export default function NewListing() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {(showBanner || draftRestored) ? (
-        <ListingFormDraftBanner
-          pathname={pathname}
-          restored={draftRestored}
-          onRestore={() => restoreFromStorage()}
-          onDismiss={() => setShowBanner(false)}
-        />
-      ) : null}
       {userNeedsSellerProfile(user) && <SellerProfileGate onReady={() => undefined} />}
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">
@@ -1061,6 +1053,14 @@ export default function NewListing() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
+        {(showBanner || draftRestored) ? (
+          <ListingFormDraftBanner
+            pathname={pathname}
+            restored={draftRestored}
+            onRestore={() => restoreFromStorage()}
+            onDismiss={() => setShowBanner(false)}
+          />
+        ) : null}
         {hasShop === false && tx.shopSuggestBanner ? (
           <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-gray-800 leading-relaxed flex flex-wrap items-center gap-x-2 gap-y-1">
             <span>{tx.shopSuggestBanner}</span>
