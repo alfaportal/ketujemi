@@ -1,0 +1,10 @@
+# Uptime monitor cron — add a separate Railway service and set Config file path to /monitoring/railway.toml
+# Required variables: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "node monitoring/uptime-monitor.mjs"
+cronSchedule = "*/5 * * * *"
+restartPolicyType = "NEVER"
