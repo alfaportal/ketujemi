@@ -794,7 +794,9 @@ export default function CategoryPage() {
       { name: "KetuJemi", url: CANONICAL_SITE_ORIGIN },
       ...crumbs.map((c) => ({
         name: c.label,
-        ...(c.href ? { url: `${CANONICAL_SITE_ORIGIN}${c.href}` } : {}),
+        url: c.href
+          ? `${CANONICAL_SITE_ORIGIN}${c.href}`
+          : `${CANONICAL_SITE_ORIGIN}${seoCategoryPath(currentCategory.slug)}`,
       })),
     ];
     if (seoCityName && seoCitySlugResolved) {

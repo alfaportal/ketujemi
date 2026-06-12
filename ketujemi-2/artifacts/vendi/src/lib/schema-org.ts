@@ -71,7 +71,7 @@ export function listingProductJsonLd(input: {
 }
 
 export function breadcrumbJsonLd(
-  items: { name: string; url?: string }[],
+  items: { name: string; url: string }[],
 ): Record<string, unknown> {
   return {
     "@context": "https://schema.org",
@@ -80,7 +80,7 @@ export function breadcrumbJsonLd(
       "@type": "ListItem",
       position: i + 1,
       name: item.name,
-      ...(item.url ? { item: item.url } : {}),
+      item: item.url,
     })),
   };
 }
