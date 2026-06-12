@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { FaFacebook, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
 import { Link2, Share2 } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
 import { cn } from "@/lib/utils";
@@ -11,10 +11,21 @@ type Props = {
   postSuccess?: boolean;
 };
 
-function whatsAppShareUrl(title: string, url: string): string {
-  const text = title.trim() ? `${title.trim()} ${url}` : url;
-  return `https://wa.me/?text=${encodeURIComponent(text)}`;
-}
+const INSTAGRAM_COPIED_ALERT: Record<string, string> = {
+  ks: "Linku u kopjua! Paste-o në Instagram Story ose Bio.",
+  al: "Linku u kopjua! Paste-o në Instagram Story ose Bio.",
+  mk: "Линкот е копиран! Залепи го во Instagram Story или Bio.",
+  mne: "Link je kopiran! Zalijepi ga u Instagram Story ili Bio.",
+  en: "Link copied! Paste it in Instagram Story or Bio.",
+};
+
+const TIKTOK_COPIED_ALERT: Record<string, string> = {
+  ks: "Linku u kopjua! Paste-o në TikTok Bio ose Video.",
+  al: "Linku u kopjua! Paste-o në TikTok Bio ose Video.",
+  mk: "Линкот е копиран! Залепи го во TikTok Bio или Video.",
+  mne: "Link je kopiran! Zalijepi ga u TikTok Bio ili Video.",
+  en: "Link copied! Paste it in TikTok Bio or Video.",
+};
 
 function facebookShareUrl(url: string, title: string): string {
   const base = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
@@ -23,10 +34,14 @@ function facebookShareUrl(url: string, title: string): string {
 }
 
 export function ListingProminentShare({ url, title = "", postSuccess = false }: Props) {
-  const { t } = useMarket();
+  const { t, uiLang } = useMarket();
   const tx = t as Record<string, string>;
   const [copied, setCopied] = useState(false);
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
+
+  const instagramCopiedAlert =
+    INSTAGRAM_COPIED_ALERT[uiLang] ?? INSTAGRAM_COPIED_ALERT.ks;
+  const tiktokCopiedAlert = TIKTOK_COPIED_ALERT[uiLang] ?? TIKTOK_COPIED_ALERT.ks;
 
   const copyUrl = useCallback(async (): Promise<boolean> => {
     try {
@@ -50,25 +65,21 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
     );
   }, [url, title]);
 
-  const onWhatsAppShare = useCallback(() => {
-    window.open(whatsAppShareUrl(title, url), "_blank", "noopener,noreferrer");
-  }, [title, url]);
-
   const onInstagramShare = useCallback(() => {
     void copyUrl().then((ok) => {
       if (!ok) return;
-      showAlert(tx.share_instagramCopiedAlert);
+      showAlert(instagramCopiedAlert);
       window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
     });
-  }, [copyUrl, showAlert, tx.share_instagramCopiedAlert]);
+  }, [copyUrl, showAlert, instagramCopiedAlert]);
 
   const onTikTokShare = useCallback(() => {
     void copyUrl().then((ok) => {
       if (!ok) return;
-      showAlert(tx.share_tiktokCopiedAlert);
+      showAlert(tiktokCopiedAlert);
       window.open("https://www.tiktok.com/", "_blank", "noopener,noreferrer");
     });
-  }, [copyUrl, showAlert, tx.share_tiktokCopiedAlert]);
+  }, [copyUrl, showAlert, tiktokCopiedAlert]);
 
   const onCopyLink = useCallback(() => {
     void copyUrl().then((ok) => {
@@ -82,7 +93,6 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
 
   const sectionTitle = postSuccess ? tx.share_postSuccessTitle : tx.share_sectionTitle;
   const facebookLabel = tx.share_facebookProminent;
-  const whatsappLabel = tx.share_whatsappProminent;
   const instagramLabel = tx.share_instagramProminent;
   const tiktokLabel = tx.share_tiktokProminent;
   const copyLabel = copied ? tx.share_linkCopied : tx.share_copyLinkProminent;
@@ -132,15 +142,6 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
         >
           <FaFacebook className="h-5 w-5" aria-hidden />
           {facebookLabel}
-        </button>
-        <button
-          type="button"
-          onClick={onWhatsAppShare}
-          className={cn(btnClass, "bg-[#25D366] text-white hover:bg-[#20BD5A]")}
-          data-testid="share-prominent-whatsapp"
-        >
-          <FaWhatsapp className="h-5 w-5" aria-hidden />
-          {whatsappLabel}
         </button>
         <button
           type="button"
