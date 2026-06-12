@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { FaFacebook, FaWhatsapp } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa";
 import { Link2, Share2 } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,21 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
   const { t } = useMarket();
   const tx = t as Record<string, string>;
   const [copied, setCopied] = useState(false);
+  const [alertMsg, setAlertMsg] = useState<string | null>(null);
+
+  const copyUrl = useCallback(async (): Promise<boolean> => {
+    try {
+      await navigator.clipboard.writeText(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [url]);
+
+  const showAlert = useCallback((message: string) => {
+    setAlertMsg(message);
+    window.setTimeout(() => setAlertMsg(null), 4000);
+  }, []);
 
   const onFacebookShare = useCallback(() => {
     window.open(
@@ -39,21 +54,37 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
     window.open(whatsAppShareUrl(title, url), "_blank", "noopener,noreferrer");
   }, [title, url]);
 
+  const onInstagramShare = useCallback(() => {
+    void copyUrl().then((ok) => {
+      if (!ok) return;
+      showAlert(tx.share_instagramCopiedAlert);
+      window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
+    });
+  }, [copyUrl, showAlert, tx.share_instagramCopiedAlert]);
+
+  const onTikTokShare = useCallback(() => {
+    void copyUrl().then((ok) => {
+      if (!ok) return;
+      showAlert(tx.share_tiktokCopiedAlert);
+      window.open("https://www.tiktok.com/", "_blank", "noopener,noreferrer");
+    });
+  }, [copyUrl, showAlert, tx.share_tiktokCopiedAlert]);
+
   const onCopyLink = useCallback(() => {
-    void navigator.clipboard
-      .writeText(url)
-      .then(() => {
-        setCopied(true);
-        window.setTimeout(() => setCopied(false), 2000);
-      })
-      .catch(() => {});
-  }, [url]);
+    void copyUrl().then((ok) => {
+      if (!ok) return;
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    });
+  }, [copyUrl]);
 
   if (!url) return null;
 
   const sectionTitle = postSuccess ? tx.share_postSuccessTitle : tx.share_sectionTitle;
   const facebookLabel = tx.share_facebookProminent;
   const whatsappLabel = tx.share_whatsappProminent;
+  const instagramLabel = tx.share_instagramProminent;
+  const tiktokLabel = tx.share_tiktokProminent;
   const copyLabel = copied ? tx.share_linkCopied : tx.share_copyLinkProminent;
 
   const btnClass =
@@ -82,6 +113,16 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
         </div>
       </div>
 
+      {alertMsg ? (
+        <p
+          role="alert"
+          className="mb-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900"
+          data-testid="share-prominent-alert"
+        >
+          {alertMsg}
+        </p>
+      ) : null}
+
       <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
         <button
           type="button"
@@ -100,6 +141,27 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
         >
           <FaWhatsapp className="h-5 w-5" aria-hidden />
           {whatsappLabel}
+        </button>
+        <button
+          type="button"
+          onClick={onInstagramShare}
+          className={cn(
+            btnClass,
+            "text-white bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] hover:opacity-90",
+          )}
+          data-testid="share-prominent-instagram"
+        >
+          <FaInstagram className="h-5 w-5" aria-hidden />
+          {instagramLabel}
+        </button>
+        <button
+          type="button"
+          onClick={onTikTokShare}
+          className={cn(btnClass, "bg-black text-white hover:bg-gray-900")}
+          data-testid="share-prominent-tiktok"
+        >
+          <FaTiktok className="h-5 w-5" aria-hidden />
+          {tiktokLabel}
         </button>
         <button
           type="button"
