@@ -27,10 +27,9 @@ const TIKTOK_COPIED_ALERT: Record<string, string> = {
   en: "Link copied! Paste it in TikTok Bio or Video.",
 };
 
-function facebookShareUrl(url: string, title: string): string {
-  const base = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-  if (!title.trim()) return base;
-  return `${base}&quote=${encodeURIComponent(title.trim())}`;
+function isMobileUserAgent(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Mobile|Android|iPhone/i.test(navigator.userAgent);
 }
 
 export function ListingProminentShare({ url, title = "", postSuccess = false }: Props) {
@@ -58,12 +57,16 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
   }, []);
 
   const onFacebookShare = useCallback(() => {
+    if (isMobileUserAgent()) {
+      window.location.href = `fb://share?link=${encodeURIComponent(url)}`;
+      return;
+    }
     window.open(
-      facebookShareUrl(url, title),
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
       "facebook-share",
       "noopener,noreferrer,width=600,height=400",
     );
-  }, [url, title]);
+  }, [url]);
 
   const onInstagramShare = useCallback(() => {
     void copyUrl().then((ok) => {
