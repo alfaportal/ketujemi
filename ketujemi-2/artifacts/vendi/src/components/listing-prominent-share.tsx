@@ -19,12 +19,12 @@ const INSTAGRAM_COPIED_ALERT: Record<string, string> = {
   en: "Link copied! Paste it in Instagram Story or Bio.",
 };
 
-const TIKTOK_COPIED_ALERT: Record<string, string> = {
-  ks: "Linku u kopjua! Paste-o në TikTok Bio ose Video.",
-  al: "Linku u kopjua! Paste-o në TikTok Bio ose Video.",
-  mk: "Линкот е копиран! Залепи го во TikTok Bio или Video.",
-  mne: "Link je kopiran! Zalijepi ga u TikTok Bio ili Video.",
-  en: "Link copied! Paste it in TikTok Bio or Video.",
+const TIKTOK_DESKTOP_COPIED_ALERT: Record<string, string> = {
+  ks: "Linku u kopjua! Hape TikTok dhe paste-o.",
+  al: "Linku u kopjua! Hape TikTok dhe paste-o.",
+  mk: "Линкот е копиран! Отвори TikTok и залепи го.",
+  mne: "Link je kopiran! Otvori TikTok i zalijepi ga.",
+  en: "Link copied! Open TikTok and paste it.",
 };
 
 function isMobileUserAgent(): boolean {
@@ -40,7 +40,8 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
 
   const instagramCopiedAlert =
     INSTAGRAM_COPIED_ALERT[uiLang] ?? INSTAGRAM_COPIED_ALERT.ks;
-  const tiktokCopiedAlert = TIKTOK_COPIED_ALERT[uiLang] ?? TIKTOK_COPIED_ALERT.ks;
+  const tiktokDesktopCopiedAlert =
+    TIKTOK_DESKTOP_COPIED_ALERT[uiLang] ?? TIKTOK_DESKTOP_COPIED_ALERT.ks;
 
   const copyUrl = useCallback(async (): Promise<boolean> => {
     try {
@@ -77,12 +78,30 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
   }, [copyUrl, showAlert, instagramCopiedAlert]);
 
   const onTikTokShare = useCallback(() => {
+    if (isMobileUserAgent()) {
+      const fallback = `https://www.tiktok.com/share?url=${encodeURIComponent(url)}`;
+      let opened = false;
+      const timer = window.setTimeout(() => {
+        if (opened) return;
+        opened = true;
+        window.location.href = fallback;
+      }, 1500);
+      const onHide = () => {
+        if (document.hidden) {
+          opened = true;
+          window.clearTimeout(timer);
+          document.removeEventListener("visibilitychange", onHide);
+        }
+      };
+      document.addEventListener("visibilitychange", onHide);
+      window.location.href = "snssdk1233://aweme/detail/";
+      return;
+    }
     void copyUrl().then((ok) => {
       if (!ok) return;
-      showAlert(tiktokCopiedAlert);
-      window.open("https://www.tiktok.com/", "_blank", "noopener,noreferrer");
+      showAlert(tiktokDesktopCopiedAlert);
     });
-  }, [copyUrl, showAlert, tiktokCopiedAlert]);
+  }, [url, copyUrl, showAlert, tiktokDesktopCopiedAlert]);
 
   const onCopyLink = useCallback(() => {
     void copyUrl().then((ok) => {
