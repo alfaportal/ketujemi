@@ -30,13 +30,13 @@ export function isSocialCrawlerUserAgent(userAgent: string): boolean {
   );
 }
 
-/** First image URL from DB with Cloudinary OG resize (w_1200,h_630,c_pad,b_white). */
+/** First image URL from DB with Cloudinary OG resize (w_1200,h_1200,c_limit). */
 function listingOgImageUrl(imageUrlField: string | null | undefined): string | null {
   if (!imageUrlField?.trim()) return null;
   const stored = imageUrlField.split(",")[0]?.trim();
   if (!stored) return null;
   if (!stored.includes("/upload/")) return stored;
-  return stored.replace("/upload/", "/upload/w_1200,h_630,c_pad,b_white/");
+  return stored.replace("/upload/", "/upload/w_1200,h_1200,c_limit/");
 }
 
 function buildOgDescription(priceRaw: string, location: string): string {
