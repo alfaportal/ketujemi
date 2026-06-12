@@ -30,23 +30,11 @@ export function isSocialCrawlerUserAgent(userAgent: string): boolean {
   );
 }
 
-/** First image URL from DB field (comma-separated), unchanged except OG Cloudinary transform. */
+/** First image URL from DB field (comma-separated), exactly as stored. */
 function listingOgImageUrl(imageUrlField: string | null | undefined): string | null {
   if (!imageUrlField?.trim()) return null;
   const stored = imageUrlField.split(",")[0]?.trim();
-  if (!stored) return null;
-
-  let url = stored;
-  if (url.startsWith("http://")) {
-    url = `https://${url.slice(7)}`;
-  }
-  if (!url.startsWith("https://")) return null;
-
-  if (url.includes("/upload/")) {
-    url = url.replace("/upload/", "/upload/w_1200,h_630,c_fill/");
-  }
-
-  return url;
+  return stored || null;
 }
 
 function buildOgDescription(priceRaw: string, location: string): string {
