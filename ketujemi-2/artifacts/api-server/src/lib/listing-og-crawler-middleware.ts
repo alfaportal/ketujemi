@@ -1,8 +1,6 @@
 import type { Express } from "express";
 import { db, listingsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
-import { primaryListingImageUrl } from "../../../../lib/listing-image-url.js";
-
 const LISTING_ORIGIN = "https://ketujemi.com";
 const FB_APP_ID = "2196983604470561";
 const LISTING_PATH = /^\/listings\/(\d+)\/?$/;
@@ -30,6 +28,25 @@ export function isSocialCrawlerUserAgent(userAgent: string): boolean {
     ua.includes("twitterbot") ||
     ua.includes("linkedinbot")
   );
+}
+
+/** First image URL from DB field (comma-separated), unchanged except OG Cloudinary transform. */
+function listingOgImageUrl(imageUrlField: string | null | undefined): string | null {
+  if (!imageUrlField?.trim()) return null;
+  const stored = imageUrlField.split(",")[0]?.trim();
+  if (!stored) return null;
+
+  let url = stored;
+  if (url.startsWith("http://")) {
+    url = `https://${url.slice(7)}`;
+  }
+  if (!url.startsWith("https://")) return null;
+
+  if (url.includes("/upload/")) {
+    url = url.replace("/upload/", "/upload/w_1200,h_630,c_fill/");
+  }
+
+  return url;
 }
 
 function buildOgDescription(priceRaw: string, location: string): string {
@@ -69,7 +86,7 @@ export async function fetchListingOgMeta(listingId: number): Promise<ListingOgMe
     id: row.id,
     title: row.title,
     ogDescription: buildOgDescription(String(row.price), row.location),
-    imageUrl: primaryListingImageUrl(row.image_url),
+    imageUrl: listingOgImageUrl(row.image_url),
     pageUrl,
   };
 }
