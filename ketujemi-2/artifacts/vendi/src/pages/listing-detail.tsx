@@ -36,8 +36,12 @@ import { ListingDetailTopPackages } from "@/components/listing-detail-top-packag
 import { notifyTopListingsRefresh } from "@/lib/top-listings-events";
 import { parseListingImageUrls } from "@/lib/listing-images";
 import { recordListingView } from "@/lib/record-listing-view";
-import { ListingShareButtons } from "@/components/listing-share-buttons";
+import { ListingProminentShare } from "@/components/listing-prominent-share";
 import { ListingSocialPostedShare } from "@/components/listing-social-posted-share";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import { ListingShopCard, type ListingShopInfo } from "@/components/listing-shop-card";
 import { applyPageMeta, truncateMetaDescription } from "@/lib/page-meta";
 import { injectJsonLd, listingProductJsonLd } from "@/lib/schema-org";
@@ -205,6 +209,7 @@ export default function ListingDetail() {
   }, [user, id, queryClient, toast, t, uiLang]);
 
   const [listingShareUrl, setListingShareUrl] = useState("");
+  const [postShareOpen, setPostShareOpen] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [complaintBusy, setComplaintBusy] = useState(false);
@@ -281,6 +286,12 @@ export default function ListingDetail() {
     url.searchParams.delete("posted");
     window.history.replaceState({}, "", url.pathname + url.search);
   }, [justPosted, canManage, fbPosted, igPosted]);
+
+  useEffect(() => {
+    if (justPosted && canManage && listingShareUrl) {
+      setPostShareOpen(true);
+    }
+  }, [justPosted, canManage, listingShareUrl]);
   const listingImageCount = listing ? parseListingImageUrls(listing.image_url).length : 0;
 
   useEffect(() => {
@@ -655,12 +666,6 @@ export default function ListingDetail() {
                 )}
               </div>
 
-              <ListingShareButtons
-                url={listingShareUrl}
-                title={listing.title}
-                variant="inline"
-              />
-
               <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 text-sm bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full font-medium">
                   <MapPin size={11} />
@@ -694,6 +699,11 @@ export default function ListingDetail() {
               </p>
             </div>
 
+            <ListingProminentShare
+              url={listingShareUrl}
+              title={listing.title}
+            />
+
             {/* Structured specs */}
             {Object.keys(specs).length > 0 && <SpecGrid specs={specs} detailsLabel={t.details} />}
 
@@ -722,12 +732,7 @@ export default function ListingDetail() {
           <div className="space-y-4">
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
               <h2 className="font-bold text-gray-900 mb-4">{t.seller}</h2>
-              <ListingShareButtons
-                url={listingShareUrl}
-                title={listing.title}
-                variant="compact"
-              />
-              <div className="space-y-3 mt-4">
+              <div className="space-y-3">
                 <div className="flex items-center gap-3 pb-3 border-b border-gray-50">
                   <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0">
                     <User className="h-5 w-5 text-white" />
@@ -923,6 +928,16 @@ export default function ListingDetail() {
           />
         </div>
       ) : null}
+
+      <Dialog open={postShareOpen} onOpenChange={setPostShareOpen}>
+        <DialogContent className="sm:max-w-lg p-0 border-0 bg-transparent shadow-none">
+          <ListingProminentShare
+            url={listingShareUrl}
+            title={listing?.title ?? ""}
+            postSuccess
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
