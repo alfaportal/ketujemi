@@ -43,6 +43,7 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { ListingShopCard, type ListingShopInfo } from "@/components/listing-shop-card";
+import { CANONICAL_SITE_ORIGIN } from "@/lib/category-seo";
 import { applyPageMeta, truncateMetaDescription } from "@/lib/page-meta";
 import { injectJsonLd, listingProductJsonLd } from "@/lib/schema-org";
 
@@ -222,17 +223,25 @@ export default function ListingDetail() {
   useEffect(() => {
     if (!listing) return;
     const path = `/listings/${listing.id}`;
+    const listingUrl = `${CANONICAL_SITE_ORIGIN}${path}`;
     const images = parseListingImageUrls(listing.image_url);
     const firstImage = images[0];
     const description = truncateMetaDescription(parsed.body || listing.title, 155);
     const locationBit = listing.location?.trim() ? ` — ${listing.location.trim()}` : "";
     const title = `${listing.title}${locationBit} | KetuJemi`;
+    const priceBit =
+      listing.price === 0 ? t.agreement : `${listing.price.toLocaleString()} EUR`;
+    const locationName = listing.location?.trim() ?? "";
+    const ogDescription = locationName ? `${priceBit} — ${locationName}` : priceBit;
     applyPageMeta({
       title,
       description,
-      canonicalPath: path,
+      ogTitle: listing.title,
+      ogDescription,
       ogImage: firstImage,
+      canonicalPath: listingUrl,
       ogType: "product",
+      fbAppId: "2196983604470561",
     });
     return injectJsonLd(
       `listing-${listing.id}`,
@@ -247,7 +256,7 @@ export default function ListingDetail() {
         sellerName: listing.seller_name,
       }),
     );
-  }, [listing, parsed.body]);
+  }, [listing, parsed.body, t.agreement]);
 
   const canManage = !!(
     user &&

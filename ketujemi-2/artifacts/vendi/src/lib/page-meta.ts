@@ -9,6 +9,7 @@ export type PageMeta = {
   canonicalPath?: string;
   ogType?: string;
   robots?: string;
+  fbAppId?: string;
 };
 
 function setMeta(attr: "name" | "property", key: string, content: string | undefined) {
@@ -48,6 +49,7 @@ export function applyPageMeta(meta: PageMeta) {
     setMeta("property", "og:url", url);
   }
   if (meta.robots) setMeta("name", "robots", meta.robots);
+  if (meta.fbAppId) setMeta("property", "fb:app_id", meta.fbAppId);
 }
 
 export function truncateMetaDescription(text: string, max = 150): string {
