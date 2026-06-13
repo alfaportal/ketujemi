@@ -391,7 +391,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
       });
       return;
     }
-    listingDescription = descriptionForAdminOnBehalf(normalizedDescription);
+    listingDescription = descriptionForAdminOnBehalf(normalizedDescription, viewer.email);
   } else {
     viewer = await syncSellerContactFromListingIfNeeded(viewer, {
       seller_name: parsed.data.seller_name,

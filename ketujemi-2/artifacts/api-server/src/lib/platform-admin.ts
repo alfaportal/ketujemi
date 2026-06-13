@@ -1,11 +1,16 @@
 import type { User } from "@workspace/db";
 import { getAdminEmail } from "./admin-monitor-email.js";
 
-/** Platform operator account (EMAIL_ADMIN / CONTACT_INBOX) — never SMS verification. */
+/** Hard fallback when EMAIL_ADMIN is not set on the server yet. */
+export const PLATFORM_OPERATOR_EMAIL = "novelto22@gmail.com";
+
+/** Platform operator account — never SMS verification; may post on behalf of sellers. */
 export function isPlatformAdminUser(u: Pick<User, "email">): boolean {
-  const admin = getAdminEmail()?.trim().toLowerCase();
   const email = u.email?.trim().toLowerCase();
-  return Boolean(admin && email && email === admin);
+  if (!email) return false;
+  const admin = getAdminEmail()?.trim().toLowerCase();
+  if (admin && email === admin) return true;
+  return email === PLATFORM_OPERATOR_EMAIL.toLowerCase();
 }
 
 export function maskEmailForDisplay(email: string): string {

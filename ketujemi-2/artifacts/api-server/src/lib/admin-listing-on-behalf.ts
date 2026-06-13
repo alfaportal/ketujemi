@@ -1,13 +1,8 @@
 import { db, usersTable, type User } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 import { getAdminEmail } from "./admin-monitor-email.js";
-import { isPlatformAdminUser } from "./platform-admin.js";
-import { stripEmailFromListingDescription } from "./listing-ownership-guard.js";
-
-/** Platform operator account (EMAIL_ADMIN, e.g. novelto22@gmail.com). */
 export async function getPlatformAdminUser(): Promise<User | null> {
-  const email = getAdminEmail()?.trim().toLowerCase();
-  if (!email) return null;
+  const email = (getAdminEmail()?.trim().toLowerCase() || PLATFORM_OPERATOR_EMAIL.toLowerCase());
   const [user] = await db
     .select()
     .from(usersTable)
@@ -35,8 +30,32 @@ export function sellerContactForAdminOnBehalf(submitted: {
   };
 }
 
-export function descriptionForAdminOnBehalf(description: string): string {
-  return stripEmailFromListingDescription(description);
+function stripOperatorEmailFromDescription(description: string, operatorEmail: string): string {
+  const op = operatorEmail.trim().toLowerCase();
+  if (!op) return description;
+  const sep = "\n\n";
+  const idx = description.indexOf(sep);
+  if (idx <= 0) return description;
+  const firstLine = description.slice(0, idx);
+  const rest = description.slice(idx);
+  const pairs = firstLine.split(" · ").filter((pair) => {
+    const colon = pair.indexOf(": ");
+    if (colon <= 0) return true;
+    const key = pair.slice(0, colon).trim();
+    const value = pair.slice(colon + 2).trim().toLowerCase();
+    if (key !== "Email") return true;
+    return value !== op;
+  });
+  if (pairs.length === 0) return description.slice(idx + sep.length);
+  return pairs.join(" · ") + rest;
+}
+
+export function descriptionForAdminOnBehalf(description: string, operatorEmail?: string | null): string {
+  const op =
+    operatorEmail?.trim().toLowerCase()
+    || getAdminEmail()?.trim().toLowerCase()
+    || PLATFORM_OPERATOR_EMAIL.toLowerCase();
+  return stripOperatorEmailFromDescription(description, op);
 }
 
 export async function isListingUserPlatformAdmin(userId: number | null | undefined): Promise<boolean> {

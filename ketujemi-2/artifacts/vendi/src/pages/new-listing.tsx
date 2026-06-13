@@ -111,6 +111,7 @@ import { engagementCopyForUiLang } from "@/lib/engagement-i18n";
 import { queueFirstListingCelebration } from "@/components/engagement-effects";
 import { staticPagePaths } from "@/lib/static-page-paths";
 import { buildNewListingSchema, type NewListingFormData } from "@/lib/listing-form-schema";
+import { isPlatformOperatorUser } from "@/lib/platform-operator";
 
 type FormData = NewListingFormData;
 
@@ -554,7 +555,14 @@ export default function NewListing() {
 
   useEffect(() => {
     if (!activeUser) return;
-    if (activeUser.is_platform_admin) return;
+    if (isPlatformOperatorUser(activeUser)) {
+      const adminEmail = activeUser.email?.trim().toLowerCase() ?? "";
+      const currentEmail = form.getValues("xSellerEmail")?.trim().toLowerCase() ?? "";
+      if (adminEmail && currentEmail === adminEmail) {
+        form.setValue("xSellerEmail", "");
+      }
+      return;
+    }
     const { seller_name, seller_phone } = sellerContactFromUser(activeUser);
     if (seller_name && !form.getValues("seller_name")?.trim()) {
       form.setValue("seller_name", seller_name);
@@ -733,6 +741,8 @@ export default function NewListing() {
       return;
     }
     const partCat = subCats.find((c: any) => c.id === resolvedCategoryId);
+    const isAdminOnBehalf = isPlatformOperatorUser(activeUser);
+    const sellerEmailInput = listingData.xSellerEmail?.trim() ?? "";
     const validation = catEngine.validateListing(
       {
         ...listingData,
@@ -744,7 +754,7 @@ export default function NewListing() {
       imageCount: photoCountForValidation,
       subcategoryName: partCat?.name,
       sellLangBlockedTemplate: tx.ui_sellLangBlocked,
-      omitSellerEmail: !!activeUser?.is_platform_admin,
+      omitSellerEmail: isAdminOnBehalf && !sellerEmailInput,
     });
     if (!validation.ok) {
       const issue = validation.issues[0]!;
@@ -766,7 +776,7 @@ export default function NewListing() {
     const formName = listingData.seller_name?.trim() ?? "";
     const formPhone = listingData.seller_phone?.trim() ?? "";
 
-    if (activeUser && userNeedsSellerProfile(activeUser) && !activeUser.is_platform_admin) {
+    if (activeUser && userNeedsSellerProfile(activeUser) && !isPlatformOperatorUser(activeUser)) {
       setIsSubmitting(true);
       try {
         const bootRes = await fetchWithTimeout("/api/auth/profile/seller-bootstrap", {
@@ -795,7 +805,7 @@ export default function NewListing() {
       }
     }
 
-    const isAdminOnBehalf = !!activeUser?.is_platform_admin;
+    const isAdminOnBehalf = isPlatformOperatorUser(activeUser);
     const profileContact = activeUser ? sellerContactFromUser(activeUser) : { seller_name: "", seller_phone: "" };
     const contact = isAdminOnBehalf
       ? { seller_name: formName, seller_phone: formPhone }
@@ -880,7 +890,7 @@ export default function NewListing() {
     );
   }
 
-  const isAdminOnBehalf = !!activeUser?.is_platform_admin;
+  const isAdminOnBehalf = isPlatformOperatorUser(activeUser);
   const canEditSellerPhone = isAdminOnBehalf || !activeUser || !userHasSellerPhone(activeUser);
 
   return (
@@ -914,7 +924,7 @@ export default function NewListing() {
             onRestore={restoreDraftMedia}
           />
         ) : null}
-        {activeUser?.is_platform_admin ? (
+        {isAdminOnBehalf ? (
           <div className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-950 leading-relaxed">
             <p className="font-bold">{tx.ui_adminOnBehalfTitle}</p>
             <p className="mt-1">{tx.ui_adminOnBehalfBody}</p>
@@ -1792,34 +1802,50 @@ export default function NewListing() {
                           {...field}
                         />
                       </FormControl>
-                      {canEditSellerPhone && (
+                      {isAdminOnBehalf ? (
+                        <p className="text-xs text-violet-700">{tx.ui_adminOnBehalfPhoneHint}</p>
+                      ) : canEditSellerPhone ? (
                         <p className="text-xs text-gray-500">{t.reg_sellerGate_sub}</p>
-                      )}
+                      ) : null}
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                {!isAdminOnBehalf ? (
                 <FormField
                   control={form.control}
                   name="xSellerEmail"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>
+                        {isAdminOnBehalf ? (tx.ui_adminSellerEmailLabel ?? "Email shitësi") : "Email"}
+                        {isAdminOnBehalf ? (
+                          <span className="text-gray-400 font-normal"> ({tx.ui_optional ?? "opsional"})</span>
+                        ) : null}
+                      </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="kontakt@email.com"
+                          placeholder={
+                            isAdminOnBehalf
+                              ? (tx.ui_adminSellerEmailPh ?? "email shitësi — jo email-i yt admin")
+                              : "kontakt@email.com"
+                          }
                           type="email"
-                          readOnly={!!activeUser?.email}
-                          className={activeUser?.email ? "bg-gray-50 cursor-not-allowed" : undefined}
+                          readOnly={!isAdminOnBehalf && !!activeUser?.email}
+                          className={
+                            !isAdminOnBehalf && activeUser?.email
+                              ? "bg-gray-50 cursor-not-allowed"
+                              : undefined
+                          }
                           {...field}
                           value={field.value as string}
                         />
                       </FormControl>
+                      {isAdminOnBehalf ? (
+                        <p className="text-xs text-violet-700">{tx.ui_adminSellerEmailHint}</p>
+                      ) : null}
                     </FormItem>
                   )}
                 />
-                ) : null}
                 <FormField
                   control={form.control}
                   name="xSellerAddress"

@@ -33,7 +33,7 @@ import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { ReportListingDialog } from "@/components/report-listing-dialog";
 import { SimilarListingsSection } from "@/components/similar-listings-section";
 import { ListingDetailTopPackages } from "@/components/listing-detail-top-packages";
-import { notifyTopListingsRefresh } from "@/lib/top-listings-events";
+import { isPlatformOperatorEmail } from "@/lib/platform-operator";
 import { parseListingImageUrls } from "@/lib/listing-images";
 import { recordListingView } from "@/lib/record-listing-view";
 import { listingPublicUrl } from "@/lib/social-share";
@@ -465,11 +465,7 @@ export default function ListingDetail() {
   const sellerDisplayName = user ? listing.seller_name : sellerFirstName(listing.seller_name);
   const showSellerPhone = !!user && sellerDigits.length >= 8;
   const specsEmail = specs["Email"]?.trim() ?? "";
-  const hideOperatorEmail =
-    !!user?.is_platform_admin &&
-    !!specsEmail &&
-    !!user.email &&
-    specsEmail.toLowerCase() === user.email.trim().toLowerCase();
+  const hideOperatorEmail = isPlatformOperatorEmail(specsEmail);
 
   const conditionMap: Record<string, { label: string; cls: string }> = {
     New:     { label: t.conditionNew,     cls: "bg-green-100 text-green-700 border-green-200" },
