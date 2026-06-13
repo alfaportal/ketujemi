@@ -1912,6 +1912,8 @@ const KS_EXTRA: Record<string, string> = {
   adm_list_total: "{n} gjithsej",
   adm_list_searchPh: "Kërko sipas titullit, emrit të shitësit ose telefonit…",
   adm_list_refresh: "Rifresko",
+  adm_list_post_new: "Posto shpallje (për shitës)",
+  adm_list_post_new_hint: "Hap formën e plotë — vendos emrin dhe telefonin e shitësit, jo të adminit.",
   adm_list_col_listing: "Shpallja",
   adm_list_col_price: "Çmimi",
   adm_list_col_seller: "Shitësi",
@@ -2135,6 +2137,11 @@ const AL_OVERRIDES: Record<string, string> = {
   ui_supportCloseAria: "Mbyll",
   ui_supportFab: "Ndihmë",
   ui_categorySuggestTitle: "Këshillë nga sistemi për kategori",
+  ui_adminOnBehalfTitle: "Modalitet operator — postim për shitës",
+  ui_adminOnBehalfBody:
+    "Vendos emrin dhe telefonin e shitësit real. Email-i yt admin nuk shfaqet publikisht. Vetëm llogaria operator (EMAIL_ADMIN) ka këtë akses.",
+  ui_adminOnBehalfNameHint: "Emri i shitësit që shfaqet publikisht (jo emri yt admin).",
+  ui_sellerNameProfileHint: "Emri përditësohet në profilin tënd kur poston — shkruaj si të duash, sistemi e rregullon shkrimin.",
   ui_categorySuggestAnalyzing: "Duke analizuar titullin tuaj…",
   ui_categorySuggestDismiss: "Faleminderit, e di",
   ui_categorySuggestMsg:
@@ -3918,6 +3925,11 @@ const MK_EXTRA: Record<string, string> = {
   ap_post_err_part: "Изберете вид на дел",
   ap_post_err_compat: "Пополнете марка, модел и година",
   ui_categorySuggestTitle: "Совет од нашиот систем за категорија",
+  ui_adminOnBehalfTitle: "Режим оператор — објава за продавач",
+  ui_adminOnBehalfBody:
+    "Внесете име и телефон на вистинскиот продавач. Вашиот admin email не се прикажува јавно. Само операторската сметка (EMAIL_ADMIN) го има овој пристап.",
+  ui_adminOnBehalfNameHint: "Име на продавачот што се прикажува јавно (не вашето admin име).",
+  ui_sellerNameProfileHint: "Името се ажурира во профилот при објава — пишете како сакате, системот го поправа пишувањето.",
   ui_categorySuggestAnalyzing: "Се анализира насловот…",
   ui_categorySuggestDismiss: "Благодарам, знам",
   ui_categorySuggestMsg:
@@ -4078,6 +4090,8 @@ const MK_EXTRA: Record<string, string> = {
   adm_list_total: "{n} вкупно",
   adm_list_searchPh: "Барање по наслов, продавач или телефон…",
   adm_list_refresh: "Освежи",
+  adm_list_post_new: "Објави оглас (за продавач)",
+  adm_list_post_new_hint: "Целосна форма — внесете име и телефон на продавачот, не на админот.",
   adm_list_col_listing: "Оглас",
   adm_list_col_price: "Цена",
   adm_list_col_seller: "Продавач",
@@ -6040,6 +6054,11 @@ const MNE_EXTRA: Record<string, string> = {
   ap_post_err_part: "Izaberite vrstu dijela",
   ap_post_err_compat: "Popunite marku, model i godinu",
   ui_categorySuggestTitle: "Savjet našeg sistema za kategoriju",
+  ui_adminOnBehalfTitle: "Režim operatora — objava za prodavca",
+  ui_adminOnBehalfBody:
+    "Unesite ime i telefon pravog prodavca. Vaš admin email se ne prikazuje javno. Samo operatorski nalog (EMAIL_ADMIN) ima ovaj pristup.",
+  ui_adminOnBehalfNameHint: "Ime prodavca koje se prikazuje javno (ne vaše admin ime).",
+  ui_sellerNameProfileHint: "Ime se ažurira u profilu pri objavi — pišite kako želite, sistem ispravlja pisanje.",
   ui_categorySuggestAnalyzing: "Analizira se naslov…",
   ui_categorySuggestDismiss: "Hvala, znam",
   ui_categorySuggestMsg:
@@ -6200,6 +6219,8 @@ const MNE_EXTRA: Record<string, string> = {
   adm_list_total: "{n} ukupno",
   adm_list_searchPh: "Traži po naslovu, prodavcu ili telefonu…",
   adm_list_refresh: "Osvježi",
+  adm_list_post_new: "Objavi oglas (za prodavca)",
+  adm_list_post_new_hint: "Puna forma — unesite ime i telefon prodavca, ne admina.",
   adm_list_col_listing: "Oglas",
   adm_list_col_price: "Cijena",
   adm_list_col_seller: "Prodavac",

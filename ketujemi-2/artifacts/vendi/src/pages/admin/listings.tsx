@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { getAdminListings, updateAdminListing, deleteAdminListing, type AdminListing } from "@/lib/admin-api";
 import {
-  Search, Star, StarOff, Trash2, Pencil, X, Check, RefreshCw, ChevronLeft, ChevronRight,
+  Search, Star, StarOff, Trash2, Pencil, X, Check, RefreshCw, ChevronLeft, ChevronRight, Plus,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useMarket } from "@/lib/market-context";
@@ -113,14 +113,25 @@ export default function AdminListings() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-black text-gray-900">{t.adm_list_title}</h2>
           <p className="text-sm text-gray-400">{fillPlaceholders(t.adm_list_total, { n: total.toLocaleString() })}</p>
         </div>
-        <button type="button" onClick={fetchListings} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 px-3 py-2 rounded-xl border border-gray-200 hover:border-gray-300 transition-all">
-          <RefreshCw size={14} /> {t.adm_list_refresh}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href="/listings/new"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 px-4 py-2.5 rounded-xl transition-all"
+            title={t.adm_list_post_new_hint as string}
+          >
+            <Plus size={16} /> {t.adm_list_post_new}
+          </a>
+          <button type="button" onClick={fetchListings} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 px-3 py-2 rounded-xl border border-gray-200 hover:border-gray-300 transition-all">
+            <RefreshCw size={14} /> {t.adm_list_refresh}
+          </button>
+        </div>
       </div>
 
       {/* Search */}

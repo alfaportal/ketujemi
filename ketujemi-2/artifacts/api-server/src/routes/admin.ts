@@ -31,6 +31,11 @@ import {
   getPlatformAdminUser,
   sellerContactForAdminOnBehalf,
 } from "../lib/admin-listing-on-behalf.js";
+import {
+  normalizeListingDescription,
+  normalizeListingTitle,
+  normalizePersonName,
+} from "../lib/listing-text-normalize.js";
 import type { PartnerTier } from "../lib/trusted-partners";
 import {
   getMonthlyPackageRevenueCents,
@@ -364,7 +369,7 @@ router.get("/admin/listings", requireAdmin, async (req, res) => {
 router.patch("/admin/listings/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const { title, price, location, condition, is_featured, description } = req.body;
+    const { title, price, location, condition, is_featured, description, seller_name, seller_phone } = req.body;
     const updates: Record<string, any> = {};
     if (title !== undefined) updates.title = title;
     if (price !== undefined) updates.price = String(price);
@@ -372,6 +377,8 @@ router.patch("/admin/listings/:id", requireAdmin, async (req, res) => {
     if (condition !== undefined) updates.condition = condition;
     if (is_featured !== undefined) updates.is_featured = is_featured;
     if (description !== undefined) updates.description = description;
+    if (seller_name !== undefined) updates.seller_name = String(seller_name).trim();
+    if (seller_phone !== undefined) updates.seller_phone = String(seller_phone).trim();
 
     const [updated] = await db
       .update(listingsTable)
@@ -422,7 +429,7 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
     }
 
     const sellerContact = sellerContactForAdminOnBehalf({
-      seller_name: parsed.data.seller_name,
+      seller_name: normalizePersonName(parsed.data.seller_name),
       seller_phone: parsed.data.seller_phone,
     });
     if (sellerContact.seller_name.length < 2) {
@@ -434,13 +441,15 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
       return;
     }
 
-    const description = descriptionForAdminOnBehalf(parsed.data.description);
+    const description = descriptionForAdminOnBehalf(
+      normalizeListingDescription(parsed.data.description),
+    );
 
     const [row] = await db
       .insert(listingsTable)
       .values({
         user_id: adminUser.id,
-        title: parsed.data.title,
+        title: normalizeListingTitle(parsed.data.title),
         description,
         price: String(parsed.data.price),
         category_id: parsed.data.category_id,

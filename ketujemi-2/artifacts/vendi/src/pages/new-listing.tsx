@@ -64,6 +64,11 @@ import {
 import { useListingPostGuard } from "@/hooks/use-listing-post-guard";
 import { ListingPhotoUploadBoundary } from "@/components/listing-photo-upload-boundary";
 import { ListingPostRecoveryBanner } from "@/components/listing-post-recovery-banner";
+import {
+  normalizeListingDescription,
+  normalizeListingTitle,
+  normalizePersonName,
+} from "@/lib/listing-text-normalize";
 import { useListingImageUpload } from "@/lib/listing-image-upload";
 import {
   isAllowedListingVideoFile,
@@ -665,9 +670,15 @@ export default function NewListing() {
     const priceByAgreement = !!data.price_agreement || rawPrice <= 0;
     const listingData: FormData = {
       ...data,
+      title: normalizeListingTitle(data.title),
+      description: normalizeListingDescription(data.description),
+      seller_name: normalizePersonName(data.seller_name),
       price: priceByAgreement ? 0 : rawPrice,
       price_agreement: priceByAgreement,
     };
+    form.setValue("title", listingData.title, { shouldDirty: true });
+    form.setValue("description", listingData.description, { shouldDirty: true });
+    form.setValue("seller_name", listingData.seller_name, { shouldDirty: true });
     const parentId = Number(listingData.parent_category_id);
     const children = (allCategories ?? []).filter((c: { parent_id?: number | null }) => c.parent_id === parentId);
     const photoCountForValidation =
@@ -902,6 +913,12 @@ export default function NewListing() {
             onDismiss={dismissRecovery}
             onRestore={restoreDraftMedia}
           />
+        ) : null}
+        {activeUser?.is_platform_admin ? (
+          <div className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-950 leading-relaxed">
+            <p className="font-bold">{tx.ui_adminOnBehalfTitle}</p>
+            <p className="mt-1">{tx.ui_adminOnBehalfBody}</p>
+          </div>
         ) : null}
         {!activeUser && !authLoading ? (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 leading-relaxed">
@@ -1143,6 +1160,13 @@ export default function NewListing() {
                               "p.sh. BMW X5 2020, JBL 500, iPhone 14 Pro Max...")
                         }
                         {...field}
+                        onBlur={(e) => {
+                          const fixed = normalizeListingTitle(e.target.value);
+                          if (fixed !== e.target.value) {
+                            field.onChange(fixed);
+                          }
+                          field.onBlur();
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -1739,11 +1763,16 @@ export default function NewListing() {
                         <Input
                           data-testid="input-seller-name"
                           placeholder="Arben Krasniqi"
-                          readOnly={!!activeUser && !isAdminOnBehalf}
-                          className={activeUser && !isAdminOnBehalf ? "bg-gray-50 cursor-not-allowed" : undefined}
+                          readOnly={false}
                           {...field}
                         />
                       </FormControl>
+                      {!isAdminOnBehalf && activeUser ? (
+                        <p className="text-xs text-gray-500">{tx.ui_sellerNameProfileHint}</p>
+                      ) : null}
+                      {isAdminOnBehalf ? (
+                        <p className="text-xs text-violet-700">{tx.ui_adminOnBehalfNameHint}</p>
+                      ) : null}
                       <FormMessage />
                     </FormItem>
                   )}

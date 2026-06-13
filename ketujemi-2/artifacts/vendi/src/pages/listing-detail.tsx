@@ -464,6 +464,12 @@ export default function ListingDetail() {
   const listingReturnPath = `/listings/${listing.id}`;
   const sellerDisplayName = user ? listing.seller_name : sellerFirstName(listing.seller_name);
   const showSellerPhone = !!user && sellerDigits.length >= 8;
+  const specsEmail = specs["Email"]?.trim() ?? "";
+  const hideOperatorEmail =
+    !!user?.is_platform_admin &&
+    !!specsEmail &&
+    !!user.email &&
+    specsEmail.toLowerCase() === user.email.trim().toLowerCase();
 
   const conditionMap: Record<string, { label: string; cls: string }> = {
     New:     { label: t.conditionNew,     cls: "bg-green-100 text-green-700 border-green-200" },
@@ -763,7 +769,7 @@ export default function ListingDetail() {
 
                 {!user ? (
                   <>
-                    {specs["Email"] ? (
+                    {specsEmail && !hideOperatorEmail ? (
                       <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
                         <div className="flex items-center justify-center gap-2">
                           <Mail className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
@@ -772,7 +778,7 @@ export default function ListingDetail() {
                             data-testid="text-masked-email"
                             aria-hidden
                           >
-                            {specs["Email"]}
+                            {specsEmail}
                           </span>
                         </div>
                       </div>
@@ -817,13 +823,13 @@ export default function ListingDetail() {
                   </>
                 ) : null}
 
-                {user && specs["Email"] ? (
+                {user && specsEmail && !hideOperatorEmail ? (
                   <a
-                    href={`mailto:${specs["Email"]}`}
+                    href={`mailto:${specsEmail}`}
                     className="flex items-center justify-center gap-2 w-full bg-white hover:bg-gray-50 text-gray-600 border border-gray-200 rounded-xl px-4 py-2.5 text-sm transition-colors"
                   >
                     <Mail className="h-4 w-4" />
-                    {specs["Email"]}
+                    {specsEmail}
                   </a>
                 ) : null}
               </div>

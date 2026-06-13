@@ -18,6 +18,7 @@ import {
   recordListingOwnershipViolation,
   sanitizeListingDescriptionEmail,
   syncSellerContactFromListingIfNeeded,
+  syncSellerContactFromListingOnPost,
   userHasPostableContact,
   verifyListingOwnerIntegrity,
 } from "../lib/listing-ownership-guard";
@@ -27,6 +28,11 @@ import {
   sellerContactForAdminOnBehalf,
 } from "../lib/admin-listing-on-behalf.js";
 import { isPlatformAdminUser } from "../lib/platform-admin.js";
+import {
+  normalizeListingDescription,
+  normalizeListingTitle,
+  normalizePersonName,
+} from "../lib/listing-text-normalize.js";
 import { maskSellerPhone } from "../lib/contact-mask";
 import { assertAccountActive } from "../lib/user-ban";
 import { formatZodIssuesMessage } from "../lib/listing-api-errors";
@@ -360,12 +366,15 @@ router.post("/listings", postListingLimiter, async (req, res) => {
 
   const adminOnBehalf = isPlatformAdminUser(viewer);
 
+  const normalizedTitle = normalizeListingTitle(parsed.data.title);
+  const normalizedDescription = normalizeListingDescription(parsed.data.description);
+
   let sellerContact: { seller_name: string; seller_phone: string };
   let listingDescription: string;
 
   if (adminOnBehalf) {
     sellerContact = sellerContactForAdminOnBehalf({
-      seller_name: parsed.data.seller_name,
+      seller_name: normalizePersonName(parsed.data.seller_name),
       seller_phone: parsed.data.seller_phone,
     });
     if (sellerContact.seller_name.length < 2) {
@@ -382,9 +391,13 @@ router.post("/listings", postListingLimiter, async (req, res) => {
       });
       return;
     }
-    listingDescription = descriptionForAdminOnBehalf(parsed.data.description);
+    listingDescription = descriptionForAdminOnBehalf(normalizedDescription);
   } else {
     viewer = await syncSellerContactFromListingIfNeeded(viewer, {
+      seller_name: parsed.data.seller_name,
+      seller_phone: parsed.data.seller_phone,
+    });
+    viewer = await syncSellerContactFromListingOnPost(viewer, {
       seller_name: parsed.data.seller_name,
       seller_phone: parsed.data.seller_phone,
     });
@@ -421,7 +434,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     }
 
     sellerContact = canonicalSellerContactForUser(viewer);
-    listingDescription = sanitizeListingDescriptionEmail(parsed.data.description, viewer.email);
+    listingDescription = sanitizeListingDescriptionEmail(normalizedDescription, viewer.email);
   }
 
   try {
@@ -437,7 +450,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
 
   const selfDuplicate = await blockSelfDuplicateListingIfNeeded(
     viewer,
-    parsed.data.title,
+    normalizedTitle,
     listingDescription,
     {
       categoryId: parsed.data.category_id,
@@ -455,7 +468,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   const specialGate = await assertSpecialCategoryListingRules({
     userId: viewer.id,
     categoryId: parsed.data.category_id,
-    title: parsed.data.title,
+    title: normalizedTitle,
     description: listingDescription,
     price: parsed.data.price,
     imageUrl: safeImageUrl ?? null,
@@ -474,7 +487,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   const twoLayer = await runTwoLayerModeration({
     userId: viewer.id,
     user: viewer,
-    title: parsed.data.title,
+    title: normalizedTitle,
     description: listingDescription,
     sellerPhone: sellerContact.seller_phone,
     categoryId: parsed.data.category_id,
@@ -491,7 +504,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
 
   try {
     await assertBusinessListingCreate(viewer, {
-      title: parsed.data.title,
+      title: normalizedTitle,
       description: listingDescription,
       price: listingPrice,
       image_url: safeImageUrl,
@@ -525,7 +538,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   const priceAgreement = !!bodyExtra.price_agreement;
   const moderation = await moderateListingContent(
     {
-      title: parsed.data.title,
+      title: normalizedTitle,
       description: listingDescription,
       price: listingPrice,
       price_agreement: priceAgreement,
@@ -540,7 +553,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
 
   if (!moderation.approved) {
     void logListingModerationRejection({
-      title: parsed.data.title,
+      title: normalizedTitle,
       reason: moderation.reason || "Moderim automatik",
       categoryId: parsed.data.category_id,
       userId: viewer.id,
@@ -580,7 +593,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     .values({
       user_id: viewer.id,
       shop_id: shopId,
-      title: parsed.data.title,
+      title: normalizedTitle,
       description: listingDescription,
       price: String(listingPrice),
       category_id: parsed.data.category_id,

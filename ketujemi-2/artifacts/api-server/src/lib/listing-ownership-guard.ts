@@ -28,6 +28,8 @@ export function userHasPostableContact(
   return seller_name.length >= 2 && seller_phone.replace(/\D/g, "").length >= 8;
 }
 
+import { normalizePersonName } from "./listing-text-normalize.js";
+
 /** When profile lacks seller contact, persist name/phone from the listing form before posting. */
 export async function syncSellerContactFromListingIfNeeded(
   user: User,
@@ -35,7 +37,7 @@ export async function syncSellerContactFromListingIfNeeded(
 ): Promise<User> {
   if (userHasPostableContact(user)) return user;
 
-  const name = submitted.seller_name.trim();
+  const name = normalizePersonName(submitted.seller_name);
   const digits = submitted.seller_phone.replace(/\D/g, "");
   if (name.length < 2 || digits.length < 8) return user;
 
@@ -45,6 +47,34 @@ export async function syncSellerContactFromListingIfNeeded(
       display_name: name.slice(0, 120),
       contact_phone: digits.slice(0, 20),
     })
+    .where(eq(usersTable.id, user.id))
+    .returning();
+
+  return row ?? user;
+}
+
+/** Sync profile name (and phone if missing) when the user edits contact on the post form. */
+export async function syncSellerContactFromListingOnPost(
+  user: User,
+  submitted: { seller_name: string; seller_phone: string },
+): Promise<User> {
+  const name = normalizePersonName(submitted.seller_name);
+  const digits = submitted.seller_phone.replace(/\D/g, "");
+  const canonical = canonicalSellerContactForUser(user);
+  const updates: { display_name?: string; contact_phone?: string } = {};
+
+  if (name.length >= 2 && name.toLocaleLowerCase() !== canonical.seller_name.toLocaleLowerCase()) {
+    updates.display_name = name.slice(0, 120);
+  }
+  if (digits.length >= 8 && canonical.seller_phone.replace(/\D/g, "").length < 8) {
+    updates.contact_phone = digits.slice(0, 20);
+  }
+
+  if (Object.keys(updates).length === 0) return user;
+
+  const [row] = await db
+    .update(usersTable)
+    .set(updates)
     .where(eq(usersTable.id, user.id))
     .returning();
 
