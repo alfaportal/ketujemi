@@ -53,12 +53,14 @@ import { logListingModerationRejection } from "../lib/listing-moderation-rejecti
 import { parseUiLang } from "../lib/claude-client";
 import { effectiveListingSearchQuery } from "../../../../lib/listing-search-query.js";
 import {
-  buildListingTokenMatchCondition,
   listingSearchTokens,
-  listingTitleMatchScoreSql,
   resolveListingHubSlug,
   resolveSearchTokenCategories,
 } from "../../../../lib/listing-search-match.js";
+import {
+  buildListingTokenMatchCondition,
+  listingTitleMatchScoreSql,
+} from "../lib/listing-search-match-sql.js";
 import { handleSellerComplaint } from "../lib/violation-escalation";
 import { deleteListingCascade } from "../lib/delete-listing-cascade";
 import type { User } from "@workspace/db";
