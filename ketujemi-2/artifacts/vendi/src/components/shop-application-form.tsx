@@ -325,6 +325,7 @@ export function ShopApplicationForm() {
 
         <section className="space-y-4">
           <h3 className="text-lg font-bold text-gray-900">{c.section4Title}</h3>
+          <p className="text-sm text-gray-600">{c.section4Description}</p>
           <div className="space-y-2">
             <Label>{c.contactName} *</Label>
             <Input

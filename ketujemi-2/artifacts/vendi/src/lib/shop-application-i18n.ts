@@ -55,6 +55,7 @@ export type OpenShopFormCopy = {
   socialPhWhatsapp: string;
   socialPhWebsite: string;
   section4Title: string;
+  section4Description: string;
   contactName: string;
   phone: string;
   email: string;
@@ -192,7 +193,8 @@ const KS: OpenShopFormCopy = {
   socialPhTiktok: "emri_dyqanit",
   socialPhWhatsapp: "38344123456",
   socialPhWebsite: "www.dyqani-ime.com",
-  section4Title: "Kontakti",
+  section4Title: "Na Kontaktoni",
+  section4Description: "Për çdo pyetje rreth aplikimit, na kontaktoni direkt.",
   contactName: "Emri i kontaktit",
   phone: "Nr. telefoni",
   email: "Email",
@@ -261,7 +263,8 @@ const MK: OpenShopFormCopy = {
   socialPhTiktok: "ime_prodavnica",
   socialPhWhatsapp: "38970123456",
   socialPhWebsite: "www.prodavnica.com",
-  section4Title: "Контакт",
+  section4Title: "Контактирајте не",
+  section4Description: "За секое прашање во врска со апликацијата, контактирајте не директно.",
   contactName: "Име на контакт",
   phone: "Телефонски број",
   email: "Email",
@@ -329,7 +332,8 @@ const MNE: OpenShopFormCopy = {
   socialPhTiktok: "ime_prodavnice",
   socialPhWhatsapp: "38267123456",
   socialPhWebsite: "www.prodavnica.com",
-  section4Title: "Kontakt",
+  section4Title: "Kontaktirajte nas",
+  section4Description: "Za sva pitanja u vezi sa prijavom, kontaktirajte nas direktno.",
   contactName: "Ime kontakta",
   phone: "Broj telefona",
   email: "Email",
@@ -397,7 +401,8 @@ const EN: OpenShopFormCopy = {
   socialPhTiktok: "your_shop_name",
   socialPhWhatsapp: "38344123456",
   socialPhWebsite: "www.yourshop.com",
-  section4Title: "Contact",
+  section4Title: "Contact us",
+  section4Description: "For any questions about your application, contact us directly.",
   contactName: "Contact name",
   phone: "Phone number",
   email: "Email",
@@ -463,7 +468,8 @@ const IT: OpenShopFormCopy = {
   socialPhTiktok: "your_shop_name",
   socialPhWhatsapp: "38344123456",
   socialPhWebsite: "www.yourshop.com",
-  section4Title: "Contatto",
+  section4Title: "Contattaci",
+  section4Description: "Per qualsiasi domanda sulla domanda, contattaci direttamente.",
   contactName: "Nome del contatto",
   phone: "Numero di telefono",
   email: "Email",
@@ -528,7 +534,8 @@ const DE: OpenShopFormCopy = {
   socialPhTiktok: "your_shop_name",
   socialPhWhatsapp: "38344123456",
   socialPhWebsite: "www.yourshop.com",
-  section4Title: "Kontakt",
+  section4Title: "Kontaktieren Sie uns",
+  section4Description: "Bei Fragen zu Ihrer Bewerbung kontaktieren Sie uns bitte direkt.",
   contactName: "Kontaktname",
   phone: "Telefonnummer",
   email: "Email",
@@ -593,7 +600,8 @@ const FR: OpenShopFormCopy = {
   socialPhTiktok: "your_shop_name",
   socialPhWhatsapp: "38344123456",
   socialPhWebsite: "www.yourshop.com",
-  section4Title: "Contact",
+  section4Title: "Contactez-nous",
+  section4Description: "Pour toute question concernant votre candidature, contactez-nous directement.",
   contactName: "Nom du contact",
   phone: "Numéro de téléphone",
   email: "Email",
