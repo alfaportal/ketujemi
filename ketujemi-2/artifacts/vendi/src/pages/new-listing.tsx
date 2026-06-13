@@ -56,6 +56,11 @@ import { ListingDescriptionHelper } from "@/components/listing-description-helpe
 import { joinListingImageUrls } from "@/lib/listing-images";
 import { fileToVisionBase64, type ListingImageAnalysis } from "@/lib/listing-image-vision";
 import { stabilizeListingPostPage } from "@/lib/listing-post-stable-mode";
+import {
+  clearListingDraftImages,
+  readListingDraftImageUrls,
+  writeListingDraftImageUrls,
+} from "@/lib/listing-post-draft";
 import { videoFileToVisionBase64 } from "@/lib/listing-video-frame";
 import { listingPhotoAnalyzeFailureToast } from "@/lib/listing-photo-analyze-toast";
 import { useListingImageUpload } from "@/lib/listing-image-upload";
@@ -182,7 +187,17 @@ export default function NewListing() {
     defaultListingMarketFromMarket(market.code),
   );
   const { data: allCategories } = useGetCategories();
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imageUrls, setImageUrlsState] = useState<string[]>(() => readListingDraftImageUrls());
+  const setImageUrls = useCallback(
+    (value: string[] | ((prev: string[]) => string[])) => {
+      setImageUrlsState((prev) => {
+        const next = typeof value === "function" ? value(prev) : value;
+        writeListingDraftImageUrls(next);
+        return next;
+      });
+    },
+    [],
+  );
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const imageAnalyzedRef = useRef(false);
@@ -208,7 +223,8 @@ export default function NewListing() {
   const [dhurataPledgeOk, setDhurataPledgeOk] = useState(false);
 
   useEffect(() => {
-    void stabilizeListingPostPage();
+    const timer = window.setTimeout(() => void stabilizeListingPostPage(), 4000);
+    return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -483,10 +499,10 @@ export default function NewListing() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user && imageUrls.length === 0) {
+    if (!user && imageUrls.length === 0 && !videoUrl) {
       setLocation(loginUrlWithReturn(pathname || "/listings/new"));
     }
-  }, [authLoading, user, setLocation, pathname, imageUrls.length]);
+  }, [authLoading, user, setLocation, pathname, imageUrls.length, videoUrl]);
 
   useEffect(() => {
     if (!allCategories || !isDhurataPostRoute) return;
@@ -538,37 +554,41 @@ export default function NewListing() {
 
   const applyImageAnalysis = useCallback(
     (analysis: ListingImageAnalysis) => {
-      const cats = allCategories as Array<{ id: number; parent_id?: number | null }> | undefined;
-      if (!cats?.length) {
+      try {
+        const cats = allCategories as Array<{ id: number; parent_id?: number | null }> | undefined;
+        if (!cats?.length) {
+          lastImageAnalysisRef.current = analysis;
+          return;
+        }
+
+        const parentExists = cats.some(
+          (c) => c.id === analysis.parent_category_id && (c.parent_id == null || c.parent_id === 0),
+        );
+        const categoryExists = cats.some((c) => c.id === analysis.category_id);
+        if (!parentExists || !categoryExists) {
+          lastImageAnalysisRef.current = analysis;
+          return;
+        }
+
         lastImageAnalysisRef.current = analysis;
-        return;
+        pendingImageAnalysisRef.current = analysis;
+        skipCategoryCascadeRef.current = true;
+        skipBrandCascadeRef.current = true;
+        skipTitleSuggestRef.current = true;
+
+        const fieldOpts = { shouldDirty: true, shouldTouch: true, shouldValidate: true } as const;
+        form.setValue("title", analysis.title, fieldOpts);
+        form.setValue("description", analysis.description, fieldOpts);
+        form.setValue("parent_category_id", analysis.parent_category_id, fieldOpts);
+        form.setValue("category_id", analysis.category_id, fieldOpts);
+        form.setValue("brand_category_id", analysis.brand_category_id ?? 0, fieldOpts);
+
+        window.setTimeout(() => {
+          skipTitleSuggestRef.current = false;
+        }, 3000);
+      } catch (err) {
+        console.warn("[KetuJemi] applyImageAnalysis skipped", err);
       }
-
-      const parentExists = cats.some(
-        (c) => c.id === analysis.parent_category_id && (c.parent_id == null || c.parent_id === 0),
-      );
-      const categoryExists = cats.some((c) => c.id === analysis.category_id);
-      if (!parentExists || !categoryExists) {
-        lastImageAnalysisRef.current = analysis;
-        return;
-      }
-
-      lastImageAnalysisRef.current = analysis;
-      pendingImageAnalysisRef.current = analysis;
-      skipCategoryCascadeRef.current = true;
-      skipBrandCascadeRef.current = true;
-      skipTitleSuggestRef.current = true;
-
-      const fieldOpts = { shouldDirty: true, shouldTouch: true, shouldValidate: true } as const;
-      form.setValue("title", analysis.title, fieldOpts);
-      form.setValue("description", analysis.description, fieldOpts);
-      form.setValue("parent_category_id", analysis.parent_category_id, fieldOpts);
-      form.setValue("category_id", analysis.category_id, fieldOpts);
-      form.setValue("brand_category_id", analysis.brand_category_id ?? 0, fieldOpts);
-
-      window.setTimeout(() => {
-        skipTitleSuggestRef.current = false;
-      }, 3000);
     },
     [form, allCategories],
   );
@@ -660,7 +680,9 @@ export default function NewListing() {
       }
       setImageUrls((prev) => [...prev, ...urls]);
       if (firstFileForAnalysis) {
-        void analyzeUploadedImageFile(firstFileForAnalysis);
+        window.setTimeout(() => {
+          void analyzeUploadedImageFile(firstFileForAnalysis);
+        }, 1200);
       }
     } catch {
       toast({ title: t.uploadFailed, variant: "destructive" });
@@ -772,6 +794,10 @@ export default function NewListing() {
   };
 
   const onSubmit = async (data: FormData) => {
+    if (!activeUser) {
+      setLocation(loginUrlWithReturn(pathname || "/listings/new"));
+      return;
+    }
     if (isDhurataPostRoute && !dhurataPledgeOk) {
       refusePost(
         tx.ui_giftPledgeUncheckedBlocked!,
@@ -959,6 +985,7 @@ export default function NewListing() {
         }
         queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetRecentListingsQueryKey() });
+        clearListingDraftImages();
         const engagement = engagementCopyForUiLang(uiLang);
         if (body.is_first_listing) {
           queueFirstListingCelebration();
@@ -972,16 +999,16 @@ export default function NewListing() {
   };
 
   const cityList = locationsForListingMarket(listingCountry);
+  const hasDraftMedia = imageUrls.length > 0 || !!videoUrl;
 
-  if (authLoading && !lastUserRef.current && imageUrls.length === 0) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-3">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-      </div>
-    );
-  }
-
-  if (!activeUser && imageUrls.length === 0) {
+  if (!activeUser && !hasDraftMedia) {
+    if (authLoading) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-3">
+          <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-3">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
@@ -1002,7 +1029,7 @@ export default function NewListing() {
   }
 
   const isAdminOnBehalf = !!activeUser?.is_platform_admin;
-  const canEditSellerPhone = isAdminOnBehalf || !userHasSellerPhone(activeUser);
+  const canEditSellerPhone = isAdminOnBehalf || !activeUser || !userHasSellerPhone(activeUser);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1896,8 +1923,8 @@ export default function NewListing() {
                         <Input
                           placeholder="kontakt@email.com"
                           type="email"
-                          readOnly={!!activeUser.email}
-                          className={activeUser.email ? "bg-gray-50 cursor-not-allowed" : undefined}
+                          readOnly={!!activeUser?.email}
+                          className={activeUser?.email ? "bg-gray-50 cursor-not-allowed" : undefined}
                           {...field}
                           value={field.value as string}
                         />

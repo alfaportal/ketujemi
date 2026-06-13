@@ -122,8 +122,8 @@ export function ListingCategorySuggest({
             {encouragementMessage(
               title,
               suggestion,
-              tx.ui_categorySuggestMsg,
-              tx.ui_categorySuggestDefaultProduct,
+              tx.ui_categorySuggestMsg ?? "{product} — «{category}»",
+              tx.ui_categorySuggestDefaultProduct ?? "Artikulli",
             )}
           </p>
           <p className="text-xs text-gray-500">

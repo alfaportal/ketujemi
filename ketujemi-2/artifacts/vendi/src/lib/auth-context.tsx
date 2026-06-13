@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user: query.data ?? null,
-        loading: query.isLoading,
+        loading: query.isPending && query.data == null,
         refresh,
       }}
     >
