@@ -54,7 +54,7 @@ import { ListingCountryPicker } from "@/components/listing-country-picker";
 import { ListingCategorySuggest } from "@/components/listing-category-suggest";
 import { ListingDescriptionHelper } from "@/components/listing-description-helper";
 import { joinListingImageUrls } from "@/lib/listing-images";
-import { imageUrlToVisionBase64, type ListingImageAnalysis } from "@/lib/listing-image-vision";
+import { fileToVisionBase64, type ListingImageAnalysis } from "@/lib/listing-image-vision";
 import { stabilizeListingPostPage } from "@/lib/listing-post-stable-mode";
 import { videoFileToVisionBase64 } from "@/lib/listing-video-frame";
 import { listingPhotoAnalyzeFailureToast } from "@/lib/listing-photo-analyze-toast";
@@ -144,7 +144,7 @@ function ImagePreview({ urls, onRemove, mainLabel }: { urls: string[]; onRemove:
   return (
     <div className="flex flex-wrap gap-2 mt-2">
       {urls.map((url, i) => (
-        <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200 flex-shrink-0">
+        <div key={url} className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200 flex-shrink-0">
           <img src={url} alt="" className="w-full h-full object-cover"
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
           <button type="button" onClick={() => onRemove(i)}
@@ -168,7 +168,7 @@ export default function NewListing() {
   const isDhurataPostRoute = pathname === "/listings/new/dhurata-falas";
   const isKerkojPostRoute = pathname === KERKOJ_POST_PATH;
   const skipListingImageAutofill = isDhurataPostRoute || isKerkojPostRoute;
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, refresh } = useAuth();
   const lastUserRef = useRef<AuthUser | null>(null);
   if (user) lastUserRef.current = user;
   const activeUser = user ?? lastUserRef.current;
@@ -483,8 +483,10 @@ export default function NewListing() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) setLocation(loginUrlWithReturn(pathname || "/listings/new"));
-  }, [authLoading, user, setLocation, pathname]);
+    if (!user && imageUrls.length === 0) {
+      setLocation(loginUrlWithReturn(pathname || "/listings/new"));
+    }
+  }, [authLoading, user, setLocation, pathname, imageUrls.length]);
 
   useEffect(() => {
     if (!allCategories || !isDhurataPostRoute) return;
@@ -536,10 +538,21 @@ export default function NewListing() {
 
   const applyImageAnalysis = useCallback(
     (analysis: ListingImageAnalysis) => {
-      if (!allCategories?.length) {
+      const cats = allCategories as Array<{ id: number; parent_id?: number | null }> | undefined;
+      if (!cats?.length) {
         lastImageAnalysisRef.current = analysis;
         return;
       }
+
+      const parentExists = cats.some(
+        (c) => c.id === analysis.parent_category_id && (c.parent_id == null || c.parent_id === 0),
+      );
+      const categoryExists = cats.some((c) => c.id === analysis.category_id);
+      if (!parentExists || !categoryExists) {
+        lastImageAnalysisRef.current = analysis;
+        return;
+      }
+
       lastImageAnalysisRef.current = analysis;
       pendingImageAnalysisRef.current = analysis;
       skipCategoryCascadeRef.current = true;
@@ -553,17 +566,6 @@ export default function NewListing() {
       form.setValue("category_id", analysis.category_id, fieldOpts);
       form.setValue("brand_category_id", analysis.brand_category_id ?? 0, fieldOpts);
 
-      const reapply = () => {
-        form.setValue("parent_category_id", analysis.parent_category_id, fieldOpts);
-        form.setValue("category_id", analysis.category_id, fieldOpts);
-        form.setValue("brand_category_id", analysis.brand_category_id ?? 0, fieldOpts);
-        form.setValue("title", analysis.title, fieldOpts);
-        form.setValue("description", analysis.description, fieldOpts);
-      };
-
-      queueMicrotask(reapply);
-      window.setTimeout(reapply, 50);
-      window.setTimeout(reapply, 200);
       window.setTimeout(() => {
         skipTitleSuggestRef.current = false;
       }, 3000);
@@ -621,12 +623,12 @@ export default function NewListing() {
     [applyImageAnalysis, skipListingImageAutofill, listingLang, myShop, toast, tx],
   );
 
-  const analyzeUploadedImageUrl = useCallback(
-    async (url: string) => {
+  const analyzeUploadedImageFile = useCallback(
+    async (file: File) => {
       if (imageAnalyzedRef.current || skipListingImageAutofill) return;
       setIsAnalyzingImage(true);
       try {
-        const vision = await imageUrlToVisionBase64(url);
+        const vision = await fileToVisionBase64(file);
         await runListingVisionAnalysis(vision);
       } catch (error) {
         toast({
@@ -640,6 +642,34 @@ export default function NewListing() {
     },
     [skipListingImageAutofill, runListingVisionAnalysis, toast, t.photoAnalyzeFailed, tx],
   );
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    if (!imageUpload.ready) {
+      toast({ title: t.uploadFailed, variant: "destructive" });
+      return;
+    }
+    const shouldAnalyze = imageUrls.length === 0 && !imageAnalyzedRef.current;
+    const firstFileForAnalysis = shouldAnalyze ? files[0] : null;
+    setIsUploading(true);
+    try {
+      const urls: string[] = [];
+      for (const file of files) {
+        urls.push(await imageUpload.uploadFile(file));
+      }
+      setImageUrls((prev) => [...prev, ...urls]);
+      if (firstFileForAnalysis) {
+        void analyzeUploadedImageFile(firstFileForAnalysis);
+      }
+    } catch {
+      toast({ title: t.uploadFailed, variant: "destructive" });
+    } finally {
+      setIsUploading(false);
+      if (uploadRef.current) uploadRef.current.value = "";
+      if (cameraPhotoRef.current) cameraPhotoRef.current.value = "";
+    }
+  };
 
   const analyzeVideoFile = useCallback(
     async (file: File): Promise<boolean> => {
@@ -669,30 +699,6 @@ export default function NewListing() {
     },
     [skipListingImageAutofill, runListingVisionAnalysis, toast, t.photoAnalyzeFailed, t.videoAnalyzeFrameHint, tx],
   );
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
-    if (!files.length) return;
-    if (!imageUpload.ready) {
-      toast({ title: t.uploadFailed, variant: "destructive" });
-      return;
-    }
-    const shouldAnalyze = imageUrls.length === 0 && !imageAnalyzedRef.current;
-    setIsUploading(true);
-    try {
-      const urls = await Promise.all(files.map((file) => imageUpload.uploadFile(file)));
-      setImageUrls((prev) => [...prev, ...urls]);
-      if (shouldAnalyze && urls[0]) {
-        void analyzeUploadedImageUrl(urls[0]);
-      }
-    } catch {
-      toast({ title: t.uploadFailed, variant: "destructive" });
-    } finally {
-      setIsUploading(false);
-      if (uploadRef.current) uploadRef.current.value = "";
-      if (cameraPhotoRef.current) cameraPhotoRef.current.value = "";
-    }
-  };
 
   const removeImage = (i: number) => {
     setImageUrls((prev) => {
@@ -967,7 +973,7 @@ export default function NewListing() {
 
   const cityList = locationsForListingMarket(listingCountry);
 
-  if (authLoading && !lastUserRef.current) {
+  if (authLoading && !lastUserRef.current && imageUrls.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-3">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
@@ -975,7 +981,7 @@ export default function NewListing() {
     );
   }
 
-  if (!activeUser) {
+  if (!activeUser && imageUrls.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-3">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
@@ -1082,7 +1088,7 @@ export default function NewListing() {
                   <button
                     type="button"
                     onClick={() => uploadRef.current?.click()}
-                    disabled={isUploading || isAnalyzingImage || !imageUpload.ready}
+                    disabled={isUploading || !imageUpload.ready}
                     className="w-full border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl py-12 px-6 text-center transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none min-h-[10.5rem] touch-manipulation"
                   >
                     {isUploading ? (
@@ -1112,7 +1118,7 @@ export default function NewListing() {
                   <button
                     type="button"
                     onClick={() => cameraPhotoRef.current?.click()}
-                    disabled={isUploading || isAnalyzingImage || !imageUpload.ready}
+                    disabled={isUploading || !imageUpload.ready}
                     className="mt-2 w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 hover:border-blue-400 hover:bg-blue-50 py-3 px-4 text-sm font-semibold text-gray-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
                   >
                     <Camera size={20} className="text-blue-600 shrink-0" />
