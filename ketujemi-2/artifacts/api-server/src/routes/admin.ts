@@ -26,6 +26,11 @@ import {
   listAdminPartnerApplications,
 } from "../lib/admin-partner-applications";
 import { syncPartnerStatusToUser } from "../lib/partner-activate";
+import {
+  descriptionForAdminOnBehalf,
+  getPlatformAdminUser,
+  sellerContactForAdminOnBehalf,
+} from "../lib/admin-listing-on-behalf.js";
 import type { PartnerTier } from "../lib/trusted-partners";
 import {
   getMonthlyPackageRevenueCents,
@@ -409,16 +414,39 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
       res.status(400).json({ error: "Invalid body", details: parsed.error.issues });
       return;
     }
+
+    const adminUser = await getPlatformAdminUser();
+    if (!adminUser) {
+      res.status(503).json({ error: "PLATFORM_ADMIN_USER_NOT_FOUND" });
+      return;
+    }
+
+    const sellerContact = sellerContactForAdminOnBehalf({
+      seller_name: parsed.data.seller_name,
+      seller_phone: parsed.data.seller_phone,
+    });
+    if (sellerContact.seller_name.length < 2) {
+      res.status(400).json({ error: "VALIDATION", message: "seller_name is required" });
+      return;
+    }
+    if (sellerContact.seller_phone.replace(/\D/g, "").length < 8) {
+      res.status(400).json({ error: "VALIDATION", message: "seller_phone is required" });
+      return;
+    }
+
+    const description = descriptionForAdminOnBehalf(parsed.data.description);
+
     const [row] = await db
       .insert(listingsTable)
       .values({
+        user_id: adminUser.id,
         title: parsed.data.title,
-        description: parsed.data.description,
+        description,
         price: String(parsed.data.price),
         category_id: parsed.data.category_id,
         location: parsed.data.location,
-        seller_name: parsed.data.seller_name,
-        seller_phone: parsed.data.seller_phone,
+        seller_name: sellerContact.seller_name,
+        seller_phone: sellerContact.seller_phone,
         condition: parsed.data.condition,
         image_url: parsed.data.image_url ?? null,
         is_featured: parsed.data.is_featured ?? false,

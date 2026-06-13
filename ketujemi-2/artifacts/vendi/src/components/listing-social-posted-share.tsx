@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { openFacebookShareDialog } from "@/lib/social-share";
 
 type Props = {
   url: string;
@@ -39,12 +40,8 @@ export function ListingSocialPostedShare({ url, fbPosted, igPosted, title }: Pro
   }, [url]);
 
   const onFacebookShare = useCallback(() => {
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      "facebook-share",
-      "noopener,noreferrer,width=600,height=400",
-    );
-  }, [url]);
+    openFacebookShareDialog(url, title);
+  }, [url, title]);
 
   const onInstagramShareClick = useCallback(() => {
     if (typeof navigator !== "undefined" && typeof navigator.share === "function") {

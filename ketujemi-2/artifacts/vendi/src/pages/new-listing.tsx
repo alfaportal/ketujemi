@@ -521,6 +521,7 @@ export default function NewListing() {
 
   useEffect(() => {
     if (!activeUser) return;
+    if (activeUser.is_platform_admin) return;
     const { seller_name, seller_phone } = sellerContactFromUser(activeUser);
     if (seller_name && !form.getValues("seller_name")?.trim()) {
       form.setValue("seller_name", seller_name);
@@ -844,6 +845,7 @@ export default function NewListing() {
       imageCount: photoCountForValidation,
       subcategoryName: partCat?.name,
       sellLangBlockedTemplate: tx.ui_sellLangBlocked,
+      omitSellerEmail: !!activeUser?.is_platform_admin,
     });
     if (!validation.ok) {
       const issue = validation.issues[0]!;
@@ -865,7 +867,7 @@ export default function NewListing() {
     const formName = listingData.seller_name?.trim() ?? "";
     const formPhone = listingData.seller_phone?.trim() ?? "";
 
-    if (activeUser && userNeedsSellerProfile(activeUser)) {
+    if (activeUser && userNeedsSellerProfile(activeUser) && !activeUser.is_platform_admin) {
       setIsSubmitting(true);
       try {
         const bootRes = await fetchWithTimeout("/api/auth/profile/seller-bootstrap", {
@@ -894,11 +896,14 @@ export default function NewListing() {
       }
     }
 
+    const isAdminOnBehalf = !!activeUser?.is_platform_admin;
     const profileContact = activeUser ? sellerContactFromUser(activeUser) : { seller_name: "", seller_phone: "" };
-    const contact = {
-      seller_name: formName || profileContact.seller_name,
-      seller_phone: formPhone || profileContact.seller_phone,
-    };
+    const contact = isAdminOnBehalf
+      ? { seller_name: formName, seller_phone: formPhone }
+      : {
+          seller_name: formName || profileContact.seller_name,
+          seller_phone: formPhone || profileContact.seller_phone,
+        };
 
     const payload: Record<string, unknown> = {
       title: listingData.title,
@@ -990,11 +995,12 @@ export default function NewListing() {
     );
   }
 
-  const canEditSellerPhone = !userHasSellerPhone(activeUser);
+  const isAdminOnBehalf = !!activeUser?.is_platform_admin;
+  const canEditSellerPhone = isAdminOnBehalf || !userHasSellerPhone(activeUser);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {userNeedsSellerProfile(activeUser) && <SellerProfileGate onReady={() => undefined} />}
+      {userNeedsSellerProfile(activeUser) && !isAdminOnBehalf && <SellerProfileGate onReady={() => undefined} />}
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">
         <MobileSafeTopSpacer />
@@ -1842,8 +1848,8 @@ export default function NewListing() {
                         <Input
                           data-testid="input-seller-name"
                           placeholder="Arben Krasniqi"
-                          readOnly={!!activeUser}
-                          className={activeUser ? "bg-gray-50 cursor-not-allowed" : undefined}
+                          readOnly={!!activeUser && !isAdminOnBehalf}
+                          className={activeUser && !isAdminOnBehalf ? "bg-gray-50 cursor-not-allowed" : undefined}
                           {...field}
                         />
                       </FormControl>
@@ -1873,6 +1879,7 @@ export default function NewListing() {
                     </FormItem>
                   )}
                 />
+                {!isAdminOnBehalf ? (
                 <FormField
                   control={form.control}
                   name="xSellerEmail"
@@ -1892,6 +1899,7 @@ export default function NewListing() {
                     </FormItem>
                   )}
                 />
+                ) : null}
                 <FormField
                   control={form.control}
                   name="xSellerAddress"

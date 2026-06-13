@@ -36,6 +36,7 @@ import { ListingDetailTopPackages } from "@/components/listing-detail-top-packag
 import { notifyTopListingsRefresh } from "@/lib/top-listings-events";
 import { parseListingImageUrls } from "@/lib/listing-images";
 import { recordListingView } from "@/lib/record-listing-view";
+import { listingPublicUrl } from "@/lib/social-share";
 import { ListingProminentShare } from "@/components/listing-prominent-share";
 import { ListingSocialPostedShare } from "@/components/listing-social-posted-share";
 import {
@@ -163,14 +164,8 @@ export default function ListingDetail() {
   }, [id, isLoading, listing?.id, queryClient]);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !listing) return;
-    const clean = new URL(window.location.href);
-    clean.search = "";
-    clean.hash = "";
-    if (clean.hostname === "www.ketujemi.com") {
-      clean.hostname = "ketujemi.com";
-    }
-    setListingShareUrl(clean.toString());
+    if (!listing) return;
+    setListingShareUrl(listingPublicUrl(listing.id));
   }, [listing?.id]);
 
   useEffect(() => {
@@ -708,10 +703,12 @@ export default function ListingDetail() {
               </p>
             </div>
 
-            <ListingProminentShare
-              url={listingShareUrl}
-              title={listing.title}
-            />
+            {canManage ? (
+              <ListingProminentShare
+                url={listingShareUrl}
+                title={listing.title}
+              />
+            ) : null}
 
             {/* Structured specs */}
             {Object.keys(specs).length > 0 && <SpecGrid specs={specs} detailsLabel={t.details} />}

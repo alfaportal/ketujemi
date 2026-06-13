@@ -10,6 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { openFacebookShareDialog, listingPublicUrl } from "@/lib/social-share";
 
 type Props = {
   url: string;
@@ -19,17 +20,7 @@ type Props = {
 
 const GREEN_TOAST_CLASS = "border-green-200 bg-green-50 text-green-900";
 
-export function listingPublicUrl(listingId: number): string {
-  if (typeof window !== "undefined") {
-    const host = window.location.hostname.toLowerCase();
-    const origin =
-      host === "ketujemi.com" || host === "www.ketujemi.com"
-        ? "https://ketujemi.com"
-        : window.location.origin;
-    return `${origin}/listings/${listingId}`;
-  }
-  return `https://ketujemi.com/listings/${listingId}`;
-}
+export { listingPublicUrl };
 
 function whatsAppShareUrl(title: string, url: string): string {
   const text = title.trim() ? `${title.trim()} ${url}` : url;
@@ -51,12 +42,8 @@ export function ListingShareButtons({ url, title = "", variant = "full" }: Props
   }, [url]);
 
   const onFacebookShare = useCallback(() => {
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
-  }, [url]);
+    openFacebookShareDialog(url, title);
+  }, [url, title]);
 
   const onWhatsAppShare = useCallback(() => {
     window.open(whatsAppShareUrl(title, url), "_blank", "noopener,noreferrer");

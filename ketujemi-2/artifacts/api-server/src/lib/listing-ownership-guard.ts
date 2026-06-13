@@ -107,6 +107,10 @@ function replaceSpecsEmail(description: string, email: string): string {
   return pairs.join(" · ") + rest;
 }
 
+export function stripEmailFromListingDescription(description: string): string {
+  return removeEmailFromSpecsLine(description);
+}
+
 function removeEmailFromSpecsLine(description: string): string {
   const sep = "\n\n";
   const idx = description.indexOf(sep);

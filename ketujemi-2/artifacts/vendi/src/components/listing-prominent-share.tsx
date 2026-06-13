@@ -3,6 +3,7 @@ import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
 import { Link2, Share2 } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
 import { cn } from "@/lib/utils";
+import { isMobileUserAgent, openFacebookShareDialog } from "@/lib/social-share";
 
 type Props = {
   url: string;
@@ -19,18 +20,13 @@ const INSTAGRAM_COPIED_ALERT: Record<string, string> = {
   en: "Link copied! Paste it in Instagram Story or Bio.",
 };
 
-const TIKTOK_DESKTOP_COPIED_ALERT: Record<string, string> = {
+const TIKTOK_COPIED_ALERT: Record<string, string> = {
   ks: "Linku u kopjua! Hape TikTok dhe paste-o.",
   al: "Linku u kopjua! Hape TikTok dhe paste-o.",
   mk: "Линкот е копиран! Отвори TikTok и залепи го.",
   mne: "Link je kopiran! Otvori TikTok i zalijepi ga.",
   en: "Link copied! Open TikTok and paste it.",
 };
-
-function isMobileUserAgent(): boolean {
-  if (typeof navigator === "undefined") return false;
-  return /Mobile|Android|iPhone/i.test(navigator.userAgent);
-}
 
 export function ListingProminentShare({ url, title = "", postSuccess = false }: Props) {
   const { t, uiLang } = useMarket();
@@ -40,8 +36,7 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
 
   const instagramCopiedAlert =
     INSTAGRAM_COPIED_ALERT[uiLang] ?? INSTAGRAM_COPIED_ALERT.ks;
-  const tiktokDesktopCopiedAlert =
-    TIKTOK_DESKTOP_COPIED_ALERT[uiLang] ?? TIKTOK_DESKTOP_COPIED_ALERT.ks;
+  const tiktokCopiedAlert = TIKTOK_COPIED_ALERT[uiLang] ?? TIKTOK_COPIED_ALERT.ks;
 
   const copyUrl = useCallback(async (): Promise<boolean> => {
     try {
@@ -58,16 +53,8 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
   }, []);
 
   const onFacebookShare = useCallback(() => {
-    if (isMobileUserAgent()) {
-      window.location.href = `fb://share?link=${encodeURIComponent(url)}`;
-      return;
-    }
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      "facebook-share",
-      "noopener,noreferrer,width=600,height=400",
-    );
-  }, [url]);
+    openFacebookShareDialog(url, title);
+  }, [url, title]);
 
   const onInstagramShare = useCallback(() => {
     void copyUrl().then((ok) => {
@@ -78,30 +65,15 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
   }, [copyUrl, showAlert, instagramCopiedAlert]);
 
   const onTikTokShare = useCallback(() => {
-    if (isMobileUserAgent()) {
-      const fallback = `https://www.tiktok.com/share?url=${encodeURIComponent(url)}`;
-      let opened = false;
-      const timer = window.setTimeout(() => {
-        if (opened) return;
-        opened = true;
-        window.location.href = fallback;
-      }, 1500);
-      const onHide = () => {
-        if (document.hidden) {
-          opened = true;
-          window.clearTimeout(timer);
-          document.removeEventListener("visibilitychange", onHide);
-        }
-      };
-      document.addEventListener("visibilitychange", onHide);
-      window.location.href = "snssdk1233://aweme/detail/";
-      return;
-    }
     void copyUrl().then((ok) => {
       if (!ok) return;
-      showAlert(tiktokDesktopCopiedAlert);
+      showAlert(tiktokCopiedAlert);
+      const tiktokUrl = isMobileUserAgent()
+        ? "https://www.tiktok.com/"
+        : "https://www.tiktok.com/";
+      window.open(tiktokUrl, "_blank", "noopener,noreferrer");
     });
-  }, [url, copyUrl, showAlert, tiktokDesktopCopiedAlert]);
+  }, [copyUrl, showAlert, tiktokCopiedAlert]);
 
   const onCopyLink = useCallback(() => {
     void copyUrl().then((ok) => {
@@ -139,7 +111,7 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
         />
         <div>
           <h2 className="text-lg sm:text-xl font-black text-gray-900 leading-snug">{sectionTitle}</h2>
-          {!postSuccess && tx.share_motivation ? (
+          {tx.share_motivation ? (
             <p className="text-sm text-gray-700 mt-1.5 leading-relaxed">{tx.share_motivation}</p>
           ) : null}
         </div>
@@ -159,7 +131,11 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
         <button
           type="button"
           onClick={onFacebookShare}
-          className={cn(btnClass, "bg-[#1877F2] text-white hover:bg-[#166FE5]")}
+          className={cn(
+            btnClass,
+            "bg-[#1877F2] text-white hover:bg-[#166FE5]",
+            postSuccess && "ring-4 ring-[#1877F2]/35 shadow-md",
+          )}
           data-testid="share-prominent-facebook"
         >
           <FaFacebook className="h-5 w-5" aria-hidden />

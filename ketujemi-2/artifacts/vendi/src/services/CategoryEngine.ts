@@ -532,6 +532,7 @@ export class CategoryEngine {
     data: ListingValidationInput,
     categoryId: number,
     subcategoryName?: string,
+    options?: { omitSellerEmail?: boolean },
   ): string {
     const fields = this.getFields(categoryId, "");
     const lines: string[] = [];
@@ -570,7 +571,7 @@ export class CategoryEngine {
       if (data.xNgjyra) lines.push(`Ngjyra: ${data.xNgjyra}`);
     }
 
-    if (data.xSellerEmail) lines.push(`Email: ${data.xSellerEmail}`);
+    if (!options?.omitSellerEmail && data.xSellerEmail) lines.push(`Email: ${data.xSellerEmail}`);
     if (data.xSellerAddress) lines.push(`Adresa: ${data.xSellerAddress}`);
     return lines.length ? `${lines.join(" · ")}\n\n` : "";
   }
@@ -582,6 +583,7 @@ export class CategoryEngine {
       imageCount?: number;
       subcategoryName?: string;
       sellLangBlockedTemplate?: string;
+      omitSellerEmail?: boolean;
     },
   ): ListingValidationResult {
     const fields = this.getFields(categoryId, "");
@@ -631,6 +633,7 @@ export class CategoryEngine {
       data,
       categoryId,
       options?.subcategoryName,
+      { omitSellerEmail: options?.omitSellerEmail },
     );
     const finalDescription = extraDescriptionPrefix + data.description;
     const blockedWord = findBlockedWordClient(`${data.title} ${finalDescription}`);

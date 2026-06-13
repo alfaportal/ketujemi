@@ -21,6 +21,12 @@ import {
   userHasPostableContact,
   verifyListingOwnerIntegrity,
 } from "../lib/listing-ownership-guard";
+import {
+  descriptionForAdminOnBehalf,
+  isListingUserPlatformAdmin,
+  sellerContactForAdminOnBehalf,
+} from "../lib/admin-listing-on-behalf.js";
+import { isPlatformAdminUser } from "../lib/platform-admin.js";
 import { maskSellerPhone } from "../lib/contact-mask";
 import { assertAccountActive } from "../lib/user-ban";
 import { formatZodIssuesMessage } from "../lib/listing-api-errors";
@@ -352,44 +358,71 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   const safeImageUrl = sanitizeListingImageUrlField(parsed.data.image_url) ?? undefined;
   const safeVideoUrl = sanitizeListingVideoUrl(parsed.data.video_url) ?? undefined;
 
-  viewer = await syncSellerContactFromListingIfNeeded(viewer, {
-    seller_name: parsed.data.seller_name,
-    seller_phone: parsed.data.seller_phone,
-  });
+  const adminOnBehalf = isPlatformAdminUser(viewer);
 
-  if (!userHasPostableContact(viewer)) {
-    res.status(400).json({
-      error: "INCOMPLETE_PROFILE",
-      message:
-        "Plotësoni emrin dhe numrin e telefonit në profilin tuaj para se të postoni.",
+  let sellerContact: { seller_name: string; seller_phone: string };
+  let listingDescription: string;
+
+  if (adminOnBehalf) {
+    sellerContact = sellerContactForAdminOnBehalf({
+      seller_name: parsed.data.seller_name,
+      seller_phone: parsed.data.seller_phone,
     });
-    return;
+    if (sellerContact.seller_name.length < 2) {
+      res.status(400).json({
+        error: "VALIDATION",
+        message: "Vendosni emrin e shitësit.",
+      });
+      return;
+    }
+    if (sellerContact.seller_phone.replace(/\D/g, "").length < 8) {
+      res.status(400).json({
+        error: "VALIDATION",
+        message: "Vendosni numrin e telefonit të shitësit.",
+      });
+      return;
+    }
+    listingDescription = descriptionForAdminOnBehalf(parsed.data.description);
+  } else {
+    viewer = await syncSellerContactFromListingIfNeeded(viewer, {
+      seller_name: parsed.data.seller_name,
+      seller_phone: parsed.data.seller_phone,
+    });
+
+    if (!userHasPostableContact(viewer)) {
+      res.status(400).json({
+        error: "INCOMPLETE_PROFILE",
+        message:
+          "Plotësoni emrin dhe numrin e telefonit në profilin tuaj para se të postoni.",
+      });
+      return;
+    }
+
+    const impersonation = detectContactImpersonation(viewer, {
+      seller_name: parsed.data.seller_name,
+      seller_phone: parsed.data.seller_phone,
+      description: parsed.data.description,
+    });
+    if (impersonation.impersonation) {
+      await recordListingOwnershipViolation({
+        userId: viewer.id,
+        context: "listing_create",
+        reason: impersonation.reason,
+        req,
+        submittedPhone: parsed.data.seller_phone,
+        submittedName: parsed.data.seller_name,
+      });
+      res.status(403).json({
+        error: "OWNERSHIP_VIOLATION",
+        message:
+          "Nuk mund të postoni me të dhëna kontakti që nuk përputhen me llogarinë tuaj.",
+      });
+      return;
+    }
+
+    sellerContact = canonicalSellerContactForUser(viewer);
+    listingDescription = sanitizeListingDescriptionEmail(parsed.data.description, viewer.email);
   }
-
-  const impersonation = detectContactImpersonation(viewer, {
-    seller_name: parsed.data.seller_name,
-    seller_phone: parsed.data.seller_phone,
-    description: parsed.data.description,
-  });
-  if (impersonation.impersonation) {
-    await recordListingOwnershipViolation({
-      userId: viewer.id,
-      context: "listing_create",
-      reason: impersonation.reason,
-      req,
-      submittedPhone: parsed.data.seller_phone,
-      submittedName: parsed.data.seller_name,
-    });
-    res.status(403).json({
-      error: "OWNERSHIP_VIOLATION",
-      message:
-        "Nuk mund të postoni me të dhëna kontakti që nuk përputhen me llogarinë tuaj.",
-    });
-    return;
-  }
-
-  const sellerContact = canonicalSellerContactForUser(viewer);
-  const listingDescription = sanitizeListingDescriptionEmail(parsed.data.description, viewer.email);
 
   try {
     await assertAccountActive(viewer, sellerContact.seller_phone);
@@ -1144,7 +1177,13 @@ router.get("/listings/:id", async (req, res) => {
 
   const catMeta = await resolveCategorySlugMeta(row.category_id);
 
-  const formatted = formatListing(row, catMeta?.name ?? null, catMeta?.rootSlug ?? null);
+  let formatted = formatListing(row, catMeta?.name ?? null, catMeta?.rootSlug ?? null);
+  if (await isListingUserPlatformAdmin(row.user_id)) {
+    formatted = {
+      ...formatted,
+      description: descriptionForAdminOnBehalf(formatted.description),
+    };
+  }
   const payload = applyViewerContact(formatted, viewer) as ReturnType<typeof formatListing> & {
     can_repost: boolean;
   };
