@@ -1,14 +1,15 @@
 # KetuJemi — Capacitor iOS CI on Codemagic
 #
-# Codemagic setup (one-time, in dashboard):
-# 1. Connect this GitHub repo (alfaportal/ketujemi).
-# 2. Set the application "Project path" to: ketujemi-2/artifacts/vendi
-#    (or point "codemagic.yaml location" to this file if using repo root checkout).
-# 3. Under Code signing → iOS, upload your Distribution certificate (.p12) and
-#    App Store / Ad Hoc provisioning profile for bundle ID com.ketujemi.app.
-# 4. Optionally link App Store Connect API key for TestFlight / App Store publish.
+# This file lives at the GitHub repository root (alfaportal/ketujemi).
+# Codemagic auto-detects codemagic.yaml here — no custom "Project path" needed.
 #
-# This workflow loads the live site (https://ketujemi.com) — no Vite web build step.
+# One-time dashboard setup:
+# 1. Connect GitHub repo alfaportal/ketujemi.
+# 2. Under Code signing → iOS, upload Distribution certificate (.p12) and
+#    App Store / Ad Hoc provisioning profile for bundle ID com.ketujemi.app.
+# 3. Optionally link App Store Connect API key for TestFlight / App Store publish.
+#
+# The native app loads the live site (https://ketujemi.com) — no Vite web build step.
 
 workflows:
   ketujemi-ios-capacitor:
@@ -23,6 +24,7 @@ workflows:
         bundle_identifier: com.ketujemi.app
       vars:
         BUNDLE_ID: com.ketujemi.app
+        VENDI_DIR: ketujemi-2/artifacts/vendi
         XCODE_PROJECT: ios/App/App.xcodeproj
         XCODE_SCHEME: App
       node: 22
@@ -32,8 +34,7 @@ workflows:
       - name: Install monorepo dependencies (pnpm)
         script: |
           set -euxo pipefail
-          REPO_ROOT="$(git rev-parse --show-toplevel)"
-          cd "$REPO_ROOT"
+          cd "$CM_BUILD_DIR"
           corepack enable
           corepack prepare pnpm@10.12.1 --activate
           pnpm install --frozen-lockfile
@@ -41,25 +42,24 @@ workflows:
       - name: Sync Capacitor iOS project
         script: |
           set -euxo pipefail
-          REPO_ROOT="$(git rev-parse --show-toplevel)"
-          cd "$REPO_ROOT/ketujemi-2/artifacts/vendi"
+          cd "$CM_BUILD_DIR/$VENDI_DIR"
           pnpm cap:sync ios
 
       - name: Set up code signing settings on Xcode project
         script: |
+          set -euxo pipefail
+          cd "$CM_BUILD_DIR/$VENDI_DIR"
           xcode-project use-profiles
 
       - name: Build signed IPA
         script: |
           set -euxo pipefail
-          REPO_ROOT="$(git rev-parse --show-toplevel)"
-          VENDI_DIR="$REPO_ROOT/ketujemi-2/artifacts/vendi"
-          cd "$VENDI_DIR"
+          cd "$CM_BUILD_DIR/$VENDI_DIR"
           xcode-project build-ipa \
-            --project "$VENDI_DIR/$XCODE_PROJECT" \
+            --project "$CM_BUILD_DIR/$VENDI_DIR/$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME"
 
     artifacts:
-      - build/ios/ipa/*.ipa
+      - ketujemi-2/artifacts/vendi/build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
       - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
