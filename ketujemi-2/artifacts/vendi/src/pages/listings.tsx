@@ -59,6 +59,14 @@ export default function Listings() {
   const [showFilters, setShowFilters] = useState(false);
   const [directoryShops, setDirectoryShops] = useState<ShopDirectoryListItem[]>([]);
   const [shopsLoading, setShopsLoading] = useState(false);
+  const [listingStats, setListingStats] = useState<{
+    total_listings: number;
+    listings_today: number;
+    category_listings: number | null;
+  } | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+
+  const tx = t as Record<string, string>;
 
   const [appliedSearch, setAppliedSearch] = useState(initialSearch);
   const [appliedCategory, setAppliedCategory] = useState(categoryId);
@@ -115,6 +123,24 @@ export default function Listings() {
       .finally(() => setShopsLoading(false));
   }, [appliedSearch]);
 
+  useEffect(() => {
+    setStatsLoading(true);
+    const params = new URLSearchParams();
+    if (appliedCategory && appliedCategory !== "all") {
+      params.set("category_id", appliedCategory);
+    }
+    const qs = params.toString();
+    void fetchWithTimeout(`/api/listings/stats${qs ? `?${qs}` : ""}`, { cache: "no-store" })
+      .then((r) => r.json() as Promise<{
+        total_listings: number;
+        listings_today: number;
+        category_listings: number | null;
+      }>)
+      .then((payload) => setListingStats(payload))
+      .catch(() => setListingStats(null))
+      .finally(() => setStatsLoading(false));
+  }, [appliedCategory]);
+
   const matchedShops = useMemo(
     () => (appliedSearch ? filterShopsByQuery(directoryShops, appliedSearch, locale) : []),
     [directoryShops, appliedSearch, locale],
@@ -124,26 +150,79 @@ export default function Listings() {
     <div className="min-h-screen bg-gray-50">
 
       <SiteHeader className="z-30">
-        <form onSubmit={applyFilters} className="flex flex-col gap-2 w-full md:flex-row md:items-center md:flex-nowrap md:gap-2 pt-1">
-              <div className="relative flex-1 min-w-0">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  data-testid="input-search-listings"
-                  type="search"
-                  placeholder={t.search}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full min-h-12 pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-base sm:text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all bg-gray-50 focus:bg-white touch-manipulation"
-                />
+        <div className="flex w-full flex-col gap-3 pt-1 lg:flex-row lg:items-stretch lg:gap-4">
+          <form
+            onSubmit={applyFilters}
+            className="flex min-w-0 flex-1 flex-col gap-2 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:flex-nowrap sm:gap-2"
+          >
+            <p className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:hidden">
+              {tx.ui_listingsQuickSearch}
+            </p>
+            <div className="relative min-w-0 flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                data-testid="input-search-listings"
+                type="search"
+                placeholder={t.search}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full min-h-12 touch-manipulation rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-4 text-base outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 sm:text-sm"
+              />
+            </div>
+            <button
+              type="submit"
+              data-testid="button-search-listings"
+              className={cnPrimaryBlue("w-full sm:w-auto")}
+            >
+              {t.searchBtn}
+            </button>
+          </form>
+
+          <div
+            className="w-full shrink-0 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-3 shadow-sm lg:w-72"
+            aria-label={tx.ui_listingsStatsTitle}
+          >
+            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-blue-700">
+              {tx.ui_listingsStatsTitle}
+            </p>
+            {statsLoading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-4/5" />
+                <Skeleton className="h-4 w-3/5" />
               </div>
-              <button
-                type="submit"
-                data-testid="button-search-listings"
-                className={cnPrimaryBlue("w-full md:w-auto")}
-              >
-                {t.searchBtn}
-              </button>
-        </form>
+            ) : (
+              <table className="w-full text-sm">
+                <tbody>
+                  <tr className="border-b border-blue-100/80">
+                    <td className="py-1.5 pr-2 font-medium text-gray-600">{tx.ui_listingsStatsTotal}</td>
+                    <td className="py-1.5 text-right font-black text-gray-900 tabular-nums">
+                      {(listingStats?.total_listings ?? data?.total ?? 0).toLocaleString()}
+                    </td>
+                  </tr>
+                  <tr className="border-b border-blue-100/80">
+                    <td className="py-1.5 pr-2 font-medium text-gray-600">{tx.ui_listingsStatsToday}</td>
+                    <td className="py-1.5 text-right font-black text-gray-900 tabular-nums">
+                      {(listingStats?.listings_today ?? 0).toLocaleString()}
+                    </td>
+                  </tr>
+                  {hasActiveFilters ? (
+                    <tr>
+                      <td className="py-1.5 pr-2 font-medium text-gray-600">{tx.ui_listingsStatsInFilter}</td>
+                      <td className="py-1.5 text-right font-black text-blue-700 tabular-nums">
+                        {(
+                          listingStats?.category_listings ??
+                          data?.total ??
+                          0
+                        ).toLocaleString()}
+                      </td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
       </SiteHeader>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">

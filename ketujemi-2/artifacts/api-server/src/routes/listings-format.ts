@@ -80,14 +80,22 @@ export function formatListing(
     category_name: categoryName,
     category_root_slug: categoryRootSlug,
     seller_phone_masked: maskSellerPhone(l.seller_phone),
-    created_at: l.created_at.toISOString(),
+    created_at: l.created_at
+      ? l.created_at.toISOString()
+      : l.listed_at
+        ? l.listed_at.toISOString()
+        : new Date().toISOString(),
     expires_at: l.expires_at ? l.expires_at.toISOString() : null,
     days_left: daysLeft,
     is_expired: expires ? expires < now : false,
     is_top: isTopActive(l),
     top_until: l.top_until ? l.top_until.toISOString() : null,
     top_count: l.top_count ?? 0,
-    listed_at: l.listed_at ? l.listed_at.toISOString() : l.created_at.toISOString(),
+    listed_at: l.listed_at
+      ? l.listed_at.toISOString()
+      : l.created_at
+        ? l.created_at.toISOString()
+        : new Date().toISOString(),
     status: l.status ?? "active",
     moderation_status: l.moderation_status ?? "approved",
     shop_id: l.shop_id ?? null,

@@ -70,6 +70,8 @@ import {
   expiresAtForCategoryRootSlug,
   resolveCategorySlugMeta,
 } from "../lib/listing-special-categories.js";
+import { getCategoryTreeIds } from "../lib/category-tree.js";
+import { expiresAtAfterListingLifetime } from "../lib/listing-lifetime.js";
 import { postNewListingToFacebook } from "../services/socialMedia.js";
 import { markListingFbPosted } from "../lib/facebook-scheduled-post-job";
 import { logger } from "../lib/logger";
@@ -95,9 +97,40 @@ function rateLimitReport(ip: string): boolean {
 
 const router = Router();
 
+/** Backfill null visibility fields on legacy rows (e.g. early admin posts). */
+async function repairLegacyListingFields(
+  row: typeof listingsTable.$inferSelect,
+): Promise<typeof listingsTable.$inferSelect> {
+  const patch: Partial<typeof listingsTable.$inferInsert> = {};
+  if (!row.status) patch.status = "active";
+  if (!row.moderation_status) patch.moderation_status = "approved";
+  if (!row.expires_at) patch.expires_at = expiresAtAfterListingLifetime();
+  if (!row.created_at) patch.created_at = new Date();
+  if (!row.listed_at) patch.listed_at = row.created_at ?? new Date();
+
+  if (Object.keys(patch).length === 0) return row;
+
+  const [updated] = await db
+    .update(listingsTable)
+    .set(patch)
+    .where(eq(listingsTable.id, row.id))
+    .returning();
+  return updated ?? { ...row, ...patch };
+}
+
 // ─── Filter: only active (non-expired) listings ───────────────────────────────
 function activeCondition() {
-  return and(gt(listingsTable.expires_at, new Date()), eq(listingsTable.status, "active"));
+  return and(
+    or(eq(listingsTable.status, "active"), isNull(listingsTable.status)),
+    or(
+      isNull(listingsTable.expires_at),
+      gt(listingsTable.expires_at, new Date()),
+    ),
+    or(
+      eq(listingsTable.moderation_status, "approved"),
+      isNull(listingsTable.moderation_status),
+    ),
+  );
 }
 
 // ─── GET /listings ────────────────────────────────────────────────────────────
@@ -166,7 +199,12 @@ router.get("/listings", searchLimiter, async (req, res) => {
   if (categoryIdList.length > 0) {
     conditions.push(inArray(listingsTable.category_id, categoryIdList));
   } else if (category_id) {
-    conditions.push(eq(listingsTable.category_id, category_id));
+    const treeIds = await getCategoryTreeIds(category_id);
+    if (treeIds.length > 0) {
+      conditions.push(inArray(listingsTable.category_id, treeIds));
+    } else {
+      conditions.push(eq(listingsTable.category_id, category_id));
+    }
   }
   if (location) conditions.push(eq(listingsTable.location, location));
   if (location_search && String(location_search).trim()) {
@@ -782,6 +820,9 @@ router.get("/listings/stats", async (req, res) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  const categoryIdRaw = Number(req.query.category_id);
+  const categoryId = Number.isFinite(categoryIdRaw) && categoryIdRaw > 0 ? categoryIdRaw : null;
+
   const [totalRes, catRes, featuredRes, todayRes, locationRes] = await Promise.all([
     db.select({ total: count() }).from(listingsTable).where(activeCondition()),
     db.select({ total: count() }).from(categoriesTable),
@@ -805,12 +846,25 @@ router.get("/listings/stats", async (req, res) => {
       .limit(5),
   ]);
 
+  let category_listings: number | null = null;
+  if (categoryId) {
+    const treeIds = await getCategoryTreeIds(categoryId);
+    if (treeIds.length > 0) {
+      const [catCount] = await db
+        .select({ total: count() })
+        .from(listingsTable)
+        .where(and(activeCondition(), inArray(listingsTable.category_id, treeIds)));
+      category_listings = catCount?.total ?? 0;
+    }
+  }
+
   res.json({
     total_listings: totalRes[0]?.total ?? 0,
     total_categories: catRes[0]?.total ?? 0,
     featured_count: featuredRes[0]?.total ?? 0,
     listings_today: todayRes[0]?.total ?? 0,
     top_locations: locationRes,
+    category_listings: category_listings,
   });
 });
 
@@ -1139,7 +1193,7 @@ router.get("/listings/:id", async (req, res) => {
     return;
   }
 
-  const [row] = await db
+  let [row] = await db
     .select()
     .from(listingsTable)
     .where(eq(listingsTable.id, parsed.data.id));
@@ -1149,12 +1203,18 @@ router.get("/listings/:id", async (req, res) => {
     return;
   }
 
+  row = await repairLegacyListingFields(row);
+
   const isExpired = !!(row.expires_at && new Date(row.expires_at) < new Date());
   const isOwner = !!(viewer && listingBelongsToUser(viewer.id, viewer, row));
+  const statusOk = !row.status || row.status === "active";
+  const moderationOk = !row.moderation_status || row.moderation_status === "approved";
 
-  if (isExpired && !isOwner) {
-    await purgeExpiredListingById(parsed.data.id);
-    res.status(404).json({ error: "Njoftimi ka skaduar" });
+  if (!isOwner && (!statusOk || !moderationOk || isExpired)) {
+    if (isExpired) {
+      await purgeExpiredListingById(parsed.data.id);
+    }
+    res.status(404).json({ error: "Not found" });
     return;
   }
 

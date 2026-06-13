@@ -151,7 +151,7 @@ export default function ListingDetail() {
   const tx = t as Record<string, string>;
   const { user } = useAuth();
 
-  const { data: listing, isLoading } = useGetListing(id, {
+  const { data: listing, isLoading, isFetching } = useGetListing(id, {
     query: {
       enabled: !!id,
       queryKey: [...getGetListingQueryKey(id), user?.id ?? "guest"],
@@ -392,7 +392,7 @@ export default function ListingDetail() {
     },
   });
 
-  if (isLoading) {
+  if (isLoading || (isFetching && !listing)) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Skeleton className="h-8 w-32 mb-6" />

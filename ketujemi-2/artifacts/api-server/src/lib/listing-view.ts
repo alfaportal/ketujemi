@@ -20,7 +20,9 @@ export async function incrementListingView(
   if (!row) return { ok: false, status: 404 };
 
   const isExpired = !!(row.expires_at && new Date(row.expires_at) < new Date());
-  if (isExpired || row.status !== "active") {
+  const statusOk = !row.status || row.status === "active";
+  const moderationOk = !row.moderation_status || row.moderation_status === "approved";
+  if (isExpired || !statusOk || !moderationOk) {
     return { ok: false, status: 404 };
   }
 
