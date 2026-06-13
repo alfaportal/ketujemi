@@ -581,21 +581,34 @@ export default function NewListing() {
   }, [activeUser, form, isAdminPostMode]);
 
   const applyImageAnalysis = useCallback(
-    (analysis: ListingImageAnalysis) => {
+    (analysis: ListingImageAnalysis): "full" | "partial" | "none" => {
       try {
         const cats = allCategories as Array<{ id: number; parent_id?: number | null }> | undefined;
+        const fieldOpts = { shouldDirty: true, shouldTouch: true, shouldValidate: true } as const;
+        const title = analysis.title?.trim() ?? "";
+        const description = analysis.description?.trim() ?? "";
+
+        if (title) form.setValue("title", title, fieldOpts);
+        if (description) form.setValue("description", description, fieldOpts);
+
+        if (!title && !description) return "none";
+
         if (!cats?.length) {
           lastImageAnalysisRef.current = analysis;
-          return;
+          return "partial";
         }
 
         const parentExists = cats.some(
           (c) => c.id === analysis.parent_category_id && (c.parent_id == null || c.parent_id === 0),
         );
         const categoryExists = cats.some((c) => c.id === analysis.category_id);
-        if (!parentExists || !categoryExists) {
+        const brandExists =
+          !analysis.brand_category_id ||
+          cats.some((c) => c.id === analysis.brand_category_id);
+
+        if (!parentExists || !categoryExists || !brandExists) {
           lastImageAnalysisRef.current = analysis;
-          return;
+          return "partial";
         }
 
         lastImageAnalysisRef.current = analysis;
@@ -604,9 +617,6 @@ export default function NewListing() {
         skipBrandCascadeRef.current = true;
         skipTitleSuggestRef.current = true;
 
-        const fieldOpts = { shouldDirty: true, shouldTouch: true, shouldValidate: true } as const;
-        form.setValue("title", analysis.title, fieldOpts);
-        form.setValue("description", analysis.description, fieldOpts);
         form.setValue("parent_category_id", analysis.parent_category_id, fieldOpts);
         form.setValue("category_id", analysis.category_id, fieldOpts);
         form.setValue("brand_category_id", analysis.brand_category_id ?? 0, fieldOpts);
@@ -614,8 +624,10 @@ export default function NewListing() {
         window.setTimeout(() => {
           skipTitleSuggestRef.current = false;
         }, 3000);
+        return "full";
       } catch (err) {
         console.warn("[KetuJemi] applyImageAnalysis skipped", err);
+        return "none";
       }
     },
     [form, allCategories],
@@ -663,15 +675,25 @@ export default function NewListing() {
         return false;
       }
       if (body.analysis) {
-        imageAnalyzedRef.current = true;
-        applyImageAnalysis(body.analysis);
-        return true;
+        const outcome = applyImageAnalysis(body.analysis);
+        if (outcome === "full") {
+          imageAnalyzedRef.current = true;
+          return true;
+        }
+        if (outcome === "partial") {
+          toast({
+            title: t.photoAnalyzeCategoryPartial,
+            description: t.photoAnalyzeFailedHint,
+          });
+          imageAnalyzedRef.current = false;
+          return true;
+        }
       }
       const fail = listingPhotoAnalyzeFailureToast(422, tx);
       toast(fail);
       return false;
     },
-    [applyImageAnalysis, skipListingImageAutofill, listingLang, myShop, toast, tx, isAdminPostMode],
+    [applyImageAnalysis, skipListingImageAutofill, listingLang, myShop, toast, tx, isAdminPostMode, t.photoAnalyzeCategoryPartial, t.photoAnalyzeFailedHint],
   );
 
   const analyzeUploadedImageFile = useCallback(
@@ -730,7 +752,11 @@ export default function NewListing() {
       toast({ title: t.uploadFailed, variant: "destructive" });
       return;
     }
-    const shouldAnalyze = imageUrls.length === 0 && !imageAnalyzedRef.current;
+    const titleEmpty = !form.getValues("title")?.trim();
+    const descEmpty = !form.getValues("description")?.trim();
+    const shouldAnalyze =
+      imageUrls.length === 0 &&
+      (!imageAnalyzedRef.current || (titleEmpty && descEmpty));
     const firstFileForAnalysis = shouldAnalyze ? files[0] : null;
     setIsUploading(true);
     try {
@@ -1212,6 +1238,9 @@ export default function NewListing() {
                         <p className="text-sm">
                           {isKerkojCategory ? t.kerkojFormClickPhoto : t.clickToSelect}
                         </p>
+                        {!isKerkojCategory && !isDhurataPostRoute && imageUrls.length === 0 ? (
+                          <p className="text-xs text-blue-500/90 max-w-xs">{t.analyzingPhotoHint}</p>
+                        ) : null}
                         <p className="text-sm text-gray-300">JPG, PNG, WEBP</p>
                       </div>
                     )}

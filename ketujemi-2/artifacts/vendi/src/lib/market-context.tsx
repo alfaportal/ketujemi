@@ -222,6 +222,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     photoAnalyzeUnavailable: "Analiza e fotos nuk është e disponueshme për momentin",
     photoAnalyzeUnavailableHint:
       "Plotësoni manualisht kategorinë, titullin dhe përshkrimin.",
+    photoAnalyzeCategoryPartial:
+      "Titulli dhe përshkrimi u plotësuan — zgjidh kategorinë manualisht nëse mungon.",
     firstPhotoAiHint:
       "📸 Ngarko foton e parë dhe sistemi jonë do të plotësojë automatikisht kategorinë, titullin dhe përshkrimin për ty — kursen kohë dhe e bën shpalljen më të lehtë!",
     firstPhotoAiHintShop:
@@ -479,6 +481,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     photoAnalyzeUnavailable: "Analiza e fotos nuk është e disponueshme për momentin",
     photoAnalyzeUnavailableHint:
       "Plotësoni manualisht kategorinë, titullin dhe përshkrimin.",
+    photoAnalyzeCategoryPartial:
+      "Titulli dhe përshkrimi u plotësuan — zgjidh kategorinë manualisht nëse mungon.",
     firstPhotoAiHint:
       "📸 Ngarko foton e parë dhe sistemi jonë do të plotësojë automatikisht kategorinë, titullin dhe përshkrimin për ty — kursen kohë dhe e bën shpalljen më të lehtë!",
     firstPhotoAiHintShop:
@@ -736,6 +740,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     photoAnalyzeUnavailable: "Анализата на фотографијата моментално не е достапна",
     photoAnalyzeUnavailableHint:
       "Пополнете рачно категорија, наслов и опис.",
+    photoAnalyzeCategoryPartial:
+      "Насловот и описот се пополнети — изберете ја категоријата рачно доколку недостасува.",
     firstPhotoAiHint:
       "📸 Прикачи ја првата фотографија и нашиот систем автоматски ќе ги пополни категоријата, насловот и описот — заштеди време и олесни го огласувањето!",
     firstPhotoAiHintShop:
@@ -993,6 +999,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     photoAnalyzeUnavailable: "Analiza fotografije trenutno nije dostupna",
     photoAnalyzeUnavailableHint:
       "Ručno popunite kategoriju, naslov i opis.",
+    photoAnalyzeCategoryPartial:
+      "Naslov i opis su popunjeni — ručno izaberite kategoriju ako nedostaje.",
     firstPhotoAiHint:
       "📸 Učitaj prvu fotografiju i naš sistem će automatski popuniti kategoriju, naslov i opis — uštedi vrijeme i olakšaj oglašavanje!",
     firstPhotoAiHintShop:
@@ -1207,6 +1215,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     photoAnalyzeUnavailable: "Photo analysis is temporarily unavailable",
     photoAnalyzeUnavailableHint:
       "Fill in category, title, and description manually.",
+    photoAnalyzeCategoryPartial:
+      "Title and description were filled — pick the category manually if missing.",
     choose: "Choose...",
     chooseYear: "Choose year...",
     chooseCity: "Choose city...",
