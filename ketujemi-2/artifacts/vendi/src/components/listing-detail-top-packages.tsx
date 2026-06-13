@@ -15,12 +15,19 @@ type ListingDetailTopPackagesProps = {
   listingId: number;
 };
 
-/** TOP boost accordion — listing detail page only (owner). */
+function topPackageTitleKey(id: TopPackageId): string {
+  return `ui_topPackage_${id}_title`;
+}
+
+function topPackageDescKey(id: TopPackageId): string {
+  return `ui_topPackage_${id}_desc`;
+}
+
+/** TOP boost — listing detail page only (owner). All tiers explained upfront. */
 export function ListingDetailTopPackages({ listingId }: ListingDetailTopPackagesProps) {
   const { t, uiLang } = useMarket();
   const tx = t as Record<string, string>;
   const { toast } = useToast();
-  const [openId, setOpenId] = useState<TopPackageId | null>(null);
   const [busyPurpose, setBusyPurpose] = useState<TopListingPurpose | null>(null);
   const [paymentsReady, setPaymentsReady] = useState(false);
   const [phase2Enabled, setPhase2Enabled] = useState(true);
@@ -44,10 +51,6 @@ export function ListingDetailTopPackages({ listingId }: ListingDetailTopPackages
 
   const blocked = !phase2Enabled || !paymentsReady;
 
-  function togglePackage(id: TopPackageId) {
-    setOpenId((prev) => (prev === id ? null : id));
-  }
-
   async function buy(purpose: TopListingPurpose) {
     if (blocked) return;
     setBusyPurpose(purpose);
@@ -62,14 +65,19 @@ export function ListingDetailTopPackages({ listingId }: ListingDetailTopPackages
     }
   }
 
-  const openPkg = TOP_PACKAGES_PUBLIC.find((p) => p.id === openId);
-
   return (
     <section
       className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50/80 to-white p-4 sm:p-5 space-y-4"
       aria-label={tx.ui_topPackagesAria}
     >
-      <p className="text-sm sm:text-base text-gray-800 leading-snug">{tx.ui_topPackagesIntro}</p>
+      <div className="space-y-1">
+        <p className="text-sm sm:text-base font-bold text-violet-950 flex items-center gap-1.5">
+          <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
+          {tx.ui_topPackagesSelectTitle}
+        </p>
+        <p className="text-xs sm:text-sm text-gray-700 leading-snug">{tx.ui_topPackagesIntro}</p>
+        <p className="text-[11px] sm:text-xs text-gray-500 leading-snug">{tx.ui_topPackagesCarouselDesc}</p>
+      </div>
 
       {!paymentsReady ? (
         <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
@@ -77,70 +85,61 @@ export function ListingDetailTopPackages({ listingId }: ListingDetailTopPackages
         </p>
       ) : null}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
         {TOP_PACKAGES_PUBLIC.map((pkg) => {
-          const isOpen = openId === pkg.id;
+          const busy = busyPurpose === pkg.purpose;
+          const title = tx[topPackageTitleKey(pkg.id)] ?? pkg.label;
+          const desc = tx[topPackageDescKey(pkg.id)] ?? "";
           return (
-            <button
+            <div
               key={pkg.id}
-              type="button"
-              onClick={() => togglePackage(pkg.id)}
               className={cn(
-                "min-h-11 px-4 rounded-xl border-2 text-sm font-black inline-flex items-center gap-1.5 touch-manipulation transition-colors",
-                isOpen
-                  ? "border-violet-500 bg-violet-100 text-violet-900"
-                  : "border-violet-200 bg-white text-violet-900 hover:border-violet-400 hover:bg-violet-50/60",
+                "rounded-xl border-2 p-3.5 flex flex-col gap-2 min-h-[10.5rem]",
+                blocked
+                  ? "border-gray-200 bg-gray-50 text-gray-400"
+                  : "border-violet-200 bg-white",
               )}
-              aria-expanded={isOpen}
             >
-              <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
-              €{pkg.priceEur}
-            </button>
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="text-2xl font-black text-violet-900">€{pkg.priceEur}</p>
+                <span className="text-[10px] font-bold uppercase tracking-wide text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full">
+                  {fillPlaceholders(tx.ui_topPackagesValidDays, { days: pkg.days })}
+                </span>
+              </div>
+              <p className="text-sm font-bold text-gray-900 leading-snug">{title}</p>
+              {desc ? (
+                <p className="text-[11px] text-gray-600 leading-snug flex-1">{desc}</p>
+              ) : null}
+              <p className="text-[10px] text-gray-500">
+                {fillPlaceholders(tx.ui_topPackagesHomepageLabel, { label: pkg.label })}
+              </p>
+              <button
+                type="button"
+                disabled={blocked || (busyPurpose != null && !busy)}
+                onClick={() => void buy(pkg.purpose)}
+                className={cn(
+                  "w-full min-h-10 rounded-lg font-semibold text-xs inline-flex items-center justify-center gap-1.5 touch-manipulation",
+                  blocked
+                    ? "bg-gray-100 text-gray-400 border border-gray-200"
+                    : "bg-violet-600 hover:bg-violet-700 text-white",
+                )}
+              >
+                {busy ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+                ) : (
+                  <CreditCard className="h-3.5 w-3.5" aria-hidden />
+                )}
+                {tx.ui_payWithCard}
+              </button>
+            </div>
           );
         })}
       </div>
 
-      {openPkg ? (
-        <div className="rounded-xl border-2 border-violet-200 bg-white p-4 space-y-3">
-          <p className="text-xs font-bold text-violet-900 flex items-center gap-1.5">
-            <Sparkles className="h-4 w-4" aria-hidden />
-            {tx.ui_topPackagesSelectTitle}
-          </p>
-          <p className="text-[11px] sm:text-xs text-gray-600 leading-snug">{tx.ui_topPackagesCarouselDesc}</p>
-          <p className="text-xs text-gray-500">{tx.ui_cardPaymentsDesc}</p>
-          <div>
-            <p className="text-2xl font-black text-violet-900">€{openPkg.priceEur}</p>
-            <p className="text-sm font-bold text-gray-800">
-              {fillPlaceholders(tx.ui_topPackagesHomepageLabel, { label: openPkg.label })}
-            </p>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {fillPlaceholders(tx.ui_topPackagesValidDays, { days: openPkg.days })}
-            </p>
-          </div>
-          <button
-            type="button"
-            disabled={blocked || busyPurpose != null}
-            onClick={() => void buy(openPkg.purpose)}
-            className={cn(
-              "w-full sm:w-auto min-h-11 px-5 rounded-xl font-semibold text-sm inline-flex items-center justify-center gap-2 touch-manipulation",
-              blocked
-                ? "bg-gray-100 text-gray-400 border border-gray-200"
-                : "bg-violet-600 hover:bg-violet-700 text-white",
-            )}
-          >
-            {busyPurpose === openPkg.purpose ? (
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-            ) : (
-              <CreditCard className="h-4 w-4" aria-hidden />
-            )}
-            {tx.ui_payWithCard}
-          </button>
-          {!phase2Enabled ? (
-            <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-              {tx.ui_topPackagesPhase2Soon}
-            </p>
-          ) : null}
-        </div>
+      {!phase2Enabled ? (
+        <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+          {tx.ui_topPackagesPhase2Soon}
+        </p>
       ) : null}
     </section>
   );

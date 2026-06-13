@@ -43,15 +43,17 @@ export function TopListingPackages({
 
   if (compact) {
     return (
-      <div className="flex flex-wrap items-center gap-1.5">
-        {TOP_PACKAGES_PUBLIC.map((pkg) => (
+      <div className="flex flex-wrap items-stretch gap-2">
+        {TOP_PACKAGES_PUBLIC.map((pkg) => {
+          const title = tx[`ui_topPackage_${pkg.id}_title`] ?? pkg.label;
+          return (
           <button
             key={pkg.id}
             type="button"
             disabled={blocked || busyPurpose != null}
             onClick={() => void buy(pkg.purpose)}
             className={cn(
-              "min-h-10 px-2.5 rounded-lg border text-xs font-bold inline-flex items-center gap-1 touch-manipulation",
+              "min-h-[3.25rem] px-3 py-2 rounded-lg border text-left touch-manipulation flex flex-col justify-center gap-0.5 min-w-[5.5rem]",
               blocked
                 ? "border-gray-200 text-gray-400 bg-white"
                 : "border-violet-200 text-violet-900 bg-white hover:bg-violet-50",
@@ -61,17 +63,23 @@ export function TopListingPackages({
                 ? tx.ui_topPhase2Compact
                 : !paymentsReady
                   ? tx.ui_cardPaymentsNotConfigured
-                  : `TOP ${pkg.label} — €${pkg.priceEur}`
+                  : tx[`ui_topPackage_${pkg.id}_desc`] ?? `TOP ${pkg.label} — €${pkg.priceEur}`
             }
           >
-            {busyPurpose === pkg.purpose ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Sparkles className="h-3.5 w-3.5" />
-            )}
-            €{pkg.priceEur}
+            <span className="inline-flex items-center gap-1 text-sm font-black">
+              {busyPurpose === pkg.purpose ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5" />
+              )}
+              €{pkg.priceEur}
+            </span>
+            <span className="text-[10px] font-semibold text-gray-600 leading-tight line-clamp-2">
+              {title}
+            </span>
           </button>
-        ))}
+          );
+        })}
       </div>
     );
   }
@@ -86,6 +94,8 @@ export function TopListingPackages({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         {TOP_PACKAGES_PUBLIC.map((pkg) => {
           const busy = busyPurpose === pkg.purpose;
+          const title = tx[`ui_topPackage_${pkg.id}_title`] ?? pkg.label;
+          const desc = tx[`ui_topPackage_${pkg.id}_desc`] ?? "";
           return (
             <button
               key={pkg.id}
@@ -101,9 +111,10 @@ export function TopListingPackages({
             >
               <div>
                 <p className="text-lg font-black text-violet-900">€{pkg.priceEur}</p>
-                <p className="text-sm font-bold text-gray-800">
-                  {fillPlaceholders(tx.ui_topPackagesHomepageLabel, { label: pkg.label })}
-                </p>
+                <p className="text-sm font-bold text-gray-800">{title}</p>
+                {desc ? (
+                  <p className="text-[11px] text-gray-600 mt-0.5 leading-snug">{desc}</p>
+                ) : null}
                 <p className="text-[11px] text-gray-500 mt-0.5">
                   {fillPlaceholders(tx.ui_topPackagesValidDays, { days: pkg.days })}
                 </p>

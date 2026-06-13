@@ -2177,6 +2177,15 @@ const AL_OVERRIDES: Record<string, string> = {
     "Njoftimi shfaqet në karuselin «TOP Njoftime» në kryefaqe (poshtë partnerëve VIP). Zgjidh paketën — pas pagesës me kartë vlen për ditët e shënuara.",
   ui_topPackagesHomepageLabel: "{label} në kryefaqe",
   ui_topPackagesValidDays: "Vlen {days} ditë nga pagesa",
+  ui_topPackage_s_title: "Starter — 4 ditë në kryefaqe",
+  ui_topPackage_s_desc:
+    "Shpallja shfaqet në karuselin «TOP Njoftime» (poshtë partnerëve VIP) për 4 ditë. Ideale për shitje të shpejtë.",
+  ui_topPackage_m_title: "Standard — 15 ditë në kryefaqe",
+  ui_topPackage_m_desc:
+    "E njëjta shfaqje TOP në kryefaqe, por për 15 ditë — më shumë shikime gjatë dy javëve.",
+  ui_topPackage_l_title: "Premium — 30 ditë në kryefaqe",
+  ui_topPackage_l_desc:
+    "Maksimumi i dukshmërisë: 30 ditë në karuselin TOP të kryefaqes — një muaj para të gjithëve.",
   ui_payWithCard: "Paguaj me kartë",
   ui_topPackagesPhase2Soon: "TOP aktivizohet së shpejti (Faza 2).",
   ui_topPaymentFailed: "Pagesa TOP dështoi",
@@ -4304,6 +4313,15 @@ const MK_EXTRA: Record<string, string> = {
     "Оglasот се прикажува во каруселот «TOP Njoftime» на почетна (под VIP партнерите). Изберете пакет — по плаќање со картичка важи за наведените денови.",
   ui_topPackagesHomepageLabel: "{label} на почетна",
   ui_topPackagesValidDays: "Важи {days} дена од плаќањето",
+  ui_topPackage_s_title: "Starter — 4 дена на почетна",
+  ui_topPackage_s_desc:
+    "Огласот се прикажува во каруселот «TOP Njoftime» (под VIP партнерите) 4 дена. Идеално за брза продажба.",
+  ui_topPackage_m_title: "Standard — 15 дена на почетна",
+  ui_topPackage_m_desc:
+    "Иста TOP приказ на почетна, но 15 дена — повеќе прегледи во две недели.",
+  ui_topPackage_l_title: "Premium — 30 дена на почетна",
+  ui_topPackage_l_desc:
+    "Максимална видливост: 30 дена во TOP каруселот на почетна — цел месец пред сите.",
   ui_payWithCard: "Плати со картичка",
   ui_topPackagesPhase2Soon: "TOP наскоро се активира (Фаза 2).",
   ui_topPaymentFailed: "TOP плаќањето не успеа",
@@ -6431,6 +6449,15 @@ const MNE_EXTRA: Record<string, string> = {
     "Oglas se prikazuje u karuselu «TOP Njoftime» na početnoj (ispod VIP partnera). Odaberite paket — nakon plaćanja karticom važi za navedene dane.",
   ui_topPackagesHomepageLabel: "{label} na početnoj",
   ui_topPackagesValidDays: "Važi {days} dana od plaćanja",
+  ui_topPackage_s_title: "Starter — 4 dana na početnoj",
+  ui_topPackage_s_desc:
+    "Oglas se prikazuje u karuselu «TOP Njoftime» (ispod VIP partnera) 4 dana. Idealno za brzu prodaju.",
+  ui_topPackage_m_title: "Standard — 15 dana na početnoj",
+  ui_topPackage_m_desc:
+    "Isti TOP prikaz na početnoj, ali 15 dana — više pregleda tokom dve sedmice.",
+  ui_topPackage_l_title: "Premium — 30 dana na početnoj",
+  ui_topPackage_l_desc:
+    "Maksimalna vidljivost: 30 dana u TOP karuselu na početnoj — cijeli mjesec ispred svih.",
   ui_payWithCard: "Plati karticom",
   ui_topPackagesPhase2Soon: "TOP se uskoro aktivira (Faza 2).",
   ui_topPaymentFailed: "TOP plaćanje nije uspjelo",
