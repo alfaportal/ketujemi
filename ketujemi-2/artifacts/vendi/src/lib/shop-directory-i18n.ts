@@ -35,6 +35,9 @@ export type ShopDirectoryCopy = {
   introP1: string;
   introP2: string;
   introP3: string;
+  introApplyTitle: string;
+  introApplyText: string;
+  introApplyBtn: string;
   searchPlaceholder: string;
   searchBtn: string;
   filterCity: string;
@@ -181,6 +184,10 @@ const KS: ShopDirectoryCopy = {
     "Ti nuk ke nevojë të ecësh nëpër treg, të telefonosh pa fund, apo të humbasësh kohë — me një kërkim të shpejtë gjen dyqanin që të duhet, sheh produktet që ofron, dhe kontakton direkt me pronarin — pa ndërmjetës, pa komision, pa vonesë!",
   introP3:
     "Të gjitha dyqanet në KetuJemi janë të verifikuara nga stafi ynë — kështu që ti mund të blesh me besim dhe siguri të plotë! ✅",
+  introApplyTitle: "Ke biznes ose dyqan?",
+  introApplyText:
+    "Apliko për dyqanin tënd dixhital — stafi ynë e shqyrton kërkesën dhe e aktivizon brenda 24 orëve.",
+  introApplyBtn: "🏪 Apliko për dyqan →",
   searchPlaceholder: "🔍 Kërko dyqan... p.sh. mobilje, telefon, këpucë",
   searchBtn: "Kërko",
   filterCity: "Qyteti",
@@ -220,6 +227,10 @@ const MK: ShopDirectoryCopy = {
     "Не мора да шеташ низ пазарот, бесконечно да телефонираш или да губиш време — со едно брзо пребарување го наоѓаш продавницата што ти треба, ги гледаш понудените производи и директно контактираш со сопственикот — без посредник, без провизија, без доцнење!",
   introP3:
     "Сите продавници на KetuJemi се верификувани од нашиот тим — така што можеш да купуваш со целосно доверба и сигурност! ✅",
+  introApplyTitle: "Имате бизнис или продавница?",
+  introApplyText:
+    "Аплицирајте за вашата дигитална продавница — тимот ја разгледува барањето и ја активира во рок од 24 часа.",
+  introApplyBtn: "🏪 Аплицирај за продавница →",
   searchPlaceholder: "🔍 Пребарај продавница... нпр. мебел, телефон, обувки",
   searchBtn: "Пребарај",
   filterCity: "Град",
@@ -259,6 +270,10 @@ const MNE: ShopDirectoryCopy = {
     "Ne moraš šetati pijacu, beskonačno zvati ili gubiti vrijeme — jednom brzom pretragom nalaziš prodavnicu koja ti treba, vidiš proizvode koje nudi i direktno kontaktiraš vlasnika — bez posrednika, bez provizije, bez čekanja!",
   introP3:
     "Sve prodavnice na KetuJemi su verifikovane od strane našeg tima — tako da možeš kupovati sa potpunim povjerenjem i sigurnošću! ✅",
+  introApplyTitle: "Imate biznis ili prodavnicu?",
+  introApplyText:
+    "Prijavite se za svoju digitalnu prodavnicu — tim pregleda zahtjev i aktivira je u roku od 24 sata.",
+  introApplyBtn: "🏪 Prijavi se za prodavnicu →",
   searchPlaceholder: "🔍 Pretraži prodavnicu... npr. namještaj, telefon, cipele",
   searchBtn: "Pretraži",
   filterCity: "Grad",
@@ -298,6 +313,10 @@ const EN: ShopDirectoryCopy = {
     "You don't need to walk through markets, make endless calls, or waste time — with one quick search you find the shop you need, see what they offer, and contact the owner directly — no middleman, no commission, no delay!",
   introP3:
     "All shops on KetuJemi are verified by our team — so you can buy with full confidence and peace of mind! ✅",
+  introApplyTitle: "Have a business or shop?",
+  introApplyText:
+    "Apply for your digital shop — our team reviews your request and activates it within 24 hours.",
+  introApplyBtn: "🏪 Apply for a shop →",
   searchPlaceholder: "🔍 Search shops... e.g. furniture, phone, shoes",
   searchBtn: "Search",
   filterCity: "City",
@@ -337,6 +356,10 @@ const IT: ShopDirectoryCopy = {
     "Non devi girare per i mercati, telefonare all'infinito o perdere tempo — con una ricerca veloce trovi il negozio che ti serve, vedi cosa offre e contatti direttamente il proprietario — senza intermediari, senza commissioni, senza attese!",
   introP3:
     "Tutti i negozi su KetuJemi sono verificati dal nostro team — così puoi acquistare con piena fiducia e tranquillità! ✅",
+  introApplyTitle: "Hai un'attività o un negozio?",
+  introApplyText:
+    "Richiedi il tuo negozio digitale — il nostro team esamina la richiesta e lo attiva entro 24 ore.",
+  introApplyBtn: "🏪 Richiedi un negozio →",
   searchPlaceholder: "🔍 Cerca negozio... es. mobili, telefono, scarpe",
   searchBtn: "Cerca",
   filterCity: "Città",
@@ -376,6 +399,10 @@ const DE: ShopDirectoryCopy = {
     "Sie müssen nicht über Märkte laufen, endlos telefonieren oder Zeit verlieren — mit einer schnellen Suche finden Sie den Shop, den Sie brauchen, sehen das Angebot und kontaktieren den Inhaber direkt — ohne Vermittler, ohne Provision, ohne Verzögerung!",
   introP3:
     "Alle Shops auf KetuJemi werden von unserem Team verifiziert — kaufen Sie mit vollem Vertrauen und Sicherheit! ✅",
+  introApplyTitle: "Haben Sie ein Geschäft oder einen Shop?",
+  introApplyText:
+    "Beantragen Sie Ihren digitalen Shop — unser Team prüft die Anfrage und aktiviert ihn innerhalb von 24 Stunden.",
+  introApplyBtn: "🏪 Shop beantragen →",
   searchPlaceholder: "🔍 Shop suchen... z. B. Möbel, Telefon, Schuhe",
   searchBtn: "Suchen",
   filterCity: "Stadt",
@@ -415,6 +442,10 @@ const FR: ShopDirectoryCopy = {
     "Pas besoin de parcourir les marchés, d'appeler sans fin ou de perdre du temps — une recherche rapide suffit pour trouver la boutique qu'il vous faut, voir ses produits et contacter directement le propriétaire — sans intermédiaire, sans commission, sans attente !",
   introP3:
     "Toutes les boutiques sur KetuJemi sont vérifiées par notre équipe — achetez donc en toute confiance ! ✅",
+  introApplyTitle: "Vous avez un commerce ou une boutique ?",
+  introApplyText:
+    "Demandez votre boutique digitale — notre équipe examine la demande et l'active sous 24 heures.",
+  introApplyBtn: "🏪 Demander une boutique →",
   searchPlaceholder: "🔍 Rechercher une boutique... ex. mobilier, téléphone, chaussures",
   searchBtn: "Rechercher",
   filterCity: "Ville",
