@@ -52,6 +52,13 @@ import { moderateListingContent } from "../lib/listing-ai-moderation";
 import { logListingModerationRejection } from "../lib/listing-moderation-rejection-log";
 import { parseUiLang } from "../lib/claude-client";
 import { effectiveListingSearchQuery } from "../../../../lib/listing-search-query.js";
+import {
+  buildListingTokenMatchCondition,
+  listingSearchTokens,
+  listingTitleMatchScoreSql,
+  resolveListingHubSlug,
+  resolveSearchTokenCategories,
+} from "../../../../lib/listing-search-match.js";
 import { handleSellerComplaint } from "../lib/violation-escalation";
 import { deleteListingCascade } from "../lib/delete-listing-cascade";
 import type { User } from "@workspace/db";
@@ -229,9 +236,48 @@ router.get("/listings", searchLimiter, async (req, res) => {
   const searchTerm = effectiveListingSearchQuery(
     typeof search === "string" ? search : search != null ? String(search) : "",
   );
-  if (searchTerm) {
-    const term = `%${searchTerm}%`;
-    conditions.push(or(ilike(listingsTable.title, term), ilike(listingsTable.description, term))!);
+  const hubSlug = searchTerm ? resolveListingHubSlug(searchTerm) : null;
+  const searchTokens = searchTerm && !hubSlug ? listingSearchTokens(searchTerm) : [];
+
+  if (hubSlug) {
+    const [hubCat] = await db
+      .select({ id: categoriesTable.id })
+      .from(categoriesTable)
+      .where(and(eq(categoriesTable.slug, hubSlug), isNull(categoriesTable.parent_id)))
+      .limit(1);
+    if (hubCat) {
+      const hubTreeIds = await getCategoryTreeIds(hubCat.id);
+      if (hubTreeIds.length > 0) {
+        conditions.push(inArray(listingsTable.category_id, hubTreeIds));
+      } else {
+        conditions.push(eq(listingsTable.category_id, hubCat.id));
+      }
+    }
+  } else if (searchTokens.length > 0) {
+    const searchCats = await db
+      .select({
+        id: categoriesTable.id,
+        name: categoriesTable.name,
+        parent_id: categoriesTable.parent_id,
+        slug: categoriesTable.slug,
+      })
+      .from(categoriesTable);
+    const resolutionByToken = await resolveSearchTokenCategories(
+      searchTokens,
+      searchCats,
+      getCategoryTreeIds,
+    );
+    const searchCond = buildListingTokenMatchCondition(
+      searchTokens,
+      {
+        title: listingsTable.title,
+        description: listingsTable.description,
+        vehicleModel: listingsTable.vehicle_model,
+        categoryId: listingsTable.category_id,
+      },
+      resolutionByToken,
+    );
+    if (searchCond) conditions.push(searchCond);
   }
 
   if (year_min != null) {
@@ -341,13 +387,18 @@ router.get("/listings", searchLimiter, async (req, res) => {
 
   const where = and(...conditions);
 
+  const feedOrder =
+    searchTokens.length > 0
+      ? [desc(listingTitleMatchScoreSql(listingsTable.title, searchTokens[0]!)), ...listingFeedOrderBy]
+      : listingFeedOrderBy;
+
   const [totalResult, rows] = await Promise.all([
     db.select({ total: count() }).from(listingsTable).where(where),
     db
       .select()
       .from(listingsTable)
       .where(where)
-      .orderBy(...listingFeedOrderBy)
+      .orderBy(...feedOrder)
       .limit(limit)
       .offset((page - 1) * limit),
   ]);

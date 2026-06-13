@@ -19,7 +19,7 @@ test.describe("integration @integration", () => {
   });
 
   test("listings search q=Golf returns at least one result", async ({ page }) => {
-    await page.goto("/listings?q=Golf");
+    await page.goto("/listings?search=Golf");
     const results = page.locator('[data-testid^="card-listing-"]');
     await expect(results.first()).toBeVisible({ timeout: 30_000 });
     expect(await results.count()).toBeGreaterThanOrEqual(1);
@@ -36,7 +36,7 @@ test.describe("integration @integration", () => {
   });
 
   test("listing detail opens from search results", async ({ page }) => {
-    await page.goto("/listings?q=Golf");
+    await page.goto("/listings?search=Golf");
     const card = page.locator('[data-testid^="card-listing-"]').first();
     await expect(card).toBeVisible({ timeout: 30_000 });
     await card.click();

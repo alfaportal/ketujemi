@@ -40,6 +40,24 @@ function SkeletonCard() {
 // --- Main Component ---
 const PAGE_SIZE = 16;
 
+function listingsUrlFromState(state: {
+  search?: string;
+  categoryId?: string;
+  loc?: string;
+  minPrice?: string;
+  maxPrice?: string;
+}): string {
+  const params = new URLSearchParams();
+  const q = effectiveListingSearchQuery(state.search ?? "");
+  if (q) params.set("search", q);
+  if (state.categoryId && state.categoryId !== "all") params.set("category_id", state.categoryId);
+  if (state.loc && state.loc !== "all") params.set("location", state.loc);
+  if (state.minPrice) params.set("min_price", state.minPrice);
+  if (state.maxPrice) params.set("max_price", state.maxPrice);
+  const qs = params.toString();
+  return qs ? `/listings?${qs}` : "/listings";
+}
+
 export default function Listings() {
   const [, setLocation] = useLocation();
   const goToPostListing = useGoToPostListing();
@@ -47,7 +65,7 @@ export default function Listings() {
   const locale = translationKeyForUiLang(uiLang);
   const shopCopy = useShopDirectoryCopy();
   const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
-  const initialSearchRaw = searchParams.get("search") ?? "";
+  const initialSearchRaw = searchParams.get("search") ?? searchParams.get("q") ?? "";
   const initialSearch = effectiveListingSearchQuery(initialSearchRaw);
 
   const [search, setSearch] = useState(initialSearchRaw);
@@ -86,18 +104,48 @@ export default function Listings() {
 
   const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1;
 
-  const applyFilters = (e?: React.FormEvent) => {
+  const applyQuickSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
-    setAppliedSearch(effectiveListingSearchQuery(search));
-    setAppliedCategory(categoryId);
-    setAppliedLoc(loc); setAppliedMinPrice(minPrice); setAppliedMaxPrice(maxPrice);
+    const q = effectiveListingSearchQuery(search);
+    setCategoryId("");
+    setLoc("");
+    setMinPrice("");
+    setMaxPrice("");
+    setAppliedSearch(q);
+    setAppliedCategory("");
+    setAppliedLoc("");
+    setAppliedMinPrice("");
+    setAppliedMaxPrice("");
     setPage(1);
+    setLocation(listingsUrlFromState({ search: q }));
+  };
+
+  const applyPanelFilters = () => {
+    const q = effectiveListingSearchQuery(search);
+    setAppliedSearch(q);
+    setAppliedCategory(categoryId);
+    setAppliedLoc(loc);
+    setAppliedMinPrice(minPrice);
+    setAppliedMaxPrice(maxPrice);
+    setPage(1);
+    setLocation(
+      listingsUrlFromState({ search: q, categoryId, loc, minPrice, maxPrice }),
+    );
   };
 
   const clearFilters = () => {
-    setSearch(""); setCategoryId(""); setLoc(""); setMinPrice(""); setMaxPrice("");
-    setAppliedSearch(""); setAppliedCategory(""); setAppliedLoc(""); setAppliedMinPrice(""); setAppliedMaxPrice("");
+    setSearch("");
+    setCategoryId("");
+    setLoc("");
+    setMinPrice("");
+    setMaxPrice("");
+    setAppliedSearch("");
+    setAppliedCategory("");
+    setAppliedLoc("");
+    setAppliedMinPrice("");
+    setAppliedMaxPrice("");
     setPage(1);
+    setLocation("/listings");
   };
 
   const hasActiveFilters = !!(
@@ -152,7 +200,7 @@ export default function Listings() {
       <SiteHeader className="z-30">
         <div className="flex w-full flex-col gap-3 pt-1 lg:flex-row lg:items-stretch lg:gap-4">
           <form
-            onSubmit={applyFilters}
+            onSubmit={applyQuickSearch}
             className="flex min-w-0 flex-1 flex-col gap-2 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:flex-nowrap sm:gap-2"
           >
             <p className="text-xs font-bold uppercase tracking-wide text-gray-500 sm:hidden">
@@ -333,7 +381,7 @@ export default function Listings() {
               <button
                 type="button"
                 data-testid="button-apply-filters"
-                onClick={() => { applyFilters(); setShowFilters(false); }}
+                onClick={() => { applyPanelFilters(); setShowFilters(false); }}
                 className={cnPrimaryBlue("w-full sm:w-auto")}
               >
                 {t.apply}
@@ -348,25 +396,66 @@ export default function Listings() {
             {appliedSearch && (
               <span className="flex items-center gap-1.5 bg-blue-50 text-blue-700 text-sm font-semibold px-3 py-1.5 rounded-full border border-blue-200">
                 {appliedSearch}
-                <X size={12} className="cursor-pointer hover:text-blue-900" onClick={() => { setSearch(""); setAppliedSearch(""); setPage(1); }} />
+                <X size={12} className="cursor-pointer hover:text-blue-900" onClick={() => {
+                  setSearch("");
+                  setAppliedSearch("");
+                  setPage(1);
+                  setLocation(listingsUrlFromState({
+                    categoryId: appliedCategory,
+                    loc: appliedLoc,
+                    minPrice: appliedMinPrice,
+                    maxPrice: appliedMaxPrice,
+                  }));
+                }} />
               </span>
             )}
             {selectedCategory && (
               <span className="flex items-center gap-1.5 bg-purple-50 text-purple-700 text-sm font-semibold px-3 py-1.5 rounded-full border border-purple-200">
                 {translateCategory(selectedCategory.name, locale)}
-                <X size={12} className="cursor-pointer hover:text-purple-900" onClick={() => { setCategoryId(""); setAppliedCategory(""); setPage(1); }} />
+                <X size={12} className="cursor-pointer hover:text-purple-900" onClick={() => {
+                  setCategoryId("");
+                  setAppliedCategory("");
+                  setPage(1);
+                  setLocation(listingsUrlFromState({
+                    search: appliedSearch,
+                    loc: appliedLoc,
+                    minPrice: appliedMinPrice,
+                    maxPrice: appliedMaxPrice,
+                  }));
+                }} />
               </span>
             )}
             {appliedLoc && appliedLoc !== "all" && (
               <span className="flex items-center gap-1.5 bg-green-50 text-green-700 text-sm font-semibold px-3 py-1.5 rounded-full border border-green-200">
                 {appliedLoc}
-                <X size={12} className="cursor-pointer hover:text-green-900" onClick={() => { setLoc(""); setAppliedLoc(""); setPage(1); }} />
+                <X size={12} className="cursor-pointer hover:text-green-900" onClick={() => {
+                  setLoc("");
+                  setAppliedLoc("");
+                  setPage(1);
+                  setLocation(listingsUrlFromState({
+                    search: appliedSearch,
+                    categoryId: appliedCategory,
+                    minPrice: appliedMinPrice,
+                    maxPrice: appliedMaxPrice,
+                  }));
+                }} />
               </span>
             )}
             {(appliedMinPrice || appliedMaxPrice) && (
               <span className="flex items-center gap-1.5 bg-amber-50 text-amber-700 text-sm font-semibold px-3 py-1.5 rounded-full border border-amber-200">
                 {appliedMinPrice || "0"} – {appliedMaxPrice || "∞"} {market.symbol}
-                <X size={12} className="cursor-pointer hover:text-amber-900" onClick={() => { setMinPrice(""); setMaxPrice(""); setAppliedMinPrice(""); setAppliedMaxPrice(""); setPage(1); }} />
+                <X size={12} className="cursor-pointer hover:text-amber-900" onClick={() => {
+                  setMinPrice("");
+                  setMaxPrice("");
+                  setAppliedMinPrice("");
+                  setAppliedMaxPrice("");
+                  setPage(1);
+                  setLocation(listingsUrlFromState({
+                    search: appliedSearch,
+                    categoryId: appliedCategory,
+                    loc: appliedLoc,
+                  }));
+                }} />
               </span>
             )}
           </div>
