@@ -1,4 +1,5 @@
 const DRAFT_KEY = "vendi_listing_post_draft_v2";
+const DRAFT_LOCAL_KEY = "vendi_listing_post_draft_local_v2";
 const LEGACY_IMAGES_KEY = "vendi_listing_draft_images_v1";
 const ACTIVE_SESSION_KEY = "vendi_listing_post_active_v1";
 const MAX_DRAFT_IMAGES = 12;
@@ -45,10 +46,39 @@ function readLegacyImages(): string[] {
   }
 }
 
+function readFromStorage(kind: "session" | "local"): ListingPostDraft | null {
+  if (typeof window === "undefined") return null;
+  const store = kind === "session" ? sessionStorage : localStorage;
+  return parseDraft(store.getItem(DRAFT_KEY));
+}
+
+function writeToStorage(
+  kind: "session" | "local",
+  payload: ListingPostDraft,
+  images: string[],
+): void {
+  if (typeof window === "undefined") return;
+  const store = kind === "session" ? sessionStorage : localStorage;
+  try {
+    store.setItem(DRAFT_KEY, JSON.stringify(payload));
+    if (kind === "session") {
+      store.setItem(LEGACY_IMAGES_KEY, JSON.stringify(images));
+    }
+  } catch {
+    /* quota */
+  }
+}
+
+/** Prefer freshest draft from session or local backup. */
 export function readListingPostDraft(): ListingPostDraft | null {
   if (typeof window === "undefined") return null;
-  const current = parseDraft(sessionStorage.getItem(DRAFT_KEY));
-  if (current) return current;
+  const sessionDraft = readFromStorage("session");
+  const localDraft = readFromStorage("local");
+  if (sessionDraft && localDraft) {
+    return sessionDraft.updatedAt >= localDraft.updatedAt ? sessionDraft : localDraft;
+  }
+  if (sessionDraft) return sessionDraft;
+  if (localDraft) return localDraft;
   const legacyImages = readLegacyImages();
   if (legacyImages.length === 0) return null;
   return { images: legacyImages, videoUrl: null, updatedAt: Date.now() };
@@ -63,27 +93,22 @@ export function writeListingPostDraft(draft: {
   videoUrl?: string | null;
 }): void {
   if (typeof window === "undefined") return;
-  try {
-    const images = draft.images.filter((u) => u.trim().length > 0).slice(0, MAX_DRAFT_IMAGES);
-    const videoUrl =
-      typeof draft.videoUrl === "string" && draft.videoUrl.trim().length > 0
-        ? draft.videoUrl.trim()
-        : null;
-    if (images.length === 0 && !videoUrl) {
-      sessionStorage.removeItem(DRAFT_KEY);
-      sessionStorage.removeItem(LEGACY_IMAGES_KEY);
-      return;
-    }
-    const payload: ListingPostDraft = {
-      images,
-      videoUrl,
-      updatedAt: Date.now(),
-    };
-    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
-    sessionStorage.setItem(LEGACY_IMAGES_KEY, JSON.stringify(images));
-  } catch {
-    /* quota / private mode */
+  const images = draft.images.filter((u) => u.trim().length > 0).slice(0, MAX_DRAFT_IMAGES);
+  const videoUrl =
+    typeof draft.videoUrl === "string" && draft.videoUrl.trim().length > 0
+      ? draft.videoUrl.trim()
+      : null;
+  if (images.length === 0 && !videoUrl) {
+    clearListingPostDraft();
+    return;
   }
+  const payload: ListingPostDraft = {
+    images,
+    videoUrl,
+    updatedAt: Date.now(),
+  };
+  writeToStorage("session", payload, images);
+  writeToStorage("local", payload, images);
 }
 
 export function writeListingDraftImageUrls(urls: string[]): void {
@@ -99,6 +124,8 @@ export function clearListingPostDraft(): void {
   try {
     sessionStorage.removeItem(DRAFT_KEY);
     sessionStorage.removeItem(LEGACY_IMAGES_KEY);
+    localStorage.removeItem(DRAFT_KEY);
+    localStorage.removeItem(DRAFT_LOCAL_KEY);
   } catch {
     /* ignore */
   }
@@ -116,6 +143,7 @@ export function markListingPostSessionActive(): void {
   if (typeof window === "undefined") return;
   try {
     sessionStorage.setItem(ACTIVE_SESSION_KEY, String(Date.now()));
+    localStorage.setItem(ACTIVE_SESSION_KEY, String(Date.now()));
   } catch {
     /* ignore */
   }
@@ -125,6 +153,7 @@ export function clearListingPostSessionActive(): void {
   if (typeof window === "undefined") return;
   try {
     sessionStorage.removeItem(ACTIVE_SESSION_KEY);
+    localStorage.removeItem(ACTIVE_SESSION_KEY);
   } catch {
     /* ignore */
   }
@@ -133,7 +162,10 @@ export function clearListingPostSessionActive(): void {
 export function wasListingPostSessionInterrupted(): boolean {
   if (typeof window === "undefined") return false;
   try {
-    return sessionStorage.getItem(ACTIVE_SESSION_KEY) != null && hasListingPostDraft();
+    const active =
+      sessionStorage.getItem(ACTIVE_SESSION_KEY) != null
+      || localStorage.getItem(ACTIVE_SESSION_KEY) != null;
+    return active && hasListingPostDraft();
   } catch {
     return false;
   }

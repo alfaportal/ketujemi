@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   fetchWithTimeout,
   getFetchErrorMessage,
-  IMAGE_ANALYZE_TIMEOUT_MS,
 } from "@/lib/fetch-with-timeout";
 import { Link, useLocation } from "wouter";
 import { useForm, useWatch } from "react-hook-form";
@@ -54,7 +53,7 @@ import { ListingCountryPicker } from "@/components/listing-country-picker";
 import { ListingCategorySuggest } from "@/components/listing-category-suggest";
 import { ListingDescriptionHelper } from "@/components/listing-description-helper";
 import { joinListingImageUrls } from "@/lib/listing-images";
-import { fileToVisionBase64, type ListingImageAnalysis } from "@/lib/listing-image-vision";
+import { type ListingImageAnalysis } from "@/lib/listing-image-vision";
 import {
   clearListingPostDraft,
   clearListingPostSessionActive,
@@ -63,8 +62,8 @@ import {
   writeListingPostDraft,
 } from "@/lib/listing-post-draft";
 import { useListingPostGuard } from "@/hooks/use-listing-post-guard";
-import { videoFileToVisionBase64 } from "@/lib/listing-video-frame";
-import { listingPhotoAnalyzeFailureToast } from "@/lib/listing-photo-analyze-toast";
+import { ListingPhotoUploadBoundary } from "@/components/listing-photo-upload-boundary";
+import { ListingPostRecoveryBanner } from "@/components/listing-post-recovery-banner";
 import { useListingImageUpload } from "@/lib/listing-image-upload";
 import {
   isAllowedListingVideoFile,
@@ -174,7 +173,6 @@ export default function NewListing() {
   const [pathname, setLocation] = useLocation();
   const isDhurataPostRoute = pathname === "/listings/new/dhurata-falas";
   const isKerkojPostRoute = pathname === KERKOJ_POST_PATH;
-  const skipListingImageAutofill = isDhurataPostRoute || isKerkojPostRoute;
   const { user, loading: authLoading, refresh } = useAuth();
   const lastUserRef = useRef<AuthUser | null>(null);
   if (user) lastUserRef.current = user;
@@ -202,7 +200,6 @@ export default function NewListing() {
     [],
   );
   const [isUploading, setIsUploading] = useState(false);
-  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const imageAnalyzedRef = useRef(false);
   const lastVideoAnalyzeKeyRef = useRef<string | null>(null);
   const skipCategoryCascadeRef = useRef(false);
@@ -215,12 +212,21 @@ export default function NewListing() {
   const cameraVideoRef = useRef<HTMLInputElement>(null);
   const imageUpload = useListingImageUpload();
   const [videoUrl, setVideoUrl] = useState<string | null>(() => readListingPostDraft()?.videoUrl ?? null);
-  const { authStuckBypass } = useListingPostGuard({
+  const [photoUploadKey, setPhotoUploadKey] = useState(0);
+  const { showRecoveryBanner, dismissRecovery } = useListingPostGuard({
     imageUrls,
     videoUrl,
     setImageUrls,
     setVideoUrl,
   });
+
+  const restoreDraftMedia = useCallback(() => {
+    const draft = readListingPostDraft();
+    if (!draft) return;
+    if (draft.images.length > 0) setImageUrls(draft.images);
+    if (draft.videoUrl) setVideoUrl(draft.videoUrl);
+    dismissRecovery();
+  }, [setImageUrls, dismissRecovery]);
   const [videoUploadPhase, setVideoUploadPhase] = useState<ListingVideoUploadPhase | null>(null);
   const [videoPreparePct, setVideoPreparePct] = useState(0);
   const isVideoUploading = videoUploadPhase !== null;
@@ -541,10 +547,6 @@ export default function NewListing() {
     }, 3000);
   }, []);
 
-  const markImagesAnalyzed = useCallback(() => {
-    imageAnalyzedRef.current = true;
-  }, []);
-
   useEffect(() => {
     if (!activeUser) return;
     if (activeUser.is_platform_admin) return;
@@ -560,117 +562,6 @@ export default function NewListing() {
     }
   }, [activeUser, form]);
 
-  const applyImageAnalysis = useCallback(
-    (analysis: ListingImageAnalysis) => {
-      try {
-        const cats = allCategories as Array<{ id: number; parent_id?: number | null }> | undefined;
-        if (!cats?.length) {
-          lastImageAnalysisRef.current = analysis;
-          return;
-        }
-
-        const parentExists = cats.some(
-          (c) => c.id === analysis.parent_category_id && (c.parent_id == null || c.parent_id === 0),
-        );
-        const categoryExists = cats.some((c) => c.id === analysis.category_id);
-        if (!parentExists || !categoryExists) {
-          lastImageAnalysisRef.current = analysis;
-          return;
-        }
-
-        lastImageAnalysisRef.current = analysis;
-        pendingImageAnalysisRef.current = analysis;
-        skipCategoryCascadeRef.current = true;
-        skipBrandCascadeRef.current = true;
-        skipTitleSuggestRef.current = true;
-
-        const fieldOpts = { shouldDirty: true, shouldTouch: true, shouldValidate: true } as const;
-        form.setValue("title", analysis.title, fieldOpts);
-        form.setValue("description", analysis.description, fieldOpts);
-        form.setValue("parent_category_id", analysis.parent_category_id, fieldOpts);
-        form.setValue("category_id", analysis.category_id, fieldOpts);
-        form.setValue("brand_category_id", analysis.brand_category_id ?? 0, fieldOpts);
-
-        window.setTimeout(() => {
-          skipTitleSuggestRef.current = false;
-        }, 3000);
-      } catch (err) {
-        console.warn("[KetuJemi] applyImageAnalysis skipped", err);
-      }
-    },
-    [form, allCategories],
-  );
-
-  useEffect(() => {
-    if (!allCategories?.length) return;
-    const analysis = lastImageAnalysisRef.current;
-    if (!analysis) return;
-    applyImageAnalysis(analysis);
-  }, [allCategories?.length, applyImageAnalysis]);
-
-  const runListingVisionAnalysis = useCallback(
-    async (vision: { data: string; mediaType: string }) => {
-      if (imageAnalyzedRef.current || skipListingImageAutofill) return false;
-
-      const res = await fetchWithTimeout(
-        "/api/ai/analyze-listing-image",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            image_base64: vision.data,
-            media_type: vision.mediaType,
-            lang: listingLang,
-            ...(myShop
-              ? { shop_name: myShop.shop_name, shop_category: myShop.category || undefined }
-              : {}),
-          }),
-        },
-        IMAGE_ANALYZE_TIMEOUT_MS,
-      );
-      const body = (await res.json().catch(() => ({}))) as {
-        analysis?: ListingImageAnalysis | null;
-        pipeline?: "google" | "claude" | null;
-        error?: string;
-      };
-      if (!res.ok) {
-        const fail = listingPhotoAnalyzeFailureToast(res.status, tx);
-        toast({ ...fail, variant: "destructive" });
-        return false;
-      }
-      if (body.analysis) {
-        imageAnalyzedRef.current = true;
-        applyImageAnalysis(body.analysis);
-        return true;
-      }
-      const fail = listingPhotoAnalyzeFailureToast(422, tx);
-      toast(fail);
-      return false;
-    },
-    [applyImageAnalysis, skipListingImageAutofill, listingLang, myShop, toast, tx],
-  );
-
-  const analyzeUploadedImageFile = useCallback(
-    async (file: File) => {
-      if (imageAnalyzedRef.current || skipListingImageAutofill) return;
-      setIsAnalyzingImage(true);
-      try {
-        const vision = await fileToVisionBase64(file);
-        await runListingVisionAnalysis(vision);
-      } catch (error) {
-        toast({
-          title: t.photoAnalyzeFailed,
-          description: getFetchErrorMessage(error, tx.photoAnalyzeFailedHint),
-          variant: "destructive",
-        });
-      } finally {
-        setIsAnalyzingImage(false);
-      }
-    },
-    [skipListingImageAutofill, runListingVisionAnalysis, toast, t.photoAnalyzeFailed, tx],
-  );
-
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
@@ -678,8 +569,6 @@ export default function NewListing() {
       toast({ title: t.uploadFailed, variant: "destructive" });
       return;
     }
-    const shouldAnalyze = imageUrls.length === 0 && !imageAnalyzedRef.current;
-    const firstFileForAnalysis = shouldAnalyze ? files[0] : null;
     setIsUploading(true);
     try {
       const urls: string[] = [];
@@ -687,11 +576,6 @@ export default function NewListing() {
         urls.push(await imageUpload.uploadFile(file));
       }
       setImageUrls((prev) => [...prev, ...urls]);
-      if (firstFileForAnalysis) {
-        window.setTimeout(() => {
-          void analyzeUploadedImageFile(firstFileForAnalysis);
-        }, 1200);
-      }
     } catch {
       toast({ title: t.uploadFailed, variant: "destructive" });
     } finally {
@@ -700,35 +584,6 @@ export default function NewListing() {
       if (cameraPhotoRef.current) cameraPhotoRef.current.value = "";
     }
   };
-
-  const analyzeVideoFile = useCallback(
-    async (file: File): Promise<boolean> => {
-      if (imageAnalyzedRef.current || skipListingImageAutofill) return false;
-      setIsAnalyzingImage(true);
-      try {
-        const vision = await videoFileToVisionBase64(file);
-        return await runListingVisionAnalysis(vision);
-      } catch (error) {
-        const code = error instanceof Error ? error.message : "";
-        const isVideoFrame =
-          code === "video_frame_failed" ||
-          code === "video_frame_timeout" ||
-          code === "video_frame_blank" ||
-          code === "video_frame_encode_failed";
-        toast({
-          title: t.photoAnalyzeFailed,
-          description: isVideoFrame
-            ? t.videoAnalyzeFrameHint
-            : getFetchErrorMessage(error, tx.photoAnalyzeFailedHint),
-          variant: "destructive",
-        });
-        return false;
-      } finally {
-        setIsAnalyzingImage(false);
-      }
-    },
-    [skipListingImageAutofill, runListingVisionAnalysis, toast, t.photoAnalyzeFailed, t.videoAnalyzeFrameHint, tx],
-  );
 
   const removeImage = (i: number) => {
     setImageUrls((prev) => {
@@ -758,9 +613,6 @@ export default function NewListing() {
       return;
     }
     const videoFileKey = `${file.name}:${file.size}:${file.lastModified}`;
-    const shouldAnalyze =
-      imageUrls.length === 0 &&
-      (!imageAnalyzedRef.current || lastVideoAnalyzeKeyRef.current !== videoFileKey);
     setVideoUploadPhase("preparing");
     setVideoPreparePct(0);
     try {
@@ -771,11 +623,7 @@ export default function NewListing() {
       setVideoUrl(url);
       setVideoUploadPhase(null);
       setVideoPreparePct(0);
-      if (shouldAnalyze) {
-        void analyzeVideoFile(file).then((ok) => {
-          if (ok) lastVideoAnalyzeKeyRef.current = videoFileKey;
-        });
-      }
+      lastVideoAnalyzeKeyRef.current = videoFileKey;
     } catch (err) {
       const msg = listingVideoErrorMessage(err, uiLang);
       if (msg) {
@@ -1008,23 +856,6 @@ export default function NewListing() {
   };
 
   const cityList = locationsForListingMarket(listingCountry);
-  const hasDraftMedia = imageUrls.length > 0 || !!videoUrl;
-  const canShowPostForm = !!activeUser || hasDraftMedia || authStuckBypass;
-
-  if (!canShowPostForm) {
-    if (authLoading) {
-      return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-3">
-          <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-        </div>
-      );
-    }
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-3">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-      </div>
-    );
-  }
 
   if (isDhurataPostRoute && !dhurataPledgeOk) {
     return (
@@ -1066,6 +897,24 @@ export default function NewListing() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
+        {showRecoveryBanner ? (
+          <ListingPostRecoveryBanner
+            onDismiss={dismissRecovery}
+            onRestore={restoreDraftMedia}
+          />
+        ) : null}
+        {!activeUser && !authLoading ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 leading-relaxed">
+            Duhet të hysh për të postuar shpalljen.{" "}
+            <Link
+              href={loginUrlWithReturn(pathname || "/listings/new")}
+              className="font-bold text-blue-700 underline-offset-2 hover:underline"
+            >
+              Kyçu këtu
+            </Link>
+            {" "}— fotot që ngarkon ruhen automatikisht.
+          </div>
+        ) : null}
         {hasShop === false && tx.shopSuggestBanner ? (
           <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-gray-800 leading-relaxed flex flex-wrap items-center gap-x-2 gap-y-1">
             <span>{tx.shopSuggestBanner}</span>
@@ -1087,6 +936,10 @@ export default function NewListing() {
 
             {/* ── 1. Photos + video (si në shpallje: foto pastaj video) ── */}
             <Section title={t.photosSection} icon={Camera}>
+              <ListingPhotoUploadBoundary
+                key={photoUploadKey}
+                onRetry={() => setPhotoUploadKey((k) => k + 1)}
+              >
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -1115,10 +968,10 @@ export default function NewListing() {
                     onChange={handleFileChange}
                   />
 
-                  {(isAnalyzingImage || isUploading) && (
+                  {(isUploading) && (
                     <p className="text-sm text-blue-600 font-medium mb-2 flex items-center gap-2" role="status">
                       <Loader2 size={14} className="animate-spin shrink-0" />
-                      {isUploading ? t.uploading : t.analyzingPhoto}
+                      {t.uploading}
                     </p>
                   )}
 
@@ -1133,12 +986,6 @@ export default function NewListing() {
                         <Loader2 size={30} className="animate-spin" />
                         <p className="text-sm font-semibold">{t.uploading}</p>
                         <p className="text-sm text-gray-400">{t.waitPlease}</p>
-                      </div>
-                    ) : isAnalyzingImage ? (
-                      <div className="flex flex-col items-center gap-1.5 text-blue-500">
-                        <Loader2 size={30} className="animate-spin" />
-                        <p className="text-sm font-semibold">{t.analyzingPhoto}</p>
-                        <p className="text-sm text-gray-400">{t.analyzingPhotoHint}</p>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center gap-1.5 text-gray-400 hover:text-blue-500 transition-colors">
@@ -1272,6 +1119,7 @@ export default function NewListing() {
                   ) : null}
                 </div>
               </div>
+              </ListingPhotoUploadBoundary>
             </Section>
 
             {/* ── 2. Title ── */}
