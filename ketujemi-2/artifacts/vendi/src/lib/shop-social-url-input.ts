@@ -1,11 +1,9 @@
 export type ShopSocialField = "facebook" | "instagram" | "tiktok" | "whatsapp" | "website";
 
-export const SHOP_SOCIAL_PREFIX: Record<ShopSocialField, string> = {
+export const SHOP_SOCIAL_PREFIX: Record<Exclude<ShopSocialField, "whatsapp" | "website">, string> = {
   facebook: "https://www.facebook.com/",
   instagram: "https://www.instagram.com/",
   tiktok: "https://www.tiktok.com/@",
-  whatsapp: "https://wa.me/",
-  website: "https://",
 };
 
 /** E.164 digits for wa.me (handles stored URLs, plain numbers, and 0xx local Kosovo). */
@@ -31,70 +29,47 @@ export function shopWhatsappDigits(raw: string | null | undefined): string | nul
 
 /** Canonical https://wa.me/… link for shop WhatsApp buttons. */
 export function shopWhatsappHref(raw: string | null | undefined): string | null {
+  const trimmed = String(raw ?? "").trim();
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
   const digits = shopWhatsappDigits(raw);
-  return digits ? `${SHOP_SOCIAL_PREFIX.whatsapp}${digits}` : null;
+  return digits ? `https://wa.me/${digits}` : null;
 }
 
-/** Strip stored URL down to the part the user types after the prefix. */
+/** Value shown in the form — full URL when stored, otherwise rebuilt from legacy bare input. */
 export function shopSocialSuffix(value: string | null | undefined, field: ShopSocialField): string {
   const raw = String(value ?? "").trim();
   if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
 
   if (field === "whatsapp") {
-    return shopWhatsappDigits(raw) ?? "";
+    return shopWhatsappHref(raw) ?? raw;
   }
 
-  if (field === "website") {
-    return raw.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
-  }
-
-  try {
-    if (/^https?:\/\//i.test(raw)) {
-      const url = new URL(raw);
-      const host = url.hostname.replace(/^www\./i, "").toLowerCase();
-      if (field === "facebook" && host.includes("facebook.com")) {
-        const slug = url.pathname.split("/").filter(Boolean)[0] ?? "";
-        return slug === "profile.php" ? "" : slug;
-      }
-      if (field === "instagram" && host.includes("instagram.com")) {
-        const slug = url.pathname.split("/").filter(Boolean)[0] ?? "";
-        if (["p", "reel", "reels", "stories", "explore"].includes(slug.toLowerCase())) return raw;
-        return slug;
-      }
-      if (field === "tiktok" && host.includes("tiktok.com")) {
-        const part = url.pathname.split("/").find((p) => p.startsWith("@"));
-        return part ? part.replace(/^@/, "") : url.pathname.split("/").filter(Boolean)[0]?.replace(/^@/, "") ?? "";
-      }
-    }
-  } catch {
-    /* fall through */
-  }
-
-  return raw
-    .replace(/^https?:\/\/(www\.)?/i, "")
-    .replace(/^facebook\.com\//i, "")
-    .replace(/^instagram\.com\//i, "")
-    .replace(/^tiktok\.com\/@?/i, "")
-    .replace(/^@/, "")
-    .replace(/\/+$/, "");
+  const built = shopSocialFullUrl(raw, field);
+  return built || raw;
 }
 
-/** Build full URL from user suffix before API submit. */
-export function shopSocialFullUrl(suffix: string, field: ShopSocialField): string {
-  const s = suffix.trim().replace(/^@/, "").replace(/^\/+/, "").replace(/\/+$/, "");
+/** Normalize pasted link (or legacy bare handle) before API submit. */
+export function shopSocialFullUrl(raw: string, field: ShopSocialField): string {
+  const s = raw.trim();
   if (!s) return "";
 
   if (field === "whatsapp") {
+    if (/^https?:\/\//i.test(s)) return s;
     return shopWhatsappHref(s) ?? "";
   }
 
+  if (/^https?:\/\//i.test(s)) return s;
+
   if (field === "website") {
-    if (/^https?:\/\//i.test(suffix)) return suffix.trim();
-    const host = s.replace(/^www\./i, "");
-    return host ? `${SHOP_SOCIAL_PREFIX.website}${host}` : "";
+    if (s.includes(".")) return `https://${s.replace(/^www\./i, "")}`;
+    return "";
   }
 
-  return `${SHOP_SOCIAL_PREFIX[field]}${s}`;
+  const handle = s.replace(/^@/, "").replace(/^\/+/, "").replace(/\/+$/, "");
+  if (!handle) return "";
+  return `${SHOP_SOCIAL_PREFIX[field]}${handle}`;
 }
 
 export function shopSocialFieldsForSubmit(values: {
