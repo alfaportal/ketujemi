@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
 import { Link2, Share2 } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { isMobileUserAgent, openFacebookShareDialog } from "@/lib/social-share";
 
@@ -12,31 +13,44 @@ type Props = {
   postSuccess?: boolean;
 };
 
-const INSTAGRAM_COPIED_ALERT: Record<string, string> = {
-  ks: "Linku u kopjua! Paste-o në Instagram Story ose Bio.",
-  al: "Linku u kopjua! Paste-o në Instagram Story ose Bio.",
-  mk: "Линкот е копиран! Залепи го во Instagram Story или Bio.",
-  mne: "Link je kopiran! Zalijepi ga u Instagram Story ili Bio.",
-  en: "Link copied! Paste it in Instagram Story or Bio.",
+const GREEN_TOAST_CLASS = "border-green-200 bg-green-50 text-green-900";
+
+const INSTAGRAM_COPIED_TOAST: Record<string, string> = {
+  ks: "Linku u kopjua! Ngjite në Instagram",
+  al: "Linku u kopjua! Ngjite në Instagram",
+  mk: "Линкот е копиран! Залепи го на Instagram",
+  mne: "Link je kopiran! Zalijepi ga na Instagram",
+  en: "Link copied! Paste it on Instagram",
 };
 
-const TIKTOK_COPIED_ALERT: Record<string, string> = {
-  ks: "Linku u kopjua! Hape TikTok dhe paste-o.",
-  al: "Linku u kopjua! Hape TikTok dhe paste-o.",
-  mk: "Линкот е копиран! Отвори TikTok и залепи го.",
-  mne: "Link je kopiran! Otvori TikTok i zalijepi ga.",
-  en: "Link copied! Open TikTok and paste it.",
+const TIKTOK_COPIED_TOAST: Record<string, string> = {
+  ks: "Linku u kopjua! Ngjite në TikTok",
+  al: "Linku u kopjua! Ngjite në TikTok",
+  mk: "Линкот е копиран! Залепи го на TikTok",
+  mne: "Link je kopiran! Zalijepi ga na TikTok",
+  en: "Link copied! Paste it on TikTok",
+};
+
+const COPIED_BTN_LABEL: Record<string, string> = {
+  ks: "U kopjua ✓",
+  al: "U kopjua ✓",
+  mk: "Копирано ✓",
+  mne: "Kopirano ✓",
+  en: "Copied ✓",
 };
 
 export function ListingProminentShare({ url, title = "", postSuccess = false }: Props) {
   const { t, uiLang } = useMarket();
+  const { toast } = useToast();
   const tx = t as Record<string, string>;
   const [copied, setCopied] = useState(false);
-  const [alertMsg, setAlertMsg] = useState<string | null>(null);
+  const [instagramCopied, setInstagramCopied] = useState(false);
+  const [tiktokCopied, setTiktokCopied] = useState(false);
 
-  const instagramCopiedAlert =
-    INSTAGRAM_COPIED_ALERT[uiLang] ?? INSTAGRAM_COPIED_ALERT.ks;
-  const tiktokCopiedAlert = TIKTOK_COPIED_ALERT[uiLang] ?? TIKTOK_COPIED_ALERT.ks;
+  const instagramCopiedToast =
+    INSTAGRAM_COPIED_TOAST[uiLang] ?? INSTAGRAM_COPIED_TOAST.ks;
+  const tiktokCopiedToast = TIKTOK_COPIED_TOAST[uiLang] ?? TIKTOK_COPIED_TOAST.ks;
+  const copiedBtnLabel = COPIED_BTN_LABEL[uiLang] ?? COPIED_BTN_LABEL.ks;
 
   const copyUrl = useCallback(async (): Promise<boolean> => {
     try {
@@ -47,11 +61,6 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
     }
   }, [url]);
 
-  const showAlert = useCallback((message: string) => {
-    setAlertMsg(message);
-    window.setTimeout(() => setAlertMsg(null), 4000);
-  }, []);
-
   const onFacebookShare = useCallback(() => {
     openFacebookShareDialog(url, title);
   }, [url, title]);
@@ -59,21 +68,25 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
   const onInstagramShare = useCallback(() => {
     void copyUrl().then((ok) => {
       if (!ok) return;
-      showAlert(instagramCopiedAlert);
+      toast({ title: instagramCopiedToast, className: GREEN_TOAST_CLASS });
+      setInstagramCopied(true);
+      window.setTimeout(() => setInstagramCopied(false), 2000);
       window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
     });
-  }, [copyUrl, showAlert, instagramCopiedAlert]);
+  }, [copyUrl, toast, instagramCopiedToast]);
 
   const onTikTokShare = useCallback(() => {
     void copyUrl().then((ok) => {
       if (!ok) return;
-      showAlert(tiktokCopiedAlert);
+      toast({ title: tiktokCopiedToast, className: GREEN_TOAST_CLASS });
+      setTiktokCopied(true);
+      window.setTimeout(() => setTiktokCopied(false), 2000);
       const tiktokUrl = isMobileUserAgent()
         ? "https://www.tiktok.com/"
         : "https://www.tiktok.com/";
       window.open(tiktokUrl, "_blank", "noopener,noreferrer");
     });
-  }, [copyUrl, showAlert, tiktokCopiedAlert]);
+  }, [copyUrl, toast, tiktokCopiedToast]);
 
   const onCopyLink = useCallback(() => {
     void copyUrl().then((ok) => {
@@ -117,16 +130,6 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
         </div>
       </div>
 
-      {alertMsg ? (
-        <p
-          role="alert"
-          className="mb-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900"
-          data-testid="share-prominent-alert"
-        >
-          {alertMsg}
-        </p>
-      ) : null}
-
       <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
         <button
           type="button"
@@ -151,7 +154,7 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
           data-testid="share-prominent-instagram"
         >
           <FaInstagram className="h-5 w-5" aria-hidden />
-          {instagramLabel}
+          {instagramCopied ? copiedBtnLabel : instagramLabel}
         </button>
         <button
           type="button"
@@ -160,7 +163,7 @@ export function ListingProminentShare({ url, title = "", postSuccess = false }: 
           data-testid="share-prominent-tiktok"
         >
           <FaTiktok className="h-5 w-5" aria-hidden />
-          {tiktokLabel}
+          {tiktokCopied ? copiedBtnLabel : tiktokLabel}
         </button>
         <button
           type="button"
