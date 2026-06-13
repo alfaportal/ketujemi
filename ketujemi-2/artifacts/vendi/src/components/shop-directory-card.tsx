@@ -61,14 +61,20 @@ export function ShopDirectoryCard({ shop, viewLabel }: Props) {
           <h3 className="font-black text-gray-900 text-base sm:text-lg leading-tight line-clamp-2">
             {shop.shop_name}
           </h3>
-          {sub ? (
-            <p className="text-xs sm:text-sm font-semibold text-orange-600 mt-1 line-clamp-1">
-              {translateDirectorySubcategory(sub, locale)}
+          {cat && sub ? (
+            <p className="text-xs sm:text-sm mt-1 line-clamp-2">
+              <span className="font-bold text-blue-700">{translateDirectoryCategory(cat, locale)}</span>
+              <span className="text-gray-400 mx-1">·</span>
+              <span className="font-semibold text-orange-600">
+                {translateDirectorySubcategory(sub, locale)}
+              </span>
             </p>
           ) : cat ? (
             <p className="text-xs sm:text-sm font-semibold text-orange-600 mt-1">
               {translateDirectoryCategory(cat, locale)}
             </p>
+          ) : shop.category ? (
+            <p className="text-xs sm:text-sm font-semibold text-gray-500 mt-1 line-clamp-1">{shop.category}</p>
           ) : null}
           <p className="text-xs text-gray-500 mt-1">
             {shop.city} · {countryLabel}

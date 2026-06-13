@@ -88,12 +88,29 @@ router.post("/shop-applications", async (req, res) => {
     errors.push("Plotësoni të paktën një rrjet social.");
   }
 
+  const directoryCategoryId = Number(body.directory_category_id);
+  const directorySubcategoryId = Number(body.directory_subcategory_id);
+  if (
+    !Number.isFinite(directoryCategoryId) ||
+    directoryCategoryId < 1 ||
+    !Number.isFinite(directorySubcategoryId) ||
+    directorySubcategoryId < 1
+  ) {
+    errors.push("Zgjidhni kategorinë dhe nënkategorinë e dyqanit.");
+  }
+
   if (errors.length) {
     res.status(400).json({ error: "VALIDATION", message: errors[0], details: errors });
     return;
   }
 
-  const categoryId = Number(body.category_id);
+  const directoryFields = await resolveDirectoryFields({
+    directory_category_id: directoryCategoryId,
+    directory_subcategory_id: directorySubcategoryId,
+    category: String(body.category).trim(),
+    category_id: null,
+  });
+
   const [row] = await db
     .insert(shopApplicationsTable)
     .values({
@@ -102,7 +119,11 @@ router.post("/shop-applications", async (req, res) => {
       logo_url: String(body.logo_url).trim(),
       description: String(body.description).trim(),
       category: String(body.category).trim(),
-      category_id: Number.isFinite(categoryId) && categoryId > 0 ? categoryId : null,
+      category_id: null,
+      directory_category_slug: directoryFields.directory_category_slug,
+      directory_subcategory_slug: directoryFields.directory_subcategory_slug,
+      directory_category_id: directoryFields.directory_category_id,
+      directory_subcategory_id: directoryFields.directory_subcategory_id,
       country: String(body.country).trim(),
       city: String(body.city).trim(),
       region: String(body.region).trim(),

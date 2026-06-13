@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import { useGetCategories } from "@workspace/api-client-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Store, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +10,12 @@ import { useShopFormCopy, SHOP_COUNTRY_CODES } from "@/lib/shop-application-i18n
 import { citiesForShopCountry } from "@/lib/shop-application-locations";
 import { uploadImageToCloudinary, useCloudinaryConfig } from "@/lib/cloudinary-config";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
-import { translateCategory } from "@/lib/category-translations";
+import { fetchShopDirectoryTaxonomy, type ShopDirectoryTaxonomyCategory } from "@/lib/shop-directory-api";
+import {
+  translateDirectoryCategory,
+  translateDirectorySubcategory,
+} from "@/lib/shop-directory-i18n";
+import { SHOP_DIRECTORY_CATEGORIES } from "@/lib/shop-directory-taxonomy";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 import { openShopApplyPath } from "@/lib/static-page-paths";
@@ -27,13 +31,16 @@ export function ShopApplicationForm() {
   const { uiLang } = useMarket();
   const { user } = useAuth();
   const cloudinary = useCloudinaryConfig();
-  const { data: categories } = useGetCategories();
+  const locale = translationKeyForUiLang(uiLang);
   const logoRef = useRef<HTMLInputElement>(null);
 
   const [shopName, setShopName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [description, setDescription] = useState("");
-  const [categoryId, setCategoryId] = useState("");
+  const [taxonomy, setTaxonomy] = useState<ShopDirectoryTaxonomyCategory[]>([]);
+  const [taxonomyLoading, setTaxonomyLoading] = useState(true);
+  const [directoryCategoryId, setDirectoryCategoryId] = useState<number | null>(null);
+  const [directorySubcategoryId, setDirectorySubcategoryId] = useState<number | null>(null);
   const [country, setCountry] = useState("XK");
   const [city, setCity] = useState("");
   const [region, setRegion] = useState("");
@@ -54,20 +61,32 @@ export function ShopApplicationForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const parentCategories = (categories ?? []).filter(
-    (cat: { parent_id?: number | null }) => cat.parent_id == null,
-  );
+  const subcategories = useMemo(() => {
+    return taxonomy.find((t) => t.id === directoryCategoryId)?.subcategories ?? [];
+  }, [taxonomy, directoryCategoryId]);
 
-  const cityOptions = citiesForShopCountry(country);
+  const selectedCategoryName = useMemo(() => {
+    const dirCat = taxonomy.find((t) => t.id === directoryCategoryId);
+    const sub = subcategories.find((s) => s.id === directorySubcategoryId);
+    const catDef = dirCat ? SHOP_DIRECTORY_CATEGORIES.find((item) => item.slug === dirCat.slug) : undefined;
+    if (catDef && sub) {
+      return `${translateDirectoryCategory(catDef, locale)} · ${translateDirectorySubcategory({ slug: sub.slug, nameSq: sub.name }, locale)}`;
+    }
+    if (catDef) return translateDirectoryCategory(catDef, locale);
+    return "";
+  }, [taxonomy, directoryCategoryId, directorySubcategoryId, subcategories, locale]);
 
-  const selectedCategory = parentCategories.find((p: { id: number }) => String(p.id) === categoryId);
-  const selectedCategoryName = selectedCategory
-    ? translateCategory((selectedCategory as { name: string }).name, translationKeyForUiLang(uiLang))
-    : "";
+  useEffect(() => {
+    void fetchShopDirectoryTaxonomy()
+      .then(setTaxonomy)
+      .finally(() => setTaxonomyLoading(false));
+  }, []);
 
   useEffect(() => {
     setCity("");
   }, [country]);
+
+  const cityOptions = citiesForShopCountry(country);
 
   async function onLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -93,10 +112,18 @@ export function ShopApplicationForm() {
     }
     setError(null);
 
-    const cat = parentCategories.find((p: { id: number }) => String(p.id) === categoryId);
-    const categoryName = cat
-      ? translateCategory((cat as { name: string }).name, translationKeyForUiLang(uiLang))
-      : "";
+    if (!directoryCategoryId || !directorySubcategoryId) {
+      setError(c.directoryCategoryRequired);
+      return;
+    }
+
+    const dirCat = taxonomy.find((t) => t.id === directoryCategoryId);
+    const sub = subcategories.find((s) => s.id === directorySubcategoryId);
+    const catDef = dirCat ? SHOP_DIRECTORY_CATEGORIES.find((item) => item.slug === dirCat.slug) : undefined;
+    const categoryName =
+      catDef && sub
+        ? `${translateDirectoryCategory(catDef, locale)} · ${translateDirectorySubcategory({ slug: sub.slug, nameSq: sub.name }, locale)}`
+        : selectedCategoryName;
 
     if (!logoUrl) {
       setError(c.logo);
@@ -125,8 +152,9 @@ export function ShopApplicationForm() {
           shop_name: shopName,
           logo_url: logoUrl,
           description,
-          category: categoryName || (cat as { name?: string })?.name,
-          category_id: Number(categoryId) || null,
+          category: categoryName,
+          directory_category_id: directoryCategoryId,
+          directory_subcategory_id: directorySubcategoryId,
           country,
           city,
           region,
@@ -230,20 +258,64 @@ export function ShopApplicationForm() {
             </div>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} required rows={5} className="min-h-[120px]" />
           </div>
-          <div className="space-y-2">
-            <Label>{c.category} *</Label>
-            <Select value={categoryId} onValueChange={setCategoryId} required>
-              <SelectTrigger className="min-h-12">
-                <SelectValue placeholder={c.category} />
-              </SelectTrigger>
-              <SelectContent>
-                {parentCategories.map((cat: { id: number; name: string }) => (
-                  <SelectItem key={cat.id} value={String(cat.id)}>
-                    {translateCategory(cat.name, translationKeyForUiLang(uiLang))}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label>{c.directoryCategory} *</Label>
+              {taxonomyLoading ? (
+                <div className="flex items-center gap-2 text-sm text-blue-600 min-h-12">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {c.uploadingLogo}
+                </div>
+              ) : (
+                <Select
+                  value={directoryCategoryId ? String(directoryCategoryId) : ""}
+                  onValueChange={(v) => {
+                    const nextCategoryId = Number(v) || null;
+                    const cat = taxonomy.find((t) => t.id === nextCategoryId);
+                    setDirectoryCategoryId(nextCategoryId);
+                    setDirectorySubcategoryId(cat?.subcategories[0]?.id ?? null);
+                  }}
+                  required
+                >
+                  <SelectTrigger className="min-h-12">
+                    <SelectValue placeholder={c.directoryCategory} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {taxonomy.map((cat) => {
+                      const catDef = SHOP_DIRECTORY_CATEGORIES.find((item) => item.slug === cat.slug);
+                      const label = catDef
+                        ? translateDirectoryCategory(catDef, locale)
+                        : cat.name;
+                      return (
+                        <SelectItem key={cat.id} value={String(cat.id)}>
+                          {cat.emoji} {label}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>{c.directorySubcategory} *</Label>
+              <Select
+                value={directorySubcategoryId ? String(directorySubcategoryId) : ""}
+                onValueChange={(v) => setDirectorySubcategoryId(Number(v) || null)}
+                disabled={!directoryCategoryId || subcategories.length === 0}
+                required
+              >
+                <SelectTrigger className="min-h-12">
+                  <SelectValue placeholder={c.directorySubcategory} />
+                </SelectTrigger>
+                <SelectContent>
+                  {subcategories.map((sub) => (
+                    <SelectItem key={sub.id} value={String(sub.id)}>
+                      {translateDirectorySubcategory({ slug: sub.slug, nameSq: sub.name }, locale)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </section>
 

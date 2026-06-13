@@ -38,6 +38,12 @@ const NAME_TO_DIRECTORY: Record<string, string> = {
   arsim: "arsim-kurse",
   kurs: "arsim-kurse",
   muzik: "sport-rekreacion",
+  turizem: "turizem-udhetimet",
+  travel: "turizem-udhetimet",
+  udhëtim: "turizem-udhetimet",
+  udhetim: "turizem-udhetimet",
+  agjenci: "turizem-udhetimet",
+  avioni: "turizem-udhetimet",
 };
 
 export function resolveDirectoryCategorySlug(input: {

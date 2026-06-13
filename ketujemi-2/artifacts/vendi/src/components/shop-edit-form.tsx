@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useGetCategories } from "@workspace/api-client-react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useShopFormCopy } from "@/lib/shop-application-i18n";
 import { citiesForShopCountry } from "@/lib/shop-application-locations";
 import { fetchShopDirectoryTaxonomy, type ShopDirectoryTaxonomyCategory } from "@/lib/shop-directory-api";
-import { translateCategory } from "@/lib/category-translations";
 import {
   translateDirectoryCategory,
   translateDirectorySubcategory,
@@ -80,7 +78,6 @@ export function ShopEditForm({
   const c = useShopFormCopy();
   const { uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
-  const { data: categories } = useGetCategories();
   const [taxonomy, setTaxonomy] = useState<ShopDirectoryTaxonomyCategory[]>([]);
   const [taxonomyLoading, setTaxonomyLoading] = useState(true);
 
@@ -96,10 +93,6 @@ export function ShopEditForm({
       .finally(() => setTaxonomyLoading(false));
   }, []);
 
-  const parentCategories = (categories ?? []).filter(
-    (cat: { parent_id?: number | null }) => cat.parent_id == null,
-  );
-
   const cityOptions = citiesForShopCountry(values.country);
 
   const subcategories = useMemo(() => {
@@ -112,10 +105,13 @@ export function ShopEditForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const cat = parentCategories.find((p: { id: number }) => p.id === values.category_id);
-    const categoryName = cat
-      ? (cat as { name: string }).name
-      : values.category;
+    const dirCat = taxonomy.find((t) => t.id === values.directory_category_id);
+    const sub = subcategories.find((s) => s.id === values.directory_subcategory_id);
+    const catDef = dirCat ? SHOP_DIRECTORY_CATEGORIES.find((c) => c.slug === dirCat.slug) : undefined;
+    const categoryName =
+      catDef && sub
+        ? `${translateDirectoryCategory(catDef, locale)} · ${translateDirectorySubcategory({ slug: sub.slug, nameSq: sub.name }, locale)}`
+        : values.category;
     const social = shopSocialFieldsForSubmit({
       facebook: values.facebook,
       instagram: values.instagram,
@@ -126,6 +122,7 @@ export function ShopEditForm({
     await onSubmit({
       ...values,
       category: categoryName,
+      category_id: null,
       facebook: social.facebook ?? "",
       instagram: social.instagram ?? "",
       tiktok: social.tiktok ?? "",
@@ -156,24 +153,6 @@ export function ShopEditForm({
             className="min-h-[100px]"
             required
           />
-        </div>
-        <div className="space-y-1.5">
-          <Label>{c.category}</Label>
-          <Select
-            value={values.category_id ? String(values.category_id) : ""}
-            onValueChange={(v) => setField("category_id", Number(v) || null)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={c.category} />
-            </SelectTrigger>
-            <SelectContent>
-              {parentCategories.map((cat: { id: number; name: string }) => (
-                <SelectItem key={cat.id} value={String(cat.id)}>
-                  {translateCategory(cat.name, locale)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
         <div className="space-y-1.5">
           <Label>{c.country}</Label>
@@ -252,7 +231,7 @@ export function ShopEditForm({
       ) : (
         <div className="grid sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label>{labels?.directoryCategory ?? c.directoryCategory}</Label>
+            <Label>{labels?.directoryCategory ?? c.directoryCategory} *</Label>
             <select
               className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
               value={values.directory_category_id ?? ""}
@@ -281,7 +260,7 @@ export function ShopEditForm({
             </select>
           </div>
           <div className="space-y-1.5">
-            <Label>{labels?.directorySubcategory ?? c.directorySubcategory}</Label>
+            <Label>{labels?.directorySubcategory ?? c.directorySubcategory} *</Label>
             <select
               className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
               value={values.directory_subcategory_id ?? ""}
