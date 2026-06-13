@@ -35,11 +35,11 @@ function TikTokIcon({ className }: { className?: string }) {
 
 export function buildShopSocialLinks(
   fields: ShopSocialFields,
-  enriched?: Partial<Record<"instagram" | "tiktok", ShopSocialProfileData>>,
+  _enriched?: Partial<Record<"instagram" | "tiktok", ShopSocialProfileData>>,
 ): ShopSocialLinkItem[] {
   const links: ShopSocialLinkItem[] = [];
   const facebook = fields.facebook?.trim();
-  const instagram = enriched?.instagram?.profile_url?.trim() || fields.instagram?.trim();
+  const instagram = fields.instagram?.trim();
   const tiktokRaw = fields.tiktok?.trim();
   const website = fields.website?.trim();
   const whatsappHref = shopWhatsappHref(fields.whatsapp);

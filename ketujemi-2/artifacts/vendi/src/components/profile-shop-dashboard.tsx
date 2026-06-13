@@ -185,9 +185,27 @@ export function ProfileShopDashboard() {
         }),
       });
       if (!res.ok) throw new Error("fail");
+      const payload = (await res.json()) as { shop: ShopMe };
+      const saved = payload.shop;
+      if (saved) {
+        setData((prev) => (prev?.shop ? { ...prev, shop: { ...prev.shop, ...saved } } : prev));
+        setShopName(saved.shop_name);
+        setLogoUrl(saved.logo_url);
+        setDescription(saved.description);
+        setAddress(saved.address);
+        setLatitude(saved.latitude ?? null);
+        setLongitude(saved.longitude ?? null);
+        setShopCountry(saved.country ?? "XK");
+        setCity(saved.city);
+        setRegion(saved.region);
+        setFacebook(shopSocialSuffix(saved.facebook, "facebook"));
+        setInstagram(shopSocialSuffix(saved.instagram, "instagram"));
+        setTiktok(shopSocialSuffix(saved.tiktok, "tiktok"));
+        setWhatsapp(shopSocialSuffix(saved.whatsapp, "whatsapp"));
+        setWebsite(shopSocialSuffix(saved.website, "website"));
+      }
       toast({ title: c.shopSaved });
       setEditFormOpen(false);
-      loadMe();
     } catch {
       toast({ title: "Error", variant: "destructive" });
     } finally {

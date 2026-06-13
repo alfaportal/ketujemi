@@ -179,12 +179,31 @@ async function loadBusinessUserPartnerProfile(userId: number): Promise<PartnerPu
   });
 
   const [shop] = await db
-    .select({ id: shopsTable.id })
+    .select({
+      id: shopsTable.id,
+      address: shopsTable.address,
+      facebook: shopsTable.facebook,
+      instagram: shopsTable.instagram,
+      tiktok: shopsTable.tiktok,
+      whatsapp: shopsTable.whatsapp,
+      website: shopsTable.website,
+    })
     .from(shopsTable)
     .where(and(eq(shopsTable.user_id, userId), eq(shopsTable.is_active, true)))
     .limit(1);
 
   const social_profiles = shop ? await getShopSocialProfilesForApi(shop.id) : {};
+
+  const profileFields = shop
+    ? buildProfileFields({
+        address: shop.address ?? user.partner_address,
+        facebook_url: shop.facebook ?? trimOrNull(user.partner_facebook_url) ?? legacy.facebook_url,
+        instagram_url: shop.instagram ?? trimOrNull(user.partner_instagram_url) ?? legacy.instagram_url,
+        whatsapp_number: shop.whatsapp ?? user.partner_whatsapp_number,
+        tiktok_url: shop.tiktok ?? user.partner_tiktok_url,
+        website_url: shop.website ?? trimOrNull(user.partner_website_url) ?? legacy.website_url,
+      })
+    : fields;
 
   return {
     id: userId,
@@ -194,7 +213,7 @@ async function loadBusinessUserPartnerProfile(userId: number): Promise<PartnerPu
     category_name,
     shop_id: shop?.id ?? null,
     social_profiles,
-    ...fields,
+    ...profileFields,
   };
 }
 

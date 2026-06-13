@@ -232,12 +232,56 @@ export default function ShopDetailPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ ...values, profile_change_token: gate.changeToken }),
+        body: JSON.stringify({
+          profile_change_token: gate.changeToken,
+          shop_name: values.shop_name,
+          logo_url: values.logo_url,
+          description: values.description,
+          category: values.category,
+          category_id: values.category_id,
+          directory_category_id: values.directory_category_id,
+          directory_subcategory_id: values.directory_subcategory_id,
+          country: values.country,
+          city: values.city,
+          region: values.region,
+          address: values.address,
+          latitude: values.latitude,
+          longitude: values.longitude,
+          contact_name: values.contact_name,
+          phone: values.phone,
+          email: values.email,
+          facebook: values.facebook,
+          instagram: values.instagram,
+          tiktok: values.tiktok,
+          whatsapp: values.whatsapp,
+          website: values.website,
+        }),
       });
       if (!res.ok) throw new Error("fail");
+      const payload = (await res.json()) as {
+        shop: ShopData;
+        social_profiles?: Partial<Record<"instagram" | "tiktok", ShopSocialProfileData>>;
+      };
+      if (payload.shop) {
+        setShop((prev) =>
+          prev
+            ? {
+                ...prev,
+                ...payload.shop,
+                facebook: payload.shop.facebook ?? null,
+                instagram: payload.shop.instagram ?? null,
+                tiktok: payload.shop.tiktok ?? null,
+                whatsapp: payload.shop.whatsapp ?? null,
+                website: payload.shop.website ?? null,
+              }
+            : prev,
+        );
+      }
+      if (payload.social_profiles) {
+        setSocialProfiles(payload.social_profiles);
+      }
       toast({ title: d.shopSaved });
       setEditOpen(false);
-      loadShop();
     } catch {
       toast({ title: d.shopSaveError, variant: "destructive" });
     } finally {
