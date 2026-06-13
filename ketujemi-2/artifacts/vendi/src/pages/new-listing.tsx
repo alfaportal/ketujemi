@@ -55,12 +55,14 @@ import { ListingCategorySuggest } from "@/components/listing-category-suggest";
 import { ListingDescriptionHelper } from "@/components/listing-description-helper";
 import { joinListingImageUrls } from "@/lib/listing-images";
 import { fileToVisionBase64, type ListingImageAnalysis } from "@/lib/listing-image-vision";
-import { stabilizeListingPostPage } from "@/lib/listing-post-stable-mode";
 import {
-  clearListingDraftImages,
+  clearListingPostDraft,
+  clearListingPostSessionActive,
   readListingDraftImageUrls,
-  writeListingDraftImageUrls,
+  readListingPostDraft,
+  writeListingPostDraft,
 } from "@/lib/listing-post-draft";
+import { useListingPostGuard } from "@/hooks/use-listing-post-guard";
 import { videoFileToVisionBase64 } from "@/lib/listing-video-frame";
 import { listingPhotoAnalyzeFailureToast } from "@/lib/listing-photo-analyze-toast";
 import { useListingImageUpload } from "@/lib/listing-image-upload";
@@ -192,7 +194,8 @@ export default function NewListing() {
     (value: string[] | ((prev: string[]) => string[])) => {
       setImageUrlsState((prev) => {
         const next = typeof value === "function" ? value(prev) : value;
-        writeListingDraftImageUrls(next);
+        const draft = readListingPostDraft();
+        writeListingPostDraft({ images: next, videoUrl: draft?.videoUrl ?? null });
         return next;
       });
     },
@@ -211,7 +214,13 @@ export default function NewListing() {
   const cameraPhotoRef = useRef<HTMLInputElement>(null);
   const cameraVideoRef = useRef<HTMLInputElement>(null);
   const imageUpload = useListingImageUpload();
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(() => readListingPostDraft()?.videoUrl ?? null);
+  const { authStuckBypass } = useListingPostGuard({
+    imageUrls,
+    videoUrl,
+    setImageUrls,
+    setVideoUrl,
+  });
   const [videoUploadPhase, setVideoUploadPhase] = useState<ListingVideoUploadPhase | null>(null);
   const [videoPreparePct, setVideoPreparePct] = useState(0);
   const isVideoUploading = videoUploadPhase !== null;
@@ -223,9 +232,8 @@ export default function NewListing() {
   const [dhurataPledgeOk, setDhurataPledgeOk] = useState(false);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => void stabilizeListingPostPage(), 4000);
-    return () => window.clearTimeout(timer);
-  }, []);
+    writeListingPostDraft({ images: imageUrls, videoUrl });
+  }, [imageUrls, videoUrl]);
 
   useEffect(() => {
     if (!isDhurataPostRoute) return;
@@ -985,7 +993,8 @@ export default function NewListing() {
         }
         queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetRecentListingsQueryKey() });
-        clearListingDraftImages();
+        clearListingPostDraft();
+        clearListingPostSessionActive();
         const engagement = engagementCopyForUiLang(uiLang);
         if (body.is_first_listing) {
           queueFirstListingCelebration();
@@ -1000,8 +1009,9 @@ export default function NewListing() {
 
   const cityList = locationsForListingMarket(listingCountry);
   const hasDraftMedia = imageUrls.length > 0 || !!videoUrl;
+  const canShowPostForm = !!activeUser || hasDraftMedia || authStuckBypass;
 
-  if (!activeUser && !hasDraftMedia) {
+  if (!canShowPostForm) {
     if (authLoading) {
       return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-3">

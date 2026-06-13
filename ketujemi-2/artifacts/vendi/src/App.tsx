@@ -29,6 +29,7 @@ const CategoryPage = lazy(() => import("@/pages/category"));
 const ListingDetail = lazy(() => import("@/pages/listing-detail"));
 
 import NewListing from "@/pages/new-listing";
+import { withListingPostErrorBoundary } from "@/components/listing-post-error-boundary";
 const LoginPage = lazy(() => import("@/pages/login"));
 const ProfilePage = lazy(() => import("@/pages/profile"));
 const MyListingsPage = lazy(() => import("@/pages/my-listings"));
@@ -100,11 +101,13 @@ const SAFE_ROUTE_COMPONENTS = Object.fromEntries(
   Object.entries(ROUTE_COMPONENTS).map(([id, Comp]) => [id, withRouteErrorBoundary(Comp)]),
 ) as Record<Exclude<RouteId, "category-hub-redirect">, ComponentType>;
 
+const NewListingPage = withListingPostErrorBoundary(NewListing);
+
 function resolveRouteComponent(route: AppRouteDefinition): ComponentType {
   if (route.id === "category-hub-redirect" && route.hubSlug) {
     return withRouteErrorBoundary(categoryHubRedirectComponent(route.hubSlug));
   }
-  if (route.id === "new-listing") return NewListing;
+  if (route.id === "new-listing") return NewListingPage;
   return SAFE_ROUTE_COMPONENTS[route.id as Exclude<RouteId, "category-hub-redirect">];
 }
 
