@@ -7,7 +7,6 @@ import { formatDistanceToNow } from "date-fns";
 import { useMarket } from "@/lib/market-context";
 import { dateFnsLocale, fillPlaceholders } from "@/lib/app-extra-i18n";
 import { primaryListingImageUrl } from "@/lib/listing-images";
-import { AdminListingCreatePanel } from "@/components/admin-listing-create-panel";
 
 function Badge({ children, color = "gray" }: { children: React.ReactNode; color?: string }) {
   const map: Record<string, string> = {
@@ -42,7 +41,6 @@ export default function AdminListings() {
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<EditState | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
-  const [showCreate, setShowCreate] = useState(false);
   const PAGE_SIZE = 20;
 
   useEffect(() => {
@@ -121,14 +119,13 @@ export default function AdminListings() {
           <p className="text-sm text-gray-400">{fillPlaceholders(t.adm_list_total, { n: total.toLocaleString() })}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowCreate(true)}
+          <a
+            href="/listings/new?adminPost=1"
             className="inline-flex items-center gap-2 text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 px-4 py-2.5 rounded-xl transition-all"
             title={t.adm_list_post_new_hint as string}
           >
             <Plus size={16} /> {t.adm_list_post_new}
-          </button>
+          </a>
           <button type="button" onClick={fetchListings} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 px-3 py-2 rounded-xl border border-gray-200 hover:border-gray-300 transition-all">
             <RefreshCw size={14} /> {t.adm_list_refresh}
           </button>
@@ -372,12 +369,6 @@ export default function AdminListings() {
           </div>
         </div>
       )}
-
-      <AdminListingCreatePanel
-        open={showCreate}
-        onClose={() => setShowCreate(false)}
-        onCreated={fetchListings}
-      />
     </div>
   );
 }

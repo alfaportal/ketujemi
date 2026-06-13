@@ -111,6 +111,7 @@ import { engagementCopyForUiLang } from "@/lib/engagement-i18n";
 import { queueFirstListingCelebration } from "@/components/engagement-effects";
 import { staticPagePaths } from "@/lib/static-page-paths";
 import { buildNewListingSchema, type NewListingFormData } from "@/lib/listing-form-schema";
+import { createAdminListing, isAdminLoggedIn } from "@/lib/admin-api";
 type FormData = NewListingFormData;
 
 function userHasSellerPhone(user: {
@@ -175,6 +176,11 @@ function ImagePreview({ urls, onRemove, mainLabel }: { urls: string[]; onRemove:
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function NewListing() {
   const [pathname, setLocation] = useLocation();
+  const isAdminPostMode = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    const params = new URLSearchParams(window.location.search);
+    return params.get("adminPost") === "1" && isAdminLoggedIn();
+  }, [pathname]);
   const isDhurataPostRoute = pathname === "/listings/new/dhurata-falas";
   const isKerkojPostRoute = pathname === KERKOJ_POST_PATH;
   const { user, loading: authLoading, refresh } = useAuth();
@@ -552,7 +558,7 @@ export default function NewListing() {
   }, []);
 
   useEffect(() => {
-    if (!activeUser) return;
+    if (!activeUser || isAdminPostMode) return;
     const { seller_name, seller_phone } = sellerContactFromUser(activeUser);
     if (seller_name && !form.getValues("seller_name")?.trim()) {
       form.setValue("seller_name", seller_name);
@@ -563,7 +569,7 @@ export default function NewListing() {
     if (activeUser.email && !form.getValues("xSellerEmail")?.trim()) {
       form.setValue("xSellerEmail", activeUser.email);
     }
-  }, [activeUser, form]);
+  }, [activeUser, form, isAdminPostMode]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -763,7 +769,7 @@ export default function NewListing() {
     const formName = listingData.seller_name?.trim() ?? "";
     const formPhone = listingData.seller_phone?.trim() ?? "";
 
-    if (activeUser && userNeedsSellerProfile(activeUser)) {
+    if (activeUser && userNeedsSellerProfile(activeUser) && !isAdminPostMode) {
       setIsSubmitting(true);
       try {
         const bootRes = await fetchWithTimeout("/api/auth/profile/seller-bootstrap", {
@@ -793,10 +799,12 @@ export default function NewListing() {
     }
 
     const profileContact = activeUser ? sellerContactFromUser(activeUser) : { seller_name: "", seller_phone: "" };
-    const contact = {
-      seller_name: formName || profileContact.seller_name,
-      seller_phone: formPhone || profileContact.seller_phone,
-    };
+    const contact = isAdminPostMode
+      ? { seller_name: formName, seller_phone: formPhone }
+      : {
+          seller_name: formName || profileContact.seller_name,
+          seller_phone: formPhone || profileContact.seller_phone,
+        };
 
     const payload: Record<string, unknown> = {
       title: listingData.title,
@@ -817,6 +825,36 @@ export default function NewListing() {
     };
 
     setIsSubmitting(true);
+
+    if (isAdminPostMode) {
+      try {
+        const row = await createAdminListing({
+          title: String(payload.title),
+          description: String(payload.description),
+          price: Number(payload.price) || 0,
+          category_id: Number(payload.category_id),
+          location: String(payload.location),
+          seller_name: contact.seller_name,
+          seller_phone: contact.seller_phone,
+          condition: String(payload.condition),
+          image_url: payload.image_url as string | undefined,
+          video_url: payload.video_url as string | undefined,
+          ...(validation.payloadExtras as Record<string, unknown>),
+        });
+        queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetRecentListingsQueryKey() });
+        clearListingPostDraft();
+        clearListingPostSessionActive();
+        toast({ title: tx.adm_post_success ?? "Shpallja u publikua." });
+        setLocation(`/listings/${row.id}?posted=1`);
+      } catch (e) {
+        refusePost(e instanceof Error ? e.message : (tx.adm_post_err_generic ?? t.postError));
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
     void fetchWithTimeout("/api/listings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -874,18 +912,18 @@ export default function NewListing() {
     );
   }
 
-  const canEditSellerPhone = !activeUser || !userHasSellerPhone(activeUser);
+  const canEditSellerPhone = isAdminPostMode || !activeUser || !userHasSellerPhone(activeUser);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {userNeedsSellerProfile(activeUser) && <SellerProfileGate onReady={() => undefined} />}
+      {userNeedsSellerProfile(activeUser) && !isAdminPostMode && <SellerProfileGate onReady={() => undefined} />}
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">
         <MobileSafeTopSpacer />
         <div className="max-w-2xl mx-auto px-4 min-h-[3.75rem] flex items-center gap-4 py-2">
           <button
             data-testid="button-back"
-            onClick={() => setLocation("/listings")}
+            onClick={() => setLocation(isAdminPostMode ? "/admin" : "/listings")}
             className="flex items-center gap-1.5 text-sm font-medium rounded-lg text-gray-500 hover:text-gray-900 transition-colors touch-manipulation min-h-12 min-w-[2.75rem] justify-center px-2 -mx-2"
           >
             <ArrowLeft size={18} />
@@ -893,7 +931,11 @@ export default function NewListing() {
           </button>
           <div className="flex-1 text-center">
             <span className="font-bold text-lg text-gray-900">
-              {isKerkojCategory ? t.kerkojFormPostTitle : t.postTitle}
+              {isAdminPostMode
+                ? (tx.adm_post_title ?? t.postTitle)
+                : isKerkojCategory
+                  ? t.kerkojFormPostTitle
+                  : t.postTitle}
             </span>
           </div>
           <AuthToolbar variant="compact" />
@@ -906,6 +948,12 @@ export default function NewListing() {
             onDismiss={dismissRecovery}
             onRestore={restoreDraftMedia}
           />
+        ) : null}
+        {isAdminPostMode ? (
+          <div className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-950 leading-relaxed">
+            <p className="font-bold">{tx.ui_adminOnBehalfTitle}</p>
+            <p className="mt-1">{tx.ui_adminOnBehalfBody}</p>
+          </div>
         ) : null}
         {!activeUser && !authLoading ? (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 leading-relaxed">
@@ -1750,13 +1798,16 @@ export default function NewListing() {
                         <Input
                           data-testid="input-seller-name"
                           placeholder="Arben Krasniqi"
-                          readOnly={!!activeUser}
-                          className={activeUser ? "bg-gray-50 cursor-not-allowed" : undefined}
+                          readOnly={!!activeUser && !isAdminPostMode}
+                          className={activeUser && !isAdminPostMode ? "bg-gray-50 cursor-not-allowed" : undefined}
                           {...field}
                         />
                       </FormControl>
-                      {activeUser ? (
+                      {!isAdminPostMode && activeUser ? (
                         <p className="text-xs text-gray-500">{tx.ui_sellerNameProfileHint}</p>
+                      ) : null}
+                      {isAdminPostMode ? (
+                        <p className="text-xs text-violet-700">{tx.ui_adminOnBehalfNameHint}</p>
                       ) : null}
                       <FormMessage />
                     </FormItem>
@@ -1777,7 +1828,9 @@ export default function NewListing() {
                           {...field}
                         />
                       </FormControl>
-                      {canEditSellerPhone ? (
+                      {isAdminPostMode ? (
+                        <p className="text-xs text-violet-700">{tx.ui_adminOnBehalfPhoneHint}</p>
+                      ) : canEditSellerPhone ? (
                         <p className="text-xs text-gray-500">{t.reg_sellerGate_sub}</p>
                       ) : null}
                       <FormMessage />
