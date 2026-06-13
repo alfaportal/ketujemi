@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   fetchWithTimeout,
   getFetchErrorMessage,
+  IMAGE_ANALYZE_TIMEOUT_MS,
 } from "@/lib/fetch-with-timeout";
 import { Link, useLocation } from "wouter";
 import { useForm, useWatch } from "react-hook-form";
@@ -53,7 +54,9 @@ import { ListingCountryPicker } from "@/components/listing-country-picker";
 import { ListingCategorySuggest } from "@/components/listing-category-suggest";
 import { ListingDescriptionHelper } from "@/components/listing-description-helper";
 import { joinListingImageUrls } from "@/lib/listing-images";
-import { type ListingImageAnalysis } from "@/lib/listing-image-vision";
+import { type ListingImageAnalysis, fileToVisionBase64 } from "@/lib/listing-image-vision";
+import { listingPhotoAnalyzeFailureToast } from "@/lib/listing-photo-analyze-toast";
+import { videoFileToVisionBase64 } from "@/lib/listing-video-frame";
 import {
   clearListingPostDraft,
   clearListingPostSessionActive,
@@ -111,7 +114,7 @@ import { engagementCopyForUiLang } from "@/lib/engagement-i18n";
 import { queueFirstListingCelebration } from "@/components/engagement-effects";
 import { staticPagePaths } from "@/lib/static-page-paths";
 import { buildNewListingSchema, type NewListingFormData } from "@/lib/listing-form-schema";
-import { createAdminListing, isAdminLoggedIn } from "@/lib/admin-api";
+import { createAdminListing, isAdminLoggedIn, adminAuthHeaders } from "@/lib/admin-api";
 type FormData = NewListingFormData;
 
 function userHasSellerPhone(user: {
@@ -183,6 +186,7 @@ export default function NewListing() {
   }, [pathname]);
   const isDhurataPostRoute = pathname === "/listings/new/dhurata-falas";
   const isKerkojPostRoute = pathname === KERKOJ_POST_PATH;
+  const skipListingImageAutofill = isDhurataPostRoute || isKerkojPostRoute;
   const { user, loading: authLoading, refresh } = useAuth();
   const lastUserRef = useRef<AuthUser | null>(null);
   if (user) lastUserRef.current = user;
@@ -210,6 +214,7 @@ export default function NewListing() {
     [],
   );
   const [isUploading, setIsUploading] = useState(false);
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const imageAnalyzedRef = useRef(false);
   const lastVideoAnalyzeKeyRef = useRef<string | null>(null);
   const skipCategoryCascadeRef = useRef(false);
@@ -220,7 +225,7 @@ export default function NewListing() {
   const uploadRef = useRef<HTMLInputElement>(null);
   const cameraPhotoRef = useRef<HTMLInputElement>(null);
   const cameraVideoRef = useRef<HTMLInputElement>(null);
-  const imageUpload = useListingImageUpload();
+  const imageUpload = useListingImageUpload({ adminPost: isAdminPostMode });
   const [videoUrl, setVideoUrl] = useState<string | null>(() => readListingPostDraft()?.videoUrl ?? null);
   const [photoUploadKey, setPhotoUploadKey] = useState(0);
   const { showRecoveryBanner, dismissRecovery } = useListingPostGuard({
@@ -463,7 +468,10 @@ export default function NewListing() {
     const timer = setTimeout(() => {
       void fetchWithTimeout("/api/ai/suggest-listing-category", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(isAdminPostMode ? adminAuthHeaders() : {}),
+        },
         credentials: "include",
         body: JSON.stringify({
           title: titleTrim,
@@ -498,7 +506,7 @@ export default function NewListing() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [parentCatId, watchTitle, watchDescription, suggestLang, allCategories, form]);
+  }, [parentCatId, watchTitle, watchDescription, suggestLang, allCategories, form, isAdminPostMode]);
 
   useEffect(() => {
     if (isKerkojCategory || isDhurataCategory) {
@@ -523,10 +531,11 @@ export default function NewListing() {
 
   useEffect(() => {
     if (authLoading) return;
+    if (isAdminPostMode) return;
     if (!user && imageUrls.length === 0 && !videoUrl) {
       setLocation(loginUrlWithReturn(pathname || "/listings/new"));
     }
-  }, [authLoading, user, setLocation, pathname, imageUrls.length, videoUrl]);
+  }, [authLoading, user, setLocation, pathname, imageUrls.length, videoUrl, isAdminPostMode]);
 
   useEffect(() => {
     if (!allCategories || !isDhurataPostRoute) return;
@@ -571,6 +580,149 @@ export default function NewListing() {
     }
   }, [activeUser, form, isAdminPostMode]);
 
+  const applyImageAnalysis = useCallback(
+    (analysis: ListingImageAnalysis) => {
+      try {
+        const cats = allCategories as Array<{ id: number; parent_id?: number | null }> | undefined;
+        if (!cats?.length) {
+          lastImageAnalysisRef.current = analysis;
+          return;
+        }
+
+        const parentExists = cats.some(
+          (c) => c.id === analysis.parent_category_id && (c.parent_id == null || c.parent_id === 0),
+        );
+        const categoryExists = cats.some((c) => c.id === analysis.category_id);
+        if (!parentExists || !categoryExists) {
+          lastImageAnalysisRef.current = analysis;
+          return;
+        }
+
+        lastImageAnalysisRef.current = analysis;
+        pendingImageAnalysisRef.current = analysis;
+        skipCategoryCascadeRef.current = true;
+        skipBrandCascadeRef.current = true;
+        skipTitleSuggestRef.current = true;
+
+        const fieldOpts = { shouldDirty: true, shouldTouch: true, shouldValidate: true } as const;
+        form.setValue("title", analysis.title, fieldOpts);
+        form.setValue("description", analysis.description, fieldOpts);
+        form.setValue("parent_category_id", analysis.parent_category_id, fieldOpts);
+        form.setValue("category_id", analysis.category_id, fieldOpts);
+        form.setValue("brand_category_id", analysis.brand_category_id ?? 0, fieldOpts);
+
+        window.setTimeout(() => {
+          skipTitleSuggestRef.current = false;
+        }, 3000);
+      } catch (err) {
+        console.warn("[KetuJemi] applyImageAnalysis skipped", err);
+      }
+    },
+    [form, allCategories],
+  );
+
+  useEffect(() => {
+    if (!allCategories?.length) return;
+    const analysis = lastImageAnalysisRef.current;
+    if (!analysis) return;
+    applyImageAnalysis(analysis);
+  }, [allCategories?.length, applyImageAnalysis]);
+
+  const runListingVisionAnalysis = useCallback(
+    async (vision: { data: string; mediaType: string }) => {
+      if (imageAnalyzedRef.current || skipListingImageAutofill) return false;
+
+      const res = await fetchWithTimeout(
+        "/api/ai/analyze-listing-image",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(isAdminPostMode ? adminAuthHeaders() : {}),
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            image_base64: vision.data,
+            media_type: vision.mediaType,
+            lang: listingLang,
+            ...(myShop
+              ? { shop_name: myShop.shop_name, shop_category: myShop.category || undefined }
+              : {}),
+          }),
+        },
+        IMAGE_ANALYZE_TIMEOUT_MS,
+      );
+      const body = (await res.json().catch(() => ({}))) as {
+        analysis?: ListingImageAnalysis | null;
+        pipeline?: "google" | "claude" | null;
+        error?: string;
+      };
+      if (!res.ok) {
+        const fail = listingPhotoAnalyzeFailureToast(res.status, tx);
+        toast({ ...fail, variant: "destructive" });
+        return false;
+      }
+      if (body.analysis) {
+        imageAnalyzedRef.current = true;
+        applyImageAnalysis(body.analysis);
+        return true;
+      }
+      const fail = listingPhotoAnalyzeFailureToast(422, tx);
+      toast(fail);
+      return false;
+    },
+    [applyImageAnalysis, skipListingImageAutofill, listingLang, myShop, toast, tx, isAdminPostMode],
+  );
+
+  const analyzeUploadedImageFile = useCallback(
+    async (file: File) => {
+      if (imageAnalyzedRef.current || skipListingImageAutofill) return;
+      setIsAnalyzingImage(true);
+      try {
+        const vision = await fileToVisionBase64(file);
+        await runListingVisionAnalysis(vision);
+      } catch (error) {
+        toast({
+          title: t.photoAnalyzeFailed,
+          description: getFetchErrorMessage(error, tx.photoAnalyzeFailedHint),
+          variant: "destructive",
+        });
+      } finally {
+        setIsAnalyzingImage(false);
+      }
+    },
+    [skipListingImageAutofill, runListingVisionAnalysis, toast, t.photoAnalyzeFailed, tx],
+  );
+
+  const analyzeVideoFile = useCallback(
+    async (file: File): Promise<boolean> => {
+      if (imageAnalyzedRef.current || skipListingImageAutofill) return false;
+      setIsAnalyzingImage(true);
+      try {
+        const vision = await videoFileToVisionBase64(file);
+        return await runListingVisionAnalysis(vision);
+      } catch (error) {
+        const code = error instanceof Error ? error.message : "";
+        const isVideoFrame =
+          code === "video_frame_failed" ||
+          code === "video_frame_timeout" ||
+          code === "video_frame_blank" ||
+          code === "video_frame_encode_failed";
+        toast({
+          title: t.photoAnalyzeFailed,
+          description: isVideoFrame
+            ? t.videoAnalyzeFrameHint
+            : getFetchErrorMessage(error, tx.photoAnalyzeFailedHint),
+          variant: "destructive",
+        });
+        return false;
+      } finally {
+        setIsAnalyzingImage(false);
+      }
+    },
+    [skipListingImageAutofill, runListingVisionAnalysis, toast, t.photoAnalyzeFailed, t.videoAnalyzeFrameHint, tx],
+  );
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
@@ -578,6 +730,8 @@ export default function NewListing() {
       toast({ title: t.uploadFailed, variant: "destructive" });
       return;
     }
+    const shouldAnalyze = imageUrls.length === 0 && !imageAnalyzedRef.current;
+    const firstFileForAnalysis = shouldAnalyze ? files[0] : null;
     setIsUploading(true);
     try {
       const urls: string[] = [];
@@ -585,6 +739,11 @@ export default function NewListing() {
         urls.push(await imageUpload.uploadFile(file));
       }
       setImageUrls((prev) => [...prev, ...urls]);
+      if (firstFileForAnalysis) {
+        window.setTimeout(() => {
+          void analyzeUploadedImageFile(firstFileForAnalysis);
+        }, 1200);
+      }
     } catch {
       toast({ title: t.uploadFailed, variant: "destructive" });
     } finally {
@@ -622,6 +781,9 @@ export default function NewListing() {
       return;
     }
     const videoFileKey = `${file.name}:${file.size}:${file.lastModified}`;
+    const shouldAnalyze =
+      imageUrls.length === 0 &&
+      (!imageAnalyzedRef.current || lastVideoAnalyzeKeyRef.current !== videoFileKey);
     setVideoUploadPhase("preparing");
     setVideoPreparePct(0);
     try {
@@ -632,7 +794,11 @@ export default function NewListing() {
       setVideoUrl(url);
       setVideoUploadPhase(null);
       setVideoPreparePct(0);
-      lastVideoAnalyzeKeyRef.current = videoFileKey;
+      if (shouldAnalyze) {
+        void analyzeVideoFile(file).then((ok) => {
+          if (ok) lastVideoAnalyzeKeyRef.current = videoFileKey;
+        });
+      }
     } catch (err) {
       const msg = listingVideoErrorMessage(err, uiLang);
       if (msg) {
@@ -659,7 +825,7 @@ export default function NewListing() {
   };
 
   const onSubmit = async (data: FormData) => {
-    if (!activeUser) {
+    if (!activeUser && !isAdminPostMode) {
       setLocation(loginUrlWithReturn(pathname || "/listings/new"));
       return;
     }
@@ -955,7 +1121,7 @@ export default function NewListing() {
             <p className="mt-1">{tx.ui_adminOnBehalfBody}</p>
           </div>
         ) : null}
-        {!activeUser && !authLoading ? (
+        {!isAdminPostMode && !activeUser && !authLoading ? (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 leading-relaxed">
             Duhet të hysh për të postuar shpalljen.{" "}
             <Link
@@ -1020,23 +1186,23 @@ export default function NewListing() {
                     onChange={handleFileChange}
                   />
 
-                  {(isUploading) && (
+                  {(isAnalyzingImage || isUploading) && (
                     <p className="text-sm text-blue-600 font-medium mb-2 flex items-center gap-2" role="status">
                       <Loader2 size={14} className="animate-spin shrink-0" />
-                      {t.uploading}
+                      {isAnalyzingImage ? t.analyzingPhoto : t.uploading}
                     </p>
                   )}
 
                   <button
                     type="button"
                     onClick={() => uploadRef.current?.click()}
-                    disabled={isUploading || !imageUpload.ready}
+                    disabled={isUploading || isAnalyzingImage || !imageUpload.ready}
                     className="w-full border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl py-12 px-6 text-center transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none min-h-[10.5rem] touch-manipulation"
                   >
-                    {isUploading ? (
+                    {isUploading || isAnalyzingImage ? (
                       <div className="flex flex-col items-center gap-1.5 text-blue-500">
                         <Loader2 size={30} className="animate-spin" />
-                        <p className="text-sm font-semibold">{t.uploading}</p>
+                        <p className="text-sm font-semibold">{isAnalyzingImage ? t.analyzingPhoto : t.uploading}</p>
                         <p className="text-sm text-gray-400">{t.waitPlease}</p>
                       </div>
                     ) : (
@@ -1221,6 +1387,7 @@ export default function NewListing() {
                 form.setValue("category_id", s.category_id);
                 form.setValue("brand_category_id", s.brand_category_id ?? 0);
               }}
+              adminPostMode={isAdminPostMode}
             />
 
             {/* ── 2. Category ── */}
@@ -1654,6 +1821,7 @@ export default function NewListing() {
                         <ListingDescriptionHelper
                           description={field.value ?? ""}
                           onApplyDescription={(next) => field.onChange(next)}
+                          adminPostMode={isAdminPostMode}
                         />
                       ) : null}
                     </div>

@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { getSessionUser } from "../lib/session-user";
 import { createB2ListingImagePresignedPut, isB2UploadConfigured } from "../lib/b2-upload-presign";
+import { getPlatformAdminUser } from "../lib/admin-listing-on-behalf.js";
+import { resolveSessionOrAdminAuth } from "../lib/session-or-admin.js";
 import { logger } from "../lib/logger";
 import { randomUUID } from "node:crypto";
 
@@ -40,8 +41,8 @@ router.post("/uploads/b2-presign", async (req, res) => {
     return;
   }
 
-  const viewer = await getSessionUser(req);
-  if (!viewer) {
+  const auth = await resolveSessionOrAdminAuth(req);
+  if (!auth) {
     res.status(401).json({ error: "Authentication required" });
     return;
   }
@@ -57,7 +58,18 @@ router.post("/uploads/b2-presign", async (req, res) => {
 
   const prefix = (process.env.B2_KEY_PREFIX?.trim() || "listings").replace(/^\/+|\/+$/g, "");
   const safeName = safeImageFilename(req.body?.filename);
-  const objectKey = `${prefix}/${viewer.id}/${randomUUID()}-${safeName}`;
+  let ownerId: number;
+  if (auth.kind === "user") {
+    ownerId = auth.user.id;
+  } else {
+    const adminUser = await getPlatformAdminUser();
+    if (!adminUser) {
+      res.status(503).json({ error: "PLATFORM_ADMIN_USER_NOT_FOUND" });
+      return;
+    }
+    ownerId = adminUser.id;
+  }
+  const objectKey = `${prefix}/${ownerId}/${randomUUID()}-${safeName}`;
 
   try {
     const { uploadUrl, publicUrl } = await createB2ListingImagePresignedPut({

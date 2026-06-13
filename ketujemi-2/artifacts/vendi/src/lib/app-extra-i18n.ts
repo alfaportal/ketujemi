@@ -2164,7 +2164,7 @@ const AL_OVERRIDES: Record<string, string> = {
   ui_categorySuggestTitle: "Këshillë nga sistemi për kategori",
   ui_adminOnBehalfTitle: "Modalitet operator — postim për shitës",
   ui_adminOnBehalfBody:
-    "Forma e plotë si për përdoruesit: ngarko foto, AI plotëson kategori/titull/përshkrim. Vendos emrin dhe telefonin e shitësit — publikohet menjëherë, pa kufizime duplicate. Email-i yt admin nuk shfaqet.",
+    "Nuk duhet të kyçesh në sajt — mjafton hyrja në panelin e adminit. Ngarko foto, AI plotëson kategori/titull/përshkrim. Vendos emrin dhe telefonin e shitësit — pa kufizime. Email-i yt admin nuk shfaqet.",
   ui_adminOnBehalfNameHint: "Emri i shitësit që shfaqet publikisht (jo emri yt admin).",
   ui_adminOnBehalfPhoneHint: "Telefoni i shitësit që shfaqet publikisht — mund ta ndryshosh lirisht.",
   ui_adminSellerEmailLabel: "Email shitësi",

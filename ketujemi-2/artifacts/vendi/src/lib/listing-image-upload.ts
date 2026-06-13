@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { adminAuthHeaders } from "@/lib/admin-api";
 import { prepareListingImageFile } from "@/lib/listing-image-prepare";
 import { uploadImageToCloudinary } from "./cloudinary-config";
 
@@ -16,9 +17,10 @@ export type ListingImageUploadConfig = {
 };
 
 /** Fetch `/api/config/public` then expose unified upload for listing photos (Backblaze B2 or Cloudinary). */
-export function useListingImageUpload(): ListingImageUploadConfig & {
+export function useListingImageUpload(opts?: { adminPost?: boolean }): ListingImageUploadConfig & {
   uploadFile: (file: File) => Promise<string>;
 } {
+  const adminPost = opts?.adminPost ?? false;
   const [provider, setProvider] = useState<ImageUploadProvider>(null);
   const [cloudinaryCloudName, setCloudinaryCloudName] = useState(BUILD_CLOUD_NAME);
   const [cloudinaryUploadPreset, setCloudinaryUploadPreset] = useState(BUILD_UPLOAD_PRESET);
@@ -71,7 +73,10 @@ export function useListingImageUpload(): ListingImageUploadConfig & {
         const pres = await fetchWithTimeout("/api/uploads/b2-presign", {
           method: "POST",
           credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(adminPost ? adminAuthHeaders() : {}),
+          },
           body: JSON.stringify({ filename: prepared.name, contentType: ct }),
         });
         const body = (await pres.json().catch(() => ({}))) as {
@@ -100,7 +105,7 @@ export function useListingImageUpload(): ListingImageUploadConfig & {
 
       throw new Error("upload_not_configured");
     },
-    [provider, cloudinaryCloudName, cloudinaryUploadPreset],
+    [provider, cloudinaryCloudName, cloudinaryUploadPreset, adminPost],
   );
 
   return {

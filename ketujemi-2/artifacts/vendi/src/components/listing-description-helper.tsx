@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { adminAuthHeaders } from "@/lib/admin-api";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMarket } from "@/lib/market-context";
@@ -19,9 +20,14 @@ function looksLikeAdvice(text: string): boolean {
 type Props = {
   description: string;
   onApplyDescription: (next: string) => void;
+  adminPostMode?: boolean;
 };
 
-export function ListingDescriptionHelper({ description, onApplyDescription }: Props) {
+export function ListingDescriptionHelper({
+  description,
+  onApplyDescription,
+  adminPostMode = false,
+}: Props) {
   const { market, t } = useMarket();
   const [loading, setLoading] = useState(false);
   const [polished, setPolished] = useState<string | null>(null);
@@ -39,7 +45,10 @@ export function ListingDescriptionHelper({ description, onApplyDescription }: Pr
 
     void fetchWithTimeout("/api/ai/polish-listing-description", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(adminPostMode ? adminAuthHeaders() : {}),
+      },
       credentials: "include",
       body: JSON.stringify({ description: desc, lang }),
     })

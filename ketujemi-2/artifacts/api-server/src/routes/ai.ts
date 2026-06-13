@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { isSessionOrAdminAuthorized } from "../lib/session-or-admin.js";
 import { getSessionUser } from "../lib/session-user";
 import { getPostingSuggestions } from "../lib/listing-posting-assistant";
 import { polishListingDescription } from "../lib/listing-description-polish";
@@ -23,8 +24,7 @@ const router = Router();
 
 // ─── POST /ai/posting-suggestions ─────────────────────────────────────────────
 router.post("/ai/posting-suggestions", aiAuthenticatedLimiter, async (req, res) => {
-  const viewer = await getSessionUser(req);
-  if (!viewer) {
+  if (!(await isSessionOrAdminAuthorized(req))) {
     res.status(401).json({ error: "Authentication required" });
     return;
   }
@@ -58,8 +58,7 @@ router.post("/ai/posting-suggestions", aiAuthenticatedLimiter, async (req, res) 
 
 // ─── POST /ai/polish-listing-description ────────────────────────────────────────
 router.post("/ai/polish-listing-description", aiAuthenticatedLimiter, async (req, res) => {
-  const viewer = await getSessionUser(req);
-  if (!viewer) {
+  if (!(await isSessionOrAdminAuthorized(req))) {
     res.status(401).json({ error: "Authentication required" });
     return;
   }
@@ -110,8 +109,7 @@ router.post("/ai/generate-shop-description", aiAuthenticatedLimiter, async (req,
 
 // ─── POST /ai/suggest-listing-category ─────────────────────────────────────────
 router.post("/ai/suggest-listing-category", aiAuthenticatedLimiter, async (req, res) => {
-  const viewer = await getSessionUser(req);
-  if (!viewer) {
+  if (!(await isSessionOrAdminAuthorized(req))) {
     res.status(401).json({ error: "Authentication required" });
     return;
   }
@@ -130,8 +128,7 @@ router.post("/ai/suggest-listing-category", aiAuthenticatedLimiter, async (req, 
 
 // ─── POST /ai/analyze-listing-image ───────────────────────────────────────────
 router.post("/ai/analyze-listing-image", analyzeListingImageLimiter, async (req, res) => {
-  const viewer = await getSessionUser(req);
-  if (!viewer) {
+  if (!(await isSessionOrAdminAuthorized(req))) {
     res.status(401).json({ error: "Authentication required" });
     return;
   }

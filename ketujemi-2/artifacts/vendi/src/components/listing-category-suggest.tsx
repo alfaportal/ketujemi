@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { adminAuthHeaders } from "@/lib/admin-api";
 import { Sparkles, Loader2, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMarket } from "@/lib/market-context";
@@ -22,6 +23,7 @@ type Props = {
   currentCategoryId: number;
   currentBrandId?: number;
   onApply: (s: CategorySuggestion) => void;
+  adminPostMode?: boolean;
 };
 
 function encouragementMessage(
@@ -46,6 +48,7 @@ export function ListingCategorySuggest({
   currentCategoryId,
   currentBrandId = 0,
   onApply,
+  adminPostMode = false,
 }: Props) {
   const { market, t } = useMarket();
   const tx = t as Record<string, string | undefined>;
@@ -66,7 +69,10 @@ export function ListingCategorySuggest({
       setLoading(true);
       void fetchWithTimeout("/api/ai/suggest-listing-category", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(adminPostMode ? adminAuthHeaders() : {}),
+        },
         credentials: "include",
         body: JSON.stringify({ title, description, lang }),
       })
@@ -80,7 +86,7 @@ export function ListingCategorySuggest({
     }, 350);
 
     return () => clearTimeout(timer);
-  }, [ready, title, description, lang]);
+  }, [ready, title, description, lang, adminPostMode]);
 
   const suggestionKey = suggestion
     ? `${suggestion.parent_category_id}-${suggestion.category_id}-${suggestion.brand_category_id ?? 0}`

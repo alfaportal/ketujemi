@@ -112,6 +112,13 @@ export function isAdminLoggedIn(): boolean {
   return !!readStoredToken();
 }
 
+/** Bearer headers for admin-panel API calls from the public site (e.g. admin post form). */
+export function adminAuthHeaders(): HeadersInit {
+  const token = readStoredToken();
+  if (!token) return {};
+  return { Authorization: `Bearer ${token}` };
+}
+
 export function getDashboard() {
   return request<AdminDashboard>("/dashboard");
 }
