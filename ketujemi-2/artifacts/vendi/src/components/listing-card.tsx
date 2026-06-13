@@ -23,7 +23,7 @@ function formatDate(isoString: string): string {
   return `${day}.${month}.${year} · ${hours}:${mins}`;
 }
 
-import { fillPlaceholders } from "@/lib/app-extra-i18n";
+import { fillPlaceholders } from "@/lib/fill-placeholders";
 
 // ─── Expiry countdown ─────────────────────────────────────────────────────────
 function getDaysLeft(

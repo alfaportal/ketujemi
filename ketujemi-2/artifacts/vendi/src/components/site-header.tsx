@@ -4,8 +4,9 @@ import { SiteLogo } from "@/components/site-logo";
 import { LanguageSelector } from "@/components/language-selector";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { useMarket } from "@/lib/market-context";
-import { useShopDirectoryCopy } from "@/lib/shop-directory-i18n";
+import { useSiteNavCopy } from "@/lib/site-nav-i18n";
 import { staticPagePaths } from "@/lib/static-page-paths";
+import { prefetchRoute } from "@/lib/route-prefetch";
 import { cn } from "@/lib/utils";
 
 const navLinkClass =
@@ -24,19 +25,30 @@ type SiteHeaderProps = {
  * on md+ — single row with logo, language, and actions.
  */
 function MainNavLinks({ className }: { className?: string }) {
-  const d = useShopDirectoryCopy();
+  const nav = useSiteNavCopy();
   const { uiLang } = useMarket();
   const contactPath = staticPagePaths(uiLang).contact;
+  const prefetch = (href: string) => () => prefetchRoute(href);
   return (
     <nav className={cn("flex items-center gap-1 sm:gap-2", className)} aria-label="Main">
-      <Link href="/listings" className={navLinkClass}>
-        {d.navBuySell}
+      <Link
+        href="/listings"
+        className={navLinkClass}
+        onMouseEnter={prefetch("/listings")}
+        onFocus={prefetch("/listings")}
+      >
+        {nav.navBuySell}
       </Link>
-      <Link href="/dyqanet" className={navLinkClass}>
-        {d.navShops}
+      <Link
+        href="/dyqanet"
+        className={navLinkClass}
+        onMouseEnter={prefetch("/dyqanet")}
+        onFocus={prefetch("/dyqanet")}
+      >
+        {nav.navShops}
       </Link>
       <Link href={contactPath} className={navLinkClass}>
-        {d.navHelp}
+        {nav.navHelp}
       </Link>
     </nav>
   );

@@ -6,9 +6,23 @@ import {
   translationKeyForUiLang,
   type UiLang,
 } from "./ui-languages";
-import { DE_TRANSLATIONS } from "./market-context-de";
-import { FR_TRANSLATIONS } from "./market-context-fr";
-import { IT_TRANSLATIONS } from "./market-context-it";
+
+type OptionalUiLocale = "fr" | "de" | "it";
+
+async function loadOptionalLocale(
+  locale: OptionalUiLocale,
+): Promise<Record<string, string>> {
+  if (locale === "fr") {
+    const m = await import("./market-context-fr");
+    return m.FR_TRANSLATIONS;
+  }
+  if (locale === "de") {
+    const m = await import("./market-context-de");
+    return m.DE_TRANSLATIONS;
+  }
+  const m = await import("./market-context-it");
+  return m.IT_TRANSLATIONS;
+}
 
 export const MARKETS = [
   { code: "ks",  flag: "🇽🇰", name: "Kosovë",             currency: "EUR", symbol: "€",   prefix: "+383" },
@@ -1363,9 +1377,6 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     postQuotaExceeded: "You have reached the free posting limit for this category.",
     postQuotaRemaining: "Free posts remaining in this category: {n}",
   },
-  fr: FR_TRANSLATIONS,
-  de: DE_TRANSLATIONS,
-  it: IT_TRANSLATIONS,
 };
 
 // ─── Form option arrays per market ────────────────────────────────────────────
@@ -1582,13 +1593,33 @@ export function MarketProvider({ children }: { children: ReactNode }) {
   const [extraTranslations, setExtraTranslations] = useState<
     Record<string, Record<string, string>> | null
   >(null);
+  const [optionalLocales, setOptionalLocales] = useState<
+    Partial<Record<OptionalUiLocale, Record<string, string>>>
+  >({});
 
   useEffect(() => {
     void import("./app-extra-i18n").then((m) => setExtraTranslations(m.EXTRA_TRANSLATIONS));
   }, []);
 
   useEffect(() => {
-    fetchLiveRates().then(setRates);
+    const key = translationKeyForUiLang(uiLang);
+    if (key !== "fr" && key !== "de" && key !== "it") return;
+    if (optionalLocales[key]) return;
+    void loadOptionalLocale(key).then((pack) => {
+      setOptionalLocales((prev) => ({ ...prev, [key]: pack }));
+    });
+  }, [uiLang, optionalLocales]);
+
+  useEffect(() => {
+    const loadRates = () => {
+      void fetchLiveRates().then(setRates);
+    };
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(loadRates, { timeout: 4000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const timer = window.setTimeout(loadRates, 1500);
+    return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -1620,11 +1651,15 @@ export function MarketProvider({ children }: { children: ReactNode }) {
 
   const translationCode = translationKeyForUiLang(uiLang);
   const tMerged = useMemo(() => {
+    const base =
+      optionalLocales[translationCode as OptionalUiLocale]
+      ?? TRANSLATIONS[translationCode]
+      ?? TRANSLATIONS.ks;
     return {
-      ...TRANSLATIONS[translationCode],
+      ...base,
       ...(extraTranslations?.[translationCode] ?? {}),
     };
-  }, [translationCode, extraTranslations]);
+  }, [translationCode, extraTranslations, optionalLocales]);
 
   return (
     <MarketContext.Provider value={{ market, setMarket, uiLang, setUiLang, rates, t: tMerged }}>
