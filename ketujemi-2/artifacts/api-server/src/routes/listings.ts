@@ -499,6 +499,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
       category_name: catRow?.name ?? null,
       categoryRootSlug: categoryMeta?.rootSlug ?? null,
       image_url: safeImageUrl,
+      video_url: safeVideoUrl,
       condition: parsed.data.condition,
     },
     parseUiLang(bodyExtra.lang),

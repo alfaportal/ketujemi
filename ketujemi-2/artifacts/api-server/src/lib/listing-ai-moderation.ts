@@ -50,6 +50,7 @@ function ruleBasedModeration(input: {
   price: number;
   price_agreement?: boolean;
   image_url?: string | null;
+  video_url?: string | null;
   categoryRootSlug?: string | null;
 }): ModerationResult {
   const title = input.title.trim();
@@ -82,9 +83,10 @@ function ruleBasedModeration(input: {
   if (!isKerkoj && !isDhurata && !input.price_agreement && input.price > 10000000)
     return { approved: false, reason: "Çmimi duket jorealiste — kontrolloje." };
 
-  // Foto
+  // Foto (video-only listings are allowed)
   const imageCount = countListingImages(input.image_url);
-  if (imageCount < 1)
+  const hasVideo = Boolean(input.video_url?.trim());
+  if (imageCount < 1 && !hasVideo)
     return { approved: false, reason: "Ju lutem ngarkoni të paktën një foto." };
   // Fjalë të ndaluara
   for (const { re, reason } of BLOCK_PATTERNS) {
@@ -123,6 +125,7 @@ export async function moderateListingContent(
     category_name?: string | null;
     categoryRootSlug?: string | null;
     image_url?: string | null;
+    video_url?: string | null;
     condition?: string | null;
   },
   lang: UiLang = "sq",

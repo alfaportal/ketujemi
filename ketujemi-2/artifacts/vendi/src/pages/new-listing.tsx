@@ -732,9 +732,12 @@ export default function NewListing() {
         onPrepareProgress: setVideoPreparePct,
       });
       setVideoUrl(url);
+      setVideoUploadPhase(null);
+      setVideoPreparePct(0);
       if (shouldAnalyze) {
-        const ok = await analyzeVideoFile(file);
-        if (ok) lastVideoAnalyzeKeyRef.current = videoFileKey;
+        void analyzeVideoFile(file).then((ok) => {
+          if (ok) lastVideoAnalyzeKeyRef.current = videoFileKey;
+        });
       }
     } catch (err) {
       const msg = listingVideoErrorMessage(err, uiLang);
@@ -744,7 +747,6 @@ export default function NewListing() {
         toast({ title: t.uploadFailed, variant: "destructive" });
       }
     } finally {
-      setIsAnalyzingImage(false);
       setVideoUploadPhase(null);
       setVideoPreparePct(0);
       if (videoUploadRef.current) videoUploadRef.current.value = "";
@@ -779,6 +781,8 @@ export default function NewListing() {
     };
     const parentId = Number(listingData.parent_category_id);
     const children = (allCategories ?? []).filter((c: { parent_id?: number | null }) => c.parent_id === parentId);
+    const photoCountForValidation =
+      imageUrls.length > 0 ? imageUrls.length : videoUrl ? 1 : 0;
     const preflight = collectListingPostPreflightIssues(
       {
         parentCategoryId: parentId,
@@ -793,7 +797,7 @@ export default function NewListing() {
         location: listingData.location,
         sellerName: listingData.seller_name,
         sellerPhone: listingData.seller_phone,
-        imageCount: imageUrls.length,
+        imageCount: photoCountForValidation,
         isKerkoj: isKerkojCategory,
         isDhurata: isDhurataCategory,
         isUploading,
@@ -837,7 +841,7 @@ export default function NewListing() {
       },
       Number(parentCatId) || effectiveCategoryId,
       {
-      imageCount: imageUrls.length,
+      imageCount: photoCountForValidation,
       subcategoryName: partCat?.name,
       sellLangBlockedTemplate: tx.ui_sellLangBlocked,
     });
@@ -1169,21 +1173,15 @@ export default function NewListing() {
                     </div>
                   ) : null}
 
-                  {isVideoUploading || (isAnalyzingImage && imageUrls.length === 0) ? (
+                  {isVideoUploading ? (
                     <div className="mt-2 flex flex-col items-center gap-2 py-8 text-blue-600">
                       <Loader2 size={28} className="animate-spin" />
                       <p className="text-sm font-semibold">
-                        {isAnalyzingImage && !isVideoUploading
-                          ? t.analyzingPhoto
-                          : videoUploadPhase === "preparing"
-                            ? t.videoPreparingTitle
-                            : t.uploading}
+                        {videoUploadPhase === "preparing"
+                          ? t.videoPreparingTitle
+                          : t.uploading}
                       </p>
-                      {isAnalyzingImage && !isVideoUploading ? (
-                        <p className="text-xs text-gray-500 text-center max-w-xs px-4">
-                          {t.analyzingPhotoHint}
-                        </p>
-                      ) : videoUploadPhase === "preparing" ? (
+                      {videoUploadPhase === "preparing" ? (
                         <p className="text-xs text-gray-500 text-center max-w-xs px-4">
                           {t.videoPreparingHint}
                           {videoPreparePct > 0 ? ` ${videoPreparePct}%` : ""}
@@ -1192,8 +1190,14 @@ export default function NewListing() {
                     </div>
                   ) : null}
 
-                  {videoUrl ? (
+                  {videoUrl && !isVideoUploading ? (
                     <div className="mt-2 relative rounded-xl overflow-hidden border border-gray-200 bg-black">
+                      <div
+                        className="absolute top-2 left-2 z-10 flex items-center justify-center w-8 h-8 rounded-full bg-white/95 shadow-sm"
+                        aria-hidden
+                      >
+                        <CheckCircle2 size={18} className="text-green-600" />
+                      </div>
                       <video
                         src={videoUrl}
                         controls
