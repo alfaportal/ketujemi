@@ -570,7 +570,9 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   }
 
   try {
-    assertListingPostUserCooldown(viewer);
+    if (!adminOnBehalf) {
+      assertListingPostUserCooldown(viewer);
+    }
   } catch (err: unknown) {
     if (err instanceof Error && err.message === "LISTING_POST_COOLDOWN") {
       const e = err as Error & { publicMessage?: string };

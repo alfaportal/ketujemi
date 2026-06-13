@@ -13,6 +13,7 @@ import { logger } from "./logger";
 import { sendTransactionalEmail } from "./send-transactional-email";
 import { getPublicAppOrigin } from "./listing-expiry-reminders";
 import { normalizeSmsPhoneDigits, vonageSendSms } from "./vonage-sms";
+import { isPlatformAdminUser } from "./platform-admin.js";
 
 /** Same or similar item cannot be reposted within this window. */
 export const SELF_DUPLICATE_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
@@ -198,6 +199,8 @@ export async function blockSelfDuplicateListingIfNeeded(
   description: string,
   opts: SelfDuplicateLookupOpts = {},
 ): Promise<SelfDuplicateBlockResult | null> {
+  if (isPlatformAdminUser(user)) return null;
+
   const existingId = await findSelfDuplicateActiveListingId(user.id, user, title, description, opts);
   if (existingId == null) return null;
 
