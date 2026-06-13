@@ -1,6 +1,7 @@
 import { db, listingsTable, type User } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { handleListingExternalView } from "./engagement-notifications";
+import { isListingPubliclyVisible } from "./listing-visibility.js";
 
 /** Increment view counter for an active, non-expired listing. */
 export async function incrementListingView(
@@ -19,10 +20,7 @@ export async function incrementListingView(
 
   if (!row) return { ok: false, status: 404 };
 
-  const isExpired = !!(row.expires_at && new Date(row.expires_at) < new Date());
-  const statusOk = !row.status || row.status === "active";
-  const moderationOk = !row.moderation_status || row.moderation_status === "approved";
-  if (isExpired || !statusOk || !moderationOk) {
+  if (!isListingPubliclyVisible(row)) {
     return { ok: false, status: 404 };
   }
 

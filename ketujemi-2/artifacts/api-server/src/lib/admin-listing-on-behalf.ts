@@ -1,6 +1,7 @@
 import { db, usersTable, type User } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 import { getAdminEmail } from "./admin-monitor-email.js";
+import { isPlatformAdminUser, PLATFORM_OPERATOR_EMAIL } from "./platform-admin.js";
 export async function getPlatformAdminUser(): Promise<User | null> {
   const email = (getAdminEmail()?.trim().toLowerCase() || PLATFORM_OPERATOR_EMAIL.toLowerCase());
   const [user] = await db

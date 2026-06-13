@@ -67,7 +67,6 @@ import type { User } from "@workspace/db";
 import { getApprovedShopIdForUser, finalizeListingsForApi } from "../lib/shop-listing-lookup";
 import { applyViewerContact, buildCategoryRootSlugMap, formatListing } from "./listings-format";
 import {
-  purgeExpiredListingById,
   requestPurgeExpiredListings,
 } from "../lib/expire-listings-job";
 import { runTwoLayerModeration } from "../lib/listing-two-layer-moderation";
@@ -81,6 +80,7 @@ import {
 } from "../lib/listing-special-categories.js";
 import { getCategoryTreeIds } from "../lib/category-tree.js";
 import { expiresAtAfterListingLifetime } from "../lib/listing-lifetime.js";
+import { isListingPubliclyVisible } from "../lib/listing-visibility.js";
 import { postNewListingToFacebook } from "../services/socialMedia.js";
 import { markListingFbPosted } from "../lib/facebook-scheduled-post-job";
 import { logger } from "../lib/logger";
@@ -106,7 +106,7 @@ function rateLimitReport(ip: string): boolean {
 
 const router = Router();
 
-/** Backfill null visibility fields on legacy rows (e.g. early admin posts). */
+/** Backfill null or legacy visibility fields (e.g. early admin posts). */
 async function repairLegacyListingFields(
   row: typeof listingsTable.$inferSelect,
 ): Promise<typeof listingsTable.$inferSelect> {
@@ -116,6 +116,12 @@ async function repairLegacyListingFields(
   if (!row.expires_at) patch.expires_at = expiresAtAfterListingLifetime();
   if (!row.created_at) patch.created_at = new Date();
   if (!row.listed_at) patch.listed_at = row.created_at ?? new Date();
+
+  // Rows that appear publishable but carry a non-active status from older flows.
+  const moderationOk = !row.moderation_status || row.moderation_status === "approved";
+  if (row.status && row.status !== "active" && moderationOk && row.title?.trim()) {
+    patch.status = "active";
+  }
 
   if (Object.keys(patch).length === 0) return row;
 
@@ -1239,53 +1245,52 @@ router.post("/listings/:id/view", async (req, res) => {
 
 // ─── GET /listings/:id ────────────────────────────────────────────────────────
 router.get("/listings/:id", async (req, res) => {
-  const viewer = await getSessionUser(req);
-  const parsed = GetListingParams.safeParse({ id: Number(req.params.id) });
-  if (!parsed.success) {
-    res.status(400).json({ error: "Invalid id" });
-    return;
-  }
-
-  let [row] = await db
-    .select()
-    .from(listingsTable)
-    .where(eq(listingsTable.id, parsed.data.id));
-
-  if (!row) {
-    res.status(404).json({ error: "Not found" });
-    return;
-  }
-
-  row = await repairLegacyListingFields(row);
-
-  const isExpired = !!(row.expires_at && new Date(row.expires_at) < new Date());
-  const isOwner = !!(viewer && listingBelongsToUser(viewer.id, viewer, row));
-  const statusOk = !row.status || row.status === "active";
-  const moderationOk = !row.moderation_status || row.moderation_status === "approved";
-
-  if (!isOwner && (!statusOk || !moderationOk || isExpired)) {
-    if (isExpired) {
-      await purgeExpiredListingById(parsed.data.id);
+  try {
+    const viewer = await getSessionUser(req);
+    const parsed = GetListingParams.safeParse({ id: Number(req.params.id) });
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid id" });
+      return;
     }
-    res.status(404).json({ error: "Not found" });
-    return;
-  }
 
-  const catMeta = await resolveCategorySlugMeta(row.category_id);
+    let [row] = await db
+      .select()
+      .from(listingsTable)
+      .where(eq(listingsTable.id, parsed.data.id));
 
-  let formatted = formatListing(row, catMeta?.name ?? null, catMeta?.rootSlug ?? null);
-  if (await isListingUserPlatformAdmin(row.user_id)) {
-    formatted = {
-      ...formatted,
-      description: descriptionForAdminOnBehalf(formatted.description),
+    if (!row) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+
+    row = await repairLegacyListingFields(row);
+
+    const isOwner = !!(viewer && listingBelongsToUser(viewer.id, viewer, row));
+
+    if (!isOwner && !isListingPubliclyVisible(row)) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+
+    const catMeta = await resolveCategorySlugMeta(row.category_id);
+
+    let formatted = formatListing(row, catMeta?.name ?? null, catMeta?.rootSlug ?? null);
+    if (await isListingUserPlatformAdmin(row.user_id)) {
+      formatted = {
+        ...formatted,
+        description: descriptionForAdminOnBehalf(formatted.description),
+      };
+    }
+    const payload = applyViewerContact(formatted, viewer) as ReturnType<typeof formatListing> & {
+      can_repost: boolean;
     };
+    payload.can_repost = isOwner && !isListingPubliclyVisible(row);
+    const [out] = await finalizeListingsForApi([payload]);
+    res.json({ ...out, can_repost: payload.can_repost, is_owner: isOwner });
+  } catch (err) {
+    logger.error({ err, listingId: req.params.id }, "GET /listings/:id failed");
+    res.status(500).json({ error: "Internal server error" });
   }
-  const payload = applyViewerContact(formatted, viewer) as ReturnType<typeof formatListing> & {
-    can_repost: boolean;
-  };
-  payload.can_repost = isOwner && isExpired;
-  const [out] = await finalizeListingsForApi([payload]);
-  res.json({ ...out, can_repost: payload.can_repost, is_owner: isOwner });
 });
 
 // ─── PATCH /listings/:id ──────────────────────────────────────────────────────
