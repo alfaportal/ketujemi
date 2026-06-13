@@ -40,7 +40,7 @@ export function buildShopSocialLinks(
   const links: ShopSocialLinkItem[] = [];
   const facebook = fields.facebook?.trim();
   const instagram = enriched?.instagram?.profile_url?.trim() || fields.instagram?.trim();
-  const tiktok = enriched?.tiktok?.profile_url?.trim() || fields.tiktok?.trim();
+  const tiktokRaw = fields.tiktok?.trim();
   const website = fields.website?.trim();
   const whatsappHref = shopWhatsappHref(fields.whatsapp);
 
@@ -71,11 +71,12 @@ export function buildShopSocialLinks(
       className: "bg-[#25D366] hover:bg-[#20bd5a] text-white",
     });
   }
-  if (tiktok) {
+  if (tiktokRaw) {
+    const tiktokHref = /^https:\/\//i.test(tiktokRaw) ? tiktokRaw : `https://${tiktokRaw}`;
     links.push({
       key: "tiktok",
       label: "TikTok",
-      href: tiktok,
+      href: tiktokHref,
       icon: TikTokIcon,
       className: "bg-black hover:bg-gray-900 text-white",
     });
