@@ -2080,6 +2080,10 @@ const KS_EXTRA: Record<string, string> = {
   ui_listingsStatsTotal: "Gjithsej",
   ui_listingsStatsToday: "Sot",
   ui_listingsStatsInFilter: "Në filtrin aktual",
+  ui_shopsStatsTitle: "Dyqane aktive",
+  ui_homePlatformTitle: "Çfarë ka në platformë",
+  ui_homeStatsListings: "Shpallje",
+  ui_homeStatsShops: "Dyqane",
 };
 
 const AL_OVERRIDES: Record<string, string> = {
@@ -3974,6 +3978,10 @@ const MK_EXTRA: Record<string, string> = {
   ui_listingsStatsTotal: "Вкупно",
   ui_listingsStatsToday: "Денес",
   ui_listingsStatsInFilter: "Во тековниот филтер",
+  ui_shopsStatsTitle: "Активни продавници",
+  ui_homePlatformTitle: "Што има на платформата",
+  ui_homeStatsListings: "Огласи",
+  ui_homeStatsShops: "Продавници",
   ui_adminOnBehalfTitle: "Режим оператор — објава за продавач",
   ui_adminOnBehalfBody:
     "Внесете име и телефон на вистинскиот продавач. Вашиот admin email не се прикажува јавно. Само операторската сметка (EMAIL_ADMIN) го има овој пристап.",
@@ -6147,6 +6155,10 @@ const MNE_EXTRA: Record<string, string> = {
   ui_listingsStatsTotal: "Ukupno",
   ui_listingsStatsToday: "Danas",
   ui_listingsStatsInFilter: "U trenutnom filteru",
+  ui_shopsStatsTitle: "Aktivne prodavnice",
+  ui_homePlatformTitle: "Šta ima na platformi",
+  ui_homeStatsListings: "Oglasi",
+  ui_homeStatsShops: "Prodavnice",
   ui_adminOnBehalfTitle: "Režim operatora — objava za prodavca",
   ui_adminOnBehalfBody:
     "Unesite ime i telefon pravog prodavca. Vaš admin email se ne prikazuje javno. Samo operatorski nalog (EMAIL_ADMIN) ima ovaj pristup.",

@@ -26,6 +26,7 @@ import {
   filterToggleButtonBaseClass,
 } from "@/lib/primary-button-classes";
 import { effectiveListingSearchQuery } from "@/lib/listing-search-query";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 
 
 function CategoryThumb({
@@ -108,6 +109,27 @@ export default function HomePage() {
   const [filterMinPrice, setFilterMinPrice] = useState("");
   const [filterMaxPrice, setFilterMaxPrice] = useState("");
   const [showFilters, setShowFilters] = useState(true);
+  const [platformStatsLoading, setPlatformStatsLoading] = useState(true);
+  const [listingStats, setListingStats] = useState<{ total_listings: number; listings_today: number } | null>(null);
+  const [shopStats, setShopStats] = useState<{ total_shops: number; shops_today: number } | null>(null);
+  const tx = t as Record<string, string>;
+
+  useEffect(() => {
+    setPlatformStatsLoading(true);
+    void Promise.all([
+      fetchWithTimeout("/api/listings/stats", { cache: "no-store" })
+        .then((r) => r.json() as Promise<{ total_listings: number; listings_today: number }>)
+        .catch(() => null),
+      fetchWithTimeout("/api/shops/directory/stats", { cache: "no-store" })
+        .then((r) => r.json() as Promise<{ total_shops: number; shops_today: number }>)
+        .catch(() => null),
+    ])
+      .then(([listings, shops]) => {
+        if (listings) setListingStats(listings);
+        if (shops) setShopStats(shops);
+      })
+      .finally(() => setPlatformStatsLoading(false));
+  }, []);
 
   const parentCategories = useMemo(
     () => sortRootCategories((apiCategories ?? []).filter((c: any) => isRootCategory(c))),
@@ -158,29 +180,83 @@ export default function HomePage() {
       <section className="bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
 
-          {/* Search row ? always visible at top */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              applyFilters();
-            }}
-            className="flex w-full max-w-full flex-col gap-2 mb-3 sm:flex-row sm:flex-nowrap sm:gap-2"
-          >
-            <div className="relative flex-1 min-w-0 w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-              <input
-                type="search"
-                enterKeyHint="search"
-                placeholder={t.search}
-                value={filterSearch}
-                onChange={(e) => setFilterSearch(e.target.value)}
-                className="w-full min-h-12 pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-base sm:text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all bg-gray-50 focus:bg-white touch-manipulation appearance-none"
-              />
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch mb-3">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                applyFilters();
+              }}
+              className="flex min-w-0 flex-1 flex-col gap-2 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:flex-nowrap sm:gap-2"
+            >
+              <div className="relative flex-1 min-w-0 w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                <input
+                  type="search"
+                  enterKeyHint="search"
+                  placeholder={t.search}
+                  value={filterSearch}
+                  onChange={(e) => setFilterSearch(e.target.value)}
+                  className="w-full min-h-12 pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-base sm:text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all bg-gray-50 focus:bg-white touch-manipulation appearance-none"
+                />
+              </div>
+              <button type="submit" className={cnPrimaryBlue("w-full sm:w-auto")}>
+                {t.searchBtn}
+              </button>
+            </form>
+
+            <div
+              className="w-full shrink-0 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-3 shadow-sm lg:w-80"
+              aria-label={tx.ui_homePlatformTitle}
+            >
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-blue-700">
+                {tx.ui_homePlatformTitle}
+              </p>
+              {platformStatsLoading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-4/5" />
+                  <Skeleton className="h-4 w-3/5" />
+                </div>
+              ) : (
+                <table className="w-full text-sm">
+                  <tbody>
+                    <tr className="border-b border-blue-100/80">
+                      <td className="py-1.5 pr-2 font-medium text-gray-600">
+                        {tx.ui_homeStatsListings} · {tx.ui_listingsStatsTotal}
+                      </td>
+                      <td className="py-1.5 text-right font-black text-gray-900 tabular-nums">
+                        {(listingStats?.total_listings ?? 0).toLocaleString()}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-blue-100/80">
+                      <td className="py-1.5 pr-2 font-medium text-gray-600">
+                        {tx.ui_homeStatsListings} · {tx.ui_listingsStatsToday}
+                      </td>
+                      <td className="py-1.5 text-right font-black text-gray-900 tabular-nums">
+                        {(listingStats?.listings_today ?? 0).toLocaleString()}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-blue-100/80">
+                      <td className="py-1.5 pr-2 font-medium text-gray-600">
+                        {tx.ui_homeStatsShops} · {tx.ui_listingsStatsTotal}
+                      </td>
+                      <td className="py-1.5 text-right font-black text-gray-900 tabular-nums">
+                        {(shopStats?.total_shops ?? 0).toLocaleString()}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-1.5 pr-2 font-medium text-gray-600">
+                        {tx.ui_homeStatsShops} · {tx.ui_listingsStatsToday}
+                      </td>
+                      <td className="py-1.5 text-right font-black text-blue-700 tabular-nums">
+                        {(shopStats?.shops_today ?? 0).toLocaleString()}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              )}
             </div>
-            <button type="submit" className={cnPrimaryBlue("w-full md:w-auto")}>
-              {t.searchBtn}
-            </button>
-          </form>
+          </div>
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
             <span className="text-sm font-bold text-gray-700">{t.title}</span>

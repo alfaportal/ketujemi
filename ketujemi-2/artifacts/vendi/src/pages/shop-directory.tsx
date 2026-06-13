@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { Loader2, Search } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ShopDirectoryHubIntro } from "@/components/shop-directory-hub-intro";
 import { ShopDirectoryApplyCta } from "@/components/shop-directory-apply-cta";
 import { ShopDirectorySearchBar } from "@/components/shop-directory-search-bar";
 import { ShopDirectoryStoresBanner } from "@/components/shop-directory-stores-banner";
+import { ShopDirectoryCard } from "@/components/shop-directory-card";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { applyPageMeta } from "@/lib/page-meta";
 import { shopDirectoryCategoryImageUrl } from "@/lib/shop-directory-category-images";
@@ -26,17 +28,26 @@ import { shopDirectoryMainGridCountHref } from "@/lib/shop-directory-nav";
 type DirectoryResponse = {
   shops: ShopDirectoryListItem[];
   categoryCounts: Record<string, number>;
+  total?: number;
+};
+
+type ShopStatsResponse = {
+  total_shops: number;
+  shops_today: number;
 };
 
 export default function ShopDirectoryPage() {
   const d = useShopDirectoryCopy();
   const formCopy = useShopFormCopy();
-  const { uiLang } = useMarket();
+  const { uiLang, t } = useMarket();
+  const tx = t as Record<string, string>;
   const locale = translationKeyForUiLang(uiLang);
 
   const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
   const [shops, setShops] = useState<ShopDirectoryListItem[]>([]);
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
+  const [shopStats, setShopStats] = useState<ShopStatsResponse | null>(null);
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
   const [city, setCity] = useState("");
@@ -53,6 +64,15 @@ export default function ShopDirectoryPage() {
       ogDescription: seoDescription,
     });
   }, [d.seoTitle, seoDescription]);
+
+  useEffect(() => {
+    setStatsLoading(true);
+    void fetchWithTimeout("/api/shops/directory/stats", { cache: "no-store" })
+      .then((r) => r.json() as Promise<ShopStatsResponse>)
+      .then((data) => setShopStats(data))
+      .catch(() => setShopStats(null))
+      .finally(() => setStatsLoading(false));
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -96,46 +116,88 @@ export default function ShopDirectoryPage() {
 
         <ShopDirectoryStoresBanner shops={shops} loading={loading} />
 
-        <div className="space-y-3">
-          <ShopDirectorySearchBar
-            value={query}
-            onChange={(v) => {
-              setQuery(v);
-              if (!v.trim()) setSubmittedQuery("");
-            }}
-            placeholder={d.searchPlaceholder}
-            searchLabel={d.searchBtn}
-            onSubmit={submitSearch}
-          />
-          <div className="flex flex-col sm:flex-row gap-2">
-            <select
-              value={country}
-              onChange={(e) => {
-                setCountry(e.target.value);
-                setCity("");
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
+          <div className="min-w-0 flex-1 space-y-3">
+            <ShopDirectorySearchBar
+              value={query}
+              onChange={(v) => {
+                setQuery(v);
+                if (!v.trim()) setSubmittedQuery("");
               }}
-              className="min-h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm flex-1"
-            >
-              <option value="">{d.filterCountry}: {d.filterAll}</option>
-              {SHOP_COUNTRY_CODES.map((code) => (
-                <option key={code} value={code}>
-                  {formCopy.countryLabels[code]}
-                </option>
-              ))}
-            </select>
-            <select
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              disabled={!country}
-              className="min-h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm flex-1 disabled:opacity-50"
-            >
-              <option value="">{d.filterCity}: {d.filterAll}</option>
-              {cityOptions.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+              placeholder={d.searchPlaceholder}
+              searchLabel={d.searchBtn}
+              onSubmit={submitSearch}
+            />
+            <div className="flex flex-col sm:flex-row gap-2">
+              <select
+                value={country}
+                onChange={(e) => {
+                  setCountry(e.target.value);
+                  setCity("");
+                }}
+                className="min-h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm flex-1"
+              >
+                <option value="">{d.filterCountry}: {d.filterAll}</option>
+                {SHOP_COUNTRY_CODES.map((code) => (
+                  <option key={code} value={code}>
+                    {formCopy.countryLabels[code]}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                disabled={!country}
+                className="min-h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm flex-1 disabled:opacity-50"
+              >
+                <option value="">{d.filterCity}: {d.filterAll}</option>
+                {cityOptions.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div
+            className="w-full shrink-0 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-3 shadow-sm lg:w-72"
+            aria-label={tx.ui_shopsStatsTitle}
+          >
+            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-blue-700">
+              {tx.ui_shopsStatsTitle}
+            </p>
+            {statsLoading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-4/5" />
+              </div>
+            ) : (
+              <table className="w-full text-sm">
+                <tbody>
+                  <tr className="border-b border-blue-100/80">
+                    <td className="py-1.5 pr-2 font-medium text-gray-600">{tx.ui_listingsStatsTotal}</td>
+                    <td className="py-1.5 text-right font-black text-gray-900 tabular-nums">
+                      {(shopStats?.total_shops ?? shops.length).toLocaleString()}
+                    </td>
+                  </tr>
+                  <tr className="border-b border-blue-100/80">
+                    <td className="py-1.5 pr-2 font-medium text-gray-600">{tx.ui_listingsStatsToday}</td>
+                    <td className="py-1.5 text-right font-black text-gray-900 tabular-nums">
+                      {(shopStats?.shops_today ?? 0).toLocaleString()}
+                    </td>
+                  </tr>
+                  {showSearchResults ? (
+                    <tr>
+                      <td className="py-1.5 pr-2 font-medium text-gray-600">{tx.ui_listingsStatsInFilter}</td>
+                      <td className="py-1.5 text-right font-black text-blue-700 tabular-nums">
+                        {filtered.length.toLocaleString()}
+                      </td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
 
@@ -152,15 +214,11 @@ export default function ShopDirectoryPage() {
             {filtered.length === 0 ? (
               <p className="text-sm text-gray-500">{fuseNoResultsMessage(d, searchTerm)}</p>
             ) : (
-              <ul className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filtered.slice(0, 24).map((s) => (
-                  <li key={s.id}>
-                    <Link href={`/dyqani/${s.id}`} className="text-sm font-semibold text-blue-700 hover:underline">
-                      {s.shop_name} — {s.city}
-                    </Link>
-                  </li>
+                  <ShopDirectoryCard key={s.id} shop={s} viewLabel={d.viewShop} />
                 ))}
-              </ul>
+              </div>
             )}
           </div>
         ) : (

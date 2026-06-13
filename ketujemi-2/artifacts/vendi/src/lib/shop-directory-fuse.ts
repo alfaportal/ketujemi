@@ -6,6 +6,10 @@ import {
   translateDirectorySubcategory,
 } from "@/lib/shop-directory-i18n";
 import type { UiTranslationLocale } from "@/lib/ui-languages";
+import {
+  resolveShopDirectoryHubSlug,
+  shopSearchTokens,
+} from "../../../../lib/shop-directory-search-match";
 
 export type ShopDirectoryFuseDoc = ShopDirectoryListItem & {
   categoryLabel: string;
@@ -85,6 +89,16 @@ export function filterShopsByQuery(
 
   const foldedQuery = foldSearchText(q);
   const docs = buildShopDirectoryFuseDocs(shops, locale);
+  const hubSlug = resolveShopDirectoryHubSlug(q);
+  const tokens = shopSearchTokens(q);
+
+  const byId = new Map<number, ShopDirectoryListItem>();
+
+  if (hubSlug) {
+    for (const s of shops) {
+      if (s.directory_category_slug === hubSlug) byId.set(s.id, s);
+    }
+  }
 
   const fuse = new Fuse(docs, {
     keys: [
@@ -101,9 +115,27 @@ export function filterShopsByQuery(
       { name: "description", weight: 0.9 },
       { name: "searchBlob", weight: 1.1 },
     ],
-    threshold: 0.4,
+    threshold: 0.42,
     ignoreLocation: true,
   });
 
-  return fuse.search(foldedQuery).map((r) => r.item);
+  for (const r of fuse.search(foldedQuery)) {
+    byId.set(r.item.id, r.item);
+  }
+
+  if (byId.size === 0 && tokens.length > 0) {
+    for (const doc of docs) {
+      const blob = doc.searchBlob;
+      const allTokensMatch = tokens.every((t) => blob.includes(t));
+      if (allTokensMatch) byId.set(doc.id, doc);
+    }
+  }
+
+  if (byId.size === 0) {
+    for (const doc of docs) {
+      if (doc.searchBlob.includes(foldedQuery)) byId.set(doc.id, doc);
+    }
+  }
+
+  return [...byId.values()];
 }

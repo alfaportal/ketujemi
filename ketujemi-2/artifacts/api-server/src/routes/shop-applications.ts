@@ -10,7 +10,7 @@ import {
   usersTable,
   categoriesTable,
 } from "@workspace/db";
-import { eq, and, asc, desc, gt, isNotNull, sql, inArray, or, isNull } from "drizzle-orm";
+import { eq, and, asc, desc, gt, gte, isNotNull, sql, inArray, or, isNull, count } from "drizzle-orm";
 import { getSessionUser } from "../lib/session-user";
 import { sendShopApplicationEmail, sendShopRatingEmail } from "../lib/send-shop-application-email";
 import { formatListingsBatch } from "../lib/format-listings-batch";
@@ -268,6 +268,34 @@ router.get("/shops/directory/taxonomy", async (_req, res) => {
   });
 });
 
+function activeDirectoryShopCondition() {
+  return and(
+    eq(shopsTable.is_active, true),
+    sql`(${shopsTable.directory_category_slug} IS NOT NULL OR ${shopsTable.directory_category_id} IS NOT NULL)`,
+  );
+}
+
+// ─── GET /shops/directory/stats ───────────────────────────────────────────────
+router.get("/shops/directory/stats", async (_req, res) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const base = activeDirectoryShopCondition();
+  const [totalRes, todayRes] = await Promise.all([
+    db.select({ total: count() }).from(shopsTable).where(base),
+    db
+      .select({ total: count() })
+      .from(shopsTable)
+      .where(and(base, gte(shopsTable.created_at, today))),
+  ]);
+
+  res.setHeader("Cache-Control", "no-store");
+  res.json({
+    total_shops: totalRes[0]?.total ?? 0,
+    shops_today: todayRes[0]?.total ?? 0,
+  });
+});
+
 // ─── GET /shops/directory ─────────────────────────────────────────────────────
 router.get("/shops/directory", async (req, res) => {
   const category = typeof req.query.category === "string" ? req.query.category.trim() : "";
@@ -277,10 +305,7 @@ router.get("/shops/directory", async (req, res) => {
   const city = typeof req.query.city === "string" ? req.query.city.trim() : "";
   const country = typeof req.query.country === "string" ? req.query.country.trim() : "";
 
-  const conditions = [
-    eq(shopsTable.is_active, true),
-    sql`(${shopsTable.directory_category_slug} IS NOT NULL OR ${shopsTable.directory_category_id} IS NOT NULL)`,
-  ];
+  const conditions = [activeDirectoryShopCondition()];
   if (Number.isFinite(categoryId) && categoryId > 0) {
     conditions.push(eq(shopsTable.directory_category_id, categoryId));
   } else if (category) {
