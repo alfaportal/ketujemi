@@ -1,7 +1,8 @@
 import { db, listingsTable, categoriesTable } from "@workspace/db";
-import { and, desc, eq, gt, ne } from "drizzle-orm";
+import { and, desc, eq, ne } from "drizzle-orm";
 import { claudeJsonCompletion, isClaudeConfigured } from "./claude-client";
 import { primaryListingImageUrl, sanitizeListingImageUrlField } from "./listing-images";
+import { activeListingSqlCondition } from "./listing-visibility.js";
 
 export type SimilarListingCard = {
   id: number;
@@ -51,9 +52,8 @@ async function fetchCategoryCandidates(
     .where(
       and(
         eq(listingsTable.category_id, categoryId),
-        eq(listingsTable.status, "active"),
+        activeListingSqlCondition(),
         ne(listingsTable.id, excludeId),
-        gt(listingsTable.expires_at, new Date()),
       ),
     )
     .orderBy(desc(listingsTable.created_at))

@@ -617,6 +617,8 @@ export async function analyzeListingImage(input: {
   if (!canGoogle && !canClaude) return emptyOutcome();
 
   const lang = parseListingCopyLang(input.lang);
+
+  try {
   const rows = await getCachedCategoryRows();
   const catalog = buildCategoryCatalog(rows);
   const shopName = input.shop_name?.trim() ?? "";
@@ -626,8 +628,7 @@ export async function analyzeListingImage(input: {
       ? { shop_name: shopName, shop_category: shopCategory || null }
       : undefined;
 
-  try {
-    if (canGoogle && canClaude) {
+  if (canGoogle && canClaude) {
       return analyzeWithParallelFallback({
         imageBase64,
         mediaType: input.mediaType,

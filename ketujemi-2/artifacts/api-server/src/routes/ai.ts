@@ -128,6 +128,7 @@ router.post("/ai/suggest-listing-category", aiAuthenticatedLimiter, async (req, 
 
 // ─── POST /ai/analyze-listing-image ───────────────────────────────────────────
 router.post("/ai/analyze-listing-image", analyzeListingImageLimiter, async (req, res) => {
+  try {
   if (!(await isSessionOrAdminAuthorized(req))) {
     res.status(401).json({ error: "Authentication required" });
     return;
@@ -185,6 +186,10 @@ router.post("/ai/analyze-listing-image", analyzeListingImageLimiter, async (req,
     google_vision: isGoogleVisionConfigured(),
     claude_vision: isClaudeConfigured(),
   });
+  } catch (err) {
+    req.log.error({ err }, "analyze-listing-image failed");
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 // ─── GET /ai/listings/:id/similar ─────────────────────────────────────────────

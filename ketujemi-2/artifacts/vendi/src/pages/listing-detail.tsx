@@ -1,7 +1,7 @@
 import { useRoute, useLocation } from "wouter";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { useState, useMemo, useEffect } from "react";
-import { useGetListing, useDeleteListing, getGetListingsQueryKey, getGetRecentListingsQueryKey, getGetFeaturedListingsQueryKey, getGetListingQueryKey } from "@workspace/api-client-react";
+import { useGetListing, useDeleteListing, getGetListingsQueryKey, getGetRecentListingsQueryKey, getGetFeaturedListingsQueryKey, getGetListingQueryKey, ApiError } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, MapPin, Phone, User, Eye, Star, Tag, Camera, Package, Clock, Pencil, Trash2, Crown,
@@ -151,10 +151,11 @@ export default function ListingDetail() {
   const tx = t as Record<string, string>;
   const { user } = useAuth();
 
-  const { data: listing, isLoading, isFetching } = useGetListing(id, {
+  const { data: listing, isLoading, isFetching, isError, error, refetch } = useGetListing(id, {
     query: {
       enabled: !!id,
       queryKey: [...getGetListingQueryKey(id), user?.id ?? "guest"],
+      retry: 1,
     },
   });
 
@@ -406,6 +407,22 @@ export default function ListingDetail() {
         </div>
       </div>
     );
+  }
+
+  if (isError && !listing) {
+    const status = error instanceof ApiError ? error.status : 0;
+    if (status >= 500 || status === 0) {
+      return (
+        <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+          <p className="text-xl font-semibold mb-2">{t.listingLoadError}</p>
+          <p className="text-muted-foreground mb-6">{t.listingLoadErrorSub}</p>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Button onClick={() => void refetch()}>{t.listingRetry}</Button>
+            <Button variant="outline" onClick={() => setLocation("/listings")}>{t.backToListings}</Button>
+          </div>
+        </div>
+      );
+    }
   }
 
   if (!listing) {

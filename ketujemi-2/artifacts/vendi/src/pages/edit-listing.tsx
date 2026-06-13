@@ -2,7 +2,7 @@ import { useRoute, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useGetListing, useUpdateListing, useGetCategories, getGetListingQueryKey, getGetListingsQueryKey } from "@workspace/api-client-react";
+import { useGetListing, useUpdateListing, useGetCategories, getGetListingQueryKey, getGetListingsQueryKey, ApiError } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Loader2, Sparkles, Upload } from "lucide-react";
@@ -70,10 +70,11 @@ export default function EditListing() {
   );
   const listingLang = listingApiLangFromUi(uiLang);
 
-  const { data: listing, isLoading } = useGetListing(id, {
+  const { data: listing, isLoading, isError, error, refetch } = useGetListing(id, {
     query: {
       enabled: !!id,
       queryKey: [...getGetListingQueryKey(id), user?.id ?? "guest"],
+      retry: 1,
     },
   });
 
@@ -274,6 +275,22 @@ export default function EditListing() {
         <Skeleton className="h-[500px] w-full rounded-xl" />
       </div>
     );
+  }
+
+  if (isError && !listing) {
+    const status = error instanceof ApiError ? error.status : 0;
+    if (status >= 500 || status === 0) {
+      return (
+        <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+          <p className="text-xl font-semibold mb-2">{t.listingLoadError}</p>
+          <p className="text-muted-foreground mb-6">{t.listingLoadErrorSub}</p>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Button onClick={() => void refetch()}>{t.listingRetry}</Button>
+            <Button variant="outline" onClick={() => setLocation("/listings")}>{t.backToListings}</Button>
+          </div>
+        </div>
+      );
+    }
   }
 
   if (!listing) {

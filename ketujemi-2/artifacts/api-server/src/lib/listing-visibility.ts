@@ -1,4 +1,5 @@
-import type { listingsTable } from "@workspace/db";
+import { listingsTable } from "@workspace/db";
+import { and, eq, gt, or, isNull } from "drizzle-orm";
 
 type ListingVisibilityRow = Pick<
   typeof listingsTable.$inferSelect,
@@ -32,5 +33,14 @@ export function isListingPubliclyVisible(
     isListingStatusActive(row.status)
     && isListingModerationApproved(row.moderation_status)
     && !isListingExpired(row.expires_at, now)
+  );
+}
+
+/** Drizzle WHERE fragment shared by list feed, similar listings, and duplicate scans. */
+export function activeListingSqlCondition(now = new Date()) {
+  return and(
+    or(eq(listingsTable.status, "active"), isNull(listingsTable.status)),
+    or(isNull(listingsTable.expires_at), gt(listingsTable.expires_at, now)),
+    or(eq(listingsTable.moderation_status, "approved"), isNull(listingsTable.moderation_status)),
   );
 }

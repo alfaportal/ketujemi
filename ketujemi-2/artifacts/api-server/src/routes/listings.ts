@@ -80,7 +80,7 @@ import {
 } from "../lib/listing-special-categories.js";
 import { getCategoryTreeIds } from "../lib/category-tree.js";
 import { expiresAtAfterListingLifetime } from "../lib/listing-lifetime.js";
-import { isListingPubliclyVisible } from "../lib/listing-visibility.js";
+import { isListingPubliclyVisible, activeListingSqlCondition } from "../lib/listing-visibility.js";
 import { postNewListingToFacebook } from "../services/socialMedia.js";
 import { markListingFbPosted } from "../lib/facebook-scheduled-post-job";
 import { logger } from "../lib/logger";
@@ -106,7 +106,7 @@ function rateLimitReport(ip: string): boolean {
 
 const router = Router();
 
-/** Backfill null or legacy visibility fields (e.g. early admin posts). */
+/** Backfill only null visibility fields — never flip status or extend lifetime on read. */
 async function repairLegacyListingFields(
   row: typeof listingsTable.$inferSelect,
 ): Promise<typeof listingsTable.$inferSelect> {
@@ -116,12 +116,6 @@ async function repairLegacyListingFields(
   if (!row.expires_at) patch.expires_at = expiresAtAfterListingLifetime();
   if (!row.created_at) patch.created_at = new Date();
   if (!row.listed_at) patch.listed_at = row.created_at ?? new Date();
-
-  // Rows that appear publishable but carry a non-active status from older flows.
-  const moderationOk = !row.moderation_status || row.moderation_status === "approved";
-  if (row.status && row.status !== "active" && moderationOk && row.title?.trim()) {
-    patch.status = "active";
-  }
 
   if (Object.keys(patch).length === 0) return row;
 
@@ -135,21 +129,12 @@ async function repairLegacyListingFields(
 
 // ─── Filter: only active (non-expired) listings ───────────────────────────────
 function activeCondition() {
-  return and(
-    or(eq(listingsTable.status, "active"), isNull(listingsTable.status)),
-    or(
-      isNull(listingsTable.expires_at),
-      gt(listingsTable.expires_at, new Date()),
-    ),
-    or(
-      eq(listingsTable.moderation_status, "approved"),
-      isNull(listingsTable.moderation_status),
-    ),
-  );
+  return activeListingSqlCondition();
 }
 
 // ─── GET /listings ────────────────────────────────────────────────────────────
 router.get("/listings", searchLimiter, async (req, res) => {
+  try {
   requestPurgeExpiredListings();
   const parsed = GetListingsQueryParams.safeParse(req.query);
   if (!parsed.success) {
@@ -260,6 +245,8 @@ router.get("/listings", searchLimiter, async (req, res) => {
       } else {
         conditions.push(eq(listingsTable.category_id, hubCat.id));
       }
+    } else {
+      conditions.push(sql`false`);
     }
   } else if (searchTokens.length > 0) {
     const searchCats = await db
@@ -431,6 +418,10 @@ router.get("/listings", searchLimiter, async (req, res) => {
     ),
   );
   res.json({ listings, total: totalResult[0]?.total ?? 0, page, limit });
+  } catch (err) {
+    logger.error({ err, query: req.query }, "GET /listings failed");
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 // ─── POST /listings ───────────────────────────────────────────────────────────
@@ -1263,9 +1254,10 @@ router.get("/listings/:id", async (req, res) => {
       return;
     }
 
-    row = await repairLegacyListingFields(row);
-
     const isOwner = !!(viewer && listingBelongsToUser(viewer.id, viewer, row));
+    const canRepost = isOwner && !isListingPubliclyVisible(row);
+
+    row = await repairLegacyListingFields(row);
 
     if (!isOwner && !isListingPubliclyVisible(row)) {
       res.status(404).json({ error: "Not found" });
@@ -1284,7 +1276,7 @@ router.get("/listings/:id", async (req, res) => {
     const payload = applyViewerContact(formatted, viewer) as ReturnType<typeof formatListing> & {
       can_repost: boolean;
     };
-    payload.can_repost = isOwner && !isListingPubliclyVisible(row);
+    payload.can_repost = canRepost;
     const [out] = await finalizeListingsForApi([payload]);
     res.json({ ...out, can_repost: payload.can_repost, is_owner: isOwner });
   } catch (err) {

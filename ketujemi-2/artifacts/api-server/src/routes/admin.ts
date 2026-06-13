@@ -66,6 +66,11 @@ import {
 import { generateAdminAiDailyReport } from "../lib/admin-ai-daily-report";
 import { loadBannedPhoneSet, saveBannedPhoneSet } from "../lib/user-ban";
 import { primaryListingImageUrl, sanitizeListingImageUrlField } from "../lib/listing-images";
+import { sanitizeListingVideoUrl } from "../lib/listing-video";
+import {
+  expiresAtForCategoryRootSlug,
+  resolveCategorySlugMeta,
+} from "../lib/listing-special-categories.js";
 import { purgeInvalidListingImages } from "../lib/purge-invalid-listing-images.js";
 import { deleteShopCascade } from "../lib/delete-shop-cascade";
 import { resolveDirectoryFields } from "../lib/shop-directory-patch";
@@ -445,6 +450,10 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
       normalizeListingDescription(parsed.data.description),
     );
 
+    const catMeta = await resolveCategorySlugMeta(parsed.data.category_id);
+    const imageUrl = sanitizeListingImageUrlField(parsed.data.image_url ?? null);
+    const videoUrl = sanitizeListingVideoUrl(parsed.data.video_url ?? null);
+
     const [row] = await db
       .insert(listingsTable)
       .values({
@@ -457,14 +466,14 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
         seller_name: sellerContact.seller_name,
         seller_phone: sellerContact.seller_phone,
         condition: parsed.data.condition,
-        image_url: parsed.data.image_url ?? null,
-        video_url: parsed.data.video_url ?? null,
+        image_url: imageUrl,
+        video_url: videoUrl,
         is_featured: parsed.data.is_featured ?? false,
         status: "active",
         moderation_status: "approved",
         listed_at: new Date(),
         created_at: new Date(),
-        expires_at: expiresAt3Months(),
+        expires_at: expiresAtForCategoryRootSlug(catMeta?.rootSlug ?? null),
         vehicle_year: parsed.data.vehicle_year ?? null,
         vehicle_mileage_km: parsed.data.vehicle_mileage_km ?? null,
         vehicle_fuel: parsed.data.vehicle_fuel ?? null,
