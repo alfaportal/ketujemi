@@ -10,9 +10,17 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "playwright test",
     "test:smoke": "playwright test --grep @smoke",
-    "test:integration": "playwright test --grep @integration"
+    "test:integration": "playwright test --grep @integration",
+    "cap:sync": "cap sync",
+    "cap:branding": "node ./scripts/capacitor-branding.mjs",
+    "cap:open:android": "cap open android",
+    "cap:open:ios": "cap open ios"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.4.0",
+    "@capacitor/ios": "^8.4.0",
     "@hookform/resolvers": "^3.10.0",
     "@playwright/test": "^1.60.0",
     "@radix-ui/react-accordion": "^1.2.4",
@@ -84,6 +92,7 @@
     "zod": "catalog:"
   },
   "dependencies": {
+    "@capacitor/core": "^8.4.0",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
     "@stripe/stripe-js": "^9.6.0",

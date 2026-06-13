@@ -1,0 +1,19 @@
+{
+  "appId": "com.ketujemi.app",
+  "appName": "KetuJemi",
+  "webDir": "capacitor-web",
+  "server": {
+    "url": "https://ketujemi.com",
+    "androidScheme": "https",
+    "cleartext": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "backgroundColor": "#15488C",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    }
+  }
+}
