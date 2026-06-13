@@ -111,8 +111,6 @@ import { engagementCopyForUiLang } from "@/lib/engagement-i18n";
 import { queueFirstListingCelebration } from "@/components/engagement-effects";
 import { staticPagePaths } from "@/lib/static-page-paths";
 import { buildNewListingSchema, type NewListingFormData } from "@/lib/listing-form-schema";
-import { isPlatformOperatorUser } from "@/lib/platform-operator";
-
 type FormData = NewListingFormData;
 
 function userHasSellerPhone(user: {
@@ -555,14 +553,6 @@ export default function NewListing() {
 
   useEffect(() => {
     if (!activeUser) return;
-    if (isPlatformOperatorUser(activeUser)) {
-      const adminEmail = activeUser.email?.trim().toLowerCase() ?? "";
-      const currentEmail = form.getValues("xSellerEmail")?.trim().toLowerCase() ?? "";
-      if (adminEmail && currentEmail === adminEmail) {
-        form.setValue("xSellerEmail", "");
-      }
-      return;
-    }
     const { seller_name, seller_phone } = sellerContactFromUser(activeUser);
     if (seller_name && !form.getValues("seller_name")?.trim()) {
       form.setValue("seller_name", seller_name);
@@ -741,8 +731,6 @@ export default function NewListing() {
       return;
     }
     const partCat = subCats.find((c: any) => c.id === resolvedCategoryId);
-    const isAdminOnBehalf = isPlatformOperatorUser(activeUser);
-    const sellerEmailInput = listingData.xSellerEmail?.trim() ?? "";
     const validation = catEngine.validateListing(
       {
         ...listingData,
@@ -754,7 +742,6 @@ export default function NewListing() {
       imageCount: photoCountForValidation,
       subcategoryName: partCat?.name,
       sellLangBlockedTemplate: tx.ui_sellLangBlocked,
-      omitSellerEmail: isAdminOnBehalf && !sellerEmailInput,
     });
     if (!validation.ok) {
       const issue = validation.issues[0]!;
@@ -776,7 +763,7 @@ export default function NewListing() {
     const formName = listingData.seller_name?.trim() ?? "";
     const formPhone = listingData.seller_phone?.trim() ?? "";
 
-    if (activeUser && userNeedsSellerProfile(activeUser) && !isPlatformOperatorUser(activeUser)) {
+    if (activeUser && userNeedsSellerProfile(activeUser)) {
       setIsSubmitting(true);
       try {
         const bootRes = await fetchWithTimeout("/api/auth/profile/seller-bootstrap", {
@@ -805,14 +792,11 @@ export default function NewListing() {
       }
     }
 
-    const isAdminOnBehalf = isPlatformOperatorUser(activeUser);
     const profileContact = activeUser ? sellerContactFromUser(activeUser) : { seller_name: "", seller_phone: "" };
-    const contact = isAdminOnBehalf
-      ? { seller_name: formName, seller_phone: formPhone }
-      : {
-          seller_name: formName || profileContact.seller_name,
-          seller_phone: formPhone || profileContact.seller_phone,
-        };
+    const contact = {
+      seller_name: formName || profileContact.seller_name,
+      seller_phone: formPhone || profileContact.seller_phone,
+    };
 
     const payload: Record<string, unknown> = {
       title: listingData.title,
@@ -890,12 +874,11 @@ export default function NewListing() {
     );
   }
 
-  const isAdminOnBehalf = isPlatformOperatorUser(activeUser);
-  const canEditSellerPhone = isAdminOnBehalf || !activeUser || !userHasSellerPhone(activeUser);
+  const canEditSellerPhone = !activeUser || !userHasSellerPhone(activeUser);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {userNeedsSellerProfile(activeUser) && !isAdminOnBehalf && <SellerProfileGate onReady={() => undefined} />}
+      {userNeedsSellerProfile(activeUser) && <SellerProfileGate onReady={() => undefined} />}
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">
         <MobileSafeTopSpacer />
@@ -923,12 +906,6 @@ export default function NewListing() {
             onDismiss={dismissRecovery}
             onRestore={restoreDraftMedia}
           />
-        ) : null}
-        {isAdminOnBehalf ? (
-          <div className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-950 leading-relaxed">
-            <p className="font-bold">{tx.ui_adminOnBehalfTitle}</p>
-            <p className="mt-1">{tx.ui_adminOnBehalfBody}</p>
-          </div>
         ) : null}
         {!activeUser && !authLoading ? (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 leading-relaxed">
@@ -1773,15 +1750,13 @@ export default function NewListing() {
                         <Input
                           data-testid="input-seller-name"
                           placeholder="Arben Krasniqi"
-                          readOnly={false}
+                          readOnly={!!activeUser}
+                          className={activeUser ? "bg-gray-50 cursor-not-allowed" : undefined}
                           {...field}
                         />
                       </FormControl>
-                      {!isAdminOnBehalf && activeUser ? (
+                      {activeUser ? (
                         <p className="text-xs text-gray-500">{tx.ui_sellerNameProfileHint}</p>
-                      ) : null}
-                      {isAdminOnBehalf ? (
-                        <p className="text-xs text-violet-700">{tx.ui_adminOnBehalfNameHint}</p>
                       ) : null}
                       <FormMessage />
                     </FormItem>
@@ -1802,9 +1777,7 @@ export default function NewListing() {
                           {...field}
                         />
                       </FormControl>
-                      {isAdminOnBehalf ? (
-                        <p className="text-xs text-violet-700">{tx.ui_adminOnBehalfPhoneHint}</p>
-                      ) : canEditSellerPhone ? (
+                      {canEditSellerPhone ? (
                         <p className="text-xs text-gray-500">{t.reg_sellerGate_sub}</p>
                       ) : null}
                       <FormMessage />
@@ -1816,33 +1789,17 @@ export default function NewListing() {
                   name="xSellerEmail"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        {isAdminOnBehalf ? (tx.ui_adminSellerEmailLabel ?? "Email shitësi") : "Email"}
-                        {isAdminOnBehalf ? (
-                          <span className="text-gray-400 font-normal"> ({tx.ui_optional ?? "opsional"})</span>
-                        ) : null}
-                      </FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder={
-                            isAdminOnBehalf
-                              ? (tx.ui_adminSellerEmailPh ?? "email shitësi — jo email-i yt admin")
-                              : "kontakt@email.com"
-                          }
+                          placeholder="kontakt@email.com"
                           type="email"
-                          readOnly={!isAdminOnBehalf && !!activeUser?.email}
-                          className={
-                            !isAdminOnBehalf && activeUser?.email
-                              ? "bg-gray-50 cursor-not-allowed"
-                              : undefined
-                          }
+                          readOnly={!!activeUser?.email}
+                          className={activeUser?.email ? "bg-gray-50 cursor-not-allowed" : undefined}
                           {...field}
                           value={field.value as string}
                         />
                       </FormControl>
-                      {isAdminOnBehalf ? (
-                        <p className="text-xs text-violet-700">{tx.ui_adminSellerEmailHint}</p>
-                      ) : null}
                     </FormItem>
                   )}
                 />

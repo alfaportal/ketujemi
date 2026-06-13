@@ -25,13 +25,10 @@ import {
 import {
   descriptionForAdminOnBehalf,
   isListingUserPlatformAdmin,
-  sellerContactForAdminOnBehalf,
 } from "../lib/admin-listing-on-behalf.js";
-import { isPlatformAdminUser } from "../lib/platform-admin.js";
 import {
   normalizeListingDescription,
   normalizeListingTitle,
-  normalizePersonName,
 } from "../lib/listing-text-normalize.js";
 import { maskSellerPhone } from "../lib/contact-mask";
 import { assertAccountActive } from "../lib/user-ban";
@@ -364,78 +361,51 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   const safeImageUrl = sanitizeListingImageUrlField(parsed.data.image_url) ?? undefined;
   const safeVideoUrl = sanitizeListingVideoUrl(parsed.data.video_url) ?? undefined;
 
-  const adminOnBehalf = isPlatformAdminUser(viewer);
-
   const normalizedTitle = normalizeListingTitle(parsed.data.title);
   const normalizedDescription = normalizeListingDescription(parsed.data.description);
 
-  let sellerContact: { seller_name: string; seller_phone: string };
-  let listingDescription: string;
+  viewer = await syncSellerContactFromListingIfNeeded(viewer, {
+    seller_name: parsed.data.seller_name,
+    seller_phone: parsed.data.seller_phone,
+  });
+  viewer = await syncSellerContactFromListingOnPost(viewer, {
+    seller_name: parsed.data.seller_name,
+    seller_phone: parsed.data.seller_phone,
+  });
 
-  if (adminOnBehalf) {
-    sellerContact = sellerContactForAdminOnBehalf({
-      seller_name: normalizePersonName(parsed.data.seller_name),
-      seller_phone: parsed.data.seller_phone,
+  if (!userHasPostableContact(viewer)) {
+    res.status(400).json({
+      error: "INCOMPLETE_PROFILE",
+      message:
+        "Plotësoni emrin dhe numrin e telefonit në profilin tuaj para se të postoni.",
     });
-    if (sellerContact.seller_name.length < 2) {
-      res.status(400).json({
-        error: "VALIDATION",
-        message: "Vendosni emrin e shitësit.",
-      });
-      return;
-    }
-    if (sellerContact.seller_phone.replace(/\D/g, "").length < 8) {
-      res.status(400).json({
-        error: "VALIDATION",
-        message: "Vendosni numrin e telefonit të shitësit.",
-      });
-      return;
-    }
-    listingDescription = descriptionForAdminOnBehalf(normalizedDescription, viewer.email);
-  } else {
-    viewer = await syncSellerContactFromListingIfNeeded(viewer, {
-      seller_name: parsed.data.seller_name,
-      seller_phone: parsed.data.seller_phone,
-    });
-    viewer = await syncSellerContactFromListingOnPost(viewer, {
-      seller_name: parsed.data.seller_name,
-      seller_phone: parsed.data.seller_phone,
-    });
-
-    if (!userHasPostableContact(viewer)) {
-      res.status(400).json({
-        error: "INCOMPLETE_PROFILE",
-        message:
-          "Plotësoni emrin dhe numrin e telefonit në profilin tuaj para se të postoni.",
-      });
-      return;
-    }
-
-    const impersonation = detectContactImpersonation(viewer, {
-      seller_name: parsed.data.seller_name,
-      seller_phone: parsed.data.seller_phone,
-      description: parsed.data.description,
-    });
-    if (impersonation.impersonation) {
-      await recordListingOwnershipViolation({
-        userId: viewer.id,
-        context: "listing_create",
-        reason: impersonation.reason,
-        req,
-        submittedPhone: parsed.data.seller_phone,
-        submittedName: parsed.data.seller_name,
-      });
-      res.status(403).json({
-        error: "OWNERSHIP_VIOLATION",
-        message:
-          "Nuk mund të postoni me të dhëna kontakti që nuk përputhen me llogarinë tuaj.",
-      });
-      return;
-    }
-
-    sellerContact = canonicalSellerContactForUser(viewer);
-    listingDescription = sanitizeListingDescriptionEmail(normalizedDescription, viewer.email);
+    return;
   }
+
+  const impersonation = detectContactImpersonation(viewer, {
+    seller_name: parsed.data.seller_name,
+    seller_phone: parsed.data.seller_phone,
+    description: parsed.data.description,
+  });
+  if (impersonation.impersonation) {
+    await recordListingOwnershipViolation({
+      userId: viewer.id,
+      context: "listing_create",
+      reason: impersonation.reason,
+      req,
+      submittedPhone: parsed.data.seller_phone,
+      submittedName: parsed.data.seller_name,
+    });
+    res.status(403).json({
+      error: "OWNERSHIP_VIOLATION",
+      message:
+        "Nuk mund të postoni me të dhëna kontakti që nuk përputhen me llogarinë tuaj.",
+    });
+    return;
+  }
+
+  const sellerContact = canonicalSellerContactForUser(viewer);
+  const listingDescription = sanitizeListingDescriptionEmail(normalizedDescription, viewer.email);
 
   try {
     await assertAccountActive(viewer, sellerContact.seller_phone);
@@ -570,9 +540,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   }
 
   try {
-    if (!adminOnBehalf) {
-      assertListingPostUserCooldown(viewer);
-    }
+    assertListingPostUserCooldown(viewer);
   } catch (err: unknown) {
     if (err instanceof Error && err.message === "LISTING_POST_COOLDOWN") {
       const e = err as Error & { publicMessage?: string };

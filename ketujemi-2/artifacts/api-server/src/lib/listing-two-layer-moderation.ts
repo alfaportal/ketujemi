@@ -6,7 +6,6 @@ import {
   SELF_DUPLICATE_SCREEN_MESSAGE,
 } from "./listing-self-duplicate";
 import { listingBelongsToUser } from "./listing-ownership";
-import { isPlatformAdminUser } from "./platform-admin.js";
 import { listingTextSimilarity, SELF_DUPLICATE_SCAN_THRESHOLD } from "./listing-text-similarity";
 
 const DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -153,9 +152,6 @@ export async function runTwoLayerModeration(input: ModerationInput): Promise<Mod
     };
   }
 
-  const skipDuplicateChecks = isPlatformAdminUser(input.user);
-
-  if (!skipDuplicateChecks) {
   const selfDupId = await findSelfDuplicateActiveListingId(
     input.userId,
     input.user,
@@ -291,7 +287,6 @@ export async function runTwoLayerModeration(input: ModerationInput): Promise<Mod
         message: "Ky shpallje ekziston tashmë. Nuk mund të postosh të njëjtën gjë dy herë.",
       };
     }
-  }
   }
 
   await logModerationDecision("PASSED", "allowed");
