@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
 import { Link, useLocation } from "wouter";
 import {
   Zap, Mail, Smartphone, Tag,
@@ -19,7 +19,9 @@ import {
 } from "@/lib/category-hub-hero-images";
 import { HomeHeroSlideshow } from "@/components/home-hero-slideshow";
 import { Skeleton } from "@/components/ui/skeleton";
-import { VipPartnersSection } from "@/components/vip-partners-section";
+const VipPartnersSection = lazy(() =>
+  import("@/components/vip-partners-section").then((m) => ({ default: m.VipPartnersSection })),
+);
 import { cn } from "@/lib/utils";
 import {
   cnPrimaryBlue,
@@ -115,20 +117,29 @@ export default function HomePage() {
   const tx = t as Record<string, string>;
 
   useEffect(() => {
-    setPlatformStatsLoading(true);
-    void Promise.all([
-      fetchWithTimeout("/api/listings/stats", { cache: "no-store" })
-        .then((r) => r.json() as Promise<{ total_listings: number; listings_today: number }>)
-        .catch(() => null),
-      fetchWithTimeout("/api/shops/directory/stats", { cache: "no-store" })
-        .then((r) => r.json() as Promise<{ total_shops: number; shops_today: number }>)
-        .catch(() => null),
-    ])
-      .then(([listings, shops]) => {
-        if (listings) setListingStats(listings);
-        if (shops) setShopStats(shops);
-      })
-      .finally(() => setPlatformStatsLoading(false));
+    const loadStats = () => {
+      setPlatformStatsLoading(true);
+      void Promise.all([
+        fetchWithTimeout("/api/listings/stats", { cache: "no-store" })
+          .then((r) => r.json() as Promise<{ total_listings: number; listings_today: number }>)
+          .catch(() => null),
+        fetchWithTimeout("/api/shops/directory/stats", { cache: "no-store" })
+          .then((r) => r.json() as Promise<{ total_shops: number; shops_today: number }>)
+          .catch(() => null),
+      ])
+        .then(([listings, shops]) => {
+          if (listings) setListingStats(listings);
+          if (shops) setShopStats(shops);
+        })
+        .finally(() => setPlatformStatsLoading(false));
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(loadStats, { timeout: 3000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const timer = window.setTimeout(loadStats, 800);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const parentCategories = useMemo(
@@ -174,7 +185,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <VipPartnersSection variant="home" />
+      <Suspense fallback={<div className="h-24" aria-hidden />}>
+        <VipPartnersSection variant="home" />
+      </Suspense>
 
       {/* -- Filter bar -- */}
       <section className="bg-white border-b border-gray-100 shadow-sm">

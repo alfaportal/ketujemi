@@ -10,7 +10,9 @@ import { AuthProvider } from "@/lib/auth-context";
 import { AppLayout } from "@/components/app-layout";
 import { RefetchOnVisible } from "@/components/refetch-on-visible";
 import { RouteLoading } from "@/components/route-loading";
-import { GoogleAnalytics } from "@/components/google-analytics";
+const GoogleAnalytics = lazy(() =>
+  import("@/components/google-analytics").then((m) => ({ default: m.GoogleAnalytics })),
+);
 import {
   LegacyCategoryRouteRedirect,
   categoryHubRedirectComponent,
@@ -27,9 +29,13 @@ const Home = lazy(() => import("@/pages/home"));
 const Listings = lazy(() => import("@/pages/listings"));
 const CategoryPage = lazy(() => import("@/pages/category"));
 const ListingDetail = lazy(() => import("@/pages/listing-detail"));
-
-import NewListing from "@/pages/new-listing";
 import { withListingPostErrorBoundary } from "@/components/listing-post-error-boundary";
+
+const NewListingPage = lazy(async () => {
+  const { default: Page } = await import("@/pages/new-listing");
+  const Wrapped = withListingPostErrorBoundary(Page);
+  return { default: Wrapped };
+});
 const LoginPage = lazy(() => import("@/pages/login"));
 const ProfilePage = lazy(() => import("@/pages/profile"));
 const MyListingsPage = lazy(() => import("@/pages/my-listings"));
@@ -86,7 +92,7 @@ const ROUTE_COMPONENTS: Record<Exclude<RouteId, "category-hub-redirect">, Compon
   "legacy-category-redirect": LegacyCategoryRouteRedirect,
   "category-seo": CategoryPage,
   category: CategoryPage,
-  "new-listing": NewListing,
+  "new-listing": NewListingPage,
   "edit-listing": EditListing,
   "shop-detail": ShopDetailPage,
   "shop-directory": ShopDirectoryPage,
@@ -101,13 +107,10 @@ const SAFE_ROUTE_COMPONENTS = Object.fromEntries(
   Object.entries(ROUTE_COMPONENTS).map(([id, Comp]) => [id, withRouteErrorBoundary(Comp)]),
 ) as Record<Exclude<RouteId, "category-hub-redirect">, ComponentType>;
 
-const NewListingPage = withListingPostErrorBoundary(NewListing);
-
 function resolveRouteComponent(route: AppRouteDefinition): ComponentType {
   if (route.id === "category-hub-redirect" && route.hubSlug) {
     return withRouteErrorBoundary(categoryHubRedirectComponent(route.hubSlug));
   }
-  if (route.id === "new-listing") return NewListingPage;
   return SAFE_ROUTE_COMPONENTS[route.id as Exclude<RouteId, "category-hub-redirect">];
 }
 
@@ -159,7 +162,9 @@ function App() {
           <AppProviders>
             <MarketProvider>
               <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-                <GoogleAnalytics />
+                <Suspense fallback={null}>
+                  <GoogleAnalytics />
+                </Suspense>
                 <RouteErrorBoundary>
                   <Router />
                 </RouteErrorBoundary>

@@ -1,5 +1,4 @@
 import { Component, type ComponentType, type ErrorInfo, type ReactNode } from "react";
-import { EXTRA_TRANSLATIONS } from "@/lib/app-extra-i18n";
 import { isListingPostPath } from "@/lib/listing-post-path";
 import { DEFAULT_UI_LANG, isUiLang, translationKeyForUiLang } from "@/lib/ui-languages";
 
@@ -10,6 +9,35 @@ type SectionErrorCopy = {
   title: string;
   hint: string;
   refresh: string;
+};
+
+/** Minimal copy — avoid importing the full i18n-extra bundle on every page load. */
+const ROUTE_ERROR_COPY: Record<string, SectionErrorCopy> = {
+  ks: {
+    title: "Diçka shkoi keq",
+    hint: "Rifresko faqen.",
+    refresh: "Rifresko",
+  },
+  al: {
+    title: "Diçka shkoi keq",
+    hint: "Rifresko faqen.",
+    refresh: "Rifresko",
+  },
+  mk: {
+    title: "Нешто тргна наопаку",
+    hint: "Освежете ја страницата.",
+    refresh: "Освежи",
+  },
+  mne: {
+    title: "Nešto je pošlo po zlu",
+    hint: "Osvježite stranicu.",
+    refresh: "Osvježi",
+  },
+  en: {
+    title: "Something went wrong",
+    hint: "Refresh the page.",
+    refresh: "Refresh",
+  },
 };
 
 const AUTO_RECOVER_KEY = "vendi_route_error_autorecover_path";
@@ -56,12 +84,8 @@ function sectionErrorCopyForStoredLang(): SectionErrorCopy {
       /* ignore */
     }
   }
-  const bundle = EXTRA_TRANSLATIONS[translationKeyForUiLang(uiLang)];
-  return {
-    title: bundle.ui_routeErrorTitle,
-    hint: bundle.ui_routeErrorHint,
-    refresh: bundle.ui_routeErrorRefresh,
-  };
+  const bundle = ROUTE_ERROR_COPY[translationKeyForUiLang(uiLang)] ?? ROUTE_ERROR_COPY.ks;
+  return bundle;
 }
 
 /** Scoped fallback for category, search, and listing detail routes. */

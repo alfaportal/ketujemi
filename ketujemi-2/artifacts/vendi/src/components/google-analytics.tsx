@@ -7,7 +7,13 @@ export function GoogleAnalytics() {
   const [pathname] = useLocation();
 
   useEffect(() => {
-    initGoogleAnalytics();
+    const run = () => initGoogleAnalytics();
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(run, { timeout: 5000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const timer = window.setTimeout(run, 2500);
+    return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {

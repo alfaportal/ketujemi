@@ -91,7 +91,7 @@ export default defineConfig(async ({ command }) => {
       workbox: {
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         // Do not precache HTML — always prefer network for navigations.
-        globPatterns: ["**/*.{js,css,ico,png,svg,woff2}"],
+        globPatterns: ["**/*.{css,ico,png,svg,woff2,webmanifest}"],
         navigateFallback: "index.html",
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
