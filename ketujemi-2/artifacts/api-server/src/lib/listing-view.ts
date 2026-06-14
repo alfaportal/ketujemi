@@ -2,6 +2,7 @@ import { db, listingsTable, type User } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { handleListingExternalView } from "./engagement-notifications";
 import { isListingPubliclyVisible } from "./listing-visibility.js";
+import { isPlatformAdminUser } from "./platform-admin.js";
 import { shouldCountView, viewDedupKey } from "./view-dedup.js";
 
 export type IncrementListingViewOptions = {
@@ -44,13 +45,15 @@ export async function incrementListingView(
     !row.first_external_view_notified &&
     (viewer == null || viewer.id !== row.user_id);
 
+  const skipOwnerNotify = viewer != null && isPlatformAdminUser(viewer);
+
   const [updated] = await db
     .update(listingsTable)
     .set({ views: row.views + 1 })
     .where(eq(listingsTable.id, listingId))
     .returning({ views: listingsTable.views });
 
-  if (wasFirstExternal) {
+  if (wasFirstExternal && !skipOwnerNotify) {
     void handleListingExternalView({ listingId, viewer }).catch(() => undefined);
   }
 

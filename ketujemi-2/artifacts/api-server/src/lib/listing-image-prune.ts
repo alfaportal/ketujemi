@@ -31,6 +31,7 @@ export async function pruneListingImagesAndNotifyOwner(opts: {
   listingId: number;
   userId: number | null | undefined;
   listingTitle: string;
+  notifySource?: ListingOwnerNotifySource;
 }): Promise<PruneListingImagesResult> {
   const hadExcess = listingImageUrlExceedsMax(opts.raw);
   const removedCount = await pruneDroppedListingImagesFromStorage(
@@ -47,6 +48,7 @@ export async function pruneListingImagesAndNotifyOwner(opts: {
       listingTitle: opts.listingTitle,
       removedCount,
       maxPhotos: LISTING_MAX_PHOTOS,
+      notifySource: opts.notifySource ?? "owner_self_service",
     });
     notified = true;
   }

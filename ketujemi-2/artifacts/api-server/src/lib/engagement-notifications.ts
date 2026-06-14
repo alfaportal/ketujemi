@@ -10,6 +10,11 @@ import { and, count, desc, eq, inArray, isNull } from "drizzle-orm";
 import { sendFcmToUser } from "./fcm-push";
 import { defaultEngagementLocale, engagementEmailCopy } from "./engagement-email-i18n";
 import { sendListingFirstViewEmail, sendSocialFollowPromptEmail } from "./send-engagement-email";
+import {
+  mayNotifyListingOwner,
+  type ListingOwnerNotifySource,
+} from "./listing-owner-notify-policy";
+import { isPlatformAdminUser } from "./platform-admin";
 
 export type NotificationPayload = {
   listingId?: number;
@@ -93,6 +98,7 @@ export async function handleListingExternalView(opts: {
 
   const viewerId = opts.viewer?.id ?? null;
   if (viewerId != null && viewerId === listing.user_id) return;
+  if (opts.viewer && isPlatformAdminUser(opts.viewer)) return;
 
   const [updated] = await db
     .update(listingsTable)
@@ -157,8 +163,11 @@ export async function notifyListingExcessPhotosRemoved(opts: {
   listingTitle: string;
   removedCount: number;
   maxPhotos: number;
+  /** Skip when an admin operator changed the listing (do not alert the poster). */
+  notifySource?: ListingOwnerNotifySource;
 }): Promise<void> {
   if (opts.removedCount < 1) return;
+  if (!mayNotifyListingOwner(opts.notifySource ?? "owner_self_service")) return;
 
   const title = opts.listingTitle.trim() || "shpallja";
   const locale = defaultEngagementLocale();

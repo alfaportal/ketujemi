@@ -23,8 +23,11 @@ export type PurgeInvalidListingImagesResult = {
 /** Remove stock/external URLs from `listings.image_url` (active listings by default). */
 export async function purgeInvalidListingImages(opts?: {
   activeOnly?: boolean;
+  /** False when run from admin panel — do not alert listing owners. */
+  notifyOwners?: boolean;
 }): Promise<PurgeInvalidListingImagesResult> {
   const activeOnly = opts?.activeOnly !== false;
+  const notifyOwners = opts?.notifyOwners !== false;
 
   const rows = activeOnly
     ? await db
@@ -62,13 +65,20 @@ export async function purgeInvalidListingImages(opts?: {
       await deleteListingStorageUrls(dropped, row.id);
       storageUrlsDeleted += dropped.length;
     }
-    if (hadExcess && dropped.length > 0 && row.user_id != null && row.user_id > 0) {
+    if (
+      notifyOwners &&
+      hadExcess &&
+      dropped.length > 0 &&
+      row.user_id != null &&
+      row.user_id > 0
+    ) {
       await notifyListingExcessPhotosRemoved({
         userId: row.user_id,
         listingId: row.id,
         listingTitle: row.title,
         removedCount: dropped.length,
         maxPhotos: LISTING_MAX_PHOTOS,
+        notifySource: "system_cron",
       });
       ownersNotified += 1;
     }

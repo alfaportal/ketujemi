@@ -73,6 +73,7 @@ import {
   resolveCategorySlugMeta,
 } from "../lib/listing-special-categories.js";
 import { purgeInvalidListingImages } from "../lib/purge-invalid-listing-images.js";
+import { pruneListingImagesAndNotifyOwner } from "../lib/listing-image-prune.js";
 import { deleteShopCascade } from "../lib/delete-shop-cascade";
 import { resolveDirectoryFields } from "../lib/shop-directory-patch";
 import { buildApplicationFieldPatch, buildShopFieldPatch } from "../lib/shop-field-patch";
@@ -309,14 +310,14 @@ router.get("/admin/listings/image-audit", requireAdmin, async (req, res) => {
 router.post("/admin/listings/purge-invalid-images", requireAdmin, async (req, res) => {
   try {
     const activeOnly = req.body?.active_only !== false;
-    const result = await purgeInvalidListingImages({ activeOnly });
+    const result = await purgeInvalidListingImages({ activeOnly, notifyOwners: false });
     res.json({
       ok: true,
       active_only: activeOnly,
       ...result,
       message:
         result.cleared > 0
-          ? `U pastruan image_url te ${result.cleared} shpallje (foto stock ose mbi 10). U fshinë ${result.storageUrlsDeleted} skedarë. U njoftuan ${result.ownersNotified} përdorues.`
+          ? `U pastruan image_url te ${result.cleared} shpallje (foto stock ose mbi 10). U fshinë ${result.storageUrlsDeleted} skedarë.`
           : "Nuk u gjetën foto stock ose tepër në image_url.",
     });
   } catch (err) {
@@ -431,6 +432,21 @@ router.patch("/admin/listings/:id", requireAdmin, async (req, res) => {
       res.status(404).json({ error: "Listing not found" });
       return;
     }
+
+    if (updates.image_url !== undefined) {
+      const rawBody = req.body as { image_url?: string | null };
+      void pruneListingImagesAndNotifyOwner({
+        raw: rawBody.image_url,
+        cleaned: updated.image_url,
+        listingId: updated.id,
+        userId: updated.user_id,
+        listingTitle: updated.title,
+        notifySource: "admin_operator",
+      }).catch((err: unknown) => {
+        req.log.warn({ err, listingId: updated.id }, "admin listing image prune failed");
+      });
+    }
+
     res.json({
       ...updated,
       price: Number(updated.price),
