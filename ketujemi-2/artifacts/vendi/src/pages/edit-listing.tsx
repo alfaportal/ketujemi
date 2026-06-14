@@ -24,6 +24,7 @@ import {
 } from "@/lib/market-context";
 import { ListingCountryPicker } from "@/components/listing-country-picker";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
+import { useListingFlowStable } from "@/hooks/use-listing-flow-stable";
 import { userOwnsListing } from "@/lib/listing-ownership";
 import { AuthToolbar } from "@/components/auth-toolbar";
 import { CardPaymentsPanel } from "@/components/card-payments-panel";
@@ -54,6 +55,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function EditListing() {
+  useListingFlowStable();
   const [, params] = useRoute("/listings/:id/edit");
   const [, setLocation] = useLocation();
   const id = Number(params?.id);

@@ -1,6 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { errorPageCopyForStoredLang } from "@/lib/error-page-i18n";
-import { isListingPostPath } from "@/lib/listing-post-path";
+import { isListingFlowPath } from "@/lib/listing-post-path";
 
 type Props = { children: ReactNode };
 type State = { error: Error | null };
@@ -24,7 +24,7 @@ export class AppErrorBoundary extends Component<Props, State> {
       message.includes("importing a module script failed") ||
       message.includes("loading chunk");
     if (!isChunkLoadError || typeof window === "undefined") return;
-    if (isListingPostPath(window.location.pathname)) return;
+    if (isListingFlowPath(window.location.pathname)) return;
     if (window.sessionStorage.getItem(this.chunkReloadKey) === "1") return;
     window.sessionStorage.setItem(this.chunkReloadKey, "1");
     void this.recoverFromStaleCache();

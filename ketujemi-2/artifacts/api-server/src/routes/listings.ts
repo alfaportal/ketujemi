@@ -1257,7 +1257,10 @@ router.get("/listings/:id", async (req, res) => {
     const isOwner = !!(viewer && listingBelongsToUser(viewer.id, viewer, row));
     const canRepost = isOwner && !isListingPubliclyVisible(row);
 
-    row = await repairLegacyListingFields(row);
+    row = await repairLegacyListingFields(row).catch((repairErr) => {
+      logger.warn({ repairErr, listingId: row.id }, "repairLegacyListingFields failed on GET");
+      return row;
+    });
 
     if (!isOwner && !isListingPubliclyVisible(row)) {
       res.status(404).json({ error: "Not found" });

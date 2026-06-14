@@ -1,6 +1,6 @@
 import { useRoute, useLocation } from "wouter";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useGetListing, useDeleteListing, getGetListingsQueryKey, getGetRecentListingsQueryKey, getGetFeaturedListingsQueryKey, getGetListingQueryKey, ApiError } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -47,6 +47,8 @@ import { ListingShopCard, type ListingShopInfo } from "@/components/listing-shop
 import { CANONICAL_SITE_ORIGIN } from "@/lib/category-seo";
 import { applyPageMeta, truncateMetaDescription } from "@/lib/page-meta";
 import { injectJsonLd, listingProductJsonLd } from "@/lib/schema-org";
+import { notifyTopListingsRefresh } from "@/lib/top-listings-events";
+import { useListingFlowStable } from "@/hooks/use-listing-flow-stable";
 
 // ─── Spec parser ─────────────────────────────────────────────────────────────
 interface ParsedDesc { specs: Record<string, string>; body: string }
@@ -142,6 +144,7 @@ function SpecGrid({ specs, detailsLabel }: { specs: Record<string, string>; deta
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function ListingDetail() {
+  useListingFlowStable();
   const [, params] = useRoute("/listings/:id");
   const [, setLocation] = useLocation();
   const id = Number(params?.id);
@@ -151,11 +154,13 @@ export default function ListingDetail() {
   const tx = t as Record<string, string>;
   const { user } = useAuth();
 
-  const { data: listing, isLoading, isFetching, isError, error, refetch } = useGetListing(id, {
+  const { data: listing, isLoading, isError, error, refetch } = useGetListing(id, {
     query: {
       enabled: !!id,
-      queryKey: [...getGetListingQueryKey(id), user?.id ?? "guest"],
+      queryKey: getGetListingQueryKey(id),
       retry: 1,
+      staleTime: 30_000,
+      placeholderData: (previous) => previous,
     },
   });
 
@@ -163,6 +168,20 @@ export default function ListingDetail() {
     if (!id || isLoading || !listing) return;
     void recordListingView(id, queryClient);
   }, [id, isLoading, listing?.id, queryClient]);
+
+  const authUserId = user?.id;
+  const prevAuthUserId = useRef<number | undefined | null>(null);
+  useEffect(() => {
+    if (!id) return;
+    if (prevAuthUserId.current === null) {
+      prevAuthUserId.current = authUserId;
+      return;
+    }
+    const prev = prevAuthUserId.current;
+    if (prev === authUserId) return;
+    prevAuthUserId.current = authUserId;
+    void queryClient.invalidateQueries({ queryKey: getGetListingQueryKey(id) });
+  }, [authUserId, id, queryClient]);
 
   useEffect(() => {
     if (!listing) return;
@@ -203,7 +222,7 @@ export default function ListingDetail() {
     finish();
     notifyTopListingsRefresh(id);
     toast({ title: tx.ui_topThanksSoon });
-  }, [user, id, queryClient, toast, t, uiLang]);
+  }, [user, id, queryClient, toast, uiLang, tx.ui_topActivatedTitle, tx.ui_topActivatedDesc, tx.ui_topPaymentPendingTitle, tx.ui_topPaymentPendingDesc, tx.ui_topThanksSoon]);
 
   const [listingShareUrl, setListingShareUrl] = useState("");
   const [postShareOpen, setPostShareOpen] = useState(false);
@@ -393,7 +412,7 @@ export default function ListingDetail() {
     },
   });
 
-  if (isLoading || (isFetching && !listing)) {
+  if (isLoading && !listing) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Skeleton className="h-8 w-32 mb-6" />

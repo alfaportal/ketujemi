@@ -1,11 +1,11 @@
-import { isListingPostPath } from "@/lib/listing-post-path";
+import { isListingFlowPath } from "@/lib/listing-post-path";
 
-const STABLE_ONCE_KEY = "vendi_listing_post_sw_cleared_v1";
+const STABLE_ONCE_KEY = "vendi_listing_flow_sw_cleared_v1";
 
-/** Drop service worker control on the posting form — stale SW shells cause white-screen reloads. */
-export async function stabilizeListingPostPage(): Promise<void> {
+/** Drop stale service workers on listing post/detail/edit — prevents white-screen reload loops. */
+export async function stabilizeListingFlowPage(): Promise<void> {
   if (!import.meta.env.PROD || typeof window === "undefined") return;
-  if (!isListingPostPath(window.location.pathname)) return;
+  if (!isListingFlowPath(window.location.pathname)) return;
   if (!("serviceWorker" in navigator)) return;
   try {
     if (sessionStorage.getItem(STABLE_ONCE_KEY) === "1") return;
@@ -19,4 +19,9 @@ export async function stabilizeListingPostPage(): Promise<void> {
   } catch {
     /* ignore */
   }
+}
+
+/** @deprecated Use stabilizeListingFlowPage */
+export async function stabilizeListingPostPage(): Promise<void> {
+  return stabilizeListingFlowPage();
 }

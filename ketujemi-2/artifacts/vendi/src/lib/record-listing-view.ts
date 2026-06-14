@@ -1,11 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
-import {
-  getGetFeaturedListingsQueryKey,
-  getGetListingQueryKey,
-  getGetListingsQueryKey,
-  getGetRecentListingsQueryKey,
-} from "@workspace/api-client-react";
+import { getGetListingQueryKey } from "@workspace/api-client-react";
 
 const SESSION_PREFIX = "kj-listing-view:";
 
@@ -49,9 +44,6 @@ export async function recordListingView(
         { queryKey: getGetListingQueryKey(listingId) },
         (old: { views?: number } | undefined) => (old ? { ...old, views } : old),
       );
-      void queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
-      void queryClient.invalidateQueries({ queryKey: getGetRecentListingsQueryKey() });
-      void queryClient.invalidateQueries({ queryKey: getGetFeaturedListingsQueryKey() });
     }
 
     return views;

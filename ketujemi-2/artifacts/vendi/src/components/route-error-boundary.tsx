@@ -1,5 +1,4 @@
 import { Component, type ComponentType, type ErrorInfo, type ReactNode } from "react";
-import { isListingPostPath } from "@/lib/listing-post-path";
 import { DEFAULT_UI_LANG, isUiLang, translationKeyForUiLang } from "@/lib/ui-languages";
 
 type Props = { children: ReactNode };
@@ -8,6 +7,7 @@ type State = { error: Error | null };
 type SectionErrorCopy = {
   title: string;
   hint: string;
+  retry: string;
   refresh: string;
 };
 
@@ -15,64 +15,35 @@ type SectionErrorCopy = {
 const ROUTE_ERROR_COPY: Record<string, SectionErrorCopy> = {
   ks: {
     title: "Diçka shkoi keq",
-    hint: "Rifresko faqen.",
+    hint: "Provo përsëri ose rifresko faqen.",
+    retry: "Provo përsëri",
     refresh: "Rifresko",
   },
   al: {
     title: "Diçka shkoi keq",
-    hint: "Rifresko faqen.",
+    hint: "Provo përsëri ose rifresko faqen.",
+    retry: "Provo përsëri",
     refresh: "Rifresko",
   },
   mk: {
     title: "Нешто тргна наопаку",
-    hint: "Освежете ја страницата.",
+    hint: "Обидете се повторно или освежете ја страницата.",
+    retry: "Обиди се повторно",
     refresh: "Освежи",
   },
   mne: {
     title: "Nešto je pošlo po zlu",
-    hint: "Osvježite stranicu.",
+    hint: "Pokušajte ponovo ili osvježite stranicu.",
+    retry: "Pokušaj ponovo",
     refresh: "Osvježi",
   },
   en: {
     title: "Something went wrong",
-    hint: "Refresh the page.",
+    hint: "Try again or refresh the page.",
+    retry: "Try again",
     refresh: "Refresh",
   },
 };
-
-const AUTO_RECOVER_KEY = "vendi_route_error_autorecover_path";
-
-function currentRouteKey(): string {
-  if (typeof window === "undefined") return "";
-  return `${window.location.pathname}${window.location.search}`;
-}
-
-function markAutoRecoveryAttempt(pathKey: string): void {
-  if (typeof window === "undefined" || !pathKey) return;
-  try {
-    sessionStorage.setItem(AUTO_RECOVER_KEY, pathKey);
-  } catch {
-    /* ignore */
-  }
-}
-
-function wasAutoRecoveryAttempted(pathKey: string): boolean {
-  if (typeof window === "undefined" || !pathKey) return false;
-  try {
-    return sessionStorage.getItem(AUTO_RECOVER_KEY) === pathKey;
-  } catch {
-    return false;
-  }
-}
-
-function clearAutoRecoveryAttempt(): void {
-  if (typeof window === "undefined") return;
-  try {
-    sessionStorage.removeItem(AUTO_RECOVER_KEY);
-  } catch {
-    /* ignore */
-  }
-}
 
 function sectionErrorCopyForStoredLang(): SectionErrorCopy {
   let uiLang = DEFAULT_UI_LANG;
@@ -84,23 +55,12 @@ function sectionErrorCopyForStoredLang(): SectionErrorCopy {
       /* ignore */
     }
   }
-  const bundle = ROUTE_ERROR_COPY[translationKeyForUiLang(uiLang)] ?? ROUTE_ERROR_COPY.ks;
-  return bundle;
+  return ROUTE_ERROR_COPY[translationKeyForUiLang(uiLang)] ?? ROUTE_ERROR_COPY.ks;
 }
 
-/** Scoped fallback for category, search, and listing detail routes. */
+/** Scoped fallback for category, search, and listing detail routes. Never auto-reloads — that caused refresh loops. */
 export class RouteErrorBoundary extends Component<Props, State> {
   state: State = { error: null };
-
-  componentDidMount() {
-    if (!this.state.error) clearAutoRecoveryAttempt();
-  }
-
-  componentDidUpdate(_prevProps: Props, prevState: State) {
-    if (prevState.error && !this.state.error) {
-      clearAutoRecoveryAttempt();
-    }
-  }
 
   static getDerivedStateFromError(error: Error): State {
     return { error };
@@ -108,13 +68,11 @@ export class RouteErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[KetuJemi] Route section failed to render", error, info.componentStack);
-
-    const pathKey = currentRouteKey();
-    if (!pathKey || wasAutoRecoveryAttempted(pathKey)) return;
-    if (isListingPostPath(pathKey.split("?")[0] ?? "")) return;
-    markAutoRecoveryAttempt(pathKey);
-    window.setTimeout(() => window.location.reload(), 120);
   }
+
+  private resetBoundary = () => {
+    this.setState({ error: null });
+  };
 
   render() {
     if (!this.state.error) return this.props.children;
@@ -125,13 +83,22 @@ export class RouteErrorBoundary extends Component<Props, State> {
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 px-6 py-16 text-center">
         <p className="text-lg font-semibold text-gray-900">{copy.title}</p>
         <p className="max-w-md text-sm text-gray-600">{copy.hint}</p>
-        <button
-          type="button"
-          className="rounded-lg bg-[#2563eb] px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-          onClick={() => window.location.reload()}
-        >
-          {copy.refresh}
-        </button>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <button
+            type="button"
+            className="rounded-lg bg-[#2563eb] px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            onClick={this.resetBoundary}
+          >
+            {copy.retry}
+          </button>
+          <button
+            type="button"
+            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
+            onClick={() => window.location.reload()}
+          >
+            {copy.refresh}
+          </button>
+        </div>
       </div>
     );
   }
