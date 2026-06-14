@@ -9,3 +9,10 @@ export const VIEWS_BOOST_TRIM_AMOUNT = 20;
 
 /** Only trim rows at or above this — leaves organic low counts untouched. */
 export const VIEWS_BOOST_TRIM_MIN_VIEWS = 20;
+
+/** Active listings created on these calendar days (Europe/Belgrade) are trimmed, not boosted. */
+export const VIEWS_TRIM_LISTING_YEAR = 2026;
+export const VIEWS_TRIM_LISTING_MONTH = 6;
+export const VIEWS_TRIM_LISTING_DAY_START = 13;
+/** Inclusive end day (same month/year as start). */
+export const VIEWS_TRIM_LISTING_DAY_END = 14;

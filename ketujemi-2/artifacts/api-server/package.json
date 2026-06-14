@@ -15,6 +15,7 @@
     "run:listing-reel": "tsx ./src/scripts/run-listing-reel.ts",
     "run:views-boost": "tsx ./src/scripts/run-views-boost.ts",
     "run:views-trim-boost": "tsx ./src/scripts/run-views-trim-boost.ts",
+    "run:views-rebalance": "tsx ./src/scripts/run-views-rebalance.ts",
     "typecheck": "tsc --build ../../lib/db/tsconfig.json ../../lib/api-zod/tsconfig.json && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

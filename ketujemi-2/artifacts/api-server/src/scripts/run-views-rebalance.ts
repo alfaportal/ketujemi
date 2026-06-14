@@ -1,6 +1,6 @@
 /**
- * One-time: subtract ~20 views from listings created 13–14.06 only (shops untouched).
- * Usage: pnpm -C ketujemi-2/artifacts/api-server run run:views-trim-boost
+ * Trim 13–14.06 listings, then boost all other low-view listings + shops.
+ * Usage: pnpm -C ketujemi-2/artifacts/api-server run run:views-rebalance
  */
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,9 +19,12 @@ const { pool, ensureShopSchema } = await import("@workspace/db");
 await ensureShopSchema(pool);
 
 const { trimExcessBoostedViews } = await import("../lib/views-boost-trim.js");
+const { boostLowViewCounts } = await import("../lib/views-boost.js");
 const { logger } = await import("../lib/logger.js");
 
-const result = await trimExcessBoostedViews();
-logger.info(result, "views trim manual run finished");
+const trim = await trimExcessBoostedViews();
+const boost = await boostLowViewCounts();
+const result = { trim, boost };
+logger.info(result, "views rebalance finished");
 console.log(JSON.stringify(result, null, 2));
 process.exit(0);

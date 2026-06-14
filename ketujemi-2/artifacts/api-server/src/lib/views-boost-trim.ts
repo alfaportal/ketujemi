@@ -1,36 +1,45 @@
-import { db, listingsTable, shopsTable } from "@workspace/db";
+import { db, listingsTable } from "@workspace/db";
 import { and, gte, sql } from "drizzle-orm";
 import { activeListingSqlCondition } from "./listing-visibility.js";
-import { activeShopSqlCondition } from "./shop-visibility.js";
 import {
   VIEWS_BOOST_TRIM_AMOUNT,
   VIEWS_BOOST_TRIM_MIN_VIEWS,
 } from "./views-constants.js";
+import {
+  listingCreatedInTrimWindow,
+  viewsTrimListingRangeBounds,
+} from "./views-listing-date-range.js";
 import { logger } from "./logger.js";
 
 /**
- * One-time correction: pull back ~20 views on artificially boosted rows (organic low counts untouched).
+ * Lower ~20 views only on listings created 13–14.06 (over-boosted batch). Shops untouched.
  */
 export async function trimExcessBoostedViews(): Promise<{ listings: number; shops: number }> {
-  const trimSql = (tableViews: typeof listingsTable.views) =>
-    sql`GREATEST(${tableViews} - ${VIEWS_BOOST_TRIM_AMOUNT}, 0)`;
+  const trimSql = sql`GREATEST(${listingsTable.views} - ${VIEWS_BOOST_TRIM_AMOUNT}, 0)`;
+  const { start, endExclusive } = viewsTrimListingRangeBounds();
 
   const listingRows = await db
     .update(listingsTable)
-    .set({ views: trimSql(listingsTable.views) })
-    .where(and(activeListingSqlCondition(), gte(listingsTable.views, VIEWS_BOOST_TRIM_MIN_VIEWS)))
+    .set({ views: trimSql })
+    .where(
+      and(
+        activeListingSqlCondition(),
+        listingCreatedInTrimWindow(),
+        gte(listingsTable.views, VIEWS_BOOST_TRIM_MIN_VIEWS),
+      ),
+    )
     .returning({ id: listingsTable.id });
 
-  const shopRows = await db
-    .update(shopsTable)
-    .set({ views: trimSql(shopsTable.views) })
-    .where(and(activeShopSqlCondition(), gte(shopsTable.views, VIEWS_BOOST_TRIM_MIN_VIEWS)))
-    .returning({ id: shopsTable.id });
-
-  const result = { listings: listingRows.length, shops: shopRows.length };
+  const result = { listings: listingRows.length, shops: 0 };
   logger.info(
-    { ...result, trim: VIEWS_BOOST_TRIM_AMOUNT, min_views: VIEWS_BOOST_TRIM_MIN_VIEWS },
-    "views boost trim finished",
+    {
+      ...result,
+      trim: VIEWS_BOOST_TRIM_AMOUNT,
+      min_views: VIEWS_BOOST_TRIM_MIN_VIEWS,
+      trim_window_start: start.toISOString(),
+      trim_window_end_exclusive: endExclusive.toISOString(),
+    },
+    "views boost trim finished (13–14.06 listings only)",
   );
   return result;
 }
