@@ -5,6 +5,22 @@ import {
   getShopSocialProfilesForShops,
   type ShopSocialProfileApi,
 } from "./shop-social-enrich.js";
+import { logger } from "./logger.js";
+
+const EMPTY_SHOP_FIELDS: ShopListingFields = {
+  shop_id: null,
+  shop_name: null,
+  shop_logo_url: null,
+  shop_category: null,
+  shop_city: null,
+  shop_facebook: null,
+  shop_instagram: null,
+  shop_tiktok: null,
+  shop_whatsapp: null,
+  shop_website: null,
+  shop_verified: false,
+  shop_social_profiles: undefined,
+};
 
 export type ShopListingFields = {
   shop_id: number | null;
@@ -78,6 +94,17 @@ export async function annotateListingsWithShopInfo<
 export async function finalizeListingsForApi<
   T extends { seller_phone: string; description: string; shop_id?: number | null },
 >(listings: T[]) {
-  const withVip = await annotateListingsWithVipFlag(listings);
-  return annotateListingsWithShopInfo(withVip);
+  if (listings.length === 0) return [];
+  try {
+    const withVip = await annotateListingsWithVipFlag(listings);
+    return await annotateListingsWithShopInfo(withVip);
+  } catch (err) {
+    logger.warn({ err }, "finalizeListingsForApi failed — returning base payloads");
+    return listings.map((listing) => ({
+      ...listing,
+      is_vip_seller: false,
+      ...EMPTY_SHOP_FIELDS,
+      shop_id: listing.shop_id ?? null,
+    }));
+  }
 }

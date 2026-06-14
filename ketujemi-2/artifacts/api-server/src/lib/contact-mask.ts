@@ -1,6 +1,6 @@
 /** First token of display name (e.g. "Arben Krasniqi" → "Arben"). */
-export function sellerFirstName(raw: string): string {
-  const name = raw.trim();
+export function sellerFirstName(raw: string | null | undefined): string {
+  const name = (raw ?? "").trim();
   if (!name) return "";
   return name.split(/\s+/)[0] ?? name;
 }
@@ -28,14 +28,16 @@ function maskEmailValue(email: string): string {
 }
 
 /** Mask `Email: …` in the specs prefix line (first segment before `\n\n`). */
-export function maskEmailInListingDescription(description: string): string {
+export function maskEmailInListingDescription(description: string | null | undefined): string {
+  const safe = description ?? "";
+  if (!safe) return "";
   const sep = "\n\n";
-  const idx = description.indexOf(sep);
-  const firstLine = idx > 0 ? description.slice(0, idx) : description;
-  const rest = idx > 0 ? description.slice(idx) : "";
+  const idx = safe.indexOf(sep);
+  const firstLine = idx > 0 ? safe.slice(0, idx) : safe;
+  const rest = idx > 0 ? safe.slice(idx) : "";
 
   if (!firstLine.includes(": ") || firstLine.includes("\n")) {
-    return description;
+    return safe;
   }
 
   const rewritten = firstLine.split(" · ").map((pair) => {

@@ -51,7 +51,7 @@ export function isVipSellerListing(
   listing: { seller_phone: string; description: string },
   lookup: VipSellerLookup,
 ): boolean {
-  const d = normalizePhoneDigits(listing.seller_phone);
+  const d = normalizePhoneDigits(listing.seller_phone ?? "");
   if (d.length >= 8) {
     if (lookup.phones.has(d) || lookup.phones.has(d.slice(-8))) return true;
   }

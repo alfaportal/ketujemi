@@ -1251,9 +1251,10 @@ router.post("/listings/:id/view", async (req, res) => {
 
 // ─── GET /listings/:id ────────────────────────────────────────────────────────
 router.get("/listings/:id", async (req, res) => {
+  const listingIdParam = req.params.id;
   try {
     const viewer = await getSessionUser(req);
-    const parsed = GetListingParams.safeParse({ id: Number(req.params.id) });
+    const parsed = GetListingParams.safeParse({ id: Number(listingIdParam) });
     if (!parsed.success) {
       res.status(400).json({ error: "Invalid id" });
       return;
@@ -1269,7 +1270,16 @@ router.get("/listings/:id", async (req, res) => {
       return;
     }
 
-    const isOwner = !!(viewer && listingBelongsToUser(viewer.id, viewer, row));
+    let isOwner = false;
+    try {
+      isOwner = !!(viewer && listingBelongsToUser(viewer.id, viewer, {
+        user_id: row.user_id,
+        seller_phone: row.seller_phone ?? "",
+        description: row.description ?? "",
+      }));
+    } catch (ownerErr) {
+      logger.warn({ ownerErr, listingId: parsed.data.id }, "listingBelongsToUser failed on GET");
+    }
     const canRepost = isOwner && !isListingPubliclyVisible(row);
 
     row = await repairLegacyListingFields(row).catch((repairErr) => {
@@ -1301,24 +1311,35 @@ router.get("/listings/:id", async (req, res) => {
       if (await isListingUserPlatformAdmin(row.user_id)) {
         formatted = {
           ...formatted,
-          description: descriptionForAdminOnBehalf(formatted.description),
+          description: descriptionForAdminOnBehalf(formatted.description ?? ""),
         };
       }
     } catch (adminErr) {
       logger.warn({ adminErr, listingId: row.id }, "admin description check failed on GET");
     }
-    const payload = applyViewerContact(formatted, viewer) as ReturnType<typeof formatListing> & {
-      can_repost: boolean;
-    };
-    payload.can_repost = canRepost;
-    const [out] = await finalizeListingsForApi([payload]).catch((finalizeErr) => {
+
+    let payload = formatted as ReturnType<typeof formatListing> & { can_repost: boolean };
+    try {
+      payload = {
+        ...(applyViewerContact(formatted, viewer) as ReturnType<typeof formatListing>),
+        can_repost: canRepost,
+      };
+    } catch (contactErr) {
+      logger.warn({ contactErr, listingId: row.id }, "applyViewerContact failed on GET");
+      payload = { ...formatted, can_repost: canRepost };
+    }
+
+    const finalized = await finalizeListingsForApi([payload]).catch((finalizeErr) => {
       logger.warn({ finalizeErr, listingId: parsed.data.id }, "finalizeListingsForApi failed on GET");
       return [payload];
     });
+    const out = finalized[0] ?? payload;
     res.json({ ...out, can_repost: payload.can_repost, is_owner: isOwner });
   } catch (err) {
-    logger.error({ err, listingId: req.params.id }, "GET /listings/:id failed");
-    res.status(500).json({ error: "Internal server error" });
+    logger.error({ err, listingId: listingIdParam }, "GET /listings/:id failed");
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Internal server error" });
+    }
   }
 });
 

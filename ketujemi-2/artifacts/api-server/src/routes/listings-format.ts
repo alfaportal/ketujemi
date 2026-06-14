@@ -9,13 +9,13 @@ function withSellerContactForViewer<
   T extends { seller_phone: string; seller_name: string; description: string },
 >(listing: T, viewer: User | null): T {
   const description = viewer
-    ? listing.description
+    ? (listing.description ?? "")
     : maskEmailInListingDescription(listing.description);
 
   return {
     ...listing,
-    seller_name: viewer ? listing.seller_name : sellerFirstName(listing.seller_name),
-    seller_phone: viewer ? listing.seller_phone : "",
+    seller_name: viewer ? (listing.seller_name ?? "") : sellerFirstName(listing.seller_name),
+    seller_phone: viewer ? (listing.seller_phone ?? "") : "",
     description,
   };
 }
@@ -64,38 +64,46 @@ export function formatListing(
 ) {
   const now = new Date();
   const expires = l.expires_at ? new Date(l.expires_at) : null;
-  const daysLeft = expires
-    ? Math.max(0, Math.ceil((expires.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
-    : null;
+  const daysLeft =
+    expires && !Number.isNaN(expires.getTime())
+      ? Math.max(0, Math.ceil((expires.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
+      : null;
 
   const image_url = sanitizeListingImageUrlField(l.image_url);
   const video_url = sanitizeListingVideoUrl(l.video_url);
+  const sellerPhone = l.seller_phone ?? "";
+  const priceRaw = Number(l.price);
+  const price = Number.isFinite(priceRaw) ? priceRaw : 0;
+
+  const toIso = (value: Date | string | null | undefined, fallback: string): string => {
+    if (!value) return fallback;
+    const d = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(d.getTime()) ? fallback : d.toISOString();
+  };
+  const nowIso = now.toISOString();
 
   return {
     ...l,
+    title: l.title ?? "",
+    description: l.description ?? "",
+    seller_name: l.seller_name ?? "",
+    seller_phone: sellerPhone,
+    location: l.location ?? null,
     image_url,
     video_url,
     primary_image_url: primaryListingImageUrl(image_url),
-    price: Number(l.price),
+    price,
     category_name: categoryName,
     category_root_slug: categoryRootSlug,
-    seller_phone_masked: maskSellerPhone(l.seller_phone),
-    created_at: l.created_at
-      ? l.created_at.toISOString()
-      : l.listed_at
-        ? l.listed_at.toISOString()
-        : new Date().toISOString(),
-    expires_at: l.expires_at ? l.expires_at.toISOString() : null,
+    seller_phone_masked: maskSellerPhone(sellerPhone),
+    created_at: toIso(l.created_at, toIso(l.listed_at, nowIso)),
+    expires_at: expires && !Number.isNaN(expires.getTime()) ? expires.toISOString() : null,
     days_left: daysLeft,
-    is_expired: expires ? expires < now : false,
+    is_expired: expires && !Number.isNaN(expires.getTime()) ? expires < now : false,
     is_top: isTopActive(l),
-    top_until: l.top_until ? l.top_until.toISOString() : null,
+    top_until: l.top_until ? toIso(l.top_until, nowIso) : null,
     top_count: l.top_count ?? 0,
-    listed_at: l.listed_at
-      ? l.listed_at.toISOString()
-      : l.created_at
-        ? l.created_at.toISOString()
-        : new Date().toISOString(),
+    listed_at: toIso(l.listed_at, toIso(l.created_at, nowIso)),
     status: l.status ?? "active",
     moderation_status: l.moderation_status ?? "approved",
     shop_id: l.shop_id ?? null,
