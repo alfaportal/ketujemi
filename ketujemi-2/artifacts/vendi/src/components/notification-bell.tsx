@@ -11,7 +11,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 export type UserNotificationRow = {
   id: number;
   type: string;
-  payload: { listingId?: number; listingTitle?: string };
+  payload: {
+    listingId?: number;
+    listingTitle?: string;
+    removedCount?: number;
+    maxPhotos?: number;
+  };
   read_at: string | null;
   requires_action: boolean;
   created_at: string;
@@ -35,6 +40,13 @@ function notificationMessage(
 ): string {
   if (row.type === "listing_first_external_view") {
     return copy.listingFirstView(row.payload.listingTitle ?? "");
+  }
+  if (row.type === "listing_excess_photos_removed") {
+    return copy.listingExcessPhotosRemoved(
+      row.payload.listingTitle ?? "",
+      row.payload.removedCount ?? 0,
+      row.payload.maxPhotos ?? 10,
+    );
   }
   if (row.type === "social_follow_prompt") {
     return [

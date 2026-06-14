@@ -8,6 +8,7 @@ export type EngagementCopy = {
   firstListingBody: string;
   subsequentListingToast: string;
   listingFirstView: (title: string) => string;
+  listingExcessPhotosRemoved: (title: string, removed: number, max: number) => string;
   socialFollowTitle: string;
   socialFollowBody: string;
   socialFollowFacebook: string;
@@ -32,6 +33,8 @@ const COPY: Record<EngagementLocale, EngagementCopy> = {
       "🎉 Urime! Shpallja jote është aktive tani në KëtuJemi.com dhe do të shfaqet automatikisht edhe në Facebook, Instagram dhe TikTok. Sa më shumë njerëz ta shohin, aq më shpejt shitet! 🚀",
     listingFirstView: (title) =>
       `👀 Dikush e shikoi shpalljen tuaj për ${title} — je në rrugë të mirë!`,
+    listingExcessPhotosRemoved: (title, removed, max) =>
+      `📷 U hoqën ${removed} foto nga shpallja «${title}» — limiti është ${max} foto për shpallje. Fotot e tepërta u fshinë automatikisht.`,
     socialFollowTitle: "🔥 Shpallja juaj po tërheq vëmendjen!",
     socialFollowBody:
       "Na ndiqni për të na ndihmuar të promovojmë shpalljet tuaja edhe më shumë:",
@@ -56,6 +59,8 @@ const COPY: Record<EngagementLocale, EngagementCopy> = {
       "🎉 Честитки! Вашиот оглас е активен на KëtuJemi.com и автоматски ќе се објави на Facebook, Instagram и TikTok. Колку повеќе луѓе го видат, толку побрзо ќе се продаде! 🚀",
     listingFirstView: (title) =>
       `👀 Некој го погледна вашиот оглас за ${title} — сте на добар пат!`,
+    listingExcessPhotosRemoved: (title, removed, max) =>
+      `📷 Отстранети се ${removed} фотографии од огласот «${title}» — лимитот е ${max} фотографии по оглас. Вишокот е автоматски избришан.`,
     socialFollowTitle: "🔥 Вашиот оглас привлекува внимание!",
     socialFollowBody:
       "Следете не за да ни помогнете да ги промовираме вашите огласи уште повеќе:",
@@ -80,6 +85,8 @@ const COPY: Record<EngagementLocale, EngagementCopy> = {
       "🎉 Čestitamo! Vaš oglas je aktivan na KëtuJemi.com i automatski će se objaviti na Facebooku, Instagramu i TikToku. Što više ljudi ga vidi, brže će se prodati! 🚀",
     listingFirstView: (title) =>
       `👀 Neko je pogledao vaš oglas za ${title} — na dobrom ste putu!`,
+    listingExcessPhotosRemoved: (title, removed, max) =>
+      `📷 Uklonjeno je ${removed} fotografija sa oglasa «${title}» — limit je ${max} fotografija po oglasu. Višak je automatski obrisan.`,
     socialFollowTitle: "🔥 Vaš oglas privlači pažnju!",
     socialFollowBody:
       "Pratite nas da nam pomognete da promovišemo vaše oglase još više:",
@@ -104,6 +111,8 @@ const COPY: Record<EngagementLocale, EngagementCopy> = {
       "🎉 Congrats! Your listing is live on KëtuJemi.com and will be shared automatically on Facebook, Instagram, and TikTok. The more people see it, the faster it sells! 🚀",
     listingFirstView: (title) =>
       `👀 Someone viewed your listing for ${title} — you're on the right track!`,
+    listingExcessPhotosRemoved: (title, removed, max) =>
+      `📷 ${removed} photos were removed from listing «${title}» — the limit is ${max} photos per listing. Extra photos were deleted automatically.`,
     socialFollowTitle: "🔥 Your listing is getting attention!",
     socialFollowBody: "Follow us to help us promote your listings even more:",
     socialFollowFacebook: "📘 Facebook — KetuJemi.com",
@@ -127,6 +136,8 @@ const COPY: Record<EngagementLocale, EngagementCopy> = {
       "🎉 Félicitations ! Votre annonce est en ligne sur KëtuJemi.com et sera partagée automatiquement sur Facebook, Instagram et TikTok. Plus elle est vue, plus vite elle se vend ! 🚀",
     listingFirstView: (title) =>
       `👀 Quelqu'un a consulté votre annonce pour ${title} — vous êtes sur la bonne voie !`,
+    listingExcessPhotosRemoved: (title, removed, max) =>
+      `📷 ${removed} photos ont été retirées de l'annonce « ${title} » — la limite est de ${max} photos par annonce. Les photos en trop ont été supprimées automatiquement.`,
     socialFollowTitle: "🔥 Votre annonce attire l'attention !",
     socialFollowBody: "Suivez-nous pour nous aider à promouvoir encore plus vos annonces :",
     socialFollowFacebook: "📘 Facebook — KetuJemi.com",
@@ -150,6 +161,8 @@ const COPY: Record<EngagementLocale, EngagementCopy> = {
       "🎉 Glückwunsch! Deine Anzeige ist live auf KëtuJemi.com und wird automatisch auf Facebook, Instagram und TikTok geteilt. Je mehr Menschen sie sehen, desto schneller verkauft sie sich! 🚀",
     listingFirstView: (title) =>
       `👀 Jemand hat deine Anzeige für ${title} angesehen — du bist auf dem richtigen Weg!`,
+    listingExcessPhotosRemoved: (title, removed, max) =>
+      `📷 ${removed} Fotos wurden aus der Anzeige «${title}» entfernt — das Limit ist ${max} Fotos pro Anzeige. Überzählige Fotos wurden automatisch gelöscht.`,
     socialFollowTitle: "🔥 Deine Anzeige zieht Aufmerksamkeit auf sich!",
     socialFollowBody: "Folge uns, damit wir deine Anzeigen noch besser promoten können:",
     socialFollowFacebook: "📘 Facebook — KetuJemi.com",
@@ -173,6 +186,8 @@ const COPY: Record<EngagementLocale, EngagementCopy> = {
       "🎉 Congratulazioni! Il tuo annuncio è online su KëtuJemi.com e verrà condiviso automaticamente su Facebook, Instagram e TikTok. Più persone lo vedono, più velocemente si vende! 🚀",
     listingFirstView: (title) =>
       `👀 Qualcuno ha visto il tuo annuncio per ${title} — sei sulla strada giusta!`,
+    listingExcessPhotosRemoved: (title, removed, max) =>
+      `📷 ${removed} foto sono state rimosse dall'annuncio «${title}» — il limite è ${max} foto per annuncio. Le foto in eccesso sono state eliminate automaticamente.`,
     socialFollowTitle: "🔥 Il tuo annuncio sta attirando attenzione!",
     socialFollowBody: "Seguici per aiutarci a promuovere ancora di più i tuoi annunci:",
     socialFollowFacebook: "📘 Facebook — KetuJemi.com",

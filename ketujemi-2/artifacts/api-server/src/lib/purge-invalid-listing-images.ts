@@ -3,13 +3,20 @@ import { listingsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { logger } from "./logger.js";
 import {
+  droppedListingImageUrls,
+  listingImageUrlExceedsMax,
   listingImageUrlNeedsPurge,
   sanitizeListingImageUrlField,
 } from "./listing-images.js";
+import { deleteListingStorageUrls } from "./delete-listing-storage.js";
+import { notifyListingExcessPhotosRemoved } from "./engagement-notifications.js";
+import { LISTING_MAX_PHOTOS } from "../../../../lib/special-listing-categories.js";
 
 export type PurgeInvalidListingImagesResult = {
   scanned: number;
   cleared: number;
+  storageUrlsDeleted: number;
+  ownersNotified: number;
   sampleIds: number[];
 };
 
@@ -23,6 +30,8 @@ export async function purgeInvalidListingImages(opts?: {
     ? await db
         .select({
           id: listingsTable.id,
+          user_id: listingsTable.user_id,
+          title: listingsTable.title,
           image_url: listingsTable.image_url,
         })
         .from(listingsTable)
@@ -30,24 +39,44 @@ export async function purgeInvalidListingImages(opts?: {
     : await db
         .select({
           id: listingsTable.id,
+          user_id: listingsTable.user_id,
+          title: listingsTable.title,
           image_url: listingsTable.image_url,
         })
         .from(listingsTable);
   let cleared = 0;
+  let storageUrlsDeleted = 0;
+  let ownersNotified = 0;
   const sampleIds: number[] = [];
 
   for (const row of rows) {
     if (!listingImageUrlNeedsPurge(row.image_url)) continue;
+    const hadExcess = listingImageUrlExceedsMax(row.image_url);
     const cleaned = sanitizeListingImageUrlField(row.image_url);
+    const dropped = droppedListingImageUrls(row.image_url, cleaned);
     await db
       .update(listingsTable)
       .set({ image_url: cleaned })
       .where(eq(listingsTable.id, row.id));
+    if (dropped.length > 0) {
+      await deleteListingStorageUrls(dropped, row.id);
+      storageUrlsDeleted += dropped.length;
+    }
+    if (hadExcess && dropped.length > 0 && row.user_id != null && row.user_id > 0) {
+      await notifyListingExcessPhotosRemoved({
+        userId: row.user_id,
+        listingId: row.id,
+        listingTitle: row.title,
+        removedCount: dropped.length,
+        maxPhotos: LISTING_MAX_PHOTOS,
+      });
+      ownersNotified += 1;
+    }
     cleared += 1;
     if (sampleIds.length < 25) sampleIds.push(row.id);
   }
 
-  return { scanned: rows.length, cleared, sampleIds };
+  return { scanned: rows.length, cleared, storageUrlsDeleted, ownersNotified, sampleIds };
 }
 
 export async function purgeInvalidListingImagesOnStartup(): Promise<void> {
@@ -55,8 +84,14 @@ export async function purgeInvalidListingImagesOnStartup(): Promise<void> {
     const result = await purgeInvalidListingImages({ activeOnly: false });
     if (result.cleared > 0) {
       logger.warn(
-        { cleared: result.cleared, scanned: result.scanned, sampleIds: result.sampleIds },
-        "Startup purge removed invalid/stock listing image_url values",
+        {
+          cleared: result.cleared,
+          scanned: result.scanned,
+          storageUrlsDeleted: result.storageUrlsDeleted,
+          ownersNotified: result.ownersNotified,
+          sampleIds: result.sampleIds,
+        },
+        "Startup purge trimmed invalid/excess listing image_url values",
       );
     }
   } catch (err) {

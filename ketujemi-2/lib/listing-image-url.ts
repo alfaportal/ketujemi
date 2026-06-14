@@ -86,6 +86,29 @@ export function parseListingImageUrls(imageUrl: string | null | undefined): stri
     .slice(0, LISTING_MAX_PHOTOS);
 }
 
+/** All valid upload URLs in field order (no max cap) — for purge/storage cleanup. */
+export function allValidListingImageUrls(imageUrl: string | null | undefined): string[] {
+  if (!imageUrl?.trim()) return [];
+  return imageUrl
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => isUserUploadedListingImageUrl(s));
+}
+
+export function listingImageUrlExceedsMax(raw: string | null | undefined): boolean {
+  return allValidListingImageUrls(raw).length > LISTING_MAX_PHOTOS;
+}
+
+/** Valid upload URLs removed when sanitizing (excess over max, invalid hosts, etc.). */
+export function droppedListingImageUrls(
+  raw: string | null | undefined,
+  cleaned: string | null | undefined,
+): string[] {
+  const before = allValidListingImageUrls(raw);
+  const after = new Set(parseListingImageUrls(cleaned));
+  return before.filter((u) => !after.has(u));
+}
+
 export function primaryListingImageUrl(imageUrl: string | null | undefined): string | null {
   return parseListingImageUrls(imageUrl)[0] ?? null;
 }

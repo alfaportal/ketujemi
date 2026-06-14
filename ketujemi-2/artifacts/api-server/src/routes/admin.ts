@@ -312,8 +312,8 @@ router.post("/admin/listings/purge-invalid-images", requireAdmin, async (req, re
       ...result,
       message:
         result.cleared > 0
-          ? `U hoqën foto të pavlefshme/stock nga ${result.cleared} shpallje.`
-          : "Nuk u gjetën foto stock në image_url.",
+          ? `U pastruan image_url te ${result.cleared} shpallje (foto stock ose mbi 10). U fshinë ${result.storageUrlsDeleted} skedarë. U njoftuan ${result.ownersNotified} përdorues.`
+          : "Nuk u gjetën foto stock ose tepër në image_url.",
     });
   } catch (err) {
     req.log.error({ err }, "Admin purge listing images error");

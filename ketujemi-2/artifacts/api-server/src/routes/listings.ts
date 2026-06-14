@@ -72,6 +72,7 @@ import {
 import { runTwoLayerModeration } from "../lib/listing-two-layer-moderation";
 import { blockSelfDuplicateListingIfNeeded } from "../lib/listing-self-duplicate";
 import { sanitizeListingImageUrlField } from "../lib/listing-images";
+import { pruneListingImagesAndNotifyOwner } from "../lib/listing-image-prune.js";
 import { sanitizeListingVideoUrl } from "../lib/listing-video";
 import {
   assertSpecialCategoryListingRules,
@@ -709,6 +710,16 @@ router.post("/listings", postListingLimiter, async (req, res) => {
       motor_transmission: parsed.data.motor_transmission ?? null,
     })
     .returning();
+
+  void pruneListingImagesAndNotifyOwner({
+    raw: parsed.data.image_url ?? null,
+    cleaned: safeImageUrl ?? null,
+    listingId: row.id,
+    userId: row.user_id,
+    listingTitle: row.title,
+  }).catch((err: unknown) => {
+    logger.warn({ err, listingId: row.id }, "prune dropped listing images on create failed");
+  });
 
   recordListingPostSuccessForUser(viewer);
   if (is_first_listing) {
@@ -1480,6 +1491,18 @@ router.patch("/listings/:id", async (req, res) => {
     .set(updates)
     .where(eq(listingsTable.id, paramsParsed.data.id))
     .returning();
+
+  if (body.image_url != null) {
+    void pruneListingImagesAndNotifyOwner({
+      raw: body.image_url,
+      cleaned: updated.image_url,
+      listingId: updated.id,
+      userId: updated.user_id,
+      listingTitle: updated.title,
+    }).catch((err: unknown) => {
+      logger.warn({ err, listingId: updated.id }, "prune dropped listing images on update failed");
+    });
+  }
 
   const catMeta = await resolveCategorySlugMeta(updated.category_id);
 

@@ -1,6 +1,9 @@
 import { boolean, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 
-export type UserNotificationType = "listing_first_external_view" | "social_follow_prompt";
+export type UserNotificationType =
+  | "listing_first_external_view"
+  | "social_follow_prompt"
+  | "listing_excess_photos_removed";
 
 export const userNotificationsTable = pgTable("user_notifications", {
   id: serial("id").primaryKey(),

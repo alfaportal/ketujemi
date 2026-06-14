@@ -8,11 +8,10 @@ import { logger } from "./logger";
  * Remove listing photos from Cloudinary / B2 when a listing is deleted or expires (90d).
  * Never touches `partners/` or `site-assets/` (protected folders).
  */
-export async function deleteListingStorageAssets(
-  imageUrlField: string | null | undefined,
+export async function deleteListingStorageUrls(
+  urls: string[],
   listingId: number,
 ): Promise<void> {
-  const urls = parseListingImageUrls(imageUrlField);
   if (urls.length === 0) return;
 
   for (const url of urls) {
@@ -29,7 +28,14 @@ export async function deleteListingStorageAssets(
         logger.info({ listingId, url, cloud, b2 }, "Deleted listing storage asset");
       }
     } catch (err) {
-      logger.warn({ err, listingId, url }, "deleteListingStorageAssets failed for URL");
+      logger.warn({ err, listingId, url }, "deleteListingStorageUrls failed for URL");
     }
   }
+}
+
+export async function deleteListingStorageAssets(
+  imageUrlField: string | null | undefined,
+  listingId: number,
+): Promise<void> {
+  await deleteListingStorageUrls(parseListingImageUrls(imageUrlField), listingId);
 }

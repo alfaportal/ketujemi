@@ -14,6 +14,8 @@ import { sendListingFirstViewEmail, sendSocialFollowPromptEmail } from "./send-e
 export type NotificationPayload = {
   listingId?: number;
   listingTitle?: string;
+  removedCount?: number;
+  maxPhotos?: number;
 };
 
 function serializePayload(payload: NotificationPayload | null): string | null {
@@ -146,6 +148,35 @@ export async function handleListingExternalView(opts: {
   });
 
   void sendSocialFollowPromptEmail(owner, locale);
+}
+
+/** Tell listing owner that excess photos were removed (platform max per listing). */
+export async function notifyListingExcessPhotosRemoved(opts: {
+  userId: number;
+  listingId: number;
+  listingTitle: string;
+  removedCount: number;
+  maxPhotos: number;
+}): Promise<void> {
+  if (opts.removedCount < 1) return;
+
+  const title = opts.listingTitle.trim() || "shpallja";
+  const locale = defaultEngagementLocale();
+  const emailCopy = engagementEmailCopy(locale);
+  const body = emailCopy.listingExcessPhotosRemoved(title, opts.removedCount, opts.maxPhotos);
+
+  await insertUserNotification({
+    userId: opts.userId,
+    type: "listing_excess_photos_removed",
+    payload: {
+      listingId: opts.listingId,
+      listingTitle: title,
+      removedCount: opts.removedCount,
+      maxPhotos: opts.maxPhotos,
+    },
+    pushTitle: "KetuJemi",
+    pushBody: body,
+  });
 }
 
 export async function listUserNotifications(userId: number) {

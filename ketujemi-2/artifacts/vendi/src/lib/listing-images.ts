@@ -1,6 +1,9 @@
 export {
+  allValidListingImageUrls,
+  droppedListingImageUrls,
   isUserUploadedListingImageUrl,
   joinListingImageUrls,
+  listingImageUrlExceedsMax,
   parseListingImageUrls,
   primaryListingImageUrl,
   sanitizeListingImageUrlField,
