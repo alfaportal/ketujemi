@@ -43,6 +43,7 @@ export default defineConfig(async ({ command }) => {
     VitePWA({
       injectRegister: null,
       registerType: "prompt",
+      selfDestroying: true,
       includeAssets: [
         "logo.png",
         "logo-app.png",

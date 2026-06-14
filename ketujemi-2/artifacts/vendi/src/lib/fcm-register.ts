@@ -1,4 +1,5 @@
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { isAppBootstrapComplete } from "@/lib/bootstrap-app-stability";
 import { isListingAreaPath } from "@/lib/listing-post-path";
 
 type FirebasePublicConfig = {
@@ -61,10 +62,20 @@ self.addEventListener("notificationclick", (event) => {
 let registerAttempted = false;
 let registerScheduled = false;
 
+async function waitForAppBootstrap(maxMs = 10_000): Promise<void> {
+  if (isAppBootstrapComplete()) return;
+  const start = Date.now();
+  while (!isAppBootstrapComplete() && Date.now() - start < maxMs) {
+    await new Promise((resolve) => window.setTimeout(resolve, 100));
+  }
+}
+
 async function registerFcmTokenNow(): Promise<void> {
   if (registerAttempted || typeof window === "undefined") return;
   if (isListingAreaPath(window.location.pathname)) return;
   registerAttempted = true;
+
+  await waitForAppBootstrap();
 
   const cfg = readFirebaseConfig();
   if (!cfg) return;

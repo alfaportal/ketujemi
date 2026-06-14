@@ -1,5 +1,5 @@
 import { Component, type ComponentType, type ErrorInfo, type ReactNode } from "react";
-import { errorPageCopyForStoredLang } from "@/lib/error-page-i18n";
+import { listingDetailErrorCopyForStoredLang } from "@/lib/error-page-i18n";
 
 type Props = { children: ReactNode };
 type State = { error: Error | null };
@@ -23,27 +23,25 @@ export class ListingDetailErrorBoundary extends Component<Props, State> {
   render() {
     if (!this.state.error) return this.props.children;
 
-    const copy = errorPageCopyForStoredLang();
+    const copy = listingDetailErrorCopyForStoredLang();
 
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 px-6 py-16 text-center">
         <p className="text-lg font-semibold text-gray-900">{copy.title}</p>
-        <p className="max-w-md text-sm text-gray-600">
-          Shpallja nuk u shfaq. Provo përsëri pa rifreskuar faqen.
-        </p>
+        <p className="max-w-md text-sm text-gray-600">{copy.subtitle}</p>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <button
             type="button"
             className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700"
             onClick={this.retry}
           >
-            Provo përsëri
+            {copy.retry}
           </button>
           <a
             href="/listings"
             className="rounded-xl border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50"
           >
-            Kthehu te lista
+            {copy.backToList}
           </a>
         </div>
       </div>

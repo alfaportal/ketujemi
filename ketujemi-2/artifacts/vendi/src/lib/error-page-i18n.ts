@@ -44,6 +44,64 @@ export const ERROR_PAGE_COPY: Record<UiLang, ErrorPageCopy> = {
   },
 };
 
+export type ListingDetailErrorCopy = {
+  subtitle: string;
+  retry: string;
+  backToList: string;
+};
+
+export const LISTING_DETAIL_ERROR_COPY: Record<UiLang, ListingDetailErrorCopy> = {
+  sq: {
+    subtitle: "Shpallja nuk u shfaq. Provo përsëri pa rifreskuar faqen.",
+    retry: "Provo përsëri",
+    backToList: "Kthehu te lista",
+  },
+  mk: {
+    subtitle: "Огласот не се прикажа. Обидете се повторно без освежување на страницата.",
+    retry: "Обиди се повторно",
+    backToList: "Назад кон листата",
+  },
+  mne: {
+    subtitle: "Oglas se nije prikazao. Pokušajte ponovo bez osvježavanja stranice.",
+    retry: "Pokušaj ponovo",
+    backToList: "Nazad na listu",
+  },
+  en: {
+    subtitle: "The listing could not be shown. Try again without refreshing the page.",
+    retry: "Try again",
+    backToList: "Back to listings",
+  },
+  fr: {
+    subtitle: "L'annonce n'a pas pu s'afficher. Réessayez sans actualiser la page.",
+    retry: "Réessayer",
+    backToList: "Retour à la liste",
+  },
+  de: {
+    subtitle: "Die Anzeige konnte nicht angezeigt werden. Versuchen Sie es erneut, ohne die Seite zu aktualisieren.",
+    retry: "Erneut versuchen",
+    backToList: "Zurück zur Liste",
+  },
+  it: {
+    subtitle: "L'annuncio non è stato mostrato. Riprova senza aggiornare la pagina.",
+    retry: "Riprova",
+    backToList: "Torna all'elenco",
+  },
+};
+
+export function listingDetailErrorCopyForStoredLang(): ErrorPageCopy & ListingDetailErrorCopy {
+  const titleCopy = errorPageCopyForStoredLang();
+  let detail = LISTING_DETAIL_ERROR_COPY[DEFAULT_UI_LANG];
+  if (typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem("vendi_ui_lang");
+      if (saved && isUiLang(saved)) detail = LISTING_DETAIL_ERROR_COPY[saved];
+    } catch {
+      /* ignore */
+    }
+  }
+  return { ...titleCopy, ...detail };
+}
+
 export function errorPageCopyForStoredLang(): ErrorPageCopy {
   if (typeof window === "undefined") return ERROR_PAGE_COPY[DEFAULT_UI_LANG];
   try {

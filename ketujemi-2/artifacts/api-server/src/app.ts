@@ -107,4 +107,11 @@ app.use("/api", router);
 attachListingOgCrawlerMiddleware(app);
 attachStaticFrontend(app);
 
+app.use((err: unknown, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  logger.error({ err, method: req.method, url: req.url?.split("?")[0] }, "unhandled express error");
+  if (!res.headersSent) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 export default app;

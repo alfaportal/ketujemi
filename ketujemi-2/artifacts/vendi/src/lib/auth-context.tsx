@@ -67,6 +67,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 async function fetchMe(): Promise<AuthUser | null> {
   const r = await fetchWithTimeout("/api/auth/me", { credentials: "include" });
   if (r.status === 401) return null;
+  if (r.status >= 500) throw new Error("AUTH_ME_TRANSIENT");
   if (!r.ok) throw new Error("auth_me_failed");
   const j = (await r.json()) as { user?: AuthUser };
   return j.user ?? null;
@@ -95,7 +96,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: ["auth", "me"],
     queryFn: fetchMe,
     staleTime: 5 * 60_000,
-    retry: 1,
+    retry: (failureCount, error) => {
+      if (error instanceof Error && error.message === "AUTH_ME_TRANSIENT") return false;
+      return failureCount < 1;
+    },
     refetchOnWindowFocus: false,
     placeholderData: (previous) => previous,
   });
@@ -133,6 +137,7 @@ export function useAuth(): AuthContextValue {
 export function safeAuthReturnUrl(raw: string | null | undefined): string {
   const d = raw?.trim() ?? "";
   if (!d.startsWith("/") || d.startsWith("//")) return "/listings/new";
+  if (d === "/login" || d.startsWith("/login?") || d.startsWith("/login/")) return "/listings";
   return d;
 }
 

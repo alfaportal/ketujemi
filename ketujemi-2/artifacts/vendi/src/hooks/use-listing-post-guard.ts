@@ -102,8 +102,8 @@ export function useListingPostGuard({
       if (event.persisted || draft) {
         setShowRecoveryBanner(!!draft);
         setForceFormVisible(true);
+        void refresh();
       }
-      void refresh();
     };
     window.addEventListener("pageshow", onPageShow);
     return () => window.removeEventListener("pageshow", onPageShow);

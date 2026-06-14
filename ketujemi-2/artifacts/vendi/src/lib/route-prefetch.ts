@@ -19,6 +19,22 @@ function listingDetailPath(href: string): string | null {
   return /^\/listings\/\d+$/.test(path) ? path : null;
 }
 
+async function importWithRetry(factory: () => Promise<unknown>, retries = 2): Promise<void> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      await factory();
+      return;
+    } catch (err) {
+      lastError = err;
+      if (attempt < retries) {
+        await new Promise((resolve) => window.setTimeout(resolve, 400 * (attempt + 1)));
+      }
+    }
+  }
+  throw lastError;
+}
+
 /** Warm route JS on hover/focus so navigation feels instant. */
 export function prefetchRoute(href: string): void {
   if (typeof window === "undefined") return;
@@ -28,7 +44,7 @@ export function prefetchRoute(href: string): void {
   const detailPath = listingDetailPath(path);
   if (detailPath) {
     PREFETCHED.add(detailPath);
-    void import("@/pages/listing-detail").catch(() => {
+    void importWithRetry(() => import("@/pages/listing-detail")).catch(() => {
       PREFETCHED.delete(detailPath);
     });
     return;
@@ -37,7 +53,7 @@ export function prefetchRoute(href: string): void {
   const loader = ROUTE_CHUNKS[path];
   if (!loader) return;
   PREFETCHED.add(path);
-  void loader().catch(() => {
+  void importWithRetry(loader).catch(() => {
     PREFETCHED.delete(path);
   });
 }

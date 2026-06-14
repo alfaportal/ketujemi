@@ -1,14 +1,12 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { checkForAppUpdate } from "@/lib/pwa-updates";
 import { isListingFlowPath } from "@/lib/listing-post-path";
-
+import { refreshBrowsingQueries } from "@/lib/query-refresh";
 import { lastRouteChangeWasPop } from "@/lib/scroll-restoration";
 
 /**
- * Çdo ndryshim faqeje (përveç back/forward): rifreskim i të dhënave API,
- * kontroll për version të ri të app-it (PWA). Scroll → useScrollRestoration.
+ * On route change (except back/forward and listing post/detail/edit): refresh list feeds only.
  */
 export function useFreshPageOnRoute() {
   const [pathname] = useLocation();
@@ -16,8 +14,7 @@ export function useFreshPageOnRoute() {
 
   useEffect(() => {
     if (!lastRouteChangeWasPop && !isListingFlowPath(pathname)) {
-      void queryClient.invalidateQueries();
+      refreshBrowsingQueries(queryClient);
     }
-    void checkForAppUpdate();
   }, [pathname, queryClient]);
 }

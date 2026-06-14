@@ -49,6 +49,10 @@ export function useScrollRestoration() {
       return;
     }
 
+    if (pathname.startsWith("/shpallje")) {
+      return;
+    }
+
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     markScrollPosition(key, 0);
     return undefined;

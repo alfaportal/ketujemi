@@ -132,6 +132,35 @@ function activeCondition() {
   return activeListingSqlCondition();
 }
 
+type ListingRow = typeof listingsTable.$inferSelect;
+
+async function buildSafeListingFeedPayloads(
+  rows: ListingRow[],
+  viewer: Awaited<ReturnType<typeof getSessionUser>>,
+  catMap: Map<number, string>,
+  catRootSlugMap: Map<number, string | null>,
+) {
+  const payloads = [];
+  for (const l of rows) {
+    try {
+      payloads.push(
+        applyViewerContact(
+          formatListing(l, catMap.get(l.category_id) ?? null, catRootSlugMap.get(l.category_id) ?? null),
+          viewer,
+        ),
+      );
+    } catch (err) {
+      logger.warn({ err, listingId: l.id }, "formatListing skipped in feed");
+    }
+  }
+  try {
+    return await finalizeListingsForApi(payloads);
+  } catch (err) {
+    logger.error({ err }, "finalizeListingsForApi failed in feed");
+    return payloads;
+  }
+}
+
 // ─── GET /listings ────────────────────────────────────────────────────────────
 router.get("/listings", searchLimiter, async (req, res) => {
   try {
@@ -409,14 +438,7 @@ router.get("/listings", searchLimiter, async (req, res) => {
   const catMap = new Map(cats.map((c) => [c.id, c.name]));
   const catRootSlugMap = buildCategoryRootSlugMap(cats);
 
-  const listings = await finalizeListingsForApi(
-    rows.map((l) =>
-      applyViewerContact(
-        formatListing(l, catMap.get(l.category_id) ?? null, catRootSlugMap.get(l.category_id) ?? null),
-        viewer,
-      ),
-    ),
-  );
+  const listings = await buildSafeListingFeedPayloads(rows, viewer, catMap, catRootSlugMap);
   res.json({ listings, total: totalResult[0]?.total ?? 0, page, limit });
   } catch (err) {
     logger.error({ err, query: req.query }, "GET /listings failed");
@@ -761,112 +783,101 @@ router.post("/listings", postListingLimiter, async (req, res) => {
 
 // ─── GET /listings/top — all active paid TOP listings (homepage carousel) ─────
 router.get("/listings/top", async (req, res) => {
-  requestPurgeExpiredListings();
-  const viewer = await getSessionUser(req);
-  const now = new Date();
+  try {
+    requestPurgeExpiredListings();
+    const viewer = await getSessionUser(req);
+    const now = new Date();
 
-  const rows = await db
-    .select()
-    .from(listingsTable)
-    .where(
-      and(
-        eq(listingsTable.is_top, true),
-        gt(listingsTable.top_until, now),
-        activeCondition(),
-      ),
-    )
-    .orderBy(desc(listingsTable.top_until), desc(listingsTable.listed_at));
-
-  const cats = await db
-    .select({
-      id: categoriesTable.id,
-      name: categoriesTable.name,
-      slug: categoriesTable.slug,
-      parent_id: categoriesTable.parent_id,
-    })
-    .from(categoriesTable);
-  const catMap = new Map(cats.map((c) => [c.id, c.name]));
-  const catRootSlugMap = buildCategoryRootSlugMap(cats);
-  res.json(
-    await finalizeListingsForApi(
-      rows.map((l) =>
-        applyViewerContact(
-          formatListing(l, catMap.get(l.category_id) ?? null, catRootSlugMap.get(l.category_id) ?? null),
-          viewer,
+    const rows = await db
+      .select()
+      .from(listingsTable)
+      .where(
+        and(
+          eq(listingsTable.is_top, true),
+          gt(listingsTable.top_until, now),
+          activeCondition(),
         ),
-      ),
-    ),
-  );
+      )
+      .orderBy(desc(listingsTable.top_until), desc(listingsTable.listed_at));
+
+    const cats = await db
+      .select({
+        id: categoriesTable.id,
+        name: categoriesTable.name,
+        slug: categoriesTable.slug,
+        parent_id: categoriesTable.parent_id,
+      })
+      .from(categoriesTable);
+    const catMap = new Map(cats.map((c) => [c.id, c.name]));
+    const catRootSlugMap = buildCategoryRootSlugMap(cats);
+    res.json(await buildSafeListingFeedPayloads(rows, viewer, catMap, catRootSlugMap));
+  } catch (err) {
+    logger.error({ err }, "GET /listings/top failed");
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 // ─── GET /listings/featured ───────────────────────────────────────────────────
 router.get("/listings/featured", async (req, res) => {
-  requestPurgeExpiredListings();
-  const viewer = await getSessionUser(req);
-  const rows = await db
-    .select()
-    .from(listingsTable)
-    .where(and(eq(listingsTable.is_featured, true), activeCondition()))
-    .orderBy(...listingFeedOrderBy)
-    .limit(8);
+  try {
+    requestPurgeExpiredListings();
+    const viewer = await getSessionUser(req);
+    const rows = await db
+      .select()
+      .from(listingsTable)
+      .where(and(eq(listingsTable.is_featured, true), activeCondition()))
+      .orderBy(...listingFeedOrderBy)
+      .limit(8);
 
-  const cats = await db
-    .select({
-      id: categoriesTable.id,
-      name: categoriesTable.name,
-      slug: categoriesTable.slug,
-      parent_id: categoriesTable.parent_id,
-    })
-    .from(categoriesTable);
-  const catMap = new Map(cats.map((c) => [c.id, c.name]));
-  const catRootSlugMap = buildCategoryRootSlugMap(cats);
-  res.json(
-    await finalizeListingsForApi(
-      rows.map((l) =>
-        applyViewerContact(
-          formatListing(l, catMap.get(l.category_id) ?? null, catRootSlugMap.get(l.category_id) ?? null),
-          viewer,
-        ),
-      ),
-    ),
-  );
+    const cats = await db
+      .select({
+        id: categoriesTable.id,
+        name: categoriesTable.name,
+        slug: categoriesTable.slug,
+        parent_id: categoriesTable.parent_id,
+      })
+      .from(categoriesTable);
+    const catMap = new Map(cats.map((c) => [c.id, c.name]));
+    const catRootSlugMap = buildCategoryRootSlugMap(cats);
+    res.json(await buildSafeListingFeedPayloads(rows, viewer, catMap, catRootSlugMap));
+  } catch (err) {
+    logger.error({ err }, "GET /listings/featured failed");
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 // ─── GET /listings/recent ─────────────────────────────────────────────────────
 router.get("/listings/recent", async (req, res) => {
-  requestPurgeExpiredListings();
-  const viewer = await getSessionUser(req);
-  const rows = await db
-    .select()
-    .from(listingsTable)
-    .where(activeCondition())
-    .orderBy(...listingFeedOrderBy)
-    .limit(12);
+  try {
+    requestPurgeExpiredListings();
+    const viewer = await getSessionUser(req);
+    const rows = await db
+      .select()
+      .from(listingsTable)
+      .where(activeCondition())
+      .orderBy(...listingFeedOrderBy)
+      .limit(12);
 
-  const cats = await db
-    .select({
-      id: categoriesTable.id,
-      name: categoriesTable.name,
-      slug: categoriesTable.slug,
-      parent_id: categoriesTable.parent_id,
-    })
-    .from(categoriesTable);
-  const catMap = new Map(cats.map((c) => [c.id, c.name]));
-  const catRootSlugMap = buildCategoryRootSlugMap(cats);
-  res.json(
-    await finalizeListingsForApi(
-      rows.map((l) =>
-        applyViewerContact(
-          formatListing(l, catMap.get(l.category_id) ?? null, catRootSlugMap.get(l.category_id) ?? null),
-          viewer,
-        ),
-      ),
-    ),
-  );
+    const cats = await db
+      .select({
+        id: categoriesTable.id,
+        name: categoriesTable.name,
+        slug: categoriesTable.slug,
+        parent_id: categoriesTable.parent_id,
+      })
+      .from(categoriesTable);
+    const catMap = new Map(cats.map((c) => [c.id, c.name]));
+    const catRootSlugMap = buildCategoryRootSlugMap(cats);
+    res.json(await buildSafeListingFeedPayloads(rows, viewer, catMap, catRootSlugMap));
+  } catch (err) {
+    logger.error({ err }, "GET /listings/recent failed");
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 // ─── GET /listings/stats ──────────────────────────────────────────────────────
 router.get("/listings/stats", async (req, res) => {
+  try {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -916,6 +927,10 @@ router.get("/listings/stats", async (req, res) => {
     top_locations: locationRes,
     category_listings: category_listings,
   });
+  } catch (err) {
+    logger.error({ err, query: req.query }, "GET /listings/stats failed");
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 // ─── GET /listings/free-quota ─────────────────────────────────────────────────

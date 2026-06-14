@@ -1,16 +1,23 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { isListingFlowPath } from "@/lib/listing-post-path";
+import { refreshBrowsingQueries } from "@/lib/query-refresh";
 
-/** Refetch API data when the user returns to the tab — never on the listing post form. */
+const MIN_INTERVAL_MS = 45_000;
+
+/** Refetch list feeds when the user returns to the tab — debounced, never on listing post/detail/edit. */
 export function RefetchOnVisible() {
   const queryClient = useQueryClient();
+  const lastRefreshRef = useRef(0);
 
   useEffect(() => {
     const refresh = () => {
       if (document.visibilityState !== "visible") return;
       if (isListingFlowPath(window.location.pathname)) return;
-      void queryClient.invalidateQueries();
+      const now = Date.now();
+      if (now - lastRefreshRef.current < MIN_INTERVAL_MS) return;
+      lastRefreshRef.current = now;
+      refreshBrowsingQueries(queryClient);
     };
 
     const onPageShow = (event: PageTransitionEvent) => {
