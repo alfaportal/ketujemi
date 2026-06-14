@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { purgeExpiredListings } from "../lib/expire-listings-job.js";
 import { sendListingExpiryReminders } from "../lib/listing-expiry-reminders.js";
+import { runViewsDailyIncrementNow } from "../lib/views-daily-cron.js";
+import { boostLowViewCounts } from "../lib/views-boost.js";
 
 const router = Router();
 
@@ -40,6 +42,36 @@ router.post("/cron/maintenance/expiry-reminders", async (req, res) => {
     res.status(200).json({ ok: true, ...result });
   } catch (err) {
     req.log?.error?.({ err }, "cron maintenance expiry-reminders error");
+    res.status(500).json({ error: "cron_failed" });
+  }
+});
+
+/** Daily +6/+7 view baseline for active listings and shops — call once per day from Railway cron. */
+router.post("/cron/maintenance/views-daily", async (req, res) => {
+  if (!verifyCronSecret(req.headers.authorization)) {
+    unauthorized(res);
+    return;
+  }
+  try {
+    const result = await runViewsDailyIncrementNow();
+    res.status(200).json({ ok: true, ...result });
+  } catch (err) {
+    req.log?.error?.({ err }, "cron maintenance views-daily error");
+    res.status(500).json({ error: "cron_failed" });
+  }
+});
+
+/** One-time views boost (listings/shops with views < 30 → random 25–40). Guard with CRON_SECRET. */
+router.post("/cron/maintenance/views-boost", async (req, res) => {
+  if (!verifyCronSecret(req.headers.authorization)) {
+    unauthorized(res);
+    return;
+  }
+  try {
+    const result = await boostLowViewCounts();
+    res.status(200).json({ ok: true, ...result });
+  } catch (err) {
+    req.log?.error?.({ err }, "cron maintenance views-boost error");
     res.status(500).json({ error: "cron_failed" });
   }
 });

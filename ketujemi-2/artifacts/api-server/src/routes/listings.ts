@@ -44,6 +44,7 @@ import {
 } from "../lib/listing-post-user-cooldown";
 import { repostListing } from "../lib/listing-repost";
 import { incrementListingView } from "../lib/listing-view";
+import { clientIpFromRequest } from "../lib/request-ip.js";
 import { markFirstListingPosted, userListingCount } from "../lib/engagement-notifications";
 import { listingFeedOrderBy } from "../lib/listing-top";
 import {
@@ -1260,12 +1261,15 @@ router.post("/listings/:id/repost", async (req, res) => {
 router.post("/listings/:id/view", async (req, res) => {
   const id = Number(req.params.id);
   const viewer = await getSessionUser(req);
-  const result = await incrementListingView(id, viewer);
+  const result = await incrementListingView(id, {
+    viewer,
+    clientIp: clientIpFromRequest(req),
+  });
   if (!result.ok) {
     res.status(result.status).json({ error: result.status === 404 ? "Not found" : "Invalid id" });
     return;
   }
-  res.json({ ok: true, views: result.views });
+  res.json({ ok: true, views: result.views, counted: result.counted });
 });
 
 // ─── GET /listings/:id ────────────────────────────────────────────────────────

@@ -12,6 +12,9 @@ import {
 } from "@workspace/db";
 import { eq, and, asc, desc, gt, gte, isNotNull, sql, inArray, or, isNull, count } from "drizzle-orm";
 import { getSessionUser } from "../lib/session-user";
+import { incrementShopView } from "../lib/shop-view.js";
+import { clientIpFromRequest } from "../lib/request-ip.js";
+import { isShopPubliclyVisible } from "../lib/shop-visibility.js";
 import { sendShopApplicationEmail, sendShopRatingEmail } from "../lib/send-shop-application-email";
 import { formatListingsBatch } from "../lib/format-listings-batch";
 import { resolveDirectoryFields } from "../lib/shop-directory-patch";
@@ -222,6 +225,7 @@ function shopDirectoryRow(
     website: shop.website,
     average_rating: ratings?.average_rating ?? null,
     rating_count: ratings?.rating_count ?? 0,
+    views: shop.views ?? 0,
   };
 }
 
@@ -735,6 +739,26 @@ router.post("/shops/:id/ratings", async (req, res) => {
   });
 });
 
+// ─── POST /shops/:id/view ─────────────────────────────────────────────────────
+router.post("/shops/:id/view", async (req, res) => {
+  const id = parseShopId(req.params.id);
+  if (!id) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const viewer = await getSessionUser(req);
+  const result = await incrementShopView(id, {
+    viewer,
+    clientIp: clientIpFromRequest(req),
+  });
+  if (!result.ok) {
+    res.status(result.status).json({ error: result.status === 404 ? "Not found" : "Invalid id" });
+    return;
+  }
+  res.json({ ok: true, views: result.views, counted: result.counted });
+});
+
 // ─── GET /shops/:id ───────────────────────────────────────────────────────────
 router.get("/shops/:id", async (req, res) => {
   const id = parseShopId(req.params.id);
@@ -744,7 +768,7 @@ router.get("/shops/:id", async (req, res) => {
   }
 
   const [shop] = await db.select().from(shopsTable).where(eq(shopsTable.id, id)).limit(1);
-  if (!shop || !shop.is_active) {
+  if (!shop || !isShopPubliclyVisible(shop)) {
     res.status(404).json({ error: "Not found" });
     return;
   }
@@ -823,6 +847,7 @@ router.get("/shops/:id", async (req, res) => {
       email: shop.email,
       average_rating: ratings?.average_rating ?? null,
       rating_count: ratings?.rating_count ?? 0,
+      views: shop.views ?? 0,
     },
     listings: translatedListings,
     active_count: translatedListings.length,

@@ -2,12 +2,21 @@ import { db, listingsTable, type User } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { handleListingExternalView } from "./engagement-notifications";
 import { isListingPubliclyVisible } from "./listing-visibility.js";
+import { shouldCountView, viewDedupKey } from "./view-dedup.js";
 
-/** Increment view counter for an active, non-expired listing. */
+export type IncrementListingViewOptions = {
+  viewer?: User | null;
+  clientIp?: string;
+};
+
+/** Increment view counter for an active, non-expired listing (guests and logged-in users). */
 export async function incrementListingView(
   listingId: number,
-  viewer: User | null = null,
-): Promise<{ ok: true; views: number } | { ok: false; status: 404 | 400 }> {
+  options: IncrementListingViewOptions = {},
+): Promise<{ ok: true; views: number; counted: boolean } | { ok: false; status: 404 | 400 }> {
+  const viewer = options.viewer ?? null;
+  const clientIp = options.clientIp ?? "unknown";
+
   if (!Number.isFinite(listingId) || listingId <= 0) {
     return { ok: false, status: 400 };
   }
@@ -24,6 +33,13 @@ export async function incrementListingView(
     return { ok: false, status: 404 };
   }
 
+  const dedupKey = viewDedupKey("listing", listingId, clientIp, viewer?.id);
+  const counted = shouldCountView(dedupKey);
+
+  if (!counted) {
+    return { ok: true, views: row.views, counted: false };
+  }
+
   const wasFirstExternal =
     !row.first_external_view_notified &&
     (viewer == null || viewer.id !== row.user_id);
@@ -38,5 +54,5 @@ export async function incrementListingView(
     void handleListingExternalView({ listingId, viewer }).catch(() => undefined);
   }
 
-  return { ok: true, views: updated?.views ?? row.views + 1 };
+  return { ok: true, views: updated?.views ?? row.views + 1, counted: true };
 }

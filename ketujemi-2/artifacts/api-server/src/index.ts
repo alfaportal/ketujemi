@@ -39,6 +39,7 @@ import { startShopSocialProfileEnrichCron } from "./lib/shop-social-profile-enri
 import { startListingReelCron } from "./lib/listing-reel-cron";
 import { purgeInvalidListingImagesOnStartup } from "./lib/purge-invalid-listing-images.js";
 import { startSystemMonitor } from "./lib/system-monitor.js";
+import { startViewsDailyIncrementCron } from "./lib/views-daily-cron.js";
 import {
   inlineHeavyCronsEnabled,
   inlineMaintenanceCronsEnabled,
@@ -171,7 +172,10 @@ async function startServer(): Promise<void> {
     if (inlineMaintenanceCronsEnabled()) {
       startExpiredListingsScheduler();
       startExpiryReminderScheduler();
-      logger.info("Inline maintenance crons started (purge expired + expiry reminders)");
+      startViewsDailyIncrementCron();
+      logger.info(
+        "Inline maintenance crons started (purge expired + expiry reminders + views daily)",
+      );
     } else {
       logger.info(
         "Inline maintenance crons off — use POST /api/cron/maintenance with CRON_SECRET",

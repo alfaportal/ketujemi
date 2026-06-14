@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useProfileEditGate } from "@/hooks/use-profile-edit-gate";
 import { ProfileEditGateFlow } from "@/components/profile-edit-gate-flow";
 import { DeletionExitSurveyModal } from "@/components/deletion-exit-survey-modal";
-import { Loader2, MapPin, Pencil, Trash2 } from "lucide-react";
+import { Loader2, MapPin, Pencil, Trash2, Eye } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useDeleteListing,
@@ -57,6 +57,7 @@ import {
 } from "@/components/ui/dialog";
 import { ShopSocialLinks } from "@/components/shop-social-links";
 import type { ShopSocialProfileData } from "@/components/shop-social-profiles";
+import { recordShopView } from "@/lib/record-shop-view";
 
 type ShopData = {
   id: number;
@@ -78,6 +79,7 @@ type ShopData = {
   email?: string;
   average_rating?: number | null;
   rating_count?: number;
+  views?: number;
   facebook?: string | null;
   instagram?: string | null;
   tiktok?: string | null;
@@ -203,6 +205,13 @@ export default function ShopDetailPage() {
   useEffect(() => {
     loadShop();
   }, [id, d, locale, uiLang]);
+
+  useEffect(() => {
+    if (!id || loading || !shop) return;
+    void recordShopView(id, (views) => {
+      setShop((prev) => (prev ? { ...prev, views } : prev));
+    });
+  }, [id, loading, shop?.id]);
 
   useEffect(() => {
     if (editRequested && gate.isUnlocked) {
@@ -360,13 +369,17 @@ export default function ShopDetailPage() {
               <MapPin size={14} />
               {shop.city}, {shop.region} — {shop.country}
             </p>
-            <div className="mt-2 flex justify-center sm:justify-start">
+            <div className="mt-2 flex flex-wrap items-center justify-center sm:justify-start gap-3">
               <ShopRatingBadge
                 averageRating={shop.average_rating}
                 ratingCount={shop.rating_count}
                 size="md"
                 tone="onDark"
               />
+              <span className="inline-flex items-center gap-1 text-sm text-white/85">
+                <Eye size={14} aria-hidden />
+                {(shop.views ?? 0).toLocaleString()} {t.views}
+              </span>
             </div>
           </div>
         </div>
