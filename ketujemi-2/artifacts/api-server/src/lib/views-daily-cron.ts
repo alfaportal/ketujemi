@@ -17,10 +17,12 @@ export function isViewsDailyIncrementEnabled(): boolean {
 export async function runViewsDailyIncrementNow(): Promise<{
   listings: number;
   shops: number;
+  bucket: number;
+  stagger_buckets: number;
 }> {
   if (runInFlight) {
     logger.warn("views daily increment: previous run still in flight, skipping");
-    return { listings: 0, shops: 0 };
+    return { listings: 0, shops: 0, bucket: 0, stagger_buckets: 7 };
   }
 
   runInFlight = true;
@@ -53,7 +55,7 @@ export function startViewsDailyIncrementCron(): void {
   cron.schedule(CRON_SCHEDULE, () => void tick(), { timezone });
 
   logger.info(
-    { schedule: CRON_SCHEDULE, timezone, time: "04:00" },
-    "views daily increment cron started (listings + shops +6/+7)",
+    { schedule: CRON_SCHEDULE, timezone, time: "04:00", stagger: "1/7 per day by id" },
+    "views daily increment cron started (staggered listings + shops)",
   );
 }

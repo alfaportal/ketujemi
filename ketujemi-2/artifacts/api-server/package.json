@@ -14,6 +14,7 @@
     "run:social-scheduled-posts": "tsx ./src/scripts/run-social-scheduled-posts.ts",
     "run:listing-reel": "tsx ./src/scripts/run-listing-reel.ts",
     "run:views-boost": "tsx ./src/scripts/run-views-boost.ts",
+    "run:views-trim-boost": "tsx ./src/scripts/run-views-trim-boost.ts",
     "typecheck": "tsc --build ../../lib/db/tsconfig.json ../../lib/api-zod/tsconfig.json && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
