@@ -80,13 +80,17 @@ export function CategoryPartnersBanner({ categoryId, className }: CategoryPartne
   const allPartners = [...vipPartners, ...standardPartners];
 
   useEffect(() => {
-    if (!loaded || allPartners.length === 0 || impressionsSent.current) return;
+    if (!loaded || impressionsSent.current) return;
+    const partnerIds = allPartners
+      .map((p) => p.id)
+      .filter((id) => Number.isFinite(id) && id > 0);
+    if (partnerIds.length === 0) return;
     impressionsSent.current = true;
     void fetchWithTimeout("/api/partners/analytics/impressions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ partner_ids: allPartners.map((p) => p.id) }),
+      body: JSON.stringify({ partner_ids: partnerIds }),
     }).catch(() => {});
   }, [loaded, allPartners]);
 

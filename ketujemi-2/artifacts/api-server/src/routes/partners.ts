@@ -178,11 +178,11 @@ router.post("/partners/analytics/impressions", async (req, res) => {
     ? raw.map((v) => Number(v)).filter((n) => Number.isFinite(n) && n > 0)
     : [];
   if (ids.length === 0) {
-    res.status(400).json({ error: "partner_ids required" });
+    res.json({ ok: true, recorded: 0 });
     return;
   }
   await recordPartnerLogoViews(ids.slice(0, 24));
-  res.json({ ok: true });
+  res.json({ ok: true, recorded: ids.length });
 });
 
 router.post("/partners/analytics/click", async (req, res) => {
