@@ -85,10 +85,13 @@ import { runInstagramScheduledPostNow } from "../lib/instagram-scheduled-post-cr
 import { runListingReelPostNow } from "../lib/listing-reel-cron.js";
 import {
   exportSocialFollowersCsv,
+  getSocialFollowersManualStats,
   getSocialFollowersStats,
   importInstagramFollowersFromExport,
   listSocialFollowers,
   runSocialFollowersDailySync,
+  setSocialFollowersManualCount,
+  type SocialFollowersManualPlatform,
 } from "../lib/social-followers-sync.js";
 
 const router = Router();
@@ -1878,10 +1881,33 @@ router.post("/admin/social/trigger-listing-reel", requireAdmin, async (req, res)
 // ─── Social followers tracking ───────────────────────────────────────────────
 router.get("/admin/followers/stats", requireAdmin, async (req, res) => {
   try {
-    const stats = await getSocialFollowersStats();
-    res.json({ stats });
+    const [stats, manual] = await Promise.all([
+      getSocialFollowersStats(),
+      getSocialFollowersManualStats(),
+    ]);
+    res.json({ stats, manual });
   } catch (err) {
     req.log.error({ err }, "admin followers stats error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/admin/followers/manual-count", requireAdmin, async (req, res) => {
+  try {
+    const platform = req.body?.platform as SocialFollowersManualPlatform | undefined;
+    if (platform !== "tiktok" && platform !== "facebook_personal") {
+      res.status(400).json({ error: "platform must be tiktok or facebook_personal" });
+      return;
+    }
+    const count = Number(req.body?.count);
+    if (!Number.isFinite(count) || count < 0) {
+      res.status(400).json({ error: "count must be a non-negative number" });
+      return;
+    }
+    const saved = await setSocialFollowersManualCount(platform, count);
+    res.json({ ok: true, platform, ...saved });
+  } catch (err) {
+    req.log.error({ err }, "admin followers manual count error");
     res.status(500).json({ error: "Internal server error" });
   }
 });

@@ -4,10 +4,13 @@ import {
   getAdminFollowersList,
   getAdminFollowersStats,
   importAdminInstagramFollowers,
+  saveAdminFollowersManualCount,
   syncAdminFollowers,
   type AdminSocialFollowerRow,
+  type AdminSocialFollowersManualStats,
   type AdminSocialFollowersStats,
   type SocialFollowerPlatform,
+  type SocialFollowersManualPlatform,
 } from "@/lib/admin-api";
 import { useMarket } from "@/lib/market-context";
 import { fillPlaceholders } from "@/lib/app-extra-i18n";
@@ -51,10 +54,86 @@ function platformLabel(platform: SocialFollowerPlatform, t: Record<string, strin
 function displayFollowerCount(
   platform: SocialFollowerPlatform,
   stats: AdminSocialFollowersStats | null,
+  manual: AdminSocialFollowersManualStats | null,
 ): number {
   if (!stats) return 0;
   const row = stats[platform];
+  if (platform === "tiktok") {
+    return row.api_count ?? manual?.tiktok.count ?? row.active;
+  }
   return row.api_count ?? row.active;
+}
+
+function ManualCountEditor({
+  platform,
+  storedCount,
+  updatedAt,
+  tr,
+  onSaved,
+}: {
+  platform: SocialFollowersManualPlatform;
+  storedCount: number | null;
+  updatedAt: string | null;
+  tr: Record<string, string>;
+  onSaved: () => Promise<void>;
+}) {
+  const [value, setValue] = useState(storedCount != null ? String(storedCount) : "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setValue(storedCount != null ? String(storedCount) : "");
+  }, [storedCount]);
+
+  const save = async () => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      setError(tr.adm_followers_manual_invalid);
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      await saveAdminFollowersManualCount(platform, Math.floor(parsed));
+      await onSaved();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : tr.adm_followers_manual_save_fail);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-gray-100 bg-gray-50/80 p-4 space-y-2">
+      <label className="text-xs font-semibold text-gray-600 block">
+        {tr.adm_followers_manual_label}
+      </label>
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          type="number"
+          min={0}
+          step={1}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className="w-32 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white"
+        />
+        <button
+          type="button"
+          onClick={() => void save()}
+          disabled={saving}
+          className="px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50"
+        >
+          {saving ? tr.adm_followers_manual_saving : tr.adm_followers_manual_save}
+        </button>
+        {updatedAt && (
+          <span className="text-xs text-gray-500">
+            {fillPlaceholders(tr.adm_followers_manual_updated, { date: formatDt(updatedAt) })}
+          </span>
+        )}
+      </div>
+      {error && <p className="text-xs text-red-600">{error}</p>}
+    </div>
+  );
 }
 
 export default function AdminFollowers() {
@@ -63,6 +142,7 @@ export default function AdminFollowers() {
 
   const [activeTab, setActiveTab] = useState<SocialFollowerPlatform>("instagram");
   const [stats, setStats] = useState<AdminSocialFollowersStats | null>(null);
+  const [manual, setManual] = useState<AdminSocialFollowersManualStats | null>(null);
   const [rows, setRows] = useState<AdminSocialFollowerRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -93,6 +173,7 @@ export default function AdminFollowers() {
         }),
       ]);
       setStats(statsRes.stats);
+      setManual(statsRes.manual);
       setRows(listRes.rows);
       setTotal(listRes.total);
     } finally {
@@ -239,7 +320,7 @@ export default function AdminFollowers() {
         {TABS.map((p) => {
           const row = stats?.[p];
           const Icon = TAB_ICON[p];
-          const followers = displayFollowerCount(p, stats);
+          const followers = displayFollowerCount(p, stats, manual);
           const unfollowedMonth = row?.unfollowed_this_month ?? 0;
           return (
             <div
@@ -290,12 +371,17 @@ export default function AdminFollowers() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-2xl font-black text-gray-900">
-              {displayFollowerCount(activeTab, stats)}
+              {displayFollowerCount(activeTab, stats, manual)}
             </p>
             <p className="text-xs text-gray-500">{tr.adm_followers_tab_total}</p>
             {tabStats?.api_count != null && tabStats.api_count !== tabStats.active && (
               <p className="text-xs text-gray-400 mt-0.5">
                 {fillPlaceholders(tr.adm_followers_stat_api, { count: String(tabStats.api_count) })}
+              </p>
+            )}
+            {activeTab === "tiktok" && manual?.tiktok.count != null && tabStats?.api_count == null && (
+              <p className="text-xs text-gray-400 mt-0.5">
+                {fillPlaceholders(tr.adm_followers_stat_manual, { count: String(manual.tiktok.count) })}
               </p>
             )}
           </div>
@@ -309,6 +395,35 @@ export default function AdminFollowers() {
             {exporting ? tr.adm_followers_exporting : tr.adm_followers_export}
           </button>
         </div>
+
+        {activeTab === "tiktok" && (
+          <ManualCountEditor
+            platform="tiktok"
+            storedCount={manual?.tiktok.count ?? null}
+            updatedAt={manual?.tiktok.updated_at ?? null}
+            tr={tr}
+            onSaved={fetchAll}
+          />
+        )}
+
+        {activeTab === "facebook" && (
+          <div className="rounded-xl border border-gray-100 p-4 space-y-3">
+            <div>
+              <p className="text-sm font-bold text-gray-900">{tr.adm_followers_facebook_personal_title}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{tr.adm_followers_facebook_personal_hint}</p>
+            </div>
+            {manual?.facebook_personal.count != null && (
+              <p className="text-xl font-black text-gray-900">{manual.facebook_personal.count}</p>
+            )}
+            <ManualCountEditor
+              platform="facebook_personal"
+              storedCount={manual?.facebook_personal.count ?? null}
+              updatedAt={manual?.facebook_personal.updated_at ?? null}
+              tr={tr}
+              onSaved={fetchAll}
+            />
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-2 items-end">
           <div>

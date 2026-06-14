@@ -29,6 +29,23 @@ function apiSyncedAtSettingKey(platform: SocialFollowerPlatform): string {
   return `social_followers_api_synced_at_${platform}`;
 }
 
+export type SocialFollowersManualPlatform = "tiktok" | "facebook_personal";
+
+const MANUAL_COUNT_SETTING_KEYS: Record<SocialFollowersManualPlatform, string> = {
+  tiktok: "social_followers_manual_count_tiktok",
+  facebook_personal: "social_followers_manual_count_facebook_personal",
+};
+
+const MANUAL_UPDATED_AT_SETTING_KEYS: Record<SocialFollowersManualPlatform, string> = {
+  tiktok: "social_followers_manual_updated_at_tiktok",
+  facebook_personal: "social_followers_manual_updated_at_facebook_personal",
+};
+
+export type SocialFollowersManualStats = Record<
+  SocialFollowersManualPlatform,
+  { count: number | null; updated_at: string | null }
+>;
+
 async function upsertAdminSetting(key: string, value: string): Promise<void> {
   await db
     .insert(adminSettingsTable)
@@ -321,6 +338,31 @@ export async function getSocialFollowersStats(): Promise<
   }
 
   return stats;
+}
+
+export async function getSocialFollowersManualStats(): Promise<SocialFollowersManualStats> {
+  const out = {} as SocialFollowersManualStats;
+  for (const platform of Object.keys(MANUAL_COUNT_SETTING_KEYS) as SocialFollowersManualPlatform[]) {
+    const countRaw = await readAdminSetting(MANUAL_COUNT_SETTING_KEYS[platform]);
+    const updatedAt = await readAdminSetting(MANUAL_UPDATED_AT_SETTING_KEYS[platform]);
+    const parsed =
+      countRaw != null && countRaw !== "" && Number.isFinite(Number(countRaw))
+        ? Math.max(0, Math.floor(Number(countRaw)))
+        : null;
+    out[platform] = { count: parsed, updated_at: updatedAt };
+  }
+  return out;
+}
+
+export async function setSocialFollowersManualCount(
+  platform: SocialFollowersManualPlatform,
+  count: number,
+): Promise<SocialFollowersManualStats[SocialFollowersManualPlatform]> {
+  const safeCount = Math.max(0, Math.floor(count));
+  const now = new Date().toISOString();
+  await upsertAdminSetting(MANUAL_COUNT_SETTING_KEYS[platform], String(safeCount));
+  await upsertAdminSetting(MANUAL_UPDATED_AT_SETTING_KEYS[platform], now);
+  return { count: safeCount, updated_at: now };
 }
 
 export type SocialFollowersListFilter = {

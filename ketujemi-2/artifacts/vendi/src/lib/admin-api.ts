@@ -788,6 +788,13 @@ export type AdminSocialFollowersStats = Record<
   }
 >;
 
+export type SocialFollowersManualPlatform = "tiktok" | "facebook_personal";
+
+export type AdminSocialFollowersManualStats = Record<
+  SocialFollowersManualPlatform,
+  { count: number | null; updated_at: string | null }
+>;
+
 export type AdminFollowersSyncResult = {
   instagram: {
     ok: boolean;
@@ -804,7 +811,24 @@ export type AdminFollowersSyncResult = {
 };
 
 export function getAdminFollowersStats() {
-  return request<{ stats: AdminSocialFollowersStats }>("/followers/stats");
+  return request<{ stats: AdminSocialFollowersStats; manual: AdminSocialFollowersManualStats }>(
+    "/followers/stats",
+  );
+}
+
+export function saveAdminFollowersManualCount(
+  platform: SocialFollowersManualPlatform,
+  count: number,
+) {
+  return request<{
+    ok: boolean;
+    platform: SocialFollowersManualPlatform;
+    count: number;
+    updated_at: string;
+  }>("/followers/manual-count", {
+    method: "POST",
+    body: JSON.stringify({ platform, count }),
+  });
 }
 
 export function getAdminFollowersList(params?: {
