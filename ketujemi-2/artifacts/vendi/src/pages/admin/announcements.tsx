@@ -12,6 +12,7 @@ export default function AdminAnnouncements() {
   const { t } = useMarket();
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+  const [subjectFieldReady, setSubjectFieldReady] = useState(false);
   const [recipientCount, setRecipientCount] = useState<number | null>(null);
   const [campaigns, setCampaigns] = useState<AdminAnnouncementCampaign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +39,14 @@ export default function AdminAnnouncements() {
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  // Browsers sometimes autofill admin login email into the subject field (label contained "email").
+  useEffect(() => {
+    if (subjectFieldReady) return;
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(subject.trim())) {
+      setSubject("");
+    }
+  }, [subject, subjectFieldReady]);
 
   async function handleSend() {
     if (!subject.trim() || !body.trim()) {
@@ -98,10 +107,19 @@ export default function AdminAnnouncements() {
           </label>
           <input
             id="ann-subject"
+            name="ketujemi-announcement-subject"
             type="text"
             maxLength={200}
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
+            readOnly={!subjectFieldReady}
+            onFocus={() => setSubjectFieldReady(true)}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            data-1p-ignore
+            data-lpignore="true"
             className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder={t.adm_ann_subject_ph}
           />
@@ -113,10 +131,12 @@ export default function AdminAnnouncements() {
           </label>
           <textarea
             id="ann-body"
+            name="ketujemi-announcement-body"
             rows={10}
             maxLength={50000}
             value={body}
             onChange={(e) => setBody(e.target.value)}
+            autoComplete="off"
             className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[12rem]"
             placeholder={t.adm_ann_body_ph}
           />

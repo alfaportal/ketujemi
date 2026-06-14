@@ -74,6 +74,7 @@ async function dispatchAnnouncementEmail(opts: {
   html: string;
   text: string;
 }): Promise<void> {
+  // One recipient per job — never batch multiple addresses in a single To: header.
   const mail = {
     to: opts.to,
     subject: opts.subject,
