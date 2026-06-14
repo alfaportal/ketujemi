@@ -13,8 +13,10 @@ import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { useShopDashboardCopy } from "@/lib/shop-dashboard-i18n";
 
 // ─── Formatted timestamp ──────────────────────────────────────────────────────
-function formatDate(isoString: string): string {
+function formatDate(isoString: string | null | undefined): string {
+  if (!isoString) return "";
   const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return "";
   const day   = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const year  = date.getFullYear();
@@ -25,6 +27,21 @@ function formatDate(isoString: string): string {
 
 import { fillPlaceholders } from "@/lib/fill-placeholders";
 import { prefetchRoute } from "@/lib/route-prefetch";
+
+function safeFillPlaceholders(
+  template: string | undefined | null,
+  vars: Record<string, string | number>,
+): string {
+  const safeTemplate = template ?? "";
+  if (!safeTemplate) return "";
+  return fillPlaceholders(safeTemplate, vars);
+}
+
+function safeMaskSellerPhone(raw: string | null | undefined): string {
+  const trimmed = raw?.trim() ?? "";
+  if (!trimmed) return "+*** **** ***";
+  return maskSellerPhone(trimmed);
+}
 
 // ─── Expiry countdown ─────────────────────────────────────────────────────────
 function getDaysLeft(
@@ -37,8 +54,8 @@ function getDaysLeft(
   const urgent = days <= 3;
   const text =
     days === 1
-      ? tx.ui_listingExpiresTomorrow
-      : fillPlaceholders(tx.ui_listingExpiresInDays, { days });
+      ? (tx.ui_listingExpiresTomorrow ?? "")
+      : safeFillPlaceholders(tx.ui_listingExpiresInDays, { days });
   return { text, urgent };
 }
 
@@ -73,8 +90,8 @@ function DhurataGiftListingCard({ listing }: ListingCardProps) {
   const { user } = useAuth();
   const [phoneRevealed, setPhoneRevealed] = useState(false);
   const masked =
-    listing.seller_phone_masked ||
-    (listing.seller_phone ? maskSellerPhone(listing.seller_phone) : "+*** **** ***");
+    listing.seller_phone_masked?.trim() ||
+    safeMaskSellerPhone(listing.seller_phone);
   const fullPhone = listing.seller_phone?.trim() ?? "";
 
   const handleContact = (e: React.MouseEvent) => {
@@ -97,7 +114,7 @@ function DhurataGiftListingCard({ listing }: ListingCardProps) {
           <ListingCardImage
             imageUrl={listing.image_url}
             primaryImageUrl={listing.primary_image_url}
-            alt={listing.title}
+            alt={listing.title ?? ""}
             className="group-hover:scale-105 transition-transform duration-300"
           />
           <div className="absolute top-2 left-2 bg-green-600 text-white text-sm font-bold px-2.5 py-1 rounded-lg shadow-sm">
@@ -112,7 +129,7 @@ function DhurataGiftListingCard({ listing }: ListingCardProps) {
             data-testid={`text-title-${listing.id}`}
             className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 mb-2 group-hover:text-green-700 transition-colors"
           >
-            {listing.title}
+            {listing.title ?? ""}
           </h3>
         </Link>
 
@@ -167,7 +184,9 @@ export default function ListingCard({ listing }: ListingCardProps) {
     return <DhurataGiftListingCard listing={listing} />;
   }
 
-  const isToday = new Date(listing.created_at).toDateString() === new Date().toDateString();
+  const isToday = listing.created_at
+    ? new Date(listing.created_at).toDateString() === new Date().toDateString()
+    : false;
   const daysLeft = getDaysLeft(listing.expires_at, tx);
   const catName = translateCategory(listing.category_name ?? "", translationKeyForUiLang(uiLang));
   const isVipSeller = !!listing.is_vip_seller;
@@ -191,7 +210,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
         <ListingCardImage
           imageUrl={listing.image_url}
           primaryImageUrl={listing.primary_image_url}
-          alt={listing.title}
+          alt={listing.title ?? ""}
           className="group-hover:scale-105 transition-transform duration-300"
         />
         {listing.is_top ? (
@@ -245,7 +264,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
           data-testid={`text-title-${listing.id}`}
           className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 mb-1.5 group-hover:text-blue-600 transition-colors"
         >
-          {listing.title}
+          {listing.title ?? ""}
         </h3>
 
         <div data-testid={`text-price-${listing.id}`} className="text-blue-600 font-black text-base mb-2">
