@@ -162,10 +162,10 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      <SiteHeader />
+      <SiteHeader mobileVariant="classic" />
 
       {/* -- Hero -- */}
-      <section className="relative w-full overflow-hidden bg-slate-800 h-[200px] sm:h-[380px] md:h-[480px] lg:h-[520px]">
+      <section className="relative w-full overflow-hidden bg-slate-800 h-[300px] sm:h-[380px] md:h-[480px] lg:h-[520px]">
         <div className="absolute inset-0 z-0">
           <HomeHeroSlideshow />
         </div>
@@ -191,59 +191,9 @@ export default function HomePage() {
 
       {/* -- Filter bar -- */}
       <section className="bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
 
-          {/* Mobile: slim search + filter + inline stats */}
-          <div className="flex flex-col gap-1.5 md:hidden mb-2">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                applyFilters();
-              }}
-              className="flex items-center gap-1.5"
-            >
-              <div className="relative flex-1 min-w-0">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
-                <input
-                  type="search"
-                  enterKeyHint="search"
-                  placeholder={t.search}
-                  value={filterSearch}
-                  onChange={(e) => setFilterSearch(e.target.value)}
-                  className="w-full h-9 pl-8 pr-2 py-1.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all bg-gray-50 focus:bg-white touch-manipulation appearance-none"
-                />
-              </div>
-              <button type="submit" aria-label={t.searchBtn} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white hover:bg-blue-700 touch-manipulation">
-                <Search size={16} aria-hidden />
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowFilters(!showFilters)}
-                aria-label={t.filters}
-                className={cn(
-                  "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border touch-manipulation",
-                  showFilters
-                    ? "border-blue-600 bg-blue-600 text-white"
-                    : "border-gray-200 bg-white text-gray-600",
-                )}
-              >
-                <SlidersHorizontal size={15} aria-hidden />
-              </button>
-            </form>
-            <p className="text-[10px] font-medium text-gray-500 tabular-nums px-0.5 truncate">
-              {platformStatsLoading ? (
-                <span className="inline-block h-3 w-32 animate-pulse rounded bg-gray-100" />
-              ) : (
-                <>
-                  {(listingStats?.total_listings ?? 0).toLocaleString()} {tx.ui_listingsStatsTotal}
-                  {" · "}
-                  {(listingStats?.listings_today ?? 0).toLocaleString()} {tx.ui_listingsStatsToday}
-                </>
-              )}
-            </p>
-          </div>
-
-          <div className="hidden md:flex flex-col gap-3 lg:flex-row lg:items-stretch mb-3">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch mb-3">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -329,7 +279,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="hidden md:flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
             <span className="text-sm font-bold text-gray-700">{t.title}</span>
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -344,7 +294,7 @@ export default function HomePage() {
               {t.filters}
             </button>
           </div>
-          <div className="hidden md:flex flex-wrap gap-2 sm:gap-3 mb-3" aria-label="Platform benefits">
+          <div className="flex flex-wrap gap-2 sm:gap-3 mb-3" aria-label="Platform benefits">
             {[
               { icons: [Mail, Smartphone], text: t.trust1 },
               { icons: [Zap], text: t.trust2 },
