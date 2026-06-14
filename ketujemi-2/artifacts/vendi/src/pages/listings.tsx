@@ -493,13 +493,13 @@ export default function Listings() {
           <div className="grid grid-cols-1 md:grid-cols-2 min-[1200px]:grid-cols-3 gap-4">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
-        ) : data && data.listings.length > 0 ? (
+        ) : data && Array.isArray(data.listings) && data.listings.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 min-[1200px]:grid-cols-3 gap-4">
               {data.listings.map((listing) => (
                 <SharedListingCard
                   key={listing.id}
-                  listing={listing as any}
+                  listing={listing as Parameters<typeof SharedListingCard>[0]["listing"]}
                 />
               ))}
             </div>

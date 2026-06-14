@@ -1,6 +1,8 @@
 /** Mask seller phone for display (matches API contact-mask logic). */
-export function maskSellerPhone(raw: string): string {
-  const digits = raw.replace(/\D/g, "");
+export function maskSellerPhone(raw: string | null | undefined): string {
+  const safe = raw?.trim() ?? "";
+  if (!safe) return "+*** **** ***";
+  const digits = safe.replace(/\D/g, "");
   if (digits.length < 8) return "+*** **** ***";
 
   let d = digits;
