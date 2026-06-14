@@ -1,4 +1,6 @@
 import { claudeJsonCompletion, isClaudeConfigured, langLabel, type UiLang } from "./claude-client";
+import { CATEGORY_CLASSIFY_GUIDE } from "./category-assistant-guide";
+import { getHubCategoryMismatchHint } from "./hub-category-suggest-rules";
 
 export type PostingSuggestion = { text: string };
 
@@ -22,6 +24,7 @@ function ruleBasedSuggestions(input: {
   price: number;
   price_agreement?: boolean;
   image_count: number;
+  category_name?: string | null;
   parent_category_name?: string | null;
 }): PostingSuggestion[] {
   const out: PostingSuggestion[] = [];
@@ -38,6 +41,17 @@ function ruleBasedSuggestions(input: {
   if (!input.price_agreement && input.price <= 0) {
     out.push({ text: "Vendosni një çmim real ose zgjidhni “me marrëveshje”." });
   }
+
+  const text = `${input.title} ${input.description}`;
+  const mismatch = getHubCategoryMismatchHint(
+    text,
+    input.parent_category_name,
+    input.category_name,
+  );
+  if (mismatch) {
+    out.push({ text: mismatch });
+  }
+
   return out.slice(0, 3);
 }
 
@@ -57,9 +71,8 @@ YOUR JOB — CATEGORY ONLY (product type, not geography):
 - Never block, scare, or imply approval will fail because of location when category is correct.
 
 CATEGORY ACCURACY (when product type is wrong):
-- Speakers/headphones/JBL/Bose → "Audio & Pajisje Zëri", NEVER "Televizorë & Projektorë".
-- TVs/projectors → "Televizorë & Projektorë"; consoles → "Konzola & Gaming".
-- Fëmijë subcategories: strollers → Karroca & Transport; toys → Lodra; etc. — pick the leaf/group that matches the item name.
+${CATEGORY_CLASSIFY_GUIDE}
+- When wrong: ONE short suggestion naming the correct parent → subcategory (nenkategori).
 
 POSTING LOCATION (never mix with category):
 - Category = product type only. "Vendndodhja" (city/country) is separate — Kosovo, Albania, North Macedonia, Montenegro are all allowed for any category.

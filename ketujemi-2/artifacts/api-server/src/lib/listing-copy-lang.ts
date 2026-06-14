@@ -1,4 +1,6 @@
 /** Language for auto-generated listing title/description (vision pipelines). */
+import { CATEGORY_CLASSIFY_GUIDE } from "./category-assistant-guide";
+
 export type ListingCopyLang = "sq" | "mk" | "me" | "en";
 
 export function parseListingCopyLang(raw: unknown): ListingCopyLang {
@@ -73,15 +75,7 @@ brand_category_id = deepest leaf when the catalog has 3+ levels under the parent
 
 Always pick the MOST SPECIFIC leaf available. Never stop at parent only when children exist.
 
-═══ VISUAL OBJECT → PARENT HUB (use exact catalog names) ═══
-CLOTHING & WEARABLES → «Rroba & Këpucë» — NOT «Muzikë & Hobby»
-VEHICLES → «Vetura» | «Motorr & Skuter» | «Kamionë & Furgonë»
-AUTO PARTS → «Auto Pjesë»
-REAL ESTATE → «Banesa & Shtëpi» or «Lokale & Zyrë»
-PHONES → «Telefona» | LAPTOPS → «Kompjuterë & Laptopë» | OTHER ELECTRONICS → «Elektronikë & Pajisje Shtëpiake»
-HOME → «Mobilje & Dekorime»
-BABY → «Fëmijë» | SPORTS → «Sport & Outdoor» | PETS → «Kafshë»
-MUSIC & HOBBY → instruments/art supplies only — NEVER clothing
+${CATEGORY_CLASSIFY_GUIDE}
 
 ═══ TEXT OUTPUT (${label} / ${lang}) ═══
 Write title and description in ${label} only — not Albanian unless lang is sq.

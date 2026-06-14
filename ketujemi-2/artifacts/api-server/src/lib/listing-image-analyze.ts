@@ -8,6 +8,7 @@ import {
   type GoogleVisionDetectResult,
 } from "./google-vision-client";
 import { matchListingCategoryFromRules } from "./listing-category-suggest";
+import { guardCategorySuggestion } from "./category-suggest-guard";
 import {
   buildClaudeVisionSystem,
   buildCopyFromLabelsSystem,
@@ -225,13 +226,50 @@ function ensureCopyMinimums(
   return { title: nextTitle, description: nextDescription };
 }
 
+function applyCategoryGuardToMapped(
+  rows: CategoryRow[],
+  mapped: { parent: CategoryRow; category: CategoryRow; brand?: CategoryRow },
+  text: string,
+): { parent: CategoryRow; category: CategoryRow; brand?: CategoryRow } {
+  const guarded = guardCategorySuggestion(
+    text,
+    {
+      parent_category_id: mapped.parent.id,
+      category_id: mapped.category.id,
+      parent_name: mapped.parent.name,
+      category_name: mapped.category.name,
+      confidence: "medium",
+      source: "ai",
+    },
+    rows,
+  );
+
+  if (
+    guarded.parent_category_id === mapped.parent.id &&
+    guarded.category_id === mapped.category.id
+  ) {
+    return mapped;
+  }
+
+  const parent = rows.find((c) => c.id === guarded.parent_category_id);
+  const category = rows.find((c) => c.id === guarded.category_id);
+  if (!parent || !category) return mapped;
+
+  return { parent, category, brand: undefined };
+}
+
 function validateHierarchy(
   rows: CategoryRow[],
   parsed: VisionAiPayload,
   lang: ListingCopyLang,
 ): ListingImageAnalyzeResult | null {
-  const mapped = mapParsedToForm(rows, parsed);
+  let mapped = mapParsedToForm(rows, parsed);
   if (!mapped || isExcludedParent(mapped.parent)) return null;
+
+  const copyText = `${parsed.title ?? ""} ${parsed.description ?? ""}`.trim();
+  if (copyText.length >= 3) {
+    mapped = applyCategoryGuardToMapped(rows, mapped, copyText.toLowerCase());
+  }
 
   if (parentHasChildren(rows, mapped.parent.id) && mapped.category.id === mapped.parent.id) {
     return null;
@@ -349,14 +387,18 @@ function classifyCategoryFromGoogleLabels(
           confidence: fromRules!.confidence,
         };
 
-  const fromRulesCompat = {
-    parent_category_id: base.parent_category_id,
-    category_id: base.category_id,
-    parent_name: base.parent_name,
-    category_name: base.category_name,
-    confidence: base.confidence,
-    source: "rules" as const,
-  };
+  const fromRulesCompat = guardCategorySuggestion(
+    searchText,
+    {
+      parent_category_id: base.parent_category_id,
+      category_id: base.category_id,
+      parent_name: base.parent_name,
+      category_name: base.category_name,
+      confidence: base.confidence,
+      source: "rules",
+    },
+    rows,
+  );
 
   let categoryId = fromRulesCompat.category_id;
   let brandId: number | undefined;

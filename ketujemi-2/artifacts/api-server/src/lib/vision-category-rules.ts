@@ -121,7 +121,62 @@ export const VISION_LABEL_RULES: VisionSlugRule[] = [
     categorySlug: "sedan",
     pattern: /\b(car|automobile|vehicle|sedan|suv|hatchback|vetur)\b/i,
     weight: 8,
-    unless: /\b(motorcycle|motorbike|scooter|truck|kamion)\b/i,
+    unless: /\b(motorcycle|motorbike|scooter|truck|kamion|tire|wheel)\b/i,
+  },
+  {
+    parentSlug: "motorr-skuter",
+    categorySlug: "motorr-type-sportiv",
+    pattern: /\b(motorcycle|motorbike|scooter|vespa|atv|quad)\b/i,
+    weight: 12,
+    unless: /\b(car|automobile|sedan|suv)\b/i,
+  },
+  {
+    parentSlug: "kamione-furgone",
+    categorySlug: "kamione-type-furgone",
+    pattern: /\b(van|minivan|cargo\s+van|furgon)\b/i,
+    weight: 11,
+    unless: /\b(car|sedan|suv)\b/i,
+  },
+  {
+    parentSlug: "auto-pjese",
+    categorySlug: "auto-pjes-type-fellne-goma",
+    pattern: /\b(tire|tyre|wheel|rim|alloy\s+wheel)\b/i,
+    weight: 12,
+    unless: /\b(bicycle|bike)\b/i,
+  },
+  {
+    parentSlug: "kafshet",
+    categorySlug: "kafshet-type-qen",
+    pattern: /\b(dog|puppy|canine)\b/i,
+    weight: 11,
+  },
+  {
+    parentSlug: "kafshet",
+    categorySlug: "kafshet-type-mace",
+    pattern: /\b(cat|kitten|feline)\b/i,
+    weight: 11,
+  },
+  {
+    parentSlug: "lokale-zyre",
+    categorySlug: "lokale-type-industriale",
+    pattern:
+      /\b(industrial\s+building|factory|warehouse|manufacturing|corrugated|metal\s+building|metal\s+panel|hangar|shed|industrial\s+property)\b/i,
+    weight: 15,
+    unless: /\b(apartment|residential|flat|condo|house\s+for\s+sale|bedroom)\b/i,
+  },
+  {
+    parentSlug: "lokale-zyre",
+    categorySlug: "lokale-type-depo",
+    pattern: /\b(storage\s+unit|storage\s+facility|depot)\b/i,
+    weight: 10,
+    unless: /\b(industrial\s+building|factory|manufacturing)\b/i,
+  },
+  {
+    parentSlug: "banesa-shtepi",
+    categorySlug: "banesa-type-apartamente-banesa",
+    pattern: /\b(apartment|flat|condo|residential\s+building|bedroom|living\s+room)\b/i,
+    weight: 9,
+    unless: /\b(industrial|factory|warehouse|corrugated|metal\s+building|hangar)\b/i,
   },
 ];
 

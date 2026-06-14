@@ -17,6 +17,7 @@
     "run:views-trim-boost": "tsx ./src/scripts/run-views-trim-boost.ts",
     "run:views-rebalance": "tsx ./src/scripts/run-views-rebalance.ts",
     "run:listing-views-adjust": "tsx ./src/scripts/run-listing-views-adjust.ts",
+    "run:listing-category-fix": "tsx ./src/scripts/run-listing-category-fix.ts",
     "typecheck": "tsc --build ../../lib/db/tsconfig.json ../../lib/api-zod/tsconfig.json && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
