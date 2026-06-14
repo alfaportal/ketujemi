@@ -28,6 +28,7 @@ import { dateFnsLocale, fillPlaceholders } from "@/lib/app-extra-i18n";
 import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
 import { userOwnsListing } from "@/lib/listing-ownership";
 import { sellerFirstName } from "@/lib/seller-display";
+import { sellerProfileHrefFromListing } from "@/lib/seller-profile-href";
 import { MobileSafeTopSpacer } from "@/components/mobile-safe-top-spacer";
 import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { ReportListingDialog } from "@/components/report-listing-dialog";
@@ -162,7 +163,8 @@ export default function ListingDetail() {
       queryKey: getGetListingQueryKey(id),
       retry: 2,
       retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 4000),
-      staleTime: 120_000,
+      staleTime: 60_000,
+      refetchOnMount: "always",
       placeholderData: (previous) => previous,
     },
   });
@@ -512,8 +514,13 @@ export default function ListingDetail() {
   const smsHref = user ? smsUriFromDigits(sellerDigits) : "sms:";
   const listingReturnPath = `/listings/${listing.id}`;
   const sellerDisplayName = user ? listing.seller_name : sellerFirstName(listing.seller_name);
-  const sellerProfileHref =
-    (listing as { seller_profile_href?: string | null }).seller_profile_href?.trim() || null;
+  const sellerProfileHref = sellerProfileHrefFromListing(
+    listing as {
+      seller_profile_href?: string | null;
+      shop_id?: number | null;
+      user_id?: number | null;
+    },
+  );
   const showSellerPhone = !!user && sellerDigits.length >= 8;
   const specsEmail = specs["Email"]?.trim() ?? "";
   const hideOperatorEmail = isPlatformOperatorEmail(specsEmail);
@@ -792,39 +799,47 @@ export default function ListingDetail() {
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
               <h2 className="font-bold text-gray-900 mb-4">{t.seller}</h2>
               <div className="space-y-3">
-                <div className="flex items-center gap-3 pb-3 border-b border-gray-50">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0">
-                    <User className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    {sellerProfileHref ? (
-                      <Link
-                        href={sellerProfileHref}
-                        className="font-semibold text-gray-900 flex items-center gap-2 flex-wrap hover:text-blue-700 transition-colors group"
-                        data-testid="link-seller-profile"
-                      >
-                        <span className="group-hover:underline">{sellerDisplayName}</span>
-                        {listing.seller_is_online ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-600">
+                {sellerProfileHref ? (
+                  <Link
+                    href={sellerProfileHref}
+                    className="flex items-center gap-3 pb-3 border-b border-gray-50 rounded-xl -mx-1 px-1 py-0.5 cursor-pointer hover:bg-blue-50/80 transition-colors group"
+                    data-testid="link-seller-profile"
+                  >
+                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0 group-hover:ring-2 group-hover:ring-blue-200">
+                      <User className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-semibold text-blue-700 flex items-center gap-2 flex-wrap underline decoration-blue-200 underline-offset-2 group-hover:text-blue-800 group-hover:decoration-blue-400">
+                        <span>{sellerDisplayName}</span>
+                        {(listing as { seller_is_online?: boolean }).seller_is_online ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-600 no-underline">
                             <span className="h-2 w-2 rounded-full bg-green-500 shrink-0" aria-hidden />
                             {t.sellerOnline}
                           </span>
                         ) : null}
-                      </Link>
-                    ) : (
+                      </div>
+                      <div className="text-sm text-gray-400 group-hover:text-gray-500">{t.privateSeller}</div>
+                    </div>
+                  </Link>
+                ) : (
+                  <div className="flex items-center gap-3 pb-3 border-b border-gray-50">
+                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0">
+                      <User className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
                       <div className="font-semibold text-gray-900 flex items-center gap-2 flex-wrap" data-testid="text-seller-name">
                         <span>{sellerDisplayName}</span>
-                        {listing.seller_is_online ? (
+                        {(listing as { seller_is_online?: boolean }).seller_is_online ? (
                           <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-600">
                             <span className="h-2 w-2 rounded-full bg-green-500 shrink-0" aria-hidden />
                             {t.sellerOnline}
                           </span>
                         ) : null}
                       </div>
-                    )}
-                    <div className="text-sm text-gray-400">{t.privateSeller}</div>
+                      <div className="text-sm text-gray-400">{t.privateSeller}</div>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
