@@ -2122,6 +2122,8 @@ const KS_EXTRA: Record<string, string> = {
   ui_homePlatformTitle: "Çfarë ka në platformë",
   ui_homeStatsListings: "Shpallje",
   ui_homeStatsShops: "Dyqane",
+  ui_homeStatsOnlineNow: "Online tani",
+  ui_sellerListingsPageTitle: "Shpalljet e shitësit",
 };
 
 const AL_OVERRIDES: Record<string, string> = {
@@ -4020,6 +4022,8 @@ const MK_EXTRA: Record<string, string> = {
   ui_homePlatformTitle: "Што има на платформата",
   ui_homeStatsListings: "Огласи",
   ui_homeStatsShops: "Продавници",
+  ui_homeStatsOnlineNow: "Онлајн сега",
+  ui_sellerListingsPageTitle: "Огласи на продавачот",
   ui_adminOnBehalfTitle: "Режим оператор — објава за продавач",
   ui_adminOnBehalfBody:
     "Внесете име и телефон на вистинскиот продавач. Вашиот admin email не се прикажува јавно. Само операторската сметка (EMAIL_ADMIN) го има овој пристап.",
@@ -6235,6 +6239,8 @@ const MNE_EXTRA: Record<string, string> = {
   ui_homePlatformTitle: "Šta ima na platformi",
   ui_homeStatsListings: "Oglasi",
   ui_homeStatsShops: "Prodavnice",
+  ui_homeStatsOnlineNow: "Online sada",
+  ui_sellerListingsPageTitle: "Oglasi prodavca",
   ui_adminOnBehalfTitle: "Režim operatora — objava za prodavca",
   ui_adminOnBehalfBody:
     "Unesite ime i telefon pravog prodavca. Vaš admin email se ne prikazuje javno. Samo operatorski nalog (EMAIL_ADMIN) ima ovaj pristup.",

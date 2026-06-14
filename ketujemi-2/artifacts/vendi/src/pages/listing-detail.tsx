@@ -1,4 +1,4 @@
-import { useRoute, useLocation } from "wouter";
+import { useRoute, useLocation, Link } from "wouter";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useGetListing, useDeleteListing, getGetListingsQueryKey, getGetRecentListingsQueryKey, getGetFeaturedListingsQueryKey, getGetListingQueryKey, ApiError } from "@workspace/api-client-react";
@@ -512,6 +512,8 @@ export default function ListingDetail() {
   const smsHref = user ? smsUriFromDigits(sellerDigits) : "sms:";
   const listingReturnPath = `/listings/${listing.id}`;
   const sellerDisplayName = user ? listing.seller_name : sellerFirstName(listing.seller_name);
+  const sellerProfileHref =
+    (listing as { seller_profile_href?: string | null }).seller_profile_href?.trim() || null;
   const showSellerPhone = !!user && sellerDigits.length >= 8;
   const specsEmail = specs["Email"]?.trim() ?? "";
   const hideOperatorEmail = isPlatformOperatorEmail(specsEmail);
@@ -795,15 +797,31 @@ export default function ListingDetail() {
                     <User className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900 flex items-center gap-2 flex-wrap" data-testid="text-seller-name">
-                      <span>{sellerDisplayName}</span>
-                      {listing.seller_is_online ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-600">
-                          <span className="h-2 w-2 rounded-full bg-green-500 shrink-0" aria-hidden />
-                          {t.sellerOnline}
-                        </span>
-                      ) : null}
-                    </div>
+                    {sellerProfileHref ? (
+                      <Link
+                        href={sellerProfileHref}
+                        className="font-semibold text-gray-900 flex items-center gap-2 flex-wrap hover:text-blue-700 transition-colors group"
+                        data-testid="link-seller-profile"
+                      >
+                        <span className="group-hover:underline">{sellerDisplayName}</span>
+                        {listing.seller_is_online ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-600">
+                            <span className="h-2 w-2 rounded-full bg-green-500 shrink-0" aria-hidden />
+                            {t.sellerOnline}
+                          </span>
+                        ) : null}
+                      </Link>
+                    ) : (
+                      <div className="font-semibold text-gray-900 flex items-center gap-2 flex-wrap" data-testid="text-seller-name">
+                        <span>{sellerDisplayName}</span>
+                        {listing.seller_is_online ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-600">
+                            <span className="h-2 w-2 rounded-full bg-green-500 shrink-0" aria-hidden />
+                            {t.sellerOnline}
+                          </span>
+                        ) : null}
+                      </div>
+                    )}
                     <div className="text-sm text-gray-400">{t.privateSeller}</div>
                   </div>
                 </div>

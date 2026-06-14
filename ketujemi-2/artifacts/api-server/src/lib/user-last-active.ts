@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, count, eq, gte, isNull } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
 
 /** Debounce DB writes — at most one update per user per 90s. */
@@ -12,6 +12,15 @@ const recentTouchByUserId = new Map<number, number>();
 export function isSellerOnline(lastActiveAt: Date | null | undefined, nowMs = Date.now()): boolean {
   if (!lastActiveAt) return false;
   return nowMs - lastActiveAt.getTime() < SELLER_ONLINE_WINDOW_MS;
+}
+
+export async function countUsersOnlineNow(nowMs = Date.now()): Promise<number> {
+  const cutoff = new Date(nowMs - SELLER_ONLINE_WINDOW_MS);
+  const [row] = await db
+    .select({ total: count() })
+    .from(usersTable)
+    .where(and(gte(usersTable.last_active_at, cutoff), isNull(usersTable.banned_at)));
+  return row?.total ?? 0;
 }
 
 function shouldSkipTouch(userId: number, lastActiveAt: Date | null | undefined, nowMs: number): boolean {

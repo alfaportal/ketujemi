@@ -107,6 +107,10 @@ export const GetListingsQueryParams = zod.object({
     .string()
     .optional()
     .describe("Comma-separated fuel labels (exact match to listing field)"),
+  user_id: zod.coerce
+    .number()
+    .optional()
+    .describe("Filter active listings posted by this registered user id"),
   page: zod.coerce.number().optional(),
   limit: zod.coerce.number().optional(),
 });

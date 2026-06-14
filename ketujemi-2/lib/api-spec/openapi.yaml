@@ -175,6 +175,11 @@ paths:
           description: Comma-separated fuel labels (exact match to listing field)
           schema:
             type: string
+        - name: user_id
+          in: query
+          description: Filter active listings posted by this registered user id
+          schema:
+            type: integer
         - name: page
           in: query
           schema:
@@ -656,6 +661,9 @@ components:
                 type: string
               count:
                 type: integer
+        users_online_now:
+          type: integer
+          description: Users with last_active_at within the last 5 minutes
 
     CarModelRow:
       type: object

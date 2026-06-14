@@ -112,7 +112,7 @@ export default function HomePage() {
   const [filterMaxPrice, setFilterMaxPrice] = useState("");
   const [showFilters, setShowFilters] = useState(true);
   const [platformStatsLoading, setPlatformStatsLoading] = useState(true);
-  const [listingStats, setListingStats] = useState<{ total_listings: number; listings_today: number } | null>(null);
+  const [listingStats, setListingStats] = useState<{ total_listings: number; listings_today: number; users_online_now?: number } | null>(null);
   const [shopStats, setShopStats] = useState<{ total_shops: number; shops_today: number } | null>(null);
   const tx = t as Record<string, string>;
 
@@ -121,7 +121,7 @@ export default function HomePage() {
       setPlatformStatsLoading(true);
       void Promise.all([
         fetchWithTimeout("/api/listings/stats", { cache: "no-store" })
-          .then((r) => r.json() as Promise<{ total_listings: number; listings_today: number }>)
+          .then((r) => r.json() as Promise<{ total_listings: number; listings_today: number; users_online_now?: number }>)
           .catch(() => null),
         fetchWithTimeout("/api/shops/directory/stats", { cache: "no-store" })
           .then((r) => r.json() as Promise<{ total_shops: number; shops_today: number }>)
@@ -257,12 +257,20 @@ export default function HomePage() {
                         {(shopStats?.total_shops ?? 0).toLocaleString()}
                       </td>
                     </tr>
-                    <tr>
+                    <tr className="border-b border-blue-100/80">
                       <td className="py-1.5 pr-2 font-medium text-gray-600">
                         {tx.ui_homeStatsShops} · {tx.ui_listingsStatsToday}
                       </td>
                       <td className="py-1.5 text-right font-black text-blue-700 tabular-nums">
                         {(shopStats?.shops_today ?? 0).toLocaleString()}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-1.5 pr-2 font-medium text-gray-600">
+                        {tx.ui_homeStatsOnlineNow}
+                      </td>
+                      <td className="py-1.5 text-right font-black text-green-700 tabular-nums">
+                        {(listingStats?.users_online_now ?? 0).toLocaleString()}
                       </td>
                     </tr>
                   </tbody>

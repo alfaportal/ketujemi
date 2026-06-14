@@ -11,7 +11,8 @@ import {
   DeleteListingParams,
 } from "@workspace/api-zod";
 import { getSessionUser } from "../lib/session-user";
-import { isSellerOnline } from "../lib/user-last-active.js";
+import { isSellerOnline, countUsersOnlineNow } from "../lib/user-last-active.js";
+import { resolveSellerProfileHref } from "../lib/seller-profile-href.js";
 import { postListingLimiter, searchLimiter } from "../lib/express-rate-limiters";
 import { canonicalSellerContactForUser, listingBelongsToUser } from "../lib/listing-ownership";
 import {
@@ -206,6 +207,7 @@ router.get("/listings", searchLimiter, async (req, res) => {
     vehicle_body_filter,
     vehicle_model,
     fuel,
+    user_id: sellerUserId,
   } = parsed.data;
 
   const categoryIdList =
@@ -227,6 +229,9 @@ router.get("/listings", searchLimiter, async (req, res) => {
       : [];
 
   const conditions = [activeCondition()];
+  if (sellerUserId != null && Number.isFinite(sellerUserId) && sellerUserId > 0) {
+    conditions.push(eq(listingsTable.user_id, sellerUserId));
+  }
   if (categoryIdList.length > 0) {
     conditions.push(inArray(listingsTable.category_id, categoryIdList));
   } else if (category_id) {
@@ -896,7 +901,7 @@ router.get("/listings/stats", async (req, res) => {
   const categoryIdRaw = Number(req.query.category_id);
   const categoryId = Number.isFinite(categoryIdRaw) && categoryIdRaw > 0 ? categoryIdRaw : null;
 
-  const [totalRes, catRes, featuredRes, todayRes, locationRes] = await Promise.all([
+  const [totalRes, catRes, featuredRes, todayRes, locationRes, onlineUsersRes] = await Promise.all([
     db.select({ total: count() }).from(listingsTable).where(activeCondition()),
     db.select({ total: count() }).from(categoriesTable),
     db
@@ -917,6 +922,7 @@ router.get("/listings/stats", async (req, res) => {
       .groupBy(listingsTable.location)
       .orderBy(desc(sql`count(*)`))
       .limit(5),
+    countUsersOnlineNow(),
   ]);
 
   let category_listings: number | null = null;
@@ -938,6 +944,7 @@ router.get("/listings/stats", async (req, res) => {
     listings_today: todayRes[0]?.total ?? 0,
     top_locations: locationRes,
     category_listings: category_listings,
+    users_online_now: onlineUsersRes,
   });
   } catch (err) {
     logger.error({ err, query: req.query }, "GET /listings/stats failed");
@@ -1348,6 +1355,7 @@ router.get("/listings/:id", async (req, res) => {
     const out = finalized[0] ?? payload;
 
     let seller_is_online = false;
+    let seller_profile_href: string | null = null;
     if (row.user_id != null) {
       const [seller] = await db
         .select({ last_active_at: usersTable.last_active_at })
@@ -1356,8 +1364,12 @@ router.get("/listings/:id", async (req, res) => {
         .limit(1);
       seller_is_online = isSellerOnline(seller?.last_active_at);
     }
+    seller_profile_href = await resolveSellerProfileHref({
+      user_id: row.user_id,
+      shop_id: row.shop_id,
+    });
 
-    res.json({ ...out, can_repost: payload.can_repost, is_owner: isOwner, seller_is_online });
+    res.json({ ...out, can_repost: payload.can_repost, is_owner: isOwner, seller_is_online, seller_profile_href });
   } catch (err) {
     logger.error({ err, listingId: listingIdParam }, "GET /listings/:id failed");
     if (!res.headersSent) {

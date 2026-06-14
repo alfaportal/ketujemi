@@ -47,6 +47,7 @@ function listingsUrlFromState(state: {
   loc?: string;
   minPrice?: string;
   maxPrice?: string;
+  userId?: string;
 }): string {
   const params = new URLSearchParams();
   const q = effectiveListingSearchQuery(state.search ?? "");
@@ -55,6 +56,7 @@ function listingsUrlFromState(state: {
   if (state.loc && state.loc !== "all") params.set("location", state.loc);
   if (state.minPrice) params.set("min_price", state.minPrice);
   if (state.maxPrice) params.set("max_price", state.maxPrice);
+  if (state.userId && state.userId !== "all") params.set("user_id", state.userId);
   const qs = params.toString();
   return qs ? `/listings?${qs}` : "/listings";
 }
@@ -73,12 +75,14 @@ export default function Listings() {
   const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
   const initialSearchRaw = searchParams.get("search") ?? searchParams.get("q") ?? "";
   const initialSearch = effectiveListingSearchQuery(initialSearchRaw);
+  const initialUserId = searchParams.get("user_id") ?? "";
 
   const [search, setSearch] = useState(initialSearchRaw);
   const [categoryId, setCategoryId] = useState(searchParams.get("category_id") ?? "");
   const [loc, setLoc] = useState(searchParams.get("location") ?? "");
   const [minPrice, setMinPrice] = useState(searchParams.get("min_price") ?? "");
   const [maxPrice, setMaxPrice] = useState(searchParams.get("max_price") ?? "");
+  const [sellerUserId, setSellerUserId] = useState(initialUserId);
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [directoryShops, setDirectoryShops] = useState<ShopDirectoryListItem[]>([]);
@@ -97,6 +101,7 @@ export default function Listings() {
   const [appliedLoc, setAppliedLoc] = useState(loc);
   const [appliedMinPrice, setAppliedMinPrice] = useState(minPrice);
   const [appliedMaxPrice, setAppliedMaxPrice] = useState(maxPrice);
+  const [appliedSellerUserId, setAppliedSellerUserId] = useState(initialUserId);
 
   const queryParams: Record<string, string | number> = { page, limit: PAGE_SIZE };
   if (appliedSearch) queryParams.search = appliedSearch;
@@ -104,6 +109,10 @@ export default function Listings() {
   if (appliedLoc && appliedLoc !== "all") queryParams.location = appliedLoc;
   if (appliedMinPrice) queryParams.min_price = Number(appliedMinPrice);
   if (appliedMaxPrice) queryParams.max_price = Number(appliedMaxPrice);
+  const parsedSellerUserId = Number(appliedSellerUserId);
+  if (Number.isFinite(parsedSellerUserId) && parsedSellerUserId > 0) {
+    queryParams.user_id = parsedSellerUserId;
+  }
 
   const { data, isLoading } = useGetListings(queryParams);
   const { data: categories } = useGetCategories();
@@ -145,11 +154,13 @@ export default function Listings() {
     setLoc("");
     setMinPrice("");
     setMaxPrice("");
+    setSellerUserId("");
     setAppliedSearch("");
     setAppliedCategory("");
     setAppliedLoc("");
     setAppliedMinPrice("");
     setAppliedMaxPrice("");
+    setAppliedSellerUserId("");
     setPage(1);
     setLocation("/listings");
   };
@@ -159,7 +170,8 @@ export default function Listings() {
     (appliedCategory && appliedCategory !== "all") ||
     (appliedLoc && appliedLoc !== "all") ||
     appliedMinPrice ||
-    appliedMaxPrice
+    appliedMaxPrice ||
+    (appliedSellerUserId && Number(appliedSellerUserId) > 0)
   );
 
   const selectedCategory = categories?.find((c) => String(c.id) === appliedCategory);
@@ -284,7 +296,11 @@ export default function Listings() {
         {/* Header row */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-5">
           <div className="min-w-0">
-            <h1 className="text-lg sm:text-2xl font-black text-gray-900">{t.title}</h1>
+            <h1 className="text-lg sm:text-2xl font-black text-gray-900">
+              {appliedSellerUserId && Number(appliedSellerUserId) > 0
+                ? tx.ui_sellerListingsPageTitle
+                : t.title}
+            </h1>
             {data && (
               <p className="text-sm text-gray-500 mt-0.5">
                 {data.total.toLocaleString()} {t.total}
