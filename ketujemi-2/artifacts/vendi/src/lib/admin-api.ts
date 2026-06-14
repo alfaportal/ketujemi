@@ -934,3 +934,38 @@ export async function downloadAdminFollowersCsv(params: {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+export type AdminAnnouncementCampaign = {
+  id: number;
+  subject: string;
+  recipient_count: number;
+  status: string;
+  sent_by_admin_id: number | null;
+  created_at: string;
+};
+
+export async function getAdminAnnouncementRecipientCount(): Promise<{ count: number }> {
+  return request<{ count: number }>("/announcements/recipient-count");
+}
+
+export async function getAdminAnnouncementCampaigns(): Promise<{
+  campaigns: AdminAnnouncementCampaign[];
+}> {
+  return request<{ campaigns: AdminAnnouncementCampaign[] }>("/announcements/campaigns");
+}
+
+export async function sendAdminAnnouncement(payload: {
+  subject: string;
+  body: string;
+}): Promise<{
+  ok: boolean;
+  campaign_id: number;
+  recipient_count: number;
+  status: string;
+  message?: string;
+}> {
+  return request("/announcements/send", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}

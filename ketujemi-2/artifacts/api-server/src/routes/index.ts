@@ -20,10 +20,13 @@ import walletRouter from "./wallet";
 import notificationsRouter from "./notifications";
 import shopApplicationsRouter from "./shop-applications";
 import mapsEmbedRouter from "./maps-embed";
+import emailUnsubscribeRouter from "./email-unsubscribe";
+import adminAnnouncementsRouter from "./admin-announcements";
 
 const router: IRouter = Router();
 
 router.use(mapsEmbedRouter);
+router.use(emailUnsubscribeRouter);
 router.use(configRouter);
 router.use(uploadsRouter);
 router.use(partnersRouter);
@@ -43,5 +46,6 @@ router.use(listingsRouter);
 router.use(categoriesRouter);
 router.use(exchangeRatesRouter);
 router.use(adminRouter);
+router.use(adminAnnouncementsRouter);
 
 export default router;

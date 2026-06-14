@@ -22,6 +22,7 @@ import {
   ensureShopSocialProfileSchema,
   ensureDeletionFeedbackSchema,
   ensureFacebookDataDeletionSchema,
+  ensureAnnouncementCampaignsSchema,
   ensureWalletSchema,
   pool,
 } from "@workspace/db";
@@ -123,6 +124,8 @@ async function startServer(): Promise<void> {
     logger.info("Deletion feedback schema verified (deletion_feedback, users.deleted_at, shops.deleted_at)");
     await ensureFacebookDataDeletionSchema(pool);
     logger.info("Facebook data deletion schema verified (facebook_data_deletion_requests)");
+    await ensureAnnouncementCampaignsSchema(pool);
+    logger.info("Announcement campaigns schema verified (announcement_campaigns, marketing_email_opt_out)");
     if (process.env.NODE_ENV === "production") {
       setTimeout(() => {
         void purgeInvalidListingImagesOnStartup().catch((err) => {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard, FileText, Users, Tag, AlertTriangle, Settings,
-  LogOut, Menu, X, Lock, ShieldCheck, Building2, CreditCard, Store, Share2, UserPlus, Instagram, Trash2,
+  LogOut, Menu, X, Lock, ShieldCheck, Building2, CreditCard, Store, Share2, UserPlus, Instagram, Trash2, Megaphone,
 } from "lucide-react";
 import { adminLoginEmailStart, adminLoginEmailVerify, adminLogout, isAdminLoggedIn } from "@/lib/admin-api";
 import { useMarket } from "@/lib/market-context";
@@ -19,6 +19,7 @@ import AdminSocialPosts from "./social-posts";
 import AdminFollowers from "./followers";
 import AdminShopSocialEnrichments from "./shop-social-enrichments";
 import AdminDeletionFeedback from "./deletion-feedback";
+import AdminAnnouncements from "./announcements";
 
 type Section =
   | "dashboard"
@@ -34,7 +35,8 @@ type Section =
   | "social"
   | "followers"
   | "shop-social"
-  | "deletion-feedback";
+  | "deletion-feedback"
+  | "announcements";
 
 const NAV: { id: Section; icon: React.ElementType }[] = [
   { id: "dashboard", icon: LayoutDashboard },
@@ -46,6 +48,7 @@ const NAV: { id: Section; icon: React.ElementType }[] = [
   { id: "listings", icon: FileText },
   { id: "social", icon: Share2 },
   { id: "followers", icon: UserPlus },
+  { id: "announcements", icon: Megaphone },
   { id: "users", icon: Users },
   { id: "categories", icon: Tag },
   { id: "reports", icon: AlertTriangle },
@@ -68,6 +71,7 @@ const NAV_TITLE_KEY: Record<Section, string> = {
   shops: "adm_nav_shops",
   "shop-social": "adm_nav_shop_social",
   "deletion-feedback": "adm_nav_deletion",
+  announcements: "adm_nav_announcements",
 };
 
 // ─── Login page ───────────────────────────────────────────────────────────────
@@ -314,6 +318,7 @@ export default function AdminPanel() {
     shops:      AdminShops,
     "shop-social": AdminShopSocialEnrichments,
     "deletion-feedback": AdminDeletionFeedback,
+    announcements: AdminAnnouncements,
   }[section];
 
   return (

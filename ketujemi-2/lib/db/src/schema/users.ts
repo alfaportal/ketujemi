@@ -74,6 +74,8 @@ export const usersTable = pgTable("users", {
   social_follow_notif_sent: boolean("social_follow_notif_sent").notNull().default(false),
   /** pending | opted_in | opted_out — promotional follow-up preference. */
   social_follow_notif_preference: text("social_follow_notif_preference").notNull().default("pending"),
+  /** When true, user opted out of marketing / announcement emails. */
+  marketing_email_opt_out: boolean("marketing_email_opt_out").notNull().default(false),
   created_at: timestamp("created_at").notNull().defaultNow(),
   deleted_at: timestamp("deleted_at"),
 });

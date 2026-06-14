@@ -47,6 +47,7 @@ export { ensureShopSchema } from "./ensure-shop-schema.js";
 export { ensureShopSocialProfileSchema } from "./ensure-shop-social-profile-schema.js";
 export { ensureDeletionFeedbackSchema } from "./ensure-deletion-feedback-schema.js";
 export { ensureFacebookDataDeletionSchema } from "./ensure-facebook-data-deletion-schema.js";
+export { ensureAnnouncementCampaignsSchema } from "./ensure-announcement-campaigns-schema.js";
 export {
   ensureShopDirectoryTaxonomy,
   ensureShopDirectoryTaxonomyTables,
