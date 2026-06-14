@@ -5,8 +5,8 @@ export const DHURATA_FALAS_SLUG = "dhurata-falas" as const;
 
 export const KERKOJ_ACTIVE_LIFETIME_DAYS = 30;
 export const DHURATA_ACTIVE_LIFETIME_DAYS = 30;
-/** No practical cap — listings may include many photos. */
-export const LISTING_MAX_PHOTOS = 999;
+/** Max real photos per listing (comma-separated in image_url). */
+export const LISTING_MAX_PHOTOS = 10;
 export const KERKOJ_MAX_PHOTOS = LISTING_MAX_PHOTOS;
 export const KERKOJ_MAX_ACTIVE_PER_USER = 1;
 export const DHURATA_MAX_PHOTOS = LISTING_MAX_PHOTOS;

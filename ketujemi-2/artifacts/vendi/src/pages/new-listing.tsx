@@ -98,6 +98,7 @@ import {
   DHURATA_PLEDGE_STORAGE_KEY,
 } from "@/components/dhurata-gift-pledge";
 import { DHURATA_FALAS_SLUG, KERKOJ_POST_PATH, KERKOJ_TE_BLEJ_SLUG } from "@/lib/special-listing-categories";
+import { fillPlaceholders } from "@/lib/fill-placeholders";
 import { categoryEngine } from "@/services/CategoryEngine";
 import {
   clientValidationMessage,
@@ -389,6 +390,8 @@ export default function NewListing() {
   );
   const isKerkojCategory = postFields.isKerkoj || isKerkojPostRoute;
   const isDhurataCategory = postFields.isDhurata;
+  const maxListingPhotos = postFields.maxPhotos;
+  const atPhotoLimit = imageUrls.length >= maxListingPhotos;
   const hasBrands = brandCats.length > 0;
 
   useEffect(() => {
@@ -752,19 +755,35 @@ export default function NewListing() {
       toast({ title: t.uploadFailed, variant: "destructive" });
       return;
     }
+    const remaining = maxListingPhotos - imageUrls.length;
+    if (remaining <= 0) {
+      toast({
+        title: t.photosMaxReached,
+        description: fillPlaceholders(t.photosMaxReachedHint, { max: String(maxListingPhotos) }),
+        variant: "destructive",
+      });
+      return;
+    }
+    const filesToUpload = files.slice(0, remaining);
+    if (files.length > remaining) {
+      toast({
+        title: t.photosMaxReached,
+        description: fillPlaceholders(t.photosMaxReachedHint, { max: String(maxListingPhotos) }),
+      });
+    }
     const titleEmpty = !form.getValues("title")?.trim();
     const descEmpty = !form.getValues("description")?.trim();
     const shouldAnalyze =
       imageUrls.length === 0 &&
       (!imageAnalyzedRef.current || (titleEmpty && descEmpty));
-    const firstFileForAnalysis = shouldAnalyze ? files[0] : null;
+    const firstFileForAnalysis = shouldAnalyze ? filesToUpload[0] : null;
     setIsUploading(true);
     try {
       const urls: string[] = [];
-      for (const file of files) {
+      for (const file of filesToUpload) {
         urls.push(await imageUpload.uploadFile(file));
       }
-      setImageUrls((prev) => [...prev, ...urls]);
+      setImageUrls((prev) => [...prev, ...urls].slice(0, maxListingPhotos));
       if (firstFileForAnalysis) {
         window.setTimeout(() => {
           void analyzeUploadedImageFile(firstFileForAnalysis);
@@ -1190,9 +1209,13 @@ export default function NewListing() {
                     <Label className="text-sm font-medium">
                       {isKerkojCategory ? t.kerkojFormPhotosLbl : t.listingPhotos}{" "}
                       <span className="text-red-500">*</span>
-                      <span className="text-gray-400 font-normal ml-1">{t.listingPhotosMinHint}</span>
+                      <span className="text-gray-400 font-normal ml-1">
+                        {t.listingPhotosMinHint} {t.listingPhotosMaxHint}
+                      </span>
                     </Label>
-                    <span className="text-sm text-gray-400">{imageUrls.length}</span>
+                    <span className="text-sm text-gray-400">
+                      {imageUrls.length}/{maxListingPhotos}
+                    </span>
                   </div>
 
                   <input
@@ -1222,7 +1245,7 @@ export default function NewListing() {
                   <button
                     type="button"
                     onClick={() => uploadRef.current?.click()}
-                    disabled={isUploading || isAnalyzingImage || !imageUpload.ready}
+                    disabled={isUploading || isAnalyzingImage || !imageUpload.ready || atPhotoLimit}
                     className="w-full border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl py-12 px-6 text-center transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none min-h-[10.5rem] touch-manipulation"
                   >
                     {isUploading || isAnalyzingImage ? (
@@ -1249,7 +1272,7 @@ export default function NewListing() {
                   <button
                     type="button"
                     onClick={() => cameraPhotoRef.current?.click()}
-                    disabled={isUploading || !imageUpload.ready}
+                    disabled={isUploading || !imageUpload.ready || atPhotoLimit}
                     className="mt-2 w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 hover:border-blue-400 hover:bg-blue-50 py-3 px-4 text-sm font-semibold text-gray-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
                   >
                     <Camera size={20} className="text-blue-600 shrink-0" />

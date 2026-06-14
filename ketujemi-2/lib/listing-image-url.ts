@@ -2,6 +2,8 @@
  * Listing photos: only user uploads (Cloudinary / B2). Never stock or external placeholders.
  */
 
+import { LISTING_MAX_PHOTOS } from "./special-listing-categories";
+
 const BLOCKED_IMAGE_HOST_SUFFIXES = [
   "unsplash.com",
   "pexels.com",
@@ -80,7 +82,8 @@ export function parseListingImageUrls(imageUrl: string | null | undefined): stri
   return imageUrl
     .split(",")
     .map((s) => s.trim())
-    .filter((s) => isUserUploadedListingImageUrl(s));
+    .filter((s) => isUserUploadedListingImageUrl(s))
+    .slice(0, LISTING_MAX_PHOTOS);
 }
 
 export function primaryListingImageUrl(imageUrl: string | null | undefined): string | null {
@@ -88,12 +91,14 @@ export function primaryListingImageUrl(imageUrl: string | null | undefined): str
 }
 
 export function sanitizeListingImageUrlField(raw: string | null | undefined): string | null {
-  const urls = parseListingImageUrls(raw);
+  const urls = parseListingImageUrls(raw).slice(0, LISTING_MAX_PHOTOS);
   return urls.length > 0 ? urls.join(",") : null;
 }
 
 export function joinListingImageUrls(urls: string[]): string | null {
-  const valid = urls.filter((u) => isUserUploadedListingImageUrl(u));
+  const valid = urls
+    .filter((u) => isUserUploadedListingImageUrl(u))
+    .slice(0, LISTING_MAX_PHOTOS);
   return valid.length > 0 ? valid.join(",") : null;
 }
 

@@ -1,8 +1,10 @@
+import { LISTING_MAX_PHOTOS } from "@/lib/special-listing-categories";
+
 const DRAFT_KEY = "vendi_listing_post_draft_v2";
 const DRAFT_LOCAL_KEY = "vendi_listing_post_draft_local_v2";
 const LEGACY_IMAGES_KEY = "vendi_listing_draft_images_v1";
 const ACTIVE_SESSION_KEY = "vendi_listing_post_active_v1";
-const MAX_DRAFT_IMAGES = 12;
+const MAX_DRAFT_IMAGES = LISTING_MAX_PHOTOS;
 
 export type ListingPostDraft = {
   images: string[];
