@@ -26,7 +26,7 @@ export function AuthToolbar({ variant = "default", className }: Props) {
 
   const btnCls =
     variant === "compact"
-      ? "h-12 min-h-12 px-2.5 text-sm md:h-8 md:min-h-0 md:text-xs"
+      ? "h-9 min-h-9 px-2 text-xs md:h-8 md:min-h-0 md:text-xs"
       : "h-12 min-h-12 px-3 text-sm md:h-10 md:min-h-0";
 
   if (loading) {

@@ -216,7 +216,59 @@ export default function Listings() {
     <div className="min-h-screen bg-gray-50">
 
       <SiteHeader className="z-30">
-        <div className="flex w-full flex-col gap-3 pt-1 lg:flex-row lg:items-stretch lg:gap-4">
+        {/* Mobile: slim search + filter icon + inline stats */}
+        <div className="flex flex-col gap-1 md:hidden">
+          <form onSubmit={applyQuickSearch} className="flex items-center gap-1.5">
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+              <input
+                data-testid="input-search-listings"
+                type="search"
+                enterKeyHint="search"
+                placeholder={t.search}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="h-9 w-full touch-manipulation rounded-lg border border-gray-200 bg-gray-50 py-1.5 pl-8 pr-2 text-sm outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+              />
+            </div>
+            <button
+              type="submit"
+              data-testid="button-search-listings"
+              aria-label={t.searchBtn}
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white hover:bg-blue-700 touch-manipulation"
+            >
+              <Search size={16} aria-hidden />
+            </button>
+            <button
+              type="button"
+              data-testid="button-toggle-filters"
+              aria-label={t.filters}
+              onClick={() => setShowFilters(!showFilters)}
+              className={cn(
+                "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border touch-manipulation",
+                showFilters || hasActiveFilters
+                  ? "border-blue-600 bg-blue-600 text-white"
+                  : "border-gray-200 bg-white text-gray-600 hover:border-blue-300",
+              )}
+            >
+              <SlidersHorizontal size={16} aria-hidden />
+            </button>
+          </form>
+          <p className="truncate px-0.5 text-[10px] font-medium text-gray-500 tabular-nums" aria-live="polite">
+            {statsLoading ? (
+              <span className="inline-block h-3 w-28 animate-pulse rounded bg-gray-100" />
+            ) : (
+              <>
+                {(listingStats?.total_listings ?? data?.total ?? 0).toLocaleString()} {tx.ui_listingsStatsTotal}
+                {" · "}
+                {(listingStats?.listings_today ?? 0).toLocaleString()} {tx.ui_listingsStatsToday}
+              </>
+            )}
+          </p>
+        </div>
+
+        {/* Desktop / tablet: full search card + stats card */}
+        <div className="hidden w-full flex-col gap-3 pt-1 md:flex lg:flex-row lg:items-stretch lg:gap-4">
           <form
             onSubmit={applyQuickSearch}
             className="flex min-w-0 flex-1 flex-col gap-2 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:flex-nowrap sm:gap-2"
@@ -291,10 +343,10 @@ export default function Listings() {
         </div>
       </SiteHeader>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 md:py-6">
 
-        {/* Header row */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-5">
+        {/* Header row — desktop only (mobile uses compact header above) */}
+        <div className="mb-4 hidden flex-col gap-3 sm:mb-5 md:flex sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <h1 className="text-lg sm:text-2xl font-black text-gray-900">
               {appliedSellerUserId && Number(appliedSellerUserId) > 0

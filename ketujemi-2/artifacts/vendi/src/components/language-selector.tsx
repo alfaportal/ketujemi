@@ -9,9 +9,10 @@ type LanguageSelectorProps = {
   variant?: "on-dark" | "on-light";
   /** Tighter control for mobile header action row */
   compact?: boolean;
+  className?: string;
 };
 
-export function LanguageSelector({ variant = "on-light", compact }: LanguageSelectorProps) {
+export function LanguageSelector({ variant = "on-light", compact, className }: LanguageSelectorProps) {
   const { uiLang, setUiLang } = useMarket();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -28,7 +29,7 @@ export function LanguageSelector({ variant = "on-light", compact }: LanguageSele
   }, []);
 
   return (
-    <div ref={ref} className="relative shrink-0">
+    <div ref={ref} className={cn("relative shrink-0", className)}>
       <button
         type="button"
         data-testid="button-language-selector"
@@ -37,7 +38,7 @@ export function LanguageSelector({ variant = "on-light", compact }: LanguageSele
         onClick={() => setOpen((v) => !v)}
         className={cn(
           primaryBlueButtonClass,
-          compact ? "w-full min-w-0 justify-center gap-1 px-3 min-h-12 max-md:text-base" : "gap-1 px-4",
+          compact ? "w-full min-w-0 justify-center gap-1 px-2.5 min-h-9 max-md:text-sm" : "gap-1 px-4",
           onDark && "border border-white/25 bg-white/10 hover:bg-white/20 shadow-none",
         )}
       >
