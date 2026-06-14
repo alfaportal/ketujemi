@@ -42,4 +42,5 @@ export interface Listing {
   motor_cc_band?: string | null;
   motor_power_kw?: number | null;
   motor_transmission?: string | null;
+  seller_is_online?: boolean;
 }

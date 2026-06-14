@@ -2,6 +2,7 @@ import type { Request } from "express";
 import { and, eq, isNull } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
 import type { User } from "@workspace/db";
+import { touchUserLastActive } from "./user-last-active.js";
 
 /** Current user from signed `kj_session` cookie, or null. */
 export async function getSessionUser(req: Request): Promise<User | null> {
@@ -13,5 +14,8 @@ export async function getSessionUser(req: Request): Promise<User | null> {
     .from(usersTable)
     .where(and(eq(usersTable.id, id), isNull(usersTable.deleted_at)))
     .limit(1);
+  if (user) {
+    touchUserLastActive(user.id, user.last_active_at);
+  }
   return user ?? null;
 }

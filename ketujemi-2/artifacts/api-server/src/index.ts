@@ -23,6 +23,7 @@ import {
   ensureDeletionFeedbackSchema,
   ensureFacebookDataDeletionSchema,
   ensureAnnouncementCampaignsSchema,
+  ensureUserLastActiveSchema,
   ensureWalletSchema,
   pool,
 } from "@workspace/db";
@@ -126,6 +127,8 @@ async function startServer(): Promise<void> {
     logger.info("Facebook data deletion schema verified (facebook_data_deletion_requests)");
     await ensureAnnouncementCampaignsSchema(pool);
     logger.info("Announcement campaigns schema verified (announcement_campaigns, marketing_email_opt_out)");
+    await ensureUserLastActiveSchema(pool);
+    logger.info("User last_active_at schema verified");
     if (process.env.NODE_ENV === "production") {
       setTimeout(() => {
         void purgeInvalidListingImagesOnStartup().catch((err) => {

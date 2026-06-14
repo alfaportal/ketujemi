@@ -11,6 +11,7 @@ import {
   DeleteListingParams,
 } from "@workspace/api-zod";
 import { getSessionUser } from "../lib/session-user";
+import { isSellerOnline } from "../lib/user-last-active.js";
 import { postListingLimiter, searchLimiter } from "../lib/express-rate-limiters";
 import { canonicalSellerContactForUser, listingBelongsToUser } from "../lib/listing-ownership";
 import {
@@ -1345,7 +1346,18 @@ router.get("/listings/:id", async (req, res) => {
       return [payload];
     });
     const out = finalized[0] ?? payload;
-    res.json({ ...out, can_repost: payload.can_repost, is_owner: isOwner });
+
+    let seller_is_online = false;
+    if (row.user_id != null) {
+      const [seller] = await db
+        .select({ last_active_at: usersTable.last_active_at })
+        .from(usersTable)
+        .where(eq(usersTable.id, row.user_id))
+        .limit(1);
+      seller_is_online = isSellerOnline(seller?.last_active_at);
+    }
+
+    res.json({ ...out, can_repost: payload.can_repost, is_owner: isOwner, seller_is_online });
   } catch (err) {
     logger.error({ err, listingId: listingIdParam }, "GET /listings/:id failed");
     if (!res.headersSent) {

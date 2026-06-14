@@ -23,6 +23,8 @@ import { hasEmailDeliveryConfigured, isEmailVerificationRequired } from "../lib/
 import { isSmsAuthEnabled, SMS_AUTH_DISABLED_MESSAGE } from "../lib/sms-auth";
 import { isRecaptchaRequired, verifyRecaptchaToken } from "../lib/recaptcha-verify";
 import { assertAccountActive, isUserBanned } from "../lib/user-ban";
+import { touchUserLastActive } from "../lib/user-last-active.js";
+import { getSessionUser } from "../lib/session-user.js";
 import { getBusinessQuotaStatus } from "../lib/business-quota";
 import { isBusinessAccount } from "../lib/business-rules";
 import {
@@ -832,7 +834,18 @@ router.get("/auth/me", async (req, res) => {
     return;
   }
 
+  touchUserLastActive(user.id, user.last_active_at);
   res.json({ user: publicUser(user, { self: true }) });
+});
+
+// ─── POST /auth/activity — heartbeat for seller online status ─────────────────
+router.post("/auth/activity", async (req, res) => {
+  const user = await getSessionUser(req);
+  if (!user) {
+    res.status(401).json({ error: "Not logged in" });
+    return;
+  }
+  res.json({ ok: true });
 });
 
 // ─── GET /auth/profile/edit-session ───────────────────────────────────────────

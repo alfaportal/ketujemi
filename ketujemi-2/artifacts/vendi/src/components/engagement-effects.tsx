@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
 import { useMarket } from "@/lib/market-context";
@@ -21,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 const FIRST_LISTING_KEY = "kj_engagement_first_listing";
+const ACTIVITY_HEARTBEAT_MS = 150_000; // 2.5 min
 
 /** Global welcome toast, first-listing confetti modal, FCM registration. */
 export function EngagementEffects() {
@@ -36,6 +38,44 @@ export function EngagementEffects() {
     if (isListingFlowPath(loc)) return;
     void registerFcmTokenIfConfigured();
   }, [user?.id, loc]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    const ping = () => {
+      void fetchWithTimeout("/api/auth/activity", {
+        method: "POST",
+        credentials: "include",
+      });
+    };
+
+    const stop = () => {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+    };
+
+    const start = () => {
+      if (interval) return;
+      ping();
+      interval = setInterval(ping, ACTIVITY_HEARTBEAT_MS);
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") start();
+      else stop();
+    };
+
+    onVisibility();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

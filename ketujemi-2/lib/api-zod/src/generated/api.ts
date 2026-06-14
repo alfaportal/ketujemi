@@ -330,6 +330,7 @@ export const GetListingResponse = zod.object({
   motor_cc_band: zod.string().nullish(),
   motor_power_kw: zod.number().nullish(),
   motor_transmission: zod.string().nullish(),
+  seller_is_online: zod.boolean().optional(),
 });
 
 /**

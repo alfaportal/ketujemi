@@ -45,6 +45,7 @@ export const DE_TRANSLATIONS: Record<string, string> = {
   noPhoto: "Kein Foto",
   seller: "Verkäufer",
   privateSeller: "Privatverkäufer",
+  sellerOnline: "Online",
   callSeller: "Anrufen",
   whatsapp: "WhatsApp-Nachricht",
   share_sectionTitle: "Diese Anzeige teilen",

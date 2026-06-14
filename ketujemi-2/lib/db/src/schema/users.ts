@@ -76,6 +76,8 @@ export const usersTable = pgTable("users", {
   social_follow_notif_preference: text("social_follow_notif_preference").notNull().default("pending"),
   /** When true, user opted out of marketing / announcement emails. */
   marketing_email_opt_out: boolean("marketing_email_opt_out").notNull().default(false),
+  /** Updated when the user is active on the site (debounced). Used for seller "Online" badge. */
+  last_active_at: timestamp("last_active_at"),
   created_at: timestamp("created_at").notNull().defaultNow(),
   deleted_at: timestamp("deleted_at"),
 });
