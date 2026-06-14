@@ -1,21 +1,31 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2, Mail, Send } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
+import { fillPlaceholders } from "@/lib/app-extra-i18n";
 import {
   getAdminAnnouncementCampaigns,
+  getAdminAnnouncementEligibleUsers,
   getAdminAnnouncementRecipientCount,
   sendAdminAnnouncement,
   type AdminAnnouncementCampaign,
+  type AdminAnnouncementEligibleUser,
 } from "@/lib/admin-api";
+
+type RecipientMode = "all" | "selected";
 
 export default function AdminAnnouncements() {
   const { t } = useMarket();
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [subjectFieldReady, setSubjectFieldReady] = useState(false);
+  const [recipientMode, setRecipientMode] = useState<RecipientMode>("all");
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<number>>(new Set());
+  const [userSearch, setUserSearch] = useState("");
+  const [eligibleUsers, setEligibleUsers] = useState<AdminAnnouncementEligibleUser[]>([]);
   const [recipientCount, setRecipientCount] = useState<number | null>(null);
   const [campaigns, setCampaigns] = useState<AdminAnnouncementCampaign[]>([]);
   const [loading, setLoading] = useState(true);
+  const [usersLoading, setUsersLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -36,11 +46,28 @@ export default function AdminAnnouncements() {
     }
   }, []);
 
+  const loadEligibleUsers = useCallback(async () => {
+    setUsersLoading(true);
+    try {
+      const res = await getAdminAnnouncementEligibleUsers();
+      setEligibleUsers(res.users);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Load failed");
+    } finally {
+      setUsersLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
-  // Browsers sometimes autofill admin login email into the subject field (label contained "email").
+  useEffect(() => {
+    if (recipientMode === "selected" && eligibleUsers.length === 0 && !usersLoading) {
+      void loadEligibleUsers();
+    }
+  }, [recipientMode, eligibleUsers.length, usersLoading, loadEligibleUsers]);
+
   useEffect(() => {
     if (subjectFieldReady) return;
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(subject.trim())) {
@@ -48,18 +75,43 @@ export default function AdminAnnouncements() {
     }
   }, [subject, subjectFieldReady]);
 
+  const filteredUsers = useMemo(() => {
+    const q = userSearch.trim().toLowerCase();
+    if (!q) return eligibleUsers;
+    return eligibleUsers.filter((u) => {
+      const name = (u.display_name ?? "").toLowerCase();
+      const email = u.email.toLowerCase();
+      return name.includes(q) || email.includes(q);
+    });
+  }, [eligibleUsers, userSearch]);
+
+  const sendCount =
+    recipientMode === "all" ? (recipientCount ?? 0) : selectedUserIds.size;
+
+  function toggleUser(id: number) {
+    setSelectedUserIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
   async function handleSend() {
     if (!subject.trim() || !body.trim()) {
       setError(t.adm_ann_required);
       return;
     }
-    const n = recipientCount ?? 0;
-    if (n === 0) {
+    if (recipientMode === "selected" && selectedUserIds.size === 0) {
+      setError(t.adm_ann_select_recipients);
+      return;
+    }
+    if (sendCount === 0) {
       setError(t.adm_ann_no_recipients);
       return;
     }
     const ok = window.confirm(
-      t.adm_ann_confirm.replace("{count}", String(n)),
+      fillPlaceholders(t.adm_ann_confirm, { count: String(sendCount) }),
     );
     if (!ok) return;
 
@@ -67,10 +119,21 @@ export default function AdminAnnouncements() {
     setError("");
     setSuccess("");
     try {
-      const res = await sendAdminAnnouncement({ subject: subject.trim(), body: body.trim() });
-      setSuccess(res.message ?? t.adm_ann_sent.replace("{count}", String(res.recipient_count)));
+      const res = await sendAdminAnnouncement({
+        subject: subject.trim(),
+        body: body.trim(),
+        ...(recipientMode === "selected"
+          ? { recipient_user_ids: [...selectedUserIds].map(String) }
+          : {}),
+      });
+      setSuccess(
+        res.message ?? fillPlaceholders(t.adm_ann_sent, { count: String(res.recipient_count) }),
+      );
       setSubject("");
       setBody("");
+      setSelectedUserIds(new Set());
+      setRecipientMode("all");
+      setUserSearch("");
       await refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : t.adm_ann_send_fail);
@@ -88,17 +151,6 @@ export default function AdminAnnouncements() {
         </h2>
         <p className="text-sm text-gray-500 mt-1">{t.adm_ann_intro}</p>
       </div>
-
-      {loading ? (
-        <div className="flex items-center gap-2 text-gray-500 text-sm">
-          <Loader2 size={16} className="animate-spin" />
-          {t.adm_ann_loading}
-        </div>
-      ) : (
-        <p className="text-sm font-medium text-blue-800 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-          {t.adm_ann_recipients.replace("{count}", String(recipientCount ?? 0))}
-        </p>
-      )}
 
       <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4 shadow-sm">
         <div>
@@ -143,11 +195,95 @@ export default function AdminAnnouncements() {
           <p className="text-xs text-gray-400 mt-1">{t.adm_ann_body_hint}</p>
         </div>
 
+        <div className="rounded-xl border border-gray-100 bg-gray-50/60 p-4 space-y-3">
+          <p className="text-sm font-semibold text-gray-800">{t.adm_ann_recipients_section}</p>
+
+          <label className="flex items-start gap-2.5 cursor-pointer">
+            <input
+              type="radio"
+              name="ann-recipient-mode"
+              checked={recipientMode === "all"}
+              onChange={() => setRecipientMode("all")}
+              className="mt-1"
+            />
+            <span className="text-sm text-gray-700">
+              {loading
+                ? t.adm_ann_loading
+                : fillPlaceholders(t.adm_ann_mode_all, {
+                    count: String(recipientCount ?? 0),
+                  })}
+            </span>
+          </label>
+
+          <label className="flex items-start gap-2.5 cursor-pointer">
+            <input
+              type="radio"
+              name="ann-recipient-mode"
+              checked={recipientMode === "selected"}
+              onChange={() => setRecipientMode("selected")}
+              className="mt-1"
+            />
+            <span className="text-sm text-gray-700">{t.adm_ann_mode_selected}</span>
+          </label>
+
+          {recipientMode === "selected" && (
+            <div className="space-y-2 pt-1">
+              <p className="text-sm font-medium text-blue-800">
+                {fillPlaceholders(t.adm_ann_selected_count, {
+                  count: String(selectedUserIds.size),
+                })}
+              </p>
+              <input
+                type="search"
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                placeholder={t.adm_ann_search_users}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm bg-white"
+              />
+              <div className="max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white divide-y divide-gray-50">
+                {usersLoading && (
+                  <p className="p-4 text-sm text-gray-400 flex items-center gap-2">
+                    <Loader2 size={14} className="animate-spin" />
+                    {t.adm_ann_loading}
+                  </p>
+                )}
+                {!usersLoading && filteredUsers.length === 0 && (
+                  <p className="p-4 text-sm text-gray-400">{t.adm_ann_no_users_match}</p>
+                )}
+                {!usersLoading &&
+                  filteredUsers.map((u) => (
+                    <label
+                      key={u.id}
+                      className="flex items-start gap-2.5 px-3 py-2.5 hover:bg-gray-50 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedUserIds.has(u.id)}
+                        onChange={() => toggleUser(u.id)}
+                        className="mt-0.5"
+                      />
+                      <span className="text-sm min-w-0">
+                        <span className="font-medium text-gray-900 block truncate">
+                          {u.display_name || u.email}
+                        </span>
+                        <span className="text-gray-500 text-xs block truncate">{u.email}</span>
+                      </span>
+                    </label>
+                  ))}
+              </div>
+            </div>
+          )}
+        </div>
+
         {error ? (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">{error}</p>
+          <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+            {error}
+          </p>
         ) : null}
         {success ? (
-          <p className="text-sm text-green-700 bg-green-50 border border-green-100 rounded-xl px-3 py-2">{success}</p>
+          <p className="text-sm text-green-700 bg-green-50 border border-green-100 rounded-xl px-3 py-2">
+            {success}
+          </p>
         ) : null}
 
         <button
@@ -174,7 +310,14 @@ export default function AdminAnnouncements() {
                 <div className="font-medium text-gray-900">{c.subject}</div>
                 <div className="text-gray-500 mt-0.5 flex flex-wrap gap-x-3 gap-y-1">
                   <span>{new Date(c.created_at).toLocaleString()}</span>
-                  <span>{c.recipient_count} {t.adm_ann_recipients_short}</span>
+                  <span>
+                    {c.recipient_count} {t.adm_ann_recipients_short}
+                  </span>
+                  <span className="text-gray-400">
+                    {c.recipient_mode === "selected"
+                      ? t.adm_ann_history_mode_selected
+                      : t.adm_ann_history_mode_all}
+                  </span>
                   <span
                     className={
                       c.status === "sent"

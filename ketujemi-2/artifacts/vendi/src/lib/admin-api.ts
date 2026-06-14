@@ -963,13 +963,26 @@ export type AdminAnnouncementCampaign = {
   id: number;
   subject: string;
   recipient_count: number;
+  recipient_mode: "all" | "selected";
   status: string;
   sent_by_admin_id: number | null;
   created_at: string;
 };
 
+export type AdminAnnouncementEligibleUser = {
+  id: number;
+  display_name: string | null;
+  email: string;
+};
+
 export async function getAdminAnnouncementRecipientCount(): Promise<{ count: number }> {
   return request<{ count: number }>("/announcements/recipient-count");
+}
+
+export async function getAdminAnnouncementEligibleUsers(): Promise<{
+  users: AdminAnnouncementEligibleUser[];
+}> {
+  return request<{ users: AdminAnnouncementEligibleUser[] }>("/announcements/recipients");
 }
 
 export async function getAdminAnnouncementCampaigns(): Promise<{
@@ -981,10 +994,12 @@ export async function getAdminAnnouncementCampaigns(): Promise<{
 export async function sendAdminAnnouncement(payload: {
   subject: string;
   body: string;
+  recipient_user_ids?: string[];
 }): Promise<{
   ok: boolean;
   campaign_id: number;
   recipient_count: number;
+  recipient_mode: "all" | "selected";
   status: string;
   message?: string;
 }> {

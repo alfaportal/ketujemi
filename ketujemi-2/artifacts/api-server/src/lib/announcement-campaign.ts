@@ -1,5 +1,10 @@
-import { and, desc, eq, isNotNull, isNull } from "drizzle-orm";
-import { db, usersTable, announcementCampaignsTable } from "@workspace/db";
+import { and, desc, eq, inArray, isNotNull, isNull } from "drizzle-orm";
+import {
+  db,
+  usersTable,
+  announcementCampaignsTable,
+  type AnnouncementRecipientMode,
+} from "@workspace/db";
 import { getPlatformAdminUser } from "./admin-listing-on-behalf.js";
 import { announcementBodyToHtml, buildAnnouncementEmailHtml } from "./announcement-email.js";
 import {
@@ -43,18 +48,49 @@ export async function countAnnouncementRecipients(): Promise<number> {
   return rows.length;
 }
 
-async function listAnnouncementRecipients(): Promise<
-  { id: number; email: string; locale: AnnouncementLocale }[]
-> {
+export type AnnouncementEligibleUser = {
+  id: number;
+  display_name: string | null;
+  email: string;
+};
+
+export async function listAnnouncementEligibleUsers(): Promise<AnnouncementEligibleUser[]> {
   const rows = await db
     .select({
       id: usersTable.id,
+      display_name: usersTable.display_name,
       email: usersTable.email,
-      phone_e164_digits: usersTable.phone_e164_digits,
     })
     .from(usersTable)
-    .where(recipientConditions);
+    .where(recipientConditions)
+    .orderBy(usersTable.display_name);
 
+  const out: AnnouncementEligibleUser[] = [];
+  for (const row of rows) {
+    const email = row.email?.trim().toLowerCase();
+    if (!email || !email.includes("@")) continue;
+    out.push({
+      id: row.id,
+      display_name: row.display_name?.trim() || null,
+      email,
+    });
+  }
+  return out;
+}
+
+export function parseAnnouncementRecipientUserIds(raw: unknown): number[] {
+  if (!Array.isArray(raw)) return [];
+  const ids = new Set<number>();
+  for (const item of raw) {
+    const n = typeof item === "string" ? parseInt(item, 10) : Number(item);
+    if (Number.isFinite(n) && n > 0) ids.add(Math.floor(n));
+  }
+  return [...ids];
+}
+
+function rowsToRecipients(
+  rows: { id: number; email: string | null; phone_e164_digits: string | null }[],
+): { id: number; email: string; locale: AnnouncementLocale }[] {
   const out: { id: number; email: string; locale: AnnouncementLocale }[] = [];
   for (const row of rows) {
     const email = row.email?.trim().toLowerCase();
@@ -66,6 +102,35 @@ async function listAnnouncementRecipients(): Promise<
     });
   }
   return out;
+}
+
+async function listAnnouncementRecipients(): Promise<
+  { id: number; email: string; locale: AnnouncementLocale }[]
+> {
+  const rows = await db
+    .select({
+      id: usersTable.id,
+      email: usersTable.email,
+      phone_e164_digits: usersTable.phone_e164_digits,
+    })
+    .from(usersTable)
+    .where(recipientConditions);
+  return rowsToRecipients(rows);
+}
+
+async function listAnnouncementRecipientsByIds(
+  userIds: number[],
+): Promise<{ id: number; email: string; locale: AnnouncementLocale }[]> {
+  if (userIds.length === 0) return [];
+  const rows = await db
+    .select({
+      id: usersTable.id,
+      email: usersTable.email,
+      phone_e164_digits: usersTable.phone_e164_digits,
+    })
+    .from(usersTable)
+    .where(and(recipientConditions, inArray(usersTable.id, userIds)));
+  return rowsToRecipients(rows);
 }
 
 async function dispatchAnnouncementEmail(opts: {
@@ -91,7 +156,13 @@ async function dispatchAnnouncementEmail(opts: {
 export async function startAnnouncementCampaign(
   subject: string,
   body: string,
-): Promise<{ campaignId: number; recipientCount: number; status: string }> {
+  recipientUserIds?: number[],
+): Promise<{
+  campaignId: number;
+  recipientCount: number;
+  recipientMode: AnnouncementRecipientMode;
+  status: string;
+}> {
   const err = validateAnnouncementInput(subject, body);
   if (err) throw new Error(err);
 
@@ -99,7 +170,19 @@ export async function startAnnouncementCampaign(
     throw new Error("Email is not configured on the server");
   }
 
-  const recipients = await listAnnouncementRecipients();
+  const selectedIds = recipientUserIds?.filter((id) => id > 0) ?? [];
+  const recipientMode: AnnouncementRecipientMode =
+    selectedIds.length > 0 ? "selected" : "all";
+
+  const recipients =
+    recipientMode === "selected"
+      ? await listAnnouncementRecipientsByIds(selectedIds)
+      : await listAnnouncementRecipients();
+
+  if (recipientMode === "selected" && recipients.length === 0) {
+    throw new Error("No eligible recipients for the selected user IDs");
+  }
+
   const bodyHtml = announcementBodyToHtml(body.trim());
   const adminUser = await getPlatformAdminUser();
 
@@ -110,11 +193,17 @@ export async function startAnnouncementCampaign(
       body_html: bodyHtml,
       sent_by_admin_id: adminUser?.id ?? null,
       recipient_count: recipients.length,
+      recipient_mode: recipientMode,
       status: "sending",
     })
     .returning();
 
   const campaignId = campaign!.id;
+
+  logger.info(
+    { campaignId, recipientMode, recipientCount: recipients.length },
+    "announcement campaign started",
+  );
 
   void processAnnouncementCampaign(campaignId, subject.trim(), bodyHtml, recipients).catch(
     (e) => {
@@ -125,6 +214,7 @@ export async function startAnnouncementCampaign(
   return {
     campaignId,
     recipientCount: recipients.length,
+    recipientMode,
     status: "sending",
   };
 }
