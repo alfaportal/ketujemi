@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { getAdminListings, updateAdminListing, deleteAdminListing, type AdminListing } from "@/lib/admin-api";
 import {
-  Search, Star, StarOff, Trash2, Pencil, X, Check, RefreshCw, ChevronLeft, ChevronRight, Plus,
+  Search, Star, StarOff, Trash2, Pencil, RefreshCw, ChevronLeft, ChevronRight, Plus,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useMarket } from "@/lib/market-context";
@@ -23,14 +23,6 @@ function Badge({ children, color = "gray" }: { children: React.ReactNode; color?
   );
 }
 
-interface EditState {
-  id: number;
-  title: string;
-  price: string;
-  location: string;
-  condition: string;
-}
-
 export default function AdminListings() {
   const { t, market } = useMarket();
   const [listings, setListings] = useState<AdminListing[]>([]);
@@ -39,7 +31,6 @@ export default function AdminListings() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [editing, setEditing] = useState<EditState | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const PAGE_SIZE = 20;
 
@@ -76,22 +67,6 @@ export default function AdminListings() {
     fetchListings();
   };
 
-  const startEdit = (l: AdminListing) => {
-    setEditing({ id: l.id, title: l.title, price: String(l.price), location: l.location, condition: l.condition });
-  };
-
-  const saveEdit = async () => {
-    if (!editing) return;
-    await updateAdminListing(editing.id, {
-      title: editing.title,
-      price: Number(editing.price),
-      location: editing.location,
-      condition: editing.condition,
-    });
-    setEditing(null);
-    fetchListings();
-  };
-
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   const conditionColor: Record<string, string> = {
@@ -107,8 +82,6 @@ export default function AdminListings() {
       default: return condition;
     }
   }
-
-  const condOptions = ["New", "Good", "Used", "Damaged"] as const;
 
   return (
     <div className="space-y-4">
@@ -226,14 +199,13 @@ export default function AdminListings() {
                         >
                           {l.is_featured ? <StarOff size={14} /> : <Star size={14} />}
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => startEdit(l)}
-                          className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors"
-                          title={t.adm_tip_edit}
+                        <a
+                          href={`/listings/new?adminEdit=${l.id}`}
+                          className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors inline-flex"
+                          title={t.adm_tip_edit_full as string}
                         >
                           <Pencil size={14} />
-                        </button>
+                        </a>
                         <button
                           type="button"
                           onClick={() => setConfirmDelete(l.id)}
@@ -281,73 +253,6 @@ export default function AdminListings() {
           </div>
         )}
       </div>
-
-      {/* Edit modal */}
-      {editing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-bold">{fillPlaceholders(t.adm_modal_edit, { id: `#${editing.id}` })}</h3>
-              <button type="button" onClick={() => setEditing(null)} className="p-1.5 rounded-lg hover:bg-gray-100">
-                <X size={18} />
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="adm-edit-title" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">{t.adm_lbl_title}</label>
-                <input
-                  id="adm-edit-title"
-                  value={editing.title}
-                  onChange={(e) => setEditing({ ...editing, title: e.target.value })}
-                  className="w-full min-h-12 border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="adm-edit-price" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">{t.adm_lbl_priceEuro}</label>
-                  <input
-                    id="adm-edit-price"
-                    type="number"
-                    value={editing.price}
-                    onChange={(e) => setEditing({ ...editing, price: e.target.value })}
-                    className="w-full min-h-12 border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="adm-edit-cond" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">{t.adm_lbl_condition}</label>
-                  <select
-                    id="adm-edit-cond"
-                    value={editing.condition}
-                    onChange={(e) => setEditing({ ...editing, condition: e.target.value })}
-                    className="w-full min-h-12 border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                  >
-                    {condOptions.map((c) => (
-                      <option key={c} value={c}>{conditionApiLabel(c)}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label htmlFor="adm-edit-loc" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">{t.adm_lbl_location}</label>
-                <input
-                  id="adm-edit-loc"
-                  value={editing.location}
-                  onChange={(e) => setEditing({ ...editing, location: e.target.value })}
-                  className="w-full min-h-12 border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
-                />
-              </div>
-            </div>
-            <div className="flex gap-2 mt-6">
-              <button type="button" onClick={() => setEditing(null)} className="flex-1 min-h-12 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
-                {t.adm_btn_cancel}
-              </button>
-              <button type="button" onClick={saveEdit} className="flex-1 min-h-12 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors">
-                {t.saveChanges}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Delete confirm */}
       {confirmDelete !== null && (

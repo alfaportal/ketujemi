@@ -133,6 +133,10 @@ export function getAdminListings(params?: { search?: string; category_id?: numbe
   return request<{ total: number; page: number; listings: AdminListing[] }>(`/listings?${qs}`);
 }
 
+export function getAdminListing(id: number) {
+  return request<AdminListing>(`/listings/${id}`);
+}
+
 export function createAdminListing(data: Partial<AdminListing> & Pick<AdminListing, "title" | "description" | "price" | "category_id" | "location" | "seller_name" | "seller_phone" | "condition">) {
   return request<AdminListing>("/listings", {
     method: "POST",
@@ -513,8 +517,29 @@ export interface AdminListing {
   views: number;
   is_featured: boolean;
   image_url?: string | null;
+  video_url?: string | null;
+  status?: string;
+  moderation_status?: string;
+  vehicle_year?: number | null;
+  vehicle_mileage_km?: number | null;
+  vehicle_fuel?: string | null;
+  vehicle_body_type?: string | null;
+  vehicle_model?: string | null;
+  truck_type_slug?: string | null;
+  truck_axle_config?: string | null;
+  truck_gvw_band?: string | null;
+  truck_euro_standard?: string | null;
+  property_txn?: string | null;
+  property_subtype?: string | null;
+  property_sqm?: number | null;
+  property_floor?: string | null;
+  motor_type_slug?: string | null;
+  motor_cc_band?: string | null;
+  motor_power_kw?: number | null;
+  motor_transmission?: string | null;
   created_at: string;
   expires_at?: string | null;
+  listed_at?: string | null;
 }
 
 export interface AdminSeller {

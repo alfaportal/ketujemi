@@ -53,7 +53,7 @@ function isCategoryUnderParent(
 import { ListingCountryPicker } from "@/components/listing-country-picker";
 import { ListingCategorySuggest } from "@/components/listing-category-suggest";
 import { ListingDescriptionHelper } from "@/components/listing-description-helper";
-import { joinListingImageUrls } from "@/lib/listing-images";
+import { joinListingImageUrls, parseListingImageUrls } from "@/lib/listing-images";
 import { type ListingImageAnalysis, fileToVisionBase64 } from "@/lib/listing-image-vision";
 import { listingPhotoAnalyzeFailureToast } from "@/lib/listing-photo-analyze-toast";
 import { videoFileToVisionBase64 } from "@/lib/listing-video-frame";
@@ -115,7 +115,8 @@ import { engagementCopyForUiLang } from "@/lib/engagement-i18n";
 import { queueFirstListingCelebration } from "@/components/engagement-effects";
 import { staticPagePaths } from "@/lib/static-page-paths";
 import { buildNewListingSchema, type NewListingFormData } from "@/lib/listing-form-schema";
-import { createAdminListing, isAdminLoggedIn, adminAuthHeaders } from "@/lib/admin-api";
+import { createAdminListing, getAdminListing, updateAdminListing, isAdminLoggedIn, adminAuthHeaders } from "@/lib/admin-api";
+import { adminListingToFormPrefill } from "@/lib/admin-listing-form-prefill";
 type FormData = NewListingFormData;
 
 function userHasSellerPhone(user: {
@@ -185,6 +186,16 @@ export default function NewListing() {
     const params = new URLSearchParams(window.location.search);
     return params.get("adminPost") === "1" && isAdminLoggedIn();
   }, [pathname]);
+  const adminEditId = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get("adminEdit");
+    if (!raw || !isAdminLoggedIn()) return null;
+    const id = Number(raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }, [pathname]);
+  const isAdminEditMode = adminEditId != null;
+  const isAdminListingMode = isAdminPostMode || isAdminEditMode;
   const isDhurataPostRoute = pathname === "/listings/new/dhurata-falas";
   const isKerkojPostRoute = pathname === KERKOJ_POST_PATH;
   const skipListingImageAutofill = isDhurataPostRoute || isKerkojPostRoute;
@@ -226,7 +237,7 @@ export default function NewListing() {
   const uploadRef = useRef<HTMLInputElement>(null);
   const cameraPhotoRef = useRef<HTMLInputElement>(null);
   const cameraVideoRef = useRef<HTMLInputElement>(null);
-  const imageUpload = useListingImageUpload({ adminPost: isAdminPostMode });
+  const imageUpload = useListingImageUpload({ adminPost: isAdminListingMode });
   const [videoUrl, setVideoUrl] = useState<string | null>(() => readListingPostDraft()?.videoUrl ?? null);
   const [photoUploadKey, setPhotoUploadKey] = useState(0);
   const { showRecoveryBanner, dismissRecovery } = useListingPostGuard({
@@ -353,6 +364,12 @@ export default function NewListing() {
   const watchDescription = useWatch({ control: form.control, name: "description" }) ?? "";
   const watchPrice = useWatch({ control: form.control, name: "price" }) ?? 0;
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [adminEditLoading, setAdminEditLoading] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const raw = new URLSearchParams(window.location.search).get("adminEdit");
+    return !!(raw && isAdminLoggedIn());
+  });
+  const [adminEditViews, setAdminEditViews] = useState<number | null>(null);
   const [postBlockMessage, setPostBlockMessage] = useState<string | null>(null);
   const postBlockRef = useRef<HTMLDivElement>(null);
   const postRefusedTitle =
@@ -473,7 +490,7 @@ export default function NewListing() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(isAdminPostMode ? adminAuthHeaders() : {}),
+          ...(isAdminListingMode ? adminAuthHeaders() : {}),
         },
         credentials: "include",
         body: JSON.stringify({
@@ -509,7 +526,7 @@ export default function NewListing() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [parentCatId, watchTitle, watchDescription, suggestLang, allCategories, form, isAdminPostMode]);
+  }, [parentCatId, watchTitle, watchDescription, suggestLang, allCategories, form, isAdminListingMode]);
 
   useEffect(() => {
     if (isKerkojCategory || isDhurataCategory) {
@@ -534,11 +551,11 @@ export default function NewListing() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (isAdminPostMode) return;
+    if (isAdminListingMode) return;
     if (!user && imageUrls.length === 0 && !videoUrl) {
       setLocation(loginUrlWithReturn(pathname || "/listings/new"));
     }
-  }, [authLoading, user, setLocation, pathname, imageUrls.length, videoUrl, isAdminPostMode]);
+  }, [authLoading, user, setLocation, pathname, imageUrls.length, videoUrl, isAdminListingMode]);
 
   useEffect(() => {
     if (!allCategories || !isDhurataPostRoute) return;
@@ -570,7 +587,7 @@ export default function NewListing() {
   }, []);
 
   useEffect(() => {
-    if (!activeUser || isAdminPostMode) return;
+    if (!activeUser || isAdminListingMode) return;
     const { seller_name, seller_phone } = sellerContactFromUser(activeUser);
     if (seller_name && !form.getValues("seller_name")?.trim()) {
       form.setValue("seller_name", seller_name);
@@ -581,7 +598,41 @@ export default function NewListing() {
     if (activeUser.email && !form.getValues("xSellerEmail")?.trim()) {
       form.setValue("xSellerEmail", activeUser.email);
     }
-  }, [activeUser, form, isAdminPostMode]);
+  }, [activeUser, form, isAdminListingMode]);
+
+  useEffect(() => {
+    if (!adminEditId || !allCategories?.length) return;
+    let cancelled = false;
+    setAdminEditLoading(true);
+    clearListingPostDraft();
+    void getAdminListing(adminEditId)
+      .then((row) => {
+        if (cancelled) return;
+        const prefill = adminListingToFormPrefill(
+          row,
+          allCategories as Array<{ id: number; parent_id?: number | null }>,
+        );
+        skipCategoryCascadeRef.current = true;
+        skipBrandCascadeRef.current = true;
+        form.reset({
+          ...form.getValues(),
+          ...prefill,
+        } as FormData);
+        setImageUrls(parseListingImageUrls(row.image_url));
+        setVideoUrl(row.video_url ?? null);
+        setAdminEditViews(row.views);
+        setAdminEditLoading(false);
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        refusePost(e instanceof Error ? e.message : (tx.adm_edit_err_load ?? t.postError));
+        setAdminEditLoading(false);
+        setLocation("/admin");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [adminEditId, allCategories, form, setLocation, refusePost, tx.adm_edit_err_load, t.postError, setImageUrls]);
 
   const applyImageAnalysis = useCallback(
     (analysis: ListingImageAnalysis): "full" | "partial" | "none" => {
@@ -653,7 +704,7 @@ export default function NewListing() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            ...(isAdminPostMode ? adminAuthHeaders() : {}),
+            ...(isAdminListingMode ? adminAuthHeaders() : {}),
           },
           credentials: "include",
           body: JSON.stringify({
@@ -696,7 +747,7 @@ export default function NewListing() {
       toast(fail);
       return false;
     },
-    [applyImageAnalysis, skipListingImageAutofill, listingLang, myShop, toast, tx, isAdminPostMode, t.photoAnalyzeCategoryPartial, t.photoAnalyzeFailedHint],
+    [applyImageAnalysis, skipListingImageAutofill, listingLang, myShop, toast, tx, isAdminListingMode, t.photoAnalyzeCategoryPartial, t.photoAnalyzeFailedHint],
   );
 
   const analyzeUploadedImageFile = useCallback(
@@ -870,7 +921,7 @@ export default function NewListing() {
   };
 
   const onSubmit = async (data: FormData) => {
-    if (!activeUser && !isAdminPostMode) {
+    if (!activeUser && !isAdminListingMode) {
       setLocation(loginUrlWithReturn(pathname || "/listings/new"));
       return;
     }
@@ -980,7 +1031,7 @@ export default function NewListing() {
     const formName = listingData.seller_name?.trim() ?? "";
     const formPhone = listingData.seller_phone?.trim() ?? "";
 
-    if (activeUser && userNeedsSellerProfile(activeUser) && !isAdminPostMode) {
+    if (activeUser && userNeedsSellerProfile(activeUser) && !isAdminListingMode) {
       setIsSubmitting(true);
       try {
         const bootRes = await fetchWithTimeout("/api/auth/profile/seller-bootstrap", {
@@ -1010,7 +1061,7 @@ export default function NewListing() {
     }
 
     const profileContact = activeUser ? sellerContactFromUser(activeUser) : { seller_name: "", seller_phone: "" };
-    const contact = isAdminPostMode
+    const contact = isAdminListingMode
       ? { seller_name: formName, seller_phone: formPhone }
       : {
           seller_name: formName || profileContact.seller_name,
@@ -1036,6 +1087,36 @@ export default function NewListing() {
     };
 
     setIsSubmitting(true);
+
+    if (isAdminEditMode && adminEditId) {
+      try {
+        await updateAdminListing(adminEditId, {
+          title: String(payload.title),
+          description: String(payload.description),
+          price: Number(payload.price) || 0,
+          category_id: Number(payload.category_id),
+          location: String(payload.location),
+          seller_name: contact.seller_name,
+          seller_phone: contact.seller_phone,
+          condition: String(payload.condition),
+          image_url: payload.image_url as string | undefined,
+          video_url: payload.video_url as string | undefined,
+          views: adminEditViews ?? undefined,
+          ...(validation.payloadExtras as Record<string, unknown>),
+        });
+        queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetRecentListingsQueryKey() });
+        clearListingPostDraft();
+        clearListingPostSessionActive();
+        toast({ title: tx.adm_edit_success ?? "Shpallja u përditësua." });
+        setLocation("/admin");
+      } catch (e) {
+        refusePost(e instanceof Error ? e.message : (tx.adm_post_err_generic ?? t.postError));
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
 
     if (isAdminPostMode) {
       try {
@@ -1123,18 +1204,26 @@ export default function NewListing() {
     );
   }
 
-  const canEditSellerPhone = isAdminPostMode || !activeUser || !userHasSellerPhone(activeUser);
+  if (adminEditLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-blue-600" aria-hidden />
+      </div>
+    );
+  }
+
+  const canEditSellerPhone = isAdminListingMode || !activeUser || !userHasSellerPhone(activeUser);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {userNeedsSellerProfile(activeUser) && !isAdminPostMode && <SellerProfileGate onReady={() => undefined} />}
+      {userNeedsSellerProfile(activeUser) && !isAdminListingMode && <SellerProfileGate onReady={() => undefined} />}
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">
         <MobileSafeTopSpacer />
         <div className="max-w-2xl mx-auto px-4 min-h-[3.75rem] flex items-center gap-4 py-2">
           <button
             data-testid="button-back"
-            onClick={() => setLocation(isAdminPostMode ? "/admin" : "/listings")}
+            onClick={() => setLocation(isAdminListingMode ? "/admin" : "/listings")}
             className="flex items-center gap-1.5 text-sm font-medium rounded-lg text-gray-500 hover:text-gray-900 transition-colors touch-manipulation min-h-12 min-w-[2.75rem] justify-center px-2 -mx-2"
           >
             <ArrowLeft size={18} />
@@ -1142,11 +1231,13 @@ export default function NewListing() {
           </button>
           <div className="flex-1 text-center">
             <span className="font-bold text-lg text-gray-900">
-              {isAdminPostMode
-                ? (tx.adm_post_title ?? t.postTitle)
-                : isKerkojCategory
-                  ? t.kerkojFormPostTitle
-                  : t.postTitle}
+              {isAdminEditMode
+                ? (tx.adm_edit_title ?? "Ndrysho shpalljen (admin)")
+                : isAdminPostMode
+                  ? (tx.adm_post_title ?? t.postTitle)
+                  : isKerkojCategory
+                    ? t.kerkojFormPostTitle
+                    : t.postTitle}
             </span>
           </div>
           <AuthToolbar variant="compact" />
@@ -1160,13 +1251,37 @@ export default function NewListing() {
             onRestore={restoreDraftMedia}
           />
         ) : null}
-        {isAdminPostMode ? (
-          <div className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-950 leading-relaxed">
-            <p className="font-bold">{tx.ui_adminOnBehalfTitle}</p>
-            <p className="mt-1">{tx.ui_adminOnBehalfBody}</p>
+        {isAdminListingMode ? (
+          <div className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-950 leading-relaxed space-y-2">
+            <div>
+              <p className="font-bold">{tx.ui_adminOnBehalfTitle}</p>
+              <p className="mt-1">
+                {isAdminEditMode
+                  ? (tx.adm_edit_intro ?? "Ndrysho të gjitha fushat — kategoria, foto, përshkrim, shitësi, çmimi.")
+                  : tx.ui_adminOnBehalfBody}
+              </p>
+            </div>
+            {isAdminEditMode && adminEditViews != null ? (
+              <div className="flex items-center gap-2 pt-1 border-t border-violet-200/80">
+                <Label htmlFor="adm-edit-views" className="text-xs font-semibold shrink-0">
+                  {tx.adm_edit_views_lbl ?? "Shikime"}
+                </Label>
+                <Input
+                  id="adm-edit-views"
+                  type="number"
+                  min={0}
+                  className="h-9 max-w-[8rem] bg-white"
+                  value={adminEditViews}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    setAdminEditViews(Number.isFinite(v) && v >= 0 ? Math.floor(v) : 0);
+                  }}
+                />
+              </div>
+            ) : null}
           </div>
         ) : null}
-        {!isAdminPostMode && !activeUser && !authLoading ? (
+        {!isAdminListingMode && !activeUser && !authLoading ? (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 leading-relaxed">
             Duhet të hysh për të postuar shpalljen.{" "}
             <Link
@@ -1439,7 +1554,7 @@ export default function NewListing() {
                 form.setValue("category_id", s.category_id);
                 form.setValue("brand_category_id", s.brand_category_id ?? 0);
               }}
-              adminPostMode={isAdminPostMode}
+              adminPostMode={isAdminListingMode}
             />
 
             {/* ── 2. Category ── */}
@@ -1873,7 +1988,7 @@ export default function NewListing() {
                         <ListingDescriptionHelper
                           description={field.value ?? ""}
                           onApplyDescription={(next) => field.onChange(next)}
-                          adminPostMode={isAdminPostMode}
+                          adminPostMode={isAdminListingMode}
                         />
                       ) : null}
                     </div>
@@ -2018,15 +2133,15 @@ export default function NewListing() {
                         <Input
                           data-testid="input-seller-name"
                           placeholder="Arben Krasniqi"
-                          readOnly={!!activeUser && !isAdminPostMode}
-                          className={activeUser && !isAdminPostMode ? "bg-gray-50 cursor-not-allowed" : undefined}
+                          readOnly={!!activeUser && !isAdminListingMode}
+                          className={activeUser && !isAdminListingMode ? "bg-gray-50 cursor-not-allowed" : undefined}
                           {...field}
                         />
                       </FormControl>
-                      {!isAdminPostMode && activeUser ? (
+                      {!isAdminListingMode && activeUser ? (
                         <p className="text-xs text-gray-500">{tx.ui_sellerNameProfileHint}</p>
                       ) : null}
-                      {isAdminPostMode ? (
+                      {isAdminListingMode ? (
                         <p className="text-xs text-violet-700">{tx.ui_adminOnBehalfNameHint}</p>
                       ) : null}
                       <FormMessage />
@@ -2048,7 +2163,7 @@ export default function NewListing() {
                           {...field}
                         />
                       </FormControl>
-                      {isAdminPostMode ? (
+                      {isAdminListingMode ? (
                         <p className="text-xs text-violet-700">{tx.ui_adminOnBehalfPhoneHint}</p>
                       ) : canEditSellerPhone ? (
                         <p className="text-xs text-gray-500">{t.reg_sellerGate_sub}</p>
@@ -2118,11 +2233,15 @@ export default function NewListing() {
                 >
                   {isSubmitting
                     ? t.posting
-                    : isDhurataCategory
-                      ? tx.ui_postGiftBtn
-                      : isKerkojCategory
-                        ? t.kerkojFormPostTitle
-                        : t.submitListing}
+                    : isAdminEditMode
+                      ? (tx.adm_edit_submit ?? t.saveChanges)
+                      : isAdminPostMode
+                        ? (tx.adm_post_submit ?? t.submitListing)
+                        : isDhurataCategory
+                          ? tx.ui_postGiftBtn
+                          : isKerkojCategory
+                            ? t.kerkojFormPostTitle
+                            : t.submitListing}
                 </Button>
               </div>
             </div>

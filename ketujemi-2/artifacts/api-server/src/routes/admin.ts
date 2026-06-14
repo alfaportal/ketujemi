@@ -66,6 +66,7 @@ import {
 import { generateAdminAiDailyReport } from "../lib/admin-ai-daily-report";
 import { loadBannedPhoneSet, saveBannedPhoneSet } from "../lib/user-ban";
 import { primaryListingImageUrl, sanitizeListingImageUrlField } from "../lib/listing-images";
+import { buildAdminListingPatch } from "../lib/admin-listing-patch.js";
 import { sanitizeListingVideoUrl } from "../lib/listing-video";
 import {
   expiresAtForCategoryRootSlug,
@@ -324,6 +325,39 @@ router.post("/admin/listings/purge-invalid-images", requireAdmin, async (req, re
   }
 });
 
+// ─── GET /admin/listings/:id ──────────────────────────────────────────────────
+router.get("/admin/listings/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (!Number.isFinite(id) || id <= 0) {
+      res.status(400).json({ error: "Invalid id" });
+      return;
+    }
+    const [row] = await db.select().from(listingsTable).where(eq(listingsTable.id, id));
+    if (!row) {
+      res.status(404).json({ error: "Listing not found" });
+      return;
+    }
+    const [cat] = await db
+      .select({ name: categoriesTable.name })
+      .from(categoriesTable)
+      .where(eq(categoriesTable.id, row.category_id))
+      .limit(1);
+    res.json({
+      ...row,
+      price: Number(row.price),
+      category_name: cat?.name ?? null,
+      created_at: row.created_at.toISOString(),
+      expires_at: row.expires_at ? row.expires_at.toISOString() : null,
+      listed_at: row.listed_at?.toISOString?.() ?? row.created_at.toISOString(),
+      top_until: row.top_until ? row.top_until.toISOString() : null,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Admin get listing error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // ─── GET /admin/listings ──────────────────────────────────────────────────────
 router.get("/admin/listings", requireAdmin, async (req, res) => {
   try {
@@ -377,16 +411,15 @@ router.get("/admin/listings", requireAdmin, async (req, res) => {
 router.patch("/admin/listings/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const { title, price, location, condition, is_featured, description, seller_name, seller_phone } = req.body;
-    const updates: Record<string, any> = {};
-    if (title !== undefined) updates.title = title;
-    if (price !== undefined) updates.price = String(price);
-    if (location !== undefined) updates.location = location;
-    if (condition !== undefined) updates.condition = condition;
-    if (is_featured !== undefined) updates.is_featured = is_featured;
-    if (description !== undefined) updates.description = description;
-    if (seller_name !== undefined) updates.seller_name = String(seller_name).trim();
-    if (seller_phone !== undefined) updates.seller_phone = String(seller_phone).trim();
+    if (!Number.isFinite(id) || id <= 0) {
+      res.status(400).json({ error: "Invalid id" });
+      return;
+    }
+    const updates = buildAdminListingPatch(req.body as Record<string, unknown>);
+    if (Object.keys(updates).length === 0) {
+      res.status(400).json({ error: "No valid fields to update" });
+      return;
+    }
 
     const [updated] = await db
       .update(listingsTable)
@@ -398,7 +431,12 @@ router.patch("/admin/listings/:id", requireAdmin, async (req, res) => {
       res.status(404).json({ error: "Listing not found" });
       return;
     }
-    res.json({ ...updated, price: Number(updated.price) });
+    res.json({
+      ...updated,
+      price: Number(updated.price),
+      created_at: updated.created_at.toISOString(),
+      expires_at: updated.expires_at ? updated.expires_at.toISOString() : null,
+    });
   } catch (err) {
     req.log.error({ err }, "Admin update listing error");
     res.status(500).json({ error: "Internal server error" });
