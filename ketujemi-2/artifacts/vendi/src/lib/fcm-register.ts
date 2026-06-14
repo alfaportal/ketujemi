@@ -1,4 +1,5 @@
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { isListingAreaPath } from "@/lib/listing-post-path";
 
 type FirebasePublicConfig = {
   apiKey: string;
@@ -58,10 +59,11 @@ self.addEventListener("notificationclick", (event) => {
 }
 
 let registerAttempted = false;
+let registerScheduled = false;
 
-/** Register browser FCM token when Firebase env vars are configured. */
-export async function registerFcmTokenIfConfigured(): Promise<void> {
+async function registerFcmTokenNow(): Promise<void> {
   if (registerAttempted || typeof window === "undefined") return;
+  if (isListingAreaPath(window.location.pathname)) return;
   registerAttempted = true;
 
   const cfg = readFirebaseConfig();
@@ -107,4 +109,18 @@ export async function registerFcmTokenIfConfigured(): Promise<void> {
   } catch {
     /* optional — push not configured or blocked */
   }
+}
+
+/** Register browser FCM token — deferred and skipped on listing post/detail/edit. */
+export async function registerFcmTokenIfConfigured(): Promise<void> {
+  if (registerAttempted || registerScheduled || typeof window === "undefined") return;
+  if (isListingAreaPath(window.location.pathname)) return;
+  registerScheduled = true;
+
+  const schedule = () => void registerFcmTokenNow();
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(schedule, { timeout: 8000 });
+    return;
+  }
+  window.setTimeout(schedule, 3000);
 }

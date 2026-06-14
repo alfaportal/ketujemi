@@ -2,6 +2,8 @@ import { lazy, Suspense, type ComponentType } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MarketProvider } from "@/lib/market-context";
+import { lazyWithRetry } from "@/lib/lazy-import-retry";
+import { withListingDetailErrorBoundary } from "@/components/listing-detail-error-boundary";
 
 const AppProviders = lazy(() =>
   import("@/components/app-providers").then((m) => ({ default: m.AppProviders })),
@@ -25,10 +27,14 @@ import {
   type RouteId,
 } from "@/config/routes.config";
 
-const Home = lazy(() => import("@/pages/home"));
-const Listings = lazy(() => import("@/pages/listings"));
-const CategoryPage = lazy(() => import("@/pages/category"));
-const ListingDetail = lazy(() => import("@/pages/listing-detail"));
+const Home = lazyWithRetry(() => import("@/pages/home"));
+const Listings = lazyWithRetry(() => import("@/pages/listings"));
+const CategoryPage = lazyWithRetry(() => import("@/pages/category"));
+const ListingDetail = lazyWithRetry(async () => {
+  const { default: Page } = await import("@/pages/listing-detail");
+  const Wrapped = withListingDetailErrorBoundary(Page);
+  return { default: Wrapped };
+});
 import { withListingPostErrorBoundary } from "@/components/listing-post-error-boundary";
 
 const NewListingPage = lazy(async () => {
@@ -41,7 +47,7 @@ const ProfilePage = lazy(() => import("@/pages/profile"));
 const MyListingsPage = lazy(() => import("@/pages/my-listings"));
 const BusinessProfilePage = lazy(() => import("@/pages/business-profile"));
 const PartnerProfilePage = lazy(() => import("@/pages/partner-profile"));
-const EditListing = lazy(() => import("@/pages/edit-listing"));
+const EditListing = lazyWithRetry(() => import("@/pages/edit-listing"));
 const AdminPanel = lazy(() => import("@/pages/admin/index"));
 const TermsPage = lazy(() => import("@/pages/terms"));
 const BusinessRulesPage = lazy(() => import("@/pages/business-rules"));
@@ -119,9 +125,11 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       staleTime: 60_000,
+      gcTime: 5 * 60_000,
       refetchOnMount: false,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
+      structuralSharing: true,
     },
   },
 });

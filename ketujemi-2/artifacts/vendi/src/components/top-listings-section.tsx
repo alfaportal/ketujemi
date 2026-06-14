@@ -12,6 +12,7 @@ import {
   subscribeTopListingsRefresh,
   type TopListingCarouselItem,
 } from "@/lib/top-listings-events";
+import { prefetchRoute } from "@/lib/route-prefetch";
 
 const TOP_CAROUSEL_SLOW_MS = 3000;
 const TOP_CAROUSEL_FAST_THRESHOLD = 25;
@@ -48,6 +49,8 @@ function TopListingSlot({ listing, priceLabel }: { listing: TopListingCarouselIt
   return (
     <Link
       href={`/listings/${listing.id}`}
+      onMouseEnter={() => prefetchRoute(`/listings/${listing.id}`)}
+      onFocus={() => prefetchRoute(`/listings/${listing.id}`)}
       className={cn(
         TOP_SLOT_FRAME,
         "group relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1A56A0] focus-visible:ring-offset-2",

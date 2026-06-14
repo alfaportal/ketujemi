@@ -9,6 +9,7 @@ import {
 } from "@/lib/engagement-i18n";
 import { fireEngagementConfetti } from "@/lib/engagement-confetti";
 import { registerFcmTokenIfConfigured } from "@/lib/fcm-register";
+import { isListingFlowPath } from "@/lib/listing-post-path";
 import {
   Dialog,
   DialogContent,
@@ -32,11 +33,13 @@ export function EngagementEffects() {
 
   useEffect(() => {
     if (!user) return;
+    if (isListingFlowPath(loc)) return;
     void registerFcmTokenIfConfigured();
-  }, [user?.id]);
+  }, [user?.id, loc]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (isListingFlowPath(window.location.pathname)) return;
     const params = new URLSearchParams(window.location.search);
     if (params.get("verified") !== "1") return;
     void refresh().finally(() => {
@@ -48,6 +51,7 @@ export function EngagementEffects() {
 
   useEffect(() => {
     if (!user || typeof window === "undefined") return;
+    if (isListingFlowPath(window.location.pathname)) return;
 
     const params = new URLSearchParams(window.location.search);
     if (params.get("welcome") === "1") {

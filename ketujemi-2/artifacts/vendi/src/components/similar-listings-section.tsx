@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useMarket } from "@/lib/market-context";
 import { getFetchErrorMessage } from "@/lib/fetch-with-timeout";
 import { ListingCardImage } from "@/components/listing-card-image";
+import { prefetchRoute } from "@/lib/route-prefetch";
 
 type Similar = {
   id: number;
@@ -77,6 +78,8 @@ export function SimilarListingsSection({ listingId }: Props) {
               <Link
                 key={item.id}
                 href={`/listings/${item.id}`}
+                onMouseEnter={() => prefetchRoute(`/listings/${item.id}`)}
+                onFocus={() => prefetchRoute(`/listings/${item.id}`)}
                 className="block rounded-xl border border-gray-100 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="aspect-[4/3] bg-gray-200">

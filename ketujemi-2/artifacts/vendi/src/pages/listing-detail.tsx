@@ -33,6 +33,7 @@ import { SiteHeaderToolbar } from "@/components/site-header-toolbar";
 import { ReportListingDialog } from "@/components/report-listing-dialog";
 import { SimilarListingsSection } from "@/components/similar-listings-section";
 import { ListingDetailTopPackages } from "@/components/listing-detail-top-packages";
+import { ListingSectionErrorBoundary } from "@/components/listing-section-error-boundary";
 import { isPlatformOperatorEmail } from "@/lib/platform-operator";
 import { parseListingImageUrls } from "@/lib/listing-images";
 import { recordListingView } from "@/lib/record-listing-view";
@@ -148,6 +149,7 @@ export default function ListingDetail() {
   const [, params] = useRoute("/listings/:id");
   const [, setLocation] = useLocation();
   const id = Number(params?.id);
+  const invalidId = !Number.isFinite(id) || id <= 0;
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { t, market, uiLang } = useMarket();
@@ -156,10 +158,11 @@ export default function ListingDetail() {
 
   const { data: listing, isLoading, isError, error, refetch } = useGetListing(id, {
     query: {
-      enabled: !!id,
+      enabled: !!id && !invalidId,
       queryKey: getGetListingQueryKey(id),
-      retry: 1,
-      staleTime: 30_000,
+      retry: 2,
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 4000),
+      staleTime: 120_000,
       placeholderData: (previous) => previous,
     },
   });
@@ -291,7 +294,7 @@ export default function ListingDetail() {
     if (fbPosted && igPosted) return;
 
     const interval = window.setInterval(() => {
-      void queryClient.invalidateQueries({ queryKey: getGetListingQueryKey(id) });
+      void queryClient.refetchQueries({ queryKey: getGetListingQueryKey(id), type: "active" });
     }, 4000);
     const stop = window.setTimeout(() => window.clearInterval(interval), 3 * 60 * 1000);
 
@@ -411,6 +414,16 @@ export default function ListingDetail() {
       },
     },
   });
+
+  if (invalidId) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+        <p className="text-xl font-semibold mb-2">{t.listingNotFound}</p>
+        <p className="text-muted-foreground mb-6">{t.listingNotFoundSub}</p>
+        <Button onClick={() => setLocation("/listings")}>{t.backToListings}</Button>
+      </div>
+    );
+  }
 
   if (isLoading && !listing) {
     return (
@@ -904,11 +917,17 @@ export default function ListingDetail() {
 
         {canManage && listing ? (
           <div className="mt-8">
-            <ListingDetailTopPackages listingId={listing.id} />
+            <ListingSectionErrorBoundary label="top-packages">
+              <ListingDetailTopPackages listingId={listing.id} />
+            </ListingSectionErrorBoundary>
           </div>
         ) : null}
 
-        {listing ? <SimilarListingsSection listingId={listing.id} /> : null}
+        {listing ? (
+          <ListingSectionErrorBoundary label="similar-listings">
+            <SimilarListingsSection listingId={listing.id} />
+          </ListingSectionErrorBoundary>
+        ) : null}
       </div>
 
       {lightboxOpen && allImages.length > 0 ? (

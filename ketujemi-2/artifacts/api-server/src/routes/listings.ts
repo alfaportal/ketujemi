@@ -1267,20 +1267,39 @@ router.get("/listings/:id", async (req, res) => {
       return;
     }
 
-    const catMeta = await resolveCategorySlugMeta(row.category_id);
+    let catMeta: Awaited<ReturnType<typeof resolveCategorySlugMeta>> = null;
+    try {
+      catMeta = await resolveCategorySlugMeta(row.category_id);
+    } catch (catErr) {
+      logger.warn({ catErr, listingId: row.id }, "resolveCategorySlugMeta failed on GET");
+    }
 
-    let formatted = formatListing(row, catMeta?.name ?? null, catMeta?.rootSlug ?? null);
-    if (await isListingUserPlatformAdmin(row.user_id)) {
-      formatted = {
-        ...formatted,
-        description: descriptionForAdminOnBehalf(formatted.description),
-      };
+    let formatted: ReturnType<typeof formatListing>;
+    try {
+      formatted = formatListing(row, catMeta?.name ?? null, catMeta?.rootSlug ?? null);
+    } catch (formatErr) {
+      logger.error({ formatErr, listingId: row.id }, "formatListing failed on GET");
+      res.status(500).json({ error: "Internal server error" });
+      return;
+    }
+    try {
+      if (await isListingUserPlatformAdmin(row.user_id)) {
+        formatted = {
+          ...formatted,
+          description: descriptionForAdminOnBehalf(formatted.description),
+        };
+      }
+    } catch (adminErr) {
+      logger.warn({ adminErr, listingId: row.id }, "admin description check failed on GET");
     }
     const payload = applyViewerContact(formatted, viewer) as ReturnType<typeof formatListing> & {
       can_repost: boolean;
     };
     payload.can_repost = canRepost;
-    const [out] = await finalizeListingsForApi([payload]);
+    const [out] = await finalizeListingsForApi([payload]).catch((finalizeErr) => {
+      logger.warn({ finalizeErr, listingId: parsed.data.id }, "finalizeListingsForApi failed on GET");
+      return [payload];
+    });
     res.json({ ...out, can_repost: payload.can_repost, is_owner: isOwner });
   } catch (err) {
     logger.error({ err, listingId: req.params.id }, "GET /listings/:id failed");

@@ -23,6 +23,7 @@ import {
   getGetFeaturedListingsQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { prefetchRoute } from "@/lib/route-prefetch";
 
 type MineListing = {
   id: number;
@@ -117,6 +118,8 @@ export function ProfileMyListings() {
               <div className="min-w-0 flex-1">
                 <Link
                   href={`/listings/${item.id}`}
+                  onMouseEnter={() => prefetchRoute(`/listings/${item.id}`)}
+                  onFocus={() => prefetchRoute(`/listings/${item.id}`)}
                   className="font-semibold text-sm text-gray-900 hover:text-blue-700 line-clamp-2"
                 >
                   {item.title}

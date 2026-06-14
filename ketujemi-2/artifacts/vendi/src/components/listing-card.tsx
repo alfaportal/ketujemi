@@ -24,6 +24,7 @@ function formatDate(isoString: string): string {
 }
 
 import { fillPlaceholders } from "@/lib/fill-placeholders";
+import { prefetchRoute } from "@/lib/route-prefetch";
 
 // ─── Expiry countdown ─────────────────────────────────────────────────────────
 function getDaysLeft(
@@ -91,7 +92,7 @@ function DhurataGiftListingCard({ listing }: ListingCardProps) {
       className="group bg-white rounded-2xl overflow-hidden border border-green-100 hover:shadow-lg hover:border-green-200 transition-all duration-200"
       data-testid={`card-listing-${listing.id}`}
     >
-      <Link href={`/listings/${listing.id}`} className="block">
+      <Link href={`/listings/${listing.id}`} className="block" onMouseEnter={() => prefetchRoute(`/listings/${listing.id}`)} onFocus={() => prefetchRoute(`/listings/${listing.id}`)}>
         <div className="relative overflow-hidden aspect-[4/3] bg-gray-200">
           <ListingCardImage
             imageUrl={listing.image_url}
@@ -106,7 +107,7 @@ function DhurataGiftListingCard({ listing }: ListingCardProps) {
       </Link>
 
       <div className="p-3">
-        <Link href={`/listings/${listing.id}`}>
+        <Link href={`/listings/${listing.id}`} onMouseEnter={() => prefetchRoute(`/listings/${listing.id}`)} onFocus={() => prefetchRoute(`/listings/${listing.id}`)}>
           <h3
             data-testid={`text-title-${listing.id}`}
             className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 mb-2 group-hover:text-green-700 transition-colors"
@@ -176,6 +177,8 @@ export default function ListingCard({ listing }: ListingCardProps) {
     <Link
       href={`/listings/${listing.id}`}
       data-testid={`card-listing-${listing.id}`}
+      onMouseEnter={() => prefetchRoute(`/listings/${listing.id}`)}
+      onFocus={() => prefetchRoute(`/listings/${listing.id}`)}
       className={cn(
         "group bg-white rounded-2xl overflow-hidden border hover:shadow-lg transition-all duration-200 block",
         isVipSeller

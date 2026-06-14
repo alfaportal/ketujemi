@@ -22,6 +22,7 @@ import { ShopDirectoryCard, type ShopDirectoryListItem } from "@/components/shop
 import { useShopDirectoryCopy } from "@/lib/shop-directory-i18n";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { translateCategory } from "@/lib/category-translations";
+import { prefetchRoute } from "@/lib/route-prefetch";
 
 // --- Skeleton Card ---
 function SkeletonCard() {
@@ -61,6 +62,11 @@ function listingsUrlFromState(state: {
 export default function Listings() {
   const [, setLocation] = useLocation();
   const goToPostListing = useGoToPostListing();
+
+  useEffect(() => {
+    void import("@/pages/listing-detail").catch(() => undefined);
+  }, []);
+
   const { market, t, uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
   const shopCopy = useShopDirectoryCopy();

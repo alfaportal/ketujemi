@@ -1,8 +1,11 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { AppErrorBoundary } from "@/components/app-error-boundary";
+import { runListingFlowBootstrap } from "@/lib/bootstrap-listing-flow";
 import { setupPwaUpdates } from "@/lib/pwa-updates";
 import "./index.css";
+
+runListingFlowBootstrap();
 
 try {
   setupPwaUpdates();
