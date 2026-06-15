@@ -14,7 +14,8 @@ import { eq, and, asc, desc, gt, gte, isNotNull, sql, inArray, or, isNull, count
 import { getSessionUser } from "../lib/session-user";
 import { incrementShopView } from "../lib/shop-view.js";
 import { clientIpFromRequest } from "../lib/request-ip.js";
-import { isShopPubliclyVisible } from "../lib/shop-visibility.js";
+import { activeShopSqlCondition, isShopPubliclyVisible } from "../lib/shop-visibility.js";
+import { backfillShopIdOnUserListings } from "../lib/shop-listing-lookup.js";
 import { sendShopApplicationEmail, sendShopRatingEmail } from "../lib/send-shop-application-email";
 import { formatListingsBatch } from "../lib/format-listings-batch";
 import { resolveDirectoryFields } from "../lib/shop-directory-patch";
@@ -393,6 +394,7 @@ router.get("/shops/me", async (req, res) => {
   let listing_count = 0;
   let total_views = 0;
   if (shop) {
+    await backfillShopIdOnUserListings(shop.user_id, shop.id).catch(() => undefined);
     const [stats] = await db
       .select({
         listing_count: sql<number>`count(*)::int`,
@@ -444,14 +446,16 @@ router.get("/shops/me/listings", async (req, res) => {
   }
 
   const [shop] = await db
-    .select({ id: shopsTable.id })
+    .select({ id: shopsTable.id, user_id: shopsTable.user_id })
     .from(shopsTable)
-    .where(and(eq(shopsTable.user_id, viewer.id), eq(shopsTable.is_active, true)))
+    .where(and(eq(shopsTable.user_id, viewer.id), activeShopSqlCondition()))
     .limit(1);
   if (!shop) {
     res.status(404).json({ error: "Not found", message: "Nuk keni dyqan të aprovuar." });
     return;
   }
+
+  await backfillShopIdOnUserListings(shop.user_id, shop.id).catch(() => undefined);
 
   const rows = await db
     .select()
@@ -774,6 +778,8 @@ router.get("/shops/:id", async (req, res) => {
   }
 
   const viewer = await getSessionUser(req);
+
+  await backfillShopIdOnUserListings(shop.user_id, shop.id).catch(() => undefined);
 
   const listingRows = await db
     .select()

@@ -1,10 +1,11 @@
-import { and, eq, inArray } from "drizzle-orm";
-import { db, shopsTable } from "@workspace/db";
+import { and, eq, inArray, isNull, desc } from "drizzle-orm";
+import { db, listingsTable, shopsTable } from "@workspace/db";
 import { annotateListingsWithVipFlag } from "./vip-seller-lookup";
 import {
   getShopSocialProfilesForShops,
   type ShopSocialProfileApi,
 } from "./shop-social-enrich.js";
+import { activeShopSqlCondition } from "./shop-visibility.js";
 import { logger } from "./logger.js";
 
 const EMPTY_SHOP_FIELDS: ShopListingFields = {
@@ -41,9 +42,23 @@ export async function getApprovedShopIdForUser(userId: number): Promise<number |
   const [shop] = await db
     .select({ id: shopsTable.id })
     .from(shopsTable)
-    .where(and(eq(shopsTable.user_id, userId), eq(shopsTable.is_active, true)))
+    .where(and(eq(shopsTable.user_id, userId), activeShopSqlCondition()))
+    .orderBy(desc(shopsTable.created_at))
     .limit(1);
   return shop?.id ?? null;
+}
+
+/** Link orphan listings (shop_id NULL) from a shop owner to their active shop. */
+export async function backfillShopIdOnUserListings(
+  userId: number,
+  shopId: number,
+): Promise<number> {
+  const updated = await db
+    .update(listingsTable)
+    .set({ shop_id: shopId })
+    .where(and(eq(listingsTable.user_id, userId), isNull(listingsTable.shop_id)))
+    .returning({ id: listingsTable.id });
+  return updated.length;
 }
 
 async function activeShopMap(shopIds: number[]) {

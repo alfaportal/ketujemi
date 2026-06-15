@@ -9,6 +9,7 @@ import {
   blockIfPriorModerationRejection,
   MODERATION_REPOST_BLOCK_MESSAGE,
 } from "./listing-moderation-repost-guard";
+import { getApprovedShopIdForUser, backfillShopIdOnUserListings } from "./shop-listing-lookup.js";
 import { runTwoLayerModeration } from "./listing-two-layer-moderation";
 import { logListingModerationRejection } from "./listing-moderation-rejection-log";
 
@@ -98,18 +99,28 @@ export async function repostListing(
 
   await removeUserDuplicateListingsForPost(user, row.title, row.description, listingId);
 
+  const shopId = await getApprovedShopIdForUser(user.id);
   const now = new Date();
+  const repostPatch: Partial<typeof listingsTable.$inferInsert> = {
+    status: "active",
+    moderation_status: "approved",
+    moderation_reason: null,
+    expires_at: expiresAtAfterListingLifetime(),
+    listed_at: now,
+    created_at: now,
+  };
+  if (shopId && row.shop_id == null) {
+    repostPatch.shop_id = shopId;
+  }
+
   await db
     .update(listingsTable)
-    .set({
-      status: "active",
-      moderation_status: "approved",
-      moderation_reason: null,
-      expires_at: expiresAtAfterListingLifetime(),
-      listed_at: now,
-      created_at: now,
-    })
+    .set(repostPatch)
     .where(eq(listingsTable.id, listingId));
+
+  if (shopId) {
+    await backfillShopIdOnUserListings(user.id, shopId).catch(() => undefined);
+  }
 
   return { ok: true };
 }

@@ -11,7 +11,8 @@ SET shop_id = s.id
 FROM shops s
 WHERE l.user_id = s.user_id
   AND l.shop_id IS NULL
-  AND s.is_active = true;
+  AND s.is_active = true
+  AND s.deleted_at IS NULL;
 `;
 
 export async function ensureListingShopSchema(pool: pg.Pool): Promise<void> {
