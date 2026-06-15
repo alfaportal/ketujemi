@@ -97,7 +97,7 @@ export function SiteHeader({ className, children, mobileVariant = "compact" }: S
             </div>
             <MainNavLinks className="justify-center w-full" />
             <div className="grid grid-cols-4 items-stretch gap-2.5 w-full">
-              <MarketSelector />
+              <MarketSelector compact largeTouch />
               <LanguageSelector compact largeTouch />
               <SiteHeaderToolbar mobileBar largeTouch />
             </div>
@@ -121,7 +121,7 @@ export function SiteHeader({ className, children, mobileVariant = "compact" }: S
               <div className="border-t border-gray-100 pb-2 pt-1.5 flex flex-col gap-2">
                 <MainNavLinks stacked onNavigate={closeMobileMenu} />
                 <div className="flex items-center gap-2">
-                  <MarketSelector />
+                  <MarketSelector compact className="shrink-0" />
                   <LanguageSelector compact className="flex-1" />
                   <SiteHeaderToolbar mobileBar className="flex-[2]" />
                 </div>

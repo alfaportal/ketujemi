@@ -43,7 +43,6 @@ const MARKET_NAMES_IT: Record<Market["code"], string> = {
   us: "USA",
 };
 
-/** Country / market label in header picker (UI language, not listing country). */
 const MARKET_NAMES_FR: Record<Market["code"], string> = {
   ks: "Kosovo",
   al: "Albanie",
@@ -57,6 +56,25 @@ const MARKET_NAMES_FR: Record<Market["code"], string> = {
   gb: "Royaume-Uni",
   us: "États-Unis",
 };
+
+const MARKET_DISPLAY_CODES: Record<Market["code"], string> = {
+  ks: "XK",
+  al: "AL",
+  mk: "MK",
+  mne: "MNE",
+  de: "DE",
+  at: "AT",
+  ch: "CH",
+  it: "IT",
+  fr: "FR",
+  gb: "GB",
+  us: "US",
+};
+
+/** Short code shown in header market picker (no emoji flags). */
+export function marketDisplayCode(market: Market): string {
+  return MARKET_DISPLAY_CODES[market.code] ?? market.code.toUpperCase();
+}
 
 export function marketDisplayName(market: Market, uiLang: UiLang): string {
   if (uiLang === "en") return MARKET_NAMES_EN[market.code] ?? market.name;
