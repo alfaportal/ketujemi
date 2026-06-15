@@ -17,6 +17,7 @@ import {
   tryBrowseOrFaqAnswer,
   tryPrioritySupportAnswer,
 } from "./support-chat-faq-offline";
+import { buildSupportBrowseLink } from "./support-chat-browse-link";
 import { KETUJEMI_PLATFORM_KNOWLEDGE } from "./support-platform-knowledge";
 import {
   getLastUserMessage,
@@ -177,6 +178,9 @@ export async function runSupportChat(
     if (contactReply) return compactSupportReply(contactReply);
   }
 
+  const browseLink = buildSupportBrowseLink(messages);
+  if (browseLink) return browseLink;
+
   if (!isClaudeConfigured()) {
     const offlineOrBrowse = tryBrowseOrFaqAnswer(messages, siteLang);
     if (offlineOrBrowse) return compactSupportReply(offlineOrBrowse);
@@ -227,6 +231,9 @@ export function supportChatFallbackReply(
   if (screenSupportUserMessage(lastUser) === "invalid") {
     return invalidSupportQuestionReply(replyLang);
   }
+
+  const browseLink = buildSupportBrowseLink(messages);
+  if (browseLink) return browseLink;
 
   const priorityAnswer = tryPrioritySupportAnswer(messages, siteLang);
   if (priorityAnswer) return compactSupportReply(priorityAnswer);

@@ -107,10 +107,10 @@ export const aiAuthenticatedLimiter = rateLimit({
   },
 });
 
-/** Public support chat — stricter cap. */
+/** Public support chat — generous cap (link-only browse replies are cheap). */
 export const aiSupportChatLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 25,
+  max: 120,
   standardHeaders: true,
   legacyHeaders: false,
   handler: (_req, res) => {

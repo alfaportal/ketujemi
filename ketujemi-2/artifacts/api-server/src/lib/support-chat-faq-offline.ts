@@ -6,6 +6,7 @@ import {
   SUPPORT_EMAIL,
   supportFallbackLine,
 } from "./support-contact";
+import { buildSupportBrowseLink } from "./support-chat-browse-link";
 import { matchCategoryRoute } from "./support-category-catalog";
 import {
   getLastUserMessage,
@@ -227,6 +228,9 @@ export function tryPrioritySupportAnswer(
     return phoneReply(lang);
   }
 
+  const browseLink = buildSupportBrowseLink(messages);
+  if (browseLink) return browseLink;
+
   const fromCurrent =
     tryCompositeAnswer(text, lang) ??
     tryProductCategoryAnswer(text, lang) ??
@@ -277,12 +281,8 @@ export function tryBrowseOrFaqAnswer(
   const priority = tryPrioritySupportAnswer(messages, langHint);
   if (priority) return priority;
 
-  if (
-    lastUserText &&
-    (isMarketplaceBrowseQuestion(lastUserText) || isRecognizedMarketplaceQuery(lastUserText))
-  ) {
-    return browsePlatformReply(lang);
-  }
+  const browseLink = buildSupportBrowseLink(messages);
+  if (browseLink) return browseLink;
 
   return null;
 }
@@ -296,9 +296,9 @@ export function supportUnknownQueryReply(
   const lang = inferSupportLang(lastUser, langHint);
   const priority = tryPrioritySupportAnswer(messages, langHint);
   if (priority) return priority;
-  if (lastUser && isRecognizedMarketplaceQuery(lastUser)) {
-    return browsePlatformReply(lang);
-  }
+  const browseLink = buildSupportBrowseLink(messages);
+  if (browseLink) return browseLink;
+
   return langText(
     {
       sq: "Më shkruani pak më qartë çfarë kërkoni (p.sh. «goma veture», «banesë Prishtinë», «iPhone 13») — do t'ju tregoj kategorinë e saktë në KetuJemi.",

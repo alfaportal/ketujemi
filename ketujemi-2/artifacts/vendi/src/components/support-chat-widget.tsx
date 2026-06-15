@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useLocation } from "wouter";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { MessageCircle, X, Send, Loader2, Mic } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
@@ -17,7 +18,39 @@ import {
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
+function isBrowseLinkContent(content: string): boolean {
+  const t = content.trim();
+  return /^\/[\w\-%./?=&+]*$/.test(t) || /^https?:\/\/\S+$/i.test(t);
+}
+
+function SupportChatMessageBody({
+  content,
+  onOpenLink,
+}: {
+  content: string;
+  onOpenLink: (href: string) => void;
+}) {
+  const trimmed = content.trim();
+  if (isBrowseLinkContent(trimmed)) {
+    const internal = trimmed.startsWith("/");
+    return (
+      <button
+        type="button"
+        className="text-left text-[#1A56A0] underline font-semibold break-all hover:text-[#164a8c]"
+        onClick={() => {
+          if (internal) onOpenLink(trimmed);
+          else window.location.assign(trimmed);
+        }}
+      >
+        {trimmed}
+      </button>
+    );
+  }
+  return <>{content}</>;
+}
+
 export function SupportChatWidget() {
+  const [, navigate] = useLocation();
   const { market, t, uiLang } = useMarket();
   const copy = useMemo(() => mergeSupportChatCopy(uiLang, t), [uiLang, t]);
   const { registerTap } = useSecretAdminTap();
@@ -153,7 +186,15 @@ export function SupportChatWidget() {
         busyRef.current = false;
       }
     },
-    [copy.busy, uiLang],
+    [copy.busy, uiLang, navigate],
+  );
+
+  const openBrowseLink = useCallback(
+    (href: string) => {
+      setOpen(false);
+      navigate(href);
+    },
+    [navigate],
   );
 
   const startWebSpeech = useCallback(() => {
@@ -276,7 +317,11 @@ export function SupportChatWidget() {
                     : "mr-auto bg-white border border-gray-100 text-gray-800",
                 )}
               >
-                {m.content}
+                {m.role === "assistant" ? (
+                  <SupportChatMessageBody content={m.content} onOpenLink={openBrowseLink} />
+                ) : (
+                  m.content
+                )}
               </div>
             ))}
             {voiceNeedsHttps ? (

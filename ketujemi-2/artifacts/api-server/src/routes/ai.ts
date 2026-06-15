@@ -23,6 +23,11 @@ import {
 
 const router = Router();
 
+function isBrowseLinkReply(reply: string): boolean {
+  const t = reply.trim();
+  return /^\/[\w\-%./?=&+]*$/.test(t);
+}
+
 // ─── POST /ai/posting-suggestions ─────────────────────────────────────────────
 router.post("/ai/posting-suggestions", aiAuthenticatedLimiter, async (req, res) => {
   if (!(await isSessionOrAdminAuthorized(req))) {
@@ -243,7 +248,11 @@ router.post("/ai/support-chat", aiSupportChatLimiter, async (req, res) => {
   } catch {
     reply = supportChatFallbackReply(valid, lang);
   }
-  res.json({ reply, ai_enabled: isClaudeConfigured() });
+  res.json({
+    reply,
+    link: isBrowseLinkReply(reply) ? { href: reply.trim() } : undefined,
+    ai_enabled: isClaudeConfigured(),
+  });
 });
 
 // ─── GET /ai/status ─────────────────────────────────────────────────────────────
