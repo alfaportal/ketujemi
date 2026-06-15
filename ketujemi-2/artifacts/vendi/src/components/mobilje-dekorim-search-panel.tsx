@@ -77,7 +77,6 @@ import {
   MD_TYPE_KEYS,
   MD_TYPE_LABEL_KEY,
   MD_TYPE_PHOTOS,
-  getMobiljeDekorimLeafCategoryIds,
   resolveMobiljeTypeCategoryId,
   type MdBedSizeKey,
   type MdBedTypeKey,
@@ -160,11 +159,6 @@ export function MobiljeDekorimSearchPanel({
 }: Props) {
   const { t } = useMarket();
 
-  const leafCsv = useMemo(() => {
-    const ids = getMobiljeDekorimLeafCategoryIds(categories, hubId);
-    return [...ids].sort((a, b) => a - b).join(",");
-  }, [categories, hubId]);
-
   const [typeKey, setTypeKey] = useState<MdTypeKey | null>(lockedTypeKey ?? null);
   useEffect(() => {
     if (lockedTypeKey) setTypeKey(lockedTypeKey);
@@ -236,18 +230,19 @@ export function MobiljeDekorimSearchPanel({
     const p: GetListingsParams = {
       page: 1,
       limit: 20,
-      category_ids: leafCsv,
     };
 
     if (scopeCategoryId) {
       p.category_id = scopeCategoryId;
-      delete p.category_ids;
     } else if (typeKey) {
       const cid = resolveMobiljeTypeCategoryId(categories, hubId, typeKey);
       if (cid) {
         p.category_id = cid;
-        delete p.category_ids;
+      } else {
+        p.category_id = hubId;
       }
+    } else {
+      p.category_id = hubId;
     }
 
     if (cityKey) p.location_search = MD_CITY_SEARCH[cityKey];
@@ -301,7 +296,6 @@ export function MobiljeDekorimSearchPanel({
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- debounced live preview
   }, [
-    leafCsv,
     hubId,
     scopeCategoryId,
     typeKey,

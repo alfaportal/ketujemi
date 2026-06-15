@@ -503,6 +503,14 @@ export const HUB_CATEGORY_SUGGEST_RULES: HubSuggestRule[] = [
     pattern: /\b(tepih|perd[ae]|curtain|rug\b|carpet)\b/i,
     weight: 10,
   },
+  {
+    parentSlug: "mobilje-dekorime",
+    categorySlug: "mobilje-type-kopsht-terasa",
+    parentName: "Mobilje & Dekorime",
+    categoryName: "Kopshti & Terasa",
+    pattern: /\b(kopsht|teras[ae]|oborr|gardh|outdoor\s+furniture|mobilje\s+jashtme|tavolin[ae]\s+jasht)\b/i,
+    weight: 10,
+  },
 
   // ── Rroba & Këpucë ────────────────────────────────────────────────────────
   {

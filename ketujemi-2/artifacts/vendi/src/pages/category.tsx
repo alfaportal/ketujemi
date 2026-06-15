@@ -1099,8 +1099,8 @@ export default function CategoryPage() {
     if (isSportOutdoorHub && sportOutdoorLeafCsv) {
       return sportOutdoorListParams ?? { category_ids: sportOutdoorLeafCsv, page: 1, limit: 20 };
     }
-    if (isLokaleZyreHub && lokaleZyreLeafCsv) {
-      return lokaleZyreListParams ?? { category_ids: lokaleZyreLeafCsv, page: 1, limit: 20 };
+    if (isLokaleZyreHub) {
+      return lokaleZyreListParams ?? { category_id: categoryId, page: 1, limit: 20 };
     }
     if (isTelefonaHubPage && telefonaLeafCsv) {
       return telefonaListParams ?? { category_ids: telefonaLeafCsv, page: 1, limit: 20 };
@@ -1108,11 +1108,11 @@ export default function CategoryPage() {
     if (isArsimKurseHub && arsimKurseLeafCsv) {
       return arsimKurseListParams ?? { category_ids: arsimKurseLeafCsv, page: 1, limit: 20 };
     }
-    if (isMobiljeDekorimHub && mobiljeDekorimLeafCsv) {
-      return mobiljeDekorimListParams ?? { category_ids: mobiljeDekorimLeafCsv, page: 1, limit: 20 };
+    if (isMobiljeDekorimHub) {
+      return mobiljeDekorimListParams ?? { category_id: categoryId, page: 1, limit: 20 };
     }
-    if (isRrobaKepuceHub && rrobaKepuceLeafCsv) {
-      return rrobaKepuceListParams ?? { category_ids: rrobaKepuceLeafCsv, page: 1, limit: 20 };
+    if (isRrobaKepuceHub) {
+      return rrobaKepuceListParams ?? { category_id: categoryId, page: 1, limit: 20 };
     }
     if (isFemijeGroupPage) {
       return femijeListParams ?? { category_id: categoryId, page: 1, limit: 20 };
@@ -1123,28 +1123,23 @@ export default function CategoryPage() {
     if (isFemijeHub && femijeLeafCsv) {
       return femijeListParams ?? { category_ids: femijeLeafCsv, page: 1, limit: 20 };
     }
-    if (isPuneSherbimeHub && puneSherbimeLeafCsv) {
-      return puneSherbimeListParams ?? { category_ids: puneSherbimeLeafCsv, page: 1, limit: 20 };
+    if (isPuneSherbimeHub) {
+      return puneSherbimeListParams ?? { category_id: categoryId, page: 1, limit: 20 };
     }
-    if (isNdertimInstalimeHub && ndertimInstalimeLeafCsv) {
-      return ndertimInstalimeListParams ?? { category_ids: ndertimInstalimeLeafCsv, page: 1, limit: 20 };
+    if (isNdertimInstalimeHub) {
+      return ndertimInstalimeListParams ?? { category_id: categoryId, page: 1, limit: 20 };
     }
-    if (isBujqesiBlegtoriHub && bujqesiBlegtoriLeafCsv) {
-      return bujqesiBlegtoriListParams ?? { category_ids: bujqesiBlegtoriLeafCsv, page: 1, limit: 20 };
+    if (isBujqesiBlegtoriHub) {
+      return bujqesiBlegtoriListParams ?? { category_id: categoryId, page: 1, limit: 20 };
     }
-    if (isMuzikeHobbyHub && muzikeHobbyLeafCsv) {
-      return muzikeHobbyListParams ?? { category_ids: muzikeHobbyLeafCsv, page: 1, limit: 20 };
+    if (isMuzikeHobbyHub) {
+      return muzikeHobbyListParams ?? { category_id: categoryId, page: 1, limit: 20 };
     }
-    if (isKafshetHub && kafshetLeafCsv) {
-      return kafshetListParams ?? { category_ids: kafshetLeafCsv, page: 1, limit: 20 };
+    if (isKafshetHub) {
+      return kafshetListParams ?? { category_id: categoryId, page: 1, limit: 20 };
     }
     if (isTvElektronikeHub) {
-      return (
-        tvElektronikeListParams ??
-        (tvElektronikeLeafCsv
-          ? { category_ids: tvElektronikeLeafCsv, page: 1, limit: 20 }
-          : { category_id: categoryId, page: 1, limit: 20 })
-      );
+      return tvElektronikeListParams ?? { category_id: categoryId, page: 1, limit: 20 };
     }
     if (isKompjuterLaptopHub) {
       return kompjuterListParams ?? { category_id: categoryId, page: 1, limit: 20 };

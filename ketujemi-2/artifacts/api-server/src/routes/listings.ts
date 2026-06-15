@@ -90,6 +90,13 @@ import {
   resolveCategorySlugMeta,
 } from "../lib/listing-special-categories.js";
 import { getCategoryTreeIds } from "../lib/category-tree.js";
+import {
+  expandCategoryIdsForFilter,
+  repairHubListingsForTypeCategory,
+  repairListingCategoriesInBatch,
+  repairListingCategoryIfNeeded,
+  resolveListingCategoryToLeaf,
+} from "../lib/listing-category-resolve.js";
 import { expiresAtAfterListingLifetime } from "../lib/listing-lifetime.js";
 import { isListingPubliclyVisible, activeListingSqlCondition } from "../lib/listing-visibility.js";
 import { postNewListingToFacebook } from "../services/socialMedia.js";
@@ -240,9 +247,14 @@ router.get("/listings", searchLimiter, async (req, res) => {
   if (sellerUserId != null && Number.isFinite(sellerUserId) && sellerUserId > 0) {
     conditions.push(eq(listingsTable.user_id, sellerUserId));
   }
+  let expandedCategoryIdList = categoryIdList;
   if (categoryIdList.length > 0) {
-    conditions.push(inArray(listingsTable.category_id, categoryIdList));
+    expandedCategoryIdList = await expandCategoryIdsForFilter(categoryIdList);
+    conditions.push(inArray(listingsTable.category_id, expandedCategoryIdList));
   } else if (category_id) {
+    await repairHubListingsForTypeCategory(category_id).catch((err) => {
+      logger.warn({ err, category_id }, "repairHubListingsForTypeCategory failed");
+    });
     const treeIds = await getCategoryTreeIds(category_id);
     if (treeIds.length > 0) {
       conditions.push(inArray(listingsTable.category_id, treeIds));
@@ -431,7 +443,7 @@ router.get("/listings", searchLimiter, async (req, res) => {
       ? [desc(listingTitleMatchScoreSql(listingsTable.title, searchTokens[0]!)), ...listingFeedOrderBy]
       : listingFeedOrderBy;
 
-  const [totalResult, rows] = await Promise.all([
+  let [totalResult, rows] = await Promise.all([
     db.select({ total: count() }).from(listingsTable).where(where),
     db
       .select()
@@ -441,6 +453,8 @@ router.get("/listings", searchLimiter, async (req, res) => {
       .limit(limit)
       .offset((page - 1) * limit),
   ]);
+
+  rows = await repairListingCategoriesInBatch(rows);
 
   const cats = await db
     .select({
@@ -489,6 +503,11 @@ router.post("/listings", postListingLimiter, async (req, res) => {
 
   const normalizedTitle = normalizeListingTitle(parsed.data.title);
   const normalizedDescription = normalizeListingDescription(parsed.data.description);
+  const listingCategoryId = await resolveListingCategoryToLeaf(
+    parsed.data.category_id,
+    normalizedTitle,
+    normalizedDescription,
+  );
 
   viewer = await syncSellerContactFromListingIfNeeded(viewer, {
     seller_name: parsed.data.seller_name,
@@ -548,7 +567,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     viewer.id,
     normalizedTitle,
     listingDescription,
-    parsed.data.category_id,
+    listingCategoryId,
   );
   if (priorRejection) {
     res.status(403).json({
@@ -563,7 +582,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     normalizedTitle,
     listingDescription,
     {
-      categoryId: parsed.data.category_id,
+      categoryId: listingCategoryId,
       imageUrl: safeImageUrl ?? null,
     },
   );
@@ -577,7 +596,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
 
   const specialGate = await assertSpecialCategoryListingRules({
     userId: viewer.id,
-    categoryId: parsed.data.category_id,
+    categoryId: listingCategoryId,
     title: normalizedTitle,
     description: listingDescription,
     price: parsed.data.price,
@@ -592,7 +611,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     return;
   }
   const listingPrice = specialGate.price;
-  const categoryMeta = await resolveCategorySlugMeta(parsed.data.category_id);
+  const categoryMeta = await resolveCategorySlugMeta(listingCategoryId);
 
   const twoLayer = await runTwoLayerModeration({
     userId: viewer.id,
@@ -600,14 +619,14 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     title: normalizedTitle,
     description: listingDescription,
     sellerPhone: sellerContact.seller_phone,
-    categoryId: parsed.data.category_id,
+    categoryId: listingCategoryId,
     imageUrl: safeImageUrl ?? null,
   });
   if (!twoLayer.ok) {
     void logListingModerationRejection({
       title: normalizedTitle,
       reason: twoLayer.reason,
-      categoryId: parsed.data.category_id,
+      categoryId: listingCategoryId,
       userId: viewer.id,
     }).catch(() => undefined);
     res.status(409).json({
@@ -643,7 +662,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   const [catRow] = await db
     .select({ name: categoriesTable.name })
     .from(categoriesTable)
-    .where(eq(categoriesTable.id, parsed.data.category_id))
+    .where(eq(categoriesTable.id, listingCategoryId))
     .limit(1);
 
   const bodyExtra = req.body as {
@@ -671,7 +690,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     void logListingModerationRejection({
       title: normalizedTitle,
       reason: moderation.reason || "Moderim automatik",
-      categoryId: parsed.data.category_id,
+      categoryId: listingCategoryId,
       userId: viewer.id,
     }).catch(() => undefined);
     res.status(403).json({
@@ -716,7 +735,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
       title: normalizedTitle,
       description: listingDescription,
       price: String(listingPrice),
-      category_id: parsed.data.category_id,
+      category_id: listingCategoryId,
       location: parsed.data.location,
       seller_name: sellerContact.seller_name,
       seller_phone: sellerContact.seller_phone,
@@ -1363,6 +1382,14 @@ router.get("/listings/:id", async (req, res) => {
       logger.warn({ repairErr, listingId: row.id }, "repairLegacyListingFields failed on GET");
       return row;
     });
+
+    const repairedCategoryId = await repairListingCategoryIfNeeded(row).catch((repairErr) => {
+      logger.warn({ repairErr, listingId: row.id }, "repairListingCategoryIfNeeded failed on GET");
+      return null;
+    });
+    if (repairedCategoryId) {
+      row = { ...row, category_id: repairedCategoryId };
+    }
 
     if (!isOwner && !isListingPubliclyVisible(row)) {
       res.status(404).json({ error: "Not found" });
