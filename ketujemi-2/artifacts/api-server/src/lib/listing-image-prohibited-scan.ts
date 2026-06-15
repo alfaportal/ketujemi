@@ -125,22 +125,25 @@ export async function scanListingImagesForProhibitedContent(
   if (urls.length === 0) return null;
 
   if (isGoogleVisionConfigured()) {
-    for (const url of urls) {
-      const base64 = await fetchImageAsBase64(url);
-      if (!base64) continue;
-      try {
-        const vision = await detectImageLabels(base64);
-        if (vision) {
-          const hit = hitFromVisionDetect(vision);
-          if (hit) return hit;
+    const hits = await Promise.all(
+      urls.map(async (url) => {
+        const base64 = await fetchImageAsBase64(url);
+        if (!base64) return null;
+        try {
+          const vision = await detectImageLabels(base64);
+          if (vision) return hitFromVisionDetect(vision);
+        } catch (err) {
+          logger.warn({ err, url: url.slice(0, 80) }, "prohibited-image-scan google vision url failed");
         }
-      } catch (err) {
-        logger.warn({ err, url: url.slice(0, 80) }, "prohibited-image-scan google vision url failed");
-      }
+        return null;
+      }),
+    );
+    for (const hit of hits) {
+      if (hit) return hit;
     }
   }
 
-  return scanWithClaudeUrls(urls);
+  return scanWithClaudeUrls(urls.slice(0, 2));
 }
 
 export function isListingImageProhibitedScanConfigured(): boolean {

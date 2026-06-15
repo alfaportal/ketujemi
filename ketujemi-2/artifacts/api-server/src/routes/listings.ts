@@ -463,6 +463,7 @@ router.get("/listings", searchLimiter, async (req, res) => {
 
 // ─── POST /listings ───────────────────────────────────────────────────────────
 router.post("/listings", postListingLimiter, async (req, res) => {
+  try {
   let viewer = await getSessionUser(req);
   if (!viewer) {
     res.status(401).json({
@@ -824,6 +825,15 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     ),
   ]);
   res.status(201).json({ ...created, is_first_listing });
+  } catch (err) {
+    logger.error({ err }, "POST /listings failed");
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: "LISTING_POST_FAILED",
+        message: "Ndodhi një gabim gjatë postimit. Provoni përsëri pas pak.",
+      });
+    }
+  }
 });
 
 // ─── GET /listings/top — all active paid TOP listings (homepage carousel) ─────

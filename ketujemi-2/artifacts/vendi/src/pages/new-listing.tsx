@@ -3,6 +3,7 @@ import {
   fetchWithTimeout,
   getFetchErrorMessage,
   IMAGE_ANALYZE_TIMEOUT_MS,
+  LISTING_POST_TIMEOUT_MS,
 } from "@/lib/fetch-with-timeout";
 import { Link, useLocation } from "wouter";
 import { useForm, useWatch } from "react-hook-form";
@@ -626,7 +627,7 @@ export default function NewListing() {
       })
       .catch((e) => {
         if (cancelled) return;
-        refusePost(e instanceof Error ? e.message : (tx.adm_edit_err_load ?? t.postError));
+        refusePost(getFetchErrorMessage(e, tx.adm_edit_err_load ?? t.postError));
         setAdminEditLoading(false);
         setLocation("/admin");
       });
@@ -1046,15 +1047,19 @@ export default function NewListing() {
     if (activeUser && userNeedsSellerProfile(activeUser) && !isAdminListingMode) {
       setIsSubmitting(true);
       try {
-        const bootRes = await fetchWithTimeout("/api/auth/profile/seller-bootstrap", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            display_name: formName,
-            contact_phone: formPhone,
-          }),
-        });
+        const bootRes = await fetchWithTimeout(
+          "/api/auth/profile/seller-bootstrap",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              display_name: formName,
+              contact_phone: formPhone,
+            }),
+          },
+          LISTING_POST_TIMEOUT_MS,
+        );
         const bootBody = (await bootRes.json().catch(() => ({}))) as {
           error?: string;
           message?: string;
@@ -1123,7 +1128,7 @@ export default function NewListing() {
         toast({ title: tx.adm_edit_success ?? "Shpallja u përditësua." });
         setLocation("/admin");
       } catch (e) {
-        refusePost(e instanceof Error ? e.message : (tx.adm_post_err_generic ?? t.postError));
+        refusePost(getFetchErrorMessage(e, tx.adm_post_err_generic ?? t.postError));
       } finally {
         setIsSubmitting(false);
       }
@@ -1152,19 +1157,23 @@ export default function NewListing() {
         toast({ title: tx.adm_post_success ?? "Shpallja u publikua." });
         setLocation(`/listings/${row.id}?posted=1`);
       } catch (e) {
-        refusePost(e instanceof Error ? e.message : (tx.adm_post_err_generic ?? t.postError));
+        refusePost(getFetchErrorMessage(e, tx.adm_post_err_generic ?? t.postError));
       } finally {
         setIsSubmitting(false);
       }
       return;
     }
 
-    void fetchWithTimeout("/api/listings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(payload),
-    })
+    void fetchWithTimeout(
+      "/api/listings",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      },
+      LISTING_POST_TIMEOUT_MS,
+    )
       .then(async (res) => {
         const body = (await res.json().catch(() => ({}))) as ListingPostApiBody & {
           id?: number;
