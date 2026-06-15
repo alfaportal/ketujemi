@@ -1763,6 +1763,13 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
     .set({ shop_id: shop.id })
     .where(and(eq(listingsTable.user_id, app.user_id), sql`${listingsTable.shop_id} IS NULL`));
 
+  const { backfillShopListingsForShop } = await import("../lib/shop-listing-lookup.js");
+  await backfillShopListingsForShop({
+    id: shop.id,
+    user_id: shop.user_id,
+    phone: shop.phone,
+  }).catch(() => undefined);
+
   const { sendShopApprovedEmail } = await import("../lib/send-shop-application-email");
   try {
     await sendShopApprovedEmail(app.email, app.shop_name, shop.id);

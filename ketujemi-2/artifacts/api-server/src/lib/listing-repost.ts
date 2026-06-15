@@ -9,7 +9,7 @@ import {
   blockIfPriorModerationRejection,
   MODERATION_REPOST_BLOCK_MESSAGE,
 } from "./listing-moderation-repost-guard";
-import { getApprovedShopIdForUser, backfillShopIdOnUserListings } from "./shop-listing-lookup.js";
+import { getApprovedShopIdForUser, backfillShopListingsForShop } from "./shop-listing-lookup.js";
 import { runTwoLayerModeration } from "./listing-two-layer-moderation";
 import { logListingModerationRejection } from "./listing-moderation-rejection-log";
 
@@ -119,7 +119,14 @@ export async function repostListing(
     .where(eq(listingsTable.id, listingId));
 
   if (shopId) {
-    await backfillShopIdOnUserListings(user.id, shopId).catch(() => undefined);
+    const [shopRow] = await db
+      .select({ id: shopsTable.id, user_id: shopsTable.user_id, phone: shopsTable.phone })
+      .from(shopsTable)
+      .where(eq(shopsTable.id, shopId))
+      .limit(1);
+    if (shopRow) {
+      await backfillShopListingsForShop(shopRow).catch(() => undefined);
+    }
   }
 
   return { ok: true };

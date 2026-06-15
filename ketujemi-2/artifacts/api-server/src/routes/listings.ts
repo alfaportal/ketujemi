@@ -74,7 +74,7 @@ import {
 import { handleSellerComplaint } from "../lib/violation-escalation";
 import { deleteListingCascade } from "../lib/delete-listing-cascade";
 import type { User } from "@workspace/db";
-import { getApprovedShopIdForUser, finalizeListingsForApi, backfillShopIdOnUserListings } from "../lib/shop-listing-lookup";
+import { getApprovedShopIdForUser, finalizeListingsForApi, linkNewListingToMatchingShop } from "../lib/shop-listing-lookup";
 import { applyViewerContact, buildCategoryRootSlugMap, formatListing } from "./listings-format";
 import {
   requestPurgeExpiredListings,
@@ -757,12 +757,14 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   });
 
   recordListingPostSuccessForUser(viewer);
-  if (shopId) {
-    try {
-      await backfillShopIdOnUserListings(viewer.id, shopId);
-    } catch (backfillErr) {
-      logger.warn({ backfillErr, userId: viewer.id, shopId }, "listing shop_id backfill after post failed");
-    }
+  try {
+    await linkNewListingToMatchingShop({
+      userId: viewer.id,
+      sellerPhone: sellerContact.seller_phone,
+      listingId: row.id,
+    });
+  } catch (linkErr) {
+    logger.warn({ linkErr, userId: viewer.id, listingId: row.id }, "listing shop link after post failed");
   }
   if (is_first_listing) {
     await markFirstListingPosted(viewer.id);

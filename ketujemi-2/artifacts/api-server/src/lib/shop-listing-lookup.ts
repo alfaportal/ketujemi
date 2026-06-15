@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull, desc } from "drizzle-orm";
+import { and, eq, inArray, isNull, desc, or, sql } from "drizzle-orm";
 import { db, listingsTable, shopsTable } from "@workspace/db";
 import { annotateListingsWithVipFlag } from "./vip-seller-lookup";
 import {
@@ -6,6 +6,8 @@ import {
   type ShopSocialProfileApi,
 } from "./shop-social-enrich.js";
 import { activeShopSqlCondition } from "./shop-visibility.js";
+import { activeListingSqlCondition } from "./listing-visibility.js";
+import { normalizePhoneDigits } from "./listing-ownership.js";
 import { logger } from "./logger.js";
 
 const EMPTY_SHOP_FIELDS: ShopListingFields = {
@@ -59,6 +61,108 @@ export async function backfillShopIdOnUserListings(
     .where(and(eq(listingsTable.user_id, userId), isNull(listingsTable.shop_id)))
     .returning({ id: listingsTable.id });
   return updated.length;
+}
+
+function phoneSuffix8(phone: string | null | undefined): string | null {
+  const digits = normalizePhoneDigits(phone ?? "");
+  if (digits.length < 8) return null;
+  return digits.slice(-8);
+}
+
+/** Backfill by user_id and by matching seller phone (handles duplicate OAuth/email accounts). */
+export async function backfillShopListingsForShop(shop: {
+  id: number;
+  user_id: number;
+  phone: string;
+}): Promise<number> {
+  let linked = await backfillShopIdOnUserListings(shop.user_id, shop.id);
+
+  const suffix = phoneSuffix8(shop.phone);
+  if (suffix) {
+    const byPhone = await db
+      .update(listingsTable)
+      .set({ shop_id: shop.id })
+      .where(
+        and(
+          isNull(listingsTable.shop_id),
+          sql`RIGHT(regexp_replace(${listingsTable.seller_phone}, '\\D', '', 'g'), 8) = ${suffix}`,
+        ),
+      )
+      .returning({ id: listingsTable.id });
+    linked += byPhone.length;
+  }
+
+  if (linked > 0) {
+    logger.info({ shopId: shop.id, linked }, "shop listings backfilled");
+  }
+  return linked;
+}
+
+/** Public shop page — listings owned by or linked to this shop. */
+export function shopPublicListingsCondition(shop: {
+  id: number;
+  user_id: number;
+  phone: string;
+}) {
+  const suffix = phoneSuffix8(shop.phone);
+  const orphanMatch = or(
+    eq(listingsTable.user_id, shop.user_id),
+    suffix
+      ? sql`RIGHT(regexp_replace(${listingsTable.seller_phone}, '\\D', '', 'g'), 8) = ${suffix}`
+      : sql`false`,
+  );
+
+  return and(
+    or(eq(listingsTable.shop_id, shop.id), and(isNull(listingsTable.shop_id), orphanMatch)),
+    activeListingSqlCondition(),
+  );
+}
+
+/** After posting, link listing to any shop whose phone matches the seller contact. */
+export async function linkNewListingToMatchingShop(input: {
+  userId: number;
+  sellerPhone: string;
+  listingId: number;
+}): Promise<void> {
+  const [shopByUser] = await db
+    .select({ id: shopsTable.id, user_id: shopsTable.user_id, phone: shopsTable.phone })
+    .from(shopsTable)
+    .where(and(eq(shopsTable.user_id, input.userId), activeShopSqlCondition()))
+    .orderBy(desc(shopsTable.created_at))
+    .limit(1);
+
+  if (shopByUser) {
+    await db
+      .update(listingsTable)
+      .set({ shop_id: shopByUser.id })
+      .where(eq(listingsTable.id, input.listingId));
+    await backfillShopListingsForShop(shopByUser);
+    return;
+  }
+
+  const suffix = phoneSuffix8(input.sellerPhone);
+  if (!suffix) return;
+
+  const [shopByPhone] = await db
+    .select({ id: shopsTable.id, user_id: shopsTable.user_id, phone: shopsTable.phone })
+    .from(shopsTable)
+    .where(
+      and(
+        activeShopSqlCondition(),
+        sql`RIGHT(regexp_replace(${shopsTable.phone}, '\\D', '', 'g'), 8) = ${suffix}`,
+      ),
+    )
+    .orderBy(desc(shopsTable.created_at))
+    .limit(1);
+
+  if (!shopByPhone) return;
+
+  await db
+    .update(listingsTable)
+    .set({ shop_id: shopByPhone.id })
+    .where(eq(listingsTable.id, input.listingId));
+
+  await backfillShopListingsForShop(shopByPhone);
 }
 
 async function activeShopMap(shopIds: number[]) {

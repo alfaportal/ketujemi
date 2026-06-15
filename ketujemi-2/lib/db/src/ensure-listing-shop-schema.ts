@@ -13,6 +13,15 @@ WHERE l.user_id = s.user_id
   AND l.shop_id IS NULL
   AND s.is_active = true
   AND s.deleted_at IS NULL;
+
+UPDATE listings l
+SET shop_id = s.id
+FROM shops s
+WHERE l.shop_id IS NULL
+  AND s.is_active = true
+  AND s.deleted_at IS NULL
+  AND RIGHT(regexp_replace(l.seller_phone, '\\D', '', 'g'), 8) = RIGHT(regexp_replace(s.phone, '\\D', '', 'g'), 8)
+  AND length(regexp_replace(l.seller_phone, '\\D', '', 'g')) >= 8;
 `;
 
 export async function ensureListingShopSchema(pool: pg.Pool): Promise<void> {

@@ -15,7 +15,7 @@ import { getSessionUser } from "../lib/session-user";
 import { incrementShopView } from "../lib/shop-view.js";
 import { clientIpFromRequest } from "../lib/request-ip.js";
 import { activeShopSqlCondition, isShopPubliclyVisible } from "../lib/shop-visibility.js";
-import { backfillShopIdOnUserListings } from "../lib/shop-listing-lookup.js";
+import { backfillShopListingsForShop, shopPublicListingsCondition } from "../lib/shop-listing-lookup.js";
 import { sendShopApplicationEmail, sendShopRatingEmail } from "../lib/send-shop-application-email";
 import { formatListingsBatch } from "../lib/format-listings-batch";
 import { resolveDirectoryFields } from "../lib/shop-directory-patch";
@@ -356,14 +356,6 @@ router.get("/shops/directory", async (req, res) => {
   });
 });
 
-function activeListingCondition() {
-  const now = new Date();
-  return and(
-    eq(listingsTable.status, "active"),
-    or(gt(listingsTable.expires_at, now), isNull(listingsTable.expires_at)),
-  );
-}
-
 // ─── GET /shops/me ────────────────────────────────────────────────────────────
 router.get("/shops/me", async (req, res) => {
   const viewer = await getSessionUser(req);
@@ -394,14 +386,24 @@ router.get("/shops/me", async (req, res) => {
   let listing_count = 0;
   let total_views = 0;
   if (shop) {
-    await backfillShopIdOnUserListings(shop.user_id, shop.id).catch(() => undefined);
+    await backfillShopListingsForShop({
+      id: shop.id,
+      user_id: shop.user_id,
+      phone: shop.phone,
+    }).catch(() => undefined);
     const [stats] = await db
       .select({
         listing_count: sql<number>`count(*)::int`,
         total_views: sql<number>`coalesce(sum(${listingsTable.views}), 0)::int`,
       })
       .from(listingsTable)
-      .where(eq(listingsTable.shop_id, shop.id));
+      .where(
+        shopPublicListingsCondition({
+          id: shop.id,
+          user_id: shop.user_id,
+          phone: shop.phone,
+        }),
+      );
     listing_count = stats?.listing_count ?? 0;
     total_views = stats?.total_views ?? 0;
   }
@@ -446,7 +448,11 @@ router.get("/shops/me/listings", async (req, res) => {
   }
 
   const [shop] = await db
-    .select({ id: shopsTable.id, user_id: shopsTable.user_id })
+    .select({
+      id: shopsTable.id,
+      user_id: shopsTable.user_id,
+      phone: shopsTable.phone,
+    })
     .from(shopsTable)
     .where(and(eq(shopsTable.user_id, viewer.id), activeShopSqlCondition()))
     .limit(1);
@@ -455,12 +461,12 @@ router.get("/shops/me/listings", async (req, res) => {
     return;
   }
 
-  await backfillShopIdOnUserListings(shop.user_id, shop.id).catch(() => undefined);
+  await backfillShopListingsForShop(shop).catch(() => undefined);
 
   const rows = await db
     .select()
     .from(listingsTable)
-    .where(and(eq(listingsTable.shop_id, shop.id), activeListingCondition()))
+    .where(shopPublicListingsCondition(shop))
     .orderBy(desc(listingsTable.listed_at))
     .limit(200);
 
@@ -779,12 +785,20 @@ router.get("/shops/:id", async (req, res) => {
 
   const viewer = await getSessionUser(req);
 
-  await backfillShopIdOnUserListings(shop.user_id, shop.id).catch(() => undefined);
+  await backfillShopListingsForShop({
+    id: shop.id,
+    user_id: shop.user_id,
+    phone: shop.phone,
+  }).catch(() => undefined);
 
   const listingRows = await db
     .select()
     .from(listingsTable)
-    .where(and(eq(listingsTable.shop_id, shop.id), activeListingCondition()))
+    .where(shopPublicListingsCondition({
+      id: shop.id,
+      user_id: shop.user_id,
+      phone: shop.phone,
+    }))
     .orderBy(desc(listingsTable.listed_at))
     .limit(200);
 
