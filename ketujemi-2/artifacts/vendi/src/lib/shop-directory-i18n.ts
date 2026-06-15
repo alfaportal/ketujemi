@@ -184,10 +184,10 @@ const KS: ShopDirectoryCopy = {
     "Ti nuk ke nevojë të ecësh nëpër treg, të telefonosh pa fund, apo të humbasësh kohë — me një kërkim të shpejtë gjen biznesin që të duhet, sheh atë që ofron, dhe kontakton direkt me pronarin — pa ndërmjetës, pa komision, pa vonesë!",
   introP3:
     "Të gjitha bizneset në KetuJemi janë të verifikuara nga stafi ynë — kështu që ti mund të bashkëpunosh apo blesh me besim dhe siguri të plotë!",
-  introApplyTitle: "Ke biznes ose dyqan?",
+  introApplyTitle: "Ke biznes apo zyrë?",
   introApplyText:
-    "Apliko për dyqanin tënd dixhital — stafi ynë e shqyrton kërkesën dhe e aktivizon brenda 24 orëve.",
-  introApplyBtn: "🏪 Apliko për dyqan →",
+    "Apliko për profilin tënd dixhital — stafi ynë e shqyrton kërkesën dhe e aktivizon brenda 24 orëve.",
+  introApplyBtn: "Apliko tani →",
   searchPlaceholder: "🔍 Kërko dyqan... p.sh. mobilje, telefon, këpucë",
   searchBtn: "Kërko",
   filterCity: "Qyteti",
@@ -227,10 +227,10 @@ const MK: ShopDirectoryCopy = {
     "Не мора да шеташ низ пазарот, бесконечно да телефонираш или да губиш време — со едно брзо пребарување го наоѓаш бизнисот што ти треба, го гледаш она што нуди и директно контактираш со сопственикот — без посредник, без провизија, без доцнење!",
   introP3:
     "Сите бизниси на KetuJemi се верификувани од нашиот тим — така што можеш да соработуваш или купуваш со целосно доверба и сигурност!",
-  introApplyTitle: "Имате бизнис или продавница?",
+  introApplyTitle: "Имате бизнис или канцеларија?",
   introApplyText:
-    "Аплицирајте за вашата дигитална продавница — тимот ја разгледува барањето и ја активира во рок од 24 часа.",
-  introApplyBtn: "🏪 Аплицирај за продавница →",
+    "Аплицирајте за вашиот дигитален профил — тимот ја разгледува барањето и ја активира во рок од 24 часа.",
+  introApplyBtn: "Аплицирајте сега →",
   searchPlaceholder: "🔍 Пребарај продавница... нпр. мебел, телефон, обувки",
   searchBtn: "Пребарај",
   filterCity: "Град",
@@ -270,10 +270,10 @@ const MNE: ShopDirectoryCopy = {
     "Ne moraš šetati pijacu, beskonačno zvati ili gubiti vrijeme — jednom brzom pretragom nalaziš biznis koji ti treba, vidiš šta nudi i direktno kontaktiraš vlasnika — bez posrednika, bez provizije, bez čekanja!",
   introP3:
     "Svi biznisi na KetuJemi su verifikovani od strane našeg tima — tako da možeš saradjivati ili kupovati sa potpunim povjerenjem i sigurnošću!",
-  introApplyTitle: "Imate biznis ili prodavnicu?",
+  introApplyTitle: "Imate biznis ili ured?",
   introApplyText:
-    "Prijavite se za svoju digitalnu prodavnicu — tim pregleda zahtjev i aktivira je u roku od 24 sata.",
-  introApplyBtn: "🏪 Prijavi se za prodavnicu →",
+    "Prijavite se za svoj digitalni profil — tim pregleda zahtjev i aktivira ga u roku od 24 sata.",
+  introApplyBtn: "Prijavi se sada →",
   searchPlaceholder: "🔍 Pretraži prodavnicu... npr. namještaj, telefon, cipele",
   searchBtn: "Pretraži",
   filterCity: "Grad",
