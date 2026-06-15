@@ -55,6 +55,9 @@ import {
 } from "../lib/listing-locations.js";
 import { moderateListingContent } from "../lib/listing-ai-moderation";
 import { logListingModerationRejection } from "../lib/listing-moderation-rejection-log";
+import {
+  blockIfPriorModerationRejection,
+} from "../lib/listing-moderation-repost-guard";
 import { parseUiLang } from "../lib/claude-client";
 import { effectiveListingSearchQuery } from "../../../../lib/listing-search-query.js";
 import {
@@ -538,6 +541,20 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     return;
   }
 
+  const priorRejection = await blockIfPriorModerationRejection(
+    viewer.id,
+    normalizedTitle,
+    listingDescription,
+    parsed.data.category_id,
+  );
+  if (priorRejection) {
+    res.status(403).json({
+      error: "MODERATION_REPOST_BLOCKED",
+      message: priorRejection.message,
+    });
+    return;
+  }
+
   const selfDuplicate = await blockSelfDuplicateListingIfNeeded(
     viewer,
     normalizedTitle,
@@ -584,6 +601,12 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     imageUrl: safeImageUrl ?? null,
   });
   if (!twoLayer.ok) {
+    void logListingModerationRejection({
+      title: normalizedTitle,
+      reason: twoLayer.reason,
+      categoryId: parsed.data.category_id,
+      userId: viewer.id,
+    }).catch(() => undefined);
     res.status(409).json({
       error: twoLayer.code,
       reason: twoLayer.reason,

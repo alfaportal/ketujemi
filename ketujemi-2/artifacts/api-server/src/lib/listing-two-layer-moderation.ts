@@ -7,6 +7,7 @@ import {
 } from "./listing-self-duplicate";
 import { listingBelongsToUser } from "./listing-ownership";
 import { listingTextSimilarity, SELF_DUPLICATE_SCAN_THRESHOLD } from "./listing-text-similarity";
+import { logListingModerationRejection } from "./listing-moderation-rejection-log";
 
 const DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
 const TEXT_SIMILARITY_THRESHOLD = SELF_DUPLICATE_SCAN_THRESHOLD;
@@ -114,6 +115,15 @@ function hasExternalLink(description: string): boolean {
   return /(https?:\/\/|www\.)\S+/i.test(description);
 }
 
+function logUserRejection(input: ModerationInput, reason: string): void {
+  void logListingModerationRejection({
+    title: input.title,
+    reason,
+    categoryId: input.categoryId,
+    userId: input.userId,
+  }).catch(() => undefined);
+}
+
 export async function runTwoLayerModeration(input: ModerationInput): Promise<ModerationResult> {
   const title = input.title.trim();
   const description = input.description.trim();
@@ -122,6 +132,7 @@ export async function runTwoLayerModeration(input: ModerationInput): Promise<Mod
   if (blockedWord) {
     const reason = `BLACKLIST_WORD:${blockedWord}`;
     await logModerationDecision(reason, "blocked");
+    logUserRejection(input, reason);
     return {
       ok: false,
       code: "BLACKLIST_WORD",
@@ -133,6 +144,7 @@ export async function runTwoLayerModeration(input: ModerationInput): Promise<Mod
   if (hasPhoneInDescription(description)) {
     const reason = "PHONE_IN_DESCRIPTION";
     await logModerationDecision(reason, "blocked");
+    logUserRejection(input, reason);
     return {
       ok: false,
       code: "PHONE_IN_DESCRIPTION",
@@ -144,6 +156,7 @@ export async function runTwoLayerModeration(input: ModerationInput): Promise<Mod
   if (hasExternalLink(description)) {
     const reason = "EXTERNAL_LINK_IN_DESCRIPTION";
     await logModerationDecision(reason, "blocked");
+    logUserRejection(input, reason);
     return {
       ok: false,
       code: "EXTERNAL_LINK_IN_DESCRIPTION",
@@ -162,6 +175,7 @@ export async function runTwoLayerModeration(input: ModerationInput): Promise<Mod
   if (selfDupId != null) {
     const reason = `SELF_DUPLICATE_ACTIVE:${selfDupId}`;
     await logModerationDecision(reason, "blocked", selfDupId);
+    logUserRejection(input, reason);
     return {
       ok: false,
       code: "DUPLICATE_LISTING_SELF",
@@ -229,6 +243,7 @@ export async function runTwoLayerModeration(input: ModerationInput): Promise<Mod
     if (similarity >= TEXT_SIMILARITY_THRESHOLD) {
       const reason = `DUPLICATE_TEXT_SIMILARITY:${similarity.toFixed(2)}`;
       await logModerationDecision(reason, "blocked", row.id);
+      logUserRejection(input, reason);
       return {
         ok: false,
         code: "DUPLICATE_LISTING",
@@ -252,6 +267,7 @@ export async function runTwoLayerModeration(input: ModerationInput): Promise<Mod
       if (matched) {
         const reason = "DUPLICATE_IMAGE_PHASH";
         await logModerationDecision(reason, "blocked", row.id);
+        logUserRejection(input, reason);
         return {
           ok: false,
           code: "DUPLICATE_LISTING",
@@ -280,6 +296,7 @@ export async function runTwoLayerModeration(input: ModerationInput): Promise<Mod
     ) {
       const reason = "DUPLICATE_PHONE_CATEGORY_24H";
       await logModerationDecision(reason, "blocked", row.id);
+      logUserRejection(input, reason);
       return {
         ok: false,
         code: "DUPLICATE_LISTING",

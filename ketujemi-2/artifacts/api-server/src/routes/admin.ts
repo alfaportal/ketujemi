@@ -58,6 +58,7 @@ import { getAdminEmail } from "../lib/admin-monitor-email.js";
 import { adminLoginLimiter } from "../lib/express-rate-limiters";
 import { notifyAdminLoginFailed } from "../lib/admin-login-alert.js";
 import { deleteListingCascade } from "../lib/delete-listing-cascade";
+import { logListingModerationRejection } from "../lib/listing-moderation-rejection-log";
 import {
   getModerationState,
   updateModerationSettings,
@@ -463,6 +464,32 @@ router.patch("/admin/listings/:id", requireAdmin, async (req, res) => {
 router.delete("/admin/listings/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+    const [existing] = await db
+      .select({
+        id: listingsTable.id,
+        title: listingsTable.title,
+        description: listingsTable.description,
+        category_id: listingsTable.category_id,
+        user_id: listingsTable.user_id,
+      })
+      .from(listingsTable)
+      .where(eq(listingsTable.id, id))
+      .limit(1);
+
+    if (!existing) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+
+    if (existing.user_id) {
+      await logListingModerationRejection({
+        title: existing.title,
+        reason: "ADMIN_REMOVED",
+        categoryId: existing.category_id,
+        userId: existing.user_id,
+      });
+    }
+
     const removed = await deleteListingCascade(id, "admin");
     if (!removed) {
       res.status(404).json({ error: "Not found" });
