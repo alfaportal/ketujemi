@@ -12,6 +12,7 @@ import {
 } from "@workspace/api-zod";
 import { getSessionUser } from "../lib/session-user";
 import { isSellerOnline, countUsersOnlineNow } from "../lib/user-last-active.js";
+import { computeDisplayUsersOnlineNow } from "../../../../lib/platform-visitors-display.js";
 import { resolveSellerProfileHref } from "../lib/seller-profile-href.js";
 import { postListingLimiter, searchLimiter } from "../lib/express-rate-limiters";
 import { canonicalSellerContactForUser, listingBelongsToUser } from "../lib/listing-ownership";
@@ -945,7 +946,7 @@ router.get("/listings/stats", async (req, res) => {
     listings_today: todayRes[0]?.total ?? 0,
     top_locations: locationRes,
     category_listings: category_listings,
-    users_online_now: onlineUsersRes,
+    users_online_now: computeDisplayUsersOnlineNow(Date.now(), onlineUsersRes),
   });
   } catch (err) {
     logger.error({ err, query: req.query }, "GET /listings/stats failed");

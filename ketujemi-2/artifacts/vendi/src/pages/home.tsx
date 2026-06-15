@@ -29,6 +29,7 @@ import {
 } from "@/lib/primary-button-classes";
 import { effectiveListingSearchQuery } from "@/lib/listing-search-query";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { computeDisplayUsersOnlineNow } from "../../../../lib/platform-visitors-display";
 
 
 function CategoryThumb({
@@ -114,9 +115,14 @@ export default function HomePage() {
   const [platformStatsLoading, setPlatformStatsLoading] = useState(true);
   const [listingStats, setListingStats] = useState<{ total_listings: number; listings_today: number; users_online_now?: number } | null>(null);
   const [shopStats, setShopStats] = useState<{ total_shops: number; shops_today: number } | null>(null);
+  const [onlineDisplay, setOnlineDisplay] = useState<number | null>(null);
   const tx = t as Record<string, string>;
 
   useEffect(() => {
+    const tickOnline = () => setOnlineDisplay(computeDisplayUsersOnlineNow());
+    tickOnline();
+    const onlineTimer = window.setInterval(tickOnline, 3 * 60_000);
+
     const loadStats = () => {
       setPlatformStatsLoading(true);
       void Promise.all([
@@ -128,7 +134,14 @@ export default function HomePage() {
           .catch(() => null),
       ])
         .then(([listings, shops]) => {
-          if (listings) setListingStats(listings);
+          if (listings) {
+            setListingStats(listings);
+            if (listings.users_online_now != null) {
+              setOnlineDisplay((prev) =>
+                Math.max(prev ?? 0, listings.users_online_now ?? 0, computeDisplayUsersOnlineNow()),
+              );
+            }
+          }
           if (shops) setShopStats(shops);
         })
         .finally(() => setPlatformStatsLoading(false));
@@ -136,10 +149,20 @@ export default function HomePage() {
 
     if (typeof window.requestIdleCallback === "function") {
       const id = window.requestIdleCallback(loadStats, { timeout: 3000 });
-      return () => window.cancelIdleCallback(id);
+      const statsPoll = window.setInterval(loadStats, 3 * 60_000);
+      return () => {
+        window.cancelIdleCallback(id);
+        window.clearInterval(statsPoll);
+        window.clearInterval(onlineTimer);
+      };
     }
     const timer = window.setTimeout(loadStats, 800);
-    return () => window.clearTimeout(timer);
+    const statsPoll = window.setInterval(loadStats, 3 * 60_000);
+    return () => {
+      window.clearTimeout(timer);
+      window.clearInterval(statsPoll);
+      window.clearInterval(onlineTimer);
+    };
   }, []);
 
   const parentCategories = useMemo(
@@ -270,7 +293,7 @@ export default function HomePage() {
                         {tx.ui_homeStatsOnlineNow}
                       </td>
                       <td className="py-1.5 text-right font-black text-green-700 tabular-nums">
-                        {(listingStats?.users_online_now ?? 0).toLocaleString()}
+                        {(onlineDisplay ?? listingStats?.users_online_now ?? 0).toLocaleString()}
                       </td>
                     </tr>
                   </tbody>
