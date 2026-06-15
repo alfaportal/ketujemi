@@ -1236,20 +1236,6 @@ export default function CategoryPage() {
     );
   }, [currentCategory?.name, currentCategory?.slug, locale, seoCitySlugResolved]);
 
-  useEffect(() => {
-    if (!categorySeoMeta) return;
-    applyPageMeta({
-      title: categorySeoMeta.title,
-      description: categorySeoMeta.description,
-      canonicalPath: categorySeoMeta.canonicalPath,
-      ogImage: categoryOgImage,
-    });
-    const cleanupLd = categoryBreadcrumbLd
-      ? injectJsonLd("category-breadcrumb", categoryBreadcrumbLd)
-      : () => {};
-    return cleanupLd;
-  }, [categorySeoMeta, categoryOgImage, categoryBreadcrumbLd]);
-
   const listingsQueryEnabled =
     Number.isFinite(categoryId) &&
     !!allCategories?.length &&
@@ -1273,6 +1259,34 @@ export default function CategoryPage() {
       enabled: listingsQueryEnabled,
     },
   });
+
+  useEffect(() => {
+    if (!categorySeoMeta || !currentCategory?.slug) return;
+
+    const listingCount = listingsData?.listings?.length ?? 0;
+    const thinCityPage = !!seoCitySlugResolved && !isLoading && listingCount === 0;
+    const hubCanonical = seoCategoryPath(currentCategory.slug);
+
+    applyPageMeta({
+      title: categorySeoMeta.title,
+      description: categorySeoMeta.description,
+      canonicalPath: thinCityPage ? hubCanonical : categorySeoMeta.canonicalPath,
+      ogImage: categoryOgImage,
+      robots: thinCityPage ? "noindex, follow" : undefined,
+    });
+    const cleanupLd = categoryBreadcrumbLd
+      ? injectJsonLd("category-breadcrumb", categoryBreadcrumbLd)
+      : () => {};
+    return cleanupLd;
+  }, [
+    categorySeoMeta,
+    categoryOgImage,
+    categoryBreadcrumbLd,
+    currentCategory?.slug,
+    seoCitySlugResolved,
+    isLoading,
+    listingsData?.listings?.length,
+  ]);
 
   useCategoryScroll(categoryId);
 

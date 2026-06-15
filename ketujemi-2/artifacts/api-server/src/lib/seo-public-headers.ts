@@ -4,7 +4,6 @@ import type { Response } from "express";
 export function applySitemapHeaders(res: Response, byteLength?: number): void {
   res.setHeader("Content-Type", "application/xml; charset=utf-8");
   res.setHeader("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
-  /** Explicit tag — avoids accidental noindex from upstream; noarchive is safe for sitemaps. */
   res.setHeader("X-Robots-Tag", "noarchive");
   if (byteLength != null) {
     res.setHeader("Content-Length", String(byteLength));
@@ -19,6 +18,19 @@ export function applyRobotsTxtHeaders(res: Response): void {
 
 export const ROBOTS_TXT_BODY = `User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin-secret-panel
+Disallow: /api/
+Disallow: /login
+Disallow: /profili
+Disallow: /profile
+Disallow: /shpalljet-e-mia
+Disallow: /wallet/
+Disallow: /listings/new
+Disallow: /listings/*/edit
+Disallow: /listings?
+Disallow: /categories/
+Disallow: /category/
 
 Sitemap: https://ketujemi.com/sitemap.xml
 `;

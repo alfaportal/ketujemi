@@ -23,6 +23,10 @@ function setMeta(attr: "name" | "property", key: string, content: string | undef
   el.setAttribute("content", content);
 }
 
+export function setRobotsMeta(content: string) {
+  setMeta("name", "robots", content);
+}
+
 function setLink(rel: string, href: string | undefined) {
   if (!href) return;
   let el = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement | null;
@@ -48,7 +52,9 @@ export function applyPageMeta(meta: PageMeta) {
     setLink("canonical", url);
     setMeta("property", "og:url", url);
   }
-  if (meta.robots) setMeta("name", "robots", meta.robots);
+  if (meta.robots !== undefined) {
+    setMeta("name", "robots", meta.robots);
+  }
   if (meta.fbAppId) setMeta("property", "fb:app_id", meta.fbAppId);
 }
 

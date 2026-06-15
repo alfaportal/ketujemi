@@ -23,6 +23,7 @@ import { useShopDirectoryCopy } from "@/lib/shop-directory-i18n";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { translateCategory } from "@/lib/category-translations";
 import { prefetchRoute } from "@/lib/route-prefetch";
+import { applyPageMeta } from "@/lib/page-meta";
 
 // --- Skeleton Card ---
 function SkeletonCard() {
@@ -102,6 +103,32 @@ export default function Listings() {
   const [appliedMinPrice, setAppliedMinPrice] = useState(minPrice);
   const [appliedMaxPrice, setAppliedMaxPrice] = useState(maxPrice);
   const [appliedSellerUserId, setAppliedSellerUserId] = useState(initialUserId);
+
+  useEffect(() => {
+    const qs = typeof window !== "undefined" ? window.location.search : "";
+    const hasFilters =
+      qs.length > 1
+      || appliedSearch.length > 0
+      || (appliedCategory && appliedCategory !== "all")
+      || (appliedLoc && appliedLoc !== "all")
+      || appliedMinPrice
+      || appliedMaxPrice
+      || (appliedSellerUserId && appliedSellerUserId !== "all");
+    if (hasFilters) return;
+    applyPageMeta({
+      title: "Shpallje — Bli & Shit | KetuJemi",
+      description:
+        "Shfletoni shpallje aktive në Kosovë, Shqipëri, Maqedoni e Veriut dhe diasporë. Bli dhe shit falas në KetuJemi.com.",
+      canonicalPath: "/listings",
+    });
+  }, [
+    appliedSearch,
+    appliedCategory,
+    appliedLoc,
+    appliedMinPrice,
+    appliedMaxPrice,
+    appliedSellerUserId,
+  ]);
 
   const queryParams: Record<string, string | number> = { page, limit: PAGE_SIZE };
   if (appliedSearch) queryParams.search = appliedSearch;

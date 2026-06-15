@@ -7,6 +7,7 @@ import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { useAuth } from "@/lib/auth-context";
 import { isInfoStaticPage } from "@/lib/static-page-paths";
 import { SecretAdminTapProvider } from "@/lib/secret-admin-tap";
+import { SeoRouteHead } from "@/components/seo-route-head";
 
 const SupportChatWidget = lazy(() =>
   import("@/components/support-chat-widget").then((m) => ({
@@ -44,6 +45,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <SecretAdminTapProvider>
+      <SeoRouteHead />
       <div className="min-h-screen bg-background flex flex-col">
         <div className="flex-1">{children}</div>
         {!hidePaymentsStrip ? (

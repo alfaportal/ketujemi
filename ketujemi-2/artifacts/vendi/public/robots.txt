@@ -1,4 +1,17 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin-secret-panel
+Disallow: /api/
+Disallow: /login
+Disallow: /profili
+Disallow: /profile
+Disallow: /shpalljet-e-mia
+Disallow: /wallet/
+Disallow: /listings/new
+Disallow: /listings/*/edit
+Disallow: /listings?
+Disallow: /categories/
+Disallow: /category/
 
 Sitemap: https://ketujemi.com/sitemap.xml
