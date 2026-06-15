@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { getAdminListings, updateAdminListing, deleteAdminListing, type AdminListing } from "@/lib/admin-api";
 import {
-  Search, Star, StarOff, Trash2, Pencil, RefreshCw, ChevronLeft, ChevronRight, Plus,
+  Search, Star, StarOff, Trash2, Pencil, RefreshCw, ChevronLeft, ChevronRight, Plus, Eye,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useMarket } from "@/lib/market-context";
@@ -32,6 +32,8 @@ export default function AdminListings() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  const [editViews, setEditViews] = useState<{ listing: AdminListing; value: number } | null>(null);
+  const [savingViews, setSavingViews] = useState(false);
   const PAGE_SIZE = 20;
 
   useEffect(() => {
@@ -65,6 +67,25 @@ export default function AdminListings() {
     await deleteAdminListing(id);
     setConfirmDelete(null);
     fetchListings();
+  };
+
+  const openEditViews = (listing: AdminListing) => {
+    setEditViews({ listing, value: listing.views });
+  };
+
+  const handleSaveViews = async () => {
+    if (!editViews) return;
+    setSavingViews(true);
+    try {
+      const views = Math.max(0, Math.floor(editViews.value));
+      await updateAdminListing(editViews.listing.id, { views });
+      setListings((prev) =>
+        prev.map((row) => (row.id === editViews.listing.id ? { ...row, views } : row)),
+      );
+      setEditViews(null);
+    } finally {
+      setSavingViews(false);
+    }
   };
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -130,6 +151,7 @@ export default function AdminListings() {
                 <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide hidden lg:table-cell">{t.adm_list_col_loc}</th>
                 <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide hidden xl:table-cell">{t.adm_list_col_date}</th>
                 <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">{t.adm_list_col_featured}</th>
+                <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide hidden sm:table-cell">{t.adm_list_col_views}</th>
                 <th className="text-right px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">{t.adm_list_col_actions}</th>
               </tr>
             </thead>
@@ -137,14 +159,14 @@ export default function AdminListings() {
               {loading ? (
                 Array.from({ length: 8 }).map((_, i) => (
                   <tr key={i}>
-                    <td colSpan={8} className="px-4 py-3">
+                    <td colSpan={9} className="px-4 py-3">
                       <div className="h-5 bg-gray-100 rounded animate-pulse" />
                     </td>
                   </tr>
                 ))
               ) : listings.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={9} className="px-4 py-12 text-center text-gray-400">
                     {t.adm_list_empty}
                   </td>
                 </tr>
@@ -166,7 +188,7 @@ export default function AdminListings() {
                         )}
                         <div className="min-w-0">
                           <div className="font-semibold text-gray-800 truncate max-w-[180px]">{l.title}</div>
-                          <div className="text-xs text-gray-400">#{l.id} · {fillPlaceholders(t.adm_list_views, { n: String(l.views) })}</div>
+                          <div className="text-xs text-gray-400">#{l.id}</div>
                         </div>
                       </div>
                     </td>
@@ -188,6 +210,17 @@ export default function AdminListings() {
                       ) : (
                         <Badge color="gray">{t.adm_list_regular}</Badge>
                       )}
+                    </td>
+                    <td className="px-4 py-3 hidden sm:table-cell">
+                      <button
+                        type="button"
+                        onClick={() => openEditViews(l)}
+                        title={t.adm_tip_edit_views as string}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-semibold text-gray-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-800 transition-colors"
+                      >
+                        <Eye size={13} className="shrink-0 text-violet-600" aria-hidden />
+                        <span>{l.views.toLocaleString()}</span>
+                      </button>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
@@ -253,6 +286,56 @@ export default function AdminListings() {
           </div>
         )}
       </div>
+
+      {/* Edit views */}
+      {editViews !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <div className="w-14 h-14 bg-violet-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Eye size={24} className="text-violet-600" />
+            </div>
+            <h3 className="text-lg font-bold mb-1 text-center">
+              {fillPlaceholders(t.adm_modal_edit_views, { id: String(editViews.listing.id) })}
+            </h3>
+            <p className="text-sm text-gray-500 mb-4 text-center line-clamp-2">{editViews.listing.title}</p>
+            <label htmlFor="adm-list-views" className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+              {t.adm_edit_views_lbl}
+            </label>
+            <input
+              id="adm-list-views"
+              type="number"
+              min={0}
+              autoFocus
+              value={editViews.value}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                setEditViews((prev) =>
+                  prev ? { ...prev, value: Number.isFinite(v) && v >= 0 ? Math.floor(v) : 0 } : prev,
+                );
+              }}
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-50 mb-6"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setEditViews(null)}
+                disabled={savingViews}
+                className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+              >
+                {t.adm_btn_cancel}
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleSaveViews()}
+                disabled={savingViews}
+                className="flex-1 px-4 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold disabled:opacity-50"
+              >
+                {savingViews ? "…" : t.adm_btn_save}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete confirm */}
       {confirmDelete !== null && (
