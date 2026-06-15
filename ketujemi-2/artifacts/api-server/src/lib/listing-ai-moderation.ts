@@ -9,34 +9,14 @@ import {
   isDhurataFalasSlug,
   isKerkojTeBlejSlug,
 } from "../../../../lib/special-listing-categories.js";
+import { detectProhibitedListingContent } from "../../../../lib/listing-prohibited-content.js";
 
 export type ModerationResult = {
   approved: boolean;
   reason: string;
 };
 
-const BLOCK_PATTERNS: { re: RegExp; reason: string }[] = [
-  // Armë
-  { re: /\b(armë|arme|pistol|rifle|kalashnikov|bomba|granata|thikë luftarake|municion)\b/i, reason: "Shitja e armëve nuk lejohet." },
-  // Drogë
-  { re: /\b(droga|kokain|heroin|kanabis|marijuana|ekstazi|amfetamin|metadon|lsd|kep)\b/i, reason: "Shitja e drogës nuk lejohet." },
-  // Alkool
-  { re: /\b(alkool|verë|rakija|birrë|beer|whisky|vodka|raki|konjak|liquor)\b/i, reason: "Alkooli dhe pijet alkoolike nuk lejohen." },
-  // Duhan
-  { re: /\b(duhan|duhani|cigare|tobacco|cigar|tytyn)\b/i, reason: "Duhani dhe cigaret nuk lejohen." },
-  // Vape
-  { re: /\b(vape|e-cig|ecig|puff|juul|iqos|heets)\b/i, reason: "Cigaret elektronike nuk lejohen." },
-  // Crypto
-  { re: /\b(crypto|bitcoin|ethereum|nft|binance|usdt|dogecoin|blockchain|token|coin)\b/i, reason: "Kriptomonedhat nuk lejohen." },
-  // MLM
-  { re: /\b(mlm|piramid|ponzi|skemë piramidale|network marketing|passive income|fitim pasiv)\b/i, reason: "Skemat piramidale / MLM nuk lejohen." },
-  // Erotik
-  { re: /\b(escort|prostitut|takime intime|seks|porno|strip|onlyfans|fetish)\b/i, reason: "Përmbajtja erotike nuk lejohet." },
-  // Kazino
-  { re: /\b(kazino|casino|baste|lojëra fati|gambling|poker|slot|bet|1xbet|betsson)\b/i, reason: "Llogaritë e lojërave / baste nuk lejohen." },
-  // Replika
-  { re: /\b(replika|kopje|fake|counterfeit|imitation|1:1|superfake|aaa grade)\b/i, reason: "Produktet e falsifikuara / replika nuk lejohen." },
-  // Kontakt në titull
+const SPAM_BLOCK_PATTERNS: { re: RegExp; reason: string }[] = [
   { re: /(\+3[0-9]{11}|00[0-9]{10}|\b(viber|whatsapp|telegram|signal)\b)/i, reason: "Mos vendos kontakt në titull ose përshkrim." },
   // Spam fjalë
   { re: /\b(klikoni|kliko|shko te|vizito|instagram|facebook\.com|tiktok|youtube\.com)\b/i, reason: "Linqet dhe rrjetet sociale nuk lejohen në shpallje." },
@@ -88,8 +68,13 @@ function ruleBasedModeration(input: {
   const hasVideo = Boolean(input.video_url?.trim());
   if (imageCount < 1 && !hasVideo)
     return { approved: false, reason: "Ju lutem ngarkoni të paktën një foto." };
-  // Fjalë të ndaluara
-  for (const { re, reason } of BLOCK_PATTERNS) {
+  // Produktet e ndaluara (armë, duhan, alkool, drogë — pa përjashtime)
+  const prohibited = detectProhibitedListingContent(title, desc);
+  if (prohibited) {
+    return { approved: false, reason: prohibited.reason };
+  }
+
+  for (const { re, reason } of SPAM_BLOCK_PATTERNS) {
     if (re.test(combined)) {
       return { approved: false, reason };
     }

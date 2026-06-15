@@ -40,6 +40,7 @@ import {
 } from "@/lib/listing-image-vision";
 import { listingApiLangFromUi } from "@/lib/listing-api-lang";
 import { listingPhotoAnalyzeFailureToast } from "@/lib/listing-photo-analyze-toast";
+import { clientValidationMessage } from "@/lib/listing-post-feedback-i18n";
 import { useListingImageUpload } from "@/lib/listing-image-upload";
 
 const schema = z.object({
@@ -163,8 +164,18 @@ export default function EditListing() {
       const body = (await res.json().catch(() => ({}))) as {
         analysis?: ListingImageAnalysis | null;
         error?: string;
+        message?: string;
       };
       if (!res.ok) {
+        if (res.status === 403 && body.error === "PROHIBITED_CONTENT") {
+          form.setValue("image_url", "", { shouldDirty: true, shouldTouch: true });
+          toast({
+            title: clientValidationMessage("PROHIBITED_CONTENT", uiLang) ?? body.message ?? t.photoAnalyzeFailed,
+            description: body.message ?? "",
+            variant: "destructive",
+          });
+          return false;
+        }
         const fail = listingPhotoAnalyzeFailureToast(res.status, t);
         toast({ ...fail, variant: "destructive" });
         return false;
@@ -178,7 +189,7 @@ export default function EditListing() {
       toast(fail);
       return false;
     },
-    [applyPhotoAnalysis, listingLang, t, toast],
+    [applyPhotoAnalysis, listingLang, t, toast, uiLang, form],
   );
 
   const analyzeCurrentPhoto = useCallback(async () => {

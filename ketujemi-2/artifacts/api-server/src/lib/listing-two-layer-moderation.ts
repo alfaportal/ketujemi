@@ -1,6 +1,7 @@
 import { db, listingsTable, moderationLogTable, type User } from "@workspace/db";
 import { and, desc, eq, gte } from "drizzle-orm";
 import { hasDisallowedPhoneInUserText } from "../../../../lib/listing-phone-in-text.js";
+import { detectProhibitedListingContent } from "../../../../lib/listing-prohibited-content.js";
 import {
   findSelfDuplicateActiveListingId,
   SELF_DUPLICATE_SCREEN_MESSAGE,
@@ -8,23 +9,13 @@ import {
 import { listingBelongsToUser } from "./listing-ownership";
 import { listingTextSimilarity, SELF_DUPLICATE_SCAN_THRESHOLD } from "./listing-text-similarity";
 import { logListingModerationRejection } from "./listing-moderation-rejection-log";
+import { scanListingImagesForProhibitedContent } from "./listing-image-prohibited-scan";
 
 const DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
 const TEXT_SIMILARITY_THRESHOLD = SELF_DUPLICATE_SCAN_THRESHOLD;
 const PHASH_DISTANCE_THRESHOLD = 6;
-const BLOCKED_WORDS = [
-  "mashtrim",
-  "droge",
-  "drogë",
-  "kokain",
-  "heroin",
-  "armë",
-  "arme",
-  "falsifikim",
-  "spam",
-  "seks",
-  "fyerje",
-];
+
+const SPAM_BLOCKED_WORDS = ["mashtrim", "spam", "seks", "fyerje", "falsifikim"];
 
 type ModerationInput = {
   userId: number;
@@ -44,6 +35,7 @@ type ModerationResult =
         | "DUPLICATE_LISTING"
         | "DUPLICATE_LISTING_SELF"
         | "BLACKLIST_WORD"
+        | "PROHIBITED_CONTENT"
         | "PHONE_IN_DESCRIPTION"
         | "EXTERNAL_LINK_IN_DESCRIPTION";
       reason: string;
@@ -99,9 +91,9 @@ async function logModerationDecision(reason: string, action: string, listingId?:
   });
 }
 
-function findBlockedWord(text: string): string | null {
+function findSpamBlockedWord(text: string): string | null {
   const normalized = normalizeText(text);
-  for (const word of BLOCKED_WORDS) {
+  for (const word of SPAM_BLOCKED_WORDS) {
     if (normalized.includes(normalizeText(word))) return word;
   }
   return null;
@@ -128,7 +120,36 @@ export async function runTwoLayerModeration(input: ModerationInput): Promise<Mod
   const title = input.title.trim();
   const description = input.description.trim();
 
-  const blockedWord = findBlockedWord(`${title} ${description}`);
+  const prohibited = detectProhibitedListingContent(title, description);
+  if (prohibited) {
+    const reason = `PROHIBITED:${prohibited.label}`;
+    await logModerationDecision(reason, "blocked");
+    logUserRejection(input, reason);
+    return {
+      ok: false,
+      code: "PROHIBITED_CONTENT",
+      reason,
+      message: prohibited.reason,
+    };
+  }
+
+  const imageUrls = imageUrlsFromCsv(input.imageUrl);
+  if (imageUrls.length > 0) {
+    const imageHit = await scanListingImagesForProhibitedContent(input.imageUrl);
+    if (imageHit) {
+      const reason = `PROHIBITED_IMAGE:${imageHit.label}`;
+      await logModerationDecision(reason, "blocked");
+      logUserRejection(input, reason);
+      return {
+        ok: false,
+        code: "PROHIBITED_CONTENT",
+        reason,
+        message: imageHit.reason,
+      };
+    }
+  }
+
+  const blockedWord = findSpamBlockedWord(`${title} ${description}`);
   if (blockedWord) {
     const reason = `BLACKLIST_WORD:${blockedWord}`;
     await logModerationDecision(reason, "blocked");

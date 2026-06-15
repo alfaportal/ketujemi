@@ -73,6 +73,8 @@ import {
   expiresAtForCategoryRootSlug,
   resolveCategorySlugMeta,
 } from "../lib/listing-special-categories.js";
+import { assertListingContentNotProhibited } from "../../../../lib/listing-prohibited-content.js";
+import { scanListingImagesForProhibitedContent } from "../lib/listing-image-prohibited-scan";
 import { purgeInvalidListingImages } from "../lib/purge-invalid-listing-images.js";
 import { pruneListingImagesAndNotifyOwner } from "../lib/listing-image-prune.js";
 import { deleteShopCascade } from "../lib/delete-shop-cascade";
@@ -423,6 +425,55 @@ router.patch("/admin/listings/:id", requireAdmin, async (req, res) => {
       return;
     }
 
+    const [existing] = await db
+      .select({
+        title: listingsTable.title,
+        description: listingsTable.description,
+        image_url: listingsTable.image_url,
+      })
+      .from(listingsTable)
+      .where(eq(listingsTable.id, id))
+      .limit(1);
+
+    if (!existing) {
+      res.status(404).json({ error: "Listing not found" });
+      return;
+    }
+
+    const nextTitle =
+      typeof updates.title === "string" ? updates.title : existing.title;
+    const nextDescription =
+      typeof updates.description === "string" ? updates.description : existing.description;
+
+    try {
+      assertListingContentNotProhibited(nextTitle, nextDescription);
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === "PROHIBITED_CONTENT") {
+        const e = err as Error & { publicMessage?: string };
+        res.status(403).json({
+          error: "PROHIBITED_CONTENT",
+          message: e.publicMessage ?? "Ky lloj produkti nuk lejohet në platformë.",
+        });
+        return;
+      }
+      throw err;
+    }
+
+    const rawBody = req.body as { image_url?: string | null };
+    const nextImageUrl =
+      updates.image_url !== undefined ? rawBody.image_url ?? null : existing.image_url;
+    if (nextImageUrl) {
+      const imageHit = await scanListingImagesForProhibitedContent(nextImageUrl);
+      if (imageHit) {
+        res.status(403).json({
+          error: "PROHIBITED_CONTENT",
+          message: imageHit.reason,
+          reason: `PROHIBITED_IMAGE:${imageHit.label}`,
+        });
+        return;
+      }
+    }
+
     const [updated] = await db
       .update(listingsTable)
       .set(updates)
@@ -435,7 +486,6 @@ router.patch("/admin/listings/:id", requireAdmin, async (req, res) => {
     }
 
     if (updates.image_url !== undefined) {
-      const rawBody = req.body as { image_url?: string | null };
       void pruneListingImagesAndNotifyOwner({
         raw: rawBody.image_url,
         cleaned: updated.image_url,
@@ -534,8 +584,34 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
       normalizeListingDescription(parsed.data.description),
     );
 
+    try {
+      assertListingContentNotProhibited(
+        normalizeListingTitle(parsed.data.title),
+        description,
+      );
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === "PROHIBITED_CONTENT") {
+        const e = err as Error & { publicMessage?: string };
+        res.status(403).json({
+          error: "PROHIBITED_CONTENT",
+          message: e.publicMessage ?? "Ky lloj produkti nuk lejohet në platformë.",
+        });
+        return;
+      }
+      throw err;
+    }
+
     const catMeta = await resolveCategorySlugMeta(parsed.data.category_id);
     const imageUrl = sanitizeListingImageUrlField(parsed.data.image_url ?? null);
+    const imageHit = await scanListingImagesForProhibitedContent(imageUrl);
+    if (imageHit) {
+      res.status(403).json({
+        error: "PROHIBITED_CONTENT",
+        message: imageHit.reason,
+        reason: `PROHIBITED_IMAGE:${imageHit.label}`,
+      });
+      return;
+    }
     const videoUrl = sanitizeListingVideoUrl(parsed.data.video_url ?? null);
 
     const [row] = await db

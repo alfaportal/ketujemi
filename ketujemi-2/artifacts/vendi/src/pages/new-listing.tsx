@@ -56,6 +56,7 @@ import { ListingDescriptionHelper } from "@/components/listing-description-helpe
 import { joinListingImageUrls, parseListingImageUrls } from "@/lib/listing-images";
 import { type ListingImageAnalysis, fileToVisionBase64 } from "@/lib/listing-image-vision";
 import { listingPhotoAnalyzeFailureToast } from "@/lib/listing-photo-analyze-toast";
+import { clientValidationMessage } from "@/lib/listing-post-feedback-i18n";
 import { videoFileToVisionBase64 } from "@/lib/listing-video-frame";
 import {
   clearListingPostDraft,
@@ -722,8 +723,19 @@ export default function NewListing() {
         analysis?: ListingImageAnalysis | null;
         pipeline?: "google" | "claude" | null;
         error?: string;
+        message?: string;
       };
       if (!res.ok) {
+        if (res.status === 403 && body.error === "PROHIBITED_CONTENT") {
+          setImageUrls((prev) => prev.slice(0, -1));
+          imageAnalyzedRef.current = false;
+          toast({
+            title: clientValidationMessage("PROHIBITED_CONTENT", uiLang) ?? body.message ?? tx.photoAnalyzeFailed,
+            description: body.message ?? clientValidationMessage("PROHIBITED_CONTENT", uiLang) ?? "",
+            variant: "destructive",
+          });
+          return false;
+        }
         const fail = listingPhotoAnalyzeFailureToast(res.status, tx);
         toast({ ...fail, variant: "destructive" });
         return false;
@@ -747,7 +759,7 @@ export default function NewListing() {
       toast(fail);
       return false;
     },
-    [applyImageAnalysis, skipListingImageAutofill, listingLang, myShop, toast, tx, isAdminListingMode, t.photoAnalyzeCategoryPartial, t.photoAnalyzeFailedHint],
+    [applyImageAnalysis, skipListingImageAutofill, listingLang, myShop, toast, tx, isAdminListingMode, t.photoAnalyzeCategoryPartial, t.photoAnalyzeFailedHint, uiLang, setImageUrls],
   );
 
   const analyzeUploadedImageFile = useCallback(

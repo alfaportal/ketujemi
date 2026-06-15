@@ -8,6 +8,7 @@ import {
   analyzeListingImage,
   isListingImageAnalyzeConfigured,
 } from "../lib/listing-image-analyze";
+import { scanImageBase64ForProhibitedContent } from "../lib/listing-image-prohibited-scan";
 import { suggestListingCategory } from "../lib/listing-category-suggest";
 import { getSimilarListingsForListing } from "../lib/listing-ai-recommendations";
 import { runSupportChat, supportChatFallbackReply, type ChatMessage } from "../lib/support-chatbot";
@@ -155,6 +156,16 @@ router.post("/ai/analyze-listing-image", analyzeListingImageLimiter, async (req,
     res.status(503).json({
       error: "AI_NOT_CONFIGURED",
       message: "Image analysis is not configured on the server.",
+    });
+    return;
+  }
+
+  const prohibitedHit = await scanImageBase64ForProhibitedContent(imageBase64, mediaType);
+  if (prohibitedHit) {
+    res.status(403).json({
+      error: "PROHIBITED_CONTENT",
+      message: prohibitedHit.reason,
+      reason: `PROHIBITED_IMAGE:${prohibitedHit.label}`,
     });
     return;
   }

@@ -45,6 +45,10 @@ const ERROR_DEFAULTS_KS: Record<string, string> = {
   DUPLICATE_LISTING_SELF:
     "Nuk mund të postoni të njëjtin send dy herë brenda 1 muaji. Keni tashmë një shpallje të ngjashme aktive — përdorni Edito ose prisni 1 muaj.",
   BLACKLIST_WORD: "Përmbajtja përmban fjalë të ndaluara. Ndryshoni titullin ose përshkrimin.",
+  PROHIBITED_CONTENT:
+    "Ky lloj produkti nuk lejohet në KetuJemi (armë, duhan, alkool, drogë, etj.).",
+  MODERATION_REPOST_BLOCKED:
+    "Ky përmbajtje është refuzuar ose hequr nga moderimi. Nuk mund ta ripostoni brenda 1 muaji.",
   CLIENT_BLOCKED_WORD: 'Përmbajtja përmban fjalë të ndaluara: "{word}".',
   PHONE_IN_DESCRIPTION:
     "Numri i telefonit nuk lejohet në përshkrim. Vendoseni vetëm në fushën e telefonit.",
@@ -105,6 +109,10 @@ const ERROR_DEFAULTS_MK: Record<string, string> = {
   DUPLICATE_LISTING_SELF:
     "Не можете да објавите истиот производ двапати во рок од 1 месец. Веќе имате сличен активен оглас — уредете го или почекајте 1 месец.",
   BLACKLIST_WORD: "Содржината содржи забранети зборови. Променете го насловот или описот.",
+  PROHIBITED_CONTENT:
+    "Ваков тип производ не е дозволен на KetuJemi (оружје, тутун, алкохол, дроги и сл.).",
+  MODERATION_REPOST_BLOCKED:
+    "Оваа содржина е одбиена или отстранета од модерација. Не можете повторно да ја објавите во рок од 1 месец.",
   CLIENT_BLOCKED_WORD: 'Содржината содржи забранета збор: "{word}".',
   PHONE_IN_DESCRIPTION:
     "Телефонскиот број не е дозволен во описот. Внесете го само во полето за телефон.",
@@ -166,6 +174,10 @@ const ERROR_DEFAULTS_MNE: Record<string, string> = {
   DUPLICATE_LISTING_SELF:
     "Ne možete objaviti isti proizvod dvaput u roku od 1 mjeseca. Već imate sličan aktivan oglas — uredite ga ili sačekajte 1 mjesec.",
   BLACKLIST_WORD: "Sadržaj sadrži zabranjene riječi. Promijenite naslov ili opis.",
+  PROHIBITED_CONTENT:
+    "Ovaj tip proizvoda nije dozvoljen na KetuJemi (oružje, duhan, alkohol, droga itd.).",
+  MODERATION_REPOST_BLOCKED:
+    "Ovaj sadržaj je odbijen ili uklonjen od moderacije. Ne možete ga ponovo objaviti u roku od 1 mjeseca.",
   CLIENT_BLOCKED_WORD: 'Sadržaj sadrži zabranjenu riječ: "{word}".',
   PHONE_IN_DESCRIPTION:
     "Broj telefona nije dozvoljen u opisu. Unesite ga samo u polje za telefon.",
@@ -227,6 +239,10 @@ const ERROR_DEFAULTS_EN: Record<string, string> = {
   DUPLICATE_LISTING_SELF:
     "You cannot post the same item twice within 1 month. You already have a similar active listing — edit it or wait 1 month.",
   BLACKLIST_WORD: "Content contains blocked words. Change the title or description.",
+  PROHIBITED_CONTENT:
+    "This type of product is not allowed on KetuJemi (weapons, tobacco, alcohol, drugs, etc.).",
+  MODERATION_REPOST_BLOCKED:
+    "This content was rejected or removed by moderation. You cannot repost it within 1 month.",
   CLIENT_BLOCKED_WORD: 'Content contains a blocked word: "{word}".',
   PHONE_IN_DESCRIPTION:
     "Phone number is not allowed in the description. Enter it only in the phone field.",
@@ -287,6 +303,10 @@ const ERROR_DEFAULTS_FR: Record<string, string> = {
   DUPLICATE_LISTING_SELF:
     "Vous ne pouvez pas publier le même article deux fois en 1 mois. Vous avez déjà une annonce similaire active — modifiez-la ou attendez 1 mois.",
   BLACKLIST_WORD: "Le contenu contient des mots interdits. Modifiez le titre ou la description.",
+  PROHIBITED_CONTENT:
+    "Ce type de produit n'est pas autorisé sur KetuJemi (armes, tabac, alcool, drogues, etc.).",
+  MODERATION_REPOST_BLOCKED:
+    "Ce contenu a été refusé ou retiré par la modération. Vous ne pouvez pas le republier avant 1 mois.",
   CLIENT_BLOCKED_WORD: 'Le contenu contient un mot interdit : « {word} ».',
   PHONE_IN_DESCRIPTION:
     "Le numéro de téléphone n'est pas autorisé dans la description. Saisissez-le uniquement dans le champ téléphone.",
@@ -433,6 +453,12 @@ export function clientValidationMessage(
       return errorDefaults.CLIENT_BLOCKED_WORD.replace("{word}", opts.blockedWord);
     }
     return errorDefaults.BLACKLIST_WORD ?? null;
+  }
+  if (code === "PROHIBITED_CONTENT") {
+    return errorDefaults.PROHIBITED_CONTENT ?? null;
+  }
+  if (code === "MODERATION_REPOST_BLOCKED") {
+    return errorDefaults.MODERATION_REPOST_BLOCKED ?? null;
   }
   if (code === "PHONE_IN_DESCRIPTION") {
     return errorDefaults.PHONE_IN_DESCRIPTION ?? null;

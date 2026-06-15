@@ -58,6 +58,8 @@ import { logListingModerationRejection } from "../lib/listing-moderation-rejecti
 import {
   blockIfPriorModerationRejection,
 } from "../lib/listing-moderation-repost-guard";
+import { detectProhibitedListingContent } from "../../../../lib/listing-prohibited-content.js";
+import { scanListingImagesForProhibitedContent } from "../lib/listing-image-prohibited-scan";
 import { parseUiLang } from "../lib/claude-client";
 import { effectiveListingSearchQuery } from "../../../../lib/listing-search-query.js";
 import {
@@ -1492,6 +1494,20 @@ router.patch("/listings/:id", async (req, res) => {
   if (body.condition != null) updates.condition = body.condition;
   if (body.image_url != null) {
     updates.image_url = sanitizeListingImageUrlField(body.image_url);
+    const imageHit = await scanListingImagesForProhibitedContent(updates.image_url);
+    if (imageHit) {
+      void logListingModerationRejection({
+        title: nextTitle,
+        reason: `PROHIBITED_IMAGE:${imageHit.label}`,
+        categoryId: existing[0].category_id,
+        userId: viewer.id,
+      }).catch(() => undefined);
+      res.status(403).json({
+        error: "PROHIBITED_CONTENT",
+        message: imageHit.reason,
+      });
+      return;
+    }
   }
   if (body.is_featured != null) updates.is_featured = body.is_featured;
 
@@ -1501,6 +1517,21 @@ router.patch("/listings/:id", async (req, res) => {
     body.title != null || body.description != null || body.price != null;
 
   if (contentChanged) {
+    const prohibited = detectProhibitedListingContent(nextTitle, nextDescription);
+    if (prohibited) {
+      void logListingModerationRejection({
+        title: nextTitle,
+        reason: `PROHIBITED:${prohibited.label}`,
+        categoryId: existing[0].category_id,
+        userId: viewer.id,
+      }).catch(() => undefined);
+      res.status(403).json({
+        error: "PROHIBITED_CONTENT",
+        message: prohibited.reason,
+      });
+      return;
+    }
+
     const [catRow] = await db
       .select({ name: categoriesTable.name })
       .from(categoriesTable)

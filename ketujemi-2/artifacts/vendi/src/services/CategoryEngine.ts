@@ -24,6 +24,7 @@ import { getTvElektronikeLeafCategoryIds } from "@/lib/tv-elektronike-search-hel
 import { getVeturaBrandLeafCategoryIds } from "@/lib/vetura-search-helpers";
 import { isKompjuterHubTypeName } from "@/lib/kompjuter-laptop-search-helpers";
 import { hasDisallowedPhoneInUserText } from "../../../../lib/listing-phone-in-text.ts";
+import { detectProhibitedListingContent } from "../../../../lib/listing-prohibited-content";
 import {
   DHURATA_FALAS_SLUG,
   LISTING_MAX_PHOTOS,
@@ -194,21 +195,11 @@ export type ListingValidationResult = {
   price_agreement: boolean;
 };
 
-const CLIENT_BLOCKED_WORDS = [
-  "mashtrim",
-  "droge",
-  "drogë",
-  "kokain",
-  "heroin",
-  "armë",
-  "arme",
-  "falsifikim",
-  "spam",
-  "seks",
-  "fyerje",
-];
+const CLIENT_BLOCKED_WORDS = ["mashtrim", "spam", "seks", "fyerje", "falsifikim"];
 
 function findBlockedWordClient(text: string): string | null {
+  const hit = detectProhibitedListingContent(text, "");
+  if (hit) return hit.label;
   const normalized = text.toLowerCase().normalize("NFC");
   for (const word of CLIENT_BLOCKED_WORDS) {
     if (normalized.includes(word.toLowerCase().normalize("NFC"))) return word;
@@ -638,9 +629,12 @@ export class CategoryEngine {
     const finalDescription = extraDescriptionPrefix + data.description;
     const blockedWord = findBlockedWordClient(`${data.title} ${finalDescription}`);
     if (blockedWord) {
+      const prohibited = detectProhibitedListingContent(data.title, finalDescription);
       issues.push({
-        code: "CLIENT_BLOCKED_WORD",
-        message: `Përmbajtja përmban fjalë të ndaluara: "${blockedWord}".`,
+        code: prohibited ? "PROHIBITED_CONTENT" : "CLIENT_BLOCKED_WORD",
+        message: prohibited
+          ? prohibited.reason
+          : `Përmbajtja përmban fjalë të ndaluara: "${blockedWord}".`,
         blockedWord,
       });
     }
