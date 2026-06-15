@@ -15,7 +15,7 @@ import { getSessionUser } from "../lib/session-user";
 import { incrementShopView } from "../lib/shop-view.js";
 import { clientIpFromRequest } from "../lib/request-ip.js";
 import { activeShopSqlCondition, isShopPubliclyVisible } from "../lib/shop-visibility.js";
-import { backfillShopListingsForShop, shopPublicListingsCondition } from "../lib/shop-listing-lookup.js";
+import { backfillShopListingsForShop, shopPublicListingsCondition, resolveShopOwnerUserIds } from "../lib/shop-listing-lookup.js";
 import { sendShopApplicationEmail, sendShopRatingEmail } from "../lib/send-shop-application-email";
 import { formatListingsBatch } from "../lib/format-listings-batch";
 import { resolveDirectoryFields } from "../lib/shop-directory-patch";
@@ -386,10 +386,15 @@ router.get("/shops/me", async (req, res) => {
   let listing_count = 0;
   let total_views = 0;
   if (shop) {
+    const ownerUserIds = await resolveShopOwnerUserIds({
+      user_id: shop.user_id,
+      email: shop.email,
+    });
     await backfillShopListingsForShop({
       id: shop.id,
       user_id: shop.user_id,
       phone: shop.phone,
+      email: shop.email,
     }).catch(() => undefined);
     const [stats] = await db
       .select({
@@ -402,6 +407,7 @@ router.get("/shops/me", async (req, res) => {
           id: shop.id,
           user_id: shop.user_id,
           phone: shop.phone,
+          ownerUserIds,
         }),
       );
     listing_count = stats?.listing_count ?? 0;
@@ -452,6 +458,7 @@ router.get("/shops/me/listings", async (req, res) => {
       id: shopsTable.id,
       user_id: shopsTable.user_id,
       phone: shopsTable.phone,
+      email: shopsTable.email,
     })
     .from(shopsTable)
     .where(and(eq(shopsTable.user_id, viewer.id), activeShopSqlCondition()))
@@ -461,12 +468,18 @@ router.get("/shops/me/listings", async (req, res) => {
     return;
   }
 
+  const ownerUserIds = await resolveShopOwnerUserIds(shop);
   await backfillShopListingsForShop(shop).catch(() => undefined);
 
   const rows = await db
     .select()
     .from(listingsTable)
-    .where(shopPublicListingsCondition(shop))
+    .where(
+      shopPublicListingsCondition({
+        ...shop,
+        ownerUserIds,
+      }),
+    )
     .orderBy(desc(listingsTable.listed_at))
     .limit(200);
 
@@ -785,20 +798,29 @@ router.get("/shops/:id", async (req, res) => {
 
   const viewer = await getSessionUser(req);
 
+  const ownerUserIds = await resolveShopOwnerUserIds({
+    user_id: shop.user_id,
+    email: shop.email,
+  });
+
   await backfillShopListingsForShop({
     id: shop.id,
     user_id: shop.user_id,
     phone: shop.phone,
+    email: shop.email,
   }).catch(() => undefined);
 
   const listingRows = await db
     .select()
     .from(listingsTable)
-    .where(shopPublicListingsCondition({
-      id: shop.id,
-      user_id: shop.user_id,
-      phone: shop.phone,
-    }))
+    .where(
+      shopPublicListingsCondition({
+        id: shop.id,
+        user_id: shop.user_id,
+        phone: shop.phone,
+        ownerUserIds,
+      }),
+    )
     .orderBy(desc(listingsTable.listed_at))
     .limit(200);
 

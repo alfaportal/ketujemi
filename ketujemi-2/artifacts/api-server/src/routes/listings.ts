@@ -74,7 +74,7 @@ import {
 import { handleSellerComplaint } from "../lib/violation-escalation";
 import { deleteListingCascade } from "../lib/delete-listing-cascade";
 import type { User } from "@workspace/db";
-import { getApprovedShopIdForUser, finalizeListingsForApi, linkNewListingToMatchingShop } from "../lib/shop-listing-lookup";
+import { finalizeListingsForApi, linkNewListingToMatchingShop, resolveShopIdForListingPoster } from "../lib/shop-listing-lookup";
 import { applyViewerContact, buildCategoryRootSlugMap, formatListing } from "./listings-format";
 import {
   requestPurgeExpiredListings,
@@ -701,7 +701,11 @@ router.post("/listings", postListingLimiter, async (req, res) => {
 
   const listingCountBefore = await userListingCount(viewer.id);
   const is_first_listing = listingCountBefore === 0;
-  const shopId = await getApprovedShopIdForUser(viewer.id);
+  const shopId = await resolveShopIdForListingPoster({
+    userId: viewer.id,
+    userEmail: viewer.email,
+    sellerPhone: sellerContact.seller_phone,
+  });
 
   const now = new Date();
   const [row] = await db
@@ -760,6 +764,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   try {
     await linkNewListingToMatchingShop({
       userId: viewer.id,
+      userEmail: viewer.email,
       sellerPhone: sellerContact.seller_phone,
       listingId: row.id,
     });

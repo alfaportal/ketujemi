@@ -120,7 +120,12 @@ export async function repostListing(
 
   if (shopId) {
     const [shopRow] = await db
-      .select({ id: shopsTable.id, user_id: shopsTable.user_id, phone: shopsTable.phone })
+      .select({
+        id: shopsTable.id,
+        user_id: shopsTable.user_id,
+        phone: shopsTable.phone,
+        email: shopsTable.email,
+      })
       .from(shopsTable)
       .where(eq(shopsTable.id, shopId))
       .limit(1);

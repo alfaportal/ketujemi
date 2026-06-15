@@ -1768,6 +1768,7 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
     id: shop.id,
     user_id: shop.user_id,
     phone: shop.phone,
+    email: shop.email,
   }).catch(() => undefined);
 
   const { sendShopApprovedEmail } = await import("../lib/send-shop-application-email");
