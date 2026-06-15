@@ -22,9 +22,11 @@ import shopApplicationsRouter from "./shop-applications";
 import mapsEmbedRouter from "./maps-embed";
 import emailUnsubscribeRouter from "./email-unsubscribe";
 import adminAnnouncementsRouter from "./admin-announcements";
+import presenceRouter from "./presence";
 
 const router: IRouter = Router();
 
+router.use(presenceRouter);
 router.use(mapsEmbedRouter);
 router.use(emailUnsubscribeRouter);
 router.use(configRouter);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { useToast } from "@/hooks/use-toast";
@@ -24,32 +24,11 @@ import { Button } from "@/components/ui/button";
 const FIRST_LISTING_KEY = "kj_engagement_first_listing";
 const ACTIVITY_HEARTBEAT_MS = 150_000; // 2.5 min
 
-/** Global welcome toast, first-listing confetti modal, FCM registration. */
-export function EngagementEffects() {
-  const { user, refresh } = useAuth();
-  const { uiLang } = useMarket();
-  const { toast } = useToast();
-  const [loc] = useLocation();
-  const copy = engagementCopyForUiLang(uiLang);
-  const [firstListingOpen, setFirstListingOpen] = useState(false);
-
+function useVisibilityHeartbeat(ping: () => void, enabled = true) {
   useEffect(() => {
-    if (!user) return;
-    if (isListingFlowPath(loc)) return;
-    void registerFcmTokenIfConfigured();
-  }, [user?.id, loc]);
-
-  useEffect(() => {
-    if (!user) return;
+    if (!enabled) return;
 
     let interval: ReturnType<typeof setInterval> | null = null;
-
-    const ping = () => {
-      void fetchWithTimeout("/api/auth/activity", {
-        method: "POST",
-        credentials: "include",
-      });
-    };
 
     const stop = () => {
       if (interval) {
@@ -75,7 +54,40 @@ export function EngagementEffects() {
       stop();
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [user?.id]);
+  }, [enabled, ping]);
+}
+
+/** Global welcome toast, first-listing confetti modal, FCM registration. */
+export function EngagementEffects() {
+  const { user, refresh } = useAuth();
+  const { uiLang } = useMarket();
+  const { toast } = useToast();
+  const [loc] = useLocation();
+  const copy = engagementCopyForUiLang(uiLang);
+  const [firstListingOpen, setFirstListingOpen] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    if (isListingFlowPath(loc)) return;
+    void registerFcmTokenIfConfigured();
+  }, [user?.id, loc]);
+
+  const pingPresence = useCallback(() => {
+    void fetchWithTimeout("/api/presence", {
+      method: "POST",
+      credentials: "include",
+    });
+  }, []);
+
+  const pingAuth = useCallback(() => {
+    void fetchWithTimeout("/api/auth/activity", {
+      method: "POST",
+      credentials: "include",
+    });
+  }, []);
+
+  useVisibilityHeartbeat(pingPresence);
+  useVisibilityHeartbeat(pingAuth, !!user);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

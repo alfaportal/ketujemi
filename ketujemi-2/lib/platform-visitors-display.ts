@@ -11,7 +11,7 @@ function slotHash(slot: number): number {
 }
 
 /**
- * Home stats “online now”: 4–5, drifts every few minutes (no day/night schedule).
+ * Home stats “online now”: at least 4–5; rises when real visitors are on site.
  */
 export function computeDisplayUsersOnlineNow(
   nowMs = Date.now(),
