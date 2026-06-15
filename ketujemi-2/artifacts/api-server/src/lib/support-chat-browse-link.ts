@@ -5,8 +5,16 @@ import {
   getLastUserMessage,
   isMarketplaceBrowseQuestion,
   isRecognizedMarketplaceQuery,
+  isShopBrowseQuestion,
   isSupportContactQuestion,
 } from "./support-chat-screening";
+import {
+  isShopBrowseIntent,
+  matchShopDirectoryRoute,
+  shopDirectoryHref,
+  shopRouteFromListingCategoryId,
+  stripShopIntentWords,
+} from "./support-chat-shop-browse-link";
 
 /** Route ids that differ from public /shpallje/ slug. */
 const CATEGORY_HREF_SLUG: Record<string, string> = {
@@ -87,9 +95,19 @@ export function shouldOfferBrowseLink(messages: ChatMessage[]): boolean {
   const lastUser = expandUserQuery(getLastUserMessage(messages));
   if (!lastUser || lastUser.length < 2) return false;
   if (isSupportContactQuestion(lastUser)) return false;
-  if (NON_BROWSE_FAQ.test(lastUser)) return false;
 
   const context = getUserSearchContext(messages);
+  if (
+    isShopBrowseQuestion(lastUser) ||
+    isShopBrowseQuestion(context) ||
+    isShopBrowseIntent(lastUser) ||
+    isShopBrowseIntent(context)
+  ) {
+    return true;
+  }
+
+  if (NON_BROWSE_FAQ.test(lastUser)) return false;
+
   return (
     isMarketplaceBrowseQuestion(lastUser) ||
     isRecognizedMarketplaceQuery(lastUser) ||
@@ -106,6 +124,27 @@ export function buildSupportBrowseLink(messages: ChatMessage[]): string | null {
 
   const context = getUserSearchContext(messages);
   const lastUser = expandUserQuery(getLastUserMessage(messages));
+  const shopIntent =
+    isShopBrowseIntent(lastUser) ||
+    isShopBrowseIntent(context) ||
+    isShopBrowseQuestion(lastUser) ||
+    isShopBrowseQuestion(context);
+
+  if (shopIntent) {
+    const terms =
+      stripShopIntentWords(extractProductSearchTerms(lastUser)) ||
+      stripShopIntentWords(extractProductSearchTerms(context)) ||
+      stripShopIntentWords(lastUser);
+    const shopRoute =
+      matchShopDirectoryRoute(terms || lastUser) ??
+      (() => {
+        const listingCat =
+          matchCategoryRouteId(terms) ?? matchCategoryRouteId(context) ?? matchCategoryRouteId(lastUser);
+        return listingCat ? shopRouteFromListingCategoryId(listingCat) : null;
+      })();
+    return shopDirectoryHref(shopRoute);
+  }
+
   const terms = extractProductSearchTerms(lastUser) || extractProductSearchTerms(context);
   const categoryId = matchCategoryRouteId(terms) ?? matchCategoryRouteId(context) ?? matchCategoryRouteId(lastUser);
 

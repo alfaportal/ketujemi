@@ -64,7 +64,16 @@ export function isSupportContactQuestion(content: string): boolean {
 
 /** Product/category terms — short messages like «goma», «vetura» are valid marketplace questions. */
 export const MARKETPLACE_PRODUCT_HINT =
-  /goma|gomat|felne|fellne|rrot|disk|amortiz|fren|karoseri|akumulator|vajra|filtra|auto\s*pjes|auto-pjes|pjese\s+aut|pjese\s+vet|iphone|samsung|regjistr|posto|njoftim|partner|biznes|stripe|top\b|kategori/i;
+  /goma|gomat|felne|fellne|rrot|disk|amortiz|fren|karoseri|akumulator|vajra|filtra|auto\s*pjes|auto-pjes|pjese\s+aut|pjese\s+vet|iphone|samsung|regjistr|posto|njoftim|partner|biznes|stripe|top\b|kategori|dyqan|dyqani|shitore|shop\b|store\b/i;
+
+/** Shop directory browse — dyqanet në të gjitha kategoritë. */
+export function isShopBrowseQuestion(content: string): boolean {
+  const t = content.trim().normalize("NFD").replace(/\p{M}/gu, "");
+  if (t.length < 3) return false;
+  return /\b(dyqan|dyqani|dyqane|dyqanet|shitore|shitoret|shop|shops|store|stores|prodavnic|radnj|ducan)\b/i.test(
+    t,
+  );
+}
 
 export function isRecognizedMarketplaceQuery(content: string): boolean {
   const t = content.trim().normalize("NFD").replace(/\p{M}/gu, "");
@@ -86,7 +95,7 @@ export function isMarketplaceBrowseQuestion(content: string): boolean {
 
   if (isRecognizedMarketplaceQuery(t)) return true;
 
-  return /ku\s+(mund|e\s+gjej|ta\s+gjej|gjen)|si\s+(mund|ta\s+gjej|gjen)|a\s+mund\s+ta\s+gjej|where\s+(can|do)\s+i\s+find|how\s+to\s+find|kërko|kerko|pretra|pronađ|gjej|blej|bler|shit|shpall|liber|libra|libër|knig|book|auto|makina|telefon|banes|shtëpi|shtepi|kategori|categori|elektronik|mobilje|rroba|sport|punë|pune|muzik|kafsh|njoftimet|listimet|shfleton|browse/i.test(
+  return /ku\s+(mund|e\s+gjej|ta\s+gjej|gjen)|si\s+(mund|ta\s+gjej|gjen)|a\s+mund\s+ta\s+gjej|where\s+(can|do)\s+i\s+find|how\s+to\s+find|kërko|kerko|pretra|pronađ|gjej|blej|bler|shit|shpall|liber|libra|libër|knig|book|auto|makina|telefon|banes|shtëpi|shtepi|kategori|categori|elektronik|mobilje|rroba|sport|punë|pune|muzik|kafsh|njoftimet|listimet|shfleton|browse|dyqan|dyqani|shitore|shop|store/i.test(
     t,
   );
 }
