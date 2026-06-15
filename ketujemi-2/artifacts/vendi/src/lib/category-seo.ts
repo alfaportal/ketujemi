@@ -1,14 +1,11 @@
 import { cityNameFromSlug, citySlugFromName } from "../../../../lib/seo-city-slugs";
+import { seoCategoryPath } from "../../../../lib/seo-category-indexing";
 import type { UiTranslationLocale } from "@/lib/ui-languages";
 
 export const SEO_LISTINGS_PREFIX = "/shpallje";
 export const CANONICAL_SITE_ORIGIN = "https://ketujemi.com";
 
-export function seoCategoryPath(categorySlug: string, citySlug?: string | null): string {
-  const base = `${SEO_LISTINGS_PREFIX}/${encodeURIComponent(categorySlug)}`;
-  if (!citySlug?.trim()) return base;
-  return `${base}/${encodeURIComponent(citySlug.trim().toLowerCase())}`;
-}
+export { seoCategoryPath };
 
 export function resolveSeoCitySlug(segment: string | undefined): string | undefined {
   if (!segment?.trim()) return undefined;

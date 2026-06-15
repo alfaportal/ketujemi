@@ -9,6 +9,7 @@ import facebookOAuthPublicRouter from "./routes/facebook-oauth-public";
 import tiktokOAuthPublicRouter from "./routes/tiktok-oauth-public";
 import { logger } from "./lib/logger";
 import { attachListingOgCrawlerMiddleware } from "./lib/listing-og-crawler-middleware";
+import { attachSeoCategoryCityMiddleware } from "./lib/seo-category-city-middleware";
 import { attachStaticFrontend } from "./lib/serve-static";
 import { canonicalHostRedirect } from "./lib/canonical-host";
 import sitemapRouter from "./routes/sitemap";
@@ -105,6 +106,7 @@ app.use(tiktokOAuthPublicRouter);
 app.use("/api", globalApiLimiter);
 app.use("/api", router);
 attachListingOgCrawlerMiddleware(app);
+attachSeoCategoryCityMiddleware(app);
 attachStaticFrontend(app);
 
 app.use((err: unknown, req: express.Request, res: express.Response, _next: express.NextFunction) => {

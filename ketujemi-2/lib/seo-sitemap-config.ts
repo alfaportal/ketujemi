@@ -52,3 +52,10 @@ export const SITEMAP_CITY_SLUGS = [
   "podgorica",
   "tivat",
 ] as const;
+
+const PARENT_HUB_SET = new Set<string>(SITEMAP_PARENT_HUB_SLUGS);
+
+export function isParentHubCategorySlug(slug: string | null | undefined): boolean {
+  if (!slug?.trim()) return false;
+  return PARENT_HUB_SET.has(slug.trim().toLowerCase());
+}

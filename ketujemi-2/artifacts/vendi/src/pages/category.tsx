@@ -49,6 +49,7 @@ import {
   seoCategoryPath,
 } from "@/lib/category-seo";
 import { applyPageMeta } from "@/lib/page-meta";
+import { resolveCategoryCityIndexing } from "../../../../lib/seo-category-indexing";
 import { breadcrumbJsonLd, injectJsonLd } from "@/lib/schema-org";
 import {
   CategoryPageLoading,
@@ -1264,15 +1265,18 @@ export default function CategoryPage() {
     if (!categorySeoMeta || !currentCategory?.slug) return;
 
     const listingCount = listingsData?.listings?.length ?? 0;
-    const thinCityPage = !!seoCitySlugResolved && !isLoading && listingCount === 0;
-    const hubCanonical = seoCategoryPath(currentCategory.slug);
+    const indexing = resolveCategoryCityIndexing(
+      currentCategory.slug,
+      seoCitySlugResolved,
+      { listingCount, isLoading },
+    );
 
     applyPageMeta({
       title: categorySeoMeta.title,
       description: categorySeoMeta.description,
-      canonicalPath: thinCityPage ? hubCanonical : categorySeoMeta.canonicalPath,
+      canonicalPath: indexing.canonicalPath,
       ogImage: categoryOgImage,
-      robots: thinCityPage ? "noindex, follow" : undefined,
+      robots: indexing.robots,
     });
     const cleanupLd = categoryBreadcrumbLd
       ? injectJsonLd("category-breadcrumb", categoryBreadcrumbLd)
