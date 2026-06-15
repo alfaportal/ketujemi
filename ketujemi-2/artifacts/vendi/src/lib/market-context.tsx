@@ -64,7 +64,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
   ks: {
     // Listings / filter
     title: "Shpalljet", search: "Kërko shpallje...", searchBtn: "Kërko",
-    searchShopsSection: "Dyqanet",
+    searchShopsSection: "Bizneset",
     filters: "Filtrat", category: "Kategoria", city: "Qyteti",
     minPrice: "Çmimi min", maxPrice: "Çmimi max", apply: "Zbato",
     clear: "Pastro", noResults: "Nuk u gjet asnjë shpallje",
@@ -338,7 +338,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
   },
   al: {
     title: "Njoftimet", search: "Kërko njoftim...", searchBtn: "Kërko",
-    searchShopsSection: "Dyqanet",
+    searchShopsSection: "Bizneset",
     filters: "Filtrat", category: "Kategoria", city: "Qyteti",
     minPrice: "Çmimi min", maxPrice: "Çmimi max", apply: "Zbato",
     clear: "Pastro", noResults: "Nuk u gjet asnjë njoftim",
@@ -607,7 +607,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
   },
   mk: {
     title: "Огласи", search: "Барај оглас...", searchBtn: "Барај",
-    searchShopsSection: "Продавници",
+    searchShopsSection: "Бизниси",
     filters: "Филтри", category: "Категорија", city: "Град",
     minPrice: "Цена МИН", maxPrice: "Цена МАКС", apply: "Примени",
     clear: "Исчисти", noResults: "Не се најдени огласи",
@@ -876,7 +876,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
   },
   mne: {
     title: "Oglasi", search: "Traži oglas...", searchBtn: "Traži",
-    searchShopsSection: "Prodavnice",
+    searchShopsSection: "Biznisi",
     filters: "Filtri", category: "Kategorija", city: "Grad",
     minPrice: "Cijena MIN", maxPrice: "Cijena MAX", apply: "Primijeni",
     clear: "Očisti", noResults: "Nisu pronađeni oglasi",
@@ -1145,7 +1145,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
   },
   en: {
     title: "Listings", search: "Search listings...", searchBtn: "Search",
-    searchShopsSection: "Shops",
+    searchShopsSection: "Businesses",
     filters: "Filters", category: "Category", city: "City",
     minPrice: "Min price", maxPrice: "Max price", apply: "Apply",
     clear: "Clear", noResults: "No listings found",
