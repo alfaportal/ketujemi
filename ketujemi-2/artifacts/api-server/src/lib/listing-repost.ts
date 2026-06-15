@@ -9,7 +9,7 @@ import {
   blockIfPriorModerationRejection,
   MODERATION_REPOST_BLOCK_MESSAGE,
 } from "./listing-moderation-repost-guard";
-import { getApprovedShopIdForUser, backfillShopListingsForShop } from "./shop-listing-lookup.js";
+import { getApprovedShopIdForUser, backfillShopListingsForShop, ensureListingLinkedToOwnerShop } from "./shop-listing-lookup.js";
 import { runTwoLayerModeration } from "./listing-two-layer-moderation";
 import { logListingModerationRejection } from "./listing-moderation-rejection-log";
 
@@ -133,6 +133,13 @@ export async function repostListing(
       await backfillShopListingsForShop(shopRow).catch(() => undefined);
     }
   }
+
+  await ensureListingLinkedToOwnerShop({
+    userId: user.id,
+    userEmail: user.email,
+    sellerPhone: row.seller_phone,
+    listingId,
+  }).catch(() => undefined);
 
   return { ok: true };
 }

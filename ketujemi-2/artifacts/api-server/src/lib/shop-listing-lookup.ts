@@ -235,6 +235,56 @@ export async function linkNewListingToMatchingShop(input: {
   await backfillShopListingsForShop(shop);
 }
 
+/**
+ * Idempotent guard — run after every listing create/update by a shop owner.
+ * Guarantees shop_id is set when a matching shop exists (account, email, or phone).
+ */
+export async function ensureListingLinkedToOwnerShop(input: {
+  userId: number;
+  userEmail?: string | null;
+  sellerPhone: string;
+  listingId: number;
+}): Promise<number | null> {
+  const expectedShopId = await resolveShopIdForListingPoster(input);
+  if (!expectedShopId) return null;
+
+  await linkNewListingToMatchingShop(input);
+
+  const [listing] = await db
+    .select({ shop_id: listingsTable.shop_id })
+    .from(listingsTable)
+    .where(eq(listingsTable.id, input.listingId))
+    .limit(1);
+
+  if (listing?.shop_id === expectedShopId) return expectedShopId;
+
+  const [shop] = await db
+    .select({
+      id: shopsTable.id,
+      user_id: shopsTable.user_id,
+      phone: shopsTable.phone,
+      email: shopsTable.email,
+    })
+    .from(shopsTable)
+    .where(eq(shopsTable.id, expectedShopId))
+    .limit(1);
+
+  if (!shop) return listing?.shop_id ?? null;
+
+  logger.warn(
+    { listingId: input.listingId, expectedShopId, hadShopId: listing?.shop_id ?? null },
+    "listing shop_id missing after link — forcing shop attach",
+  );
+
+  await db
+    .update(listingsTable)
+    .set({ shop_id: shop.id })
+    .where(eq(listingsTable.id, input.listingId));
+
+  await backfillShopListingsForShop(shop);
+  return shop.id;
+}
+
 async function activeShopMap(shopIds: number[]) {
   const unique = [...new Set(shopIds.filter((id) => id > 0))];
   const map = new Map<number, typeof shopsTable.$inferSelect>();

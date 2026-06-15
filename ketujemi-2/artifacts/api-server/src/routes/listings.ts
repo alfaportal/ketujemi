@@ -74,7 +74,7 @@ import {
 import { handleSellerComplaint } from "../lib/violation-escalation";
 import { deleteListingCascade } from "../lib/delete-listing-cascade";
 import type { User } from "@workspace/db";
-import { finalizeListingsForApi, linkNewListingToMatchingShop, resolveShopIdForListingPoster } from "../lib/shop-listing-lookup";
+import { finalizeListingsForApi, ensureListingLinkedToOwnerShop, resolveShopIdForListingPoster } from "../lib/shop-listing-lookup";
 import { applyViewerContact, buildCategoryRootSlugMap, formatListing } from "./listings-format";
 import {
   requestPurgeExpiredListings,
@@ -761,26 +761,26 @@ router.post("/listings", postListingLimiter, async (req, res) => {
   });
 
   recordListingPostSuccessForUser(viewer);
-  try {
-    await linkNewListingToMatchingShop({
-      userId: viewer.id,
-      userEmail: viewer.email,
-      sellerPhone: sellerContact.seller_phone,
-      listingId: row.id,
-    });
-  } catch (linkErr) {
+  const linkedShopId = await ensureListingLinkedToOwnerShop({
+    userId: viewer.id,
+    userEmail: viewer.email,
+    sellerPhone: sellerContact.seller_phone,
+    listingId: row.id,
+  }).catch((linkErr) => {
     logger.warn({ linkErr, userId: viewer.id, listingId: row.id }, "listing shop link after post failed");
-  }
+    return shopId;
+  });
   if (is_first_listing) {
     await markFirstListingPosted(viewer.id);
   }
 
   let shopNameForSocial: string | null = null;
-  if (shopId) {
+  const shopIdForSocial = linkedShopId ?? shopId;
+  if (shopIdForSocial) {
     const [shopRow] = await db
       .select({ shop_name: shopsTable.shop_name })
       .from(shopsTable)
-      .where(eq(shopsTable.id, shopId))
+      .where(eq(shopsTable.id, shopIdForSocial))
       .limit(1);
     shopNameForSocial = shopRow?.shop_name ?? null;
   }
@@ -1602,6 +1602,15 @@ router.patch("/listings/:id", async (req, res) => {
     .set(updates)
     .where(eq(listingsTable.id, paramsParsed.data.id))
     .returning();
+
+  await ensureListingLinkedToOwnerShop({
+    userId: viewer.id,
+    userEmail: viewer.email,
+    sellerPhone: updated.seller_phone,
+    listingId: updated.id,
+  }).catch((linkErr) => {
+    logger.warn({ linkErr, listingId: updated.id }, "listing shop link after patch failed");
+  });
 
   if (body.image_url != null) {
     void pruneListingImagesAndNotifyOwner({
