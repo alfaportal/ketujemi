@@ -177,13 +177,13 @@ const KS: ShopDirectoryCopy = {
   homeBannerTitle: "Bizneset Dixhitale — Bli direkt nga bizneset me një klikim",
   homeBannerSubtitle: "{count} kategori • Qindra dyqane lokale • në çdo vend",
   homeBannerBtn: "Shiko të gjitha dyqanet →",
-  introTitle: "🏪 Dyqani Dixhital — E ardhmja e tregtisë!",
+  introTitle: "Hapësira Dixhitale — E ardhmja e tregtisë dhe shërbimeve!",
   introP1:
-    "Dyqani Dixhital në KetuJemi.com është prania online e çdo biznesi dhe dyqani fizik — nga dyqani i lagjës deri te kompanitë e mëdha. Çdo dyqan ka faqen e vet të personalizuar me produktet, çmimet, fotot dhe kontaktin e drejtpërdrejtë me shitësin.",
+    "Hapësira Dixhitale në KetuJemi.com është prania online e çdo biznesi, dyqani, firme apo zyre — nga biznesi i vogël lokal deri te kompanitë e mëdha. Çdo partner ka faqen e vet të personalizuar me produktet, shërbimet, çmimet, fotot dhe kontaktin e drejtpërdrejtë me shitësin apo ofruesin e shërbimit.",
   introP2:
-    "Ti nuk ke nevojë të ecësh nëpër treg, të telefonosh pa fund, apo të humbasësh kohë — me një kërkim të shpejtë gjen dyqanin që të duhet, sheh produktet që ofron, dhe kontakton direkt me pronarin — pa ndërmjetës, pa komision, pa vonesë!",
+    "Ti nuk ke nevojë të ecësh nëpër treg, të telefonosh pa fund, apo të humbasësh kohë — me një kërkim të shpejtë gjen biznesin që të duhet, sheh atë që ofron, dhe kontakton direkt me pronarin — pa ndërmjetës, pa komision, pa vonesë!",
   introP3:
-    "Të gjitha dyqanet në KetuJemi janë të verifikuara nga stafi ynë — kështu që ti mund të blesh me besim dhe siguri të plotë! ✅",
+    "Të gjitha bizneset në KetuJemi janë të verifikuara nga stafi ynë — kështu që ti mund të bashkëpunosh apo blesh me besim dhe siguri të plotë!",
   introApplyTitle: "Ke biznes ose dyqan?",
   introApplyText:
     "Apliko për dyqanin tënd dixhital — stafi ynë e shqyrton kërkesën dhe e aktivizon brenda 24 orëve.",
@@ -220,13 +220,13 @@ const MK: ShopDirectoryCopy = {
   homeBannerTitle: "Дигитални бизниси — Купувајте директно од бизнисите со еден клик",
   homeBannerSubtitle: "{count} категории • Стотици локални продавници • на секое место",
   homeBannerBtn: "Види ги сите продавници →",
-  introTitle: "🏪 Дигитална продавница — Иднината на трговијата!",
+  introTitle: "Дигитален простор — Иднината на трговијата и услугите!",
   introP1:
-    "Дигиталната продавница на KetuJemi.com е онлајн присуство на секој бизнис и физичка продавница — од продавницата во маалото до големите компании. Секоја продавница има сопствена персонализирана страница со производи, цени, фотографии и директен контакт со продавачот.",
+    "Дигиталниот простор на KetuJemi.com е онлајн присуство на секој бизнис, продавница, фирма или канцеларија — од малиот локален бизнис до големите компании. Секој партнер има сопствена персонализирана страница со производи, услуги, цени, фотографии и директен контакт со продавачот или давателот на услугата.",
   introP2:
-    "Не мора да шеташ низ пазарот, бесконечно да телефонираш или да губиш време — со едно брзо пребарување го наоѓаш продавницата што ти треба, ги гледаш понудените производи и директно контактираш со сопственикот — без посредник, без провизија, без доцнење!",
+    "Не мора да шеташ низ пазарот, бесконечно да телефонираш или да губиш време — со едно брзо пребарување го наоѓаш бизнисот што ти треба, го гледаш она што нуди и директно контактираш со сопственикот — без посредник, без провизија, без доцнење!",
   introP3:
-    "Сите продавници на KetuJemi се верификувани од нашиот тим — така што можеш да купуваш со целосно доверба и сигурност! ✅",
+    "Сите бизниси на KetuJemi се верификувани од нашиот тим — така што можеш да соработуваш или купуваш со целосно доверба и сигурност!",
   introApplyTitle: "Имате бизнис или продавница?",
   introApplyText:
     "Аплицирајте за вашата дигитална продавница — тимот ја разгледува барањето и ја активира во рок од 24 часа.",
@@ -263,13 +263,13 @@ const MNE: ShopDirectoryCopy = {
   homeBannerTitle: "Digitalni biznisi — Kupujte direktno od biznisa jednim klikom",
   homeBannerSubtitle: "{count} kategorija • Stotine lokalnih prodavnica • na svakom mjestu",
   homeBannerBtn: "Pogledaj sve prodavnice →",
-  introTitle: "🏪 Digitalna prodavnica — Budućnost trgovine!",
+  introTitle: "Digitalni prostor — Budućnost trgovine i usluga!",
   introP1:
-    "Digitalna prodavnica na KetuJemi.com je online prisustvo svakog biznisa i fizičke prodavnice — od prodavnice u komšiluku do velikih kompanija. Svaka prodavnica ima svoju personalizovanu stranicu sa proizvodima, cijenama, fotografijama i direktnim kontaktom sa prodavcem.",
+    "Digitalni prostor na KetuJemi.com je online prisustvo svakog biznisa, prodavnice, firme ili ureda — od malog lokalnog biznisa do velikih kompanija. Svaki partner ima svoju personalizovanu stranicu sa proizvodima, uslugama, cijenama, fotografijama i direktnim kontaktom sa prodavcem ili pružaocem usluge.",
   introP2:
-    "Ne moraš šetati pijacu, beskonačno zvati ili gubiti vrijeme — jednom brzom pretragom nalaziš prodavnicu koja ti treba, vidiš proizvode koje nudi i direktno kontaktiraš vlasnika — bez posrednika, bez provizije, bez čekanja!",
+    "Ne moraš šetati pijacu, beskonačno zvati ili gubiti vrijeme — jednom brzom pretragom nalaziš biznis koji ti treba, vidiš šta nudi i direktno kontaktiraš vlasnika — bez posrednika, bez provizije, bez čekanja!",
   introP3:
-    "Sve prodavnice na KetuJemi su verifikovane od strane našeg tima — tako da možeš kupovati sa potpunim povjerenjem i sigurnošću! ✅",
+    "Svi biznisi na KetuJemi su verifikovani od strane našeg tima — tako da možeš saradjivati ili kupovati sa potpunim povjerenjem i sigurnošću!",
   introApplyTitle: "Imate biznis ili prodavnicu?",
   introApplyText:
     "Prijavite se za svoju digitalnu prodavnicu — tim pregleda zahtjev i aktivira je u roku od 24 sata.",
