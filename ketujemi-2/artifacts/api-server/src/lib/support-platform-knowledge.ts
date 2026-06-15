@@ -25,8 +25,7 @@ KetuJemi.com është platformë njoftimesh (shpallje) për blerje/shitje në Bal
 === TREGJET (11 tregje) ===
 Ballkan (4): Kosovë (EUR €), Shqipëri (ALL L), Maqedoni e Veriut (MKD ден), Mal i Zi (EUR €).
 Diaspora (7): Gjermani, Austri, Zvicër, Itali, Francë, Angli, SHBA — me monedhë lokale në shfaqje.
-• Tregu zgjidhet në footer/header — ndikon në simbolin e çmimit dhe prefiks telefon për SMS.
-• SMS regjistrim: +383, +355, +389, +382 (Ballkan). Diaspora: regjistrim me **email** rekomandohet (SMS vetëm Ballkan).
+• Tregu zgjidhet në footer/header — ndikon në simbolin e çmimit.
 • Diaspora mund të postojë normalisht me numrin e vendit të tyre.
 
 === 20 KATEGORITË KRYESORE + NËN-KATEGORI ===
@@ -76,16 +75,15 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 === SI TË REGJISTROHESH (hap pas hapi) ===
 1) Klikoni **«Hyr»** (këndi i sipërm djathtas).
 2) Zgjidhni **«Regjistrohu»**.
-3) **Opsioni A — Email:** vendosni email + fjalëkalim (min. 8 karaktere) → merrni kod/link verifikimi në email → konfirmoni.
-4) **Opsioni B — Telefon (Ballkan):** zgjidhni prefiks (+383 KS, +355 AL, +389 MK, +382 ME) → SMS me kod 6-shifror → futni kodin.
-5) **Diaspora:** përdorni regjistrimin me **email** (SMS OTP vetëm për prefikset Ballkan).
-6) Pas verifikimit: mund të shfletoni, të kontaktoni shitës, të postoni («Posto Falas»).
-7) **Harruat fjalëkalimin?** Në «Hyr» → «Harrova fjalëkalimin» → SMS ose email për rivendosje.
+3) **Email:** vendosni email + fjalëkalim (min. 8 karaktere) → konfirmoni nga emaili.
+4) **Google, Facebook ose TikTok:** përdorni butonat e hyrjes sociale në të njëjtën faqe.
+5) Pas regjistrimit: mund të shfletoni, të kontaktoni shitës, të postoni («Posto Falas»).
+6) **Harruat fjalëkalimin?** Në «Hyr» → «Harrova fjalëkalimin» (me email).
 
 **Regjistrim ≠ postim njoftimi:** llogari krijon akses; për të shitur duhet «Posto Falas» + kategori.
 
 === SI TË POSTOSH NJOFTIM (hap pas hapi) ===
-1) Hyni në llogari (email/SMS i verifikuar).
+1) Hyni në llogari (email, Google, Facebook ose TikTok).
 2) Klikoni **«Posto Falas»** (/listings/new).
 3) Zgjidhni **kategorinë kryesore** dhe **nënkategorinë** e saktë (e rëndësishme për blerësit).
 4) Plotësoni: titull i qartë, përshkrim, çmim në **€** (ose «Me marrëveshje» për privatë).
@@ -150,10 +148,10 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 **A funksionon jashtë vendit?** → Po, 11 tregje përfshirë diasporën.
 **Si funksionon çmimi i artikullit?** → Çdo njoftim ka çmimin e vet; krahaso disa njoftime në të njëjtën kategori.
 **Muzikë ku?** → Kategoria **Muzikë & Hobby** (Instrumente, Libra, Studio…), jo Sport & Outdoor.
-**Regjistrim për muzikë?** → Llogari: Hyr→Regjistrohu; shitje: Posto Falas→Muzikë & Hobby; blerje: Muzikë & Hobby→shfletoni.
+**Regjistrim për muzikë?** → Llogari: Hyr→Regjistrohu (email, Google, Facebook, TikTok); shitje: Posto Falas→Muzikë & Hobby; blerje: Muzikë & Hobby→shfletoni.
 **Partner dyqani?** → /partner, formular aplikimi Partner / VIP Partner, pa pagesë online.
 **Skadimi?** → deri 3 muaj; rifillo nga njoftimi juaj.
-**Verifikimi?** → Email + SMS (Ballkan) para postimit të plotë.
+**Verifikimi?** → Hyni në llogari (regjistrim me email, Google, Facebook ose TikTok).
 
 === RREGULLA & MODERIM ===
 Lejohet: produkt real, foto të vërteta, një produkt për njoftim, çmim i qartë.

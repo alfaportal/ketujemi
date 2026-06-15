@@ -65,9 +65,9 @@ const COMPOSITE_INTENTS: { test: (t: string) => boolean; reply: LangCopy }[] = [
   {
     test: (t) => /regjistr|regjistro|sign\s*up/i.test(t) && /muzik|hobi|instrument/i.test(t),
     reply: {
-      sq: "Për **llogari** në KetuJemi: «Hyr» → «Regjistrohu» (email ose telefon + SMS). Për të **shitur** muzikë/instrumente: pas hyrjes → «Posto Falas» → kategoria **Muzikë & Hobby** (Instrumente, Libra, Studio…). Për të **blerë**: faqja kryesore → **Muzikë & Hobby** → shfletoni njoftimet.",
-      mk: "Сметка: «Најава» → регистрација. Продажба: «Posto Falas» → **Музика и хоби**. Купување: почетна → **Музика и хоби**.",
-      me: "Nalog: «Prijava» → registracija. Prodaja: «Posto Falas» → **Muzika i hobi**. Kupovina: početna → **Muzika i hobi**.",
+      sq: "Për **llogari** në KetuJemi: «Hyr» → «Regjistrohu» (email, Google, Facebook ose TikTok). Për të **shitur** muzikë/instrumente: pas hyrjes → «Posto Falas» → kategoria **Muzikë & Hobby** (Instrumente, Libra, Studio…). Për të **blerë**: faqja kryesore → **Muzikë & Hobby** → shfletoni njoftimet.",
+      mk: "Сметка: «Најава» → «Регистрирај се» (email, Google, Facebook или TikTok). Продажба: «Posto Falas» → **Музика и хоби**.",
+      me: "Nalog: «Prijava» → «Registruj se» (email, Google, Facebook ili TikTok). Prodaja: «Posto Falas» → **Muzika i hobi**.",
     },
   },
   {
@@ -85,9 +85,9 @@ const DETAILED_FAQ: FaqEntry[] = [
     keywords:
       /regjistr|regjistro|krijoj\s+llogari|hap\s+llogari|sign\s*up|create\s+account|otvori\s+nalog|регистр/i,
     reply: {
-      sq: "Regjistrimi (hap pas hapi): 1) **«Hyr»** → **«Regjistrohu»**. 2) Email+fjalëkalim (min. 8 shkronja) + verifikim me kod në email, OSE telefon Ballkan (+383/+355/+389/+382) + SMS 6-shifror. 3) Diaspora: përdorni email. 4) Pas verifikimit: shfletoni kategori ose **«Posto Falas»** për të shitur. Regjistrim ≠ postim — për muzikë/instrumente postimi bëhet te **Muzikë & Hobby**.",
-      mk: "Регистрација: **Најава** → регистрација (email или SMS). Потоа **Posto Falas** или пребарување.",
-      me: "Registracija: **Prijava** → registracija (email ili SMS). Zatim **Posto Falas** ili pretraga.",
+      sq: "Klikoni «Hyr» (këndi i sipërm djathtas) → zgjidhni «Regjistrohu». Mund të regjistroheni me email (email + fjalëkalim, konfirmoni nga emaili), me Google, Facebook ose TikTok (butonat në faqen e hyrjes). Pas regjistrimit: shfletoni kategori ose «Posto Falas» për të shitur.",
+      mk: "«Најава» (горе десно) → «Регистрирај се». Со email, Google, Facebook или TikTok. Потоа пребарување или **Posto Falas**.",
+      me: "«Prijava» (gore desno) → «Registruj se». Email, Google, Facebook ili TikTok. Zatim pretraga ili **Posto Falas**.",
     },
   },
   {
@@ -143,9 +143,9 @@ const DETAILED_FAQ: FaqEntry[] = [
   {
     keywords: /verifik|sms|email|kod|confirm/i,
     reply: {
-      sq: "Për të postuar duhet të **hyni në llogari**. Email ose SMS (+383, +355, +389, +382) përdoren për regjistrim — verifikimi SMS **nuk** është i detyrueshëm para postimit.",
-      mk: "Верификација email + SMS.",
-      me: "Verifikacija email + SMS.",
+      sq: "Për të postuar duhet të **hyni në llogari**. Regjistrohuni nga «Hyr» → «Regjistrohu» me email, Google, Facebook ose TikTok.",
+      mk: "За објава мора да сте најавени. Регистрација: email, Google, Facebook или TikTok.",
+      me: "Za objavu morate biti prijavljeni. Registracija: email, Google, Facebook ili TikTok.",
     },
   },
   {
@@ -160,7 +160,7 @@ const DETAILED_FAQ: FaqEntry[] = [
   {
     keywords: /treg|market|diaspor|kosov|shqip|maqedon|mal\s+i\s+zi|gjermani|zvic|austri|shba|angli/i,
     reply: {
-      sq: "KetuJemi funksionon në **Kosovë, Shqipëri, Maqedoni e Veriut dhe 8 tregje të diasporës** (Gjermani, Zvicër, Austri, Francë, Itali, Angli, SHBA, Mal i Zi). Zgjidhni tregun në footer — ndikon në monedhën e shfaqur. Diaspora regjistrohet kryesisht me **email**; Ballkani edhe me SMS.",
+      sq: "KetuJemi funksionon në **Kosovë, Shqipëri, Maqedoni e Veriut dhe 8 tregje të diasporës** (Gjermani, Zvicër, Austri, Francë, Itali, Angli, SHBA, Mal i Zi). Zgjidhni tregun në footer — ndikon në monedhën e shfaqur.",
       mk: "11 пазари: Косово, Албанија, МК, Црна Гора + дијаспора (DE, AT, CH, IT, FR, GB, US).",
       me: "11 tržišta: KS, AL, MK, ME + dijaspora (DE, AT, CH, IT, FR, GB, US).",
     },
