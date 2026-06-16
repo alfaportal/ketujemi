@@ -1,6 +1,6 @@
 /** UI languages (independent of market / currency). */
 export const UI_LANGUAGES = [
-  { code: "sq", flag: "🇦🇱", label: "Shqip", displayCode: "AL" },
+  { code: "sq", flag: "🇽🇰", label: "Shqip", displayCode: "AL" },
   { code: "mk", flag: "🇲🇰", label: "Maqedonisht", displayCode: "MK" },
   { code: "mne", flag: "🇲🇪", label: "Malazisht", displayCode: "ME" },
   { code: "en", flag: "🇬🇧", label: "English", displayCode: "EN" },
