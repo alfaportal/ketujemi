@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { UI_LANGUAGES, flagImgUrl } from "@/lib/ui-languages";
-import { useMarket } from "@/lib/market-context";
+import { UI_LANGUAGES, flagImgUrl, marketCodeForUiLang } from "@/lib/ui-languages";
+import { useMarket, MARKETS } from "@/lib/market-context";
 
 type LanguageSelectorProps = {
   variant?: "on-dark" | "on-light";
@@ -19,7 +19,7 @@ export function LanguageSelector({
   largeTouch,
   className,
 }: LanguageSelectorProps) {
-  const { uiLang, setUiLang } = useMarket();
+  const { uiLang, setUiLang, setMarket } = useMarket();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -90,6 +90,11 @@ export function LanguageSelector({
                 data-testid={`option-language-${lang.code}`}
                 onClick={() => {
                   setUiLang(lang.code);
+                  const mCode = marketCodeForUiLang(lang.code);
+                  if (mCode) {
+                    const m = MARKETS.find((x) => x.code === mCode);
+                    if (m) setMarket(m);
+                  }
                   setOpen(false);
                 }}
                 className={cn(
