@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { appOriginFromRequest } from "../lib/meta-oauth-config";
+import { appOriginFromRequest, facebookPublicOAuthCallbackUrl } from "../lib/meta-oauth-config";
 import {
   buildFacebookAuthorizeUrl,
   exchangeFacebookCode,
@@ -27,6 +27,16 @@ import {
 
 const router = Router();
 
+/**
+ * Always prefer PUBLIC_APP_ORIGIN for the OAuth redirect_uri so it is stable
+ * regardless of what host header Railway / mobile browsers send.
+ */
+function resolvedOAuthOrigin(req: import("express").Request): string {
+  const configured = process.env.PUBLIC_APP_ORIGIN?.trim().replace(/["']/g, "").replace(/\/$/, "");
+  if (configured) return configured;
+  return appOriginFromRequest(req);
+}
+
 router.get("/auth/facebook/start", (req, res) => {
   if (!isFacebookOAuthEnabled()) {
     res.status(503).json({ error: "FACEBOOK_OAUTH_DISABLED" });
@@ -34,12 +44,27 @@ router.get("/auth/facebook/start", (req, res) => {
   }
 
   try {
-    const origin = appOriginFromRequest(req);
+    const origin = resolvedOAuthOrigin(req);
     const returnTo = sanitizeOAuthReturnTo(
       typeof req.query.return === "string" ? req.query.return : "/",
     );
     const state = createOAuthState({ provider: "facebook", returnTo });
-    res.redirect(302, buildFacebookAuthorizeUrl(state, origin, "public"));
+    const authorizeUrl = buildFacebookAuthorizeUrl(state, origin, "public");
+    const redirectUri = facebookPublicOAuthCallbackUrl(origin);
+
+    console.log("[facebook oauth start]", {
+      PUBLIC_APP_ORIGIN: process.env.PUBLIC_APP_ORIGIN ?? "(not set)",
+      origin,
+      redirectUri,
+      returnTo,
+      stateLength: state.length,
+      requestHost: req.get("host") ?? "(none)",
+      xForwardedHost: req.get("x-forwarded-host") ?? "(none)",
+      xForwardedProto: req.get("x-forwarded-proto") ?? "(none)",
+      userAgent: (req.get("user-agent") ?? "").slice(0, 120),
+    });
+
+    res.redirect(302, authorizeUrl);
   } catch (err) {
     req.log?.error({ err }, "facebook oauth start");
     res.status(500).json({ error: "OAuth start failed" });
@@ -47,9 +72,25 @@ router.get("/auth/facebook/start", (req, res) => {
 });
 
 router.get("/auth/facebook/callback", async (req, res) => {
-  const origin = appOriginFromRequest(req);
+  const origin = resolvedOAuthOrigin(req);
   const stateRaw = typeof req.query.state === "string" ? req.query.state : "";
   const code = typeof req.query.code === "string" ? req.query.code : "";
+
+  console.log("[facebook oauth callback] incoming request", {
+    PUBLIC_APP_ORIGIN: process.env.PUBLIC_APP_ORIGIN ?? "(not set)",
+    origin,
+    redirectUri: facebookPublicOAuthCallbackUrl(origin),
+    hasCode: Boolean(code),
+    codeLength: code.length,
+    hasState: Boolean(stateRaw),
+    stateLength: stateRaw.length,
+    hasError: Boolean(req.query.error),
+    errorParam: req.query.error ?? "(none)",
+    requestHost: req.get("host") ?? "(none)",
+    xForwardedHost: req.get("x-forwarded-host") ?? "(none)",
+    xForwardedProto: req.get("x-forwarded-proto") ?? "(none)",
+    userAgent: (req.get("user-agent") ?? "").slice(0, 120),
+  });
 
   if (req.query.error) {
     const fbErr = parseFacebookOAuthCallbackError(req.query as Record<string, unknown>);
@@ -66,6 +107,14 @@ router.get("/auth/facebook/callback", async (req, res) => {
   }
 
   const state = verifyOAuthState(stateRaw);
+
+  console.log("[facebook oauth callback] state verification", {
+    stateRaw: stateRaw.slice(0, 40) + (stateRaw.length > 40 ? "…" : ""),
+    stateValid: Boolean(state),
+    stateProvider: state?.provider ?? "(invalid)",
+    stateReturnTo: state?.returnTo ?? "(invalid)",
+  });
+
   if (!state || state.provider !== "facebook") {
     redirectOAuthLogin(res, origin, "oauth_state");
     return;
@@ -81,7 +130,7 @@ router.get("/auth/facebook/callback", async (req, res) => {
     const profile = await fetchFacebookProfile(accessToken);
     const user = await findOrCreateUserFromFacebook(profile);
 
-    console.log("[facebook oauth callback] findOrCreateUserFromFacebook", {
+    console.log("[facebook oauth callback] user resolved", {
       userId: user.id,
       facebookUserId: profile.id,
       email: user.email ?? profile.email ?? null,
@@ -101,7 +150,7 @@ router.get("/auth/facebook/callback", async (req, res) => {
     const redirectSep = redirectPath.includes("?") ? "&" : "?";
     const redirectUrl = `${origin.replace(/\/$/, "")}${redirectPath}${redirectSep}${redirectParams.toString()}`;
 
-    console.log("[facebook oauth callback] session cookie set before redirect", {
+    console.log("[facebook oauth callback] sending HTML redirect", {
       userId: user.id,
       cookie: sessionCookieDebugInfo(),
       setCookieHeader: res.getHeader("Set-Cookie"),
