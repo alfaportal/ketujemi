@@ -64,6 +64,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
   ks: {
     // Listings / filter
     title: "Shpalljet", search: "Kërko shpallje...", searchBtn: "Kërko",
+    searchTagline: "Kërko dhe gjej shpejt — çfarë kërkon, gjej në sekonda!",
     searchShopsSection: "Bizneset",
     filters: "Filtrat", category: "Kategoria", city: "Qyteti",
     minPrice: "Çmimi min", maxPrice: "Çmimi max", apply: "Zbato",
@@ -338,6 +339,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
   },
   al: {
     title: "Njoftimet", search: "Kërko njoftim...", searchBtn: "Kërko",
+    searchTagline: "Kërko dhe gjej shpejt — çfarë kërkon, gjej në sekonda!",
     searchShopsSection: "Bizneset",
     filters: "Filtrat", category: "Kategoria", city: "Qyteti",
     minPrice: "Çmimi min", maxPrice: "Çmimi max", apply: "Zbato",
@@ -607,6 +609,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
   },
   mk: {
     title: "Огласи", search: "Барај оглас...", searchBtn: "Барај",
+    searchTagline: "Барај и најди брзо — она што го бараш, најди за секунди!",
     searchShopsSection: "Бизниси",
     filters: "Филтри", category: "Категорија", city: "Град",
     minPrice: "Цена МИН", maxPrice: "Цена МАКС", apply: "Примени",
@@ -876,6 +879,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
   },
   mne: {
     title: "Oglasi", search: "Traži oglas...", searchBtn: "Traži",
+    searchTagline: "Traži i pronađi brzo — što tražiš, nađi za sekunde!",
     searchShopsSection: "Biznisi",
     filters: "Filtri", category: "Kategorija", city: "Grad",
     minPrice: "Cijena MIN", maxPrice: "Cijena MAX", apply: "Primijeni",
@@ -1145,6 +1149,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
   },
   en: {
     title: "Listings", search: "Search listings...", searchBtn: "Search",
+    searchTagline: "Search and find fast — whatever you're looking for, found in seconds!",
     searchShopsSection: "Businesses",
     filters: "Filters", category: "Category", city: "City",
     minPrice: "Min price", maxPrice: "Max price", apply: "Apply",
