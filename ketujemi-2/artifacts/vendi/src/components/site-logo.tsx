@@ -11,20 +11,11 @@ type Props = {
 };
 
 const SIZE = {
-  header: {
-    wrap:
-      "rounded-2xl max-md:px-5 max-md:py-3 md:px-4 md:py-2.5 sm:px-5 sm:py-2.5 shadow-[0_4px_14px_rgba(37,99,235,0.45)]",
-    text: "text-[1.3rem] sm:text-[1.35rem] md:text-[1.5rem] leading-none max-md:tracking-tight",
-    domain: "text-[0.92em] font-bold opacity-95",
-  },
-  compact: {
-    wrap: "rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 shadow-[0_3px_10px_rgba(37,99,235,0.35)]",
-    text: "text-base sm:text-lg leading-none",
-    domain: "text-[0.9em] font-bold opacity-95",
-  },
+  header: { img: "h-11 w-11 sm:h-12 sm:w-12 md:h-[3.25rem] md:w-[3.25rem]" },
+  compact: { img: "h-9 w-9 sm:h-10 sm:w-10" },
 } as const;
 
-/** KetuJemi.com brand mark — gradient pill wordmark, sharp on all screens. */
+/** KetuJemi.com brand mark — app icon, matches TikTok / favicon exactly. */
 export function SiteLogo({ className, testId = "link-logo", size = "header", mobileWide }: Props) {
   const s = SIZE[size];
 
@@ -39,29 +30,18 @@ export function SiteLogo({ className, testId = "link-logo", size = "header", mob
       )}
       aria-label="KetuJemi.com"
     >
-      <span
+      <img
+        src="/logo.png"
+        alt="KetuJemi.com"
+        width={52}
+        height={52}
         className={cn(
-          "relative inline-flex items-center justify-center overflow-hidden border border-white/25",
-          "bg-gradient-to-b from-[#4a9eff] via-[#2563eb] to-[#1d4ed8]",
-          s.wrap,
-          mobileWide && size === "header" && "max-md:min-w-[min(100%,22rem)]",
+          "rounded-xl object-cover shadow-[0_3px_10px_rgba(26,63,168,0.45)]",
+          s.img,
+          mobileWide && size === "header" && "max-md:h-14 max-md:w-14",
         )}
-      >
-        <span
-          className="pointer-events-none absolute inset-x-0 top-0 h-[42%] bg-gradient-to-b from-white/35 to-transparent"
-          aria-hidden
-        />
-        <span
-          className={cn(
-            "relative z-[1] whitespace-nowrap font-black tracking-tight text-white",
-            "[text-shadow:0_1px_2px_rgba(15,23,42,0.35)]",
-            s.text,
-          )}
-        >
-          KetuJemi
-          <span className={s.domain}>.com</span>
-        </span>
-      </span>
+        draggable={false}
+      />
     </Link>
   );
 }
