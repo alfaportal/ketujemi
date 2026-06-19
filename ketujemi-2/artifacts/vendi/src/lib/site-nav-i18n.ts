@@ -2,7 +2,7 @@ import { useMarket } from "@/lib/market-context";
 import { translationKeyForUiLang, type UiTranslationLocale } from "@/lib/ui-languages";
 
 const SITE_NAV: Record<UiTranslationLocale, { navBuySell: string; navShops: string; navHelp: string }> = {
-  ks: { navBuySell: "Bli & Shit", navShops: "Bizneset", navHelp: "Ndihmë" },
+  ks: { navBuySell: "Blej & Shite", navShops: "Bizneset", navHelp: "Ndihmë" },
   mk: { navBuySell: "Купи & Продај", navShops: "Бизниси", navHelp: "Помош" },
   mne: { navBuySell: "Kupi & Prodaj", navShops: "Biznisi", navHelp: "Pomoć" },
   en: { navBuySell: "Buy & Sell", navShops: "Businesses", navHelp: "Help" },

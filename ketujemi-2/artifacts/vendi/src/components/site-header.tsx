@@ -12,10 +12,10 @@ import { prefetchRoute } from "@/lib/route-prefetch";
 import { cn } from "@/lib/utils";
 
 const navLinkClass =
-  "inline-flex items-center rounded-xl px-3 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 min-h-11 whitespace-nowrap";
+  "inline-flex items-center rounded-xl px-4 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 min-h-11 whitespace-nowrap transition-colors shadow-sm";
 
 const navLinkStackedClass =
-  "inline-flex items-center rounded-lg px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 min-h-10 whitespace-nowrap";
+  "inline-flex items-center rounded-xl px-4 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 min-h-11 whitespace-nowrap transition-colors";
 
 type SiteHeaderProps = {
   className?: string;
