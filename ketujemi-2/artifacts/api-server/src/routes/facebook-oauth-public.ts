@@ -18,7 +18,7 @@ import {
 } from "../lib/user-session";
 import { assertAccountActive } from "../lib/user-ban";
 import { parseFacebookOAuthCallbackError } from "../lib/facebook-oauth-errors.js";
-import { redirectOAuthLogin, redirectOAuthSuccess } from "../lib/oauth-redirect";
+import { redirectOAuthLogin, redirectOAuthSuccessHtml } from "../lib/oauth-redirect";
 import { parseFacebookSignedRequest } from "../lib/facebook-signed-request.js";
 import {
   getFacebookDataDeletionStatus,
@@ -114,7 +114,7 @@ router.get("/auth/facebook/callback", async (req, res) => {
       m.scheduleShopSocialEnrichForUser(user.id),
     );
 
-    redirectOAuthSuccess(res, origin, state.returnTo, welcome);
+    redirectOAuthSuccessHtml(res, origin, state.returnTo, welcome);
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown";
     req.log?.error({ err, message }, "facebook oauth callback");
