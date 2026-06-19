@@ -11,8 +11,8 @@ type Props = {
 };
 
 const SIZE = {
-  header: { img: "h-11 w-11 sm:h-12 sm:w-12 md:h-[3.25rem] md:w-[3.25rem]" },
-  compact: { img: "h-9 w-9 sm:h-10 sm:w-10" },
+  header: { img: "h-14 w-14 sm:h-16 sm:w-16 md:h-[4.5rem] md:w-[4.5rem]" },
+  compact: { img: "h-10 w-10 sm:h-12 sm:w-12" },
 } as const;
 
 /** KetuJemi.com brand mark — app icon, matches TikTok / favicon exactly. */
@@ -33,12 +33,12 @@ export function SiteLogo({ className, testId = "link-logo", size = "header", mob
       <img
         src="/logo.png"
         alt="KetuJemi.com"
-        width={52}
-        height={52}
+        width={72}
+        height={72}
         className={cn(
-          "rounded-xl object-cover shadow-[0_3px_10px_rgba(26,63,168,0.45)]",
+          "rounded-2xl object-cover shadow-[0_4px_14px_rgba(26,63,168,0.50)]",
           s.img,
-          mobileWide && size === "header" && "max-md:h-14 max-md:w-14",
+          mobileWide && size === "header" && "max-md:h-16 max-md:w-16",
         )}
         draggable={false}
       />
