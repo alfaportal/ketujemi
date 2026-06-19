@@ -39,6 +39,8 @@ export function buildFacebookAuthorizeUrl(
     state,
     response_type: "code",
     scope: "email,public_profile",
+    display: "touch",   // force web-based flow on mobile browsers
+    app_absent: "0",    // prevent iOS Universal Links from opening the Facebook native app
   });
 
   return `https://www.facebook.com/${metaGraphVersion()}/dialog/oauth?${params}`;
