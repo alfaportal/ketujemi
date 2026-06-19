@@ -1,13 +1,18 @@
 /** UI languages (independent of market / currency). */
 export const UI_LANGUAGES = [
-  { code: "sq", flag: "🇽🇰", label: "Shqip", displayCode: "AL" },
-  { code: "mk", flag: "🇲🇰", label: "Maqedonisht", displayCode: "MK" },
-  { code: "mne", flag: "🇲🇪", label: "Malazisht", displayCode: "ME" },
-  { code: "en", flag: "🇬🇧", label: "English", displayCode: "EN" },
-  { code: "fr", flag: "🇫🇷", label: "Français", displayCode: "FR" },
-  { code: "de", flag: "🇩🇪", label: "Deutsch", displayCode: "DE" },
-  { code: "it", flag: "🇮🇹", label: "Italiano", displayCode: "IT" },
+  { code: "sq",  flag: "🇽🇰", flagIso: "xk", label: "Shqip",       displayCode: "XK" },
+  { code: "mk",  flag: "🇲🇰", flagIso: "mk", label: "Maqedonisht", displayCode: "MK" },
+  { code: "mne", flag: "🇲🇪", flagIso: "me", label: "Malazisht",   displayCode: "ME" },
+  { code: "en",  flag: "🇬🇧", flagIso: "gb", label: "English",     displayCode: "GB" },
+  { code: "fr",  flag: "🇫🇷", flagIso: "fr", label: "Français",    displayCode: "FR" },
+  { code: "de",  flag: "🇩🇪", flagIso: "de", label: "Deutsch",     displayCode: "DE" },
+  { code: "it",  flag: "🇮🇹", flagIso: "it", label: "Italiano",    displayCode: "IT" },
 ] as const;
+
+/** Returns a reliable flag image URL that renders on Windows (no emoji font needed). */
+export function flagImgUrl(flagIso: string): string {
+  return `https://flagcdn.com/w40/${flagIso}.png`;
+}
 
 export type UiLang = (typeof UI_LANGUAGES)[number]["code"];
 

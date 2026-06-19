@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { UI_LANGUAGES } from "@/lib/ui-languages";
+import { UI_LANGUAGES, flagImgUrl } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 
 type LanguageSelectorProps = {
@@ -54,9 +54,15 @@ export function LanguageSelector({
             : "border-gray-200 bg-white shadow-sm hover:bg-gray-50 text-gray-800",
         )}
       >
-        <span className="text-lg leading-none" aria-hidden>
-          {current.flag}
-        </span>
+        <img
+          src={flagImgUrl(current.flagIso)}
+          alt=""
+          aria-hidden
+          width={24}
+          height={16}
+          className="rounded-[2px] object-cover shrink-0"
+          style={{ width: 24, height: 16 }}
+        />
         <ChevronDown
           size={14}
           className={cn("shrink-0 opacity-70 transition-transform", open && "rotate-180")}
@@ -97,9 +103,15 @@ export function LanguageSelector({
                       : "text-gray-800 hover:bg-gray-50",
                 )}
               >
-                <span className="w-6 shrink-0 text-center text-base leading-none" aria-hidden>
-                  {lang.flag}
-                </span>
+                <img
+                  src={flagImgUrl(lang.flagIso)}
+                  alt=""
+                  aria-hidden
+                  width={24}
+                  height={16}
+                  className="rounded-[2px] object-cover shrink-0"
+                  style={{ width: 24, height: 16 }}
+                />
                 <span className="min-w-0 truncate">{lang.label}</span>
               </button>
             );
