@@ -49,7 +49,7 @@ export function resolveRouteSeoDefaults(pathname: string, search: string): Parti
 
   if (path === "/listings" && search.trim().length > 0) {
     return {
-      title: "KetuJemi — Bli & Shit",
+      title: "KetuJemi — Blej & Shite",
       robots: NOINDEX_FOLLOW,
       canonicalPath: "/listings",
     };
