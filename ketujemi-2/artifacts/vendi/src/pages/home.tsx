@@ -214,21 +214,21 @@ export default function HomePage() {
 
       {/* -- Filter bar -- */}
       <section className="bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-4">
-          {t.searchTagline && (
-            <p className="mb-3 text-center text-sm sm:text-base font-medium text-gray-500 tracking-wide">
-              {t.searchTagline}
-            </p>
-          )}
-
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch mb-3">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 applyFilters();
               }}
-              className="flex min-w-0 flex-1 flex-col gap-2 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:flex-nowrap sm:gap-2"
+              className="flex min-w-0 flex-1 flex-col gap-2 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm sm:flex-nowrap sm:gap-2"
             >
+              {t.searchTagline && (
+                <p className="px-1 pt-0.5 pb-1 text-center text-sm sm:text-base font-semibold text-gray-700 tracking-wide">
+                  {t.searchTagline}
+                </p>
+              )}
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <div className="relative flex-1 min-w-0 w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                 <input
@@ -243,6 +243,7 @@ export default function HomePage() {
               <button type="submit" className={cnPrimaryBlue("w-full sm:w-auto")}>
                 {t.searchBtn}
               </button>
+              </div>
             </form>
 
             <div
