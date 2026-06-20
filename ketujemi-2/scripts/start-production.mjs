@@ -10,11 +10,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const dbDir = path.join(root, "lib", "db");
 const envFile = path.join(root, ".env");
 const staticRoot = path.join(root, "artifacts/vendi/dist/public");
 const apiEntry = path.join(root, "artifacts/api-server/dist/index.mjs");
-const require = createRequire(path.join(root, "lib", "db", "package.json"));
-const { Pool } = require("pg");
+const requireDb = createRequire(path.join(dbDir, "package.json"));
+const { Pool } = requireDb("pg");
 
 if (!fs.existsSync(apiEntry)) {
   console.error("[start-production] Missing API build. Run: node ./scripts/build-production.mjs");
@@ -64,22 +65,56 @@ async function hasCoreTables() {
     `);
     const row = rows[0] ?? {};
     return Boolean(row.users_tbl && row.categories_tbl && row.listings_tbl);
+  } catch (err) {
+    console.warn(
+      "[start-production] Could not check core tables:",
+      err instanceof Error ? err.message : err,
+    );
+    return false;
   } finally {
     await pool.end();
   }
 }
 
-function runPnpm(args) {
-  const isWin = process.platform === "win32";
-  const result = spawnSync("pnpm", args, {
-    cwd: root,
-    env: { ...process.env, NODE_ENV: "production" },
-    stdio: "inherit",
-    shell: isWin,
-  });
-  if (result.status !== 0) {
-    throw new Error(`Command failed: pnpm ${args.join(" ")}`);
+function resolvePackageBin(pkgName) {
+  const pkgJsonPath = requireDb.resolve(`${pkgName}/package.json`);
+  const pkgRoot = path.dirname(pkgJsonPath);
+  const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
+  const binField = pkgJson.bin;
+  const rel =
+    typeof binField === "string"
+      ? binField
+      : binField?.[pkgName] ?? Object.values(binField ?? {})[0];
+  if (!rel) {
+    throw new Error(`Cannot resolve CLI entry for package: ${pkgName}`);
   }
+  return path.join(pkgRoot, rel);
+}
+
+function runCli(executable, args, cwd) {
+  const result = spawnSync(executable, args, {
+    cwd,
+    env: { ...process.env, NODE_ENV: process.env.NODE_ENV ?? "production" },
+    stdio: "inherit",
+    shell: false,
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(
+      `Command failed (exit ${result.status ?? "unknown"}): ${executable} ${args.join(" ")}`,
+    );
+  }
+}
+
+/** Run a node_modules bin without pnpm (pnpm is often missing at Railway runtime). */
+function runNodeModuleBin(pkgName, args, cwd) {
+  const binPath = resolvePackageBin(pkgName);
+  const ext = path.extname(binPath).toLowerCase();
+  if (ext === ".js" || ext === ".cjs" || ext === ".mjs") {
+    runCli(process.execPath, [binPath, ...args], cwd);
+    return;
+  }
+  runCli(binPath, args, cwd);
 }
 
 function sleep(ms) {
@@ -99,20 +134,26 @@ async function waitForCoreTables(maxAttempts = 30, delayMs = 1000) {
 }
 
 async function runBootstrapDbSetup() {
-  console.log("[start-production] Empty DB — step 1/2: db:push (base schema) …");
-  runPnpm(["db:push"]);
+  console.log(
+    "[start-production] Empty DB — step 1/2: drizzle-kit push (base schema, no pnpm) …",
+  );
+  runNodeModuleBin(
+    "drizzle-kit",
+    ["push", "--config", "./drizzle.config.ts", "--force"],
+    dbDir,
+  );
 
-  console.log("[start-production] db:push finished — verifying users/categories/listings exist …");
+  console.log("[start-production] drizzle-kit push finished — verifying core tables …");
   const tablesReady = await waitForCoreTables();
   if (!tablesReady) {
     throw new Error(
-      "db:push completed but core tables are still missing — cannot run db:migrate",
+      "drizzle-kit push completed but core tables are still missing — cannot run SQL migrations",
     );
   }
   console.log("[start-production] Core tables verified.");
 
-  console.log("[start-production] step 2/2: db:migrate (SQL migrations) …");
-  runPnpm(["db:migrate"]);
+  console.log("[start-production] step 2/2: SQL migrations (tsx run-migrations.ts) …");
+  runNodeModuleBin("tsx", ["./src/run-migrations.ts"], dbDir);
   console.log("[start-production] Database bootstrap completed.");
 }
 
