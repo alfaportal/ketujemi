@@ -79,7 +79,13 @@ import { purgeInvalidListingImages } from "../lib/purge-invalid-listing-images.j
 import { pruneListingImagesAndNotifyOwner } from "../lib/listing-image-prune.js";
 import { deleteShopCascade } from "../lib/delete-shop-cascade";
 import { resolveDirectoryFields } from "../lib/shop-directory-patch";
-import { buildApplicationFieldPatch, buildShopFieldPatch } from "../lib/shop-field-patch";
+import {
+  buildApplicationFieldPatch,
+  buildShopFieldPatch,
+  parseLatitude,
+  parseLongitude,
+} from "../lib/shop-field-patch";
+import { normalizeShopWhatsappStored } from "../lib/shop-whatsapp-url";
 import {
   buildAdminSocialPostPreview,
   executeAdminSocialPost,
@@ -601,6 +607,23 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
       throw err;
     }
 
+    let listingUserId = adminUser.id;
+    let shopId: number | null = null;
+    const bodyShopId = parsed.data.shop_id;
+    if (bodyShopId != null && bodyShopId > 0) {
+      const [shopRow] = await db
+        .select({ id: shopsTable.id, user_id: shopsTable.user_id })
+        .from(shopsTable)
+        .where(eq(shopsTable.id, bodyShopId))
+        .limit(1);
+      if (!shopRow) {
+        res.status(400).json({ error: "VALIDATION", message: "Dyqani nuk u gjet." });
+        return;
+      }
+      shopId = shopRow.id;
+      listingUserId = shopRow.user_id;
+    }
+
     const catMeta = await resolveCategorySlugMeta(parsed.data.category_id);
     const imageUrl = sanitizeListingImageUrlField(parsed.data.image_url ?? null);
     const imageHit = await scanListingImagesForProhibitedContent(imageUrl);
@@ -617,7 +640,8 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
     const [row] = await db
       .insert(listingsTable)
       .values({
-        user_id: adminUser.id,
+        user_id: listingUserId,
+        shop_id: shopId,
         title: normalizeListingTitle(parsed.data.title),
         description,
         price: String(parsed.data.price),
@@ -1811,6 +1835,142 @@ router.post("/admin/shop-applications/:id/reject", requireAdmin, async (req, res
   }
 
   res.json({ ok: true });
+});
+
+router.post("/admin/shops", requireAdmin, async (req, res) => {
+  try {
+    const adminUser = await getPlatformAdminUser();
+    if (!adminUser) {
+      res.status(503).json({ error: "PLATFORM_ADMIN_USER_NOT_FOUND" });
+      return;
+    }
+
+    const body = req.body as Record<string, unknown>;
+    const trimOrNull = (v: unknown): string | null => {
+      if (typeof v !== "string") return null;
+      const t = v.trim();
+      return t || null;
+    };
+    const requiredString = (v: unknown, field: string): string | null => {
+      const t = trimOrNull(v);
+      if (!t) return `Fusha «${field}» është e detyrueshme.`;
+      return null;
+    };
+
+    const errors: string[] = [];
+    const shopNameErr = requiredString(body.shop_name, "Emri i dyqanit");
+    if (shopNameErr) errors.push(shopNameErr);
+    const logoErr = requiredString(body.logo_url, "Logo");
+    if (logoErr) errors.push(logoErr);
+    const descErr = requiredString(body.description, "Përshkrimi");
+    if (descErr) errors.push(descErr);
+    const countryErr = requiredString(body.country, "Shteti");
+    if (countryErr) errors.push(countryErr);
+    const cityErr = requiredString(body.city, "Qyteti");
+    if (cityErr) errors.push(cityErr);
+    const regionErr = requiredString(body.region, "Rajoni/Lagja");
+    if (regionErr) errors.push(regionErr);
+    const addressErr = requiredString(body.address, "Adresa");
+    if (addressErr) errors.push(addressErr);
+    const contactErr = requiredString(body.contact_name, "Emri i kontaktit");
+    if (contactErr) errors.push(contactErr);
+    const phoneErr = requiredString(body.phone, "Telefoni");
+    if (phoneErr) errors.push(phoneErr);
+    const emailErr = requiredString(body.email, "Email");
+    if (emailErr) errors.push(emailErr);
+
+    const facebook = trimOrNull(body.facebook);
+    const instagram = trimOrNull(body.instagram);
+    const tiktok = trimOrNull(body.tiktok);
+    const whatsapp = normalizeShopWhatsappStored(body.whatsapp);
+    const website = trimOrNull(body.website);
+    if (!facebook && !instagram && !tiktok && !whatsapp && !website) {
+      errors.push("Plotësoni të paktën një rrjet social.");
+    }
+
+    const directoryCategoryId = Number(body.directory_category_id);
+    const directorySubcategoryId = Number(body.directory_subcategory_id);
+    if (
+      !Number.isFinite(directoryCategoryId) ||
+      directoryCategoryId < 1 ||
+      !Number.isFinite(directorySubcategoryId) ||
+      directorySubcategoryId < 1
+    ) {
+      errors.push("Zgjidhni kategorinë dhe nënkategorinë e dyqanit.");
+    }
+
+    if (errors.length) {
+      res.status(400).json({ error: "VALIDATION", message: errors[0], details: errors });
+      return;
+    }
+
+    const categoryLabel = trimOrNull(body.category) ?? "Dyqan";
+    const directoryFields = await resolveDirectoryFields({
+      directory_category_id: directoryCategoryId,
+      directory_subcategory_id: directorySubcategoryId,
+      category: categoryLabel,
+      category_id: null,
+    });
+
+    const shopValues = {
+      shop_name: String(body.shop_name).trim(),
+      logo_url: String(body.logo_url).trim(),
+      description: String(body.description).trim(),
+      category: categoryLabel,
+      category_id: null,
+      directory_category_slug: directoryFields.directory_category_slug,
+      directory_subcategory_slug: directoryFields.directory_subcategory_slug,
+      directory_category_id: directoryFields.directory_category_id,
+      directory_subcategory_id: directoryFields.directory_subcategory_id,
+      country: String(body.country).trim(),
+      city: String(body.city).trim(),
+      region: String(body.region).trim(),
+      address: String(body.address).trim(),
+      latitude: parseLatitude(body.latitude),
+      longitude: parseLongitude(body.longitude),
+      facebook,
+      instagram,
+      tiktok,
+      whatsapp,
+      website,
+      contact_name: String(body.contact_name).trim(),
+      phone: String(body.phone).trim(),
+      email: String(body.email).trim(),
+      admin_notes: trimOrNull(body.admin_notes),
+    };
+
+    const [application] = await db
+      .insert(shopApplicationsTable)
+      .values({
+        user_id: adminUser.id,
+        ...shopValues,
+        status: "approved",
+      })
+      .returning();
+
+    const [shop] = await db
+      .insert(shopsTable)
+      .values({
+        user_id: adminUser.id,
+        application_id: application.id,
+        ...shopValues,
+        is_active: true,
+      })
+      .returning();
+
+    await db
+      .update(shopApplicationsTable)
+      .set({ shop_id: shop.id })
+      .where(eq(shopApplicationsTable.id, application.id));
+
+    const { scheduleShopSocialEnrich } = await import("../lib/shop-social-enrich.js");
+    scheduleShopSocialEnrich(shop.id);
+
+    res.status(201).json({ ok: true, shop_id: shop.id, application_id: application.id });
+  } catch (err) {
+    req.log.error({ err }, "Admin create shop error");
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 router.patch("/admin/shops/:id", requireAdmin, async (req, res) => {

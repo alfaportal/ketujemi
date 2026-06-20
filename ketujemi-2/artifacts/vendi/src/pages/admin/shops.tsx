@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useGetCategories } from "@workspace/api-client-react";
 import {
   approveAdminShopApplication,
+  createAdminShop,
   deleteAdminShop,
   getAdminShopApplications,
   rejectAdminShopApplication,
@@ -38,10 +39,35 @@ import {
   fetchShopDirectoryTaxonomy,
   type ShopDirectoryTaxonomyCategory,
 } from "@/lib/shop-directory-api";
-import { Loader2, RefreshCw, Store } from "lucide-react";
+import { Loader2, Plus, RefreshCw, Store } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type DirectoryDraft = { categoryId: number; subcategoryId: number };
+
+const BLANK_SHOP_CREATE: ShopEditFormValues = {
+  shop_name: "",
+  logo_url: "",
+  description: "",
+  category: "",
+  category_id: null,
+  directory_category_id: null,
+  directory_subcategory_id: null,
+  country: "XK",
+  city: "",
+  region: "",
+  address: "",
+  latitude: null,
+  longitude: null,
+  facebook: "",
+  instagram: "",
+  tiktok: "",
+  whatsapp: "",
+  website: "",
+  contact_name: "",
+  phone: "",
+  email: "",
+  admin_notes: "",
+};
 
 function statusBadge(status: string) {
   if (status === "approved") return "bg-green-100 text-green-800";
@@ -62,6 +88,8 @@ export default function AdminShops() {
   const [taxonomy, setTaxonomy] = useState<ShopDirectoryTaxonomyCategory[]>([]);
   const [editRow, setEditRow] = useState<AdminShopApplication | null>(null);
   const [editSaving, setEditSaving] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createSaving, setCreateSaving] = useState(false);
   const [deleteRow, setDeleteRow] = useState<AdminShopApplication | null>(null);
   const { data: categories } = useGetCategories();
 
@@ -146,6 +174,20 @@ export default function AdminShops() {
     }
   }
 
+  async function onCreateShop(values: ShopEditFormValues) {
+    setCreateSaving(true);
+    try {
+      await createAdminShop(values);
+      setCreateOpen(false);
+      setToast("Dyqani u krijua.");
+      await load();
+    } catch {
+      setToast("Gabim gjatë krijimit të dyqanit.");
+    } finally {
+      setCreateSaving(false);
+    }
+  }
+
   async function onSaveEdit(values: ShopEditFormValues) {
     if (!editRow) return;
     setEditSaving(true);
@@ -206,14 +248,23 @@ export default function AdminShops() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-2">
           <Store className="h-6 w-6 text-blue-700" />
           <h2 className="text-xl font-bold text-gray-900">Dyqanet</h2>
         </div>
-        <button type="button" onClick={() => void load()} className="p-2 rounded-lg hover:bg-gray-100">
-          <RefreshCw size={18} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setCreateOpen(true)}
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold min-h-10"
+          >
+            <Plus size={16} /> Dyqan i ri
+          </button>
+          <button type="button" onClick={() => void load()} className="p-2 rounded-lg hover:bg-gray-100 min-h-10 min-w-10">
+            <RefreshCw size={18} />
+          </button>
+        </div>
       </div>
 
       {toast ? <p className="text-sm text-gray-700 bg-gray-100 rounded-lg px-3 py-2">{toast}</p> : null}
@@ -275,6 +326,14 @@ export default function AdminShops() {
                   {row.website ? <span>Web: {row.website}</span> : null}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">
+                  {row.shop_id && row.status === "approved" ? (
+                    <a
+                      href={`/listings/new?adminPost=1&shopId=${row.shop_id}`}
+                      className="px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold min-h-10 shadow-sm inline-flex items-center gap-1.5"
+                    >
+                      <Plus size={14} /> Shpallje
+                    </a>
+                  ) : null}
                   <button
                     type="button"
                     onClick={() => setEditRow(row)}
@@ -399,6 +458,28 @@ export default function AdminShops() {
           })}
         </div>
       )}
+
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Shto dyqan të ri</DialogTitle>
+          </DialogHeader>
+          <ShopEditForm
+            initial={BLANK_SHOP_CREATE}
+            onSubmit={onCreateShop}
+            onCancel={() => setCreateOpen(false)}
+            saving={createSaving}
+            showAdminNotes
+            labels={{
+              save: "Krijo dyqanin",
+              cancel: "Anulo",
+              adminNotes: "Shënime të brendshme (admin)",
+              directoryCategory: "Kategoria e direktorisë",
+              directorySubcategory: "Nënkategoria",
+            }}
+          />
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!editRow} onOpenChange={(open) => !open && setEditRow(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">

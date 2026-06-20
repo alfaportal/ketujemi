@@ -194,6 +194,7 @@ export const CreateListingBody = zod.object({
   motor_cc_band: zod.string().nullish(),
   motor_power_kw: zod.number().nullish(),
   motor_transmission: zod.string().nullish(),
+  shop_id: zod.number().nullish(),
 });
 
 /**

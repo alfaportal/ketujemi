@@ -137,7 +137,7 @@ export function getAdminListing(id: number) {
   return request<AdminListing>(`/listings/${id}`);
 }
 
-export function createAdminListing(data: Partial<AdminListing> & Pick<AdminListing, "title" | "description" | "price" | "category_id" | "location" | "seller_name" | "seller_phone" | "condition">) {
+export function createAdminListing(data: Partial<AdminListing> & Pick<AdminListing, "title" | "description" | "price" | "category_id" | "location" | "seller_name" | "seller_phone" | "condition"> & { shop_id?: number | null }) {
   return request<AdminListing>("/listings", {
     method: "POST",
     body: JSON.stringify(data),
@@ -658,6 +658,13 @@ export function updateAdminShopApplication(id: number, data: Record<string, unkn
 
 export function deleteAdminShop(id: number) {
   return request<{ ok: boolean }>(`/shops/${id}`, { method: "DELETE" });
+}
+
+export function createAdminShop(data: Record<string, unknown>) {
+  return request<{ ok: boolean; shop_id: number; application_id: number }>("/shops", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
 
 export interface AdminSocialListing {

@@ -196,6 +196,14 @@ export default function NewListing() {
     const id = Number(raw);
     return Number.isFinite(id) && id > 0 ? id : null;
   }, [pathname]);
+  const adminShopId = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get("shopId");
+    if (!raw || !isAdminLoggedIn()) return null;
+    const id = Number(raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }, [pathname]);
   const isAdminEditMode = adminEditId != null;
   const isAdminListingMode = isAdminPostMode || isAdminEditMode;
   const isDhurataPostRoute = pathname === "/listings/new/dhurata-falas";
@@ -1107,7 +1115,7 @@ export default function NewListing() {
 
     const payload: Record<string, unknown> = {
       title: listingData.title,
-      description: finalDescription,
+        description: finalDescription,
       price: Number.isFinite(validation.price) ? validation.price : 0,
       price_agreement: validation.price_agreement,
       lang: listingLang,
@@ -1119,7 +1127,7 @@ export default function NewListing() {
       condition: listingData.condition,
       image_url: hasListingVideo ? undefined : joinListingImageUrls(imageUrls) ?? undefined,
       video_url: hasListingPhotos ? undefined : videoUrl ?? undefined,
-      is_featured: false,
+        is_featured: false,
       ...validation.payloadExtras,
     };
 
@@ -1168,6 +1176,7 @@ export default function NewListing() {
           condition: String(payload.condition),
           image_url: payload.image_url as string | undefined,
           video_url: payload.video_url as string | undefined,
+          shop_id: adminShopId ?? undefined,
           ...(validation.payloadExtras as Record<string, unknown>),
         });
         queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
@@ -1175,7 +1184,7 @@ export default function NewListing() {
         clearListingPostDraft();
         clearListingPostSessionActive();
         toast({ title: tx.adm_post_success ?? "Shpallja u publikua." });
-        setLocation(`/listings/${row.id}?posted=1`);
+        setLocation(adminShopId ? "/admin/shops" : `/listings/${row.id}?posted=1`);
       } catch (e) {
         refusePost(getFetchErrorMessage(e, tx.adm_post_err_generic ?? t.postError));
       } finally {
@@ -1234,8 +1243,8 @@ export default function NewListing() {
   const cityList = locationsForListingMarket(listingCountry);
 
   if (isDhurataPostRoute && !dhurataPledgeOk) {
-    return (
-      <div className="min-h-screen bg-gray-50">
+  return (
+    <div className="min-h-screen bg-gray-50">
         <AuthToolbar />
         <DhurataGiftPledge
           onAccepted={() => setDhurataPledgeOk(true)}
@@ -1301,6 +1310,11 @@ export default function NewListing() {
                   ? (tx.adm_edit_intro ?? "Ndrysho të gjitha fushat — kategoria, foto, përshkrim, shitësi, çmimi.")
                   : tx.ui_adminOnBehalfBody}
               </p>
+              {adminShopId ? (
+                <p className="mt-2 text-xs font-semibold">
+                  Shpallja do të lidhet me dyqanin #{adminShopId}.
+                </p>
+              ) : null}
             </div>
             {isAdminEditMode && adminEditViews != null ? (
               <div className="flex items-center gap-2 pt-1 border-t border-violet-200/80">
@@ -1646,36 +1660,36 @@ export default function NewListing() {
                       </p>
                     )}
                     {subCats.length > 1 && !bodyCatId && watchTitle.trim().length >= 5 && (
-                      <FormField
-                        control={form.control}
-                        name="category_id"
-                        render={({ field }) => (
+                <FormField
+                  control={form.control}
+                  name="category_id"
+                  render={({ field }) => (
                           <FormItem className="mt-3">
-                            <FormLabel>
+                      <FormLabel>
                               {t.subcategory} <span className="text-red-500">*</span>
-                            </FormLabel>
+                      </FormLabel>
                             <Select
                               onValueChange={(v) => field.onChange(Number(v))}
                               value={field.value ? String(field.value) : ""}
                             >
-                              <FormControl>
+                        <FormControl>
                                 <SelectTrigger data-testid="select-subcategory">
                                   <SelectValue placeholder={t.chooseSubcategory} />
-                                </SelectTrigger>
-                              </FormControl>
+                          </SelectTrigger>
+                        </FormControl>
                               <SelectContent className="max-h-[min(70vh,360px)]">
                                 {subCats.map((cat: { id: number; name: string }) => (
                                   <SelectItem key={cat.id} value={String(cat.id)}>
                                     {translateCategory(cat.name, categoryLocale)}
                                   </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
                     {subCats.length > 1 && !bodyCatId && watchTitle.trim().length < 5 && (
                       <p className="text-sm mt-1 text-amber-700" role="status">
                         {t.subcategoryTitleMinHint}
@@ -1726,10 +1740,10 @@ export default function NewListing() {
                     { name: "xModeli" as const, label: t.ap_lbl_model, placeholder: t.ap_ph_model },
                   ].map(({ name, label, placeholder }) => (
                     <FormField key={name} control={form.control} name={name}
-                      render={({ field }) => (
-                        <FormItem>
+                render={({ field }) => (
+                  <FormItem>
                           <FormLabel>{label} <span className="text-red-500">*</span></FormLabel>
-                          <FormControl>
+                    <FormControl>
                             <Input placeholder={placeholder} className="min-h-12 w-full text-sm" {...field} value={field.value as string} />
                           </FormControl>
                         </FormItem>
@@ -1743,18 +1757,18 @@ export default function NewListing() {
                         <Select onValueChange={field.onChange} value={field.value ?? ""}>
                           <FormControl>
                             <SelectTrigger className="min-h-12 w-full text-sm"><SelectValue placeholder={t.ap_ph_year} /></SelectTrigger>
-                          </FormControl>
+                    </FormControl>
                           <SelectContent className="max-h-60">
                             {Array.from({ length: 2026 - 1990 + 1 }, (_, i) => String(2026 - i)).map((y) => (
                               <SelectItem key={y} value={y} className="min-h-11">{y}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-                      </FormItem>
-                    )}
-                  />
+                  </FormItem>
+                )}
+              />
                 </div>
-              </Section>
+            </Section>
             )}
 
             {postFields.showVetura && (
@@ -2146,28 +2160,28 @@ export default function NewListing() {
             {/* ── Location (city, then country) ── */}
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
               <div className="p-5 space-y-4">
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t.locationSection} <span className="text-red-500">*</span></FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t.locationSection} <span className="text-red-500">*</span></FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
                           <SelectTrigger data-testid="select-location">
-                            <SelectValue placeholder={t.chooseCity} />
-                          </SelectTrigger>
-                        </FormControl>
+                          <SelectValue placeholder={t.chooseCity} />
+                        </SelectTrigger>
+                      </FormControl>
                         <SelectContent className="max-h-[min(70vh,360px)]">
-                          {cityList.map((city) => (
-                            <SelectItem key={city} value={city}>{city}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        {cityList.map((city) => (
+                          <SelectItem key={city} value={city}>{city}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
                 <ListingCountryPicker
                   value={listingCountry}
                   onChange={setListingCountry}
@@ -2273,7 +2287,7 @@ export default function NewListing() {
                   >
                     <p className="font-bold text-red-900">{postRefusedTitle}</p>
                     <p className="mt-1 leading-snug">{postBlockMessage}</p>
-                  </div>
+                    </div>
                 )}
                 <Button
                   type="submit"

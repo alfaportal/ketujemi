@@ -3,10 +3,14 @@ import {
   getAdminCategories, createAdminCategory, updateAdminCategory, deleteAdminCategory,
   type AdminCategory,
 } from "@/lib/admin-api";
-import { Plus, Pencil, Trash2, X, ChevronRight, Tag, RefreshCw, Loader2 } from "lucide-react";
+import { fetchShopDirectoryTaxonomy, type ShopDirectoryTaxonomyCategory } from "@/lib/shop-directory-api";
+import { Plus, Pencil, Trash2, X, ChevronRight, Tag, RefreshCw, Loader2, Store } from "lucide-react";
 import { useMarket } from "@/lib/market-context";
 import { fillPlaceholders } from "@/lib/app-extra-i18n";
 import { uploadImageToCloudinary, useCloudinaryConfig } from "@/lib/cloudinary-config";
+import { cn } from "@/lib/utils";
+
+type CategoryTab = "marketplace" | "shops";
 
 interface EditState {
   id: number | null;
@@ -26,8 +30,11 @@ const ICON_OPTIONS = [
 
 export default function AdminCategories() {
   const { t } = useMarket();
+  const [tab, setTab] = useState<CategoryTab>("marketplace");
   const [cats, setCats] = useState<AdminCategory[]>([]);
+  const [shopTaxonomy, setShopTaxonomy] = useState<ShopDirectoryTaxonomyCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [shopLoading, setShopLoading] = useState(false);
   const [editing, setEditing] = useState<EditState | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
@@ -38,7 +45,20 @@ export default function AdminCategories() {
     getAdminCategories().then(setCats).finally(() => setLoading(false));
   };
 
+  const reloadShopTaxonomy = () => {
+    setShopLoading(true);
+    fetchShopDirectoryTaxonomy()
+      .then(setShopTaxonomy)
+      .finally(() => setShopLoading(false));
+  };
+
   useEffect(() => { reload(); }, []);
+
+  useEffect(() => {
+    if (tab === "shops" && shopTaxonomy.length === 0 && !shopLoading) {
+      reloadShopTaxonomy();
+    }
+  }, [tab, shopTaxonomy.length, shopLoading]);
 
   const parentCats = cats.filter((c) => !c.parent_id);
   const childrenOf = (id: number) => cats.filter((c) => c.parent_id === id);
@@ -111,23 +131,101 @@ export default function AdminCategories() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-black text-gray-900">{t.adm_cat_head}</h2>
-          <p className="text-sm text-gray-400">{fillPlaceholders(t.adm_cat_top, { n: parentCats.length.toLocaleString() })}</p>
+          <p className="text-sm text-gray-400">
+            {tab === "marketplace"
+              ? fillPlaceholders(t.adm_cat_top, { n: parentCats.length.toLocaleString() })
+              : fillPlaceholders(t.adm_cat_shop_top, { n: shopTaxonomy.length.toLocaleString() })}
+          </p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <button type="button" onClick={reload} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 px-3 py-2 rounded-xl border border-gray-200 hover:border-gray-300 transition-all">
-            <RefreshCw size={14} /> {t.adm_cat_refresh}
-          </button>
-          <button
-            type="button"
-            onClick={() => openCreate()}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
-          >
-            <Plus size={15} /> {t.adm_cat_new}
-          </button>
+          {tab === "marketplace" ? (
+            <>
+              <button type="button" onClick={reload} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 px-3 py-2 rounded-xl border border-gray-200 hover:border-gray-300 transition-all">
+                <RefreshCw size={14} /> {t.adm_cat_refresh}
+              </button>
+              <button
+                type="button"
+                onClick={() => openCreate()}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+              >
+                <Plus size={15} /> {t.adm_cat_new}
+              </button>
+            </>
+          ) : (
+            <button type="button" onClick={reloadShopTaxonomy} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 px-3 py-2 rounded-xl border border-gray-200 hover:border-gray-300 transition-all">
+              <RefreshCw size={14} /> {t.adm_cat_refresh}
+            </button>
+          )}
         </div>
       </div>
 
-      {loading ? (
+      <div className="flex gap-2 border-b border-gray-100 pb-1">
+        <button
+          type="button"
+          onClick={() => setTab("marketplace")}
+          className={cn(
+            "px-4 py-2 rounded-xl text-sm font-semibold transition-colors",
+            tab === "marketplace" ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-100",
+          )}
+        >
+          {t.adm_cat_tab_marketplace}
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("shops")}
+          className={cn(
+            "px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-1.5",
+            tab === "shops" ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-100",
+          )}
+        >
+          <Store size={14} /> {t.adm_cat_tab_shops}
+        </button>
+      </div>
+
+      {tab === "shops" ? (
+        <>
+          <p className="text-sm text-gray-500 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
+            {t.adm_cat_shop_hint}
+          </p>
+          {shopLoading ? (
+            <div className="grid grid-cols-1 gap-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 h-16 animate-pulse bg-gray-50" />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {shopTaxonomy.map((cat) => (
+                <div key={cat.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                  <div className="flex items-center gap-3 px-5 py-4">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0 text-lg">
+                      {cat.emoji}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-gray-900">{cat.name}</div>
+                      <div className="text-xs text-gray-400">
+                        {t.adm_cat_slugFld}: {cat.slug} · {cat.subcategories.length} {t.adm_cat_shop_subs}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border-t border-gray-50 px-5 py-3">
+                    <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">{t.adm_cat_subsection}</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                      {cat.subcategories.map((sub) => (
+                        <div key={sub.id} className="flex items-center gap-2 p-2.5 bg-gray-50 rounded-xl">
+                          <ChevronRight size={12} className="text-gray-300 flex-shrink-0" />
+                          <span className="text-sm font-medium text-gray-700 flex-1 truncate">{sub.name}</span>
+                          <span className="text-xs text-gray-400">{sub.slug}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      ) : loading ? (
         <div className="grid grid-cols-1 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 h-16 animate-pulse bg-gray-50" />
@@ -193,7 +291,7 @@ export default function AdminCategories() {
             );
           })}
         </div>
-      )}
+      ) : null}
 
       {editing !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
