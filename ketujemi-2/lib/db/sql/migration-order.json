@@ -18,5 +18,9 @@
   "phone-verify-challenges-migration.sql",
   "email-verify-challenges-migration.sql",
   "bump-free-listing-limit-10.sql",
-  "listings-video-url-migration.sql"
+  "listings-video-url-migration.sql",
+  "homepage-partners-migration.sql",
+  "homepage-partner-categories-migration.sql",
+  "business-partner-categories-migration.sql",
+  "partner-profile-fields-migration.sql"
 ]

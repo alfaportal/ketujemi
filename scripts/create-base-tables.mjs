@@ -309,6 +309,38 @@ const STATEMENTS = [
     issued_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
   )`,
+  `CREATE TABLE IF NOT EXISTS homepage_partners (
+    id SERIAL PRIMARY KEY,
+    business_name TEXT NOT NULL,
+    logo_url TEXT NOT NULL,
+    link_url TEXT NOT NULL DEFAULT '',
+    tier TEXT NOT NULL,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    address TEXT,
+    facebook_url TEXT,
+    instagram_url TEXT,
+    whatsapp_number TEXT,
+    tiktok_url TEXT,
+    website_url TEXT
+  )`,
+  `CREATE INDEX IF NOT EXISTS homepage_partners_tier_active_idx
+    ON homepage_partners (tier, is_active, sort_order)`,
+  `CREATE TABLE IF NOT EXISTS homepage_partner_categories (
+    partner_id INTEGER NOT NULL REFERENCES homepage_partners(id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+    PRIMARY KEY (partner_id, category_id)
+  )`,
+  `CREATE INDEX IF NOT EXISTS homepage_partner_categories_category_idx
+    ON homepage_partner_categories (category_id)`,
+  `CREATE TABLE IF NOT EXISTS business_partner_categories (
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, category_id)
+  )`,
+  `CREATE INDEX IF NOT EXISTS business_partner_categories_category_idx
+    ON business_partner_categories (category_id)`,
 ];
 
 const pool = new Pool({
