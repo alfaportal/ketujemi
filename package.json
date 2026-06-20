@@ -22,6 +22,7 @@
     "db:push": "pnpm -C ketujemi-2 run db:push",
     "db:migrate": "pnpm -C ketujemi-2 run db:migrate",
     "db:seed": "pnpm -C ketujemi-2 run db:seed",
+    "db:seed:all": "node scripts/seed-all-categories.mjs",
     "typecheck": "pnpm -C ketujemi-2 run typecheck",
     "test:smoke": "pnpm -C ketujemi-2 run test:smoke",
     "build": "node scripts/with-node-options.mjs pnpm --filter @workspace/vendi run build && node scripts/with-node-options.mjs pnpm --filter @workspace/api-server run build:vercel",

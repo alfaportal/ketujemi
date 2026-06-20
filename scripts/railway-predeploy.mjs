@@ -114,5 +114,16 @@ if (result.status !== 0) {
   console.log("[railway-predeploy] SQL migrations completed.");
 }
 
+console.log("[railway-predeploy] Seeding category tree (idempotent) …");
+try {
+  const { seedAllCategories } = await import("./seed-all-categories.mjs");
+  seedAllCategories();
+  console.log("[railway-predeploy] Category seed completed.");
+} catch (err) {
+  console.warn(
+    `[railway-predeploy] Category seed failed: ${err instanceof Error ? err.message : err} — deploy continues.`,
+  );
+}
+
 console.log("[railway-predeploy] done");
 process.exit(0);
