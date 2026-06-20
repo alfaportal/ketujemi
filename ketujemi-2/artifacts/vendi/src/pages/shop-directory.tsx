@@ -25,6 +25,9 @@ import { citiesForShopCountry } from "@/lib/shop-application-locations";
 import type { ShopDirectoryListItem } from "@/components/shop-directory-card";
 import { shopDirectoryMainGridCountHref } from "@/lib/shop-directory-nav";
 
+/** Set true to show shop stats table beside filters on /dyqane. */
+const SHOW_SHOP_DIRECTORY_STATS = false;
+
 type DirectoryResponse = {
   shops: ShopDirectoryListItem[];
   categoryCounts: Record<string, number>;
@@ -160,6 +163,7 @@ export default function ShopDirectoryPage() {
             </div>
           </div>
 
+          {SHOW_SHOP_DIRECTORY_STATS ? (
           <div
             className="w-full shrink-0 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-3 shadow-sm lg:w-72"
             aria-label={tx.ui_shopsStatsTitle}
@@ -199,6 +203,7 @@ export default function ShopDirectoryPage() {
               </table>
             )}
           </div>
+          ) : null}
         </div>
 
         {loading ? (

@@ -31,6 +31,8 @@ import { effectiveListingSearchQuery } from "@/lib/listing-search-query";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { computeDisplayUsersOnlineNow } from "../../../../lib/platform-visitors-display";
 
+/** Set true to show «Çfarë ka në platformë» stats beside search on homepage. */
+const SHOW_HOME_PLATFORM_STATS = false;
 
 function CategoryThumb({
   src,
@@ -246,6 +248,7 @@ export default function HomePage() {
               </div>
             </form>
 
+            {SHOW_HOME_PLATFORM_STATS ? (
             <div
               className="w-full shrink-0 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-3 shadow-sm lg:w-80"
               aria-label={tx.ui_homePlatformTitle}
@@ -306,6 +309,7 @@ export default function HomePage() {
                 </table>
               )}
             </div>
+            ) : null}
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
