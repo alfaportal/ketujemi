@@ -6,6 +6,8 @@ export const CATEGORY_CLASSIFY_GUIDE = `
 Classify by WHAT THE PRODUCT IS (title + description). Never use city, country, or seller location.
 Always pick the MOST SPECIFIC subcategory (nenkategori) — never stop at parent hub when children exist.
 Each subcategory has its own purpose — read the item name carefully before choosing.
+Each listing belongs in ONE correct category only — never mix unrelated products or post in the wrong hub.
+Browse path when users ask where to find items: /shpallje/{category-slug} (e.g. phones → /shpallje/telefona).
 
 ═══ VEHICLES ═══
 - Full cars (BMW, Audi, Opel…) → «Vetura» → body type (Sedan, SUV, Kombi, Pickup, Elektrike…)

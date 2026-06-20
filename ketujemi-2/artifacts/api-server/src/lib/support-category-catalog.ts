@@ -74,7 +74,7 @@ export const KETUJEMI_CATEGORY_ROUTES: CategoryRoute[] = [
   {
     id: "telefona",
     keywords:
-      /telefon|smartphone|iphone|samsung|xiaomi|huawei|oneplus|honor|motorola|nokia|apple\s+phone|tablet\s+tel|kartel|numra\s+tel|aksesor.*telefon/i,
+      /telefon|smartphone|mobile|mobil|celular|cell\s*phone|iphone|samsung|xiaomi|huawei|oneplus|honor|motorola|nokia|apple\s+phone|tablet\s+tel|kartel|numra\s+tel|aksesor.*telefon/i,
     reply: {
       sq: "**Telefona**: faqja kryesore → **Telefona** → Smartphones, Telefona Fiksë, Numra & Kartela, Pjesë Rezervë, Aksesorë → marka (Apple, Samsung, Xiaomi…) → njoftimet. Kërkim: «Njoftimet» + «iPhone 14».",
       mk: "**Телефони**: почетна → **Телефони** → Smartphones, аксесоари, марка → оглас.",

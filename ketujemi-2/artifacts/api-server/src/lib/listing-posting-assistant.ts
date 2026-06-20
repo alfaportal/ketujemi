@@ -1,6 +1,7 @@
 import { claudeJsonCompletion, isClaudeConfigured, langLabel, type UiLang } from "./claude-client";
 import { CATEGORY_CLASSIFY_GUIDE } from "./category-assistant-guide";
 import { getHubCategoryMismatchHint } from "./hub-category-suggest-rules";
+import { detectProhibitedListingContent } from "../../../../lib/listing-prohibited-content.js";
 
 export type PostingSuggestion = { text: string };
 
@@ -29,6 +30,15 @@ function ruleBasedSuggestions(input: {
 }): PostingSuggestion[] {
   const out: PostingSuggestion[] = [];
 
+  const prohibited = detectProhibitedListingContent(`${input.title} ${input.description}`);
+  if (prohibited) {
+    out.push({ text: `${prohibited.reason} Postimi do të refuzohet.` });
+    return out.slice(0, 3);
+  }
+
+  if (input.image_count > 10) {
+    out.push({ text: "Maksimumi është 10 foto për shpallje — hiqni foto shtesë." });
+  }
   if (input.description.trim().length < 40) {
     out.push({ text: "Përshkrimi është shumë i shkurtër — shtoni më shumë detaje." });
   }
@@ -57,6 +67,14 @@ function ruleBasedSuggestions(input: {
 
 const ASSISTANT_SYSTEM = `You help users write classified ads on KetuJemi.com — a large marketplace with roughly 20 top-level categories (from phones and electronics to vehicles and more).
 
+STYLE — keep every suggestion ONE short sentence. Max 3 suggestions total.
+
+HARD RULES (enforce immediately in suggestions when violated):
+• **Max 10 photos** per listing — if image_count > 10, tell user to remove extras.
+• **Prohibited items** (weapons, drugs, alcohol, tobacco/vape, crypto, gambling, MLM, erotik, fake/replica) — posting WILL be blocked; tell user clearly and stop encouraging other tips until fixed.
+• **One product per listing** in the **correct category only** — never mix unrelated items or wrong hub (phones ≠ TV, motorcycles ≠ Vetura, headphones ≠ Televizorë).
+• **Duplicates:** same or nearly identical item cannot be reposted within 1 month — suggest Edito on the old listing or add a distinctive detail (color, model, serial).
+
 CONTEXT — DUPLICATES:
 The platform blocks reposting the same or very similar item within 1 month (active listing or posted in last 30 days). If the user's draft reads as almost copy-pasted, overly generic/template-like, or could be mistaken for something they likely already posted, include ONE friendly suggestion — only when it genuinely applies (not on every listing).
 
@@ -67,7 +85,7 @@ Use the user's reply language:
 YOUR JOB — CATEGORY ONLY (product type, not geography):
 - Help users place the listing in the category that matches WHAT they sell (title + description vs selected category/parent_category in the JSON).
 - If the selected category already fits the product → do NOT mention category at all. Let them post. No warnings about city, country, or "wrong place".
-- Only when the product clearly belongs elsewhere → ONE short suggestion to switch category (e.g. headphones → "Audio & Pajisje Zëri", not "Televizorë & Projektorë").
+- Only when the product clearly belongs elsewhere → ONE short suggestion to switch category (e.g. headphones → "Audio & Pajisje Zëri", not "Televizorë & Projektorë"; phones → "Telefona → Smartphones").
 - Never block, scare, or imply approval will fail because of location when category is correct.
 
 CATEGORY ACCURACY (when product type is wrong):
@@ -88,7 +106,7 @@ TECHNICAL OUTPUT:
 Reply ONLY with JSON: {"suggestions":["...","..."]}
 - Maximum 3 short suggestions (one sentence each).
 - Language = requested (sq / mk / me).
-- Optional tips only: more photos, realistic price — NEVER require model/year/size/reason for selling, serial number, or long title. NEVER about contact info or geography.`;
+- Optional tips only: more photos (up to 10 max), realistic price — NEVER require model/year/size/reason for selling, serial number, or long title. NEVER about contact info or geography.`;
 
 export async function getPostingSuggestions(
   input: {

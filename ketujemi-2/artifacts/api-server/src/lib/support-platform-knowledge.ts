@@ -14,7 +14,7 @@ KetuJemi.com është platformë njoftimesh (shpallje) për blerje/shitje në Bal
 • Faqja kryesore (/): 20 kategori + njoftime të fundit + TOP.
 • «Njoftimet» (/listings): të gjitha njoftimet + kërkim me fjalë kyçe.
 • Kategori (/category/…): klik kategori → nën-kategori (nëse ka) → markë/lloj (Vetura, Telefona…) → lista → hap njoftimin.
-• Njoftim (/listings/:id): foto të pakufizuara (+ video opsionale deri 150MB), titull, përshkrim, çmim €, sy/shikime, «Telefono», WhatsApp, «Raporto».
+• Njoftim (/listings/:id): foto (max **10** për shpallje), video opsionale deri 150MB, titull, përshkrim, çmim €, sy/shikime, «Telefono», WhatsApp, «Raporto».
 • «Posto Falas» (/listings/new): krijon njoftim të ri.
 • «Hyr» (/login): hyrje dhe regjistrim.
 • Profili (/profile): «Njoftimet e mia» — edito, fshi, rifillo.
@@ -87,12 +87,38 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 2) Klikoni **«Posto Falas»** (/listings/new).
 3) Zgjidhni **kategorinë kryesore** dhe **nënkategorinë** e saktë (e rëndësishme për blerësit).
 4) Plotësoni: titull i qartë, përshkrim, çmim në **€** (ose «Me marrëveshje» për privatë).
-5) Ngarkoni foto **të pakufizuara** (opsionalisht një video deri **150MB**); rekomandohen min. 3 foto reale të produktit.
+5) Ngarkoni **deri 10 foto** (min. 3 rekomandohen); opsionalisht një video deri **150MB**.
 6) Vendndodhja/qyteti, emri, telefon kontakti.
 7) Publikoni — **moderim automatik** → njoftim aktiv deri **3 muaj**.
 8) Menaxhim: **Profili** → njoftimet e mia → ndrysho / fshi / **«Rifillo njoftimin»** pas skadimit (+3 muaj).
 9) **TOP** (opsional): **€2 = 4 ditë**, **€5 = 15 ditë**, **€8 = 30 ditë** në krye të listës (zgjidhni paketën → Stripe).
-10) Mos postoni të njëjtin send dy herë brenda 1 muaji — sistemi bllokon shpallje të ngjashme (titull, përshkrim, foto, kategori).
+10) Mos postoni të njëjtin send dy herë brenda **1 muaji** — sistemi bllokon shpallje të ngjashme (titull, përshkrim, foto, kategori). Përdorni **Edito** në Profil për njoftimin e vjetër.
+
+=== LINKA DIREKTE KATEGORISH (përgjigje «ku ta gjej X» — vetëm path, një rresht) ===
+Kur përdoruesi pyet ku të gjejë produkt/kategori, jep **vetëm** path-in (klikueshëm në chat):
+• Telefona/mobile → /shpallje/telefona
+• Vetura/makina → /shpallje/vetura
+• Motorr/skuter → /shpallje/motorr-skuter
+• Kamionë/furgonë → /shpallje/kamione-furgone
+• Auto pjesë/goma → /shpallje/auto-pjese
+• Banesa/apartament → /shpallje/banesa-shtepi
+• Lokale/zyrë → /shpallje/lokale-zyre
+• Laptop/kompjuter → /shpallje/kompjutere-laptope
+• TV/elektronikë → /shpallje/tv-elektronike
+• Mobilje → /shpallje/mobilje-dekorime
+• Rroba/këpucë → /shpallje/rroba-kepuce
+• Fëmijë → /shpallje/femije
+• Sport → /shpallje/sport-outdoor
+• Punë/shërbime → /shpallje/pune-sherbime
+• Bujqësi → /shpallje/bujqesi-blegtori
+• Arsim/kurse → /shpallje/arsim-kurse
+• Muzikë/instrumente → /shpallje/muzike-hobby
+• Kafshë → /shpallje/kafshet
+• Ndërtim → /shpallje/ndertim-instalime
+• Kërkim me model (p.sh. iPhone 15) → /listings?search=iPhone+15
+• Regjistrim → /login
+• Postim shpallje → /listings/new
+• Dyqane biznesi → /dyqanet
 
 === NJOFTIME FALAS (përdorues privat) ===
 • **10 postime falas në muaj** për çdo **kategori kryesore** (rrënja + të gjitha nën-kategoritë; numërohen postimet e këtij muaji kalendarik).
@@ -142,7 +168,7 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 === FAQ — PYETJET MË TË SHPESHTA ===
 **Si të postoj?** → «Posto Falas», kategori, të dhëna, foto, publiko (deri 3 muaj).
 **Sa kushton postimi?** → Falas dhe i pakufizuar; TOP opsional €2/€5/€8; partner dyqani (/partner) — aplikim falas.
-**Sa foto?** → Pa limit — foto të pakufizuara dhe video opsionale deri në 150MB për njoftim.
+**Sa foto?** → **Maksimum 10 foto** për shpallje (+ video opsionale deri 150MB).
 **Si ta fshij/ndryshoj?** → Profili → njoftimet e mia.
 **Si kontaktoj shitësin?** → Telefono / WhatsApp në faqen e njoftimit.
 **A funksionon jashtë vendit?** → Po, 11 tregje përfshirë diasporën.
@@ -153,7 +179,11 @@ Kërkim i gjerë: «Njoftimet» + fjalë (p.sh. «iPhone 15», «banesë Prishti
 **Skadimi?** → deri 3 muaj; rifillo nga njoftimi juaj.
 **Verifikimi?** → Hyni në llogari (regjistrim me email, Google, Facebook ose TikTok).
 
-=== RREGULLA & MODERIM ===
-Lejohet: produkt real, foto të vërteta, një produkt për njoftim, çmim i qartë.
+=== RREGULLA & MODERIM (obligative — mos i thyej) ===
+Lejohet: produkt real, foto të vërteta, **një produkt për njoftim**, çmim i qartë, **kategoria e saktë** (çdo shpallje vetëm aty ku i përket).
+Ndaluar menjëherë (refuzim automatik): armë, droga, alkool, duhan/cigare/vape, kripto, baste/kazino, MLM/piramida, erotik, replika/fake.
+**Duplikate:** i njëjti send **jo dy herë brenda 1 muaji** — përdor Edito ose ndrysho artikullin.
+**Foto:** max **10** për shpallje.
+**Kategoria ≠ vendndodhja:** kategoria = lloji i produktit; qyteti/shteti zgjidhet veç e veç (KS, AL, MK, MNE lejohen).
 Moderim automatik para publikimit; refuzim nëse përmbajtja shkel rregullat.
 `.trim();

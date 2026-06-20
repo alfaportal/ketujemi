@@ -48,6 +48,10 @@ export function extractProductSearchTerms(raw: string): string {
   let t = expandUserQuery(raw);
   t = t
     .replace(
+      /^(a\s+)?ku\s+(mund\s+)?(e\s+)?(jan|jane|jane\s+)?(ta\s+)?(gjej|gjen|blej|bler|shoh|shfaq)\s+/i,
+      "",
+    )
+    .replace(
       /^(a\s+)?ku\s+(mund\s+)?(e\s+)?(ta\s+)?(gjej|gjen|blej|bler|shoh|shfaq)\s+/i,
       "",
     )
