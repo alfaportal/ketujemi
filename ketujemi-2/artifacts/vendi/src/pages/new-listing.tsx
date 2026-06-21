@@ -100,6 +100,7 @@ import {
   DHURATA_PLEDGE_STORAGE_KEY,
 } from "@/components/dhurata-gift-pledge";
 import { DHURATA_FALAS_SLUG, KERKOJ_POST_PATH, KERKOJ_TE_BLEJ_SLUG } from "@/lib/special-listing-categories";
+import { isRootCategory, sortRootCategories } from "@/lib/parent-category-slugs";
 import { fillPlaceholders } from "@/lib/fill-placeholders";
 import { categoryEngine } from "@/services/CategoryEngine";
 import {
@@ -222,7 +223,7 @@ export default function NewListing() {
   const [listingCountry, setListingCountry] = useState<ListingMarketCode>(() =>
     defaultListingMarketFromMarket(market.code),
   );
-  const { data: allCategories } = useGetCategories();
+  const { data: allCategories, isLoading: categoriesLoading } = useGetCategories();
   const [imageUrls, setImageUrlsState] = useState<string[]>(() => readListingDraftImageUrls());
   const setImageUrls = useCallback(
     (value: string[] | ((prev: string[]) => string[])) => {
@@ -294,7 +295,10 @@ export default function NewListing() {
   const techCondOpts = formOptionsForUiLang("techCondition", uiLang);
   const furnishedOpts = formOptionsForUiLang("furnished", uiLang);
 
-  const parentCats = (allCategories ?? []).filter((c: any) => !c.parent_id);
+  const parentCats = useMemo(
+    () => sortRootCategories((allCategories ?? []).filter((c: { id?: number; parent_id?: number | null; slug?: string | null }) => isRootCategory(c))),
+    [allCategories],
+  );
 
   useEffect(() => {
     if (!activeUser) return;
@@ -405,8 +409,16 @@ export default function NewListing() {
   const effectiveCategoryId =
     Number(brandCatId) || Number(bodyCatId) || Number(parentCatId);
 
-  const subCats   = (allCategories ?? []).filter((c: any) => c.parent_id === Number(parentCatId));
-  const brandCats = (allCategories ?? []).filter((c: any) => c.parent_id === Number(bodyCatId));
+  const subCats = (allCategories ?? []).filter(
+    (c: { parent_id?: number | null }) => Number(c.parent_id) === Number(parentCatId) && Number(parentCatId) > 0,
+  );
+  const brandCats = (allCategories ?? []).filter(
+    (c: { parent_id?: number | null }) => Number(c.parent_id) === Number(bodyCatId) && Number(bodyCatId) > 0,
+  );
+  const showManualSubcategoryPicker =
+    subCats.length > 1 && !bodyCatId && (isAdminListingMode || watchTitle.trim().length >= 5);
+  const showSubcategoryTitleHint =
+    subCats.length > 1 && !bodyCatId && !isAdminListingMode && watchTitle.trim().length < 5;
   const catEngine = useMemo(
     () => categoryEngine((allCategories ?? []) as { id: number; name: string; slug?: string | null; parent_id?: number | null }[]),
     [allCategories],
@@ -486,10 +498,15 @@ export default function NewListing() {
     if (lastImageAnalysisRef.current) return;
 
     const children = (allCategories ?? []).filter(
-      (c: { parent_id?: number | null }) => c.parent_id === parentId,
+      (c: { parent_id?: number | null }) => Number(c.parent_id) === parentId,
     );
     if (children.length === 0) {
       form.setValue("category_id", parentId);
+      return;
+    }
+
+    if (isAdminListingMode && children.length === 1 && !Number(form.getValues("category_id"))) {
+      form.setValue("category_id", children[0]!.id, { shouldDirty: true });
       return;
     }
 
@@ -987,7 +1004,9 @@ export default function NewListing() {
     form.setValue("description", listingData.description, { shouldDirty: true });
     form.setValue("seller_name", listingData.seller_name, { shouldDirty: true });
     const parentId = Number(listingData.parent_category_id);
-    const children = (allCategories ?? []).filter((c: { parent_id?: number | null }) => c.parent_id === parentId);
+    const children = (allCategories ?? []).filter(
+      (c: { parent_id?: number | null }) => Number(c.parent_id) === parentId,
+    );
     const photoCountForValidation =
       imageUrls.length > 0 ? imageUrls.length : videoUrl ? 1 : 0;
     const preflight = collectListingPostPreflightIssues(
@@ -1648,6 +1667,12 @@ export default function NewListing() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {categoriesLoading ? (
+                      <p className="text-sm mt-1 text-gray-500">Duke ngarkuar kategoritë…</p>
+                    ) : null}
+                    {!categoriesLoading && parentCats.length === 0 ? (
+                      <p className="text-sm mt-1 text-red-600">Kategoritë nuk u ngarkuan. Rifreskoni faqen.</p>
+                    ) : null}
                     <FormMessage />
                     {subCats.length > 0 && bodyCatId > 0 && (
                       <p className="text-sm mt-1 text-green-700" role="status">
@@ -1659,7 +1684,7 @@ export default function NewListing() {
                         }`}
                       </p>
                     )}
-                    {subCats.length > 1 && !bodyCatId && watchTitle.trim().length >= 5 && (
+                    {showManualSubcategoryPicker ? (
                 <FormField
                   control={form.control}
                   name="category_id"
@@ -1689,12 +1714,12 @@ export default function NewListing() {
                     </FormItem>
                   )}
                 />
-              )}
-                    {subCats.length > 1 && !bodyCatId && watchTitle.trim().length < 5 && (
+              ) : null}
+                    {showSubcategoryTitleHint ? (
                       <p className="text-sm mt-1 text-amber-700" role="status">
                         {t.subcategoryTitleMinHint}
                       </p>
-                    )}
+                    ) : null}
                     {subCats.length === 1 && !bodyCatId && (
                       <p className="text-sm mt-1 text-amber-700" role="status">
                         {t.subcategoryAutoSetting}

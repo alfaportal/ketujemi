@@ -93,6 +93,22 @@ export function ShopEditForm({
       .finally(() => setTaxonomyLoading(false));
   }, []);
 
+  useEffect(() => {
+    if (taxonomy.length === 0) return;
+    setValues((prev) => {
+      if (prev.directory_category_id && prev.directory_subcategory_id) return prev;
+      const cat = taxonomy.find((t) => t.id === prev.directory_category_id) ?? taxonomy[0];
+      if (!cat) return prev;
+      const sub =
+        cat.subcategories.find((s) => s.id === prev.directory_subcategory_id) ?? cat.subcategories[0];
+      return {
+        ...prev,
+        directory_category_id: prev.directory_category_id ?? cat.id,
+        directory_subcategory_id: prev.directory_subcategory_id ?? sub?.id ?? null,
+      };
+    });
+  }, [taxonomy]);
+
   const cityOptions = citiesForShopCountry(values.country);
 
   const subcategories = useMemo(() => {
@@ -231,6 +247,10 @@ export function ShopEditForm({
         <div className="flex justify-center py-4">
           <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
         </div>
+      ) : taxonomy.length === 0 ? (
+        <p className="text-sm text-red-600 rounded-lg border border-red-100 bg-red-50 px-3 py-2">
+          Kategoritë e direktorisë nuk u ngarkuan. Rifreskoni faqen ose kontrolloni API-n.
+        </p>
       ) : (
         <div className="grid sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">

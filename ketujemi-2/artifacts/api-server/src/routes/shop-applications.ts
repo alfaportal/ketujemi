@@ -1,6 +1,8 @@
 import { Router } from "express";
 import {
   db,
+  pool,
+  ensureShopDirectoryTaxonomy,
   shopApplicationsTable,
   shopDirectoryCategoriesTable,
   shopDirectorySubcategoriesTable,
@@ -24,6 +26,7 @@ import { normalizeShopWhatsappStored } from "../lib/shop-whatsapp-url";
 import { parseDeletionSurveyBody } from "../lib/deletion-feedback.js";
 import { softDeleteShopWithFeedback } from "../lib/soft-delete-shop.js";
 import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxonomy.js";
+import { SHOP_DIRECTORY_CATEGORY_IMAGE_URLS } from "../../../../lib/shop-directory-category-images.js";
 import { enforceProfileChangeToken } from "../lib/profile-change-verify.js";
 import {
   getShopSocialProfilesForApi,
@@ -238,39 +241,61 @@ function parseShopId(raw: string): number | null {
 
 // ─── GET /shops/directory/taxonomy ────────────────────────────────────────────
 router.get("/shops/directory/taxonomy", async (_req, res) => {
-  const categories = await db
-    .select()
-    .from(shopDirectoryCategoriesTable)
-    .orderBy(asc(shopDirectoryCategoriesTable.sort_order), asc(shopDirectoryCategoriesTable.id));
+  try {
+    let categories = await db
+      .select()
+      .from(shopDirectoryCategoriesTable)
+      .orderBy(asc(shopDirectoryCategoriesTable.sort_order), asc(shopDirectoryCategoriesTable.id));
 
-  const subcategories = await db
-    .select()
-    .from(shopDirectorySubcategoriesTable)
-    .orderBy(asc(shopDirectorySubcategoriesTable.id));
+    if (categories.length === 0) {
+      await ensureShopDirectoryTaxonomy(
+        pool,
+        SHOP_DIRECTORY_CATEGORIES.map((cat) => ({
+          slug: cat.slug,
+          emoji: cat.emoji,
+          nameSq: cat.nameSq,
+          imageUrl: SHOP_DIRECTORY_CATEGORY_IMAGE_URLS[cat.slug],
+          subcategories: cat.subcategories,
+        })),
+      );
+      categories = await db
+        .select()
+        .from(shopDirectoryCategoriesTable)
+        .orderBy(asc(shopDirectoryCategoriesTable.sort_order), asc(shopDirectoryCategoriesTable.id));
+    }
 
-  const subsByCategory = new Map<number, typeof subcategories>();
-  for (const sub of subcategories) {
-    const list = subsByCategory.get(sub.category_id) ?? [];
-    list.push(sub);
-    subsByCategory.set(sub.category_id, list);
-  }
+    const subcategories = await db
+      .select()
+      .from(shopDirectorySubcategoriesTable)
+      .orderBy(asc(shopDirectorySubcategoriesTable.id));
 
-  res.json({
-    categories: categories.map((cat) => ({
-      id: cat.id,
-      name: cat.name,
-      emoji: cat.emoji,
-      slug: cat.slug,
-      image_url: cat.image_url,
-      sort_order: cat.sort_order,
-      subcategories: (subsByCategory.get(cat.id) ?? []).map((sub) => ({
-        id: sub.id,
-        category_id: sub.category_id,
-        name: sub.name,
-        slug: sub.slug,
+    const subsByCategory = new Map<number, typeof subcategories>();
+    for (const sub of subcategories) {
+      const list = subsByCategory.get(sub.category_id) ?? [];
+      list.push(sub);
+      subsByCategory.set(sub.category_id, list);
+    }
+
+    res.json({
+      categories: categories.map((cat) => ({
+        id: cat.id,
+        name: cat.name,
+        emoji: cat.emoji,
+        slug: cat.slug,
+        image_url: cat.image_url,
+        sort_order: cat.sort_order,
+        subcategories: (subsByCategory.get(cat.id) ?? []).map((sub) => ({
+          id: sub.id,
+          category_id: sub.category_id,
+          name: sub.name,
+          slug: sub.slug,
+        })),
       })),
-    })),
-  });
+    });
+  } catch (err) {
+    (_req as any).log?.error?.({ err }, "Failed shop directory taxonomy");
+    res.status(500).json({ error: "Internal server error", categories: [] });
+  }
 });
 
 function activeDirectoryShopCondition() {
