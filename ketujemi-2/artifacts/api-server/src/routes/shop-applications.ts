@@ -40,6 +40,50 @@ import {
 
 const router = Router();
 
+const SHOP_DIRECTORY_SEED = SHOP_DIRECTORY_CATEGORIES.map((cat) => ({
+  slug: cat.slug,
+  emoji: cat.emoji,
+  nameSq: cat.nameSq,
+  imageUrl: SHOP_DIRECTORY_CATEGORY_IMAGE_URLS[cat.slug],
+  subcategories: cat.subcategories,
+}));
+
+async function loadShopDirectoryTaxonomyResponse() {
+  const categories = await db
+    .select()
+    .from(shopDirectoryCategoriesTable)
+    .orderBy(asc(shopDirectoryCategoriesTable.sort_order), asc(shopDirectoryCategoriesTable.id));
+
+  const subcategories = await db
+    .select()
+    .from(shopDirectorySubcategoriesTable)
+    .orderBy(asc(shopDirectorySubcategoriesTable.id));
+
+  const subsByCategory = new Map<number, typeof subcategories>();
+  for (const sub of subcategories) {
+    const list = subsByCategory.get(sub.category_id) ?? [];
+    list.push(sub);
+    subsByCategory.set(sub.category_id, list);
+  }
+
+  return {
+    categories: categories.map((cat) => ({
+      id: cat.id,
+      name: cat.name,
+      emoji: cat.emoji,
+      slug: cat.slug,
+      image_url: cat.image_url,
+      sort_order: cat.sort_order,
+      subcategories: (subsByCategory.get(cat.id) ?? []).map((sub) => ({
+        id: sub.id,
+        category_id: sub.category_id,
+        name: sub.name,
+        slug: sub.slug,
+      })),
+    })),
+  };
+}
+
 function trimOrNull(v: unknown): string | null {
   if (typeof v !== "string") return null;
   const t = v.trim();
@@ -242,56 +286,29 @@ function parseShopId(raw: string): number | null {
 // ─── GET /shops/directory/taxonomy ────────────────────────────────────────────
 router.get("/shops/directory/taxonomy", async (_req, res) => {
   try {
-    let categories = await db
-      .select()
-      .from(shopDirectoryCategoriesTable)
-      .orderBy(asc(shopDirectoryCategoriesTable.sort_order), asc(shopDirectoryCategoriesTable.id));
-
-    if (categories.length === 0) {
-      await ensureShopDirectoryTaxonomy(
-        pool,
-        SHOP_DIRECTORY_CATEGORIES.map((cat) => ({
-          slug: cat.slug,
-          emoji: cat.emoji,
-          nameSq: cat.nameSq,
-          imageUrl: SHOP_DIRECTORY_CATEGORY_IMAGE_URLS[cat.slug],
-          subcategories: cat.subcategories,
-        })),
-      );
-      categories = await db
-        .select()
-        .from(shopDirectoryCategoriesTable)
-        .orderBy(asc(shopDirectoryCategoriesTable.sort_order), asc(shopDirectoryCategoriesTable.id));
+    try {
+      await ensureShopDirectoryTaxonomy(pool, SHOP_DIRECTORY_SEED);
+    } catch (ensureErr) {
+      (_req as any).log?.error?.({ err: ensureErr }, "ensureShopDirectoryTaxonomy on taxonomy GET");
     }
 
-    const subcategories = await db
-      .select()
-      .from(shopDirectorySubcategoriesTable)
-      .orderBy(asc(shopDirectorySubcategoriesTable.id));
-
-    const subsByCategory = new Map<number, typeof subcategories>();
-    for (const sub of subcategories) {
-      const list = subsByCategory.get(sub.category_id) ?? [];
-      list.push(sub);
-      subsByCategory.set(sub.category_id, list);
+    try {
+      const payload = await loadShopDirectoryTaxonomyResponse();
+      if (payload.categories.length > 0) {
+        res.json(payload);
+        return;
+      }
+    } catch (loadErr) {
+      (_req as any).log?.error?.({ err: loadErr }, "loadShopDirectoryTaxonomyResponse failed, retrying after ensure");
+      await ensureShopDirectoryTaxonomy(pool, SHOP_DIRECTORY_SEED);
+      const payload = await loadShopDirectoryTaxonomyResponse();
+      if (payload.categories.length > 0) {
+        res.json(payload);
+        return;
+      }
     }
 
-    res.json({
-      categories: categories.map((cat) => ({
-        id: cat.id,
-        name: cat.name,
-        emoji: cat.emoji,
-        slug: cat.slug,
-        image_url: cat.image_url,
-        sort_order: cat.sort_order,
-        subcategories: (subsByCategory.get(cat.id) ?? []).map((sub) => ({
-          id: sub.id,
-          category_id: sub.category_id,
-          name: sub.name,
-          slug: sub.slug,
-        })),
-      })),
-    });
+    res.json({ categories: [] });
   } catch (err) {
     (_req as any).log?.error?.({ err }, "Failed shop directory taxonomy");
     res.status(500).json({ error: "Internal server error", categories: [] });

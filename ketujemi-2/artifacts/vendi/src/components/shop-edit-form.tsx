@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useShopFormCopy } from "@/lib/shop-application-i18n";
 import { citiesForShopCountry } from "@/lib/shop-application-locations";
-import { fetchShopDirectoryTaxonomy, type ShopDirectoryTaxonomyCategory } from "@/lib/shop-directory-api";
+import { fetchShopDirectoryTaxonomy, isApiShopDirectoryTaxonomy, type ShopDirectoryTaxonomyCategory } from "@/lib/shop-directory-api";
 import {
   translateDirectoryCategory,
   translateDirectorySubcategory,
@@ -31,6 +31,8 @@ export type ShopEditFormValues = {
   category_id: number | null;
   directory_category_id: number | null;
   directory_subcategory_id: number | null;
+  directory_category_slug?: string | null;
+  directory_subcategory_slug?: string | null;
   country: string;
   city: string;
   region: string;
@@ -80,6 +82,7 @@ export function ShopEditForm({
   const locale = translationKeyForUiLang(uiLang);
   const [taxonomy, setTaxonomy] = useState<ShopDirectoryTaxonomyCategory[]>([]);
   const [taxonomyLoading, setTaxonomyLoading] = useState(true);
+  const taxonomyUsesApiIds = isApiShopDirectoryTaxonomy(taxonomy);
 
   const [values, setValues] = useState(initial);
 
@@ -96,24 +99,52 @@ export function ShopEditForm({
   useEffect(() => {
     if (taxonomy.length === 0) return;
     setValues((prev) => {
-      if (prev.directory_category_id && prev.directory_subcategory_id) return prev;
-      const cat = taxonomy.find((t) => t.id === prev.directory_category_id) ?? taxonomy[0];
+      const hasApiPick = !!(prev.directory_category_id && prev.directory_subcategory_id);
+      const hasSlugPick = !!(prev.directory_category_slug && prev.directory_subcategory_slug);
+      if (hasApiPick || hasSlugPick) return prev;
+
+      const cat =
+        taxonomy.find((t) => t.id === prev.directory_category_id) ??
+        taxonomy.find((t) => t.slug === prev.directory_category_slug) ??
+        taxonomy[0];
       if (!cat) return prev;
       const sub =
-        cat.subcategories.find((s) => s.id === prev.directory_subcategory_id) ?? cat.subcategories[0];
+        cat.subcategories.find((s) => s.id === prev.directory_subcategory_id) ??
+        cat.subcategories.find((s) => s.slug === prev.directory_subcategory_slug) ??
+        cat.subcategories[0];
+
+      if (taxonomyUsesApiIds) {
+        return {
+          ...prev,
+          directory_category_id: cat.id,
+          directory_subcategory_id: sub?.id ?? null,
+          directory_category_slug: cat.slug,
+          directory_subcategory_slug: sub?.slug ?? null,
+        };
+      }
       return {
         ...prev,
-        directory_category_id: prev.directory_category_id ?? cat.id,
-        directory_subcategory_id: prev.directory_subcategory_id ?? sub?.id ?? null,
+        directory_category_id: null,
+        directory_subcategory_id: null,
+        directory_category_slug: cat.slug,
+        directory_subcategory_slug: sub?.slug ?? null,
       };
     });
-  }, [taxonomy]);
+  }, [taxonomy, taxonomyUsesApiIds]);
 
   const cityOptions = citiesForShopCountry(values.country);
 
-  const subcategories = useMemo(() => {
-    return taxonomy.find((t) => t.id === values.directory_category_id)?.subcategories ?? [];
-  }, [taxonomy, values.directory_category_id]);
+  const activeDirectoryCategory = useMemo(() => {
+    if (taxonomyUsesApiIds && values.directory_category_id) {
+      return taxonomy.find((t) => t.id === values.directory_category_id);
+    }
+    if (values.directory_category_slug) {
+      return taxonomy.find((t) => t.slug === values.directory_category_slug);
+    }
+    return undefined;
+  }, [taxonomy, taxonomyUsesApiIds, values.directory_category_id, values.directory_category_slug]);
+
+  const subcategories = activeDirectoryCategory?.subcategories ?? [];
 
   function setField<K extends keyof ShopEditFormValues>(key: K, value: ShopEditFormValues[K]) {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -121,11 +152,17 @@ export function ShopEditForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!values.directory_category_id || !values.directory_subcategory_id) {
-      return;
-    }
-    const dirCat = taxonomy.find((t) => t.id === values.directory_category_id);
-    const sub = subcategories.find((s) => s.id === values.directory_subcategory_id);
+    const hasApiIds = !!(values.directory_category_id && values.directory_subcategory_id);
+    const hasSlugs = !!(values.directory_category_slug && values.directory_subcategory_slug);
+    if (!hasApiIds && !hasSlugs) return;
+
+    const dirCat =
+      activeDirectoryCategory ??
+      taxonomy.find((t) => t.slug === values.directory_category_slug) ??
+      taxonomy.find((t) => t.id === values.directory_category_id);
+    const sub =
+      subcategories.find((s) => s.id === values.directory_subcategory_id) ??
+      subcategories.find((s) => s.slug === values.directory_subcategory_slug);
     const catDef = dirCat ? SHOP_DIRECTORY_CATEGORIES.find((c) => c.slug === dirCat.slug) : undefined;
     const categoryName =
       catDef && sub
@@ -142,6 +179,8 @@ export function ShopEditForm({
       ...values,
       category: categoryName,
       category_id: null,
+      directory_category_slug: dirCat?.slug ?? values.directory_category_slug ?? null,
+      directory_subcategory_slug: sub?.slug ?? values.directory_subcategory_slug ?? null,
       facebook: social.facebook ?? "",
       instagram: social.instagram ?? "",
       tiktok: social.tiktok ?? "",
@@ -247,58 +286,106 @@ export function ShopEditForm({
         <div className="flex justify-center py-4">
           <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
         </div>
-      ) : taxonomy.length === 0 ? (
-        <p className="text-sm text-red-600 rounded-lg border border-red-100 bg-red-50 px-3 py-2">
-          Kategoritë e direktorisë nuk u ngarkuan. Rifreskoni faqen ose kontrolloni API-n.
-        </p>
       ) : (
-        <div className="grid sm:grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label>{labels?.directoryCategory ?? c.directoryCategory} *</Label>
-            <select
-              className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
-              value={values.directory_category_id ?? ""}
-              required
-              onChange={(e) => {
-                const directory_category_id = Number(e.target.value) || null;
-                const cat = taxonomy.find((t) => t.id === directory_category_id);
-                const firstSub = cat?.subcategories[0];
-                setValues((prev) => ({
-                  ...prev,
-                  directory_category_id,
-                  directory_subcategory_id: firstSub?.id ?? null,
-                }));
-              }}
-            >
-              {taxonomy.map((cat) => {
-                const catDef = SHOP_DIRECTORY_CATEGORIES.find((c) => c.slug === cat.slug);
-                const label = catDef
-                  ? translateDirectoryCategory(catDef, locale)
-                  : cat.name;
-                return (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.emoji} {label}
+        <>
+          {!taxonomyUsesApiIds ? (
+            <p className="text-xs text-amber-800 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2">
+              Kategoritë u ngarkuan nga lista lokale — serveri do t&apos;i sinkronizojë gjatë ruajtjes.
+            </p>
+          ) : null}
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>{labels?.directoryCategory ?? c.directoryCategory} *</Label>
+              <select
+                className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
+                value={
+                  taxonomyUsesApiIds
+                    ? (values.directory_category_id ?? "")
+                    : (values.directory_category_slug ?? "")
+                }
+                required
+                onChange={(e) => {
+                  if (taxonomyUsesApiIds) {
+                    const directory_category_id = Number(e.target.value) || null;
+                    const cat = taxonomy.find((t) => t.id === directory_category_id);
+                    const firstSub = cat?.subcategories[0];
+                    setValues((prev) => ({
+                      ...prev,
+                      directory_category_id,
+                      directory_subcategory_id: firstSub?.id ?? null,
+                      directory_category_slug: cat?.slug ?? null,
+                      directory_subcategory_slug: firstSub?.slug ?? null,
+                    }));
+                    return;
+                  }
+                  const directory_category_slug = e.target.value || null;
+                  const cat = taxonomy.find((t) => t.slug === directory_category_slug);
+                  const firstSub = cat?.subcategories[0];
+                  setValues((prev) => ({
+                    ...prev,
+                    directory_category_id: null,
+                    directory_subcategory_id: null,
+                    directory_category_slug,
+                    directory_subcategory_slug: firstSub?.slug ?? null,
+                  }));
+                }}
+              >
+                {taxonomy.map((cat) => {
+                  const catDef = SHOP_DIRECTORY_CATEGORIES.find((c) => c.slug === cat.slug);
+                  const label = catDef
+                    ? translateDirectoryCategory(catDef, locale)
+                    : cat.name;
+                  return (
+                    <option
+                      key={cat.slug}
+                      value={taxonomyUsesApiIds ? cat.id : cat.slug}
+                    >
+                      {cat.emoji} {label}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>{labels?.directorySubcategory ?? c.directorySubcategory} *</Label>
+              <select
+                className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
+                value={
+                  taxonomyUsesApiIds
+                    ? (values.directory_subcategory_id ?? "")
+                    : (values.directory_subcategory_slug ?? "")
+                }
+                required
+                onChange={(e) => {
+                  if (taxonomyUsesApiIds) {
+                    const directory_subcategory_id = Number(e.target.value) || null;
+                    const sub = subcategories.find((s) => s.id === directory_subcategory_id);
+                    setValues((prev) => ({
+                      ...prev,
+                      directory_subcategory_id,
+                      directory_subcategory_slug: sub?.slug ?? prev.directory_subcategory_slug,
+                    }));
+                    return;
+                  }
+                  setValues((prev) => ({
+                    ...prev,
+                    directory_subcategory_id: null,
+                    directory_subcategory_slug: e.target.value || null,
+                  }));
+                }}
+              >
+                {subcategories.map((sub) => (
+                  <option
+                    key={sub.slug}
+                    value={taxonomyUsesApiIds ? sub.id : sub.slug}
+                  >
+                    {translateDirectorySubcategory({ slug: sub.slug, nameSq: sub.name }, locale)}
                   </option>
-                );
-              })}
-            </select>
+                ))}
+              </select>
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <Label>{labels?.directorySubcategory ?? c.directorySubcategory} *</Label>
-            <select
-              className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
-              value={values.directory_subcategory_id ?? ""}
-              required
-              onChange={(e) => setField("directory_subcategory_id", Number(e.target.value) || null)}
-            >
-              {subcategories.map((sub) => (
-                <option key={sub.id} value={sub.id}>
-                  {translateDirectorySubcategory({ slug: sub.slug, nameSq: sub.name }, locale)}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        </>
       )}
 
       <ShopSocialUrlFields
@@ -399,6 +486,8 @@ export function adminRowToFormValues(row: {
     category_id: row.category_id,
     directory_category_id: row.directory_category_id,
     directory_subcategory_id: row.directory_subcategory_id,
+    directory_category_slug: row.directory_category_slug ?? null,
+    directory_subcategory_slug: row.directory_subcategory_slug ?? null,
     country: row.country,
     city: row.city,
     region: row.region,

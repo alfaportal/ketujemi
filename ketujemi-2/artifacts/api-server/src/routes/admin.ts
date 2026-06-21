@@ -1862,7 +1862,7 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
         imageUrl: SHOP_DIRECTORY_CATEGORY_IMAGE_URLS[cat.slug],
         subcategories: cat.subcategories,
       })),
-    ).catch(() => undefined);
+    );
 
     const body = req.body as Record<string, unknown>;
     const trimOrNull = (v: unknown): string | null => {
@@ -1909,12 +1909,15 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
 
     const directoryCategoryId = Number(body.directory_category_id);
     const directorySubcategoryId = Number(body.directory_subcategory_id);
-    if (
-      !Number.isFinite(directoryCategoryId) ||
-      directoryCategoryId < 1 ||
-      !Number.isFinite(directorySubcategoryId) ||
-      directorySubcategoryId < 1
-    ) {
+    const directoryCategorySlug = trimOrNull(body.directory_category_slug);
+    const directorySubcategorySlug = trimOrNull(body.directory_subcategory_slug);
+    const hasDirectoryIds =
+      Number.isFinite(directoryCategoryId) &&
+      directoryCategoryId >= 1 &&
+      Number.isFinite(directorySubcategoryId) &&
+      directorySubcategoryId >= 1;
+    const hasDirectorySlugs = !!(directoryCategorySlug && directorySubcategorySlug);
+    if (!hasDirectoryIds && !hasDirectorySlugs) {
       errors.push("Zgjidhni kategorinë dhe nënkategorinë e dyqanit.");
     }
 
@@ -1925,11 +1928,21 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
 
     const categoryLabel = trimOrNull(body.category) ?? "Dyqan";
     const directoryFields = await resolveDirectoryFields({
-      directory_category_id: directoryCategoryId,
-      directory_subcategory_id: directorySubcategoryId,
+      directory_category_id: hasDirectoryIds ? directoryCategoryId : null,
+      directory_subcategory_id: hasDirectoryIds ? directorySubcategoryId : null,
+      directory_category_slug: directoryCategorySlug,
+      directory_subcategory_slug: directorySubcategorySlug,
       category: categoryLabel,
       category_id: null,
     });
+
+    if (!directoryFields.directory_category_id || !directoryFields.directory_subcategory_id) {
+      res.status(400).json({
+        error: "VALIDATION",
+        message: "Kategoritë e dyqanit nuk u zgjidhën. Provoni përsëri ose kontrolloni serverin.",
+      });
+      return;
+    }
 
     const shopValues = {
       shop_name: String(body.shop_name).trim(),
