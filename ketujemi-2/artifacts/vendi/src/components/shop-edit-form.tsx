@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +51,32 @@ export type ShopEditFormValues = {
   admin_notes?: string;
 };
 
+function validateShopEditForm(values: ShopEditFormValues): string | null {
+  if (!values.shop_name.trim()) return "Plotësoni emrin e dyqanit.";
+  if (!values.logo_url.trim()) return "Plotësoni URL-në e logos.";
+  if (!values.description.trim()) return "Plotësoni përshkrimin.";
+  if (!values.country.trim()) return "Zgjidhni shtetin.";
+  if (!values.city.trim()) return "Zgjidhni ose shkruani qytetin.";
+  if (!values.address.trim()) return "Plotësoni adresën.";
+  const hasApiIds = !!(values.directory_category_id && values.directory_subcategory_id);
+  const hasSlugs = !!(values.directory_category_slug && values.directory_subcategory_slug);
+  if (!hasApiIds && !hasSlugs) return "Zgjidhni kategorinë dhe nënkategorinë e dyqanit.";
+  const social = shopSocialFieldsForSubmit({
+    facebook: values.facebook,
+    instagram: values.instagram,
+    tiktok: values.tiktok,
+    whatsapp: values.whatsapp,
+    website: values.website,
+  });
+  if (!social.facebook && !social.instagram && !social.tiktok && !social.whatsapp && !social.website) {
+    return "Plotësoni të paktën një rrjet social (Facebook, Instagram, TikTok, WhatsApp ose website).";
+  }
+  if (!values.contact_name.trim()) return "Plotësoni emrin e kontaktit.";
+  if (!values.phone.trim()) return "Plotësoni telefonin.";
+  if (!values.email.trim()) return "Plotësoni email-in.";
+  return null;
+}
+
 type ShopEditFormProps = {
   initial: ShopEditFormValues;
   onSubmit: (values: ShopEditFormValues) => Promise<void>;
@@ -83,6 +109,7 @@ export function ShopEditForm({
   const [taxonomy, setTaxonomy] = useState<ShopDirectoryTaxonomyCategory[]>(staticShopDirectoryTaxonomy);
   const [taxonomyLoading, setTaxonomyLoading] = useState(true);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const errorRef = useRef<HTMLParagraphElement>(null);
   const taxonomyUsesApiIds = isApiShopDirectoryTaxonomy(taxonomy);
 
   const [values, setValues] = useState(initial);
@@ -153,13 +180,21 @@ export function ShopEditForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const validationError = validateShopEditForm(values);
+    if (validationError) {
+      setSubmitError(validationError);
+      errorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      return;
+    }
+    setSubmitError(null);
+
     const hasApiIds = !!(values.directory_category_id && values.directory_subcategory_id);
     const hasSlugs = !!(values.directory_category_slug && values.directory_subcategory_slug);
     if (!hasApiIds && !hasSlugs) {
       setSubmitError("Zgjidhni kategorinë dhe nënkategorinë e dyqanit.");
+      errorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
       return;
     }
-    setSubmitError(null);
 
     const dirCat =
       activeDirectoryCategory ??
@@ -180,37 +215,55 @@ export function ShopEditForm({
       whatsapp: values.whatsapp,
       website: values.website,
     });
-    await onSubmit({
-      ...values,
-      category: categoryName,
-      category_id: null,
-      directory_category_slug: dirCat?.slug ?? values.directory_category_slug ?? null,
-      directory_subcategory_slug: sub?.slug ?? values.directory_subcategory_slug ?? null,
-      facebook: social.facebook ?? "",
-      instagram: social.instagram ?? "",
-      tiktok: social.tiktok ?? "",
-      whatsapp: social.whatsapp ?? "",
-      website: social.website ?? "",
-    });
+    try {
+      await onSubmit({
+        ...values,
+        region: values.region.trim() || values.city.trim() || "—",
+        category: categoryName,
+        category_id: null,
+        directory_category_slug: dirCat?.slug ?? values.directory_category_slug ?? null,
+        directory_subcategory_slug: sub?.slug ?? values.directory_subcategory_slug ?? null,
+        facebook: social.facebook ?? "",
+        instagram: social.instagram ?? "",
+        tiktok: social.tiktok ?? "",
+        whatsapp: social.whatsapp ?? "",
+        website: social.website ?? "",
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Gabim gjatë ruajtjes së dyqanit.";
+      setSubmitError(msg);
+      errorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   }
 
   const saveLabel = labels?.save ?? c.submitBtn;
   const cancelLabel = labels?.cancel ?? c.aiCancelBtn;
-  const hasDirectorySelection =
-    !!(values.directory_category_id && values.directory_subcategory_id) ||
-    !!(values.directory_category_slug && values.directory_subcategory_slug);
-  const canSubmit = hasDirectorySelection;
 
   return (
-    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+    <form
+      noValidate
+      onSubmit={(e) => void handleSubmit(e)}
+      className="flex flex-col max-h-[75vh] min-h-0"
+    >
+      {submitError ? (
+        <p
+          ref={errorRef}
+          className="mb-3 text-sm text-red-700 rounded-lg border border-red-200 bg-red-50 px-3 py-2 shrink-0"
+          role="alert"
+        >
+          {submitError}
+        </p>
+      ) : null}
+
+      <div className="space-y-4 overflow-y-auto flex-1 min-h-0 pr-1">
       <div className="grid sm:grid-cols-2 gap-3">
         <div className="space-y-1.5 sm:col-span-2">
           <Label>{c.shopName}</Label>
-          <Input value={values.shop_name} onChange={(e) => setField("shop_name", e.target.value)} required />
+          <Input value={values.shop_name} onChange={(e) => setField("shop_name", e.target.value)} />
         </div>
         <div className="space-y-1.5 sm:col-span-2">
           <Label>{c.logo}</Label>
-          <Input value={values.logo_url} onChange={(e) => setField("logo_url", e.target.value)} required />
+          <Input value={values.logo_url} onChange={(e) => setField("logo_url", e.target.value)} />
         </div>
         <div className="space-y-1.5 sm:col-span-2">
           <Label>{c.description}</Label>
@@ -218,7 +271,6 @@ export function ShopEditForm({
             value={values.description}
             onChange={(e) => setField("description", e.target.value)}
             className="min-h-[100px]"
-            required
           />
         </div>
         <div className="space-y-1.5">
@@ -252,12 +304,12 @@ export function ShopEditForm({
               </SelectContent>
             </Select>
           ) : (
-            <Input value={values.city} onChange={(e) => setField("city", e.target.value)} required />
+            <Input value={values.city} onChange={(e) => setField("city", e.target.value)} />
           )}
         </div>
         <div className="space-y-1.5">
           <Label>{c.region}</Label>
-          <Input value={values.region} onChange={(e) => setField("region", e.target.value)} required />
+          <Input value={values.region} onChange={(e) => setField("region", e.target.value)} placeholder="Lagja / rajoni (opsionale)" />
         </div>
         <div className="space-y-1.5 sm:col-span-2">
           <Label>{c.address}</Label>
@@ -265,7 +317,6 @@ export function ShopEditForm({
             value={values.address}
             country={values.country}
             placeholder={c.addressAutocompleteHint}
-            required
             onChange={(address) =>
               setValues((prev) => ({
                 ...prev,
@@ -292,27 +343,24 @@ export function ShopEditForm({
       </div>
 
       {taxonomyLoading ? (
-        <div className="flex justify-center py-4">
-          <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
-        </div>
-      ) : (
-        <>
-          {!taxonomyUsesApiIds ? (
-            <p className="text-xs text-amber-800 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2">
-              Kategoritë u ngarkuan nga lista lokale — serveri do t&apos;i sinkronizojë gjatë ruajtjes.
-            </p>
-          ) : null}
-          <div className="grid sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>{labels?.directoryCategory ?? c.directoryCategory} *</Label>
-              <select
+        <p className="text-xs text-gray-500">Duke sinkronizuar kategoritë me serverin…</p>
+      ) : null}
+      {!taxonomyUsesApiIds ? (
+        <p className="text-xs text-amber-800 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2">
+          Kategoritë u ngarkuan nga lista lokale — serveri do t&apos;i sinkronizojë gjatë ruajtjes.
+        </p>
+      ) : null}
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label>{labels?.directoryCategory ?? c.directoryCategory} *</Label>
+          <select
                 className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
                 value={
                   taxonomyUsesApiIds
                     ? (values.directory_category_id ?? "")
                     : (values.directory_category_slug ?? "")
                 }
-                required
+                required={false}
                 onChange={(e) => {
                   if (taxonomyUsesApiIds) {
                     const directory_category_id = Number(e.target.value) || null;
@@ -364,7 +412,7 @@ export function ShopEditForm({
                     ? (values.directory_subcategory_id ?? "")
                     : (values.directory_subcategory_slug ?? "")
                 }
-                required
+                required={false}
                 onChange={(e) => {
                   if (taxonomyUsesApiIds) {
                     const directory_subcategory_id = Number(e.target.value) || null;
@@ -394,8 +442,6 @@ export function ShopEditForm({
               </select>
             </div>
           </div>
-        </>
-      )}
 
       <ShopSocialUrlFields
         values={{
@@ -411,15 +457,15 @@ export function ShopEditForm({
       <div className="grid sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label>{c.contactName}</Label>
-          <Input value={values.contact_name} onChange={(e) => setField("contact_name", e.target.value)} required />
+          <Input value={values.contact_name} onChange={(e) => setField("contact_name", e.target.value)} />
         </div>
         <div className="space-y-1.5">
           <Label>{c.phone}</Label>
-          <Input value={values.phone} onChange={(e) => setField("phone", e.target.value)} required />
+          <Input value={values.phone} onChange={(e) => setField("phone", e.target.value)} />
         </div>
         <div className="space-y-1.5 sm:col-span-2">
           <Label>{c.email}</Label>
-          <Input type="email" value={values.email} onChange={(e) => setField("email", e.target.value)} required />
+          <Input type="email" value={values.email} onChange={(e) => setField("email", e.target.value)} />
         </div>
       </div>
 
@@ -450,12 +496,10 @@ export function ShopEditForm({
         </div>
       ) : null}
 
-      {submitError ? (
-        <p className="text-sm text-red-600 rounded-lg border border-red-100 bg-red-50 px-3 py-2">{submitError}</p>
-      ) : null}
+      </div>
 
-      <div className="flex flex-wrap gap-2 pt-2 sticky bottom-0 bg-white border-t border-gray-100 py-3">
-        <Button type="submit" disabled={saving || !canSubmit} className="min-h-10">
+      <div className="flex flex-wrap gap-2 pt-3 mt-3 border-t border-gray-100 shrink-0 bg-white">
+        <Button type="submit" disabled={saving} className="min-h-10">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saveLabel}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel} disabled={saving} className="min-h-10">

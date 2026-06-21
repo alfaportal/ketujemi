@@ -39,11 +39,16 @@ function authHeaders(): HeadersInit {
   };
 }
 
-async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
-  const res = await fetchWithTimeout(`${BASE}${path}`, {
-    ...opts,
-    headers: { ...authHeaders(), ...(opts.headers ?? {}) },
-  });
+async function request<T>(path: string, opts: RequestInit & { timeoutMs?: number } = {}): Promise<T> {
+  const { timeoutMs, ...fetchOpts } = opts;
+  const res = await fetchWithTimeout(
+    `${BASE}${path}`,
+    {
+      ...fetchOpts,
+      headers: { ...authHeaders(), ...(fetchOpts.headers ?? {}) },
+    },
+    timeoutMs,
+  );
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     const errBody = body as { error?: string; message?: string; details?: string[]; detail?: string };
@@ -670,6 +675,7 @@ export function createAdminShop(data: Record<string, unknown>) {
   return request<{ ok: boolean; shop_id: number; application_id: number }>("/shops", {
     method: "POST",
     body: JSON.stringify(data),
+    timeoutMs: 60_000,
   });
 }
 

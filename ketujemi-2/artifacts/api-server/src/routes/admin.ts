@@ -1883,8 +1883,6 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
     if (countryErr) errors.push(countryErr);
     const cityErr = requiredString(body.city, "Qyteti");
     if (cityErr) errors.push(cityErr);
-    const regionErr = requiredString(body.region, "Rajoni/Lagja");
-    if (regionErr) errors.push(regionErr);
     const addressErr = requiredString(body.address, "Adresa");
     if (addressErr) errors.push(addressErr);
     const contactErr = requiredString(body.contact_name, "Emri i kontaktit");
@@ -1923,7 +1921,7 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
     }
 
     const categoryLabel = trimOrNull(body.category) ?? "Dyqan";
-    const directoryFields = await resolveDirectoryFieldsWithEnsure(
+    let directoryFields = await resolveDirectoryFieldsWithEnsure(
       pool,
       shopDirectorySeed,
       {
@@ -1936,7 +1934,20 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
       },
     );
 
-    if (!directoryFields.directory_category_id || !directoryFields.directory_subcategory_id) {
+    if (
+      (!directoryFields.directory_category_id || !directoryFields.directory_subcategory_id) &&
+      directoryCategorySlug &&
+      directorySubcategorySlug
+    ) {
+      directoryFields = {
+        directory_category_slug: directoryCategorySlug,
+        directory_subcategory_slug: directorySubcategorySlug,
+        directory_category_id: directoryFields.directory_category_id,
+        directory_subcategory_id: directoryFields.directory_subcategory_id,
+      };
+    }
+
+    if (!directoryFields.directory_category_slug || !directoryFields.directory_subcategory_slug) {
       res.status(400).json({
         error: "VALIDATION",
         message: "Kategoritë e dyqanit nuk u zgjidhën. Provoni përsëri ose kontrolloni serverin.",
@@ -1956,7 +1967,7 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
       directory_subcategory_id: directoryFields.directory_subcategory_id,
       country: String(body.country).trim(),
       city: String(body.city).trim(),
-      region: String(body.region).trim(),
+      region: trimOrNull(body.region) ?? String(body.city).trim() || "—",
       address: String(body.address).trim(),
       latitude: parseLatitude(body.latitude),
       longitude: parseLongitude(body.longitude),

@@ -490,7 +490,7 @@ export default function AdminShops() {
       )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
+        <DialogContent className="max-w-2xl max-h-[92vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>Shto dyqan të ri</DialogTitle>
           </DialogHeader>
@@ -513,7 +513,7 @@ export default function AdminShops() {
       </Dialog>
 
       <Dialog open={!!editRow} onOpenChange={(open) => !open && setEditRow(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
+        <DialogContent className="max-w-2xl max-h-[92vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>Edito dyqanin — {editRow?.shop_name}</DialogTitle>
           </DialogHeader>
