@@ -22,6 +22,7 @@ import { ShopDirectoryCard, type ShopDirectoryListItem } from "@/components/shop
 import { useShopDirectoryCopy } from "@/lib/shop-directory-i18n";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { translateCategory } from "@/lib/category-translations";
+import { isRootCategory, sortRootCategories } from "@/lib/parent-category-slugs";
 import { prefetchRoute } from "@/lib/route-prefetch";
 import { applyPageMeta } from "@/lib/page-meta";
 
@@ -143,6 +144,10 @@ export default function Listings() {
 
   const { data, isLoading } = useGetListings(queryParams);
   const { data: categories } = useGetCategories();
+  const rootCategories = useMemo(
+    () => sortRootCategories((categories ?? []).filter((cat) => isRootCategory(cat))),
+    [categories],
+  );
 
   const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1;
 
@@ -418,7 +423,7 @@ export default function Listings() {
                   </SelectTrigger>
                   <SelectContent className="!max-h-[300px]">
                     <SelectItem value="all">{t.all}</SelectItem>
-                    {categories?.filter((cat) => !cat.parent_id).map((cat) => (
+                    {rootCategories.map((cat) => (
                       <SelectItem key={cat.id} value={String(cat.id)}>
                         {translateCategory(cat.name, locale)}
                       </SelectItem>

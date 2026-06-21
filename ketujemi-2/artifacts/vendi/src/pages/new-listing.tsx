@@ -415,10 +415,7 @@ export default function NewListing() {
   const brandCats = (allCategories ?? []).filter(
     (c: { parent_id?: number | null }) => Number(c.parent_id) === Number(bodyCatId) && Number(bodyCatId) > 0,
   );
-  const showManualSubcategoryPicker =
-    subCats.length > 1 && !bodyCatId && (isAdminListingMode || watchTitle.trim().length >= 5);
-  const showSubcategoryTitleHint =
-    subCats.length > 1 && !bodyCatId && !isAdminListingMode && watchTitle.trim().length < 5;
+  const showSubcategoryField = subCats.length > 1;
   const catEngine = useMemo(
     () => categoryEngine((allCategories ?? []) as { id: number; name: string; slug?: string | null; parent_id?: number | null }[]),
     [allCategories],
@@ -489,6 +486,32 @@ export default function NewListing() {
     form.setValue("brand_category_id", 0);
   }, [bodyCatId, parentCatId, form]);
 
+  /** Pas kategorisë kryesore: vendos automatikisht nënkategori kur ka 0 ose 1 fëmijë. */
+  useEffect(() => {
+    const parentId = Number(parentCatId);
+    if (!parentId || !allCategories?.length) return;
+    if (skipCategoryCascadeRef.current) return;
+
+    const children = (allCategories ?? []).filter(
+      (c: { parent_id?: number | null }) => Number(c.parent_id) === parentId,
+    );
+    const currentCatId = Number(form.getValues("category_id"));
+
+    if (children.length === 0) {
+      if (currentCatId !== parentId) {
+        form.setValue("category_id", parentId, { shouldDirty: true });
+      }
+      return;
+    }
+
+    if (children.length === 1) {
+      const onlyId = children[0]!.id;
+      if (currentCatId !== onlyId) {
+        form.setValue("category_id", onlyId, { shouldDirty: true });
+      }
+    }
+  }, [parentCatId, allCategories, form]);
+
   const suggestLang = listingLang;
 
   useEffect(() => {
@@ -501,12 +524,6 @@ export default function NewListing() {
       (c: { parent_id?: number | null }) => Number(c.parent_id) === parentId,
     );
     if (children.length === 0) {
-      form.setValue("category_id", parentId);
-      return;
-    }
-
-    if (isAdminListingMode && children.length === 1 && !Number(form.getValues("category_id"))) {
-      form.setValue("category_id", children[0]!.id, { shouldDirty: true });
       return;
     }
 
@@ -1645,7 +1662,7 @@ export default function NewListing() {
               adminPostMode={isAdminListingMode}
             />
 
-            {/* ── 2. Category ── */}
+            {/* ── 2. Category (kategori → nënkategori → marka) ── */}
             <Section title={t.mainCategory} icon={ChevronRight}>
               <FormField
                 control={form.control}
@@ -1684,7 +1701,7 @@ export default function NewListing() {
                         }`}
                       </p>
                     )}
-                    {showManualSubcategoryPicker ? (
+                    {showSubcategoryField ? (
                 <FormField
                   control={form.control}
                   name="category_id"
@@ -1715,16 +1732,6 @@ export default function NewListing() {
                   )}
                 />
               ) : null}
-                    {showSubcategoryTitleHint ? (
-                      <p className="text-sm mt-1 text-amber-700" role="status">
-                        {t.subcategoryTitleMinHint}
-                      </p>
-                    ) : null}
-                    {subCats.length === 1 && !bodyCatId && (
-                      <p className="text-sm mt-1 text-amber-700" role="status">
-                        {t.subcategoryAutoSetting}
-                      </p>
-                    )}
                   </FormItem>
                 )}
               />
