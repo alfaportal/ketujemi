@@ -37,6 +37,7 @@ import {
 } from "@/lib/shop-directory-taxonomy";
 import {
   fetchShopDirectoryTaxonomy,
+  staticShopDirectoryTaxonomy,
   type ShopDirectoryTaxonomyCategory,
 } from "@/lib/shop-directory-api";
 import { Loader2, Plus, RefreshCw, Store } from "lucide-react";
@@ -113,12 +114,15 @@ export default function AdminShops() {
   }, []);
 
   function openCreateShop() {
-    const cat = taxonomy[0];
+    const source = taxonomy.length > 0 ? taxonomy : staticShopDirectoryTaxonomy();
+    const cat = source[0];
     const sub = cat?.subcategories[0];
     setCreateInitial({
       ...BLANK_SHOP_CREATE,
-      directory_category_id: cat?.id ?? null,
-      directory_subcategory_id: sub?.id ?? null,
+      directory_category_id: cat?.id && cat.id > 0 ? cat.id : null,
+      directory_subcategory_id: sub?.id && sub.id > 0 ? sub.id : null,
+      directory_category_slug: cat?.slug ?? null,
+      directory_subcategory_slug: sub?.slug ?? null,
     });
     setCreateOpen(true);
   }

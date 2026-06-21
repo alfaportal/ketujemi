@@ -1,4 +1,10 @@
-import { db, shopDirectoryCategoriesTable, shopDirectorySubcategoriesTable } from "@workspace/db";
+import {
+  db,
+  ensureShopDirectoryTaxonomy,
+  shopDirectoryCategoriesTable,
+  shopDirectorySubcategoriesTable,
+  type ShopDirectorySeedCategory,
+} from "@workspace/db";
 import { and, eq } from "drizzle-orm";
 import {
   resolveDirectoryCategorySlug,
@@ -126,5 +132,59 @@ export async function resolveDirectoryFields(
     directory_subcategory_slug: directorySubcategorySlug,
     directory_category_id: directoryCategoryId,
     directory_subcategory_id: directorySubcategoryId,
+  };
+}
+
+/** Seed taxonomy if needed, then resolve IDs — with raw SQL fallback when Drizzle lookup fails. */
+export async function resolveDirectoryFieldsWithEnsure(
+  pool: { query: <T = unknown>(text: string, params?: unknown[]) => Promise<{ rows: T[] }> },
+  seed: ShopDirectorySeedCategory[],
+  input: DirectoryPatchInput,
+  existing?: Parameters<typeof resolveDirectoryFields>[1],
+): Promise<Awaited<ReturnType<typeof resolveDirectoryFields>>> {
+  try {
+    await ensureShopDirectoryTaxonomy(pool, seed);
+  } catch {
+    /* seed may fail on first deploy — still try slug lookup below */
+  }
+
+  let resolved = await resolveDirectoryFields(input, existing);
+  if (resolved.directory_category_id && resolved.directory_subcategory_id) {
+    return resolved;
+  }
+
+  const catSlug =
+    (typeof input.directory_category_slug === "string" ? input.directory_category_slug.trim() : null) ||
+    resolved.directory_category_slug;
+  const subSlug =
+    (typeof input.directory_subcategory_slug === "string" ? input.directory_subcategory_slug.trim() : null) ||
+    resolved.directory_subcategory_slug;
+
+  if (!catSlug || !subSlug) return resolved;
+
+  try {
+    await ensureShopDirectoryTaxonomy(pool, seed);
+  } catch {
+    /* ignore */
+  }
+
+  const catRes = await pool.query<{ id: number; slug: string }>(
+    `SELECT id, slug FROM shop_directory_categories WHERE slug = $1 LIMIT 1`,
+    [catSlug],
+  );
+  const catId = catRes.rows[0]?.id;
+  if (!catId) return resolved;
+
+  const subRes = await pool.query<{ id: number; slug: string }>(
+    `SELECT id, slug FROM shop_directory_subcategories WHERE category_id = $1 AND slug = $2 LIMIT 1`,
+    [catId, subSlug],
+  );
+  const subId = subRes.rows[0]?.id;
+
+  return {
+    directory_category_slug: catSlug,
+    directory_subcategory_slug: subSlug,
+    directory_category_id: catId,
+    directory_subcategory_id: subId ?? null,
   };
 }

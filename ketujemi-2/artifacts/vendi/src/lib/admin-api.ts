@@ -46,8 +46,14 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    const errBody = body as { error?: string; message?: string };
-    throw new Error(errBody.message ?? errBody.error ?? `HTTP ${res.status}`);
+    const errBody = body as { error?: string; message?: string; details?: string[]; detail?: string };
+    throw new Error(
+      errBody.message ??
+        errBody.details?.[0] ??
+        errBody.detail ??
+        errBody.error ??
+        `HTTP ${res.status}`,
+    );
   }
   return res.json() as Promise<T>;
 }

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useShopFormCopy } from "@/lib/shop-application-i18n";
 import { citiesForShopCountry } from "@/lib/shop-application-locations";
-import { fetchShopDirectoryTaxonomy, isApiShopDirectoryTaxonomy, type ShopDirectoryTaxonomyCategory } from "@/lib/shop-directory-api";
+import { fetchShopDirectoryTaxonomy, isApiShopDirectoryTaxonomy, staticShopDirectoryTaxonomy, type ShopDirectoryTaxonomyCategory } from "@/lib/shop-directory-api";
 import {
   translateDirectoryCategory,
   translateDirectorySubcategory,
@@ -80,8 +80,9 @@ export function ShopEditForm({
   const c = useShopFormCopy();
   const { uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
-  const [taxonomy, setTaxonomy] = useState<ShopDirectoryTaxonomyCategory[]>([]);
+  const [taxonomy, setTaxonomy] = useState<ShopDirectoryTaxonomyCategory[]>(staticShopDirectoryTaxonomy);
   const [taxonomyLoading, setTaxonomyLoading] = useState(true);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const taxonomyUsesApiIds = isApiShopDirectoryTaxonomy(taxonomy);
 
   const [values, setValues] = useState(initial);
@@ -154,7 +155,11 @@ export function ShopEditForm({
     e.preventDefault();
     const hasApiIds = !!(values.directory_category_id && values.directory_subcategory_id);
     const hasSlugs = !!(values.directory_category_slug && values.directory_subcategory_slug);
-    if (!hasApiIds && !hasSlugs) return;
+    if (!hasApiIds && !hasSlugs) {
+      setSubmitError("Zgjidhni kategorinë dhe nënkategorinë e dyqanit.");
+      return;
+    }
+    setSubmitError(null);
 
     const dirCat =
       activeDirectoryCategory ??
@@ -191,6 +196,10 @@ export function ShopEditForm({
 
   const saveLabel = labels?.save ?? c.submitBtn;
   const cancelLabel = labels?.cancel ?? c.aiCancelBtn;
+  const hasDirectorySelection =
+    !!(values.directory_category_id && values.directory_subcategory_id) ||
+    !!(values.directory_category_slug && values.directory_subcategory_slug);
+  const canSubmit = hasDirectorySelection;
 
   return (
     <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
@@ -441,8 +450,12 @@ export function ShopEditForm({
         </div>
       ) : null}
 
+      {submitError ? (
+        <p className="text-sm text-red-600 rounded-lg border border-red-100 bg-red-50 px-3 py-2">{submitError}</p>
+      ) : null}
+
       <div className="flex flex-wrap gap-2 pt-2 sticky bottom-0 bg-white border-t border-gray-100 py-3">
-        <Button type="submit" disabled={saving} className="min-h-10">
+        <Button type="submit" disabled={saving || !canSubmit} className="min-h-10">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saveLabel}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel} disabled={saving} className="min-h-10">

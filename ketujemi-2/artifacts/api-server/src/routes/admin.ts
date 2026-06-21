@@ -78,7 +78,7 @@ import { scanListingImagesForProhibitedContent } from "../lib/listing-image-proh
 import { purgeInvalidListingImages } from "../lib/purge-invalid-listing-images.js";
 import { pruneListingImagesAndNotifyOwner } from "../lib/listing-image-prune.js";
 import { deleteShopCascade } from "../lib/delete-shop-cascade";
-import { resolveDirectoryFields } from "../lib/shop-directory-patch";
+import { resolveDirectoryFields, resolveDirectoryFieldsWithEnsure } from "../lib/shop-directory-patch";
 import {
   buildApplicationFieldPatch,
   buildShopFieldPatch,
@@ -1852,17 +1852,13 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
     const { SHOP_DIRECTORY_CATEGORY_IMAGE_URLS } = await import(
       "../../../../lib/shop-directory-category-images.js"
     );
-    const { ensureShopDirectoryTaxonomy } = await import("@workspace/db");
-    await ensureShopDirectoryTaxonomy(
-      pool,
-      SHOP_DIRECTORY_CATEGORIES.map((cat) => ({
-        slug: cat.slug,
-        emoji: cat.emoji,
-        nameSq: cat.nameSq,
-        imageUrl: SHOP_DIRECTORY_CATEGORY_IMAGE_URLS[cat.slug],
-        subcategories: cat.subcategories,
-      })),
-    );
+    const shopDirectorySeed = SHOP_DIRECTORY_CATEGORIES.map((cat) => ({
+      slug: cat.slug,
+      emoji: cat.emoji,
+      nameSq: cat.nameSq,
+      imageUrl: SHOP_DIRECTORY_CATEGORY_IMAGE_URLS[cat.slug],
+      subcategories: cat.subcategories,
+    }));
 
     const body = req.body as Record<string, unknown>;
     const trimOrNull = (v: unknown): string | null => {
@@ -1927,14 +1923,18 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
     }
 
     const categoryLabel = trimOrNull(body.category) ?? "Dyqan";
-    const directoryFields = await resolveDirectoryFields({
-      directory_category_id: hasDirectoryIds ? directoryCategoryId : null,
-      directory_subcategory_id: hasDirectoryIds ? directorySubcategoryId : null,
-      directory_category_slug: directoryCategorySlug,
-      directory_subcategory_slug: directorySubcategorySlug,
-      category: categoryLabel,
-      category_id: null,
-    });
+    const directoryFields = await resolveDirectoryFieldsWithEnsure(
+      pool,
+      shopDirectorySeed,
+      {
+        directory_category_id: hasDirectoryIds ? directoryCategoryId : null,
+        directory_subcategory_id: hasDirectoryIds ? directorySubcategoryId : null,
+        directory_category_slug: directoryCategorySlug,
+        directory_subcategory_slug: directorySubcategorySlug,
+        category: categoryLabel,
+        category_id: null,
+      },
+    );
 
     if (!directoryFields.directory_category_id || !directoryFields.directory_subcategory_id) {
       res.status(400).json({
@@ -2001,7 +2001,12 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
     res.status(201).json({ ok: true, shop_id: shop.id, application_id: application.id });
   } catch (err) {
     req.log.error({ err }, "Admin create shop error");
-    res.status(500).json({ error: "Internal server error" });
+    const detail = err instanceof Error ? err.message : "Internal server error";
+    res.status(500).json({
+      error: "Internal server error",
+      message: "Dyqani nuk u ruajt. Kontrolloni DATABASE_URL dhe rifreskoni faqen.",
+      detail,
+    });
   }
 });
 
