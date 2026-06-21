@@ -1967,7 +1967,7 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
       directory_subcategory_id: directoryFields.directory_subcategory_id,
       country: String(body.country).trim(),
       city: String(body.city).trim(),
-      region: trimOrNull(body.region) ?? String(body.city).trim() || "—",
+      region: trimOrNull(body.region) ?? (String(body.city).trim() || "—"),
       address: String(body.address).trim(),
       latitude: parseLatitude(body.latitude),
       longitude: parseLongitude(body.longitude),
