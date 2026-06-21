@@ -98,7 +98,7 @@ import {
   resolveListingCategoryToLeaf,
 } from "../lib/listing-category-resolve.js";
 import { expiresAtAfterListingLifetime } from "../lib/listing-lifetime.js";
-import { isListingPubliclyVisible, activeListingSqlCondition } from "../lib/listing-visibility.js";
+import { isListingPubliclyVisible, activeListingSqlCondition, marketplaceListingSqlCondition } from "../lib/listing-visibility.js";
 import { postNewListingToFacebook } from "../services/socialMedia.js";
 import { markListingFbPosted } from "../lib/facebook-scheduled-post-job";
 import { logger } from "../lib/logger";
@@ -148,6 +148,10 @@ async function repairLegacyListingFields(
 // ─── Filter: only active (non-expired) listings ───────────────────────────────
 function activeCondition() {
   return activeListingSqlCondition();
+}
+
+function marketplaceCondition() {
+  return marketplaceListingSqlCondition();
 }
 
 type ListingRow = typeof listingsTable.$inferSelect;
@@ -243,7 +247,7 @@ router.get("/listings", searchLimiter, async (req, res) => {
       ? motor_transmission.split(",").map((s) => s.trim()).filter(Boolean)
       : [];
 
-  const conditions = [activeCondition()];
+  const conditions = [sellerUserId ? activeCondition() : marketplaceCondition()];
   if (sellerUserId != null && Number.isFinite(sellerUserId) && sellerUserId > 0) {
     conditions.push(eq(listingsTable.user_id, sellerUserId));
   }
@@ -883,7 +887,7 @@ router.get("/listings/top", async (req, res) => {
         and(
           eq(listingsTable.is_top, true),
           gt(listingsTable.top_until, now),
-          activeCondition(),
+          marketplaceCondition(),
         ),
       )
       .orderBy(desc(listingsTable.top_until), desc(listingsTable.listed_at));
@@ -913,7 +917,7 @@ router.get("/listings/featured", async (req, res) => {
     const rows = await db
       .select()
       .from(listingsTable)
-      .where(and(eq(listingsTable.is_featured, true), activeCondition()))
+      .where(and(eq(listingsTable.is_featured, true), marketplaceCondition()))
       .orderBy(...listingFeedOrderBy)
       .limit(8);
 
@@ -942,7 +946,7 @@ router.get("/listings/recent", async (req, res) => {
     const rows = await db
       .select()
       .from(listingsTable)
-      .where(activeCondition())
+      .where(marketplaceCondition())
       .orderBy(...listingFeedOrderBy)
       .limit(12);
 
@@ -973,23 +977,23 @@ router.get("/listings/stats", async (req, res) => {
   const categoryId = Number.isFinite(categoryIdRaw) && categoryIdRaw > 0 ? categoryIdRaw : null;
 
   const [totalRes, catRes, featuredRes, todayRes, locationRes, onlineUsersRes] = await Promise.all([
-    db.select({ total: count() }).from(listingsTable).where(activeCondition()),
+    db.select({ total: count() }).from(listingsTable).where(marketplaceCondition()),
     db.select({ total: count() }).from(categoriesTable),
     db
       .select({ total: count() })
       .from(listingsTable)
-      .where(and(eq(listingsTable.is_featured, true), activeCondition())),
+      .where(and(eq(listingsTable.is_featured, true), marketplaceCondition())),
     db
       .select({ total: count() })
       .from(listingsTable)
-      .where(and(gte(listingsTable.created_at, today), activeCondition())),
+      .where(and(gte(listingsTable.created_at, today), marketplaceCondition())),
     db
       .select({
         location: listingsTable.location,
         count: sql<number>`cast(count(*) as int)`,
       })
       .from(listingsTable)
-      .where(activeCondition())
+      .where(marketplaceCondition())
       .groupBy(listingsTable.location)
       .orderBy(desc(sql`count(*)`))
       .limit(5),
@@ -1003,7 +1007,7 @@ router.get("/listings/stats", async (req, res) => {
       const [catCount] = await db
         .select({ total: count() })
         .from(listingsTable)
-        .where(and(activeCondition(), inArray(listingsTable.category_id, treeIds)));
+        .where(and(marketplaceCondition(), inArray(listingsTable.category_id, treeIds)));
       category_listings = catCount?.total ?? 0;
     }
   }

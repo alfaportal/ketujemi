@@ -2,14 +2,47 @@ import { db, usersTable, type User } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 import { getAdminEmail } from "./admin-monitor-email.js";
 import { isPlatformAdminUser, PLATFORM_OPERATOR_EMAIL } from "./platform-admin.js";
+function platformAdminEmail(): string {
+  return getAdminEmail()?.trim().toLowerCase() || PLATFORM_OPERATOR_EMAIL.toLowerCase();
+}
+
 export async function getPlatformAdminUser(): Promise<User | null> {
-  const email = (getAdminEmail()?.trim().toLowerCase() || PLATFORM_OPERATOR_EMAIL.toLowerCase());
+  const email = platformAdminEmail();
   const [user] = await db
     .select()
     .from(usersTable)
     .where(sql`lower(trim(${usersTable.email})) = ${email}`)
     .limit(1);
   return user ?? null;
+}
+
+/** After empty DB reset — auto-create operator row so admin can post shops/listings. */
+export async function getOrEnsurePlatformAdminUser(): Promise<User> {
+  const existing = await getPlatformAdminUser();
+  if (existing) return existing;
+
+  const email = platformAdminEmail();
+  const [inserted] = await db
+    .insert(usersTable)
+    .values({
+      email,
+      display_name: "KetuJemi Admin",
+      identity_verified: true,
+      identity_verified_via: "platform",
+    })
+    .returning();
+
+  if (inserted) return inserted;
+
+  const [row] = await db
+    .select()
+    .from(usersTable)
+    .where(sql`lower(trim(${usersTable.email})) = ${email}`)
+    .limit(1);
+  if (!row) {
+    throw new Error("PLATFORM_ADMIN_USER_ENSURE_FAILED");
+  }
+  return row;
 }
 
 export function normalizeSubmittedSellerPhone(phone: string): string {

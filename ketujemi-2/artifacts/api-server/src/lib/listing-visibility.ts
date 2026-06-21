@@ -44,3 +44,8 @@ export function activeListingSqlCondition(now = new Date()) {
     or(eq(listingsTable.moderation_status, "approved"), isNull(listingsTable.moderation_status)),
   );
 }
+
+/** Public marketplace feed — excludes listings tied to a shop (those live on /dyqani/:id). */
+export function marketplaceListingSqlCondition(now = new Date()) {
+  return and(activeListingSqlCondition(now), isNull(listingsTable.shop_id));
+}

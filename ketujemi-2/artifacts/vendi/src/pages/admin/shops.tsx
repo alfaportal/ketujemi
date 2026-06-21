@@ -90,6 +90,7 @@ export default function AdminShops() {
   const [editSaving, setEditSaving] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [createSaving, setCreateSaving] = useState(false);
+  const [createInitial, setCreateInitial] = useState<ShopEditFormValues>(BLANK_SHOP_CREATE);
   const [deleteRow, setDeleteRow] = useState<AdminShopApplication | null>(null);
   const { data: categories } = useGetCategories();
 
@@ -110,6 +111,17 @@ export default function AdminShops() {
   useEffect(() => {
     void fetchShopDirectoryTaxonomy().then(setTaxonomy);
   }, []);
+
+  function openCreateShop() {
+    const cat = taxonomy[0];
+    const sub = cat?.subcategories[0];
+    setCreateInitial({
+      ...BLANK_SHOP_CREATE,
+      directory_category_id: cat?.id ?? null,
+      directory_subcategory_id: sub?.id ?? null,
+    });
+    setCreateOpen(true);
+  }
 
   function defaultDirectoryDraft(row: AdminShopApplication): DirectoryDraft {
     const listingSlug = row.category_id ? categorySlugById.get(row.category_id) : null;
@@ -177,12 +189,13 @@ export default function AdminShops() {
   async function onCreateShop(values: ShopEditFormValues) {
     setCreateSaving(true);
     try {
-      await createAdminShop(values);
+      const result = await createAdminShop(values);
       setCreateOpen(false);
-      setToast("Dyqani u krijua.");
+      setToast(`Dyqani u krijua (#${result.shop_id}). Shfaqet në /dyqanet.`);
       await load();
-    } catch {
-      setToast("Gabim gjatë krijimit të dyqanit.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Gabim gjatë krijimit të dyqanit.";
+      setToast(msg);
     } finally {
       setCreateSaving(false);
     }
@@ -256,7 +269,7 @@ export default function AdminShops() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setCreateOpen(true)}
+            onClick={openCreateShop}
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold min-h-10"
           >
             <Plus size={16} /> Dyqan i ri
@@ -267,7 +280,20 @@ export default function AdminShops() {
         </div>
       </div>
 
-      {toast ? <p className="text-sm text-gray-700 bg-gray-100 rounded-lg px-3 py-2">{toast}</p> : null}
+      {toast ? (
+        <p className="text-sm text-gray-700 bg-gray-100 rounded-lg px-3 py-2" role="status">
+          {toast}
+        </p>
+      ) : null}
+
+      <p className="text-sm text-gray-500">
+        Dyqanet janë veçmas nga shpalljet e thjeshta: shfaqen vetëm në{" "}
+        <a href="/dyqanet" target="_blank" rel="noreferrer" className="text-blue-600 underline">
+          /dyqanet
+        </a>
+        . Shpalljet e dyqanit shtohen këtu me «Shpallje» dhe shfaqen te faqja e dyqanit — jo te
+        marketplace i përgjithshëm.
+      </p>
 
       <div className="flex gap-3 text-sm">
         <span className="px-3 py-1 rounded-full bg-amber-100">Në pritje: {stats.pending}</span>
@@ -465,7 +491,8 @@ export default function AdminShops() {
             <DialogTitle>Shto dyqan të ri</DialogTitle>
           </DialogHeader>
           <ShopEditForm
-            initial={BLANK_SHOP_CREATE}
+            key={createOpen ? `create-${createInitial.directory_category_id ?? 0}` : "closed"}
+            initial={createInitial}
             onSubmit={onCreateShop}
             onCancel={() => setCreateOpen(false)}
             saving={createSaving}

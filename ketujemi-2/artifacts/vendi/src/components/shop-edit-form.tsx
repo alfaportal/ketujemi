@@ -105,6 +105,9 @@ export function ShopEditForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!values.directory_category_id || !values.directory_subcategory_id) {
+      return;
+    }
     const dirCat = taxonomy.find((t) => t.id === values.directory_category_id);
     const sub = subcategories.find((s) => s.id === values.directory_subcategory_id);
     const catDef = dirCat ? SHOP_DIRECTORY_CATEGORIES.find((c) => c.slug === dirCat.slug) : undefined;
@@ -235,6 +238,7 @@ export function ShopEditForm({
             <select
               className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
               value={values.directory_category_id ?? ""}
+              required
               onChange={(e) => {
                 const directory_category_id = Number(e.target.value) || null;
                 const cat = taxonomy.find((t) => t.id === directory_category_id);
@@ -264,6 +268,7 @@ export function ShopEditForm({
             <select
               className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
               value={values.directory_subcategory_id ?? ""}
+              required
               onChange={(e) => setField("directory_subcategory_id", Number(e.target.value) || null)}
             >
               {subcategories.map((sub) => (

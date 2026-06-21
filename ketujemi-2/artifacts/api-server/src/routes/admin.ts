@@ -13,7 +13,7 @@ import {
   shopDirectorySubcategoriesTable,
   shopsTable,
 } from "@workspace/db";
-import { eq, desc, sql, count, gte, and, inArray } from "drizzle-orm";
+import { eq, desc, sql, count, gte, and, inArray, isNull } from "drizzle-orm";
 import { isVipBusinessActive } from "../lib/business-rules";
 import {
   generatePartnerActivationCode,
@@ -28,7 +28,7 @@ import {
 import { syncPartnerStatusToUser } from "../lib/partner-activate";
 import {
   descriptionForAdminOnBehalf,
-  getPlatformAdminUser,
+  getOrEnsurePlatformAdminUser,
   sellerContactForAdminOnBehalf,
 } from "../lib/admin-listing-on-behalf.js";
 import {
@@ -382,6 +382,7 @@ router.get("/admin/listings", requireAdmin, async (req, res) => {
     let rows = await db
       .select()
       .from(listingsTable)
+      .where(isNull(listingsTable.shop_id))
       .orderBy(desc(listingsTable.created_at));
 
     if (search) {
@@ -567,11 +568,7 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
       return;
     }
 
-    const adminUser = await getPlatformAdminUser();
-    if (!adminUser) {
-      res.status(503).json({ error: "PLATFORM_ADMIN_USER_NOT_FOUND" });
-      return;
-    }
+    const adminUser = await getOrEnsurePlatformAdminUser();
 
     const sellerContact = sellerContactForAdminOnBehalf({
       seller_name: normalizePersonName(parsed.data.seller_name),
@@ -1839,11 +1836,33 @@ router.post("/admin/shop-applications/:id/reject", requireAdmin, async (req, res
 
 router.post("/admin/shops", requireAdmin, async (req, res) => {
   try {
-    const adminUser = await getPlatformAdminUser();
-    if (!adminUser) {
-      res.status(503).json({ error: "PLATFORM_ADMIN_USER_NOT_FOUND" });
+    let adminUser: Awaited<ReturnType<typeof getOrEnsurePlatformAdminUser>>;
+    try {
+      adminUser = await getOrEnsurePlatformAdminUser();
+    } catch {
+      res.status(503).json({
+        error: "PLATFORM_ADMIN_USER_NOT_FOUND",
+        message: "Nuk u krijua llogaria e operatorit. Kontrolloni EMAIL_ADMIN në server.",
+      });
       return;
     }
+
+    const { pool } = await import("@workspace/db");
+    const { SHOP_DIRECTORY_CATEGORIES } = await import("../../../../lib/shop-directory-taxonomy.js");
+    const { SHOP_DIRECTORY_CATEGORY_IMAGE_URLS } = await import(
+      "../../../../lib/shop-directory-category-images.js"
+    );
+    const { ensureShopDirectoryTaxonomy } = await import("@workspace/db");
+    await ensureShopDirectoryTaxonomy(
+      pool,
+      SHOP_DIRECTORY_CATEGORIES.map((cat) => ({
+        slug: cat.slug,
+        emoji: cat.emoji,
+        nameSq: cat.nameSq,
+        imageUrl: SHOP_DIRECTORY_CATEGORY_IMAGE_URLS[cat.slug],
+        subcategories: cat.subcategories,
+      })),
+    ).catch(() => undefined);
 
     const body = req.body as Record<string, unknown>;
     const trimOrNull = (v: unknown): string | null => {
