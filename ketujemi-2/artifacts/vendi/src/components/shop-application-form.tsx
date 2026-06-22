@@ -92,8 +92,6 @@ export function ShopApplicationForm() {
   useEffect(() => {
     if (!user || contactPrefilledRef.current) return;
     contactPrefilledRef.current = true;
-    const name = user.business_name?.trim() || user.display_name?.trim();
-    if (name) setContactName(name);
     const userPhone = applicantPhoneFromUser(user);
     if (userPhone) setPhone(userPhone);
   }, [user]);
@@ -179,7 +177,7 @@ export function ShopApplicationForm() {
           latitude,
           longitude,
           ...social,
-          contact_name: contactName,
+          contact_name: c.defaultContactName,
           phone,
           email: trimmedEmail,
         }),
@@ -398,11 +396,12 @@ export function ShopApplicationForm() {
             <Label>{c.contactName} *</Label>
             <Input
               value={contactName}
-              onChange={(e) => setContactName(e.target.value)}
+              readOnly
               required
-              className="min-h-12"
-              placeholder={c.contactName}
+              className="min-h-12 bg-gray-50"
+              aria-readonly
             />
+            <p className="text-xs text-gray-500 leading-relaxed">{c.contactNameHint}</p>
           </div>
           <div className="space-y-2">
             <Label>{c.email} *</Label>

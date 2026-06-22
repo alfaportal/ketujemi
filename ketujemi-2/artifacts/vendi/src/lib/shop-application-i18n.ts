@@ -58,6 +58,7 @@ export type OpenShopFormCopy = {
   section4Title: string;
   section4Description: string;
   contactName: string;
+  contactNameHint: string;
   phone: string;
   email: string;
   emailRequired: string;
@@ -165,9 +166,9 @@ const KS: OpenShopFormCopy = {
   applyDocTitle: "Apliko për dyqan — KetuJemi.com",
   formImportant:
     "⚠️ E rëndësishme: Dyqani aktivizohet vetëm pasi të shqyrtohet kërkesa juaj brenda 24 orëve. Të dhënat mund të ndryshohen më vonë nga profili juaj.",
-  defaultContactName: "",
+  defaultContactName: "info@ketujemi.com",
   defaultContactPhone: "",
-  defaultContactEmail: "info@ketujemi.com",
+  defaultContactEmail: "",
   loginBtn: "Kyçu / Regjistrohu",
   section1Title: "Identiteti i dyqanit",
   shopName: "Emri i dyqanit",
@@ -202,12 +203,13 @@ const KS: OpenShopFormCopy = {
   section4Description:
     "Email dhe telefoni i personit që aplikon — na nevojiten për aprovim dhe për t'ju njoftuar për statusin e kërkesës.",
   contactName: "Emri i kontaktit",
+  contactNameHint: "Kërkesa dërgohet te ekipi KetuJemi në këtë adresë.",
   phone: "Nr. telefoni",
   email: "Email i aplikuesit",
   emailRequired: "Plotësoni email-in tuaj të vlefshëm.",
-  emailPlaceholder: "info@ketujemi.com",
+  emailPlaceholder: "emaili@juaj.com",
   emailWhereHint:
-    "Kjo adresë ruhet te kërkesa juaj. Ju kontaktojmë këtu për aprovim (brenda 24 orëve) dhe merrni email kur dyqani aktivizohet ose refuzohet.",
+    "Shkruani email-in tuaj personal — merrni përgjigje kur dyqani aprovohet ose refuzohet.",
   emailPlatformNotAllowed:
     "Shkruani email-in tuaj personal (Gmail, Outlook, etj.) — jo adresën e platformës KetuJemi.",
   submitBtn: "Dërgo Kërkesën për Dyqan →",
@@ -280,6 +282,7 @@ const MK: OpenShopFormCopy = {
   section4Description:
     "Е-пошта и телефон на лицето што аплицира — ни требаат за одобрување и за да ве известиме за статусот.",
   contactName: "Име на контакт",
+  contactNameHint: "Барањето се испраќа до тимот на KetuJemi на оваа адреса.",
   phone: "Телефонски број",
   email: "Е-пошта на апликантот",
   emailRequired: "Внесете важечка е-пошта.",
@@ -357,6 +360,7 @@ const MNE: OpenShopFormCopy = {
   section4Description:
     "Email i telefon osobe koja aplicira — potrebni su nam za odobrenje i obavještenje o statusu zahtjeva.",
   contactName: "Ime kontakta",
+  contactNameHint: "Zahtjev se šalje timu KetuJemi na ovu adresu.",
   phone: "Broj telefona",
   email: "Email podnosioca",
   emailRequired: "Unesite važeći email.",
@@ -434,6 +438,7 @@ const EN: OpenShopFormCopy = {
   section4Description:
     "Email and phone of the person applying — we need these to approve your shop and notify you about the request status.",
   contactName: "Contact name",
+  contactNameHint: "Your request is sent to the KetuJemi team at this address.",
   phone: "Phone number",
   email: "Applicant email",
   emailRequired: "Enter a valid email address.",
