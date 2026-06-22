@@ -77,6 +77,14 @@ ALTER TABLE shop_applications ADD COLUMN IF NOT EXISTS longitude double precisio
 ALTER TABLE shops ADD COLUMN IF NOT EXISTS views integer NOT NULL DEFAULT 0;
 `;
 
+/** FK columns need shop_directory_* tables — applied via ensureShopDirectoryTaxonomyTables on boot. */
+const DIRECTORY_FK_COLUMNS_SQL = `
+ALTER TABLE shop_applications ADD COLUMN IF NOT EXISTS directory_category_id integer;
+ALTER TABLE shop_applications ADD COLUMN IF NOT EXISTS directory_subcategory_id integer;
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS directory_category_id integer;
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS directory_subcategory_id integer;
+`;
+
 const SHOP_RATINGS_SQL = `
 CREATE TABLE IF NOT EXISTS shop_ratings (
   id serial PRIMARY KEY,
@@ -95,5 +103,6 @@ export async function ensureShopSchema(pool: pg.Pool): Promise<void> {
   await pool.query(SHOP_APPLICATIONS_SQL);
   await pool.query(SHOPS_SQL);
   await pool.query(DIRECTORY_COLUMNS_SQL);
+  await pool.query(DIRECTORY_FK_COLUMNS_SQL);
   await pool.query(SHOP_RATINGS_SQL);
 }

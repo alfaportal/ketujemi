@@ -11,7 +11,7 @@ import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxono
 
 let adminDirectorySeedCache: ShopDirectorySeedCategory[] | null = null;
 
-async function adminShopDirectorySeed(): Promise<ShopDirectorySeedCategory[]> {
+export async function adminShopDirectorySeed(): Promise<ShopDirectorySeedCategory[]> {
   if (adminDirectorySeedCache) return adminDirectorySeedCache;
   const { SHOP_DIRECTORY_CATEGORY_IMAGE_URLS } = await import(
     "../../../../lib/shop-directory-category-images.js"

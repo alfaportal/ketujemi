@@ -52,11 +52,13 @@ async function request<T>(path: string, opts: RequestInit & { timeoutMs?: number
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     const errBody = body as { error?: string; message?: string; details?: string[]; detail?: string };
+    const genericDbHint = errBody.message?.includes("DATABASE_URL");
     throw new Error(
-      errBody.message ??
-        errBody.details?.[0] ??
-        errBody.detail ??
-        errBody.error ??
+      (genericDbHint && errBody.detail) ||
+        errBody.message ||
+        errBody.details?.[0] ||
+        errBody.detail ||
+        errBody.error ||
         `HTTP ${res.status}`,
     );
   }

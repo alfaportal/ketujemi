@@ -84,6 +84,11 @@ import {
   resolveAdminShopDirectoryWithEnsure,
 } from "../lib/admin-shop-directory";
 import {
+  formatAdminShopSaveError,
+  persistAdminShopCreate,
+  type AdminShopInsertValues,
+} from "../lib/admin-shop-create";
+import {
   buildApplicationFieldPatch,
   buildShopFieldPatch,
   parseLatitude,
@@ -1834,7 +1839,7 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
     const whatsapp = normalizeShopWhatsappStored(body.whatsapp);
     const website = trimOrNull(body.website);
 
-    const shopValues = {
+    const shopValues: AdminShopInsertValues = {
       shop_name: String(body.shop_name).trim(),
       logo_url: String(body.logo_url).trim(),
       description: String(body.description).trim(),
@@ -1861,33 +1866,7 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
       admin_notes: trimOrNull(body.admin_notes),
     };
 
-    const { application, shop } = await db.transaction(async (tx) => {
-      const [application] = await tx
-        .insert(shopApplicationsTable)
-        .values({
-          user_id: adminUser.id,
-          ...shopValues,
-          status: "approved",
-        })
-        .returning();
-
-      const [shop] = await tx
-        .insert(shopsTable)
-        .values({
-          user_id: adminUser.id,
-          application_id: application.id,
-          ...shopValues,
-          is_active: true,
-        })
-        .returning();
-
-      await tx
-        .update(shopApplicationsTable)
-        .set({ shop_id: shop.id })
-        .where(eq(shopApplicationsTable.id, application.id));
-
-      return { application, shop };
-    });
+    const { application, shop } = await persistAdminShopCreate(adminUser.id, shopValues);
 
     const { scheduleShopSocialEnrich } = await import("../lib/shop-social-enrich.js");
     scheduleShopSocialEnrich(shop.id);
@@ -1895,10 +1874,10 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
     res.status(201).json({ ok: true, shop_id: shop.id, application_id: application.id });
   } catch (err) {
     req.log.error({ err }, "Admin create shop error");
-    const detail = err instanceof Error ? err.message : "Internal server error";
+    const detail = err instanceof Error ? err.message : String(err);
     res.status(500).json({
       error: "Internal server error",
-      message: "Dyqani nuk u ruajt. Kontrolloni DATABASE_URL dhe rifreskoni faqen.",
+      message: formatAdminShopSaveError(err),
       detail,
     });
   }
