@@ -20,7 +20,8 @@ import { activeShopSqlCondition, isShopPubliclyVisible } from "../lib/shop-visib
 import { backfillShopListingsForShop, shopPublicListingsCondition, resolveShopOwnerUserIds } from "../lib/shop-listing-lookup.js";
 import { sendShopApplicationEmail, sendShopRatingEmail } from "../lib/send-shop-application-email";
 import { formatListingsBatch } from "../lib/format-listings-batch";
-import { resolveDirectoryFields } from "../lib/shop-directory-patch";
+import { resolveDirectoryFieldsWithEnsure } from "../lib/shop-directory-patch";
+import { validateAdminShopDirectorySlugs } from "../lib/admin-shop-directory.js";
 import { ownerShopFieldPatch, parseLatitude, parseLongitude } from "../lib/shop-field-patch";
 import { normalizeShopWhatsappStored } from "../lib/shop-whatsapp-url";
 import { parseDeletionSurveyBody } from "../lib/deletion-feedback.js";
@@ -142,12 +143,15 @@ router.post("/shop-applications", async (req, res) => {
 
   const directoryCategoryId = Number(body.directory_category_id);
   const directorySubcategoryId = Number(body.directory_subcategory_id);
-  if (
-    !Number.isFinite(directoryCategoryId) ||
-    directoryCategoryId < 1 ||
-    !Number.isFinite(directorySubcategoryId) ||
-    directorySubcategoryId < 1
-  ) {
+  const categorySlug = trimOrNull(body.directory_category_slug);
+  const subcategorySlug = trimOrNull(body.directory_subcategory_slug);
+  const hasValidIds =
+    Number.isFinite(directoryCategoryId) &&
+    directoryCategoryId > 0 &&
+    Number.isFinite(directorySubcategoryId) &&
+    directorySubcategoryId > 0;
+  const slugErr = validateAdminShopDirectorySlugs(categorySlug, subcategorySlug);
+  if (slugErr && !hasValidIds) {
     errors.push("Zgjidhni kategorinë dhe nënkategorinë e dyqanit.");
   }
 
@@ -156,12 +160,22 @@ router.post("/shop-applications", async (req, res) => {
     return;
   }
 
-  const directoryFields = await resolveDirectoryFields({
-    directory_category_id: directoryCategoryId,
-    directory_subcategory_id: directorySubcategoryId,
+  const directoryFields = await resolveDirectoryFieldsWithEnsure(pool, SHOP_DIRECTORY_SEED, {
+    directory_category_slug: categorySlug,
+    directory_subcategory_slug: subcategorySlug,
+    directory_category_id: hasValidIds ? directoryCategoryId : null,
+    directory_subcategory_id: hasValidIds ? directorySubcategoryId : null,
     category: String(body.category).trim(),
     category_id: null,
   });
+
+  if (!directoryFields.directory_category_slug || !directoryFields.directory_subcategory_slug) {
+    res.status(400).json({
+      error: "VALIDATION",
+      message: "Zgjidhni kategorinë dhe nënkategorinë e dyqanit.",
+    });
+    return;
+  }
 
   const [row] = await db
     .insert(shopApplicationsTable)
