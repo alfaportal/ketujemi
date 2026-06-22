@@ -131,14 +131,6 @@ router.post("/shop-applications", async (req, res) => {
   if (phoneErr) errors.push(phoneErr);
   const emailErr = requiredString(body.email, "Email");
   if (emailErr) errors.push(emailErr);
-  const applicantEmail = trimOrNull(body.email)?.toLowerCase() ?? "";
-  if (
-    applicantEmail &&
-    (applicantEmail.endsWith("@ketujemi.com") ||
-      applicantEmail === "novelto22@gmail.com")
-  ) {
-    errors.push("Shkruani email-in tuaj personal — jo adresën e platformës KetuJemi.");
-  }
 
   const facebook = trimOrNull(body.facebook);
   const instagram = trimOrNull(body.instagram);

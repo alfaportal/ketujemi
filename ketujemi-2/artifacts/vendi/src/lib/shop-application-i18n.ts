@@ -167,7 +167,7 @@ const KS: OpenShopFormCopy = {
     "⚠️ E rëndësishme: Dyqani aktivizohet vetëm pasi të shqyrtohet kërkesa juaj brenda 24 orëve. Të dhënat mund të ndryshohen më vonë nga profili juaj.",
   defaultContactName: "",
   defaultContactPhone: "",
-  defaultContactEmail: "",
+  defaultContactEmail: "info@ketujemi.com",
   loginBtn: "Kyçu / Regjistrohu",
   section1Title: "Identiteti i dyqanit",
   shopName: "Emri i dyqanit",
@@ -205,7 +205,7 @@ const KS: OpenShopFormCopy = {
   phone: "Nr. telefoni",
   email: "Email i aplikuesit",
   emailRequired: "Plotësoni email-in tuaj të vlefshëm.",
-  emailPlaceholder: "emaili@juaj.com",
+  emailPlaceholder: "info@ketujemi.com",
   emailWhereHint:
     "Kjo adresë ruhet te kërkesa juaj. Ju kontaktojmë këtu për aprovim (brenda 24 orëve) dhe merrni email kur dyqani aktivizohet ose refuzohet.",
   emailPlatformNotAllowed:
