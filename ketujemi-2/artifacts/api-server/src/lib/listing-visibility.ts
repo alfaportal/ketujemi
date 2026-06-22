@@ -45,7 +45,7 @@ export function activeListingSqlCondition(now = new Date()) {
   );
 }
 
-/** Public marketplace feed — excludes listings tied to a shop (those live on /dyqani/:id). */
+/** Public marketplace feed — includes private sellers and shop listings (with shop badge on cards). */
 export function marketplaceListingSqlCondition(now = new Date()) {
-  return and(activeListingSqlCondition(now), isNull(listingsTable.shop_id));
+  return activeListingSqlCondition(now);
 }

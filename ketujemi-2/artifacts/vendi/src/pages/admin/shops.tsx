@@ -223,8 +223,7 @@ export default function AdminShops() {
         <a href="/dyqanet" target="_blank" rel="noreferrer" className="text-blue-600 underline">
           /dyqanet
         </a>
-        . Shpalljet e dyqanit shtohen këtu me «Shpallje» dhe shfaqen te faqja e dyqanit — jo te
-        marketplace i përgjithshëm.
+        . Shpalljet e dyqanit shfaqen te faqja e dyqanit dhe në Blej &amp; Shite me logo të dyqanit.
       </p>
 
       <div className="flex gap-3 text-sm">

@@ -685,6 +685,24 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
         motor_transmission: parsed.data.motor_transmission ?? null,
       })
       .returning();
+
+    if (shopId) {
+      const [shopRow] = await db
+        .select({
+          id: shopsTable.id,
+          user_id: shopsTable.user_id,
+          phone: shopsTable.phone,
+          email: shopsTable.email,
+        })
+        .from(shopsTable)
+        .where(eq(shopsTable.id, shopId))
+        .limit(1);
+      if (shopRow) {
+        const { backfillShopListingsForShop } = await import("../lib/shop-listing-lookup.js");
+        await backfillShopListingsForShop(shopRow).catch(() => undefined);
+      }
+    }
+
     res.status(201).json({ ...row, price: Number(row.price), created_at: row.created_at.toISOString() });
   } catch (err) {
     req.log.error({ err }, "Admin create listing error");
