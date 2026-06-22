@@ -3,9 +3,6 @@ import { Link } from "wouter";
 import type { ShopDirectoryListItem } from "@/components/shop-directory-card";
 import { cn } from "@/lib/utils";
 
-/** Below this count logos stay centered; at or above, the strip auto-scrolls. */
-const SCROLL_MIN_SHOPS = 5;
-
 type Props = {
   shops: ShopDirectoryListItem[];
   loading?: boolean;
@@ -46,7 +43,7 @@ function MarqueeTrack({ shops }: { shops: ShopDirectoryListItem[] }) {
     <div className="shop-directory-stores-marquee relative overflow-hidden px-1">
       <div
         className="shop-directory-stores-marquee-track flex w-max items-start gap-6 sm:gap-8"
-        style={{ "--shop-marquee-duration": `${Math.max(shops.length * 6, 28)}s` } as CSSProperties}
+        style={{ "--shop-marquee-duration": `${Math.max(shops.length * 6, 24)}s` } as CSSProperties}
       >
         {loop.map((shop, index) => (
           <ShopLogoTile key={`${shop.id}-${index}`} shop={shop} />
@@ -56,28 +53,33 @@ function MarqueeTrack({ shops }: { shops: ShopDirectoryListItem[] }) {
   );
 }
 
-function StaticRow({ shops }: { shops: ShopDirectoryListItem[] }) {
-  return (
-    <div className="flex flex-wrap items-start justify-center gap-5 sm:gap-7 px-4">
-      {shops.map((shop) => (
-        <ShopLogoTile key={shop.id} shop={shop} />
-      ))}
-    </div>
-  );
+/** Enough tiles for a smooth horizontal scroll (even with 1–2 real shops). */
+function shopsForMarquee(shops: ShopDirectoryListItem[]): ShopDirectoryListItem[] {
+  if (shops.length === 0) return shops;
+  if (shops.length >= 5) return shops;
+  const out: ShopDirectoryListItem[] = [];
+  while (out.length < 8) {
+    for (const shop of shops) {
+      out.push(shop);
+      if (out.length >= 8) break;
+    }
+  }
+  return out;
 }
 
 export function ShopDirectoryStoresBanner({ shops, loading }: Props) {
   if (!loading && shops.length === 0) return null;
 
-  const scrollable = shops.length >= SCROLL_MIN_SHOPS;
+  const marqueeShops = shopsForMarquee(shops);
 
   return (
     <section
       className={cn(
         "rounded-2xl border border-gray-200 bg-white py-5 sm:py-6 shadow-sm",
-        scrollable && "shop-directory-stores-marquee-mask",
+        "shop-directory-stores-marquee-mask",
       )}
       aria-busy={loading || undefined}
+      aria-label="Dyqanet e regjistruara"
     >
       {loading ? (
         <div className="flex justify-center gap-4 px-4">
@@ -88,10 +90,8 @@ export function ShopDirectoryStoresBanner({ shops, loading }: Props) {
             </div>
           ))}
         </div>
-      ) : scrollable ? (
-        <MarqueeTrack shops={shops} />
       ) : (
-        <StaticRow shops={shops} />
+        <MarqueeTrack shops={marqueeShops} />
       )}
     </section>
   );

@@ -328,11 +328,14 @@ function activeDirectoryShopCondition() {
 }
 
 // ─── GET /shops/directory/stats ───────────────────────────────────────────────
-router.get("/shops/directory/stats", async (_req, res) => {
+router.get("/shops/directory/stats", async (req, res) => {
   try {
-    await syncShopDirectoryFieldsFromApplications().catch(() => undefined);
-  } catch {
-    /* directory still works with existing slugs */
+    await syncShopDirectoryFieldsFromApplications();
+  } catch (err) {
+    (req as { log?: { warn: (o: unknown, m: string) => void } }).log?.warn?.(
+      { err },
+      "shop directory sync before stats failed",
+    );
   }
 
   const today = new Date();
@@ -357,9 +360,12 @@ router.get("/shops/directory/stats", async (_req, res) => {
 // ─── GET /shops/directory ─────────────────────────────────────────────────────
 router.get("/shops/directory", async (req, res) => {
   try {
-    await syncShopDirectoryFieldsFromApplications().catch(() => undefined);
-  } catch {
-    /* directory still works with existing slugs */
+    await syncShopDirectoryFieldsFromApplications();
+  } catch (err) {
+    (req as { log?: { warn: (o: unknown, m: string) => void } }).log?.warn?.(
+      { err },
+      "shop directory sync before list failed",
+    );
   }
 
   const category = typeof req.query.category === "string" ? req.query.category.trim() : "";
