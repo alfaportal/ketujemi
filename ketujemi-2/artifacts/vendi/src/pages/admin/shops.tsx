@@ -9,9 +9,10 @@ import {
   updateAdminShopApplication,
   type AdminShopApplication,
 } from "@/lib/admin-api";
+import { useShopFormCopy } from "@/lib/shop-application-i18n";
 import {
   AdminShopForm,
-  BLANK_ADMIN_SHOP,
+  blankAdminShopWithDefaults,
   adminApplicationToFormValues,
 } from "@/pages/admin/admin-shop-form";
 import {
@@ -63,6 +64,11 @@ function defaultDirectoryDraft(row: AdminShopApplication): DirectoryDraft {
 }
 
 export default function AdminShops() {
+  const shopFormCopy = useShopFormCopy();
+  const createInitial = useMemo(
+    () => blankAdminShopWithDefaults(shopFormCopy),
+    [shopFormCopy],
+  );
   const [rows, setRows] = useState<AdminShopApplication[]>([]);
   const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 });
   const [loading, setLoading] = useState(true);
@@ -429,7 +435,7 @@ export default function AdminShops() {
           </DialogHeader>
           <AdminShopForm
             key={createOpen ? "create-open" : "create-closed"}
-            initial={BLANK_ADMIN_SHOP}
+            initial={createInitial}
             onSubmit={onCreateShop}
             onCancel={() => setCreateOpen(false)}
             saving={createSaving}

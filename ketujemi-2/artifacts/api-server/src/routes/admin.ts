@@ -79,9 +79,11 @@ import { purgeInvalidListingImages } from "../lib/purge-invalid-listing-images.j
 import { pruneListingImagesAndNotifyOwner } from "../lib/listing-image-prune.js";
 import { deleteShopCascade } from "../lib/delete-shop-cascade";
 import {
+  adminShopDirectoryLabel,
   collectAdminShopValidationErrors,
   readAdminShopDirectorySlugs,
-  resolveAdminShopDirectoryWithEnsure,
+  resolveAdminShopDirectory,
+  validateAdminShopDirectorySlugs,
 } from "../lib/admin-shop-directory";
 import {
   formatAdminShopSaveError,
@@ -1666,12 +1668,9 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
     return;
   }
 
-  let directoryFields: Awaited<ReturnType<typeof resolveAdminShopDirectoryWithEnsure>>;
+  let directoryFields: Awaited<ReturnType<typeof resolveAdminShopDirectory>>;
   try {
-    directoryFields = await resolveAdminShopDirectoryWithEnsure(
-      slugPick.categorySlug,
-      slugPick.subcategorySlug,
-    );
+    directoryFields = await resolveAdminShopDirectory(slugPick.categorySlug, slugPick.subcategorySlug);
   } catch (err) {
     res.status(400).json({
       error: "VALIDATION",
@@ -1813,19 +1812,13 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
       return;
     }
 
-    let directoryFields: Awaited<ReturnType<typeof resolveAdminShopDirectoryWithEnsure>>;
-    try {
-      directoryFields = await resolveAdminShopDirectoryWithEnsure(
-        slugPick.categorySlug,
-        slugPick.subcategorySlug,
-      );
-    } catch (err) {
-      res.status(400).json({
-        error: "VALIDATION",
-        message: err instanceof Error ? err.message : "Kategoritë e dyqanit nuk u zgjidhën.",
-      });
+    const slugErr = validateAdminShopDirectorySlugs(slugPick.categorySlug, slugPick.subcategorySlug);
+    if (slugErr) {
+      res.status(400).json({ error: "VALIDATION", message: slugErr });
       return;
     }
+
+    const categoryLabel = adminShopDirectoryLabel(slugPick.categorySlug, slugPick.subcategorySlug);
 
     const trimOrNull = (v: unknown): string | null => {
       if (typeof v !== "string") return null;
@@ -1843,12 +1836,12 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
       shop_name: String(body.shop_name).trim(),
       logo_url: String(body.logo_url).trim(),
       description: String(body.description).trim(),
-      category: directoryFields.category_label,
+      category: categoryLabel,
       category_id: null,
-      directory_category_slug: directoryFields.directory_category_slug,
-      directory_subcategory_slug: directoryFields.directory_subcategory_slug,
-      directory_category_id: directoryFields.directory_category_id,
-      directory_subcategory_id: directoryFields.directory_subcategory_id,
+      directory_category_slug: slugPick.categorySlug,
+      directory_subcategory_slug: slugPick.subcategorySlug,
+      directory_category_id: null,
+      directory_subcategory_id: null,
       country: String(body.country).trim(),
       city: String(body.city).trim(),
       region: trimOrNull(body.region) ?? (String(body.city).trim() || "—"),
@@ -1912,7 +1905,7 @@ router.patch("/admin/shops/:id", requireAdmin, async (req, res) => {
       return;
     }
     try {
-      const directoryFields = await resolveAdminShopDirectoryWithEnsure(
+      const directoryFields = await resolveAdminShopDirectory(
         slugPick.categorySlug,
         slugPick.subcategorySlug,
       );
@@ -1997,7 +1990,7 @@ router.patch("/admin/shop-applications/:id", requireAdmin, async (req, res) => {
       return;
     }
     try {
-      const directoryFields = await resolveAdminShopDirectoryWithEnsure(
+      const directoryFields = await resolveAdminShopDirectory(
         slugPick.categorySlug,
         slugPick.subcategorySlug,
       );

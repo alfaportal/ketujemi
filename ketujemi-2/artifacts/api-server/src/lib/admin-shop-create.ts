@@ -44,65 +44,58 @@ function pgErrorMessage(err: unknown): string {
   return String(err);
 }
 
-/** Idempotent schema columns only — no full taxonomy seed (that runs on server boot). */
-let shopWriteReadyOnce: Promise<void> | null = null;
+let shopSchemaReadyOnce: Promise<void> | null = null;
 
-export async function ensureAdminShopWriteReady(): Promise<void> {
-  if (!shopWriteReadyOnce) {
-    shopWriteReadyOnce = (async () => {
-      const { ensureShopDirectoryTaxonomyTables } = await import("@workspace/db");
-      await ensureShopSchema(pool);
-      await ensureShopDirectoryTaxonomyTables(pool);
-    })().catch((err) => {
-      shopWriteReadyOnce = null;
+async function ensureShopTablesReady(): Promise<void> {
+  if (!shopSchemaReadyOnce) {
+    shopSchemaReadyOnce = ensureShopSchema(pool).catch((err) => {
+      shopSchemaReadyOnce = null;
       throw err;
     });
   }
-  await shopWriteReadyOnce;
+  await shopSchemaReadyOnce;
 }
 
 async function insertAdminShopPair(
   adminUserId: number,
   shopValues: AdminShopInsertValues,
 ): Promise<{ application: typeof shopApplicationsTable.$inferSelect; shop: typeof shopsTable.$inferSelect }> {
-  return db.transaction(async (tx) => {
-    const [application] = await tx
-      .insert(shopApplicationsTable)
-      .values({
-        user_id: adminUserId,
-        ...shopValues,
-        status: "approved",
-      })
-      .returning();
+  const [application] = await db
+    .insert(shopApplicationsTable)
+    .values({
+      user_id: adminUserId,
+      ...shopValues,
+      status: "approved",
+    })
+    .returning();
 
-    if (!application) {
-      throw new Error("Aplikimi i dyqanit nuk u krijua.");
-    }
+  if (!application) {
+    throw new Error("Aplikimi i dyqanit nuk u krijua.");
+  }
 
-    const [shop] = await tx
-      .insert(shopsTable)
-      .values({
-        user_id: adminUserId,
-        application_id: application.id,
-        ...shopValues,
-        is_active: true,
-      })
-      .returning();
+  const [shop] = await db
+    .insert(shopsTable)
+    .values({
+      user_id: adminUserId,
+      application_id: application.id,
+      ...shopValues,
+      is_active: true,
+    })
+    .returning();
 
-    if (!shop) {
-      throw new Error("Dyqani nuk u krijua në bazën e të dhënave.");
-    }
+  if (!shop) {
+    throw new Error("Dyqani nuk u krijua në bazën e të dhënave.");
+  }
 
-    await tx
-      .update(shopApplicationsTable)
-      .set({ shop_id: shop.id })
-      .where(eq(shopApplicationsTable.id, application.id));
+  await db
+    .update(shopApplicationsTable)
+    .set({ shop_id: shop.id })
+    .where(eq(shopApplicationsTable.id, application.id));
 
-    return { application, shop };
-  });
+  return { application, shop };
 }
 
-/** Insert shop + application; retry without directory IDs if FK/column issues. */
+/** Fast path: slug-only directory fields, no taxonomy seed, no transaction wrapper. */
 export async function persistAdminShopCreate(
   adminUserId: number,
   shopValues: AdminShopInsertValues,
@@ -112,23 +105,9 @@ export async function persistAdminShopCreate(
   } catch (err) {
     const code = pgErrorCode(err);
     const msg = pgErrorMessage(err).toLowerCase();
-    const hasDirectoryIds =
-      shopValues.directory_category_id != null || shopValues.directory_subcategory_id != null;
-    const fkOrDirectoryIssue =
-      code === "23503" ||
-      (code === "42703" && msg.includes("directory_")) ||
-      msg.includes("shop_directory_");
-
-    if (hasDirectoryIds && fkOrDirectoryIssue) {
-      return insertAdminShopPair(adminUserId, {
-        ...shopValues,
-        directory_category_id: null,
-        directory_subcategory_id: null,
-      });
-    }
 
     if (code === "42703" || msg.includes("does not exist")) {
-      await ensureAdminShopWriteReady();
+      await ensureShopTablesReady();
       return insertAdminShopPair(adminUserId, shopValues);
     }
 
@@ -142,7 +121,7 @@ export function formatAdminShopSaveError(err: unknown): string {
   const code = pgErrorCode(err);
 
   if (code === "23503" || lower.includes("foreign key")) {
-    return "Kategoria e dyqanit nuk u lidh me bazën. Rifreskoni faqen dhe provoni përsëri.";
+    return "Të dhënat nuk u lidhën me bazën. Rifreskoni faqen dhe provoni përsëri.";
   }
   if (code === "42703" || lower.includes("does not exist")) {
     return "Mungon struktura e bazës për dyqanet. Prisni 1–2 min pas deploy-it dhe provoni përsëri.";

@@ -71,6 +71,19 @@ export const BLANK_ADMIN_SHOP: AdminShopFormValues = {
   admin_notes: "",
 };
 
+export function blankAdminShopWithDefaults(c: {
+  defaultContactName: string;
+  defaultContactPhone: string;
+  defaultContactEmail: string;
+}): AdminShopFormValues {
+  return {
+    ...BLANK_ADMIN_SHOP,
+    contact_name: c.defaultContactName,
+    phone: c.defaultContactPhone,
+    email: c.defaultContactEmail,
+  };
+}
+
 type AdminShopFormProps = {
   initial: AdminShopFormValues;
   onSubmit: (payload: Record<string, unknown>) => Promise<void>;
@@ -285,6 +298,10 @@ export function AdminShopForm({
     <form noValidate onSubmit={(e) => void handleSubmit(e)} className="flex flex-col max-h-[75vh] min-h-0">
       {errorBanner}
 
+      <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 shrink-0">
+        Obligative: logo, kategori, të paktën 1 rrjet social, telefon dhe email. Pastaj shtyp «Krijo dyqanin».
+      </p>
+
       <div ref={scrollRef} className="space-y-4 overflow-y-auto flex-1 min-h-0 pr-1">
         <div className="grid sm:grid-cols-2 gap-3">
           <div className="space-y-1.5 sm:col-span-2">
@@ -325,77 +342,11 @@ export function AdminShopForm({
             />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
-            <Label>{c.description}</Label>
+            <Label>{c.description} *</Label>
             <Textarea
               value={values.description}
               onChange={(e) => setField("description", e.target.value)}
               className="min-h-[100px]"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label>{c.country} *</Label>
-            <Select
-              value={values.country}
-              onValueChange={(v) => setValues((prev) => ({ ...prev, country: v, city: "" }))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(c.countryLabels).map(([code, label]) => (
-                  <SelectItem key={code} value={code}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label>{c.city} *</Label>
-            {cityOptions.length > 0 && cityInList ? (
-              <Select value={values.city || undefined} onValueChange={(v) => setField("city", v)}>
-                <SelectTrigger className="min-h-10">
-                  <SelectValue placeholder={c.city} />
-                </SelectTrigger>
-                <SelectContent>
-                  {cityOptions.map((city) => (
-                    <SelectItem key={city} value={city}>
-                      {city}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <Input value={values.city} onChange={(e) => setField("city", e.target.value)} className="min-h-10" />
-            )}
-          </div>
-          <div className="space-y-1.5">
-            <Label>{c.region}</Label>
-            <Input
-              value={values.region}
-              onChange={(e) => setField("region", e.target.value)}
-              placeholder="Lagja / rajoni (opsionale)"
-            />
-          </div>
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label>{c.address}</Label>
-            <ShopAddressAutocomplete
-              value={values.address}
-              country={values.country}
-              placeholder={c.addressAutocompleteHint}
-              onChange={(address) =>
-                setValues((prev) => ({ ...prev, address, latitude: null, longitude: null }))
-              }
-              onPlaceSelect={(place) => {
-                setValues((prev) => ({
-                  ...prev,
-                  address: place.address,
-                  latitude: place.latitude,
-                  longitude: place.longitude,
-                  ...(place.city ? { city: place.city } : {}),
-                  ...(place.region ? { region: place.region } : {}),
-                }));
-              }}
             />
           </div>
         </div>
@@ -452,16 +403,85 @@ export function AdminShopForm({
 
         <div className="grid sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label>{c.contactName}</Label>
-            <Input value={values.contact_name} onChange={(e) => setField("contact_name", e.target.value)} />
+            <Label>{c.contactName} *</Label>
+            <Input value={values.contact_name} onChange={(e) => setField("contact_name", e.target.value)} className="min-h-10" />
           </div>
           <div className="space-y-1.5">
-            <Label>{c.phone}</Label>
-            <Input value={values.phone} onChange={(e) => setField("phone", e.target.value)} />
+            <Label>{c.phone} *</Label>
+            <Input value={values.phone} onChange={(e) => setField("phone", e.target.value)} className="min-h-10" />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
-            <Label>{c.email}</Label>
-            <Input type="email" value={values.email} onChange={(e) => setField("email", e.target.value)} />
+            <Label>{c.email} *</Label>
+            <Input type="email" value={values.email} onChange={(e) => setField("email", e.target.value)} className="min-h-10" />
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-3 pt-1 border-t border-gray-100">
+          <div className="space-y-1.5">
+            <Label>{c.country} *</Label>
+            <Select
+              value={values.country}
+              onValueChange={(v) => setValues((prev) => ({ ...prev, country: v, city: "" }))}
+            >
+              <SelectTrigger className="min-h-10">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(c.countryLabels).map(([code, label]) => (
+                  <SelectItem key={code} value={code}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>{c.city} *</Label>
+            {cityOptions.length > 0 && cityInList ? (
+              <Select value={values.city || undefined} onValueChange={(v) => setField("city", v)}>
+                <SelectTrigger className="min-h-10">
+                  <SelectValue placeholder={c.city} />
+                </SelectTrigger>
+                <SelectContent>
+                  {cityOptions.map((city) => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input value={values.city} onChange={(e) => setField("city", e.target.value)} className="min-h-10" />
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label>{c.region}</Label>
+            <Input
+              value={values.region}
+              onChange={(e) => setField("region", e.target.value)}
+              placeholder="Lagja / rajoni (opsionale)"
+            />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label>{c.address} *</Label>
+            <ShopAddressAutocomplete
+              value={values.address}
+              country={values.country}
+              placeholder={c.addressAutocompleteHint}
+              onChange={(address) =>
+                setValues((prev) => ({ ...prev, address, latitude: null, longitude: null }))
+              }
+              onPlaceSelect={(place) => {
+                setValues((prev) => ({
+                  ...prev,
+                  address: place.address,
+                  latitude: place.latitude,
+                  longitude: place.longitude,
+                  ...(place.city ? { city: place.city } : {}),
+                  ...(place.region ? { region: place.region } : {}),
+                }));
+              }}
+            />
           </div>
         </div>
 
