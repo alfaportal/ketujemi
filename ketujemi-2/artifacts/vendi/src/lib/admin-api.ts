@@ -681,6 +681,10 @@ export function deleteAdminShop(id: number) {
   return request<{ ok: boolean }>(`/shops/${id}`, { method: "DELETE" });
 }
 
+export function deleteAdminShopApplication(id: number) {
+  return request<{ ok: boolean }>(`/shop-applications/${id}`, { method: "DELETE" });
+}
+
 export function createAdminShop(data: Record<string, unknown>) {
   return request<{ ok: boolean; shop_id: number; application_id: number }>("/shops", {
     method: "POST",

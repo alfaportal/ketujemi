@@ -25,6 +25,7 @@ import { ownerShopFieldPatch, parseLatitude, parseLongitude } from "../lib/shop-
 import { normalizeShopWhatsappStored } from "../lib/shop-whatsapp-url";
 import { parseDeletionSurveyBody } from "../lib/deletion-feedback.js";
 import { softDeleteShopWithFeedback } from "../lib/soft-delete-shop.js";
+import { syncShopDirectoryFieldsFromApplications } from "../lib/shop-directory-sync.js";
 import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxonomy.js";
 import { SHOP_DIRECTORY_CATEGORY_IMAGE_URLS } from "../../../../lib/shop-directory-category-images.js";
 import { enforceProfileChangeToken } from "../lib/profile-change-verify.js";
@@ -318,12 +319,22 @@ router.get("/shops/directory/taxonomy", async (_req, res) => {
 function activeDirectoryShopCondition() {
   return and(
     eq(shopsTable.is_active, true),
-    sql`(${shopsTable.directory_category_slug} IS NOT NULL OR ${shopsTable.directory_category_id} IS NOT NULL)`,
+    isNull(shopsTable.deleted_at),
+    sql`(
+      (${shopsTable.directory_category_slug} IS NOT NULL AND TRIM(${shopsTable.directory_category_slug}) <> '')
+      OR ${shopsTable.directory_category_id} IS NOT NULL
+    )`,
   );
 }
 
 // ─── GET /shops/directory/stats ───────────────────────────────────────────────
 router.get("/shops/directory/stats", async (_req, res) => {
+  try {
+    await syncShopDirectoryFieldsFromApplications().catch(() => undefined);
+  } catch {
+    /* directory still works with existing slugs */
+  }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -345,6 +356,12 @@ router.get("/shops/directory/stats", async (_req, res) => {
 
 // ─── GET /shops/directory ─────────────────────────────────────────────────────
 router.get("/shops/directory", async (req, res) => {
+  try {
+    await syncShopDirectoryFieldsFromApplications().catch(() => undefined);
+  } catch {
+    /* directory still works with existing slugs */
+  }
+
   const category = typeof req.query.category === "string" ? req.query.category.trim() : "";
   const subcategory = typeof req.query.subcategory === "string" ? req.query.subcategory.trim() : "";
   const categoryId = Number(req.query.category_id);
@@ -378,7 +395,7 @@ router.get("/shops/directory", async (req, res) => {
       count: sql<number>`count(*)::int`,
     })
     .from(shopsTable)
-    .where(and(eq(shopsTable.is_active, true), isNotNull(shopsTable.directory_category_slug)))
+    .where(activeDirectoryShopCondition())
     .groupBy(shopsTable.directory_category_slug);
 
   const categoryCounts: Record<string, number> = {};

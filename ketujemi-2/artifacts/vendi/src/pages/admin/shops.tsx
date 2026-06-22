@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   approveAdminShopApplication,
   createAdminShop,
-  deleteAdminShop,
+  deleteAdminShopApplication,
   getAdminShopApplications,
   rejectAdminShopApplication,
   updateAdminShop,
@@ -22,21 +22,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   defaultSubcategoryForCategory,
   guessDirectoryCategoryFromListingSlug,
   SHOP_DIRECTORY_CATEGORIES,
 } from "@/lib/shop-directory-taxonomy";
-import { Loader2, Plus, RefreshCw, Store } from "lucide-react";
+import { Loader2, Plus, RefreshCw, Store, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type DirectoryDraft = { categorySlug: string; subcategorySlug: string };
@@ -82,6 +72,7 @@ export default function AdminShops() {
   const [createOpen, setCreateOpen] = useState(false);
   const [createSaving, setCreateSaving] = useState(false);
   const [deleteRow, setDeleteRow] = useState<AdminShopApplication | null>(null);
+  const [deleteSaving, setDeleteSaving] = useState(false);
 
   const categoryBySlug = useMemo(
     () => new Map(SHOP_DIRECTORY_CATEGORIES.map((c) => [c.slug, c])),
@@ -164,25 +155,23 @@ export default function AdminShops() {
   }
 
   async function onConfirmDelete(row: AdminShopApplication) {
-    if (!row.shop_id) {
-      setToast("Gabim gjatë fshirjes.");
-      setDeleteRow(null);
-      return;
-    }
-    setBusyId(row.shop_id);
+    setDeleteSaving(true);
+    setBusyId(row.id);
     try {
-      await deleteAdminShop(row.shop_id);
+      await deleteAdminShopApplication(row.id);
       setDeleteRow(null);
-      setRows((prev) => prev.filter((r) => r.shop_id !== row.shop_id));
+      setRows((prev) => prev.filter((r) => r.id !== row.id));
       setStats((prev) => ({
         pending: prev.pending - (row.status === "pending" ? 1 : 0),
         approved: prev.approved - (row.status === "approved" ? 1 : 0),
         rejected: prev.rejected - (row.status === "rejected" ? 1 : 0),
       }));
       setToast("Dyqani u fshi me sukses.");
-    } catch {
-      setToast("Gabim gjatë fshirjes.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Gabim gjatë fshirjes.";
+      setToast(msg);
     } finally {
+      setDeleteSaving(false);
       setBusyId(null);
     }
   }
@@ -312,7 +301,7 @@ export default function AdminShops() {
                   </button>
                   <button
                     type="button"
-                    disabled={busyId === row.shop_id}
+                    disabled={busyId === row.id}
                     onClick={() => setDeleteRow(row)}
                     className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold min-h-10 shadow-sm"
                   >
@@ -473,29 +462,39 @@ export default function AdminShops() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={deleteRow != null} onOpenChange={(open) => !open && setDeleteRow(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Fshi dyqanin?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {deleteRow
-                ? `A jeni i sigurt që dëshironi ta fshini dyqanin '${deleteRow.shop_name}'? Ky veprim do të fshijë dyqanin dhe të gjitha shpalljet e tij.`
-                : null}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-300">
-              Anulo
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700"
-              onClick={() => deleteRow && void onConfirmDelete(deleteRow)}
-            >
-              Po, fshije
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {deleteRow ? (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Trash2 size={24} className="text-red-600" />
+            </div>
+            <h3 className="text-lg font-bold mb-2">Fshi dyqanin?</h3>
+            <p className="text-sm text-gray-500 mb-6">
+              A jeni i sigurt që dëshironi ta fshini dyqanin «{deleteRow.shop_name}»? Ky veprim do të
+              fshijë dyqanin dhe të gjitha shpalljet e tij.
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={deleteSaving}
+                onClick={() => setDeleteRow(null)}
+                className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Anulo
+              </button>
+              <button
+                type="button"
+                disabled={deleteSaving}
+                onClick={() => void onConfirmDelete(deleteRow)}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold disabled:opacity-50"
+              >
+                {deleteSaving ? <Loader2 size={16} className="animate-spin" /> : null}
+                Po, fshije
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

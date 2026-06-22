@@ -77,7 +77,7 @@ import { assertListingContentNotProhibited } from "../../../../lib/listing-prohi
 import { scanListingImagesForProhibitedContent } from "../lib/listing-image-prohibited-scan";
 import { purgeInvalidListingImages } from "../lib/purge-invalid-listing-images.js";
 import { pruneListingImagesAndNotifyOwner } from "../lib/listing-image-prune.js";
-import { deleteShopCascade } from "../lib/delete-shop-cascade";
+import { deleteShopApplicationByAdmin, deleteShopCascade } from "../lib/delete-shop-cascade";
 import {
   adminShopDirectoryLabel,
   collectAdminShopValidationErrors,
@@ -2045,19 +2045,45 @@ router.patch("/admin/shop-applications/:id", requireAdmin, async (req, res) => {
 });
 
 router.delete("/admin/shops/:id", requireAdmin, async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isFinite(id) || id < 1) {
-    res.status(400).json({ error: "Invalid id" });
-    return;
-  }
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id) || id < 1) {
+      res.status(400).json({ error: "Invalid id" });
+      return;
+    }
 
-  const ok = await deleteShopCascade(id, "admin");
-  if (!ok) {
-    res.status(404).json({ error: "Not found" });
-    return;
-  }
+    const ok = await deleteShopCascade(id, "admin");
+    if (!ok) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
 
-  res.json({ ok: true });
+    res.json({ ok: true });
+  } catch (err) {
+    req.log.error({ err }, "Admin delete shop error");
+    res.status(500).json({ error: "Internal server error", message: "Dyqani nuk u fshi." });
+  }
+});
+
+router.delete("/admin/shop-applications/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id) || id < 1) {
+      res.status(400).json({ error: "Invalid id" });
+      return;
+    }
+
+    const ok = await deleteShopApplicationByAdmin(id);
+    if (!ok) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    req.log.error({ err }, "Admin delete shop application error");
+    res.status(500).json({ error: "Internal server error", message: "Dyqani nuk u fshi." });
+  }
 });
 
 // ─── Facebook & Instagram social posting ───────────────────────────────────────
