@@ -1,0 +1,118 @@
+# Build signed KetuJemi Android AAB (Capacitor) and upload as a workflow artifact.
+#
+# Required repository secrets:
+#   CM_KEYSTORE          — base64-encoded release .jks
+#   CM_KEYSTORE_PASSWORD — keystore password
+#   CM_KEY_ALIAS         — key alias (e.g. ketujemi)
+#   CM_KEY_PASSWORD      — key password
+
+name: Android AAB
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - "ketujemi-2/artifacts/vendi/android/**"
+      - "ketujemi-2/artifacts/vendi/package.json"
+      - "ketujemi-2/artifacts/vendi/capacitor.config.*"
+      - ".github/workflows/android-build.yml"
+
+concurrency:
+  group: android-aab-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VENDI_DIR: ketujemi-2/artifacts/vendi
+  PACKAGE_NAME: com.ketujemi.app
+
+jobs:
+  build-aab:
+    name: Build signed AAB
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Require signing secrets
+        env:
+          CM_KEYSTORE: ${{ secrets.CM_KEYSTORE }}
+          CM_KEYSTORE_PASSWORD: ${{ secrets.CM_KEYSTORE_PASSWORD }}
+          CM_KEY_ALIAS: ${{ secrets.CM_KEY_ALIAS }}
+          CM_KEY_PASSWORD: ${{ secrets.CM_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for var in CM_KEYSTORE CM_KEYSTORE_PASSWORD CM_KEY_ALIAS CM_KEY_PASSWORD; do
+            if [ -z "${!var:-}" ]; then
+              echo "::error::Missing secret $var — add it under Settings → Secrets and variables → Actions."
+              exit 1
+            fi
+          done
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Sync Capacitor Android
+        working-directory: ${{ env.VENDI_DIR }}
+        run: pnpm cap:sync android
+
+      - name: Configure Android SDK path
+        working-directory: ${{ env.VENDI_DIR }}/android
+        run: echo "sdk.dir=${ANDROID_SDK_ROOT}" > local.properties
+
+      - name: Decode release keystore
+        env:
+          CM_KEYSTORE: ${{ secrets.CM_KEYSTORE }}
+        run: |
+          set -euo pipefail
+          echo "$CM_KEYSTORE" | base64 --decode > "${{ runner.temp }}/keystore.jks"
+          echo "CM_KEYSTORE_PATH=${{ runner.temp }}/keystore.jks" >> "$GITHUB_ENV"
+
+      - name: Build release AAB
+        working-directory: ${{ env.VENDI_DIR }}/android
+        env:
+          CM_KEYSTORE_PASSWORD: ${{ secrets.CM_KEYSTORE_PASSWORD }}
+          CM_KEY_ALIAS: ${{ secrets.CM_KEY_ALIAS }}
+          CM_KEY_PASSWORD: ${{ secrets.CM_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          chmod +x ./gradlew
+          ./gradlew bundleRelease --stacktrace
+
+      - name: Verify package name
+        working-directory: ${{ env.VENDI_DIR }}/android
+        run: |
+          set -euo pipefail
+          AAB="app/build/outputs/bundle/release/app-release.aab"
+          test -f "$AAB"
+          "${ANDROID_SDK_ROOT}/build-tools/$(ls -1 "${ANDROID_SDK_ROOT}/build-tools" | sort -V | tail -n 1)/aapt2" dump badging "$AAB" | grep -F "package: name='${{ env.PACKAGE_NAME }}'"
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ketujemi-${{ env.PACKAGE_NAME }}-aab
+          path: ${{ env.VENDI_DIR }}/android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+          retention-days: 30
