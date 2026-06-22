@@ -1,0 +1,83 @@
+# KetuJemi — Capacitor Android (Google Play) on Codemagic
+#
+# Point Codemagic to this file: ketujemi-2/artifacts/vendi/codemagic.yaml
+# (Repository root stays alfaportal/ketujemi — pnpm install runs from monorepo root.)
+#
+# One-time dashboard setup:
+# 1. Code signing → Android: upload release keystore OR add group "ketujemi_android_signing" with:
+#      CM_KEYSTORE          — base64-encoded .jks / .keystore file
+#      CM_KEYSTORE_PASSWORD — keystore password
+#      CM_KEY_ALIAS         — key alias
+#      CM_KEY_PASSWORD      — key password
+# 2. Optional: link App Store Connect / Google Play for publish (not required for AAB artifact).
+
+workflows:
+  ketujemi-android-google-play:
+    name: KetuJemi Android (Google Play)
+    max_build_duration: 60
+    # Android AAB builds (same machine class as React Native / Flutter Android on Codemagic).
+    instance_type: linux_x2
+    environment:
+      android_signing:
+        - ketujemi_android
+      groups:
+        - ketujemi_android_signing
+      vars:
+        PACKAGE_NAME: com.ketujemi.app
+        VENDI_DIR: ketujemi-2/artifacts/vendi
+      node: 22
+      java: 21
+
+    scripts:
+      - name: Install monorepo dependencies (pnpm)
+        script: |
+          set -euxo pipefail
+          cd "$CM_BUILD_DIR"
+          corepack enable
+          corepack prepare pnpm@10.12.1 --activate
+          pnpm install --frozen-lockfile
+
+      - name: Sync Capacitor Android project
+        script: |
+          set -euxo pipefail
+          cd "$CM_BUILD_DIR/$VENDI_DIR"
+          pnpm cap:sync android
+
+      - name: Set Android SDK location
+        script: |
+          set -euxo pipefail
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/$VENDI_DIR/android/local.properties"
+
+      - name: Set up release keystore from environment
+        script: |
+          set -euxo pipefail
+          # Codemagic android_signing sets CM_KEYSTORE_PATH; fallback: decode CM_KEYSTORE (base64).
+          if [ -n "${CM_KEYSTORE:-}" ] && [ -z "${CM_KEYSTORE_PATH:-}" ]; then
+            export CM_KEYSTORE_PATH="$CM_BUILD_DIR/keystore.jks"
+            echo "$CM_KEYSTORE" | base64 --decode > "$CM_KEYSTORE_PATH"
+          fi
+          if [ -z "${CM_KEYSTORE_PATH:-}" ]; then
+            echo "No keystore: upload in Code signing or set CM_KEYSTORE in ketujemi_android_signing group."
+            exit 1
+          fi
+          echo "Using keystore at $CM_KEYSTORE_PATH (package $PACKAGE_NAME)"
+
+      - name: Build signed release AAB
+        script: |
+          set -euxo pipefail
+          cd "$CM_BUILD_DIR/$VENDI_DIR/android"
+          chmod +x ./gradlew
+          ./gradlew bundleRelease --stacktrace
+
+      - name: Verify AAB package name
+        script: |
+          set -euxo pipefail
+          AAB=$(find "$CM_BUILD_DIR/$VENDI_DIR/android/app/build/outputs/bundle" -name '*.aab' | head -n 1)
+          test -n "$AAB"
+          echo "Built: $AAB"
+          # aapt2 is on PATH on linux_x2 Android images.
+          aapt2 dump badging "$AAB" | grep -F "package: name='$PACKAGE_NAME'"
+
+    artifacts:
+      - ketujemi-2/artifacts/vendi/android/app/build/outputs/bundle/release/*.aab
+      - ketujemi-2/artifacts/vendi/android/app/build/outputs/**/*.aab
