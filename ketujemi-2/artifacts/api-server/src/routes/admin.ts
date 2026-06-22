@@ -81,7 +81,7 @@ import { deleteShopCascade } from "../lib/delete-shop-cascade";
 import {
   collectAdminShopValidationErrors,
   readAdminShopDirectorySlugs,
-  resolveAdminShopDirectory,
+  resolveAdminShopDirectoryWithEnsure,
 } from "../lib/admin-shop-directory";
 import {
   buildApplicationFieldPatch,
@@ -1661,9 +1661,12 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
     return;
   }
 
-  let directoryFields: Awaited<ReturnType<typeof resolveAdminShopDirectory>>;
+  let directoryFields: Awaited<ReturnType<typeof resolveAdminShopDirectoryWithEnsure>>;
   try {
-    directoryFields = await resolveAdminShopDirectory(slugPick.categorySlug, slugPick.subcategorySlug);
+    directoryFields = await resolveAdminShopDirectoryWithEnsure(
+      slugPick.categorySlug,
+      slugPick.subcategorySlug,
+    );
   } catch (err) {
     res.status(400).json({
       error: "VALIDATION",
@@ -1805,10 +1808,19 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
       return;
     }
 
-    const directoryFields = await resolveAdminShopDirectory(
-      slugPick.categorySlug,
-      slugPick.subcategorySlug,
-    );
+    let directoryFields: Awaited<ReturnType<typeof resolveAdminShopDirectoryWithEnsure>>;
+    try {
+      directoryFields = await resolveAdminShopDirectoryWithEnsure(
+        slugPick.categorySlug,
+        slugPick.subcategorySlug,
+      );
+    } catch (err) {
+      res.status(400).json({
+        error: "VALIDATION",
+        message: err instanceof Error ? err.message : "Kategoritë e dyqanit nuk u zgjidhën.",
+      });
+      return;
+    }
 
     const trimOrNull = (v: unknown): string | null => {
       if (typeof v !== "string") return null;
@@ -1849,29 +1861,33 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
       admin_notes: trimOrNull(body.admin_notes),
     };
 
-    const [application] = await db
-      .insert(shopApplicationsTable)
-      .values({
-        user_id: adminUser.id,
-        ...shopValues,
-        status: "approved",
-      })
-      .returning();
+    const { application, shop } = await db.transaction(async (tx) => {
+      const [application] = await tx
+        .insert(shopApplicationsTable)
+        .values({
+          user_id: adminUser.id,
+          ...shopValues,
+          status: "approved",
+        })
+        .returning();
 
-    const [shop] = await db
-      .insert(shopsTable)
-      .values({
-        user_id: adminUser.id,
-        application_id: application.id,
-        ...shopValues,
-        is_active: true,
-      })
-      .returning();
+      const [shop] = await tx
+        .insert(shopsTable)
+        .values({
+          user_id: adminUser.id,
+          application_id: application.id,
+          ...shopValues,
+          is_active: true,
+        })
+        .returning();
 
-    await db
-      .update(shopApplicationsTable)
-      .set({ shop_id: shop.id })
-      .where(eq(shopApplicationsTable.id, application.id));
+      await tx
+        .update(shopApplicationsTable)
+        .set({ shop_id: shop.id })
+        .where(eq(shopApplicationsTable.id, application.id));
+
+      return { application, shop };
+    });
 
     const { scheduleShopSocialEnrich } = await import("../lib/shop-social-enrich.js");
     scheduleShopSocialEnrich(shop.id);
@@ -1916,18 +1932,26 @@ router.patch("/admin/shops/:id", requireAdmin, async (req, res) => {
       });
       return;
     }
-    const directoryFields = await resolveAdminShopDirectory(
-      slugPick.categorySlug,
-      slugPick.subcategorySlug,
-    );
-    Object.assign(patch, {
-      category: directoryFields.category_label,
-      category_id: null,
-      directory_category_slug: directoryFields.directory_category_slug,
-      directory_subcategory_slug: directoryFields.directory_subcategory_slug,
-      directory_category_id: directoryFields.directory_category_id,
-      directory_subcategory_id: directoryFields.directory_subcategory_id,
-    });
+    try {
+      const directoryFields = await resolveAdminShopDirectoryWithEnsure(
+        slugPick.categorySlug,
+        slugPick.subcategorySlug,
+      );
+      Object.assign(patch, {
+        category: directoryFields.category_label,
+        category_id: null,
+        directory_category_slug: directoryFields.directory_category_slug,
+        directory_subcategory_slug: directoryFields.directory_subcategory_slug,
+        directory_category_id: directoryFields.directory_category_id,
+        directory_subcategory_id: directoryFields.directory_subcategory_id,
+      });
+    } catch (err) {
+      res.status(400).json({
+        error: "VALIDATION",
+        message: err instanceof Error ? err.message : "Kategoritë e dyqanit nuk u zgjidhën.",
+      });
+      return;
+    }
   }
 
   const appPatch: Record<string, unknown> = { ...patch };
@@ -1993,18 +2017,26 @@ router.patch("/admin/shop-applications/:id", requireAdmin, async (req, res) => {
       });
       return;
     }
-    const directoryFields = await resolveAdminShopDirectory(
-      slugPick.categorySlug,
-      slugPick.subcategorySlug,
-    );
-    Object.assign(patch, {
-      category: directoryFields.category_label,
-      category_id: null,
-      directory_category_slug: directoryFields.directory_category_slug,
-      directory_subcategory_slug: directoryFields.directory_subcategory_slug,
-      directory_category_id: directoryFields.directory_category_id,
-      directory_subcategory_id: directoryFields.directory_subcategory_id,
-    });
+    try {
+      const directoryFields = await resolveAdminShopDirectoryWithEnsure(
+        slugPick.categorySlug,
+        slugPick.subcategorySlug,
+      );
+      Object.assign(patch, {
+        category: directoryFields.category_label,
+        category_id: null,
+        directory_category_slug: directoryFields.directory_category_slug,
+        directory_subcategory_slug: directoryFields.directory_subcategory_slug,
+        directory_category_id: directoryFields.directory_category_id,
+        directory_subcategory_id: directoryFields.directory_subcategory_id,
+      });
+    } catch (err) {
+      res.status(400).json({
+        error: "VALIDATION",
+        message: err instanceof Error ? err.message : "Kategoritë e dyqanit nuk u zgjidhën.",
+      });
+      return;
+    }
   }
 
   if (!Object.keys(patch).length) {

@@ -13,7 +13,6 @@ import {
   AdminShopForm,
   BLANK_ADMIN_SHOP,
   adminApplicationToFormValues,
-  type AdminShopFormValues,
 } from "@/pages/admin/admin-shop-form";
 import {
   Dialog,
@@ -125,10 +124,10 @@ export default function AdminShops() {
     }
   }
 
-  async function onCreateShop(values: AdminShopFormValues) {
+  async function onCreateShop(payload: Record<string, unknown>) {
     setCreateSaving(true);
     try {
-      const result = await createAdminShop(values);
+      const result = await createAdminShop(payload);
       setCreateOpen(false);
       setToast(`Dyqani u krijua (#${result.shop_id}). Shfaqet në /dyqanet.`);
       await load();
@@ -139,14 +138,14 @@ export default function AdminShops() {
     }
   }
 
-  async function onSaveEdit(values: AdminShopFormValues) {
+  async function onSaveEdit(payload: Record<string, unknown>) {
     if (!editRow) return;
     setEditSaving(true);
     try {
       if (editRow.shop_id) {
-        await updateAdminShop(editRow.shop_id, values);
+        await updateAdminShop(editRow.shop_id, payload);
       } else {
-        await updateAdminShopApplication(editRow.id, values);
+        await updateAdminShopApplication(editRow.id, payload);
       }
       setEditRow(null);
       setToast("Dyqani u përditësua.");

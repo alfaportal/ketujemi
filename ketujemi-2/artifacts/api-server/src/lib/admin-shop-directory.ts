@@ -1,6 +1,30 @@
-import { db, shopDirectoryCategoriesTable, shopDirectorySubcategoriesTable } from "@workspace/db";
+import {
+  db,
+  ensureShopDirectoryTaxonomy,
+  pool,
+  shopDirectoryCategoriesTable,
+  shopDirectorySubcategoriesTable,
+  type ShopDirectorySeedCategory,
+} from "@workspace/db";
 import { and, eq } from "drizzle-orm";
 import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxonomy.js";
+
+let adminDirectorySeedCache: ShopDirectorySeedCategory[] | null = null;
+
+async function adminShopDirectorySeed(): Promise<ShopDirectorySeedCategory[]> {
+  if (adminDirectorySeedCache) return adminDirectorySeedCache;
+  const { SHOP_DIRECTORY_CATEGORY_IMAGE_URLS } = await import(
+    "../../../../lib/shop-directory-category-images.js"
+  );
+  adminDirectorySeedCache = SHOP_DIRECTORY_CATEGORIES.map((cat) => ({
+    slug: cat.slug,
+    emoji: cat.emoji,
+    nameSq: cat.nameSq,
+    imageUrl: SHOP_DIRECTORY_CATEGORY_IMAGE_URLS[cat.slug],
+    subcategories: cat.subcategories,
+  }));
+  return adminDirectorySeedCache;
+}
 
 const CATEGORY_BY_SLUG = new Map(SHOP_DIRECTORY_CATEGORIES.map((c) => [c.slug, c]));
 
@@ -76,6 +100,19 @@ export async function resolveAdminShopDirectory(
     directory_subcategory_id,
     category_label: adminShopDirectoryLabel(cat, sub),
   };
+}
+
+/** Ensure DB taxonomy rows exist, then resolve slugs → IDs for /dyqanet filters. */
+export async function resolveAdminShopDirectoryWithEnsure(
+  categorySlug: string,
+  subcategorySlug: string,
+): Promise<ResolvedAdminShopDirectory> {
+  try {
+    await ensureShopDirectoryTaxonomy(pool, await adminShopDirectorySeed());
+  } catch {
+    /* slug-only save still works if seed fails */
+  }
+  return resolveAdminShopDirectory(categorySlug, subcategorySlug);
 }
 
 function trimOrNull(v: unknown): string | null {
