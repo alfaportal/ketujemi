@@ -62,6 +62,8 @@ export type OpenShopFormCopy = {
   email: string;
   emailRequired: string;
   emailPlaceholder: string;
+  emailWhereHint: string;
+  emailPlatformNotAllowed: string;
   submitBtn: string;
   successMsg: string;
   loginRequired: string;
@@ -204,6 +206,10 @@ const KS: OpenShopFormCopy = {
   email: "Email i aplikuesit",
   emailRequired: "Plotësoni email-in tuaj të vlefshëm.",
   emailPlaceholder: "emaili@juaj.com",
+  emailWhereHint:
+    "Kjo adresë ruhet te kërkesa juaj. Ju kontaktojmë këtu për aprovim (brenda 24 orëve) dhe merrni email kur dyqani aktivizohet ose refuzohet.",
+  emailPlatformNotAllowed:
+    "Shkruani email-in tuaj personal (Gmail, Outlook, etj.) — jo adresën e platformës KetuJemi.",
   submitBtn: "Dërgo Kërkesën për Dyqan →",
   successMsg: "✅ Kërkesa juaj u dërgua! Do të kontaktoheni brenda 24 orëve.",
   loginRequired: "Për të dërguar kërkesën, duhet të jeni i regjistruar dhe i kyçur në llogarinë tuaj.",
@@ -278,6 +284,10 @@ const MK: OpenShopFormCopy = {
   email: "Е-пошта на апликантот",
   emailRequired: "Внесете важечка е-пошта.",
   emailPlaceholder: "vashiot@email.com",
+  emailWhereHint:
+    "Оваа адреса се зачувува кај вашето барање. Контактираме ве тука за одобрување (во рок од 24 часа) и добивате е-пошта кога продавницата е активирана или одбиена.",
+  emailPlatformNotAllowed:
+    "Внесете лична е-пошта (Gmail, Outlook, итн.) — не адреса на платформата KetuJemi.",
   submitBtn: "Испрати барање за продавница →",
   successMsg: "✅ Вашето барање е испратено! Ќе бидете контактирани во рок од 24 часа.",
   loginRequired: "За да го испратите барањето, мора да сте регистрирани и најавени.",
@@ -351,6 +361,10 @@ const MNE: OpenShopFormCopy = {
   email: "Email podnosioca",
   emailRequired: "Unesite važeći email.",
   emailPlaceholder: "vas@email.com",
+  emailWhereHint:
+    "Ova adresa se čuva uz vaš zahtjev. Kontaktiramo vas ovdje za odobrenje (u roku od 24 sata) i dobijate email kad je prodavnica aktivirana ili odbijena.",
+  emailPlatformNotAllowed:
+    "Unesite svoj lični email (Gmail, Outlook, itd.) — ne adresu platforme KetuJemi.",
   submitBtn: "Pošalji zahtjev za prodavnicu →",
   successMsg: "✅ Vaš zahtjev je poslan! Bićete kontaktirani u roku od 24 sata.",
   loginRequired: "Da biste poslali zahtjev, morate biti registrovani i prijavljeni.",
@@ -424,6 +438,10 @@ const EN: OpenShopFormCopy = {
   email: "Applicant email",
   emailRequired: "Enter a valid email address.",
   emailPlaceholder: "you@email.com",
+  emailWhereHint:
+    "This address is stored with your request. We contact you here for approval (within 24 hours) and you receive email when your shop is activated or rejected.",
+  emailPlatformNotAllowed:
+    "Enter your personal email (Gmail, Outlook, etc.) — not a KetuJemi platform address.",
   submitBtn: "Submit Shop Request →",
   successMsg: "✅ Your request was sent! We will contact you within 24 hours.",
   loginRequired: "You must be registered and signed in to submit a shop request.",

@@ -31,6 +31,17 @@ function applicantPhoneFromUser(user: AuthUser): string {
   return digits.startsWith("+") ? digits : `+${digits}`;
 }
 
+const PLATFORM_APPLICANT_EMAILS = new Set([
+  "info@ketujemi.com",
+  "support@ketujemi.com",
+  "novelto22@gmail.com",
+]);
+
+function isPlatformApplicantEmail(email: string): boolean {
+  const lower = email.trim().toLowerCase();
+  return PLATFORM_APPLICANT_EMAILS.has(lower) || lower.endsWith("@ketujemi.com");
+}
+
 export function ShopApplicationForm() {
   const c = useShopFormCopy();
   const { uiLang } = useMarket();
@@ -93,7 +104,9 @@ export function ShopApplicationForm() {
     if (!user || contactPrefilledRef.current) return;
     contactPrefilledRef.current = true;
     const userEmail = user.email?.trim();
-    if (userEmail) setEmail(userEmail);
+    if (userEmail && !isPlatformApplicantEmail(userEmail) && !user.is_platform_admin) {
+      setEmail(userEmail);
+    }
     const name = user.business_name?.trim() || user.display_name?.trim();
     if (name) setContactName(name);
     const userPhone = applicantPhoneFromUser(user);
@@ -129,6 +142,10 @@ export function ShopApplicationForm() {
     const trimmedEmail = email.trim();
     if (!trimmedEmail || !trimmedEmail.includes("@")) {
       setError(c.emailRequired);
+      return;
+    }
+    if (isPlatformApplicantEmail(trimmedEmail)) {
+      setError(c.emailPlatformNotAllowed);
       return;
     }
 
@@ -417,6 +434,7 @@ export function ShopApplicationForm() {
               className="min-h-12"
               placeholder={c.emailPlaceholder}
             />
+            <p className="text-xs text-gray-500 leading-relaxed">{c.emailWhereHint}</p>
           </div>
           <div className="space-y-2">
             <Label>{c.phone} *</Label>
