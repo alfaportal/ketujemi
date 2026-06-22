@@ -60,6 +60,8 @@ export type OpenShopFormCopy = {
   contactName: string;
   phone: string;
   email: string;
+  emailRequired: string;
+  emailPlaceholder: string;
   submitBtn: string;
   successMsg: string;
   loginRequired: string;
@@ -161,9 +163,9 @@ const KS: OpenShopFormCopy = {
   applyDocTitle: "Apliko për dyqan — KetuJemi.com",
   formImportant:
     "⚠️ E rëndësishme: Dyqani aktivizohet vetëm pasi të shqyrtohet kërkesa juaj brenda 24 orëve. Të dhënat mund të ndryshohen më vonë nga profili juaj.",
-  defaultContactName: "REVOLUTION INVEST SH.P.K.",
-  defaultContactPhone: "+38343555294",
-  defaultContactEmail: "info@ketujemi.com",
+  defaultContactName: "",
+  defaultContactPhone: "",
+  defaultContactEmail: "",
   loginBtn: "Kyçu / Regjistrohu",
   section1Title: "Identiteti i dyqanit",
   shopName: "Emri i dyqanit",
@@ -194,11 +196,14 @@ const KS: OpenShopFormCopy = {
   socialPhTiktok: "",
   socialPhWhatsapp: "",
   socialPhWebsite: "",
-  section4Title: "Na Kontaktoni",
-  section4Description: "Për çdo pyetje rreth aplikimit, na kontaktoni direkt.",
+  section4Title: "Kontakti juaj (aplikuesi)",
+  section4Description:
+    "Email dhe telefoni i personit që aplikon — na nevojiten për aprovim dhe për t'ju njoftuar për statusin e kërkesës.",
   contactName: "Emri i kontaktit",
   phone: "Nr. telefoni",
-  email: "Email",
+  email: "Email i aplikuesit",
+  emailRequired: "Plotësoni email-in tuaj të vlefshëm.",
+  emailPlaceholder: "emaili@juaj.com",
   submitBtn: "Dërgo Kërkesën për Dyqan →",
   successMsg: "✅ Kërkesa juaj u dërgua! Do të kontaktoheni brenda 24 orëve.",
   loginRequired: "Për të dërguar kërkesën, duhet të jeni i regjistruar dhe i kyçur në llogarinë tuaj.",
@@ -265,11 +270,14 @@ const MK: OpenShopFormCopy = {
   socialPhTiktok: "",
   socialPhWhatsapp: "",
   socialPhWebsite: "",
-  section4Title: "Контактирајте не",
-  section4Description: "За секое прашање во врска со апликацијата, контактирајте не директно.",
+  section4Title: "Ваш контакт (апликант)",
+  section4Description:
+    "Е-пошта и телефон на лицето што аплицира — ни требаат за одобрување и за да ве известиме за статусот.",
   contactName: "Име на контакт",
   phone: "Телефонски број",
-  email: "Email",
+  email: "Е-пошта на апликантот",
+  emailRequired: "Внесете важечка е-пошта.",
+  emailPlaceholder: "vashiot@email.com",
   submitBtn: "Испрати барање за продавница →",
   successMsg: "✅ Вашето барање е испратено! Ќе бидете контактирани во рок од 24 часа.",
   loginRequired: "За да го испратите барањето, мора да сте регистрирани и најавени.",
@@ -335,11 +343,14 @@ const MNE: OpenShopFormCopy = {
   socialPhTiktok: "",
   socialPhWhatsapp: "",
   socialPhWebsite: "",
-  section4Title: "Kontaktirajte nas",
-  section4Description: "Za sva pitanja u vezi sa prijavom, kontaktirajte nas direktno.",
+  section4Title: "Vaš kontakt (podnosilac)",
+  section4Description:
+    "Email i telefon osobe koja aplicira — potrebni su nam za odobrenje i obavještenje o statusu zahtjeva.",
   contactName: "Ime kontakta",
   phone: "Broj telefona",
-  email: "Email",
+  email: "Email podnosioca",
+  emailRequired: "Unesite važeći email.",
+  emailPlaceholder: "vas@email.com",
   submitBtn: "Pošalji zahtjev za prodavnicu →",
   successMsg: "✅ Vaš zahtjev je poslan! Bićete kontaktirani u roku od 24 sata.",
   loginRequired: "Da biste poslali zahtjev, morate biti registrovani i prijavljeni.",
@@ -405,11 +416,14 @@ const EN: OpenShopFormCopy = {
   socialPhTiktok: "",
   socialPhWhatsapp: "",
   socialPhWebsite: "",
-  section4Title: "Contact us",
-  section4Description: "For any questions about your application, contact us directly.",
+  section4Title: "Your contact (applicant)",
+  section4Description:
+    "Email and phone of the person applying — we need these to approve your shop and notify you about the request status.",
   contactName: "Contact name",
   phone: "Phone number",
-  email: "Email",
+  email: "Applicant email",
+  emailRequired: "Enter a valid email address.",
+  emailPlaceholder: "you@email.com",
   submitBtn: "Submit Shop Request →",
   successMsg: "✅ Your request was sent! We will contact you within 24 hours.",
   loginRequired: "You must be registered and signed in to submit a shop request.",

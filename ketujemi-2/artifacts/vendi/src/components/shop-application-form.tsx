@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAuth, loginUrlWithReturn } from "@/lib/auth-context";
+import { useAuth, loginUrlWithReturn, type AuthUser } from "@/lib/auth-context";
 import { useShopFormCopy, SHOP_COUNTRY_CODES } from "@/lib/shop-application-i18n";
 import { citiesForShopCountry } from "@/lib/shop-application-locations";
 import { uploadImageToCloudinary, useCloudinaryConfig } from "@/lib/cloudinary-config";
@@ -25,6 +25,12 @@ import { ShopSocialUrlFields } from "@/components/shop-social-url-fields";
 import { shopSocialFieldsForSubmit, type ShopSocialField } from "@/lib/shop-social-url-input";
 import { ShopAddressAutocomplete } from "@/components/shop-address-autocomplete";
 
+function applicantPhoneFromUser(user: AuthUser): string {
+  const digits = user.contact_phone?.trim() || user.phone_e164_digits?.trim() || "";
+  if (!digits) return "";
+  return digits.startsWith("+") ? digits : `+${digits}`;
+}
+
 export function ShopApplicationForm() {
   const c = useShopFormCopy();
   const { uiLang } = useMarket();
@@ -32,6 +38,7 @@ export function ShopApplicationForm() {
   const cloudinary = useCloudinaryConfig();
   const locale = translationKeyForUiLang(uiLang);
   const logoRef = useRef<HTMLInputElement>(null);
+  const contactPrefilledRef = useRef(false);
 
   const [shopName, setShopName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
@@ -82,6 +89,17 @@ export function ShopApplicationForm() {
     setCity("");
   }, [country]);
 
+  useEffect(() => {
+    if (!user || contactPrefilledRef.current) return;
+    contactPrefilledRef.current = true;
+    const userEmail = user.email?.trim();
+    if (userEmail) setEmail(userEmail);
+    const name = user.business_name?.trim() || user.display_name?.trim();
+    if (name) setContactName(name);
+    const userPhone = applicantPhoneFromUser(user);
+    if (userPhone) setPhone(userPhone);
+  }, [user]);
+
   const cityOptions = citiesForShopCountry(country);
 
   async function onLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -107,6 +125,12 @@ export function ShopApplicationForm() {
       return;
     }
     setError(null);
+
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !trimmedEmail.includes("@")) {
+      setError(c.emailRequired);
+      return;
+    }
 
     if (!directoryCategorySlug || !directorySubcategorySlug) {
       setError(c.directoryCategoryRequired);
@@ -159,7 +183,7 @@ export function ShopApplicationForm() {
           ...social,
           contact_name: contactName,
           phone,
-          email,
+          email: trimmedEmail,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -379,18 +403,7 @@ export function ShopApplicationForm() {
               onChange={(e) => setContactName(e.target.value)}
               required
               className="min-h-12"
-              placeholder={c.defaultContactName}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>{c.phone} *</Label>
-            <Input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-              type="tel"
-              className="min-h-12"
-              placeholder={c.defaultContactPhone}
+              placeholder={c.contactName}
             />
           </div>
           <div className="space-y-2">
@@ -400,8 +413,21 @@ export function ShopApplicationForm() {
               onChange={(e) => setEmail(e.target.value)}
               required
               type="email"
+              autoComplete="email"
               className="min-h-12"
-              placeholder={c.defaultContactEmail}
+              placeholder={c.emailPlaceholder}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>{c.phone} *</Label>
+            <Input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+              type="tel"
+              autoComplete="tel"
+              className="min-h-12"
+              placeholder={c.phone}
             />
           </div>
         </section>
