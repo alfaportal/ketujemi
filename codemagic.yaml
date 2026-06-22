@@ -1,13 +1,16 @@
-# KetuJemi — Capacitor iOS CI on Codemagic
+# KetuJemi — Capacitor iOS & Android CI on Codemagic
 #
-# This file lives at the GitHub repository root (alfaportal/ketujemi).
-# Codemagic auto-detects codemagic.yaml here — no custom "Project path" needed.
+# Canonical location: repository root (alfaportal/ketujemi/codemagic.yaml).
+# Codemagic auto-detects this file — no custom "Project path" needed.
 #
-# One-time dashboard setup:
-# 1. Connect GitHub repo alfaportal/ketujemi.
-# 2. Under Code signing → iOS, upload Distribution certificate (.p12) and
-#    App Store / Ad Hoc provisioning profile for bundle ID com.ketujemi.app.
-# 3. Optionally link App Store Connect API key for TestFlight / App Store publish.
+# iOS setup:
+#   Code signing → iOS: Distribution certificate (.p12) + provisioning profile
+#   for bundle ID com.ketujemi.app.
+#
+# Android setup:
+#   Code signing → Android keystore reference ketujemi_android, OR group
+#   ketujemi_android_signing with CM_KEYSTORE (base64), CM_KEYSTORE_PASSWORD,
+#   CM_KEY_ALIAS, CM_KEY_PASSWORD.
 #
 # The native app loads the live site (https://ketujemi.com) — no Vite web build step.
 
@@ -17,8 +20,6 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
-      # Fetch signing files uploaded in Codemagic for this bundle ID.
-      # Change distribution_type to ad_hoc or development for non–App Store IPAs.
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.ketujemi.app
@@ -63,3 +64,70 @@ workflows:
       - ketujemi-2/artifacts/vendi/build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
       - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+
+  ketujemi-android-google-play:
+    name: KetuJemi Android (Google Play)
+    max_build_duration: 60
+    instance_type: linux_x2
+    environment:
+      android_signing:
+        - ketujemi_android
+      groups:
+        - ketujemi_android_signing
+      vars:
+        PACKAGE_NAME: com.ketujemi.app
+        VENDI_DIR: ketujemi-2/artifacts/vendi
+      node: 22
+      java: 21
+
+    scripts:
+      - name: Install monorepo dependencies (pnpm)
+        script: |
+          set -euxo pipefail
+          cd "$CM_BUILD_DIR"
+          corepack enable
+          corepack prepare pnpm@10.12.1 --activate
+          pnpm install --frozen-lockfile
+
+      - name: Sync Capacitor Android project
+        script: |
+          set -euxo pipefail
+          cd "$CM_BUILD_DIR/$VENDI_DIR"
+          pnpm cap:sync android
+
+      - name: Set Android SDK location
+        script: |
+          set -euxo pipefail
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/$VENDI_DIR/android/local.properties"
+
+      - name: Set up release keystore from environment
+        script: |
+          set -euxo pipefail
+          if [ -n "${CM_KEYSTORE:-}" ] && [ -z "${CM_KEYSTORE_PATH:-}" ]; then
+            export CM_KEYSTORE_PATH="$CM_BUILD_DIR/keystore.jks"
+            echo "$CM_KEYSTORE" | base64 --decode > "$CM_KEYSTORE_PATH"
+          fi
+          if [ -z "${CM_KEYSTORE_PATH:-}" ]; then
+            echo "No keystore: upload in Code signing or set CM_KEYSTORE in ketujemi_android_signing group."
+            exit 1
+          fi
+          echo "Using keystore at $CM_KEYSTORE_PATH (package $PACKAGE_NAME)"
+
+      - name: Build signed release AAB
+        script: |
+          set -euxo pipefail
+          cd "$CM_BUILD_DIR/$VENDI_DIR/android"
+          chmod +x ./gradlew
+          ./gradlew bundleRelease --stacktrace
+
+      - name: Verify AAB package name
+        script: |
+          set -euxo pipefail
+          AAB=$(find "$CM_BUILD_DIR/$VENDI_DIR/android/app/build/outputs/bundle" -name '*.aab' | head -n 1)
+          test -n "$AAB"
+          echo "Built: $AAB"
+          aapt2 dump badging "$AAB" | grep -F "package: name='$PACKAGE_NAME'"
+
+    artifacts:
+      - ketujemi-2/artifacts/vendi/android/app/build/outputs/bundle/release/*.aab
+      - ketujemi-2/artifacts/vendi/android/app/build/outputs/**/*.aab
