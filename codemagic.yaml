@@ -7,10 +7,11 @@
 #   Code signing → iOS: Distribution certificate (.p12) + provisioning profile
 #   for bundle ID com.ketujemi.app.
 #
-# Android setup:
-#   Code signing → Android keystore reference ketujemi_android, OR group
-#   ketujemi_android_signing with CM_KEYSTORE (base64), CM_KEYSTORE_PASSWORD,
-#   CM_KEY_ALIAS, CM_KEY_PASSWORD.
+# Android setup (environment variables in Codemagic — no code signing identities):
+#   CM_KEYSTORE          — base64-encoded release .jks file
+#   CM_KEYSTORE_PASSWORD — keystore password
+#   CM_KEY_ALIAS         — key alias (e.g. ketujemi)
+#   CM_KEY_PASSWORD      — key password
 #
 # The native app loads the live site (https://ketujemi.com) — no Vite web build step.
 
@@ -70,8 +71,6 @@ workflows:
     max_build_duration: 60
     instance_type: linux_x2
     environment:
-      android_signing:
-        - ketujemi_android
       groups:
         - ketujemi_android_signing
       vars:
@@ -100,22 +99,18 @@ workflows:
           set -euxo pipefail
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/$VENDI_DIR/android/local.properties"
 
-      - name: Set up release keystore from environment
-        script: |
-          set -euxo pipefail
-          if [ -n "${CM_KEYSTORE:-}" ] && [ -z "${CM_KEYSTORE_PATH:-}" ]; then
-            export CM_KEYSTORE_PATH="$CM_BUILD_DIR/keystore.jks"
-            echo "$CM_KEYSTORE" | base64 --decode > "$CM_KEYSTORE_PATH"
-          fi
-          if [ -z "${CM_KEYSTORE_PATH:-}" ]; then
-            echo "No keystore: upload in Code signing or set CM_KEYSTORE in ketujemi_android_signing group."
-            exit 1
-          fi
-          echo "Using keystore at $CM_KEYSTORE_PATH (package $PACKAGE_NAME)"
-
       - name: Build signed release AAB
         script: |
           set -euxo pipefail
+          for var in CM_KEYSTORE CM_KEYSTORE_PASSWORD CM_KEY_ALIAS CM_KEY_PASSWORD; do
+            if [ -z "${!var:-}" ]; then
+              echo "Missing $var — add as secure environment variable in Codemagic."
+              exit 1
+            fi
+          done
+          export CM_KEYSTORE_PATH="$CM_BUILD_DIR/keystore.jks"
+          echo "$CM_KEYSTORE" | base64 --decode > "$CM_KEYSTORE_PATH"
+          echo "Keystore: $CM_KEYSTORE_PATH (alias $CM_KEY_ALIAS)"
           cd "$CM_BUILD_DIR/$VENDI_DIR/android"
           chmod +x ./gradlew
           ./gradlew bundleRelease --stacktrace
