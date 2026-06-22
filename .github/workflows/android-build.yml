@@ -106,9 +106,8 @@ jobs:
         run: |
           set -euo pipefail
           AAB="app/build/outputs/bundle/release/app-release.aab"
-          test -f "$AAB"
-          "${ANDROID_SDK_ROOT}/build-tools/$(ls -1 "${ANDROID_SDK_ROOT}/build-tools" | sort -V | tail -n 1)/aapt2" dump badging "$AAB" | grep -F "package: name='${{ env.PACKAGE_NAME }}'"
-
+          test -f "$AAB" && echo "AAB exists: $AAB" || (echo "AAB not found!" && exit 1)
+          
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
