@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useGetCategories } from "@workspace/api-client-react";
 import {
   approveAdminShopApplication,
   createAdminShop,
@@ -11,10 +10,11 @@ import {
   type AdminShopApplication,
 } from "@/lib/admin-api";
 import {
-  ShopEditForm,
-  adminRowToFormValues,
-  type ShopEditFormValues,
-} from "@/components/shop-edit-form";
+  AdminShopForm,
+  BLANK_ADMIN_SHOP,
+  adminApplicationToFormValues,
+  type AdminShopFormValues,
+} from "@/pages/admin/admin-shop-form";
 import {
   Dialog,
   DialogContent,
@@ -34,47 +34,33 @@ import {
 import {
   defaultSubcategoryForCategory,
   guessDirectoryCategoryFromListingSlug,
+  SHOP_DIRECTORY_CATEGORIES,
 } from "@/lib/shop-directory-taxonomy";
-import {
-  fetchShopDirectoryTaxonomy,
-  staticShopDirectoryTaxonomy,
-  type ShopDirectoryTaxonomyCategory,
-} from "@/lib/shop-directory-api";
 import { Loader2, Plus, RefreshCw, Store } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type DirectoryDraft = { categoryId: number; subcategoryId: number };
-
-const BLANK_SHOP_CREATE: ShopEditFormValues = {
-  shop_name: "",
-  logo_url: "",
-  description: "",
-  category: "",
-  category_id: null,
-  directory_category_id: null,
-  directory_subcategory_id: null,
-  country: "XK",
-  city: "",
-  region: "",
-  address: "",
-  latitude: null,
-  longitude: null,
-  facebook: "",
-  instagram: "",
-  tiktok: "",
-  whatsapp: "",
-  website: "",
-  contact_name: "",
-  phone: "",
-  email: "",
-  admin_notes: "",
-};
+type DirectoryDraft = { categorySlug: string; subcategorySlug: string };
 
 function statusBadge(status: string) {
   if (status === "approved") return "bg-green-100 text-green-800";
   if (status === "pending") return "bg-amber-100 text-amber-900";
   if (status === "rejected") return "bg-red-100 text-red-800";
   return "bg-gray-100 text-gray-700";
+}
+
+function defaultDirectoryDraft(row: AdminShopApplication): DirectoryDraft {
+  const categorySlug =
+    row.directory_category_slug?.trim() ||
+    guessDirectoryCategoryFromListingSlug(null) ||
+    SHOP_DIRECTORY_CATEGORIES[0]?.slug ||
+    "biznes-sherbime";
+  const subcategorySlug =
+    row.directory_subcategory_slug?.trim() ||
+    defaultSubcategoryForCategory(categorySlug) ||
+    SHOP_DIRECTORY_CATEGORIES.find((c) => c.slug === categorySlug)?.subcategories[0]?.slug ||
+    "dyqane-te-pergjithshme";
+
+  return { categorySlug, subcategorySlug };
 }
 
 export default function AdminShops() {
@@ -86,68 +72,16 @@ export default function AdminShops() {
   const [rejectReason, setRejectReason] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const [directoryDrafts, setDirectoryDrafts] = useState<Record<number, DirectoryDraft>>({});
-  const [taxonomy, setTaxonomy] = useState<ShopDirectoryTaxonomyCategory[]>([]);
   const [editRow, setEditRow] = useState<AdminShopApplication | null>(null);
   const [editSaving, setEditSaving] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [createSaving, setCreateSaving] = useState(false);
-  const [createInitial, setCreateInitial] = useState<ShopEditFormValues>(BLANK_SHOP_CREATE);
   const [deleteRow, setDeleteRow] = useState<AdminShopApplication | null>(null);
-  const { data: categories } = useGetCategories();
 
-  const categorySlugById = useMemo(() => {
-    const map = new Map<number, string>();
-    for (const c of categories ?? []) {
-      if (c.id != null && c.slug) map.set(c.id, c.slug);
-    }
-    return map;
-  }, [categories]);
-
-  const taxonomyBySlug = useMemo(() => {
-    const map = new Map<string, ShopDirectoryTaxonomyCategory>();
-    for (const cat of taxonomy) map.set(cat.slug, cat);
-    return map;
-  }, [taxonomy]);
-
-  useEffect(() => {
-    void fetchShopDirectoryTaxonomy().then(setTaxonomy);
-  }, []);
-
-  function openCreateShop() {
-    const source = taxonomy.length > 0 ? taxonomy : staticShopDirectoryTaxonomy();
-    const cat = source[0];
-    const sub = cat?.subcategories[0];
-    setCreateInitial({
-      ...BLANK_SHOP_CREATE,
-      directory_category_id: cat?.id && cat.id > 0 ? cat.id : null,
-      directory_subcategory_id: sub?.id && sub.id > 0 ? sub.id : null,
-      directory_category_slug: cat?.slug ?? null,
-      directory_subcategory_slug: sub?.slug ?? null,
-    });
-    setCreateOpen(true);
-  }
-
-  function defaultDirectoryDraft(row: AdminShopApplication): DirectoryDraft {
-    const listingSlug = row.category_id ? categorySlugById.get(row.category_id) : null;
-    const categorySlug =
-      row.directory_category_slug ??
-      guessDirectoryCategoryFromListingSlug(listingSlug) ??
-      "biznes-sherbime";
-    const subcategorySlug =
-      row.directory_subcategory_slug ?? defaultSubcategoryForCategory(categorySlug) ?? "";
-
-    const cat =
-      taxonomyBySlug.get(categorySlug) ??
-      taxonomy.find((c) => c.slug === categorySlug) ??
-      taxonomy[0];
-    const sub =
-      cat?.subcategories.find((s) => s.slug === subcategorySlug) ?? cat?.subcategories[0];
-
-    return {
-      categoryId: row.directory_category_id ?? cat?.id ?? 0,
-      subcategoryId: row.directory_subcategory_id ?? sub?.id ?? 0,
-    };
-  }
+  const categoryBySlug = useMemo(
+    () => new Map(SHOP_DIRECTORY_CATEGORIES.map((c) => [c.slug, c])),
+    [],
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -163,34 +97,35 @@ export default function AdminShops() {
     } finally {
       setLoading(false);
     }
-  }, [categorySlugById, taxonomy, taxonomyBySlug]);
+  }, []);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  function subcategoriesForCategoryId(categoryId: number) {
-    return taxonomy.find((c) => c.id === categoryId)?.subcategories ?? [];
+  function subcategoriesForCategorySlug(categorySlug: string) {
+    return categoryBySlug.get(categorySlug)?.subcategories ?? [];
   }
 
   async function onApprove(id: number) {
     setBusyId(id);
-    const draft = directoryDrafts[id];
+    const draft = directoryDrafts[id] ?? defaultDirectoryDraft(rows.find((r) => r.id === id)!);
     try {
       await approveAdminShopApplication(id, {
-        directory_category_id: draft?.categoryId,
-        directory_subcategory_id: draft?.subcategoryId,
+        directory_category_slug: draft.categorySlug,
+        directory_subcategory_slug: draft.subcategorySlug,
       });
       setToast("Dyqani u aprovua.");
       await load();
-    } catch {
-      setToast("Gabim gjatë aprovimit.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Gabim gjatë aprovimit.";
+      setToast(msg);
     } finally {
       setBusyId(null);
     }
   }
 
-  async function onCreateShop(values: ShopEditFormValues) {
+  async function onCreateShop(values: AdminShopFormValues) {
     setCreateSaving(true);
     try {
       const result = await createAdminShop(values);
@@ -198,14 +133,13 @@ export default function AdminShops() {
       setToast(`Dyqani u krijua (#${result.shop_id}). Shfaqet në /dyqanet.`);
       await load();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Gabim gjatë krijimit të dyqanit.";
-      setToast(msg);
+      throw e instanceof Error ? e : new Error("Gabim gjatë krijimit të dyqanit.");
     } finally {
       setCreateSaving(false);
     }
   }
 
-  async function onSaveEdit(values: ShopEditFormValues) {
+  async function onSaveEdit(values: AdminShopFormValues) {
     if (!editRow) return;
     setEditSaving(true);
     try {
@@ -217,8 +151,8 @@ export default function AdminShops() {
       setEditRow(null);
       setToast("Dyqani u përditësua.");
       await load();
-    } catch {
-      setToast("Gabim gjatë përditësimit.");
+    } catch (e) {
+      throw e instanceof Error ? e : new Error("Gabim gjatë përditësimit.");
     } finally {
       setEditSaving(false);
     }
@@ -273,7 +207,7 @@ export default function AdminShops() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={openCreateShop}
+            onClick={() => setCreateOpen(true)}
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold min-h-10"
           >
             <Plus size={16} /> Dyqan i ri
@@ -313,7 +247,7 @@ export default function AdminShops() {
         <div className="space-y-4">
           {rows.map((row) => {
             const draft = directoryDrafts[row.id] ?? defaultDirectoryDraft(row);
-            const subcategories = subcategoriesForCategoryId(draft.categoryId);
+            const subcategories = subcategoriesForCategorySlug(draft.categorySlug);
 
             return (
               <article key={row.id} className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 space-y-3">
@@ -392,23 +326,23 @@ export default function AdminShops() {
                         <span>Kategoria e direktorisë</span>
                         <select
                           className="w-full border rounded-lg px-2 py-2 text-sm min-h-10"
-                          value={draft.categoryId || ""}
+                          value={draft.categorySlug}
                           onChange={(e) => {
-                            const categoryId = Number(e.target.value);
-                            const cat = taxonomy.find((c) => c.id === categoryId);
+                            const categorySlug = e.target.value;
+                            const cat = categoryBySlug.get(categorySlug);
                             const firstSub = cat?.subcategories[0];
                             setDirectoryDrafts((prev) => ({
                               ...prev,
                               [row.id]: {
-                                categoryId,
-                                subcategoryId: firstSub?.id ?? 0,
+                                categorySlug,
+                                subcategorySlug: firstSub?.slug ?? draft.subcategorySlug,
                               },
                             }));
                           }}
                         >
-                          {taxonomy.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {c.emoji} {c.name}
+                          {SHOP_DIRECTORY_CATEGORIES.map((c) => (
+                            <option key={c.slug} value={c.slug}>
+                              {c.emoji} {c.nameSq}
                             </option>
                           ))}
                         </select>
@@ -417,21 +351,21 @@ export default function AdminShops() {
                         <span>Nënkategoria</span>
                         <select
                           className="w-full border rounded-lg px-2 py-2 text-sm min-h-10"
-                          value={draft.subcategoryId || ""}
+                          value={draft.subcategorySlug}
                           onChange={(e) => {
-                            const subcategoryId = Number(e.target.value);
+                            const subcategorySlug = e.target.value;
                             setDirectoryDrafts((prev) => ({
                               ...prev,
                               [row.id]: {
-                                categoryId: prev[row.id]?.categoryId ?? draft.categoryId,
-                                subcategoryId,
+                                categorySlug: prev[row.id]?.categorySlug ?? draft.categorySlug,
+                                subcategorySlug,
                               },
                             }));
                           }}
                         >
                           {subcategories.map((s) => (
-                            <option key={s.id} value={s.id}>
-                              {s.name}
+                            <option key={s.slug} value={s.slug}>
+                              {s.nameSq}
                             </option>
                           ))}
                         </select>
@@ -494,9 +428,9 @@ export default function AdminShops() {
           <DialogHeader>
             <DialogTitle>Shto dyqan të ri</DialogTitle>
           </DialogHeader>
-          <ShopEditForm
-            key={createOpen ? `create-${createInitial.directory_category_id ?? 0}` : "closed"}
-            initial={createInitial}
+          <AdminShopForm
+            key={createOpen ? "create-open" : "create-closed"}
+            initial={BLANK_ADMIN_SHOP}
             onSubmit={onCreateShop}
             onCancel={() => setCreateOpen(false)}
             saving={createSaving}
@@ -505,8 +439,6 @@ export default function AdminShops() {
               save: "Krijo dyqanin",
               cancel: "Anulo",
               adminNotes: "Shënime të brendshme (admin)",
-              directoryCategory: "Kategoria e direktorisë",
-              directorySubcategory: "Nënkategoria",
             }}
           />
         </DialogContent>
@@ -518,8 +450,8 @@ export default function AdminShops() {
             <DialogTitle>Edito dyqanin — {editRow?.shop_name}</DialogTitle>
           </DialogHeader>
           {editRow ? (
-            <ShopEditForm
-              initial={adminRowToFormValues(editRow)}
+            <AdminShopForm
+              initial={adminApplicationToFormValues(editRow)}
               onSubmit={onSaveEdit}
               onCancel={() => setEditRow(null)}
               saving={editSaving}
@@ -530,8 +462,6 @@ export default function AdminShops() {
                 cancel: "Anulo",
                 status: "Statusi",
                 adminNotes: "Shënime të brendshme (admin)",
-                directoryCategory: "Kategoria e direktorisë",
-                directorySubcategory: "Nënkategoria",
               }}
             />
           ) : null}

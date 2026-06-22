@@ -78,7 +78,11 @@ import { scanListingImagesForProhibitedContent } from "../lib/listing-image-proh
 import { purgeInvalidListingImages } from "../lib/purge-invalid-listing-images.js";
 import { pruneListingImagesAndNotifyOwner } from "../lib/listing-image-prune.js";
 import { deleteShopCascade } from "../lib/delete-shop-cascade";
-import { resolveDirectoryFields, resolveDirectoryFieldsWithEnsure } from "../lib/shop-directory-patch";
+import {
+  collectAdminShopValidationErrors,
+  readAdminShopDirectorySlugs,
+  resolveAdminShopDirectory,
+} from "../lib/admin-shop-directory";
 import {
   buildApplicationFieldPatch,
   buildShopFieldPatch,
@@ -1645,90 +1649,27 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
   }
 
   const body = req.body as Record<string, unknown>;
-  const { resolveDirectoryCategorySlug, resolveDirectorySubcategorySlug } = await import(
-    "../lib/shop-directory-resolve.js"
-  );
-
-  const bodyCategoryId = Number(body.directory_category_id);
-  const bodySubcategoryId = Number(body.directory_subcategory_id);
-
-  let directoryCategoryId: number | null =
-    Number.isFinite(bodyCategoryId) && bodyCategoryId > 0 ? bodyCategoryId : app.directory_category_id;
-  let directorySubcategoryId: number | null =
-    Number.isFinite(bodySubcategoryId) && bodySubcategoryId > 0
-      ? bodySubcategoryId
-      : app.directory_subcategory_id;
-
-  let directoryCategorySlug =
-    typeof body.directory_category_slug === "string" ? body.directory_category_slug.trim() : null;
-  let directorySubcategorySlug =
-    typeof body.directory_subcategory_slug === "string" ? body.directory_subcategory_slug.trim() : null;
-
-  if (directoryCategoryId) {
-    const [catRow] = await db
-      .select()
-      .from(shopDirectoryCategoriesTable)
-      .where(eq(shopDirectoryCategoriesTable.id, directoryCategoryId))
-      .limit(1);
-    if (catRow) directoryCategorySlug = catRow.slug;
-  }
-
-  if (!directoryCategorySlug) {
-    directoryCategorySlug = resolveDirectoryCategorySlug({
-      directory_category_slug: app.directory_category_slug,
-      category_id: app.category_id,
-      category: app.category,
+  const slugPick = readAdminShopDirectorySlugs(body, {
+    category: app.directory_category_slug,
+    subcategory: app.directory_subcategory_slug,
+  });
+  if (!slugPick) {
+    res.status(400).json({
+      error: "VALIDATION",
+      message: "Zgjidhni kategorinë dhe nënkategorinë e dyqanit.",
     });
+    return;
   }
 
-  if (directorySubcategoryId) {
-    const [subRow] = await db
-      .select()
-      .from(shopDirectorySubcategoriesTable)
-      .where(eq(shopDirectorySubcategoriesTable.id, directorySubcategoryId))
-      .limit(1);
-    if (subRow) {
-      directorySubcategorySlug = subRow.slug;
-      if (!directoryCategoryId) {
-        directoryCategoryId = subRow.category_id;
-        const [catRow] = await db
-          .select({ slug: shopDirectoryCategoriesTable.slug })
-          .from(shopDirectoryCategoriesTable)
-          .where(eq(shopDirectoryCategoriesTable.id, subRow.category_id))
-          .limit(1);
-        if (catRow) directoryCategorySlug = catRow.slug;
-      }
-    }
-  }
-
-  if (!directorySubcategorySlug) {
-    directorySubcategorySlug = resolveDirectorySubcategorySlug(
-      directoryCategorySlug,
-      app.directory_subcategory_slug,
-    );
-  }
-
-  if (!directoryCategoryId && directoryCategorySlug) {
-    const [catRow] = await db
-      .select({ id: shopDirectoryCategoriesTable.id })
-      .from(shopDirectoryCategoriesTable)
-      .where(eq(shopDirectoryCategoriesTable.slug, directoryCategorySlug))
-      .limit(1);
-    if (catRow) directoryCategoryId = catRow.id;
-  }
-
-  if (!directorySubcategoryId && directoryCategoryId && directorySubcategorySlug) {
-    const [subRow] = await db
-      .select({ id: shopDirectorySubcategoriesTable.id })
-      .from(shopDirectorySubcategoriesTable)
-      .where(
-        and(
-          eq(shopDirectorySubcategoriesTable.category_id, directoryCategoryId),
-          eq(shopDirectorySubcategoriesTable.slug, directorySubcategorySlug),
-        ),
-      )
-      .limit(1);
-    if (subRow) directorySubcategoryId = subRow.id;
+  let directoryFields: Awaited<ReturnType<typeof resolveAdminShopDirectory>>;
+  try {
+    directoryFields = await resolveAdminShopDirectory(slugPick.categorySlug, slugPick.subcategorySlug);
+  } catch (err) {
+    res.status(400).json({
+      error: "VALIDATION",
+      message: err instanceof Error ? err.message : "Kategoritë e dyqanit nuk u zgjidhën.",
+    });
+    return;
   }
 
   const [shop] = await db
@@ -1739,12 +1680,12 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
       shop_name: app.shop_name,
       logo_url: app.logo_url,
       description: app.description,
-      category: app.category,
-      category_id: app.category_id,
-      directory_category_slug: directoryCategorySlug,
-      directory_subcategory_slug: directorySubcategorySlug,
-      directory_category_id: directoryCategoryId,
-      directory_subcategory_id: directorySubcategoryId,
+      category: directoryFields.category_label,
+      category_id: null,
+      directory_category_slug: directoryFields.directory_category_slug,
+      directory_subcategory_slug: directoryFields.directory_subcategory_slug,
+      directory_category_id: directoryFields.directory_category_id,
+      directory_subcategory_id: directoryFields.directory_subcategory_id,
       country: app.country,
       city: app.city,
       region: app.region,
@@ -1767,10 +1708,11 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
   await db
     .update(shopApplicationsTable)
     .set({
-      directory_category_slug: directoryCategorySlug,
-      directory_subcategory_slug: directorySubcategorySlug,
-      directory_category_id: directoryCategoryId,
-      directory_subcategory_id: directorySubcategoryId,
+      category: directoryFields.category_label,
+      directory_category_slug: directoryFields.directory_category_slug,
+      directory_subcategory_slug: directoryFields.directory_subcategory_slug,
+      directory_category_id: directoryFields.directory_category_id,
+      directory_subcategory_id: directoryFields.directory_subcategory_id,
     })
     .where(eq(shopApplicationsTable.id, id));
 
@@ -1847,119 +1789,44 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
       return;
     }
 
-    const { pool } = await import("@workspace/db");
-    const { SHOP_DIRECTORY_CATEGORIES } = await import("../../../../lib/shop-directory-taxonomy.js");
-    const { SHOP_DIRECTORY_CATEGORY_IMAGE_URLS } = await import(
-      "../../../../lib/shop-directory-category-images.js"
-    );
-    const shopDirectorySeed = SHOP_DIRECTORY_CATEGORIES.map((cat) => ({
-      slug: cat.slug,
-      emoji: cat.emoji,
-      nameSq: cat.nameSq,
-      imageUrl: SHOP_DIRECTORY_CATEGORY_IMAGE_URLS[cat.slug],
-      subcategories: cat.subcategories,
-    }));
-
     const body = req.body as Record<string, unknown>;
+    const errors = collectAdminShopValidationErrors(body);
+    if (errors.length) {
+      res.status(400).json({ error: "VALIDATION", message: errors[0], details: errors });
+      return;
+    }
+
+    const slugPick = readAdminShopDirectorySlugs(body);
+    if (!slugPick) {
+      res.status(400).json({
+        error: "VALIDATION",
+        message: "Zgjidhni kategorinë dhe nënkategorinë e dyqanit.",
+      });
+      return;
+    }
+
+    const directoryFields = await resolveAdminShopDirectory(
+      slugPick.categorySlug,
+      slugPick.subcategorySlug,
+    );
+
     const trimOrNull = (v: unknown): string | null => {
       if (typeof v !== "string") return null;
       const t = v.trim();
       return t || null;
     };
-    const requiredString = (v: unknown, field: string): string | null => {
-      const t = trimOrNull(v);
-      if (!t) return `Fusha «${field}» është e detyrueshme.`;
-      return null;
-    };
-
-    const errors: string[] = [];
-    const shopNameErr = requiredString(body.shop_name, "Emri i dyqanit");
-    if (shopNameErr) errors.push(shopNameErr);
-    const logoErr = requiredString(body.logo_url, "Logo");
-    if (logoErr) errors.push(logoErr);
-    const descErr = requiredString(body.description, "Përshkrimi");
-    if (descErr) errors.push(descErr);
-    const countryErr = requiredString(body.country, "Shteti");
-    if (countryErr) errors.push(countryErr);
-    const cityErr = requiredString(body.city, "Qyteti");
-    if (cityErr) errors.push(cityErr);
-    const addressErr = requiredString(body.address, "Adresa");
-    if (addressErr) errors.push(addressErr);
-    const contactErr = requiredString(body.contact_name, "Emri i kontaktit");
-    if (contactErr) errors.push(contactErr);
-    const phoneErr = requiredString(body.phone, "Telefoni");
-    if (phoneErr) errors.push(phoneErr);
-    const emailErr = requiredString(body.email, "Email");
-    if (emailErr) errors.push(emailErr);
 
     const facebook = trimOrNull(body.facebook);
     const instagram = trimOrNull(body.instagram);
     const tiktok = trimOrNull(body.tiktok);
     const whatsapp = normalizeShopWhatsappStored(body.whatsapp);
     const website = trimOrNull(body.website);
-    if (!facebook && !instagram && !tiktok && !whatsapp && !website) {
-      errors.push("Plotësoni të paktën një rrjet social.");
-    }
-
-    const directoryCategoryId = Number(body.directory_category_id);
-    const directorySubcategoryId = Number(body.directory_subcategory_id);
-    const directoryCategorySlug = trimOrNull(body.directory_category_slug);
-    const directorySubcategorySlug = trimOrNull(body.directory_subcategory_slug);
-    const hasDirectoryIds =
-      Number.isFinite(directoryCategoryId) &&
-      directoryCategoryId >= 1 &&
-      Number.isFinite(directorySubcategoryId) &&
-      directorySubcategoryId >= 1;
-    const hasDirectorySlugs = !!(directoryCategorySlug && directorySubcategorySlug);
-    if (!hasDirectoryIds && !hasDirectorySlugs) {
-      errors.push("Zgjidhni kategorinë dhe nënkategorinë e dyqanit.");
-    }
-
-    if (errors.length) {
-      res.status(400).json({ error: "VALIDATION", message: errors[0], details: errors });
-      return;
-    }
-
-    const categoryLabel = trimOrNull(body.category) ?? "Dyqan";
-    let directoryFields = await resolveDirectoryFieldsWithEnsure(
-      pool,
-      shopDirectorySeed,
-      {
-        directory_category_id: hasDirectoryIds ? directoryCategoryId : null,
-        directory_subcategory_id: hasDirectoryIds ? directorySubcategoryId : null,
-        directory_category_slug: directoryCategorySlug,
-        directory_subcategory_slug: directorySubcategorySlug,
-        category: categoryLabel,
-        category_id: null,
-      },
-    );
-
-    if (
-      (!directoryFields.directory_category_id || !directoryFields.directory_subcategory_id) &&
-      directoryCategorySlug &&
-      directorySubcategorySlug
-    ) {
-      directoryFields = {
-        directory_category_slug: directoryCategorySlug,
-        directory_subcategory_slug: directorySubcategorySlug,
-        directory_category_id: directoryFields.directory_category_id,
-        directory_subcategory_id: directoryFields.directory_subcategory_id,
-      };
-    }
-
-    if (!directoryFields.directory_category_slug || !directoryFields.directory_subcategory_slug) {
-      res.status(400).json({
-        error: "VALIDATION",
-        message: "Kategoritë e dyqanit nuk u zgjidhën. Provoni përsëri ose kontrolloni serverin.",
-      });
-      return;
-    }
 
     const shopValues = {
       shop_name: String(body.shop_name).trim(),
       logo_url: String(body.logo_url).trim(),
       description: String(body.description).trim(),
-      category: categoryLabel,
+      category: directoryFields.category_label,
       category_id: null,
       directory_category_slug: directoryFields.directory_category_slug,
       directory_subcategory_slug: directoryFields.directory_subcategory_slug,
@@ -2036,8 +1903,32 @@ router.patch("/admin/shops/:id", requireAdmin, async (req, res) => {
 
   const body = req.body as Record<string, unknown>;
   const patch = buildShopFieldPatch(body);
-  const directory = await resolveDirectoryFields(body, shop);
-  Object.assign(patch, directory);
+
+  if ("directory_category_slug" in body || "directory_subcategory_slug" in body) {
+    const slugPick = readAdminShopDirectorySlugs(body, {
+      category: shop.directory_category_slug,
+      subcategory: shop.directory_subcategory_slug,
+    });
+    if (!slugPick) {
+      res.status(400).json({
+        error: "VALIDATION",
+        message: "Zgjidhni kategorinë dhe nënkategorinë e dyqanit.",
+      });
+      return;
+    }
+    const directoryFields = await resolveAdminShopDirectory(
+      slugPick.categorySlug,
+      slugPick.subcategorySlug,
+    );
+    Object.assign(patch, {
+      category: directoryFields.category_label,
+      category_id: null,
+      directory_category_slug: directoryFields.directory_category_slug,
+      directory_subcategory_slug: directoryFields.directory_subcategory_slug,
+      directory_category_id: directoryFields.directory_category_id,
+      directory_subcategory_id: directoryFields.directory_subcategory_id,
+    });
+  }
 
   const appPatch: Record<string, unknown> = { ...patch };
   if ("status" in body) {
@@ -2089,8 +1980,32 @@ router.patch("/admin/shop-applications/:id", requireAdmin, async (req, res) => {
 
   const body = req.body as Record<string, unknown>;
   const patch = buildApplicationFieldPatch(body);
-  const directory = await resolveDirectoryFields(body, app);
-  Object.assign(patch, directory);
+
+  if ("directory_category_slug" in body || "directory_subcategory_slug" in body) {
+    const slugPick = readAdminShopDirectorySlugs(body, {
+      category: app.directory_category_slug,
+      subcategory: app.directory_subcategory_slug,
+    });
+    if (!slugPick) {
+      res.status(400).json({
+        error: "VALIDATION",
+        message: "Zgjidhni kategorinë dhe nënkategorinë e dyqanit.",
+      });
+      return;
+    }
+    const directoryFields = await resolveAdminShopDirectory(
+      slugPick.categorySlug,
+      slugPick.subcategorySlug,
+    );
+    Object.assign(patch, {
+      category: directoryFields.category_label,
+      category_id: null,
+      directory_category_slug: directoryFields.directory_category_slug,
+      directory_subcategory_slug: directoryFields.directory_subcategory_slug,
+      directory_category_id: directoryFields.directory_category_id,
+      directory_subcategory_id: directoryFields.directory_subcategory_id,
+    });
+  }
 
   if (!Object.keys(patch).length) {
     res.status(400).json({ error: "VALIDATION", message: "Nuk ka fusha për përditësim." });
@@ -2105,7 +2020,16 @@ router.patch("/admin/shop-applications/:id", requireAdmin, async (req, res) => {
 
   if (app.shop_id) {
     const shopPatch = buildShopFieldPatch(body);
-    Object.assign(shopPatch, directory);
+    if ("directory_category_slug" in body || "directory_subcategory_slug" in body) {
+      Object.assign(shopPatch, {
+        category: patch.category,
+        category_id: null,
+        directory_category_slug: patch.directory_category_slug,
+        directory_subcategory_slug: patch.directory_subcategory_slug,
+        directory_category_id: patch.directory_category_id,
+        directory_subcategory_id: patch.directory_subcategory_id,
+      });
+    }
     if (patch.status === "approved") shopPatch.is_active = true;
     if (patch.status === "rejected") shopPatch.is_active = false;
     if (Object.keys(shopPatch).length) {
