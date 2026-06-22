@@ -1,6 +1,6 @@
 import {
   db,
-  ensureShopDirectoryTaxonomy,
+  ensureShopDirectoryTaxonomyTables,
   pool,
   shopDirectoryCategoriesTable,
   shopDirectorySubcategoriesTable,
@@ -102,15 +102,15 @@ export async function resolveAdminShopDirectory(
   };
 }
 
-/** Ensure DB taxonomy rows exist, then resolve slugs → IDs for /dyqanet filters. */
+/** Ensure taxonomy tables exist, then resolve slugs (no full seed — that runs on server boot). */
 export async function resolveAdminShopDirectoryWithEnsure(
   categorySlug: string,
   subcategorySlug: string,
 ): Promise<ResolvedAdminShopDirectory> {
   try {
-    await ensureShopDirectoryTaxonomy(pool, await adminShopDirectorySeed());
+    await ensureShopDirectoryTaxonomyTables(pool);
   } catch {
-    /* slug-only save still works if seed fails */
+    /* slug-only save still works */
   }
   return resolveAdminShopDirectory(categorySlug, subcategorySlug);
 }

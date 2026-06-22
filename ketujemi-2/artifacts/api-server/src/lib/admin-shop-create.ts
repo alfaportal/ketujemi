@@ -1,13 +1,11 @@
 import {
   db,
-  ensureShopDirectoryTaxonomy,
   ensureShopSchema,
   pool,
   shopApplicationsTable,
   shopsTable,
 } from "@workspace/db";
 import { eq } from "drizzle-orm";
-import { adminShopDirectorySeed } from "./admin-shop-directory.js";
 
 export type AdminShopInsertValues = {
   shop_name: string;
@@ -46,10 +44,21 @@ function pgErrorMessage(err: unknown): string {
   return String(err);
 }
 
-/** Idempotent schema + taxonomy before admin shop write (handles partial Railway migrations). */
+/** Idempotent schema columns only — no full taxonomy seed (that runs on server boot). */
+let shopWriteReadyOnce: Promise<void> | null = null;
+
 export async function ensureAdminShopWriteReady(): Promise<void> {
-  await ensureShopSchema(pool);
-  await ensureShopDirectoryTaxonomy(pool, await adminShopDirectorySeed());
+  if (!shopWriteReadyOnce) {
+    shopWriteReadyOnce = (async () => {
+      const { ensureShopDirectoryTaxonomyTables } = await import("@workspace/db");
+      await ensureShopSchema(pool);
+      await ensureShopDirectoryTaxonomyTables(pool);
+    })().catch((err) => {
+      shopWriteReadyOnce = null;
+      throw err;
+    });
+  }
+  await shopWriteReadyOnce;
 }
 
 async function insertAdminShopPair(
@@ -98,8 +107,6 @@ export async function persistAdminShopCreate(
   adminUserId: number,
   shopValues: AdminShopInsertValues,
 ): Promise<{ application: typeof shopApplicationsTable.$inferSelect; shop: typeof shopsTable.$inferSelect }> {
-  await ensureAdminShopWriteReady();
-
   try {
     return await insertAdminShopPair(adminUserId, shopValues);
   } catch (err) {
@@ -141,7 +148,7 @@ export function formatAdminShopSaveError(err: unknown): string {
     return "Mungon struktura e bazës për dyqanet. Prisni 1–2 min pas deploy-it dhe provoni përsëri.";
   }
   if (lower.includes("connection") || lower.includes("econnrefused") || lower.includes("timeout")) {
-    return "Lidhja me bazën e të dhënave dështoi. Kontrolloni DATABASE_URL në Railway.";
+    return "Lidhja me bazën e të dhënave vonoi. Provoni përsëri pas disa sekondash.";
   }
   if (msg.length > 0 && msg.length < 280) {
     return `Dyqani nuk u ruajt: ${msg}`;
