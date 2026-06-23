@@ -1,10 +1,10 @@
 # Uptime Monitor — KetuJemi.com
 
 Bot që kontrollon `https://ketujemi.com/` dhe `https://ketujemi.com/api/healthz`
-çdo **5 minuta** përmes GitHub Actions, dhe dërgon njoftim në **Telegram**:
+çdo **1 orë** përmes GitHub Actions (ose Railway cron), dhe dërgon njoftim në **Telegram**:
 
 - 🔴 kur faqja/API nuk përgjigjet (HTTP gabim, timeout, etj.)
-- 🔴 ri-njoftim çdo 30 min nëse problemi vazhdon
+- 🔴 ri-njoftim çdo 1 orë nëse problemi vazhdon
 - 🟢 kur faqja rikthehet, me kohëzgjatjen e ndërprerjes
 
 ## Setup (një herë)
@@ -34,7 +34,7 @@ Repo → **Settings → Secrets and variables → Actions → New repository sec
 ### 4. Gati
 
 Workflow-i `.github/workflows/uptime-monitor.yml` ekzekutohet automatikisht
-çdo 5 minuta. Mund ta testosh menjëherë: **Actions → Uptime Monitor
+çdo 1 orë. Mund ta testosh menjëherë: **Actions → Uptime Monitor
 (KetuJemi.com) → Run workflow**.
 
 ## Si funksionon

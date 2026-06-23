@@ -1,10 +1,10 @@
-# Kontrollon ketujemi.com çdo 5 minuta dhe njofton në Telegram kur ka problem
+# Kontrollon ketujemi.com çdo 1 orë dhe njofton në Telegram kur ka problem
 # (ose kur faqja rikthehet). Shih monitoring/README.md për setup.
 name: Uptime Monitor (KetuJemi.com)
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 permissions:

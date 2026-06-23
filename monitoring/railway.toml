@@ -6,5 +6,5 @@ builder = "NIXPACKS"
 
 [deploy]
 startCommand = "node monitoring/uptime-monitor.mjs"
-cronSchedule = "*/5 * * * *"
+cronSchedule = "0 * * * *"
 restartPolicyType = "NEVER"

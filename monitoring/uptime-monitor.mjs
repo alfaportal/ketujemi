@@ -14,7 +14,7 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 const TIMEOUT_MS = 10_000;
 // Sa shpesh të ri-njoftojë në Telegram nëse problemi vazhdon
-const ALERT_COOLDOWN_MS = 30 * 60 * 1000;
+const ALERT_COOLDOWN_MS = 60 * 60 * 1000;
 // Kur zbulohet problem, sa kontrolle konfirmuese (1 mesazh secili) me interval mes tyre
 const CONFIRM_ATTEMPTS = 3;
 const CONFIRM_INTERVAL_MS = 60 * 1000;
