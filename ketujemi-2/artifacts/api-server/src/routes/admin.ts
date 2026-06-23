@@ -569,6 +569,10 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
       bodyShopId,
       seller_name: sellerContact.seller_name,
       seller_phone: sellerContact.seller_phone,
+      description,
+      facebook: (parsed.data as { facebook?: string | null }).facebook,
+      instagram: (parsed.data as { instagram?: string | null }).instagram,
+      tiktok: (parsed.data as { tiktok?: string | null }).tiktok,
     });
 
     const imageUrl = sanitizeListingImageUrlField(parsed.data.image_url ?? null);

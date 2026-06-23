@@ -9,6 +9,7 @@ import { activeShopSqlCondition } from "./shop-visibility.js";
 import { activeListingSqlCondition } from "./listing-visibility.js";
 import { normalizePhoneDigits, phonesMatch } from "./listing-ownership.js";
 import { logger } from "./logger.js";
+import { listingTextMatchesShopSocial } from "./shop-social-match.js";
 
 const EMPTY_SHOP_FIELDS: ShopListingFields = {
   shop_id: null,
@@ -155,16 +156,35 @@ function phoneSuffix8(phone: string | null | undefined): string | null {
   return digits.slice(-8);
 }
 
+function shopHasVerifiedPhone(phone: string | null | undefined): boolean {
+  return (phone?.replace(/\D/g, "") ?? "").length >= 8;
+}
+
 function listingBelongsToShop(
-  listing: { user_id: number; seller_phone: string },
-  shop: { id: number; user_id: number; phone: string; email?: string | null },
+  listing: { user_id: number; seller_phone: string; description?: string | null },
+  shop: {
+    id: number;
+    user_id: number;
+    phone: string;
+    email?: string | null;
+    facebook?: string | null;
+    instagram?: string | null;
+    tiktok?: string | null;
+  },
   ownerUserIds: number[],
   shopCountForOwner: number,
 ): boolean {
   if (shopCountForOwner > 1) {
     const phone = listing.seller_phone?.trim();
-    if (!phone) return false;
-    return phonesMatch(phone, shop.phone);
+    if (shopHasVerifiedPhone(shop.phone) && phone && phonesMatch(phone, shop.phone)) {
+      return true;
+    }
+    if (listing.description && listingTextMatchesShopSocial(listing.description, shop)) {
+      return true;
+    }
+    // Temporary: shops without phone yet (admin) — trust explicit shop_id link.
+    if (!shopHasVerifiedPhone(shop.phone)) return true;
+    return false;
   }
   if (listing.user_id === shop.user_id) return true;
   if (ownerUserIds.includes(listing.user_id)) return true;
@@ -251,6 +271,7 @@ export async function reconcileShopListingAssignments(): Promise<{ unlinked: num
       shop_id: listingsTable.shop_id,
       user_id: listingsTable.user_id,
       seller_phone: listingsTable.seller_phone,
+      description: listingsTable.description,
     })
     .from(listingsTable)
     .where(isNotNull(listingsTable.shop_id));
@@ -268,8 +289,15 @@ export async function reconcileShopListingAssignments(): Promise<{ unlinked: num
     const ownerIds = ownerIdsByShop.get(shopId) ?? [];
     const shopCount = shopCountByUser.get(shop.user_id) ?? 1;
     if (shopCount > 1) {
-      const phone = listing.seller_phone?.trim();
-      if (!phone || !phonesMatch(phone, shop.phone)) {
+      const phoneOk =
+        shopHasVerifiedPhone(shop.phone)
+        && Boolean(listing.seller_phone?.trim())
+        && phonesMatch(listing.seller_phone, shop.phone);
+      const socialOk =
+        Boolean(listing.description?.trim())
+        && listingTextMatchesShopSocial(listing.description, shop);
+      const noPhoneShop = !shopHasVerifiedPhone(shop.phone);
+      if (!phoneOk && !socialOk && !noPhoneShop) {
         await db.update(listingsTable).set({ shop_id: null }).where(eq(listingsTable.id, listing.id));
         unlinked++;
       }
@@ -331,7 +359,12 @@ async function activeShopMap(shopIds: number[]) {
 }
 
 export async function annotateListingsWithShopInfo<
-  T extends { shop_id?: number | null; user_id?: number | null; seller_phone?: string | null },
+  T extends {
+    shop_id?: number | null;
+    user_id?: number | null;
+    seller_phone?: string | null;
+    description?: string | null;
+  },
 >(listings: T[]): Promise<(T & ShopListingFields)[]> {
   if (listings.length === 0) return [];
 
@@ -366,6 +399,7 @@ export async function annotateListingsWithShopInfo<
       {
         user_id: listing.user_id ?? 0,
         seller_phone: listing.seller_phone ?? "",
+        description: listing.description,
       },
       shop,
       ownerIds,

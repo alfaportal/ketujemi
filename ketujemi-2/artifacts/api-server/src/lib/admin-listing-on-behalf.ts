@@ -4,6 +4,7 @@ import { getAdminEmail } from "./admin-monitor-email.js";
 import { isPlatformAdminUser, PLATFORM_OPERATOR_EMAIL } from "./platform-admin.js";
 import { activeShopSqlCondition } from "./shop-visibility.js";
 import { phonesMatch } from "./listing-ownership.js";
+import { findShopByUniqueSocialFromText } from "./shop-social-match.js";
 function platformAdminEmail(): string {
   return getAdminEmail()?.trim().toLowerCase() || PLATFORM_OPERATOR_EMAIL.toLowerCase();
 }
@@ -119,6 +120,16 @@ async function findShopByUniquePhone(
   return matches.length === 1 ? matches[0]! : null;
 }
 
+async function findShopByUniqueSocial(input: {
+  description?: string | null;
+  facebook?: string | null;
+  instagram?: string | null;
+  tiktok?: string | null;
+}): Promise<typeof shopsTable.$inferSelect | null> {
+  const shops = await db.select().from(shopsTable).where(activeShopSqlCondition());
+  return findShopByUniqueSocialFromText(shops, input);
+}
+
 function shopSellerDisplayName(
   shop: Pick<typeof shopsTable.$inferSelect, "shop_name" | "contact_name">,
   submittedName: string,
@@ -132,13 +143,17 @@ function shopSellerDisplayName(
 
 /**
  * Admin posts are stored as if the shop or seller posted — never as anonymous admin.
- * shop_id must be explicit or match exactly one shop phone.
+ * shop_id: explicit body, unique phone, or unique IG/FB/TikTok in description (temporary for shops without phone).
  */
 export async function resolveAdminListingAttribution(input: {
   adminUserId: number;
   bodyShopId?: number | null;
   seller_name: string;
   seller_phone: string;
+  description?: string | null;
+  facebook?: string | null;
+  instagram?: string | null;
+  tiktok?: string | null;
 }): Promise<AdminListingAttribution> {
   const seller = sellerContactForAdminOnBehalf({
     seller_name: input.seller_name,
@@ -156,6 +171,14 @@ export async function resolveAdminListingAttribution(input: {
     shopRow = row ?? null;
   } else {
     shopRow = await findShopByUniquePhone(seller.seller_phone);
+    if (!shopRow) {
+      shopRow = await findShopByUniqueSocial({
+        description: input.description,
+        facebook: input.facebook,
+        instagram: input.instagram,
+        tiktok: input.tiktok,
+      });
+    }
   }
 
   if (shopRow) {
