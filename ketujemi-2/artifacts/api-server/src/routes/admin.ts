@@ -69,12 +69,11 @@ import { loadBannedPhoneSet, saveBannedPhoneSet } from "../lib/user-ban";
 import { primaryListingImageUrl, sanitizeListingImageUrlField } from "../lib/listing-images";
 import { buildAdminListingPatch } from "../lib/admin-listing-patch.js";
 import { sanitizeListingVideoUrl } from "../lib/listing-video";
+import { expiresAtForAdminOperator } from "../lib/listing-lifetime.js";
 import {
-  expiresAtForCategoryRootSlug,
-  resolveCategorySlugMeta,
-} from "../lib/listing-special-categories.js";
-import { assertListingContentNotProhibited } from "../../../../lib/listing-prohibited-content.js";
-import { scanListingImagesForProhibitedContent } from "../lib/listing-image-prohibited-scan";
+  ensureListingLinkedToOwnerShop,
+  resolveShopIdForListingPoster,
+} from "../lib/shop-listing-lookup.js";
 import { purgeInvalidListingImages } from "../lib/purge-invalid-listing-images.js";
 import { pruneListingImagesAndNotifyOwner } from "../lib/listing-image-prune.js";
 import { deleteShopApplicationByAdmin, deleteShopCascade } from "../lib/delete-shop-cascade";
@@ -393,7 +392,6 @@ router.get("/admin/listings", requireAdmin, async (req, res) => {
     let rows = await db
       .select()
       .from(listingsTable)
-      .where(isNull(listingsTable.shop_id))
       .orderBy(desc(listingsTable.created_at));
 
     if (search) {
@@ -458,39 +456,9 @@ router.patch("/admin/listings/:id", requireAdmin, async (req, res) => {
       return;
     }
 
-    const nextTitle =
-      typeof updates.title === "string" ? updates.title : existing.title;
-    const nextDescription =
-      typeof updates.description === "string" ? updates.description : existing.description;
-
-    try {
-      assertListingContentNotProhibited(nextTitle, nextDescription);
-    } catch (err: unknown) {
-      if (err instanceof Error && err.message === "PROHIBITED_CONTENT") {
-        const e = err as Error & { publicMessage?: string };
-        res.status(403).json({
-          error: "PROHIBITED_CONTENT",
-          message: e.publicMessage ?? "Ky lloj produkti nuk lejohet në platformë.",
-        });
-        return;
-      }
-      throw err;
-    }
-
     const rawBody = req.body as { image_url?: string | null };
     const nextImageUrl =
       updates.image_url !== undefined ? rawBody.image_url ?? null : existing.image_url;
-    if (nextImageUrl) {
-      const imageHit = await scanListingImagesForProhibitedContent(nextImageUrl);
-      if (imageHit) {
-        res.status(403).json({
-          error: "PROHIBITED_CONTENT",
-          message: imageHit.reason,
-          reason: `PROHIBITED_IMAGE:${imageHit.label}`,
-        });
-        return;
-      }
-    }
 
     const [updated] = await db
       .update(listingsTable)
@@ -598,26 +566,9 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
       normalizeListingDescription(parsed.data.description),
     );
 
-    try {
-      assertListingContentNotProhibited(
-        normalizeListingTitle(parsed.data.title),
-        description,
-      );
-    } catch (err: unknown) {
-      if (err instanceof Error && err.message === "PROHIBITED_CONTENT") {
-        const e = err as Error & { publicMessage?: string };
-        res.status(403).json({
-          error: "PROHIBITED_CONTENT",
-          message: e.publicMessage ?? "Ky lloj produkti nuk lejohet në platformë.",
-        });
-        return;
-      }
-      throw err;
-    }
-
     let listingUserId = adminUser.id;
     let shopId: number | null = null;
-    const bodyShopId = parsed.data.shop_id;
+    const bodyShopId = (parsed.data as { shop_id?: number | null }).shop_id;
     if (bodyShopId != null && bodyShopId > 0) {
       const [shopRow] = await db
         .select({ id: shopsTable.id, user_id: shopsTable.user_id })
@@ -630,19 +581,26 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
       }
       shopId = shopRow.id;
       listingUserId = shopRow.user_id;
+    } else {
+      const resolvedShopId = await resolveShopIdForListingPoster({
+        userId: adminUser.id,
+        userEmail: adminUser.email,
+        sellerPhone: sellerContact.seller_phone,
+      });
+      if (resolvedShopId) {
+        const [shopRow] = await db
+          .select({ id: shopsTable.id, user_id: shopsTable.user_id })
+          .from(shopsTable)
+          .where(eq(shopsTable.id, resolvedShopId))
+          .limit(1);
+        if (shopRow) {
+          shopId = shopRow.id;
+          listingUserId = shopRow.user_id;
+        }
+      }
     }
 
-    const catMeta = await resolveCategorySlugMeta(parsed.data.category_id);
     const imageUrl = sanitizeListingImageUrlField(parsed.data.image_url ?? null);
-    const imageHit = await scanListingImagesForProhibitedContent(imageUrl);
-    if (imageHit) {
-      res.status(403).json({
-        error: "PROHIBITED_CONTENT",
-        message: imageHit.reason,
-        reason: `PROHIBITED_IMAGE:${imageHit.label}`,
-      });
-      return;
-    }
     const videoUrl = sanitizeListingVideoUrl(parsed.data.video_url ?? null);
 
     const [row] = await db
@@ -665,7 +623,7 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
         moderation_status: "approved",
         listed_at: new Date(),
         created_at: new Date(),
-        expires_at: expiresAtForCategoryRootSlug(catMeta?.rootSlug ?? null),
+        expires_at: expiresAtForAdminOperator(),
         vehicle_year: parsed.data.vehicle_year ?? null,
         vehicle_mileage_km: parsed.data.vehicle_mileage_km ?? null,
         vehicle_fuel: parsed.data.vehicle_fuel ?? null,
@@ -702,6 +660,13 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
         await backfillShopListingsForShop(shopRow).catch(() => undefined);
       }
     }
+
+    await ensureListingLinkedToOwnerShop({
+      userId: listingUserId,
+      userEmail: adminUser.email,
+      sellerPhone: sellerContact.seller_phone,
+      listingId: row.id,
+    }).catch(() => undefined);
 
     res.status(201).json({ ...row, price: Number(row.price), created_at: row.created_at.toISOString() });
   } catch (err) {
@@ -1878,6 +1843,14 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
     };
 
     const { application, shop } = await persistAdminShopCreate(adminUser.id, shopValues);
+
+    const { backfillShopListingsForShop } = await import("../lib/shop-listing-lookup.js");
+    await backfillShopListingsForShop({
+      id: shop.id,
+      user_id: shop.user_id,
+      phone: shop.phone,
+      email: shop.email,
+    }).catch(() => undefined);
 
     const { scheduleShopSocialEnrich } = await import("../lib/shop-social-enrich.js");
     scheduleShopSocialEnrich(shop.id);

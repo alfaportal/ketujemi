@@ -158,6 +158,9 @@ async function runDirectorySyncQueries(): Promise<void> {
   }
 
   await backfillMissingSlugsInTypescript();
+
+  const { backfillAllActiveShopListingsIfStale } = await import("./shop-listing-lookup.js");
+  await backfillAllActiveShopListingsIfStale().catch(() => undefined);
 }
 
 /** Ensure every active shop has directory slugs so /dyqanet lists it. */

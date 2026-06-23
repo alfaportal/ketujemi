@@ -29,7 +29,9 @@ import {
 import {
   descriptionForAdminOnBehalf,
   isListingUserPlatformAdmin,
+  sellerContactForAdminOnBehalf,
 } from "../lib/admin-listing-on-behalf.js";
+import { isPlatformAdminUser } from "../lib/platform-admin.js";
 import {
   normalizeListingDescription,
   normalizeListingTitle,
@@ -97,7 +99,7 @@ import {
   repairListingCategoryIfNeeded,
   resolveListingCategoryToLeaf,
 } from "../lib/listing-category-resolve.js";
-import { expiresAtAfterListingLifetime } from "../lib/listing-lifetime.js";
+import { expiresAtAfterListingLifetime, expiresAtForAdminOperator } from "../lib/listing-lifetime.js";
 import { isListingPubliclyVisible, activeListingSqlCondition, marketplaceListingSqlCondition } from "../lib/listing-visibility.js";
 import { postNewListingToFacebook } from "../services/socialMedia.js";
 import { markListingFbPosted } from "../lib/facebook-scheduled-post-job";
@@ -491,6 +493,8 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     return;
   }
 
+  const isOperatorPost = isPlatformAdminUser(viewer);
+
   const parsed = CreateListingBody.safeParse(req.body);
   if (!parsed.success) {
     const message = formatZodIssuesMessage(parsed.error.issues);
@@ -522,7 +526,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     seller_phone: parsed.data.seller_phone,
   });
 
-  if (!userHasPostableContact(viewer)) {
+  if (!isOperatorPost && !userHasPostableContact(viewer)) {
     res.status(400).json({
       error: "INCOMPLETE_PROFILE",
       message:
@@ -531,6 +535,21 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     return;
   }
 
+  const sellerContact = isOperatorPost
+    ? sellerContactForAdminOnBehalf({
+        seller_name: parsed.data.seller_name,
+        seller_phone: parsed.data.seller_phone,
+      })
+    : canonicalSellerContactForUser(viewer);
+  const listingDescription = isOperatorPost
+    ? descriptionForAdminOnBehalf(normalizedDescription)
+    : sanitizeListingDescriptionEmail(normalizedDescription, viewer.email);
+
+  let listingPrice = parsed.data.price;
+  const categoryMeta = await resolveCategorySlugMeta(listingCategoryId);
+  let moderationReason: string | null = null;
+
+  if (!isOperatorPost) {
   const impersonation = detectContactImpersonation(viewer, {
     seller_name: parsed.data.seller_name,
     seller_phone: parsed.data.seller_phone,
@@ -552,9 +571,6 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     });
     return;
   }
-
-  const sellerContact = canonicalSellerContactForUser(viewer);
-  const listingDescription = sanitizeListingDescriptionEmail(normalizedDescription, viewer.email);
 
   try {
     await assertAccountActive(viewer, sellerContact.seller_phone);
@@ -614,8 +630,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     });
     return;
   }
-  const listingPrice = specialGate.price;
-  const categoryMeta = await resolveCategorySlugMeta(listingCategoryId);
+  listingPrice = specialGate.price;
 
   const twoLayer = await runTwoLayerModeration({
     userId: viewer.id,
@@ -707,6 +722,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     });
     return;
   }
+  moderationReason = moderation.reason || null;
 
   try {
     assertListingPostUserCooldown(viewer);
@@ -720,6 +736,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
       return;
     }
     throw err;
+  }
   }
 
   const listingCountBefore = await userListingCount(viewer.id);
@@ -751,8 +768,10 @@ router.post("/listings", postListingLimiter, async (req, res) => {
       created_at: now,
       status: "active",
       moderation_status: "approved",
-      moderation_reason: moderation.reason || null,
-      expires_at: expiresAtForCategoryRootSlug(categoryMeta?.rootSlug),
+      moderation_reason: moderationReason,
+      expires_at: isOperatorPost
+        ? expiresAtForAdminOperator()
+        : expiresAtForCategoryRootSlug(categoryMeta?.rootSlug),
       vehicle_year: parsed.data.vehicle_year ?? null,
       vehicle_mileage_km: parsed.data.vehicle_mileage_km ?? null,
       vehicle_fuel: parsed.data.vehicle_fuel ?? null,

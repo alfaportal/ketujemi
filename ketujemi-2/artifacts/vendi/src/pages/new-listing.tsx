@@ -1000,7 +1000,7 @@ export default function NewListing() {
       setLocation(loginUrlWithReturn(pathname || "/listings/new"));
       return;
     }
-    if (isDhurataPostRoute && !dhurataPledgeOk) {
+    if (isDhurataPostRoute && !dhurataPledgeOk && !isAdminListingMode) {
       refusePost(
         tx.ui_giftPledgeUncheckedBlocked!,
       );
@@ -1026,30 +1026,33 @@ export default function NewListing() {
     );
     const photoCountForValidation =
       imageUrls.length > 0 ? imageUrls.length : videoUrl ? 1 : 0;
-    const preflight = collectListingPostPreflightIssues(
-      {
-        parentCategoryId: parentId,
-        categoryId: Number(listingData.category_id),
-        brandCategoryId: Number(listingData.brand_category_id) || 0,
-        hasBrands,
-        subcategoryCount: children.length,
-        title: listingData.title,
-        description: listingData.description,
-        price: listingData.price,
-        priceAgreement: listingData.price_agreement,
-        location: listingData.location,
-        sellerName: listingData.seller_name,
-        sellerPhone: listingData.seller_phone,
-        imageCount: photoCountForValidation,
-        isKerkoj: isKerkojCategory,
-        isDhurata: isDhurataCategory,
-        isUploading,
-      },
-      categoryLocale,
-    );
-    if (preflight.length > 0) {
-      refusePost(formatPreflightSummary(preflight));
-      return;
+
+    if (!isAdminListingMode) {
+      const preflight = collectListingPostPreflightIssues(
+        {
+          parentCategoryId: parentId,
+          categoryId: Number(listingData.category_id),
+          brandCategoryId: Number(listingData.brand_category_id) || 0,
+          hasBrands,
+          subcategoryCount: children.length,
+          title: listingData.title,
+          description: listingData.description,
+          price: listingData.price,
+          priceAgreement: listingData.price_agreement,
+          location: listingData.location,
+          sellerName: listingData.seller_name,
+          sellerPhone: listingData.seller_phone,
+          imageCount: photoCountForValidation,
+          isKerkoj: isKerkojCategory,
+          isDhurata: isDhurataCategory,
+          isUploading,
+        },
+        categoryLocale,
+      );
+      if (preflight.length > 0) {
+        refusePost(formatPreflightSummary(preflight));
+        return;
+      }
     }
 
     let resolvedCategoryId = Number(listingData.category_id);
@@ -1060,7 +1063,7 @@ export default function NewListing() {
       if (children.length === 1) {
         resolvedCategoryId = children[0]!.id;
         form.setValue("category_id", resolvedCategoryId);
-      } else {
+      } else if (!isAdminListingMode) {
         refusePost(
           watchTitle.trim().length < 5
             ? t.postErrTitleForSubcategory
@@ -1071,24 +1074,39 @@ export default function NewListing() {
     }
 
     const resolvedBrandId = Number(listingData.brand_category_id) || 0;
-    if (hasBrands && resolvedBrandId < 1) {
+    if (hasBrands && resolvedBrandId < 1 && !isAdminListingMode) {
       refusePost(t.postErrChooseBrand);
       return;
     }
     const partCat = subCats.find((c: any) => c.id === resolvedCategoryId);
-    const validation = catEngine.validateListing(
-      {
-        ...listingData,
-        category_id: resolvedCategoryId,
-        brand_category_id: resolvedBrandId || listingData.brand_category_id,
-      },
-      Number(parentCatId) || effectiveCategoryId,
-      {
-      imageCount: photoCountForValidation,
-      subcategoryName: partCat?.name,
-      sellLangBlockedTemplate: tx.ui_sellLangBlocked,
-    });
+    const adminPriceByAgreement = !!listingData.price_agreement || rawPrice <= 0;
+    const validation = isAdminListingMode
+      ? {
+          ok: listingData.title.trim().length >= 1,
+          issues: [] as { code: string; message: string; blockedWord?: string }[],
+          extraDescriptionPrefix: "",
+          payloadExtras: {} as Record<string, unknown>,
+          price: adminPriceByAgreement ? 0 : rawPrice,
+          price_agreement: adminPriceByAgreement,
+        }
+      : catEngine.validateListing(
+          {
+            ...listingData,
+            category_id: resolvedCategoryId,
+            brand_category_id: resolvedBrandId || listingData.brand_category_id,
+          },
+          Number(parentCatId) || effectiveCategoryId,
+          {
+            imageCount: photoCountForValidation,
+            subcategoryName: partCat?.name,
+            sellLangBlockedTemplate: tx.ui_sellLangBlocked,
+          },
+        );
     if (!validation.ok) {
+      if (isAdminListingMode) {
+        refusePost(t.postErrTitleForSubcategory ?? "Titulli kërkohet.");
+        return;
+      }
       const issue = validation.issues[0]!;
       const fbLocale = translationKeyForUiLang(uiLang);
       const title =

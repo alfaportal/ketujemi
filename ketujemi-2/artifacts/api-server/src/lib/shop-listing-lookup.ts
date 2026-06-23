@@ -293,7 +293,7 @@ async function activeShopMap(shopIds: number[]) {
   const rows = await db
     .select()
     .from(shopsTable)
-    .where(and(inArray(shopsTable.id, unique), eq(shopsTable.is_active, true)));
+    .where(and(inArray(shopsTable.id, unique), activeShopSqlCondition()));
 
   for (const row of rows) map.set(row.id, row);
   return map;
@@ -328,6 +328,31 @@ export async function annotateListingsWithShopInfo<
       shop_social_profiles: listing.shop_id ? socialMap.get(listing.shop_id) : undefined,
     };
   });
+}
+
+let lastAllShopListingBackfillAt = 0;
+const ALL_SHOP_LISTING_BACKFILL_TTL_MS = 60_000;
+
+/** Link orphan listings to active shops (phone/email/user) — runs at most once per minute. */
+export async function backfillAllActiveShopListingsIfStale(): Promise<void> {
+  const now = Date.now();
+  if (now - lastAllShopListingBackfillAt < ALL_SHOP_LISTING_BACKFILL_TTL_MS) return;
+  lastAllShopListingBackfillAt = now;
+
+  const shops = await db
+    .select({
+      id: shopsTable.id,
+      user_id: shopsTable.user_id,
+      phone: shopsTable.phone,
+      email: shopsTable.email,
+    })
+    .from(shopsTable)
+    .where(activeShopSqlCondition())
+    .limit(500);
+
+  for (const shop of shops) {
+    await backfillShopListingsForShop(shop).catch(() => undefined);
+  }
 }
 
 export async function finalizeListingsForApi<
