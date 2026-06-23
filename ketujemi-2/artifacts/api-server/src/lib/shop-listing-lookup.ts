@@ -161,8 +161,13 @@ function listingBelongsToShop(
   ownerUserIds: number[],
   shopCountForOwner: number,
 ): boolean {
-  if (listing.user_id === shop.user_id && shopCountForOwner === 1) return true;
-  if (ownerUserIds.includes(listing.user_id) && shopCountForOwner === 1) return true;
+  if (shopCountForOwner > 1) {
+    const phone = listing.seller_phone?.trim();
+    if (!phone) return false;
+    return phonesMatch(phone, shop.phone);
+  }
+  if (listing.user_id === shop.user_id) return true;
+  if (ownerUserIds.includes(listing.user_id)) return true;
   if (phonesMatch(listing.seller_phone, shop.phone)) return true;
   return false;
 }
@@ -264,14 +269,9 @@ export async function reconcileShopListingAssignments(): Promise<{ unlinked: num
     const shopCount = shopCountByUser.get(shop.user_id) ?? 1;
     if (shopCount > 1) {
       const phone = listing.seller_phone?.trim();
-      if (phone) {
-        const matches = shops.filter((s) => phonesMatch(phone, s.phone));
-        if (matches.length === 1 && matches[0]!.id !== shopId) {
-          await db
-            .update(listingsTable)
-            .set({ shop_id: matches[0]!.id })
-            .where(eq(listingsTable.id, listing.id));
-        }
+      if (!phone || !phonesMatch(phone, shop.phone)) {
+        await db.update(listingsTable).set({ shop_id: null }).where(eq(listingsTable.id, listing.id));
+        unlinked++;
       }
       continue;
     }
@@ -331,7 +331,7 @@ async function activeShopMap(shopIds: number[]) {
 }
 
 export async function annotateListingsWithShopInfo<
-  T extends { shop_id?: number | null },
+  T extends { shop_id?: number | null; user_id?: number | null; seller_phone?: string | null },
 >(listings: T[]): Promise<(T & ShopListingFields)[]> {
   if (listings.length === 0) return [];
 
@@ -341,21 +341,58 @@ export async function annotateListingsWithShopInfo<
   const shopMap = await activeShopMap(shopIds);
   const socialMap = await getShopSocialProfilesForShops(shopIds);
 
+  const shopCountByUser = new Map<number, number>();
+  const ownerIdsByShop = new Map<number, number[]>();
+  for (const shop of shopMap.values()) {
+    if (!shopCountByUser.has(shop.user_id)) {
+      shopCountByUser.set(shop.user_id, await activeShopCountForUser(shop.user_id));
+    }
+    ownerIdsByShop.set(shop.id, await resolveShopOwnerUserIds(shop));
+  }
+
   return listings.map((listing) => {
     const shop = listing.shop_id ? shopMap.get(listing.shop_id) : undefined;
+    if (!shop) {
+      return {
+        ...listing,
+        shop_id: listing.shop_id ?? null,
+        ...EMPTY_SHOP_FIELDS,
+      };
+    }
+
+    const shopCount = shopCountByUser.get(shop.user_id) ?? 1;
+    const ownerIds = ownerIdsByShop.get(shop.id) ?? [shop.user_id];
+    const belongs = listingBelongsToShop(
+      {
+        user_id: listing.user_id ?? 0,
+        seller_phone: listing.seller_phone ?? "",
+      },
+      shop,
+      ownerIds,
+      shopCount,
+    );
+
+    if (!belongs) {
+      return {
+        ...listing,
+        shop_id: listing.shop_id ?? null,
+        ...EMPTY_SHOP_FIELDS,
+      };
+    }
+
     return {
       ...listing,
       shop_id: listing.shop_id ?? null,
-      shop_name: shop?.shop_name ?? null,
-      shop_logo_url: shop?.logo_url ?? null,
-      shop_category: shop?.category ?? null,
-      shop_city: shop?.city ?? null,
-      shop_facebook: shop?.facebook ?? null,
-      shop_instagram: shop?.instagram ?? null,
-      shop_tiktok: shop?.tiktok ?? null,
-      shop_whatsapp: shop?.whatsapp ?? null,
-      shop_website: shop?.website ?? null,
-      shop_verified: !!shop,
+      shop_name: shop.shop_name ?? null,
+      shop_logo_url: shop.logo_url ?? null,
+      shop_category: shop.category ?? null,
+      shop_city: shop.city ?? null,
+      shop_facebook: shop.facebook ?? null,
+      shop_instagram: shop.instagram ?? null,
+      shop_tiktok: shop.tiktok ?? null,
+      shop_whatsapp: shop.whatsapp ?? null,
+      shop_website: shop.website ?? null,
+      shop_verified: true,
       shop_social_profiles: listing.shop_id ? socialMap.get(listing.shop_id) : undefined,
     };
   });
@@ -371,6 +408,14 @@ export async function reconcileShopListingAssignmentsIfStale(): Promise<void> {
   lastReconcileAt = now;
   await reconcileShopListingAssignments().catch((err) => {
     logger.warn({ err }, "reconcileShopListingAssignments failed");
+  });
+}
+
+/** Run once on API boot so bad legacy shop_id rows are cleaned immediately. */
+export async function reconcileShopListingAssignmentsOnBoot(): Promise<void> {
+  lastReconcileAt = Date.now();
+  await reconcileShopListingAssignments().catch((err) => {
+    logger.warn({ err }, "reconcileShopListingAssignments on boot failed");
   });
 }
 

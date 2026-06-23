@@ -104,7 +104,9 @@ async function startServer(): Promise<void> {
     await syncShopDirectoryFieldsFromApplications().catch((err) => {
       logger.warn({ err }, "shop directory slug backfill on startup failed (will retry on /dyqanet)");
     });
-    logger.info("Shop directory slug backfill completed");
+    const { reconcileShopListingAssignmentsOnBoot } = await import("./lib/shop-listing-lookup.js");
+    await reconcileShopListingAssignmentsOnBoot();
+    logger.info("Shop listing shop_id reconcile completed");
     await ensureSportOutdoorTypeCategories(pool);
     logger.info("Sport & Outdoor type subcategories verified (sport-type-*)");
     await ensureNdertimInstalimeTypeCategories(pool);
