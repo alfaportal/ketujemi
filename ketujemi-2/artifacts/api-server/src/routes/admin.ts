@@ -70,10 +70,6 @@ import { primaryListingImageUrl, sanitizeListingImageUrlField } from "../lib/lis
 import { buildAdminListingPatch } from "../lib/admin-listing-patch.js";
 import { sanitizeListingVideoUrl } from "../lib/listing-video";
 import { expiresAtForAdminOperator } from "../lib/listing-lifetime.js";
-import {
-  ensureListingLinkedToOwnerShop,
-  resolveShopIdForListingPoster,
-} from "../lib/shop-listing-lookup.js";
 import { purgeInvalidListingImages } from "../lib/purge-invalid-listing-images.js";
 import { pruneListingImagesAndNotifyOwner } from "../lib/listing-image-prune.js";
 import { deleteShopApplicationByAdmin, deleteShopCascade } from "../lib/delete-shop-cascade";
@@ -568,10 +564,11 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
 
     let listingUserId = adminUser.id;
     let shopId: number | null = null;
+    let sellerPhoneForListing = sellerContact.seller_phone;
     const bodyShopId = (parsed.data as { shop_id?: number | null }).shop_id;
     if (bodyShopId != null && bodyShopId > 0) {
       const [shopRow] = await db
-        .select({ id: shopsTable.id, user_id: shopsTable.user_id })
+        .select({ id: shopsTable.id, user_id: shopsTable.user_id, phone: shopsTable.phone })
         .from(shopsTable)
         .where(eq(shopsTable.id, bodyShopId))
         .limit(1);
@@ -581,22 +578,8 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
       }
       shopId = shopRow.id;
       listingUserId = shopRow.user_id;
-    } else {
-      const resolvedShopId = await resolveShopIdForListingPoster({
-        userId: adminUser.id,
-        userEmail: adminUser.email,
-        sellerPhone: sellerContact.seller_phone,
-      });
-      if (resolvedShopId) {
-        const [shopRow] = await db
-          .select({ id: shopsTable.id, user_id: shopsTable.user_id })
-          .from(shopsTable)
-          .where(eq(shopsTable.id, resolvedShopId))
-          .limit(1);
-        if (shopRow) {
-          shopId = shopRow.id;
-          listingUserId = shopRow.user_id;
-        }
+      if (shopRow.phone?.trim()) {
+        sellerPhoneForListing = shopRow.phone.trim();
       }
     }
 
@@ -614,7 +597,7 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
         category_id: parsed.data.category_id,
         location: parsed.data.location,
         seller_name: sellerContact.seller_name,
-        seller_phone: sellerContact.seller_phone,
+        seller_phone: sellerPhoneForListing,
         condition: parsed.data.condition,
         image_url: imageUrl,
         video_url: videoUrl,
@@ -643,30 +626,6 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
         motor_transmission: parsed.data.motor_transmission ?? null,
       })
       .returning();
-
-    if (shopId) {
-      const [shopRow] = await db
-        .select({
-          id: shopsTable.id,
-          user_id: shopsTable.user_id,
-          phone: shopsTable.phone,
-          email: shopsTable.email,
-        })
-        .from(shopsTable)
-        .where(eq(shopsTable.id, shopId))
-        .limit(1);
-      if (shopRow) {
-        const { backfillShopListingsForShop } = await import("../lib/shop-listing-lookup.js");
-        await backfillShopListingsForShop(shopRow).catch(() => undefined);
-      }
-    }
-
-    await ensureListingLinkedToOwnerShop({
-      userId: listingUserId,
-      userEmail: adminUser.email,
-      sellerPhone: sellerContact.seller_phone,
-      listingId: row.id,
-    }).catch(() => undefined);
 
     res.status(201).json({ ...row, price: Number(row.price), created_at: row.created_at.toISOString() });
   } catch (err) {

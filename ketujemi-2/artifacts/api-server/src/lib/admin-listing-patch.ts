@@ -89,6 +89,10 @@ export function buildAdminListingPatch(body: Record<string, unknown>): Partial<L
     const m = String(body.moderation_status).trim();
     if (m) updates.moderation_status = m;
   }
+  if (body.shop_id !== undefined) {
+    const sid = body.shop_id == null || body.shop_id === "" ? null : Number(body.shop_id);
+    updates.shop_id = sid != null && Number.isFinite(sid) && sid > 0 ? Math.floor(sid) : null;
+  }
 
   for (const key of NUMERIC_NULLABLE) {
     if (body[key] !== undefined) {

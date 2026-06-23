@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull, desc, or, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, desc, or, sql } from "drizzle-orm";
 import { db, listingsTable, shopsTable, usersTable } from "@workspace/db";
 import { annotateListingsWithVipFlag } from "./vip-seller-lookup";
 import {
@@ -40,14 +40,16 @@ export type ShopListingFields = {
   shop_social_profiles?: Partial<Record<"instagram" | "tiktok", ShopSocialProfileApi>>;
 };
 
+/** Active shop for user — only when they own exactly one (never guess among several). */
 export async function getApprovedShopIdForUser(userId: number): Promise<number | null> {
-  const [shop] = await db
+  const rows = await db
     .select({ id: shopsTable.id })
     .from(shopsTable)
     .where(and(eq(shopsTable.user_id, userId), activeShopSqlCondition()))
-    .orderBy(desc(shopsTable.created_at))
-    .limit(1);
-  return shop?.id ?? null;
+    .orderBy(desc(shopsTable.created_at));
+
+  if (rows.length === 1) return rows[0]!.id;
+  return null;
 }
 
 /** Resolve all user ids that own this shop (account id + matching login email). */
@@ -67,33 +69,49 @@ export async function resolveShopOwnerUserIds(shop: {
   return [...ids];
 }
 
-/** Find active shop for poster — by account, then shop email, then phone. */
+async function activeShopCountForUser(userId: number): Promise<number> {
+  const [row] = await db
+    .select({ total: sql<number>`cast(count(*) as int)` })
+    .from(shopsTable)
+    .where(and(eq(shopsTable.user_id, userId), activeShopSqlCondition()));
+  return row?.total ?? 0;
+}
+
+/** Find active shop for poster — never guess when multiple shops share the same account. */
 export async function resolveShopIdForListingPoster(input: {
   userId: number;
   userEmail?: string | null;
   sellerPhone: string;
 }): Promise<number | null> {
-  const byUser = await getApprovedShopIdForUser(input.userId);
-  if (byUser) return byUser;
+  const shopCount = await activeShopCountForUser(input.userId);
+  if (shopCount === 1) {
+    const sole = await getApprovedShopIdForUser(input.userId);
+    if (sole) return sole;
+  }
+  if (shopCount > 1) {
+    return null;
+  }
 
   const email = input.userEmail?.trim().toLowerCase();
   if (email) {
-    const [shopByEmail] = await db
-      .select({ id: shopsTable.id })
+    const shopsByEmail = await db
+      .select({ id: shopsTable.id, user_id: shopsTable.user_id, email: shopsTable.email })
       .from(shopsTable)
       .where(
         and(activeShopSqlCondition(), sql`lower(trim(${shopsTable.email})) = ${email}`),
       )
-      .orderBy(desc(shopsTable.created_at))
-      .limit(1);
-    if (shopByEmail) return shopByEmail.id;
+      .orderBy(desc(shopsTable.created_at));
+    if (shopsByEmail.length === 1) {
+      const ownerIds = await resolveShopOwnerUserIds(shopsByEmail[0]!);
+      if (ownerIds.includes(input.userId)) return shopsByEmail[0]!.id;
+    }
   }
 
   const suffix = phoneSuffix8(input.sellerPhone);
   if (!suffix) return null;
 
-  const [shopByPhone] = await db
-    .select({ id: shopsTable.id })
+  const shopsByPhone = await db
+    .select({ id: shopsTable.id, user_id: shopsTable.user_id, email: shopsTable.email, phone: shopsTable.phone })
     .from(shopsTable)
     .where(
       and(
@@ -101,16 +119,28 @@ export async function resolveShopIdForListingPoster(input: {
         sql`RIGHT(regexp_replace(${shopsTable.phone}, '\\D', '', 'g'), 8) = ${suffix}`,
       ),
     )
-    .orderBy(desc(shopsTable.created_at))
-    .limit(1);
-  return shopByPhone?.id ?? null;
+    .orderBy(desc(shopsTable.created_at));
+
+  const ownedMatches: number[] = [];
+  for (const shop of shopsByPhone) {
+    const ownerIds = await resolveShopOwnerUserIds(shop);
+    if (ownerIds.includes(input.userId)) ownedMatches.push(shop.id);
+  }
+  if (ownedMatches.length === 1) return ownedMatches[0]!;
+  return null;
 }
 
-/** Link orphan listings (shop_id NULL) from a shop owner to their active shop. */
+/** Link orphan listings to shop only when poster owns exactly this shop account. */
 export async function backfillShopIdOnUserListings(
   userId: number,
   shopId: number,
 ): Promise<number> {
+  const shopCount = await activeShopCountForUser(userId);
+  if (shopCount !== 1) return 0;
+
+  const soleShopId = await getApprovedShopIdForUser(userId);
+  if (soleShopId !== shopId) return 0;
+
   const updated = await db
     .update(listingsTable)
     .set({ shop_id: shopId })
@@ -125,86 +155,37 @@ function phoneSuffix8(phone: string | null | undefined): string | null {
   return digits.slice(-8);
 }
 
-/** Backfill by user_id, email, and phone (same rules as phonesMatch). */
+function listingBelongsToShop(
+  listing: { user_id: number; seller_phone: string },
+  shop: { id: number; user_id: number; phone: string; email?: string | null },
+  ownerUserIds: number[],
+  shopCountForOwner: number,
+): boolean {
+  if (listing.user_id === shop.user_id && shopCountForOwner === 1) return true;
+  if (ownerUserIds.includes(listing.user_id) && shopCountForOwner === 1) return true;
+  if (phonesMatch(listing.seller_phone, shop.phone)) return true;
+  return false;
+}
+
+/** Safe backfill — only sole-shop owners; never bulk-link by phone across the marketplace. */
 export async function backfillShopListingsForShop(shop: {
   id: number;
   user_id: number;
   phone: string;
   email?: string | null;
 }): Promise<number> {
-  const ownerUserIds = await resolveShopOwnerUserIds(shop);
-  let linked = 0;
+  const shopCount = await activeShopCountForUser(shop.user_id);
+  if (shopCount !== 1) return 0;
 
-  for (const userId of ownerUserIds) {
-    linked += await backfillShopIdOnUserListings(userId, shop.id);
-  }
-
-  const email = shop.email?.trim().toLowerCase();
-  if (email) {
-    const byEmail = await db
-      .update(listingsTable)
-      .set({ shop_id: shop.id })
-      .from(usersTable)
-      .where(
-        and(
-          eq(listingsTable.user_id, usersTable.id),
-          isNull(listingsTable.shop_id),
-          sql`lower(trim(${usersTable.email})) = ${email}`,
-        ),
-      )
-      .returning({ id: listingsTable.id });
-    linked += byEmail.length;
-  }
-
-  const orphans = await db
-    .select({ id: listingsTable.id, seller_phone: listingsTable.seller_phone })
-    .from(listingsTable)
-    .where(isNull(listingsTable.shop_id))
-    .limit(1000);
-
-  const phoneIds = orphans
-    .filter((row) => phonesMatch(row.seller_phone, shop.phone))
-    .map((row) => row.id);
-
-  if (phoneIds.length > 0) {
-    const byPhone = await db
-      .update(listingsTable)
-      .set({ shop_id: shop.id })
-      .where(inArray(listingsTable.id, phoneIds))
-      .returning({ id: listingsTable.id });
-    linked += byPhone.length;
-  }
-
-  if (linked > 0) {
-    logger.info({ shopId: shop.id, linked, ownerUserIds }, "shop listings backfilled");
-  }
-  return linked;
+  return backfillShopIdOnUserListings(shop.user_id, shop.id);
 }
 
-/** Public shop page — listings owned by or linked to this shop. */
-export function shopPublicListingsCondition(shop: {
-  id: number;
-  user_id: number;
-  phone: string;
-  ownerUserIds?: number[];
-}) {
-  const ownerIds =
-    shop.ownerUserIds && shop.ownerUserIds.length > 0 ? shop.ownerUserIds : [shop.user_id];
-  const suffix = phoneSuffix8(shop.phone);
-  const orphanMatch = or(
-    inArray(listingsTable.user_id, ownerIds),
-    suffix
-      ? sql`RIGHT(regexp_replace(${listingsTable.seller_phone}, '\\D', '', 'g'), 8) = ${suffix}`
-      : sql`false`,
-  );
-
-  return and(
-    or(eq(listingsTable.shop_id, shop.id), and(isNull(listingsTable.shop_id), orphanMatch)),
-    activeListingSqlCondition(),
-  );
+/** Public shop page — only listings explicitly tagged with this shop_id. */
+export function shopPublicListingsCondition(shop: { id: number }) {
+  return and(eq(listingsTable.shop_id, shop.id), activeListingSqlCondition());
 }
 
-/** After posting, link listing to any shop whose phone matches the seller contact. */
+/** After posting, link only this listing when shop is unambiguous. */
 export async function linkNewListingToMatchingShop(input: {
   userId: number;
   userEmail?: string | null;
@@ -214,30 +195,14 @@ export async function linkNewListingToMatchingShop(input: {
   const shopId = await resolveShopIdForListingPoster(input);
   if (!shopId) return;
 
-  const [shop] = await db
-    .select({
-      id: shopsTable.id,
-      user_id: shopsTable.user_id,
-      phone: shopsTable.phone,
-      email: shopsTable.email,
-    })
-    .from(shopsTable)
-    .where(eq(shopsTable.id, shopId))
-    .limit(1);
-
-  if (!shop) return;
-
   await db
     .update(listingsTable)
-    .set({ shop_id: shop.id })
-    .where(eq(listingsTable.id, input.listingId));
-
-  await backfillShopListingsForShop(shop);
+    .set({ shop_id: shopId })
+    .where(and(eq(listingsTable.id, input.listingId), isNull(listingsTable.shop_id)));
 }
 
 /**
- * Idempotent guard — run after every listing create/update by a shop owner.
- * Guarantees shop_id is set when a matching shop exists (account, email, or phone).
+ * Idempotent guard — run after listing create when shop is unambiguous.
  */
 export async function ensureListingLinkedToOwnerShop(input: {
   userId: number;
@@ -256,33 +221,100 @@ export async function ensureListingLinkedToOwnerShop(input: {
     .where(eq(listingsTable.id, input.listingId))
     .limit(1);
 
-  if (listing?.shop_id === expectedShopId) return expectedShopId;
+  return listing?.shop_id ?? null;
+}
 
-  const [shop] = await db
-    .select({
-      id: shopsTable.id,
-      user_id: shopsTable.user_id,
-      phone: shopsTable.phone,
-      email: shopsTable.email,
-    })
+/** Fix wrong shop_id from old phone/user backfills; re-link only unambiguous orphans. */
+export async function reconcileShopListingAssignments(): Promise<{ unlinked: number; linked: number }> {
+  const shops = await db
+    .select()
     .from(shopsTable)
-    .where(eq(shopsTable.id, expectedShopId))
-    .limit(1);
+    .where(activeShopSqlCondition());
 
-  if (!shop) return listing?.shop_id ?? null;
+  const shopById = new Map(shops.map((s) => [s.id, s]));
+  const ownerIdsByShop = new Map<number, number[]>();
+  const shopCountByUser = new Map<number, number>();
 
-  logger.warn(
-    { listingId: input.listingId, expectedShopId, hadShopId: listing?.shop_id ?? null },
-    "listing shop_id missing after link — forcing shop attach",
-  );
+  for (const shop of shops) {
+    ownerIdsByShop.set(shop.id, await resolveShopOwnerUserIds(shop));
+    shopCountByUser.set(shop.user_id, (shopCountByUser.get(shop.user_id) ?? 0) + 1);
+  }
 
-  await db
-    .update(listingsTable)
-    .set({ shop_id: shop.id })
-    .where(eq(listingsTable.id, input.listingId));
+  const linkedRows = await db
+    .select({
+      id: listingsTable.id,
+      shop_id: listingsTable.shop_id,
+      user_id: listingsTable.user_id,
+      seller_phone: listingsTable.seller_phone,
+    })
+    .from(listingsTable)
+    .where(isNotNull(listingsTable.shop_id));
 
-  await backfillShopListingsForShop(shop);
-  return shop.id;
+  let unlinked = 0;
+  for (const listing of linkedRows) {
+    const shopId = listing.shop_id!;
+    const shop = shopById.get(shopId);
+    if (!shop) {
+      await db.update(listingsTable).set({ shop_id: null }).where(eq(listingsTable.id, listing.id));
+      unlinked++;
+      continue;
+    }
+
+    const ownerIds = ownerIdsByShop.get(shopId) ?? [];
+    const shopCount = shopCountByUser.get(shop.user_id) ?? 1;
+    const shopCount = shopCountByUser.get(shop.user_id) ?? 1;
+    if (shopCount > 1) {
+      const phone = listing.seller_phone?.trim();
+      if (!phone) {
+        await db.update(listingsTable).set({ shop_id: null }).where(eq(listingsTable.id, listing.id));
+        unlinked++;
+        continue;
+      }
+      if (!phonesMatch(phone, shop.phone)) {
+        await db.update(listingsTable).set({ shop_id: null }).where(eq(listingsTable.id, listing.id));
+        unlinked++;
+      }
+      continue;
+    }
+
+    if (listingBelongsToShop(listing, shop, ownerIds, shopCount)) continue;
+
+    await db.update(listingsTable).set({ shop_id: null }).where(eq(listingsTable.id, listing.id));
+    unlinked++;
+  }
+
+  let linked = 0;
+  for (const shop of shops) {
+    linked += await backfillShopListingsForShop(shop);
+  }
+
+  const orphans = await db
+    .select({
+      id: listingsTable.id,
+      seller_phone: listingsTable.seller_phone,
+    })
+    .from(listingsTable)
+    .where(isNull(listingsTable.shop_id))
+    .limit(2000);
+
+  for (const listing of orphans) {
+    const phone = listing.seller_phone?.trim();
+    if (!phone) continue;
+
+    const matches = shops.filter((s) => phonesMatch(phone, s.phone));
+    if (matches.length !== 1) continue;
+
+    await db
+      .update(listingsTable)
+      .set({ shop_id: matches[0]!.id })
+      .where(eq(listingsTable.id, listing.id));
+    linked++;
+  }
+
+  if (unlinked > 0 || linked > 0) {
+    logger.info({ unlinked, linked }, "shop listing assignments reconciled");
+  }
+  return { unlinked, linked };
 }
 
 async function activeShopMap(shopIds: number[]) {
@@ -330,29 +362,17 @@ export async function annotateListingsWithShopInfo<
   });
 }
 
-let lastAllShopListingBackfillAt = 0;
-const ALL_SHOP_LISTING_BACKFILL_TTL_MS = 60_000;
+let lastReconcileAt = 0;
+const RECONCILE_TTL_MS = 60_000;
 
-/** Link orphan listings to active shops (phone/email/user) — runs at most once per minute. */
-export async function backfillAllActiveShopListingsIfStale(): Promise<void> {
+/** Repair mixed shop listings — at most once per minute (e.g. on /dyqanet load). */
+export async function reconcileShopListingAssignmentsIfStale(): Promise<void> {
   const now = Date.now();
-  if (now - lastAllShopListingBackfillAt < ALL_SHOP_LISTING_BACKFILL_TTL_MS) return;
-  lastAllShopListingBackfillAt = now;
-
-  const shops = await db
-    .select({
-      id: shopsTable.id,
-      user_id: shopsTable.user_id,
-      phone: shopsTable.phone,
-      email: shopsTable.email,
-    })
-    .from(shopsTable)
-    .where(activeShopSqlCondition())
-    .limit(500);
-
-  for (const shop of shops) {
-    await backfillShopListingsForShop(shop).catch(() => undefined);
-  }
+  if (now - lastReconcileAt < RECONCILE_TTL_MS) return;
+  lastReconcileAt = now;
+  await reconcileShopListingAssignments().catch((err) => {
+    logger.warn({ err }, "reconcileShopListingAssignments failed");
+  });
 }
 
 export async function finalizeListingsForApi<

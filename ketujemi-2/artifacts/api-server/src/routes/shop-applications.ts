@@ -17,7 +17,7 @@ import { getSessionUser } from "../lib/session-user";
 import { incrementShopView } from "../lib/shop-view.js";
 import { clientIpFromRequest } from "../lib/request-ip.js";
 import { activeShopSqlCondition, isShopPubliclyVisible } from "../lib/shop-visibility.js";
-import { backfillShopListingsForShop, shopPublicListingsCondition, resolveShopOwnerUserIds } from "../lib/shop-listing-lookup.js";
+import { backfillShopListingsForShop, shopPublicListingsCondition, resolveShopOwnerUserIds, reconcileShopListingAssignmentsIfStale } from "../lib/shop-listing-lookup.js";
 import { sendShopApplicationEmail, sendShopRatingEmail } from "../lib/send-shop-application-email";
 import { formatListingsBatch } from "../lib/format-listings-batch";
 import { resolveDirectoryFieldsWithEnsure } from "../lib/shop-directory-patch";
@@ -868,6 +868,8 @@ router.get("/shops/:id", async (req, res) => {
     res.status(400).json({ error: "Invalid id" });
     return;
   }
+
+  await reconcileShopListingAssignmentsIfStale().catch(() => undefined);
 
   const [shop] = await db.select().from(shopsTable).where(eq(shopsTable.id, id)).limit(1);
   if (!shop || !isShopPubliclyVisible(shop)) {
