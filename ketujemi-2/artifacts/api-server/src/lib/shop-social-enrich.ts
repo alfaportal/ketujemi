@@ -203,29 +203,34 @@ export function scheduleShopSocialEnrichForUser(userId: number): void {
 export async function getShopSocialProfilesForApi(
   shopId: number,
 ): Promise<Partial<Record<ShopSocialPlatform, ShopSocialProfileApi>>> {
-  const rows = await db
-    .select()
-    .from(shopSocialProfileEnrichmentsTable)
-    .where(eq(shopSocialProfileEnrichmentsTable.shop_id, shopId));
+  try {
+    const rows = await db
+      .select()
+      .from(shopSocialProfileEnrichmentsTable)
+      .where(eq(shopSocialProfileEnrichmentsTable.shop_id, shopId));
 
-  const out: Partial<Record<ShopSocialPlatform, ShopSocialProfileApi>> = {};
-  for (const row of rows) {
-    const platform = row.platform as ShopSocialPlatform;
-    if (platform !== "instagram" && platform !== "tiktok") continue;
-    out[platform] = {
-      handle: row.handle,
-      display_name: row.display_name,
-      avatar_url: row.avatar_url,
-      follower_count: row.follower_count,
-      profile_url: row.profile_url ?? "",
-      link_valid: row.link_valid,
-      oauth_verified: row.oauth_verified,
-      verification_method: row.verification_method,
-      fetch_status: row.fetch_status,
-      fetched_at: row.fetched_at?.toISOString() ?? null,
-    };
+    const out: Partial<Record<ShopSocialPlatform, ShopSocialProfileApi>> = {};
+    for (const row of rows) {
+      const platform = row.platform as ShopSocialPlatform;
+      if (platform !== "instagram" && platform !== "tiktok") continue;
+      out[platform] = {
+        handle: row.handle,
+        display_name: row.display_name,
+        avatar_url: row.avatar_url,
+        follower_count: row.follower_count,
+        profile_url: row.profile_url ?? "",
+        link_valid: row.link_valid,
+        oauth_verified: row.oauth_verified,
+        verification_method: row.verification_method,
+        fetch_status: row.fetch_status,
+        fetched_at: row.fetched_at?.toISOString() ?? null,
+      };
+    }
+    return out;
+  } catch (err) {
+    logger.warn({ err, shopId }, "getShopSocialProfilesForApi failed — returning empty");
+    return {};
   }
-  return out;
 }
 
 export async function getShopSocialProfilesForShops(
@@ -235,28 +240,32 @@ export async function getShopSocialProfilesForShops(
   const map = new Map<number, Partial<Record<ShopSocialPlatform, ShopSocialProfileApi>>>();
   if (unique.length === 0) return map;
 
-  const rows = await db
-    .select()
-    .from(shopSocialProfileEnrichmentsTable)
-    .where(inArray(shopSocialProfileEnrichmentsTable.shop_id, unique));
+  try {
+    const rows = await db
+      .select()
+      .from(shopSocialProfileEnrichmentsTable)
+      .where(inArray(shopSocialProfileEnrichmentsTable.shop_id, unique));
 
-  for (const row of rows) {
-    const platform = row.platform as ShopSocialPlatform;
-    if (platform !== "instagram" && platform !== "tiktok") continue;
-    const existing = map.get(row.shop_id) ?? {};
-    existing[platform] = {
-      handle: row.handle,
-      display_name: row.display_name,
-      avatar_url: row.avatar_url,
-      follower_count: row.follower_count,
-      profile_url: row.profile_url ?? "",
-      link_valid: row.link_valid,
-      oauth_verified: row.oauth_verified,
-      verification_method: row.verification_method,
-      fetch_status: row.fetch_status,
-      fetched_at: row.fetched_at?.toISOString() ?? null,
-    };
-    map.set(row.shop_id, existing);
+    for (const row of rows) {
+      const platform = row.platform as ShopSocialPlatform;
+      if (platform !== "instagram" && platform !== "tiktok") continue;
+      const existing = map.get(row.shop_id) ?? {};
+      existing[platform] = {
+        handle: row.handle,
+        display_name: row.display_name,
+        avatar_url: row.avatar_url,
+        follower_count: row.follower_count,
+        profile_url: row.profile_url ?? "",
+        link_valid: row.link_valid,
+        oauth_verified: row.oauth_verified,
+        verification_method: row.verification_method,
+        fetch_status: row.fetch_status,
+        fetched_at: row.fetched_at?.toISOString() ?? null,
+      };
+      map.set(row.shop_id, existing);
+    }
+  } catch (err) {
+    logger.warn({ err, shopIds: unique }, "getShopSocialProfilesForShops failed — returning empty");
   }
   return map;
 }
