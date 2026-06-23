@@ -262,17 +262,16 @@ export async function reconcileShopListingAssignments(): Promise<{ unlinked: num
 
     const ownerIds = ownerIdsByShop.get(shopId) ?? [];
     const shopCount = shopCountByUser.get(shop.user_id) ?? 1;
-    const shopCount = shopCountByUser.get(shop.user_id) ?? 1;
     if (shopCount > 1) {
       const phone = listing.seller_phone?.trim();
-      if (!phone) {
-        await db.update(listingsTable).set({ shop_id: null }).where(eq(listingsTable.id, listing.id));
-        unlinked++;
-        continue;
-      }
-      if (!phonesMatch(phone, shop.phone)) {
-        await db.update(listingsTable).set({ shop_id: null }).where(eq(listingsTable.id, listing.id));
-        unlinked++;
+      if (phone) {
+        const matches = shops.filter((s) => phonesMatch(phone, s.phone));
+        if (matches.length === 1 && matches[0]!.id !== shopId) {
+          await db
+            .update(listingsTable)
+            .set({ shop_id: matches[0]!.id })
+            .where(eq(listingsTable.id, listing.id));
+        }
       }
       continue;
     }

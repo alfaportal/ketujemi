@@ -1,7 +1,9 @@
-import { db, usersTable, type User } from "@workspace/db";
+import { db, usersTable, shopsTable, type User } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 import { getAdminEmail } from "./admin-monitor-email.js";
 import { isPlatformAdminUser, PLATFORM_OPERATOR_EMAIL } from "./platform-admin.js";
+import { activeShopSqlCondition } from "./shop-visibility.js";
+import { phonesMatch } from "./listing-ownership.js";
 function platformAdminEmail(): string {
   return getAdminEmail()?.trim().toLowerCase() || PLATFORM_OPERATOR_EMAIL.toLowerCase();
 }
@@ -100,4 +102,76 @@ export async function isListingUserPlatformAdmin(userId: number | null | undefin
     .where(eq(usersTable.id, userId))
     .limit(1);
   return user ? isPlatformAdminUser(user) : false;
+}
+
+export type AdminListingAttribution = {
+  listingUserId: number;
+  shopId: number | null;
+  seller_name: string;
+  seller_phone: string;
+};
+
+async function findShopByUniquePhone(
+  phone: string,
+): Promise<typeof shopsTable.$inferSelect | null> {
+  const shops = await db.select().from(shopsTable).where(activeShopSqlCondition());
+  const matches = shops.filter((s) => phonesMatch(phone, s.phone));
+  return matches.length === 1 ? matches[0]! : null;
+}
+
+function shopSellerDisplayName(
+  shop: Pick<typeof shopsTable.$inferSelect, "shop_name" | "contact_name">,
+  submittedName: string,
+): string {
+  const custom = submittedName.trim();
+  if (custom.length >= 2) return custom;
+  const contact = shop.contact_name?.trim();
+  if (contact && contact.length >= 2) return contact;
+  return shop.shop_name.trim();
+}
+
+/**
+ * Admin posts are stored as if the shop or seller posted — never as anonymous admin.
+ * shop_id must be explicit or match exactly one shop phone.
+ */
+export async function resolveAdminListingAttribution(input: {
+  adminUserId: number;
+  bodyShopId?: number | null;
+  seller_name: string;
+  seller_phone: string;
+}): Promise<AdminListingAttribution> {
+  const seller = sellerContactForAdminOnBehalf({
+    seller_name: input.seller_name,
+    seller_phone: input.seller_phone,
+  });
+
+  let shopRow: typeof shopsTable.$inferSelect | null = null;
+
+  if (input.bodyShopId != null && input.bodyShopId > 0) {
+    const [row] = await db
+      .select()
+      .from(shopsTable)
+      .where(eq(shopsTable.id, input.bodyShopId))
+      .limit(1);
+    shopRow = row ?? null;
+  } else {
+    shopRow = await findShopByUniquePhone(seller.seller_phone);
+  }
+
+  if (shopRow) {
+    const phone = shopRow.phone?.trim() || seller.seller_phone;
+    return {
+      listingUserId: shopRow.user_id,
+      shopId: shopRow.id,
+      seller_name: shopSellerDisplayName(shopRow, seller.seller_name),
+      seller_phone: phone,
+    };
+  }
+
+  return {
+    listingUserId: input.adminUserId,
+    shopId: null,
+    seller_name: seller.seller_name,
+    seller_phone: seller.seller_phone,
+  };
 }

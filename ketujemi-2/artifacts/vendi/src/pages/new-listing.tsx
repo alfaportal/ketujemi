@@ -370,6 +370,44 @@ export default function NewListing() {
     },
   });
 
+  useEffect(() => {
+    if (!isAdminListingMode || !adminShopId) return;
+    let cancelled = false;
+    void fetchWithTimeout(`/api/shops/${adminShopId}?lang=${encodeURIComponent(uiLang)}`, {
+      credentials: "include",
+      cache: "no-store",
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error("fail");
+        return res.json() as Promise<{
+          shop?: { shop_name?: string; category?: string; contact_name?: string; phone?: string; city?: string };
+        }>;
+      })
+      .then((data) => {
+        if (cancelled) return;
+        const shop = data.shop;
+        if (shop?.shop_name?.trim()) {
+          setMyShop({
+            shop_name: shop.shop_name.trim(),
+            category: shop.category?.trim() ?? "",
+          });
+          if (!form.getValues("seller_name")?.trim() && shop.contact_name?.trim()) {
+            form.setValue("seller_name", shop.contact_name.trim());
+          }
+          if (!form.getValues("seller_phone")?.trim() && shop.phone?.trim()) {
+            form.setValue("seller_phone", shop.phone.trim());
+          }
+          if (!form.getValues("location")?.trim() && shop.city?.trim()) {
+            form.setValue("location", shop.city.trim());
+          }
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdminListingMode, adminShopId, uiLang, form]);
+
   const parentCatId    = useWatch({ control: form.control, name: "parent_category_id" });
   const bodyCatId      = useWatch({ control: form.control, name: "category_id" });
   const brandCatId     = useWatch({ control: form.control, name: "brand_category_id" });
@@ -702,13 +740,17 @@ export default function NewListing() {
           (c) => c.id === analysis.parent_category_id && (c.parent_id == null || c.parent_id === 0),
         );
         const categoryExists = cats.some((c) => c.id === analysis.category_id);
-        const brandExists =
-          !analysis.brand_category_id ||
-          cats.some((c) => c.id === analysis.brand_category_id);
+        let brandId = analysis.brand_category_id ?? 0;
+        let brandOk =
+          brandId < 1 || cats.some((c) => c.id === brandId);
 
-        if (!parentExists || !categoryExists || !brandExists) {
+        if (!parentExists || !categoryExists) {
           lastImageAnalysisRef.current = analysis;
           return "partial";
+        }
+
+        if (!brandOk) {
+          brandId = 0;
         }
 
         lastImageAnalysisRef.current = analysis;
@@ -719,7 +761,7 @@ export default function NewListing() {
 
         form.setValue("parent_category_id", analysis.parent_category_id, fieldOpts);
         form.setValue("category_id", analysis.category_id, fieldOpts);
-        form.setValue("brand_category_id", analysis.brand_category_id ?? 0, fieldOpts);
+        form.setValue("brand_category_id", brandId, fieldOpts);
 
         window.setTimeout(() => {
           skipTitleSuggestRef.current = false;

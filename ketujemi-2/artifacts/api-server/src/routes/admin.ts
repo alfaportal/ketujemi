@@ -29,6 +29,7 @@ import { syncPartnerStatusToUser } from "../lib/partner-activate";
 import {
   descriptionForAdminOnBehalf,
   getOrEnsurePlatformAdminUser,
+  resolveAdminListingAttribution,
   sellerContactForAdminOnBehalf,
 } from "../lib/admin-listing-on-behalf.js";
 import {
@@ -562,42 +563,34 @@ router.post("/admin/listings", requireAdmin, async (req, res) => {
       normalizeListingDescription(parsed.data.description),
     );
 
-    let listingUserId = adminUser.id;
-    let shopId: number | null = null;
-    let sellerPhoneForListing = sellerContact.seller_phone;
     const bodyShopId = (parsed.data as { shop_id?: number | null }).shop_id;
-    if (bodyShopId != null && bodyShopId > 0) {
-      const [shopRow] = await db
-        .select({ id: shopsTable.id, user_id: shopsTable.user_id, phone: shopsTable.phone })
-        .from(shopsTable)
-        .where(eq(shopsTable.id, bodyShopId))
-        .limit(1);
-      if (!shopRow) {
-        res.status(400).json({ error: "VALIDATION", message: "Dyqani nuk u gjet." });
-        return;
-      }
-      shopId = shopRow.id;
-      listingUserId = shopRow.user_id;
-      if (shopRow.phone?.trim()) {
-        sellerPhoneForListing = shopRow.phone.trim();
-      }
-    }
+    const attribution = await resolveAdminListingAttribution({
+      adminUserId: adminUser.id,
+      bodyShopId,
+      seller_name: sellerContact.seller_name,
+      seller_phone: sellerContact.seller_phone,
+    });
 
     const imageUrl = sanitizeListingImageUrlField(parsed.data.image_url ?? null);
     const videoUrl = sanitizeListingVideoUrl(parsed.data.video_url ?? null);
 
+    if (bodyShopId != null && bodyShopId > 0 && !attribution.shopId) {
+      res.status(400).json({ error: "VALIDATION", message: "Dyqani nuk u gjet." });
+      return;
+    }
+
     const [row] = await db
       .insert(listingsTable)
       .values({
-        user_id: listingUserId,
-        shop_id: shopId,
+        user_id: attribution.listingUserId,
+        shop_id: attribution.shopId,
         title: normalizeListingTitle(parsed.data.title),
         description,
         price: String(parsed.data.price),
         category_id: parsed.data.category_id,
         location: parsed.data.location,
-        seller_name: sellerContact.seller_name,
-        seller_phone: sellerPhoneForListing,
+        seller_name: attribution.seller_name,
+        seller_phone: attribution.seller_phone,
         condition: parsed.data.condition,
         image_url: imageUrl,
         video_url: videoUrl,

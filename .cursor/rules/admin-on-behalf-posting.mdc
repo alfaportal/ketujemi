@@ -1,0 +1,11 @@
+# Admin posting on behalf — mandatory
+
+When the platform admin posts a listing or shop content:
+
+1. **Treat as the seller/shop** — `seller_name`, `seller_phone`, `shop_id`, and `user_id` must reflect the **shop owner or named seller**, never the operator account in the UI.
+2. **Use `resolveAdminListingAttribution`** in `admin-listing-on-behalf.ts` for all admin create/update paths.
+3. **Shop listings** — require `shopId` query param or body `shop_id` from admin panel (`/listings/new?adminPost=1&shopId=…`). Store the shop's phone and owner `user_id`.
+4. **Never bulk-relink** listings across shops by phone when one account owns multiple shops. Reconcile may reassign only when phone matches **exactly one** shop.
+5. **Vision/category AI** — admin bearer must work for `/api/ai/analyze-listing-image` (no prohibited-image block for operator).
+
+Do not regress: admin posts must look identical to posts from the real shop or person.

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isSessionOrAdminAuthorized } from "../lib/session-or-admin.js";
+import { isSessionOrAdminAuthorized, hasAdminBearer } from "../lib/session-or-admin.js";
 import { getSessionUser } from "../lib/session-user";
 import { getPostingSuggestions } from "../lib/listing-posting-assistant";
 import { polishListingDescription } from "../lib/listing-description-polish";
@@ -165,7 +165,9 @@ router.post("/ai/analyze-listing-image", analyzeListingImageLimiter, async (req,
     return;
   }
 
-  const prohibitedHit = await scanImageBase64ForProhibitedContent(imageBase64, mediaType);
+  const prohibitedHit = hasAdminBearer(req)
+    ? null
+    : await scanImageBase64ForProhibitedContent(imageBase64, mediaType);
   if (prohibitedHit) {
     res.status(403).json({
       error: "PROHIBITED_CONTENT",
