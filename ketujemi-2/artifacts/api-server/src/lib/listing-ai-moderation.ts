@@ -67,7 +67,7 @@ function ruleBasedModeration(input: {
   const imageCount = countListingImages(input.image_url);
   const hasVideo = Boolean(input.video_url?.trim());
   if (imageCount < 1 && !hasVideo)
-    return { approved: false, reason: "Ju lutem ngarkoni të paktën një foto." };
+    return { approved: false, reason: "Ju lutem ngarkoni të paktën një foto ose video." };
   // Produktet e ndaluara (armë, duhan, alkool, drogë — pa përjashtime)
   const prohibited = detectProhibitedListingContent(title, desc);
   if (prohibited) {

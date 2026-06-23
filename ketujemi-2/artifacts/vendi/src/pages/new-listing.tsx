@@ -466,8 +466,6 @@ export default function NewListing() {
   const isDhurataCategory = postFields.isDhurata;
   const maxListingPhotos = postFields.maxPhotos;
   const atPhotoLimit = imageUrls.length >= maxListingPhotos;
-  const hasListingPhotos = imageUrls.length > 0;
-  const hasListingVideo = !!videoUrl;
   const hasBrands = brandCats.length > 0;
 
   useEffect(() => {
@@ -901,15 +899,6 @@ export default function NewListing() {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
-    if (videoUrl) {
-      toast({
-        title: t.listingMediaRemoveVideoForPhotos,
-        variant: "destructive",
-      });
-      if (uploadRef.current) uploadRef.current.value = "";
-      if (cameraPhotoRef.current) cameraPhotoRef.current.value = "";
-      return;
-    }
     if (!imageUpload.ready) {
       toast({ title: t.uploadFailed, variant: "destructive" });
       return;
@@ -971,15 +960,6 @@ export default function NewListing() {
   const handleVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (imageUrls.length > 0) {
-      toast({
-        title: t.listingMediaRemovePhotosForVideo,
-        variant: "destructive",
-      });
-      if (videoUploadRef.current) videoUploadRef.current.value = "";
-      if (cameraVideoRef.current) cameraVideoRef.current.value = "";
-      return;
-    }
     if (!videoUpload.ready) {
       toast({ title: t.uploadFailed, variant: "destructive" });
       return;
@@ -1066,8 +1046,7 @@ export default function NewListing() {
     const children = (allCategories ?? []).filter(
       (c: { parent_id?: number | null }) => Number(c.parent_id) === parentId,
     );
-    const photoCountForValidation =
-      imageUrls.length > 0 ? imageUrls.length : videoUrl ? 1 : 0;
+    const photoCountForValidation = imageUrls.length;
 
     if (!isAdminListingMode) {
       const preflight = collectListingPostPreflightIssues(
@@ -1085,6 +1064,7 @@ export default function NewListing() {
           sellerName: listingData.seller_name,
           sellerPhone: listingData.seller_phone,
           imageCount: photoCountForValidation,
+          hasVideo: !!videoUrl,
           isKerkoj: isKerkojCategory,
           isDhurata: isDhurataCategory,
           isUploading,
@@ -1140,6 +1120,7 @@ export default function NewListing() {
           Number(parentCatId) || effectiveCategoryId,
           {
             imageCount: photoCountForValidation,
+            hasVideo: !!videoUrl,
             subcategoryName: partCat?.name,
             sellLangBlockedTemplate: tx.ui_sellLangBlocked,
           },
@@ -1221,8 +1202,8 @@ export default function NewListing() {
       seller_name: contact.seller_name,
       seller_phone: contact.seller_phone,
       condition: listingData.condition,
-      image_url: hasListingVideo ? undefined : joinListingImageUrls(imageUrls) ?? undefined,
-      video_url: hasListingPhotos ? undefined : videoUrl ?? undefined,
+      image_url: joinListingImageUrls(imageUrls) ?? undefined,
+      video_url: videoUrl ?? undefined,
         is_featured: false,
       ...validation.payloadExtras,
     };
@@ -1463,7 +1444,7 @@ export default function NewListing() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)} className="space-y-4">
 
-            {/* ── 1. Photos or video (one or the other) ── */}
+            {/* ── 1. Photos and/or video ── */}
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
               <div className="p-5 space-y-4">
               <ListingPhotoUploadBoundary
@@ -1471,7 +1452,7 @@ export default function NewListing() {
                 onRetry={() => setPhotoUploadKey((k) => k + 1)}
               >
               <div className="space-y-4">
-                <div className={hasListingVideo ? "opacity-50 pointer-events-none" : undefined}>
+                <div>
                   <div className="flex items-center justify-between mb-2">
                     <Label className="text-sm font-medium">
                       {isKerkojCategory ? t.kerkojFormPhotosLbl : t.listingPhotos}{" "}
@@ -1484,12 +1465,6 @@ export default function NewListing() {
                       {imageUrls.length}/{maxListingPhotos}
                     </span>
                   </div>
-
-                  {hasListingVideo ? (
-                    <p className="text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-2">
-                      {t.listingMediaRemoveVideoForPhotos}
-                    </p>
-                  ) : null}
 
                   <input
                     ref={uploadRef}
@@ -1518,7 +1493,7 @@ export default function NewListing() {
                   <button
                     type="button"
                     onClick={() => uploadRef.current?.click()}
-                    disabled={isUploading || isAnalyzingImage || !imageUpload.ready || atPhotoLimit || hasListingVideo}
+                    disabled={isUploading || isAnalyzingImage || !imageUpload.ready || atPhotoLimit}
                     className="w-full border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl py-12 px-6 text-center transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none min-h-[10.5rem] touch-manipulation"
                   >
                     {isUploading || isAnalyzingImage ? (
@@ -1545,7 +1520,7 @@ export default function NewListing() {
                   <button
                     type="button"
                     onClick={() => cameraPhotoRef.current?.click()}
-                    disabled={isUploading || !imageUpload.ready || atPhotoLimit || hasListingVideo}
+                    disabled={isUploading || !imageUpload.ready || atPhotoLimit}
                     className="mt-2 w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 hover:border-blue-400 hover:bg-blue-50 py-3 px-4 text-sm font-semibold text-gray-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
                   >
                     <Camera size={20} className="text-blue-600 shrink-0" />
@@ -1563,17 +1538,11 @@ export default function NewListing() {
                   </p>
                 </div>
 
-                <div className={`border-t border-gray-100 pt-4${hasListingPhotos ? " opacity-50 pointer-events-none" : ""}`}>
+                <div className="border-t border-gray-100 pt-4">
                   <Label className="text-sm font-medium text-gray-700">
                     {listingVideoLabel(uiLang)}{" "}
                     <span className="text-gray-400 font-normal">{listingVideoFormatsHint(uiLang)}</span>
                   </Label>
-
-                  {hasListingPhotos ? (
-                    <p className="text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mt-2">
-                      {t.listingMediaRemovePhotosForVideo}
-                    </p>
-                  ) : null}
 
                   <input
                     ref={videoUploadRef}
@@ -1591,7 +1560,7 @@ export default function NewListing() {
                     onChange={(e) => void handleVideoChange(e)}
                   />
 
-                  {!videoUrl && !isVideoUploading && !hasListingPhotos ? (
+                  {!videoUrl && !isVideoUploading ? (
                     <div className="mt-2 space-y-2">
                       <button
                         type="button"

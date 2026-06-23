@@ -572,6 +572,7 @@ export class CategoryEngine {
     categoryId: number,
     options?: {
       imageCount?: number;
+      hasVideo?: boolean;
       subcategoryName?: string;
       sellLangBlockedTemplate?: string;
       omitSellerEmail?: boolean;
@@ -580,8 +581,9 @@ export class CategoryEngine {
     const fields = this.getFields(categoryId, "");
     const issues: ListingValidationIssue[] = [];
     const imageCount = options?.imageCount ?? 0;
+    const hasVideo = !!options?.hasVideo;
 
-    if (imageCount === 0) {
+    if (imageCount === 0 && !hasVideo) {
       issues.push({ code: "NO_PHOTOS", message: "addAtLeastPhoto" });
     }
     if (fields.isKerkoj) {

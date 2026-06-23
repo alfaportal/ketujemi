@@ -14,6 +14,7 @@ export type ListingPostPreflightInput = {
   sellerName: string;
   sellerPhone: string;
   imageCount: number;
+  hasVideo?: boolean;
   isKerkoj: boolean;
   isDhurata: boolean;
   isUploading: boolean;
@@ -47,7 +48,7 @@ const KS: ListingPostPreflightCopy = {
   sellerNameRequired: "Shkruani emrin e shitësit.",
   phoneMinDigits: "Telefoni duhet të ketë të paktën 5 shifra.",
   waitForUpload: "Prisni derisa të përfundojë ngarkimi i fotove.",
-  addPhoto: "Shtoni të paktën një foto.",
+  addPhoto: "Shtoni të paktën një foto ose video.",
   freeQuotaRemaining: (used, limit, remaining) =>
     `Postime falas këtë muaj për këtë kategori: ${used}/${limit} (mbeten ${remaining}).`,
   freeQuotaExhaustedCanWallet: (used, limit) =>
@@ -67,7 +68,7 @@ const MK: ListingPostPreflightCopy = {
   sellerNameRequired: "Внесете име на продавачот.",
   phoneMinDigits: "Телефонот мора да има најмалку 5 цифри.",
   waitForUpload: "Почекајте да заврши прикачувањето на фотографиите.",
-  addPhoto: "Додајте најмалку една фотографија.",
+  addPhoto: "Додајте најмалку една фотографија или видео.",
   freeQuotaRemaining: (used, limit, remaining) =>
     `Бесплатни објави овој месец за оваа категорија: ${used}/${limit} (остануваат ${remaining}).`,
   freeQuotaExhaustedCanWallet: (used, limit) =>
@@ -87,7 +88,7 @@ const MNE: ListingPostPreflightCopy = {
   sellerNameRequired: "Unesite ime prodavca.",
   phoneMinDigits: "Telefon mora imati najmanje 5 cifara.",
   waitForUpload: "Sačekajte da se završi upload fotografija.",
-  addPhoto: "Dodajte najmanje jednu fotografiju.",
+  addPhoto: "Dodajte najmanje jednu fotografiju ili video.",
   freeQuotaRemaining: (used, limit, remaining) =>
     `Besplatne objave ovog mjeseca za ovu kategoriju: ${used}/${limit} (preostaje ${remaining}).`,
   freeQuotaExhaustedCanWallet: (used, limit) =>
@@ -107,7 +108,7 @@ const EN: ListingPostPreflightCopy = {
   sellerNameRequired: "Enter the seller's name.",
   phoneMinDigits: "Phone must have at least 5 digits.",
   waitForUpload: "Wait until photo upload finishes.",
-  addPhoto: "Add at least one photo.",
+  addPhoto: "Add at least one photo or video.",
   freeQuotaRemaining: (used, limit, remaining) =>
     `Free posts this month for this category: ${used}/${limit} (${remaining} remaining).`,
   freeQuotaExhaustedCanWallet: (used, limit) =>
@@ -127,7 +128,7 @@ const IT: ListingPostPreflightCopy = {
   sellerNameRequired: "Enter the seller's name.",
   phoneMinDigits: "Phone must have at least 5 digits.",
   waitForUpload: "Wait until photo upload finishes.",
-  addPhoto: "Add at least one photo.",
+  addPhoto: "Add at least one photo or video.",
   freeQuotaRemaining: (used, limit, remaining) =>
     `Free posts this month for this category: ${used}/${limit} (${remaining} remaining).`,
   freeQuotaExhaustedCanWallet: (used, limit) =>
@@ -147,7 +148,7 @@ const DE: ListingPostPreflightCopy = {
   sellerNameRequired: "Enter the seller's name.",
   phoneMinDigits: "Phone must have at least 5 digits.",
   waitForUpload: "Wait until photo upload finishes.",
-  addPhoto: "Add at least one photo.",
+  addPhoto: "Add at least one photo or video.",
   freeQuotaRemaining: (used, limit, remaining) =>
     `Free posts this month for this category: ${used}/${limit} (${remaining} remaining).`,
   freeQuotaExhaustedCanWallet: (used, limit) =>
@@ -167,7 +168,7 @@ const FR: ListingPostPreflightCopy = {
   sellerNameRequired: "Saisissez le nom du vendeur.",
   phoneMinDigits: "Le téléphone doit contenir au moins 5 chiffres.",
   waitForUpload: "Attendez la fin du téléversement des photos.",
-  addPhoto: "Ajoutez au moins une photo.",
+  addPhoto: "Ajoutez au moins une photo ou une vidéo.",
   freeQuotaRemaining: (used, limit, remaining) =>
     `Publications gratuites ce mois pour cette catégorie : ${used}/${limit} (il en reste ${remaining}).`,
   freeQuotaExhaustedCanWallet: (used, limit) =>
@@ -230,7 +231,7 @@ export function collectListingPostPreflightIssues(
   if (input.isUploading) {
     issues.push(c.waitForUpload);
   }
-  if (input.imageCount < 1) {
+  if (input.imageCount < 1 && !input.hasVideo) {
     issues.push(c.addPhoto);
   }
 

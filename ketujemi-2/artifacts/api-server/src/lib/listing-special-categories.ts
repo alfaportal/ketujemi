@@ -221,9 +221,13 @@ export async function assertSpecialCategoryListingRules(input: {
   description: string;
   price: number;
   imageUrl: string | null;
+  videoUrl?: string | null;
 }): Promise<SpecialCategoryGateResult> {
   const meta = await resolveCategorySlugMeta(input.categoryId);
   const rootSlug = meta?.rootSlug ?? null;
+  const imageCount = countListingImages(input.imageUrl);
+  const hasVideo = Boolean(input.videoUrl?.trim());
+  const hasMedia = imageCount >= 1 || hasVideo;
 
   if (isDhurataFalasSlug(rootSlug)) {
     if (input.price > 0) {
@@ -235,9 +239,8 @@ export async function assertSpecialCategoryListingRules(input: {
       };
     }
 
-    const imageCount = countListingImages(input.imageUrl);
-    if (imageCount < 1) {
-      const reason = "Duhet të ngarkoni të paktën një foto.";
+    if (!hasMedia) {
+      const reason = "Duhet të ngarkoni të paktën një foto ose video.";
       await notifyAdminSpecialListingIssue({
         subject: "Dhurata & Falas — mungon foto",
         lines: [`Përdoruesi #${input.userId} u bllokua.`, `Titulli: ${input.title}`, reason],
@@ -266,27 +269,29 @@ export async function assertSpecialCategoryListingRules(input: {
       return { ok: false, error: "DHURATA_SELLING_LANGUAGE", message: reason, reason };
     }
 
-    const photoCheck = await verifyDhurataPhotoMatchesListing({
-      title: input.title,
-      description: input.description,
-      imageUrl: input.imageUrl,
-    });
-    if (!photoCheck.approved) {
-      const reason =
-        photoCheck.reason || "Fotoja nuk përputhet me titullin ose përshkrimin e dhuratës.";
-      await notifyAdminSpecialListingIssue({
-        subject: "Dhurata & Falas — foto e dyshimtë",
-        lines: [
-          `Përdoruesi #${input.userId} u bllokua automatikisht.`,
-          `Titulli: ${input.title}`,
-          reason,
-        ],
+    if (imageCount >= 1) {
+      const photoCheck = await verifyDhurataPhotoMatchesListing({
         title: input.title,
-        reason,
-        categoryId: input.categoryId,
-        userId: input.userId,
+        description: input.description,
+        imageUrl: input.imageUrl,
       });
-      return { ok: false, error: "DHURATA_PHOTO_MISMATCH", message: reason, reason };
+      if (!photoCheck.approved) {
+        const reason =
+          photoCheck.reason || "Fotoja nuk përputhet me titullin ose përshkrimin e dhuratës.";
+        await notifyAdminSpecialListingIssue({
+          subject: "Dhurata & Falas — foto e dyshimtë",
+          lines: [
+            `Përdoruesi #${input.userId} u bllokua automatikisht.`,
+            `Titulli: ${input.title}`,
+            reason,
+          ],
+          title: input.title,
+          reason,
+          categoryId: input.categoryId,
+          userId: input.userId,
+        });
+        return { ok: false, error: "DHURATA_PHOTO_MISMATCH", message: reason, reason };
+      }
     }
 
     return { ok: true, price: 0 };
@@ -296,9 +301,8 @@ export async function assertSpecialCategoryListingRules(input: {
     return { ok: true, price: input.price };
   }
 
-  const imageCount = countListingImages(input.imageUrl);
-  if (imageCount < 1) {
-    const reason = "Duhet të ngarkoni të paktën një foto.";
+  if (!hasMedia) {
+    const reason = "Duhet të ngarkoni të paktën një foto ose video.";
     await notifyAdminSpecialListingIssue({
       subject: "Kërkoj të Blej — mungon foto",
       lines: [
@@ -340,28 +344,30 @@ export async function assertSpecialCategoryListingRules(input: {
     }
   }
 
-  const photoCheck = await verifyKerkojPhotoMatchesListing({
-    title: input.title,
-    description: input.description,
-    imageUrl: input.imageUrl,
-  });
-  if (!photoCheck.approved) {
-    const reason =
-      photoCheck.reason ||
-      "Fotoja nuk përputhet me titullin ose përshkrimin e kërkesës.";
-    await notifyAdminSpecialListingIssue({
-      subject: "Kërkoj të Blej — foto e dyshimtë",
-      lines: [
-        `Përdoruesi #${input.userId} u bllokua automatikisht.`,
-        `Titulli: ${input.title}`,
-        reason,
-      ],
+  if (imageCount >= 1) {
+    const photoCheck = await verifyKerkojPhotoMatchesListing({
       title: input.title,
-      reason,
-      categoryId: input.categoryId,
-      userId: input.userId,
+      description: input.description,
+      imageUrl: input.imageUrl,
     });
-    return { ok: false, error: "KERKOJ_PHOTO_MISMATCH", message: reason, reason };
+    if (!photoCheck.approved) {
+      const reason =
+        photoCheck.reason ||
+        "Fotoja nuk përputhet me titullin ose përshkrimin e kërkesës.";
+      await notifyAdminSpecialListingIssue({
+        subject: "Kërkoj të Blej — foto e dyshimtë",
+        lines: [
+          `Përdoruesi #${input.userId} u bllokua automatikisht.`,
+          `Titulli: ${input.title}`,
+          reason,
+        ],
+        title: input.title,
+        reason,
+        categoryId: input.categoryId,
+        userId: input.userId,
+      });
+      return { ok: false, error: "KERKOJ_PHOTO_MISMATCH", message: reason, reason };
+    }
   }
 
   return { ok: true, price: 0 };

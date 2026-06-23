@@ -621,6 +621,7 @@ router.post("/listings", postListingLimiter, async (req, res) => {
     description: listingDescription,
     price: parsed.data.price,
     imageUrl: safeImageUrl ?? null,
+    videoUrl: safeVideoUrl ?? null,
   });
   if (!specialGate.ok) {
     res.status(403).json({
