@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { fetchWithTimeout, getFetchErrorMessage } from "@/lib/fetch-with-timeout";
 import { Link, useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -241,8 +241,12 @@ export default function LoginPage() {
   }
 
   async function clearAuthSessionBeforeRegister(): Promise<void> {
-    await fetchWithTimeout("/api/auth/logout", { method: "POST", credentials: "include" });
-    await refresh();
+    try {
+      await fetchWithTimeout("/api/auth/logout", { method: "POST", credentials: "include" });
+      await refresh();
+    } catch {
+      // Best effort — registration must not fail if logout/refresh times out.
+    }
   }
 
   function showPostRegisterWelcome(payload: RegisterAuthPayload): void {
@@ -277,43 +281,51 @@ export default function LoginPage() {
 
   async function submitEmailSignin(): Promise<boolean> {
     if (!validateEmailPassword(email, password, t, toast)) return false;
-    await clearAuthSessionBeforeRegister();
-    const res = await fetchWithTimeout("/api/auth/register/email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      const err = data as { message?: string; error?: string };
-      if (err.error === "INVALID_CREDENTIALS") {
-        const next = passwordFailCount + 1;
-        setPasswordFailCount(next);
+    try {
+      await clearAuthSessionBeforeRegister();
+      const res = await fetchWithTimeout("/api/auth/register/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const err = data as { message?: string; error?: string };
+        if (err.error === "INVALID_CREDENTIALS") {
+          const next = passwordFailCount + 1;
+          setPasswordFailCount(next);
+        }
+        toast({
+          title: err.message ?? err.error ?? t.toast_reqFail,
+          variant: "destructive",
+        });
+        return false;
       }
+      setPasswordFailCount(0);
+      const payload = data as RegisterAuthPayload;
+      if (payload.needsVerification && !payload.existingAccount) {
+        setEmailMode("verify");
+        setStep("verify");
+        toast({ title: t.toast_emailSent });
+        return true;
+      }
+      await refresh();
+      const onVerifyStep = emailMode === "verify";
+      if (payload.welcome_new_user) {
+        showPostRegisterWelcome(payload);
+      } else {
+        showPostRegisterReturning(payload, onVerifyStep);
+      }
+      setLocation(returnTo);
+      return true;
+    } catch (error) {
       toast({
-        title: err.message ?? err.error ?? t.toast_reqFail,
+        title: getFetchErrorMessage(error, t.toast_reqFail),
         variant: "destructive",
       });
       return false;
     }
-    setPasswordFailCount(0);
-    const payload = data as RegisterAuthPayload;
-    if (payload.needsVerification && !payload.existingAccount) {
-      setEmailMode("verify");
-      setStep("verify");
-      toast({ title: t.toast_emailSent });
-      return true;
-    }
-    await refresh();
-    const onVerifyStep = emailMode === "verify";
-    if (payload.welcome_new_user) {
-      showPostRegisterWelcome(payload);
-    } else {
-      showPostRegisterReturning(payload, onVerifyStep);
-    }
-    setLocation(returnTo);
-    return true;
   }
 
   async function onForgotPassword(e: React.FormEvent) {
@@ -434,6 +446,11 @@ export default function LoginPage() {
         toast({ title: t.login_welcomeBack });
       }
       setLocation(returnTo);
+    } catch (error) {
+      toast({
+        title: getFetchErrorMessage(error, t.toast_verifyFail),
+        variant: "destructive",
+      });
     } finally {
       setBusy(false);
     }

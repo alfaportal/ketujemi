@@ -1,4 +1,8 @@
-import { deliverEmail, isTransactionalEmailConfigured } from "./send-transactional-email";
+import {
+  deliverEmail,
+  deliverEmailNow,
+  isTransactionalEmailConfigured,
+} from "./send-transactional-email";
 
 type VerifyMailPayload = {
   to: string;
@@ -27,7 +31,7 @@ export async function sendPasswordResetEmail(payload: VerifyMailPayload): Promis
     "Nëse nuk e keni kërkuar ju, injoroni këtë email.",
   ].join("\n");
 
-  await deliverEmail({
+  await deliverEmailNow({
     to,
     subject,
     text,
@@ -48,7 +52,7 @@ export async function sendEmailVerification(payload: VerifyMailPayload): Promise
     verifyUrl,
   ].join("\n");
 
-  await deliverEmail({
+  await deliverEmailNow({
     to,
     subject,
     text,
@@ -75,7 +79,7 @@ export async function sendLoginSmsFallbackCodeEmail(payload: { to: string; code:
     "",
     "Nëse nuk e keni kërkuar ju, injoroni këtë email.",
   ].join("\n");
-  await deliverEmail({
+  await deliverEmailNow({
     to,
     subject,
     text,
@@ -94,7 +98,7 @@ export async function sendAdminLoginCodeEmail(payload: { to: string; code: strin
     "",
     "Kodi skadon pas 15 minutash.",
   ].join("\n");
-  await deliverEmail({
+  await deliverEmailNow({
     to,
     subject,
     text,
@@ -113,7 +117,7 @@ export async function sendProfileChangeCodeEmail(payload: { to: string; code: st
     "",
     "Nëse nuk e keni kërkuar ju, injoroni këtë email.",
   ].join("\n");
-  await deliverEmail({
+  await deliverEmailNow({
     to,
     subject,
     text,

@@ -18,6 +18,7 @@ import {
   ensureUserSocialConnectionsSchema,
   ensureProfileChangeSchema,
   ensurePhoneVerifySchema,
+  ensureEmailVerifySchema,
   ensureAdminLoginSchema,
   ensureShopSocialProfileSchema,
   ensureDeletionFeedbackSchema,
@@ -125,6 +126,8 @@ async function startServer(): Promise<void> {
     logger.info("Profile change verify schema verified (profile_change_challenges, profile_change_tokens)");
     await ensurePhoneVerifySchema(pool);
     logger.info("Phone verify schema verified (phone_verify_challenges.fail_count)");
+    await ensureEmailVerifySchema(pool);
+    logger.info("Email verify schema verified (email_verify_challenges)");
     await ensureAdminLoginSchema(pool);
     logger.info("Admin login schema verified (admin_login_challenges)");
     await ensureShopSocialProfileSchema(pool);

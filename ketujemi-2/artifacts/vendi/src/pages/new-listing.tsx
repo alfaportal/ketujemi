@@ -635,7 +635,7 @@ export default function NewListing() {
     if (authLoading) return;
     if (isAdminListingMode) return;
     if (!user && imageUrls.length === 0 && !videoUrl) {
-      setLocation(loginUrlWithReturn(pathname || "/listings/new"));
+      setLocation(loginUrlWithReturn(pathname || "/listings/new", "register"));
     }
   }, [authLoading, user, setLocation, pathname, imageUrls.length, videoUrl, isAdminListingMode]);
 
@@ -1019,7 +1019,7 @@ export default function NewListing() {
 
   const onSubmit = async (data: FormData) => {
     if (!activeUser && !isAdminListingMode) {
-      setLocation(loginUrlWithReturn(pathname || "/listings/new"));
+      setLocation(loginUrlWithReturn(pathname || "/listings/new", "register"));
       return;
     }
     if (isDhurataPostRoute && !dhurataPledgeOk && !isAdminListingMode) {
@@ -1417,7 +1417,7 @@ export default function NewListing() {
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 leading-relaxed">
             Duhet të hysh për të postuar shpalljen.{" "}
             <Link
-              href={loginUrlWithReturn(pathname || "/listings/new")}
+              href={loginUrlWithReturn(pathname || "/listings/new", "register")}
               className="font-bold text-blue-700 underline-offset-2 hover:underline"
             >
               Kyçu këtu

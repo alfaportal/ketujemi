@@ -39,6 +39,13 @@ export const authLoginRegisterLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: clientIp,
+  handler: (_req, res) => {
+    res.status(429).json({
+      error: "RATE_LIMIT_AUTH",
+      message: "Shumë përpjekje. Prisni 15 minuta dhe provoni përsëri.",
+    });
+  },
 });
 
 /** POST /listings: generous cap (avoid blocking normal sellers testing the form). */

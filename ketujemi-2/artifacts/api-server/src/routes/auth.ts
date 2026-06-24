@@ -258,7 +258,7 @@ router.post("/auth/register/email", authLoginRegisterLimiter, async (req, res) =
   } catch (err) {
     req.log?.error({ err }, "register email");
     const msg = err instanceof Error ? err.message : "";
-    if (msg.includes("Email send failed")) {
+    if (msg.includes("Email send failed") || msg.includes("Email is not configured")) {
       res.status(502).json({
         error: "EMAIL_SEND_FAILED",
         message: "Nuk u dërgua emaili i verifikimit. Provo përsëri ose kontrollo adresën.",
@@ -599,7 +599,7 @@ router.post("/auth/password/forgot", async (req, res) => {
   } catch (err) {
     req.log?.error({ err }, "password forgot");
     const msg = err instanceof Error ? err.message : "";
-    if (msg.includes("Email send failed")) {
+    if (msg.includes("Email send failed") || msg.includes("Email is not configured")) {
       res.status(502).json({ error: "EMAIL_SEND_FAILED", message: "Nuk u dërgua emaili." });
       return;
     }

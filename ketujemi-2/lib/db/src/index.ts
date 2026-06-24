@@ -42,6 +42,7 @@ export { ensureSocialPlatformTokensSchema } from "./ensure-social-platform-token
 export { ensureUserSocialConnectionsSchema } from "./ensure-user-social-connections-schema.js";
 export { ensureProfileChangeSchema } from "./ensure-profile-change-schema.js";
 export { ensurePhoneVerifySchema } from "./ensure-phone-verify-schema.js";
+export { ensureEmailVerifySchema } from "./ensure-email-verify-schema.js";
 export { ensureAdminLoginSchema } from "./ensure-admin-login-schema.js";
 export { ensureShopSchema } from "./ensure-shop-schema.js";
 export { ensureShopSocialProfileSchema } from "./ensure-shop-social-profile-schema.js";

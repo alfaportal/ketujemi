@@ -20,7 +20,7 @@ export function useGoToPostListing(options?: GoToPostListingOptions) {
   return () => {
     if (loading) return;
     if (!user) {
-      setLocation(loginUrlWithReturn(postPath));
+      setLocation(loginUrlWithReturn(postPath, "register"));
       return;
     }
     setLocation(postPath);

@@ -6,7 +6,7 @@ import { KERKOJ_POST_PATH } from "@/lib/special-listing-categories";
 export function KerkojTeBlejHubIntro() {
   const { user, loading } = useAuth();
   const { t } = useMarket();
-  const postHref = !loading && !user ? loginUrlWithReturn(KERKOJ_POST_PATH) : KERKOJ_POST_PATH;
+  const postHref = !loading && !user ? loginUrlWithReturn(KERKOJ_POST_PATH, "register") : KERKOJ_POST_PATH;
 
   return (
     <section className="mb-8 rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-sky-50 p-6 sm:p-8 shadow-sm">
