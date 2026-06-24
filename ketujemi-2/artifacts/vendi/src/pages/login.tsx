@@ -98,6 +98,7 @@ export default function LoginPage() {
   const [phoneFallbackNote, setPhoneFallbackNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [smsAuthEnabled, setSmsAuthEnabled] = useState(false);
+  const [phoneOtpEnabled, setPhoneOtpEnabled] = useState(false);
   const [googleOAuthEnabled, setGoogleOAuthEnabled] = useState(false);
   const [facebookOAuthEnabled, setFacebookOAuthEnabled] = useState(false);
   const [tiktokOAuthEnabled, setTiktokOAuthEnabled] = useState(false);
@@ -111,12 +112,15 @@ export default function LoginPage() {
       .then((r) => (r.ok ? r.json() : {}))
       .then((data: {
         smsAuthEnabled?: boolean;
+        phoneOtpEnabled?: boolean;
+        whatsappOtpEnabled?: boolean;
         googleOAuthEnabled?: boolean;
         facebookOAuthEnabled?: boolean;
         tiktokOAuthEnabled?: boolean;
       }) => {
         if (cancelled) return;
         setSmsAuthEnabled(Boolean(data.smsAuthEnabled));
+        setPhoneOtpEnabled(Boolean(data.phoneOtpEnabled ?? data.smsAuthEnabled));
         setGoogleOAuthEnabled(Boolean(data.googleOAuthEnabled));
         setFacebookOAuthEnabled(Boolean(data.facebookOAuthEnabled));
         setTiktokOAuthEnabled(Boolean(data.tiktokOAuthEnabled));
@@ -124,6 +128,7 @@ export default function LoginPage() {
       .catch(() => {
         if (!cancelled) {
           setSmsAuthEnabled(false);
+          setPhoneOtpEnabled(false);
           setGoogleOAuthEnabled(false);
           setFacebookOAuthEnabled(false);
           setTiktokOAuthEnabled(false);
@@ -197,10 +202,10 @@ export default function LoginPage() {
   }, []);
 
   useEffect(() => {
-    if (!smsAuthEnabled && flow === "login") {
+    if (!phoneOtpEnabled && flow === "login") {
       setFlow("register");
     }
-  }, [smsAuthEnabled, flow]);
+  }, [phoneOtpEnabled, flow]);
 
   function resetVerify() {
     setStep("credentials");
@@ -577,7 +582,10 @@ export default function LoginPage() {
         return;
       }
       setStep("verify");
-      toast({ title: t.toast_codeSent });
+      const channel = (data as { channel?: string }).channel;
+      toast({
+        title: channel === "whatsapp" ? t.toast_whatsappCodeSent : t.toast_codeSent,
+      });
     } finally {
       setBusy(false);
     }
@@ -689,7 +697,7 @@ export default function LoginPage() {
             <p className="text-xs text-center text-gray-500">{t.login_oauth_social_hint}</p>
           ) : null}
 
-          {hasOAuth && (smsAuthEnabled || isRegister) ? (
+          {hasOAuth && (phoneOtpEnabled || isRegister) ? (
             <div className="flex items-center gap-3 py-1">
               <div className="h-px flex-1 bg-gray-200" />
               <span className="text-xs text-gray-400 uppercase tracking-wide">{t.login_oauth_or}</span>
@@ -697,7 +705,7 @@ export default function LoginPage() {
             </div>
           ) : null}
 
-          {smsAuthEnabled ? (
+          {phoneOtpEnabled ? (
             <div className="flex rounded-lg bg-gray-100 p-1">
               <button
                 type="button"
@@ -870,7 +878,7 @@ export default function LoginPage() {
                     {t.login_forgotPassword}
                   </button>
                 ) : null}
-                {smsAuthEnabled ? (
+                {phoneOtpEnabled ? (
                   <p className="text-center text-sm text-gray-500">
                     {t.login_havePhoneAccount}{" "}
                     <button
@@ -884,7 +892,7 @@ export default function LoginPage() {
                 ) : null}
               </form>
             )
-          ) : smsAuthEnabled ? (
+          ) : phoneOtpEnabled ? (
             isVerify ? (
               <form className="space-y-4" onSubmit={onVerifyPhone} noValidate>
                 <p className="text-sm text-gray-600">

@@ -21,6 +21,12 @@ import { assertSmsStartAllowed, clientIp } from "../lib/sms-rate-limit";
 import { authLoginRegisterLimiter } from "../lib/express-rate-limiters";
 import { hasEmailDeliveryConfigured, isEmailVerificationRequired } from "../lib/email-auth";
 import { isSmsAuthEnabled, SMS_AUTH_DISABLED_MESSAGE } from "../lib/sms-auth";
+import {
+  isPhoneOtpAuthEnabled,
+  PHONE_OTP_DISABLED_MESSAGE,
+  startPhoneOtpChallenge,
+  verifyPhoneOtpChallenge,
+} from "../lib/phone-otp.js";
 import { isRecaptchaRequired, verifyRecaptchaToken } from "../lib/recaptcha-verify";
 import { assertAccountActive, isUserBanned } from "../lib/user-ban";
 import { touchUserLastActive } from "../lib/user-last-active.js";
@@ -1348,10 +1354,10 @@ router.get("/auth/account/business-quota", async (req, res) => {
 
 // ─── POST /auth/sms/start ───────────────────────────────────────────────────
 router.post("/auth/sms/start", authLoginRegisterLimiter, async (req, res) => {
-  if (!isSmsAuthEnabled()) {
+  if (!isPhoneOtpAuthEnabled()) {
     res.status(503).json({
-      error: "SMS_AUTH_DISABLED",
-      message: SMS_AUTH_DISABLED_MESSAGE,
+      error: "PHONE_OTP_DISABLED",
+      message: PHONE_OTP_DISABLED_MESSAGE,
     });
     return;
   }
@@ -1428,25 +1434,26 @@ router.post("/auth/sms/start", authLoginRegisterLimiter, async (req, res) => {
       .delete(phoneVerifyChallengesTable)
       .where(lt(phoneVerifyChallengesTable.expires_at, new Date()));
 
-    const requestId = await vonageVerifyRequest(phone);
+    const otp = await startPhoneOtpChallenge(phone, req.body?.channel);
     const expiresAt = new Date(Date.now() + CHALLENGE_TTL_MS);
 
     await db.insert(phoneVerifyChallengesTable).values({
       phone_e164_digits: phone,
-      request_id: requestId,
+      request_id: otp.requestId,
       password_hash: passwordHash,
+      otp_code_hash: otp.otpCodeHash,
       expires_at: expiresAt,
     });
 
-    res.json({ ok: true });
+    res.json({ ok: true, channel: otp.channel });
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "SMS start failed";
-    req.log?.error({ err }, "sms start");
-    const authHint = /authenticate|bad credentials|20003/i.test(msg);
+    const msg = err instanceof Error ? err.message : "OTP start failed";
+    req.log?.error({ err }, "phone otp start");
+    const authHint = /authenticate|bad credentials|20003|OAuthException|invalid oauth/i.test(msg);
     res.status(502).json({
-      error: authHint ? "SMS_PROVIDER_AUTH_FAILED" : "SMS_START_FAILED",
+      error: authHint ? "OTP_PROVIDER_AUTH_FAILED" : "OTP_START_FAILED",
       message: authHint
-        ? "Konfigurimi Vonage SMS nuk u pranua. Kontrollo VONAGE_API_KEY dhe VONAGE_API_SECRET në Railway Variables."
+        ? "Konfigurimi WhatsApp/SMS nuk u pranua. Kontrollo token-in Meta ose Vonage në Railway Variables."
         : msg,
     });
   }
@@ -1454,10 +1461,10 @@ router.post("/auth/sms/start", authLoginRegisterLimiter, async (req, res) => {
 
 // ─── POST /auth/sms/verify ──────────────────────────────────────────────────
 router.post("/auth/sms/verify", authLoginRegisterLimiter, async (req, res) => {
-  if (!isSmsAuthEnabled()) {
+  if (!isPhoneOtpAuthEnabled()) {
     res.status(503).json({
-      error: "SMS_AUTH_DISABLED",
-      message: SMS_AUTH_DISABLED_MESSAGE,
+      error: "PHONE_OTP_DISABLED",
+      message: PHONE_OTP_DISABLED_MESSAGE,
     });
     return;
   }
@@ -1494,7 +1501,7 @@ router.post("/auth/sms/verify", authLoginRegisterLimiter, async (req, res) => {
       .limit(1);
 
     try {
-      await vonageVerifyCheck(challenge.request_id, code, phone);
+      await verifyPhoneOtpChallenge(challenge, code, phone);
     } catch (verifyErr: unknown) {
       const failCount = await incrementPhoneLoginSmsFailCount(challenge.id);
       if (failCount >= SMS_VERIFY_FAIL_THRESHOLD && user && isPlatformAdminUser(user)) {

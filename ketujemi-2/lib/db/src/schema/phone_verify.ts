@@ -7,6 +7,8 @@ export const phoneVerifyChallengesTable = pgTable("phone_verify_challenges", {
   request_id: text("request_id").notNull(),
   /** Set during SMS registration (not used for login-only OTP). */
   password_hash: text("password_hash"),
+  /** Bcrypt hash i kodit OTP (WhatsApp Cloud API — verifikim lokal). */
+  otp_code_hash: text("otp_code_hash"),
   fail_count: integer("fail_count").notNull().default(0),
   created_at: timestamp("created_at").notNull().defaultNow(),
   expires_at: timestamp("expires_at").notNull(),
