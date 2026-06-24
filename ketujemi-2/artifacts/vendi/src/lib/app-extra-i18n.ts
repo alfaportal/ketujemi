@@ -116,6 +116,10 @@ const KS_EXTRA: Record<string, string> = {
   login_oauth_or: "ose",
   login_oauth_social_hint: "Një klik — pa email apo fjalëkalim në faqen tonë.",
   login_google_btn: "Hyr me Google",
+  login_whatsapp_btn: "Regjistrohu me WhatsApp",
+  login_whatsapp_login_btn: "Kyçu me WhatsApp",
+  login_sendWhatsappBtn: "Dërgo kodin në WhatsApp",
+  login_phoneVerifyWhatsappHint: "Shkruaj kodin që erdhi në WhatsApp.",
   login_oauth_facebook: "Hyr me Facebook",
   login_oauth_facebook_denied: "Hyrja me Facebook u anulua.",
   login_oauth_facebook_denied_hint:
@@ -2388,6 +2392,10 @@ const MK_EXTRA: Record<string, string> = {
   login_oauth_or: "или",
   login_oauth_social_hint: "Еден клик — без email или лозинка на нашата страница.",
   login_google_btn: "Најави се со Google",
+  login_whatsapp_btn: "Регистрирај се со WhatsApp",
+  login_whatsapp_login_btn: "Најави се со WhatsApp",
+  login_sendWhatsappBtn: "Испрати код на WhatsApp",
+  login_phoneVerifyWhatsappHint: "Внесете го кодот што стигна на WhatsApp.",
   login_oauth_facebook: "Најави се со Facebook",
   login_oauth_facebook_denied: "Најавата со Facebook е откажана.",
   login_oauth_facebook_denied_hint:
@@ -4621,6 +4629,10 @@ const MNE_EXTRA: Record<string, string> = {
   login_oauth_or: "ili",
   login_oauth_social_hint: "Jedan klik — bez emaila ili lozinke na našoj stranici.",
   login_google_btn: "Prijavi se putem Google",
+  login_whatsapp_btn: "Registruj se putem WhatsApp",
+  login_whatsapp_login_btn: "Prijavi se putem WhatsApp",
+  login_sendWhatsappBtn: "Pošalji kod na WhatsApp",
+  login_phoneVerifyWhatsappHint: "Unesite kod poslat na WhatsApp.",
   login_oauth_facebook: "Prijavi se putem Facebook",
   login_oauth_facebook_denied: "Prijava putem Facebook je otkazana.",
   login_oauth_facebook_denied_hint:

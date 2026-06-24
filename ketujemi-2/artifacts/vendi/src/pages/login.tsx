@@ -16,6 +16,7 @@ import {
   type RecaptchaV2Handle,
 } from "@/components/recaptcha-v2";
 import { SocialOAuthButtons } from "@/components/social-oauth-buttons";
+import { WhatsAppOtpButton, WhatsAppIcon } from "@/components/whatsapp-otp-button";
 import { showWelcomeToast } from "@/components/engagement-effects";
 import { fillPlaceholders } from "@/lib/app-extra-i18n";
 import { welcomeDisplayName } from "@/lib/engagement-i18n";
@@ -32,6 +33,7 @@ type RegisterAuthPayload = {
 type Flow = "register" | "login";
 type Step = "credentials" | "verify";
 type EmailMode = "signin" | "verify" | "forgot" | "reset";
+type OtpChannel = "whatsapp" | "sms";
 
 const MIN_PASSWORD = 6;
 
@@ -99,6 +101,8 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [smsAuthEnabled, setSmsAuthEnabled] = useState(false);
   const [phoneOtpEnabled, setPhoneOtpEnabled] = useState(false);
+  const [whatsappOtpEnabled, setWhatsappOtpEnabled] = useState(false);
+  const [otpChannel, setOtpChannel] = useState<OtpChannel>("whatsapp");
   const [googleOAuthEnabled, setGoogleOAuthEnabled] = useState(false);
   const [facebookOAuthEnabled, setFacebookOAuthEnabled] = useState(false);
   const [tiktokOAuthEnabled, setTiktokOAuthEnabled] = useState(false);
@@ -121,6 +125,10 @@ export default function LoginPage() {
         if (cancelled) return;
         setSmsAuthEnabled(Boolean(data.smsAuthEnabled));
         setPhoneOtpEnabled(Boolean(data.phoneOtpEnabled ?? data.smsAuthEnabled));
+        setWhatsappOtpEnabled(Boolean(data.whatsappOtpEnabled));
+        if (data.whatsappOtpEnabled) {
+          setOtpChannel("whatsapp");
+        }
         setGoogleOAuthEnabled(Boolean(data.googleOAuthEnabled));
         setFacebookOAuthEnabled(Boolean(data.facebookOAuthEnabled));
         setTiktokOAuthEnabled(Boolean(data.tiktokOAuthEnabled));
@@ -129,6 +137,7 @@ export default function LoginPage() {
         if (!cancelled) {
           setSmsAuthEnabled(false);
           setPhoneOtpEnabled(false);
+          setWhatsappOtpEnabled(false);
           setGoogleOAuthEnabled(false);
           setFacebookOAuthEnabled(false);
           setTiktokOAuthEnabled(false);
@@ -226,6 +235,12 @@ export default function LoginPage() {
     setPasswordFailCount(0);
     setNewPassword("");
     setConfirmPassword("");
+    setOtpChannel(whatsappOtpEnabled ? "whatsapp" : "sms");
+  }
+
+  function startWhatsAppAuth() {
+    switchFlow("login");
+    setOtpChannel("whatsapp");
   }
 
   function backToEmailSignin() {
@@ -566,6 +581,7 @@ export default function LoginPage() {
         credentials: "include",
         body: JSON.stringify({
           phone,
+          channel: otpChannel,
           recaptcha_token: recaptchaToken ?? undefined,
         }),
       });
@@ -672,6 +688,8 @@ export default function LoginPage() {
     />
   );
 
+  const useWhatsAppOtp = whatsappOtpEnabled && otpChannel === "whatsapp";
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between max-w-lg mx-auto w-full">
@@ -697,7 +715,23 @@ export default function LoginPage() {
             <p className="text-xs text-center text-gray-500">{t.login_oauth_social_hint}</p>
           ) : null}
 
-          {hasOAuth && (phoneOtpEnabled || isRegister) ? (
+          {whatsappOtpEnabled && phoneOtpEnabled ? (
+            <WhatsAppOtpButton
+              label={isRegister ? t.login_whatsapp_btn : t.login_whatsapp_login_btn}
+              onClick={startWhatsAppAuth}
+              disabled={busy}
+            />
+          ) : null}
+
+          {whatsappOtpEnabled && phoneOtpEnabled && (hasOAuth || isRegister) ? (
+            <div className="flex items-center gap-3 py-1">
+              <div className="h-px flex-1 bg-gray-200" />
+              <span className="text-xs text-gray-400 uppercase tracking-wide">{t.login_oauth_or}</span>
+              <div className="h-px flex-1 bg-gray-200" />
+            </div>
+          ) : null}
+
+          {hasOAuth && (phoneOtpEnabled || isRegister) && !whatsappOtpEnabled ? (
             <div className="flex items-center gap-3 py-1">
               <div className="h-px flex-1 bg-gray-200" />
               <span className="text-xs text-gray-400 uppercase tracking-wide">{t.login_oauth_or}</span>
@@ -880,14 +914,30 @@ export default function LoginPage() {
                 ) : null}
                 {phoneOtpEnabled ? (
                   <p className="text-center text-sm text-gray-500">
-                    {t.login_havePhoneAccount}{" "}
-                    <button
-                      type="button"
-                      className="text-blue-600 font-semibold hover:underline"
-                      onClick={() => switchFlow("login")}
-                    >
-                      {t.login_switchToPhone}
-                    </button>
+                    {whatsappOtpEnabled ? (
+                      <>
+                        {t.login_havePhoneAccount}{" "}
+                        <button
+                          type="button"
+                          className="text-[#128C7E] font-semibold hover:underline inline-flex items-center gap-1"
+                          onClick={startWhatsAppAuth}
+                        >
+                          <WhatsAppIcon className="h-4 w-4" />
+                          {t.login_whatsapp_login_btn}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        {t.login_havePhoneAccount}{" "}
+                        <button
+                          type="button"
+                          className="text-blue-600 font-semibold hover:underline"
+                          onClick={() => switchFlow("login")}
+                        >
+                          {t.login_switchToPhone}
+                        </button>
+                      </>
+                    )}
                   </p>
                 ) : null}
               </form>
@@ -896,7 +946,11 @@ export default function LoginPage() {
             isVerify ? (
               <form className="space-y-4" onSubmit={onVerifyPhone} noValidate>
                 <p className="text-sm text-gray-600">
-                  {phoneLoginEmailFallback ? t.login_emailFallbackHint : t.login_phoneVerifyHint}
+                  {phoneLoginEmailFallback
+                    ? t.login_emailFallbackHint
+                    : useWhatsAppOtp
+                      ? t.login_phoneVerifyWhatsappHint
+                      : t.login_phoneVerifyHint}
                 </p>
                 {phoneFallbackNote ? (
                   <p className="text-sm text-blue-900 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2">
@@ -945,10 +999,21 @@ export default function LoginPage() {
                 />
                 <Button
                   type="submit"
-                  className="w-full min-h-12 h-12 text-base"
+                  className={`w-full min-h-12 h-12 text-base gap-2 ${
+                    useWhatsAppOtp
+                      ? "bg-[#25D366] hover:bg-[#20BD5A] text-white"
+                      : ""
+                  }`}
                   disabled={busy || (captchaRequired && !recaptchaToken)}
                 >
-                  {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : t.login_sendSmsBtn}
+                  {busy ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      {useWhatsAppOtp ? <WhatsAppIcon className="h-5 w-5 text-white" /> : null}
+                      {useWhatsAppOtp ? t.login_sendWhatsappBtn : t.login_sendSmsBtn}
+                    </>
+                  )}
                 </Button>
                 <p className="text-center text-sm text-gray-500">
                   {t.login_needEmailAccount}{" "}
