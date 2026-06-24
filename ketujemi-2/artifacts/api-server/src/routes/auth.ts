@@ -10,7 +10,7 @@ import {
   type User,
 } from "@workspace/db";
 import { vonageVerifyRequest, vonageVerifyCheck } from "../lib/vonage-verify";
-import { sendEmailVerification, sendPasswordResetEmail } from "../lib/send-email";
+import { sendEmailVerification } from "../lib/send-email";
 import {
   setUserSessionCookie,
   clearUserSessionCookie,
@@ -61,6 +61,11 @@ import {
   triggerPhoneLoginSmsEmailFallback,
   triggerProfileSmsEmailFallback,
 } from "../lib/verification-sms-fallback.js";
+import {
+  clearEmailPasswordFailCount,
+  handleExistingUserWrongPassword,
+  sendPasswordResetChallengeForEmail,
+} from "../lib/email-password-fail.js";
 
 const router = Router();
 
@@ -117,7 +122,7 @@ async function loginExistingEmailUser(
   password: string,
 ): Promise<
   | { ok: true; user: User; isReturningUser: boolean }
-  | { ok: false; status: number; body: Record<string, string> }
+  | { ok: false; status: number; body: Record<string, unknown> }
 > {
   if (isUserBanned(existing)) {
     return { ok: false, status: 403, body: { error: "Account suspended" } };
@@ -125,12 +130,13 @@ async function loginExistingEmailUser(
   if (existing.password_hash) {
     const match = await bcrypt.compare(password, existing.password_hash);
     if (!match) {
-      return {
-        ok: false,
-        status: 401,
-        body: { error: "INVALID_CREDENTIALS", message: "Fjalëkalim i gabuar." },
-      };
+      const body = await handleExistingUserWrongPassword(
+        existing.email ?? "",
+        true,
+      );
+      return { ok: false, status: 401, body };
     }
+    clearEmailPasswordFailCount(existing.email ?? "");
     setUserSessionCookie(res, existing.id);
     return { ok: true, user: existing, isReturningUser: true };
   }
@@ -144,6 +150,7 @@ async function loginExistingEmailUser(
     .where(eq(usersTable.id, existing.id))
     .returning();
   const loggedIn = updated ?? existing;
+  clearEmailPasswordFailCount(loggedIn.email ?? "");
   setUserSessionCookie(res, loggedIn.id);
   return { ok: true, user: loggedIn, isReturningUser: false };
 }
@@ -530,12 +537,12 @@ router.post("/auth/login/email", authLoginRegisterLimiter, async (req, res) => {
 
     const ok = await bcrypt.compare(password, user.password_hash);
     if (!ok) {
-      res.status(401).json({
-        error: "INVALID_CREDENTIALS",
-        message: "Email ose fjalëkalim i gabuar.",
-      });
+      const body = await handleExistingUserWrongPassword(email, true);
+      res.status(401).json(body);
       return;
     }
+
+    clearEmailPasswordFailCount(email);
 
     if (isUserBanned(user)) {
       res.status(403).json({ error: "Account suspended" });
@@ -579,22 +586,7 @@ router.post("/auth/password/forgot", async (req, res) => {
       return;
     }
 
-    await db.delete(emailVerifyChallengesTable).where(eq(emailVerifyChallengesTable.email, email));
-
-    const code = sixDigitCode();
-    const token = randomUUID();
-    const expiresAt = new Date(Date.now() + CHALLENGE_TTL_MS);
-    const placeholderHash = await bcrypt.hash(randomUUID(), 10);
-
-    await db.insert(emailVerifyChallengesTable).values({
-      email,
-      password_hash: placeholderHash,
-      code,
-      token,
-      expires_at: expiresAt,
-    });
-
-    await sendPasswordResetEmail({ to: email, code, verifyUrl: "" });
+    await sendPasswordResetChallengeForEmail(email);
     res.json(genericOk);
   } catch (err) {
     req.log?.error({ err }, "password forgot");
@@ -678,6 +670,7 @@ router.post("/auth/password/reset", async (req, res) => {
       .delete(emailVerifyChallengesTable)
       .where(eq(emailVerifyChallengesTable.id, challenge.id));
 
+    clearEmailPasswordFailCount(email);
     setUserSessionCookie(res, updated!.id);
     res.json({ ok: true, user: publicUser(updated!, { self: true }) });
   } catch (err) {

@@ -283,6 +283,60 @@ export default function LoginPage() {
     if (!validateEmailPassword(email, password, t, toast)) return false;
     try {
       await clearAuthSessionBeforeRegister();
+
+      const loginRes = await fetchWithTimeout("/api/auth/login/email/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
+      const loginData = (await loginRes.json().catch(() => ({}))) as {
+        error?: string;
+        message?: string;
+        password_reset_sent?: boolean;
+        fail_count?: number;
+        user?: AuthUser;
+        needsVerification?: boolean;
+        existingAccount?: boolean;
+        welcome_new_user?: boolean;
+      };
+
+      if (loginRes.ok) {
+        setPasswordFailCount(0);
+        await refresh();
+        if (loginData.welcome_new_user) {
+          showPostRegisterWelcome(loginData);
+        } else {
+          showPostRegisterReturning(loginData, emailMode === "verify");
+        }
+        setLocation(returnTo);
+        return true;
+      }
+
+      if (loginData.error === "INVALID_CREDENTIALS") {
+        setPasswordFailCount(loginData.fail_count ?? passwordFailCount + 1);
+        if (loginData.password_reset_sent) {
+          setEmailMode("reset");
+          setStep("credentials");
+          setCode("");
+          toast({ title: loginData.message ?? t.toast_emailSent });
+          return false;
+        }
+        toast({
+          title: loginData.message ?? t.toast_reqFail,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      if (loginData.error !== "NOT_REGISTERED") {
+        toast({
+          title: loginData.message ?? loginData.error ?? t.toast_reqFail,
+          variant: "destructive",
+        });
+        return false;
+      }
+
       const res = await fetchWithTimeout("/api/auth/register/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -291,10 +345,16 @@ export default function LoginPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const err = data as { message?: string; error?: string };
+        const err = data as { message?: string; error?: string; password_reset_sent?: boolean };
         if (err.error === "INVALID_CREDENTIALS") {
-          const next = passwordFailCount + 1;
-          setPasswordFailCount(next);
+          setPasswordFailCount((data as { fail_count?: number }).fail_count ?? passwordFailCount + 1);
+          if (err.password_reset_sent) {
+            setEmailMode("reset");
+            setStep("credentials");
+            setCode("");
+            toast({ title: err.message ?? t.toast_emailSent });
+            return false;
+          }
         }
         toast({
           title: err.message ?? err.error ?? t.toast_reqFail,
@@ -457,9 +517,29 @@ export default function LoginPage() {
   }
 
   async function onResendEmailCode() {
+    if (!isValidEmailForSubmit(email)) {
+      toast({ title: t.login_email_invalid, variant: "destructive" });
+      return;
+    }
     setBusy(true);
     try {
-      await submitEmailSignin();
+      const res = await fetchWithTimeout("/api/auth/register/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({
+          title: (data as { message?: string }).message ?? t.toast_reqFail,
+          variant: "destructive",
+        });
+        return;
+      }
+      if ((data as RegisterAuthPayload).needsVerification) {
+        toast({ title: t.toast_emailSent });
+      }
     } finally {
       setBusy(false);
     }
