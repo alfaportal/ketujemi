@@ -192,19 +192,19 @@ async function waitForCoreTables(maxAttempts = 30, delayMs = 1000) {
 
 async function runBootstrapDbSetup() {
   console.log(
-    "[start-production] Empty DB — step 1/2: drizzle-kit push (node_modules/.bin or npx) …",
+    "[start-production] Empty DB — step 1/2: drizzle-kit push:pg (node_modules/.bin or npx) …",
   );
   runLocalBinOrNpx(
     "drizzle-kit",
-    ["push", "--config", "./drizzle.config.ts", "--force"],
+    ["push:pg", "--config", "./drizzle.config.ts", "--force"],
     dbDir,
   );
 
-  console.log("[start-production] drizzle-kit push finished — verifying core tables …");
+  console.log("[start-production] drizzle-kit push:pg finished — verifying core tables …");
   const tablesReady = await waitForCoreTables();
   if (!tablesReady) {
     throw new Error(
-      "drizzle-kit push completed but core tables are still missing — cannot run SQL migrations",
+      "drizzle-kit push:pg completed but core tables are still missing — cannot run SQL migrations",
     );
   }
   console.log("[start-production] Core tables verified.");
