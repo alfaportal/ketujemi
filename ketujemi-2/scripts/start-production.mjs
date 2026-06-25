@@ -92,9 +92,14 @@ async function queryWithQuotaRetry(pool, sql, label = "query") {
   throw new Error(`Unexpected: ${label} exhausted quota retries`);
 }
 
-async function hasCoreTables() {
+/**
+ * @returns {{ state: "present" } | { state: "absent" } | { state: "unknown", error: unknown }}
+ */
+async function checkCoreTables() {
   const pool = createDatabasePool();
-  if (!pool) return false;
+  if (!pool) {
+    return { state: "unknown", error: new Error("DATABASE_URL is not set") };
+  }
 
   try {
     const { rows } = await queryWithQuotaRetry(
@@ -108,16 +113,22 @@ async function hasCoreTables() {
       "core table check",
     );
     const row = rows[0] ?? {};
-    return Boolean(row.users_tbl && row.categories_tbl && row.listings_tbl);
+    const hasTables = Boolean(row.users_tbl && row.categories_tbl && row.listings_tbl);
+    return hasTables ? { state: "present" } : { state: "absent" };
   } catch (err) {
-    console.warn(
-      "[start-production] Could not check core tables:",
-      err instanceof Error ? err.message : err,
-    );
-    return false;
+    return { state: "unknown", error: err };
   } finally {
     await pool.end();
   }
+}
+
+function warnCoreTableCheckFailed(check, context) {
+  const message =
+    check.error instanceof Error ? check.error.message : String(check.error ?? "unknown error");
+  console.warn(
+    `[start-production] Could not verify core tables${context ? ` (${context})` : ""} — continuing startup:`,
+    message,
+  );
 }
 
 async function ensureBaseTables() {
@@ -211,16 +222,18 @@ function runCli(executable, args, cwd) {
   }
 }
 
-/** Poll until base tables exist (Neon can lag briefly). */
+/** Poll until base tables exist (Neon can lag briefly). Unknown check errors stop waiting. */
 async function waitForCoreTables(maxAttempts = 30, delayMs = 1000) {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    if (await hasCoreTables()) return true;
+    const check = await checkCoreTables();
+    if (check.state === "present") return { ready: true, check };
+    if (check.state === "unknown") return { ready: false, check };
     console.log(
       `[start-production] Waiting for core tables (${attempt}/${maxAttempts})…`,
     );
     await sleep(delayMs);
   }
-  return false;
+  return { ready: false, check: { state: "absent" } };
 }
 
 async function runBootstrapDbSetup() {
@@ -228,13 +241,16 @@ async function runBootstrapDbSetup() {
   await ensureBaseTables();
 
   console.log("[start-production] Base tables created — verifying core tables …");
-  const tablesReady = await waitForCoreTables();
-  if (!tablesReady) {
-    throw new Error(
-      "Base table SQL completed but core tables are still missing — cannot run SQL migrations",
+  const waitResult = await waitForCoreTables();
+  if (waitResult.check.state === "present") {
+    console.log("[start-production] Core tables verified.");
+  } else if (waitResult.check.state === "unknown") {
+    warnCoreTableCheckFailed(waitResult.check, "after bootstrap");
+  } else if (!waitResult.ready) {
+    console.warn(
+      "[start-production] Base table SQL finished but core tables still look missing — continuing with migrations anyway.",
     );
   }
-  console.log("[start-production] Core tables verified.");
 
   console.log("[start-production] step 2/2: SQL migrations (tsx run-migrations.ts) …");
   runLocalBinOrNpx("tsx", ["./src/run-migrations.ts"], dbDir);
@@ -250,17 +266,19 @@ if (fs.existsSync(envFile) && !onRailway && process.env.USE_ENV_FILE !== "0") {
 
 void (async () => {
   try {
-    if (!(await hasCoreTables())) {
+    const check = await checkCoreTables();
+    if (check.state === "present") {
+      console.log("[start-production] Core DB tables already exist — skipping bootstrap.");
+    } else if (check.state === "absent") {
       await runBootstrapDbSetup();
     } else {
-      console.log("[start-production] Core DB tables already exist — skipping bootstrap.");
+      warnCoreTableCheckFailed(check, "startup");
     }
   } catch (err) {
-    console.error(
-      "[start-production] Automatic DB bootstrap failed:",
+    console.warn(
+      "[start-production] Database bootstrap failed — starting server anyway:",
       err instanceof Error ? err.message : err,
     );
-    process.exit(1);
   }
 
   const child = spawn("node", args, {
