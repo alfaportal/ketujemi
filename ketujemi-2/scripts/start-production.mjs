@@ -48,6 +48,15 @@ const env = {
   API_PORT: port,
 };
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isComputeQuotaError(err) {
+  const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+  return msg.includes("exceeded compute time quota");
+}
+
 async function hasCoreTables() {
   const databaseUrl = process.env.DATABASE_URL?.trim();
   if (!databaseUrl) return false;
@@ -56,20 +65,39 @@ async function hasCoreTables() {
     connectionString: databaseUrl,
     connectionTimeoutMillis: 15_000,
   });
+
+  const maxQuotaRetries = 3;
+  const quotaRetryDelayMs = 5_000;
+
   try {
-    const { rows } = await pool.query(`
+    for (let attempt = 1; attempt <= maxQuotaRetries; attempt++) {
+      try {
+        const { rows } = await pool.query(`
       SELECT
         to_regclass('public.users')            AS users_tbl,
         to_regclass('public.categories')       AS categories_tbl,
         to_regclass('public.listings')         AS listings_tbl
     `);
-    const row = rows[0] ?? {};
-    return Boolean(row.users_tbl && row.categories_tbl && row.listings_tbl);
-  } catch (err) {
-    console.warn(
-      "[start-production] Could not check core tables:",
-      err instanceof Error ? err.message : err,
-    );
+        const row = rows[0] ?? {};
+        return Boolean(row.users_tbl && row.categories_tbl && row.listings_tbl);
+      } catch (err) {
+        if (isComputeQuotaError(err)) {
+          if (attempt >= maxQuotaRetries) {
+            throw err;
+          }
+          console.warn(
+            `[start-production] Neon compute quota exceeded (${attempt}/${maxQuotaRetries}), retrying in 5s…`,
+          );
+          await sleep(quotaRetryDelayMs);
+          continue;
+        }
+        console.warn(
+          "[start-production] Could not check core tables:",
+          err instanceof Error ? err.message : err,
+        );
+        return false;
+      }
+    }
     return false;
   } finally {
     await pool.end();
@@ -115,10 +143,6 @@ function runNodeModuleBin(pkgName, args, cwd) {
     return;
   }
   runCli(binPath, args, cwd);
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /** Poll until drizzle push has created core tables (Neon can lag briefly). */
