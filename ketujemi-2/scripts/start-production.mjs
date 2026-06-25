@@ -8,6 +8,7 @@ import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { BASE_TABLE_SQL_STATEMENTS } from "../lib/db/base-table-statements.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dbDir = path.join(root, "lib", "db");
@@ -19,6 +20,9 @@ const staticRoot = path.join(root, "artifacts/vendi/dist/public");
 const apiEntry = path.join(root, "artifacts/api-server/dist/index.mjs");
 const requireDb = createRequire(path.join(dbDir, "package.json"));
 const { Pool } = requireDb("pg");
+
+const MAX_QUOTA_RETRIES = 3;
+const QUOTA_RETRY_DELAY_MS = 5_000;
 
 if (!fs.existsSync(apiEntry)) {
   console.error("[start-production] Missing API build. Run: node ./scripts/build-production.mjs");
@@ -60,48 +64,77 @@ function isComputeQuotaError(err) {
   return msg.includes("exceeded compute time quota");
 }
 
-async function hasCoreTables() {
+function createDatabasePool() {
   const databaseUrl = process.env.DATABASE_URL?.trim();
-  if (!databaseUrl) return false;
-
-  const pool = new Pool({
+  if (!databaseUrl) return null;
+  return new Pool({
     connectionString: databaseUrl,
     connectionTimeoutMillis: 15_000,
   });
+}
 
-  const maxQuotaRetries = 3;
-  const quotaRetryDelayMs = 5_000;
+async function queryWithQuotaRetry(pool, sql, label = "query") {
+  for (let attempt = 1; attempt <= MAX_QUOTA_RETRIES; attempt++) {
+    try {
+      return await pool.query(sql);
+    } catch (err) {
+      if (isComputeQuotaError(err)) {
+        if (attempt >= MAX_QUOTA_RETRIES) throw err;
+        console.warn(
+          `[start-production] Neon compute quota exceeded during ${label} (${attempt}/${MAX_QUOTA_RETRIES}), retrying in 5s…`,
+        );
+        await sleep(QUOTA_RETRY_DELAY_MS);
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw new Error(`Unexpected: ${label} exhausted quota retries`);
+}
+
+async function hasCoreTables() {
+  const pool = createDatabasePool();
+  if (!pool) return false;
 
   try {
-    for (let attempt = 1; attempt <= maxQuotaRetries; attempt++) {
-      try {
-        const { rows } = await pool.query(`
+    const { rows } = await queryWithQuotaRetry(
+      pool,
+      `
       SELECT
         to_regclass('public.users')            AS users_tbl,
         to_regclass('public.categories')       AS categories_tbl,
         to_regclass('public.listings')         AS listings_tbl
-    `);
-        const row = rows[0] ?? {};
-        return Boolean(row.users_tbl && row.categories_tbl && row.listings_tbl);
-      } catch (err) {
-        if (isComputeQuotaError(err)) {
-          if (attempt >= maxQuotaRetries) {
-            throw err;
-          }
-          console.warn(
-            `[start-production] Neon compute quota exceeded (${attempt}/${maxQuotaRetries}), retrying in 5s…`,
-          );
-          await sleep(quotaRetryDelayMs);
-          continue;
-        }
-        console.warn(
-          "[start-production] Could not check core tables:",
-          err instanceof Error ? err.message : err,
-        );
-        return false;
-      }
-    }
+    `,
+      "core table check",
+    );
+    const row = rows[0] ?? {};
+    return Boolean(row.users_tbl && row.categories_tbl && row.listings_tbl);
+  } catch (err) {
+    console.warn(
+      "[start-production] Could not check core tables:",
+      err instanceof Error ? err.message : err,
+    );
     return false;
+  } finally {
+    await pool.end();
+  }
+}
+
+async function ensureBaseTables() {
+  const pool = createDatabasePool();
+  if (!pool) {
+    throw new Error("DATABASE_URL is not set — cannot create base tables");
+  }
+
+  try {
+    console.log(
+      `[start-production] Creating base tables via SQL (${BASE_TABLE_SQL_STATEMENTS.length} statement(s))…`,
+    );
+    for (let i = 0; i < BASE_TABLE_SQL_STATEMENTS.length; i++) {
+      const sql = BASE_TABLE_SQL_STATEMENTS[i];
+      await queryWithQuotaRetry(pool, sql, `base table statement ${i + 1}`);
+    }
+    console.log("[start-production] Base tables SQL completed.");
   } finally {
     await pool.end();
   }
@@ -178,7 +211,7 @@ function runCli(executable, args, cwd) {
   }
 }
 
-/** Poll until drizzle push has created core tables (Neon can lag briefly). */
+/** Poll until base tables exist (Neon can lag briefly). */
 async function waitForCoreTables(maxAttempts = 30, delayMs = 1000) {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     if (await hasCoreTables()) return true;
@@ -191,20 +224,14 @@ async function waitForCoreTables(maxAttempts = 30, delayMs = 1000) {
 }
 
 async function runBootstrapDbSetup() {
-  console.log(
-    "[start-production] Empty DB — step 1/2: drizzle-kit push:pg (node_modules/.bin or npx) …",
-  );
-  runLocalBinOrNpx(
-    "drizzle-kit",
-    ["push:pg", "--config", "./drizzle.config.ts", "--force"],
-    dbDir,
-  );
+  console.log("[start-production] Empty DB — step 1/2: create base tables (direct SQL) …");
+  await ensureBaseTables();
 
-  console.log("[start-production] drizzle-kit push:pg finished — verifying core tables …");
+  console.log("[start-production] Base tables created — verifying core tables …");
   const tablesReady = await waitForCoreTables();
   if (!tablesReady) {
     throw new Error(
-      "drizzle-kit push:pg completed but core tables are still missing — cannot run SQL migrations",
+      "Base table SQL completed but core tables are still missing — cannot run SQL migrations",
     );
   }
   console.log("[start-production] Core tables verified.");
