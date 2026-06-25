@@ -3,26 +3,92 @@ import { eq, lt } from "drizzle-orm";
 import { logger } from "./logger";
 import { deleteListingCascade } from "./delete-listing-cascade";
 
+/** Neon quota errors may appear on message, cause chain, or pg error fields. */
 function isNeonComputeQuotaError(err: unknown): boolean {
-  const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
-  return msg.includes("exceeded compute time quota");
+  const seen = new Set<unknown>();
+  let current: unknown = err;
+
+  while (current != null && !seen.has(current)) {
+    seen.add(current);
+
+    const parts: string[] = [];
+    if (typeof current === "string") {
+      parts.push(current);
+    } else if (current instanceof Error) {
+      parts.push(current.message);
+      if (current.name) parts.push(current.name);
+    } else if (typeof current === "object") {
+      const record = current as Record<string, unknown>;
+      for (const key of ["message", "detail", "code", "severity", "routine"]) {
+        const value = record[key];
+        if (typeof value === "string") parts.push(value);
+      }
+    }
+
+    const haystack = parts.join(" ").toLowerCase();
+    if (
+      haystack.includes("exceeded compute time quota") ||
+      haystack.includes("compute time quota") ||
+      (haystack.includes("neon") && haystack.includes("quota"))
+    ) {
+      return true;
+    }
+
+    current = current instanceof Error ? current.cause : undefined;
+  }
+
+  return false;
 }
 
 function warnNeonQuotaSkipped(context: string, err: unknown): void {
   logger.warn(
     { err, context },
-    "Neon compute quota exceeded — skipping expired listings job query",
+    "Neon compute quota exceeded — skipping expired listings job",
   );
+}
+
+function logPurgeFailure(context: string, err: unknown): void {
+  if (isNeonComputeQuotaError(err)) {
+    warnNeonQuotaSkipped(context, err);
+    return;
+  }
+  logger.error({ err, context }, "purgeExpiredListings failed");
 }
 
 /** Delete listings past expires_at (90-day max lifetime) and their listing storage assets. */
 export async function purgeExpiredListings(): Promise<number> {
-  let expiring: { id: number }[];
   try {
-    expiring = await db
-      .select({ id: listingsTable.id })
-      .from(listingsTable)
-      .where(lt(listingsTable.expires_at, new Date()));
+    let expiring: { id: number }[];
+    try {
+      expiring = await db
+        .select({ id: listingsTable.id })
+        .from(listingsTable)
+        .where(lt(listingsTable.expires_at, new Date()));
+    } catch (err) {
+      if (isNeonComputeQuotaError(err)) {
+        warnNeonQuotaSkipped("purgeExpiredListings.select", err);
+        return 0;
+      }
+      throw err;
+    }
+
+    let removed = 0;
+    for (const row of expiring) {
+      try {
+        if (await deleteListingCascade(row.id, "expiry")) removed++;
+      } catch (err) {
+        if (isNeonComputeQuotaError(err)) {
+          warnNeonQuotaSkipped("purgeExpiredListings.delete", err);
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    if (removed > 0) {
+      logger.info({ count: removed }, "Purged expired listings");
+    }
+    return removed;
   } catch (err) {
     if (isNeonComputeQuotaError(err)) {
       warnNeonQuotaSkipped("purgeExpiredListings", err);
@@ -30,27 +96,39 @@ export async function purgeExpiredListings(): Promise<number> {
     }
     throw err;
   }
-
-  let removed = 0;
-  for (const row of expiring) {
-    if (await deleteListingCascade(row.id, "expiry")) removed++;
-  }
-
-  if (removed > 0) {
-    logger.info({ count: removed }, "Purged expired listings");
-  }
-  return removed;
 }
 
 /** Delete one listing immediately when past expires_at (e.g. guest opens expired URL). */
 export async function purgeExpiredListingById(listingId: number): Promise<boolean> {
-  let row: { id: number; expires_at: Date | null } | undefined;
   try {
-    [row] = await db
-      .select({ id: listingsTable.id, expires_at: listingsTable.expires_at })
-      .from(listingsTable)
-      .where(eq(listingsTable.id, listingId))
-      .limit(1);
+    let row: { id: number; expires_at: Date | null } | undefined;
+    try {
+      [row] = await db
+        .select({ id: listingsTable.id, expires_at: listingsTable.expires_at })
+        .from(listingsTable)
+        .where(eq(listingsTable.id, listingId))
+        .limit(1);
+    } catch (err) {
+      if (isNeonComputeQuotaError(err)) {
+        warnNeonQuotaSkipped("purgeExpiredListingById.select", err);
+        return false;
+      }
+      throw err;
+    }
+
+    if (!row?.expires_at || new Date(row.expires_at) >= new Date()) {
+      return false;
+    }
+
+    try {
+      return await deleteListingCascade(listingId, "expiry");
+    } catch (err) {
+      if (isNeonComputeQuotaError(err)) {
+        warnNeonQuotaSkipped("purgeExpiredListingById.delete", err);
+        return false;
+      }
+      throw err;
+    }
   } catch (err) {
     if (isNeonComputeQuotaError(err)) {
       warnNeonQuotaSkipped("purgeExpiredListingById", err);
@@ -58,12 +136,6 @@ export async function purgeExpiredListingById(listingId: number): Promise<boolea
     }
     throw err;
   }
-
-  if (!row?.expires_at || new Date(row.expires_at) >= new Date()) {
-    return false;
-  }
-
-  return deleteListingCascade(listingId, "expiry");
 }
 
 function expireListingsIntervalMs(): number {
@@ -87,7 +159,7 @@ export function requestPurgeExpiredListings(): void {
   onDemandPurgeInFlight = true;
   void purgeExpiredListings()
     .catch((err) => {
-      logger.error({ err }, "purgeExpiredListings failed (on-demand)");
+      logPurgeFailure("purgeExpiredListings.on-demand", err);
     })
     .finally(() => {
       onDemandPurgeInFlight = false;
@@ -97,10 +169,12 @@ export function requestPurgeExpiredListings(): void {
 export function startExpiredListingsScheduler(): void {
   const intervalMs = expireListingsIntervalMs();
   logger.info({ intervalMs }, "Expired listings scheduler started");
-  void purgeExpiredListings();
+  void purgeExpiredListings().catch((err) => {
+    logPurgeFailure("purgeExpiredListings.scheduler.initial", err);
+  });
   setInterval(() => {
     void purgeExpiredListings().catch((err) => {
-      logger.error({ err }, "purgeExpiredListings failed");
+      logPurgeFailure("purgeExpiredListings.scheduler", err);
     });
   }, intervalMs);
 }
