@@ -11,6 +11,9 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dbDir = path.join(root, "lib", "db");
+const monorepoRootDir = fs.existsSync(path.join(root, "..", "pnpm-workspace.yaml"))
+  ? path.join(root, "..")
+  : root;
 const envFile = path.join(root, ".env");
 const staticRoot = path.join(root, "artifacts/vendi/dist/public");
 const apiEntry = path.join(root, "artifacts/api-server/dist/index.mjs");
@@ -119,6 +122,47 @@ function resolvePackageBin(pkgName) {
   return path.join(pkgRoot, rel);
 }
 
+/** Prefer node_modules/.bin, then package bin entry, then npx (never pnpm). */
+function resolveLocalBin(pkgName) {
+  const binNames =
+    process.platform === "win32" ? [pkgName, `${pkgName}.cmd`] : [pkgName];
+  const binDirs = [
+    path.join(dbDir, "node_modules", ".bin"),
+    path.join(root, "node_modules", ".bin"),
+    path.join(monorepoRootDir, "node_modules", ".bin"),
+  ];
+
+  for (const binDir of binDirs) {
+    for (const name of binNames) {
+      const binPath = path.join(binDir, name);
+      if (fs.existsSync(binPath)) return binPath;
+    }
+  }
+
+  try {
+    return resolvePackageBin(pkgName);
+  } catch {
+    return null;
+  }
+}
+
+function runLocalBinOrNpx(pkgName, args, cwd) {
+  const binPath = resolveLocalBin(pkgName);
+  if (binPath) {
+    console.log(`[start-production] ${pkgName}: ${binPath}`);
+    const ext = path.extname(binPath).toLowerCase();
+    if (ext === ".js" || ext === ".cjs" || ext === ".mjs") {
+      runCli(process.execPath, [binPath, ...args], cwd);
+      return;
+    }
+    runCli(binPath, args, cwd);
+    return;
+  }
+
+  console.log(`[start-production] ${pkgName}: npx --no-install ${pkgName} …`);
+  runCli("npx", ["--no-install", pkgName, ...args], cwd);
+}
+
 function runCli(executable, args, cwd) {
   const result = spawnSync(executable, args, {
     cwd,
@@ -132,17 +176,6 @@ function runCli(executable, args, cwd) {
       `Command failed (exit ${result.status ?? "unknown"}): ${executable} ${args.join(" ")}`,
     );
   }
-}
-
-/** Run a node_modules bin without pnpm (pnpm is often missing at Railway runtime). */
-function runNodeModuleBin(pkgName, args, cwd) {
-  const binPath = resolvePackageBin(pkgName);
-  const ext = path.extname(binPath).toLowerCase();
-  if (ext === ".js" || ext === ".cjs" || ext === ".mjs") {
-    runCli(process.execPath, [binPath, ...args], cwd);
-    return;
-  }
-  runCli(binPath, args, cwd);
 }
 
 /** Poll until drizzle push has created core tables (Neon can lag briefly). */
@@ -159,9 +192,9 @@ async function waitForCoreTables(maxAttempts = 30, delayMs = 1000) {
 
 async function runBootstrapDbSetup() {
   console.log(
-    "[start-production] Empty DB — step 1/2: drizzle-kit push (base schema, no pnpm) …",
+    "[start-production] Empty DB — step 1/2: drizzle-kit push (node_modules/.bin or npx) …",
   );
-  runNodeModuleBin(
+  runLocalBinOrNpx(
     "drizzle-kit",
     ["push", "--config", "./drizzle.config.ts", "--force"],
     dbDir,
@@ -177,7 +210,7 @@ async function runBootstrapDbSetup() {
   console.log("[start-production] Core tables verified.");
 
   console.log("[start-production] step 2/2: SQL migrations (tsx run-migrations.ts) …");
-  runNodeModuleBin("tsx", ["./src/run-migrations.ts"], dbDir);
+  runLocalBinOrNpx("tsx", ["./src/run-migrations.ts"], dbDir);
   console.log("[start-production] Database bootstrap completed.");
 }
 
