@@ -1,6 +1,7 @@
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { isAppBootstrapComplete } from "@/lib/bootstrap-app-stability";
 import { isListingAreaPath } from "@/lib/listing-post-path";
+import { Capacitor } from "@capacitor/core";
 
 type FirebasePublicConfig = {
   apiKey: string;
@@ -125,6 +126,8 @@ async function registerFcmTokenNow(): Promise<void> {
 /** Register browser FCM token — deferred and skipped on listing post/detail/edit. */
 export async function registerFcmTokenIfConfigured(): Promise<void> {
   if (registerAttempted || registerScheduled || typeof window === "undefined") return;
+  // Native shell loads the live site in WebView; web push/FCM is browser-only.
+  if (Capacitor.isNativePlatform()) return;
   if (isListingAreaPath(window.location.pathname)) return;
   registerScheduled = true;
 
