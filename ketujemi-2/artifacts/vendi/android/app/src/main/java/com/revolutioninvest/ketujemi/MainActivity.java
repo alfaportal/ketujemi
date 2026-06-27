@@ -1,4 +1,4 @@
-package com.ketujemi.app;
+package com.revolutioninvest.ketujemi;
 
 import com.getcapacitor.BridgeActivity;
 

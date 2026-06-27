@@ -24,7 +24,7 @@ concurrency:
 
 env:
   VENDI_DIR: ketujemi-2/artifacts/vendi
-  PACKAGE_NAME: com.ketujemi.app
+  PACKAGE_NAME: com.revolutioninvest.ketujemi
 
 jobs:
   build-aab:

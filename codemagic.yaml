@@ -74,7 +74,7 @@ workflows:
       groups:
         - ketujemi_android_signing
       vars:
-        PACKAGE_NAME: com.ketujemi.app
+        PACKAGE_NAME: com.revolutioninvest.ketujemi
         VENDI_DIR: ketujemi-2/artifacts/vendi
       node: 22
       java: 21

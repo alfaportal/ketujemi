@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">KetuJemi</string>
     <string name="title_activity_main">KetuJemi</string>
-    <string name="package_name">com.ketujemi.app</string>
-    <string name="custom_url_scheme">com.ketujemi.app</string>
+    <string name="package_name">com.revolutioninvest.ketujemi</string>
+    <string name="custom_url_scheme">com.revolutioninvest.ketujemi</string>
 </resources>
