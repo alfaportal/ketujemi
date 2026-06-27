@@ -1,20 +1,37 @@
 /** Unified phone OTP — WhatsApp Cloud API (Meta) dhe/ose Vonage SMS. */
 
+import { randomUUID } from "node:crypto";
+import bcrypt from "bcryptjs";
 import { logger } from "./logger.js";
 import { isSmsAuthEnabled } from "./sms-auth.js";
 import {
   isWhatsAppOtpEnabled,
   whatsappOtpMode,
 } from "./whatsapp-auth-config.js";
-import {
-  isWhatsAppVerifyRequestId,
-  startWhatsAppOtpChallenge,
-  verifyWhatsAppOtpCode,
-} from "./whatsapp-otp.js";
+import { generateOTP, sendWhatsAppOTP } from "./whatsapp-otp.js";
 import { vonageVerifyCheck, vonageVerifyRequest } from "./vonage-verify.js";
 import { isTwilioVerifyRequestId } from "./twilio-verify.js";
 
 export type PhoneOtpChannel = "whatsapp" | "sms";
+
+const WHATSAPP_VERIFY_REQUEST_PREFIX = "whatsapp:";
+
+function isWhatsAppVerifyRequestId(requestId: string): boolean {
+  return requestId.startsWith(WHATSAPP_VERIFY_REQUEST_PREFIX);
+}
+
+async function verifyWhatsAppOtpCode(
+  otpCodeHash: string | null | undefined,
+  code: string,
+): Promise<void> {
+  if (!otpCodeHash?.trim()) {
+    throw new Error("WhatsApp verification challenge invalid");
+  }
+  const ok = await bcrypt.compare(code.trim(), otpCodeHash);
+  if (!ok) {
+    throw new Error("Invalid or expired code");
+  }
+}
 
 export function isPhoneOtpAuthEnabled(): boolean {
   return isSmsAuthEnabled() || isWhatsAppOtpEnabled();
@@ -61,10 +78,15 @@ export async function startPhoneOtpChallenge(
   const sms = isSmsAuthEnabled();
 
   const tryWhatsApp = async () => {
-    const wa = await startWhatsAppOtpChallenge(phoneDigits);
+    const code = generateOTP();
+    const ok = await sendWhatsAppOTP(phoneDigits, code);
+    if (!ok) {
+      throw new Error("WhatsApp OTP send failed");
+    }
+    const otpCodeHash = await bcrypt.hash(code, 10);
     return {
-      requestId: wa.requestId,
-      otpCodeHash: wa.otpCodeHash,
+      requestId: `${WHATSAPP_VERIFY_REQUEST_PREFIX}${randomUUID()}`,
+      otpCodeHash,
       channel: "whatsapp" as const,
     };
   };

@@ -24,12 +24,12 @@ export function whatsappOtpTemplateLanguage(): string {
 }
 
 export function hasWhatsAppOtpCreds(): boolean {
-  return Boolean(whatsappPhoneNumberId() && whatsappAccessToken() && whatsappOtpTemplateName());
+  return Boolean(whatsappPhoneNumberId() && whatsappAccessToken());
 }
 
 /**
  * WhatsApp OTP për regjistrim/hyrje me telefon.
- * WHATSAPP_AUTH_ENABLED=true + WHATSAPP_PHONE_NUMBER_ID + token + WHATSAPP_OTP_TEMPLATE_NAME.
+ * WHATSAPP_AUTH_ENABLED=true + WHATSAPP_PHONE_NUMBER_ID + WHATSAPP_ACCESS_TOKEN (ose WHATSAPP_CLOUD_API_ACCESS_TOKEN).
  */
 export function isWhatsAppOtpEnabled(): boolean {
   const raw = process.env.WHATSAPP_AUTH_ENABLED?.trim().toLowerCase();
