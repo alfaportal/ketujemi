@@ -16,48 +16,49 @@ Tracks applied files in `schema_migrations`. Options: `--dry-run`, or pass a sin
 
 1. `oauth-users-migration.sql`
 2. `phone-verify-challenges-migration.sql`
-3. `email-verify-challenges-migration.sql`
-4. `business-payments-migration.sql`
-5. `wallet-migration.sql`
-6. `fiscal-receipts-migration.sql`
+3. `phone-verify-whatsapp-otp-migration.sql`
+4. `email-verify-challenges-migration.sql`
+5. `business-payments-migration.sql`
+6. `wallet-migration.sql`
+7. `fiscal-receipts-migration.sql`
 
 ## Partners & shops
 
-7. `partners-table-migration.sql`
-8. `business-partner-system-migration.sql`
-9. `business-partner-categories-migration.sql`
-10. `partner-profile-fields-migration.sql`
-11. `partner-activation-code-migration.sql`
-12. `partners-payment-automation-migration.sql`
-13. `homepage-partners-migration.sql`
-14. `homepage-partner-categories-migration.sql`
-15. `users-partner-logo-migration.sql`
-16. `partner-logo-stats-migration.sql`
+8. `partners-table-migration.sql`
+9. `business-partner-system-migration.sql`
+10. `business-partner-categories-migration.sql`
+11. `partner-profile-fields-migration.sql`
+12. `partner-activation-code-migration.sql`
+13. `partners-payment-automation-migration.sql`
+14. `homepage-partners-migration.sql`
+15. `homepage-partner-categories-migration.sql`
+16. `users-partner-logo-migration.sql`
+17. `partner-logo-stats-migration.sql`
 
 ## Listings & moderation
 
-17. `listings-video-url-migration.sql`
-18. `listings-top-repost-migration.sql`
-19. `listings-fb-posted-migration.sql`
-20. `listings-expiry-reminders-migration.sql`
-21. `listing-package-purchases-migration.sql`
-22. `listing-deletion-log-migration.sql`
-23. `listing-moderation-rejections-migration.sql`
-24. `moderation-log-migration.sql`
-25. `bump-free-listing-limit-10.sql`
+18. `listings-video-url-migration.sql`
+19. `listings-top-repost-migration.sql`
+20. `listings-fb-posted-migration.sql`
+21. `listings-expiry-reminders-migration.sql`
+22. `listing-package-purchases-migration.sql`
+23. `listing-deletion-log-migration.sql`
+24. `listing-moderation-rejections-migration.sql`
+25. `moderation-log-migration.sql`
+26. `bump-free-listing-limit-10.sql`
 
 ## Social & engagement
 
-26. `social-followers-migration.sql`
-27. `user-social-connections-migration.sql`
-28. `engagement-notifications-migration.sql`
+27. `social-followers-migration.sql`
+28. `user-social-connections-migration.sql`
+29. `engagement-notifications-migration.sql`
 
 ## Categories & rules
 
-29. `femije-subcategories-migration.sql`
-30. `femije-hub-subcategory-photos.sql`
-31. `sport-outdoor-types-migration.sql`
-32. `business-rules-migration.sql`
+30. `femije-subcategories-migration.sql`
+31. `femije-hub-subcategory-photos.sql`
+32. `sport-outdoor-types-migration.sql`
+33. `business-rules-migration.sql`
 
 ## Runtime schema guards
 

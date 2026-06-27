@@ -125,7 +125,7 @@ async function startServer(): Promise<void> {
     await ensureProfileChangeSchema(pool);
     logger.info("Profile change verify schema verified (profile_change_challenges, profile_change_tokens)");
     await ensurePhoneVerifySchema(pool);
-    logger.info("Phone verify schema verified (phone_verify_challenges.fail_count)");
+    logger.info("Phone verify schema verified (phone_verify_challenges.fail_count, otp_code_hash)");
     await ensureEmailVerifySchema(pool);
     logger.info("Email verify schema verified (email_verify_challenges)");
     await ensureAdminLoginSchema(pool);

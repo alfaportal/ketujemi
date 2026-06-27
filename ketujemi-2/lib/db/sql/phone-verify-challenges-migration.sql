@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS phone_verify_challenges (
   phone_e164_digits text NOT NULL,
   request_id text NOT NULL,
   password_hash text,
+  otp_code_hash text,
+  fail_count integer NOT NULL DEFAULT 0,
   created_at timestamp NOT NULL DEFAULT now(),
   expires_at timestamp NOT NULL
 );

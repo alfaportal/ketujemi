@@ -158,6 +158,7 @@ export const BASE_TABLE_SQL_STATEMENTS = [
     phone_e164_digits TEXT NOT NULL,
     request_id TEXT NOT NULL,
     password_hash TEXT,
+    otp_code_hash TEXT,
     fail_count INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     expires_at TIMESTAMP NOT NULL
