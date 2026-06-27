@@ -16,9 +16,9 @@ WHERE l.user_id = s.user_id
 
 UPDATE listings l
 SET shop_id = s.id
-FROM shops s
-JOIN users u ON u.id = l.user_id
-WHERE l.shop_id IS NULL
+FROM shops s, users u
+WHERE u.id = l.user_id
+  AND l.shop_id IS NULL
   AND s.is_active = true
   AND s.deleted_at IS NULL
   AND lower(trim(u.email)) = lower(trim(s.email))
