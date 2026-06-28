@@ -147,9 +147,6 @@ router.post("/shop-applications", async (req, res) => {
   const whatsapp = normalizeShopWhatsappStored(body.whatsapp);
   const website = trimOrNull(body.website);
   const youtube = trimOrNull(body.youtube);
-  if (!facebook && !instagram && !tiktok && !whatsapp && !website && !youtube) {
-    errors.push("Plotësoni të paktën një rrjet social.");
-  }
 
   const directoryCategoryId = Number(body.directory_category_id);
   const directorySubcategoryId = Number(body.directory_subcategory_id);
@@ -183,6 +180,20 @@ router.post("/shop-applications", async (req, res) => {
     res.status(400).json({
       error: "VALIDATION",
       message: "Zgjidhni kategorinë dhe nënkategorinë e dyqanit.",
+    });
+    return;
+  }
+
+  const [existingShop] = await db
+    .select({ id: shopsTable.id })
+    .from(shopsTable)
+    .where(and(eq(shopsTable.user_id, viewer.id), eq(shopsTable.is_active, true)))
+    .limit(1);
+  if (existingShop) {
+    res.status(409).json({
+      error: "SHOP_EXISTS",
+      message: "Keni tashmë një dyqan aktiv. Menaxhojeni nga Profili.",
+      shop_id: existingShop.id,
     });
     return;
   }
@@ -244,7 +255,28 @@ router.post("/shop-applications", async (req, res) => {
     req.log?.error({ err, applicationId: row.id }, "shop application email failed");
   }
 
-  res.status(201).json({ ok: true, id: row.id });
+  const { approveShopApplication } = await import("../lib/approve-shop-application.js");
+  let activation: Awaited<ReturnType<typeof approveShopApplication>> | null = null;
+  try {
+    activation = await approveShopApplication(row.id, {
+      directory_category_slug: directoryFields.directory_category_slug!,
+      directory_subcategory_slug: directoryFields.directory_subcategory_slug!,
+      directory_category_id: directoryFields.directory_category_id ?? null,
+      directory_subcategory_id: directoryFields.directory_subcategory_id ?? null,
+      category_label: String(body.category).trim(),
+    });
+  } catch (err) {
+    req.log?.error({ err, applicationId: row.id }, "shop auto-approve failed");
+  }
+
+  res.status(201).json({
+    ok: true,
+    id: row.id,
+    approved: !!activation,
+    shop_id: activation?.shop_id ?? null,
+    slug: activation?.slug ?? null,
+    public_path: activation?.public_path ?? null,
+  });
 });
 
 type RatingSummary = { average_rating: number | null; rating_count: number };

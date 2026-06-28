@@ -1633,128 +1633,44 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
     res.status(404).json({ error: "Not found" });
     return;
   }
-  if (app.status === "approved" && app.shop_id) {
-    const { shopPublicPath } = await import("../lib/shop-slug.js");
-    const [existing] = await db
-      .select({ slug: shopsTable.slug })
-      .from(shopsTable)
-      .where(eq(shopsTable.id, app.shop_id))
-      .limit(1);
-    const slug = existing?.slug ?? null;
-    res.json({
-      ok: true,
-      shop_id: app.shop_id,
-      slug,
-      public_path: shopPublicPath(slug, app.shop_id),
-    });
-    return;
-  }
 
   const body = req.body as Record<string, unknown>;
+  let directoryFields: Awaited<ReturnType<typeof resolveAdminShopDirectory>> | undefined;
   const slugPick = readAdminShopDirectorySlugs(body, {
     category: app.directory_category_slug,
     subcategory: app.directory_subcategory_slug,
   });
-  if (!slugPick) {
-    res.status(400).json({
-      error: "VALIDATION",
-      message: "Zgjidhni kategorinë dhe nënkategorinë e dyqanit.",
-    });
-    return;
+  if (slugPick) {
+    try {
+      directoryFields = await resolveAdminShopDirectory(slugPick.categorySlug, slugPick.subcategorySlug);
+    } catch (err) {
+      res.status(400).json({
+        error: "VALIDATION",
+        message: err instanceof Error ? err.message : "Kategoritë e dyqanit nuk u zgjidhën.",
+      });
+      return;
+    }
   }
 
-  let directoryFields: Awaited<ReturnType<typeof resolveAdminShopDirectory>>;
+  const { approveShopApplication } = await import("../lib/approve-shop-application.js");
   try {
-    directoryFields = await resolveAdminShopDirectory(slugPick.categorySlug, slugPick.subcategorySlug);
-  } catch (err) {
-    res.status(400).json({
-      error: "VALIDATION",
-      message: err instanceof Error ? err.message : "Kategoritë e dyqanit nuk u zgjidhën.",
+    const result = await approveShopApplication(id, directoryFields);
+    res.json({
+      ok: true,
+      shop_id: result.shop_id,
+      slug: result.slug,
+      public_path: result.public_path,
     });
-    return;
-  }
-
-  const [shop] = await db
-    .insert(shopsTable)
-    .values({
-      user_id: app.user_id,
-      application_id: app.id,
-      shop_name: app.shop_name,
-      logo_url: app.logo_url,
-      description: app.description,
-      category: directoryFields.category_label,
-      category_id: null,
-      directory_category_slug: directoryFields.directory_category_slug,
-      directory_subcategory_slug: directoryFields.directory_subcategory_slug,
-      directory_category_id: directoryFields.directory_category_id,
-      directory_subcategory_id: directoryFields.directory_subcategory_id,
-      country: app.country,
-      city: app.city,
-      region: app.region,
-      address: app.address,
-      latitude: app.latitude,
-      longitude: app.longitude,
-      facebook: app.facebook,
-      instagram: app.instagram,
-      tiktok: app.tiktok,
-      whatsapp: app.whatsapp,
-      website: app.website,
-      contact_name: app.contact_name,
-      phone: app.phone,
-      email: app.email,
-      is_active: true,
-      admin_notes: app.admin_notes,
-    })
-    .returning();
-
-  await db
-    .update(shopApplicationsTable)
-    .set({
-      category: directoryFields.category_label,
-      directory_category_slug: directoryFields.directory_category_slug,
-      directory_subcategory_slug: directoryFields.directory_subcategory_slug,
-      directory_category_id: directoryFields.directory_category_id,
-      directory_subcategory_id: directoryFields.directory_subcategory_id,
-    })
-    .where(eq(shopApplicationsTable.id, id));
-
-  await db
-    .update(shopApplicationsTable)
-    .set({ status: "approved", shop_id: shop.id, rejected_reason: null })
-    .where(eq(shopApplicationsTable.id, id));
-
-  await db
-    .update(listingsTable)
-    .set({ shop_id: shop.id })
-    .where(and(eq(listingsTable.user_id, app.user_id), sql`${listingsTable.shop_id} IS NULL`));
-
-  const { backfillShopListingsForShop } = await import("../lib/shop-listing-lookup.js");
-  await backfillShopListingsForShop({
-    id: shop.id,
-    user_id: shop.user_id,
-    phone: shop.phone,
-    email: shop.email,
-  }).catch(() => undefined);
-
-  const { sendShopApprovedEmail } = await import("../lib/send-shop-application-email");
-  try {
-    await sendShopApprovedEmail(app.email, app.shop_name, shop.id);
   } catch (err) {
-    req.log?.error({ err, shopId: shop.id }, "shop approved email failed");
+    if (err instanceof Error && err.message === "MISSING_DIRECTORY") {
+      res.status(400).json({
+        error: "VALIDATION",
+        message: "Zgjidhni kategorinë dhe nënkategorinë e dyqanit.",
+      });
+      return;
+    }
+    throw err;
   }
-
-  const { scheduleShopSocialEnrich } = await import("../lib/shop-social-enrich.js");
-  scheduleShopSocialEnrich(shop.id);
-
-  const { ensureShopSlug, shopPublicPath } = await import("../lib/shop-slug.js");
-  const slug = await ensureShopSlug(shop.id, shop.shop_name).catch(() => shop.slug ?? "");
-
-  res.json({
-    ok: true,
-    shop_id: shop.id,
-    slug: slug || null,
-    public_path: shopPublicPath(slug || null, shop.id),
-  });
 });
 
 router.post("/admin/shop-applications/:id/reject", requireAdmin, async (req, res) => {

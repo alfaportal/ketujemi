@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "wouter";
 import { Loader2, Store, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -98,6 +99,10 @@ export function ShopApplicationForm() {
     contactPrefilledRef.current = true;
     const userPhone = applicantPhoneFromUser(user);
     if (userPhone) setPhone(userPhone);
+    const userEmail = user.email?.trim();
+    if (userEmail) setEmail(userEmail);
+    const userName = user.display_name?.trim() || user.business_name?.trim();
+    if (userName) setContactName(userName);
   }, [user]);
 
   const cityOptions = citiesForShopCountry(country);
@@ -148,10 +153,6 @@ export function ShopApplicationForm() {
       setError(c.logo);
       return;
     }
-    if (!facebook.trim() && !instagram.trim() && !tiktok.trim() && !whatsapp.trim() && !website.trim() && !youtube.trim()) {
-      setError(c.socialRequired);
-      return;
-    }
 
     const social = shopSocialFieldsForSubmit({
       facebook,
@@ -182,7 +183,12 @@ export function ShopApplicationForm() {
           latitude,
           longitude,
           ...social,
-          contact_name: c.defaultContactName,
+          contact_name:
+            contactName.trim() ||
+            user.display_name?.trim() ||
+            user.business_name?.trim() ||
+            shopName.trim() ||
+            "Aplikues",
           phone,
           email: trimmedEmail,
         }),
@@ -202,8 +208,20 @@ export function ShopApplicationForm() {
 
   if (success) {
     return (
-      <div className="rounded-2xl border border-green-200 bg-green-50 p-8 text-center">
+      <div className="rounded-2xl border border-green-200 bg-green-50 p-8 text-center space-y-4">
         <p className="text-lg font-bold text-green-800">{c.successMsg}</p>
+        <div className="flex flex-col sm:flex-row gap-2 justify-center">
+          <Link href="/profili">
+            <Button className="w-full sm:w-auto min-h-11 text-white" style={{ backgroundColor: BRAND_BLUE }}>
+              {c.successGoProfile}
+            </Button>
+          </Link>
+          <Link href="/listings/new">
+            <Button variant="outline" className="w-full sm:w-auto min-h-11">
+              {c.successPostListing}
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -380,7 +398,7 @@ export function ShopApplicationForm() {
 
         <section className="space-y-4">
           <h3 className="text-lg font-bold text-gray-900">{c.section3Title}</h3>
-          <p className="text-xs text-amber-800/80">{c.socialRequired}</p>
+          <p className="text-xs text-gray-500">{c.socialOptionalHint}</p>
           <ShopSocialUrlFields
             values={{ facebook, instagram, tiktok, whatsapp, website, youtube }}
             onChange={(field: ShopSocialField, v) => {
@@ -402,10 +420,10 @@ export function ShopApplicationForm() {
             <Label>{c.contactName} *</Label>
             <Input
               value={contactName}
-              readOnly
+              onChange={(e) => setContactName(e.target.value)}
               required
-              className="min-h-12 bg-gray-50"
-              aria-readonly
+              className="min-h-12"
+              placeholder={shopName || c.contactName}
             />
             <p className="text-xs text-gray-500 leading-relaxed">{c.contactNameHint}</p>
           </div>

@@ -116,10 +116,6 @@ function validate(values: AdminShopFormValues): string | null {
   if (!values.directory_category_slug || !values.directory_subcategory_slug) {
     return "Zgjidhni kategorinë dhe nënkategorinë e dyqanit.";
   }
-  const social = shopSocialFieldsForSubmit(values);
-  if (!social.facebook && !social.instagram && !social.tiktok && !social.whatsapp && !social.website && !social.youtube) {
-    return "Plotësoni të paktën një rrjet social.";
-  }
   if (!values.contact_name.trim()) return "Plotësoni emrin e kontaktit.";
   if (!values.phone.trim()) return "Plotësoni telefonin.";
   if (!values.email.trim()) return "Plotësoni email-in.";

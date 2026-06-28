@@ -82,14 +82,16 @@ export function shopSocialFullUrl(raw: string, field: ShopSocialField): string {
   return `${SHOP_SOCIAL_PREFIX[field]}${handle}`;
 }
 
-export function shopSocialFieldsForSubmit(values: {
+export type ShopSocialValues = {
   facebook: string;
   instagram: string;
   tiktok: string;
   whatsapp: string;
   website: string;
   youtube: string;
-}): {
+};
+
+export function shopSocialFieldsForSubmit(values: ShopSocialValues): {
   facebook: string | null;
   instagram: string | null;
   tiktok: string | null;
@@ -105,4 +107,17 @@ export function shopSocialFieldsForSubmit(values: {
     website: shopSocialFullUrl(values.website, "website") || null,
     youtube: shopSocialFullUrl(values.youtube, "youtube") || null,
   };
+}
+
+/** True when at least one social / contact link normalizes to a storable value. */
+export function shopHasSocialContact(values: ShopSocialValues): boolean {
+  const social = shopSocialFieldsForSubmit(values);
+  return !!(
+    social.facebook ||
+    social.instagram ||
+    social.tiktok ||
+    social.whatsapp ||
+    social.website ||
+    social.youtube
+  );
 }

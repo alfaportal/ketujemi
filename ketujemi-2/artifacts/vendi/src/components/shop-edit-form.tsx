@@ -62,17 +62,6 @@ function validateShopEditForm(values: ShopEditFormValues): string | null {
   const hasApiIds = !!(values.directory_category_id && values.directory_subcategory_id);
   const hasSlugs = !!(values.directory_category_slug && values.directory_subcategory_slug);
   if (!hasApiIds && !hasSlugs) return "Zgjidhni kategorinë dhe nënkategorinë e dyqanit.";
-  const social = shopSocialFieldsForSubmit({
-    facebook: values.facebook,
-    instagram: values.instagram,
-    tiktok: values.tiktok,
-    whatsapp: values.whatsapp,
-    website: values.website,
-    youtube: values.youtube,
-  });
-  if (!social.facebook && !social.instagram && !social.tiktok && !social.whatsapp && !social.website && !social.youtube) {
-    return "Plotësoni të paktën një rrjet social (Facebook, Instagram, TikTok, WhatsApp ose website).";
-  }
   if (!values.contact_name.trim()) return "Plotësoni emrin e kontaktit.";
   if (!values.phone.trim()) return "Plotësoni telefonin.";
   if (!values.email.trim()) return "Plotësoni email-in.";

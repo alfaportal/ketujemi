@@ -172,9 +172,6 @@ export function collectAdminShopValidationErrors(body: Record<string, unknown>):
   const tiktok = trimOrNull(body.tiktok);
   const whatsapp = trimOrNull(body.whatsapp);
   const website = trimOrNull(body.website);
-  if (!facebook && !instagram && !tiktok && !whatsapp && !website) {
-    errors.push("Plotësoni të paktën një rrjet social.");
-  }
 
   const dirErr = validateShopStorefrontDirectorySlugs(
     trimOrNull(body.directory_category_slug),

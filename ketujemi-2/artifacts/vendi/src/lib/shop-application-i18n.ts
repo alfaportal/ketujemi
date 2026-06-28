@@ -49,6 +49,7 @@ export type OpenShopFormCopy = {
   whatsapp: string;
   website: string;
   socialRequired: string;
+  socialOptionalHint: string;
   socialUrlHint: string;
   socialPhFacebook: string;
   socialPhInstagram: string;
@@ -67,6 +68,8 @@ export type OpenShopFormCopy = {
   emailPlatformNotAllowed: string;
   submitBtn: string;
   successMsg: string;
+  successGoProfile: string;
+  successPostListing: string;
   loginRequired: string;
   uploadingLogo: string;
   logoUploadFailed: string;
@@ -165,8 +168,8 @@ const DIASPORA_CITIES: Record<DiasporaCountryCode, string[]> = {
 const KS: OpenShopFormCopy = {
   applyDocTitle: "Apliko për dyqan — KetuJemi.com",
   formImportant:
-    "⚠️ E rëndësishme: Dyqani aktivizohet vetëm pasi të shqyrtohet kërkesa juaj brenda 24 orëve. Të dhënat mund të ndryshohen më vonë nga profili juaj.",
-  defaultContactName: "info@ketujemi.com",
+    "Pas dërgimit dyqani aktivizohet menjëherë — mund të postoni shpallje dhe të menaxhoni webfaqen nga Profili.",
+  defaultContactName: "",
   defaultContactPhone: "",
   defaultContactEmail: "",
   loginBtn: "Kyçu / Regjistrohu",
@@ -193,6 +196,8 @@ const KS: OpenShopFormCopy = {
   whatsapp: "WhatsApp",
   website: "Website URL",
   socialRequired: "Plotësoni të paktën një rrjet social",
+  socialOptionalHint:
+    "Opsionale — Instagram, Facebook, TikTok ose WhatsApp. Mund t'i shtoni edhe më vonë nga Profili.",
   socialUrlHint: "Ngjisni linkun e plotë të faqes suaj (kopjoni direkt nga Facebook, Instagram, TikTok, WhatsApp ose faqja juaj).",
   socialPhFacebook: "",
   socialPhInstagram: "",
@@ -212,8 +217,10 @@ const KS: OpenShopFormCopy = {
     "Shkruani email-in tuaj personal — merrni përgjigje kur dyqani aprovohet ose refuzohet.",
   emailPlatformNotAllowed:
     "Shkruani email-in tuaj personal (Gmail, Outlook, etj.) — jo adresën e platformës KetuJemi.",
-  submitBtn: "Dërgo Kërkesën për Dyqan →",
-  successMsg: "✅ Kërkesa juaj u dërgua! Do të kontaktoheni brenda 24 orëve.",
+  submitBtn: "Hap dyqanin →",
+  successMsg: "✅ Dyqani u hap! Tani mund të postoni shpallje dhe të menaxhoni webfaqen.",
+  successGoProfile: "Shko te Profili",
+  successPostListing: "Posto shpallje",
   loginRequired: "Për të dërguar kërkesën, duhet të jeni i regjistruar dhe i kyçur në llogarinë tuaj.",
   uploadingLogo: "Duke ngarkuar logon...",
   logoUploadFailed: "Ngarkimi i logos dështoi.",
