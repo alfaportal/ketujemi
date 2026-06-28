@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useProfileEditGate } from "@/hooks/use-profile-edit-gate";
 import { ProfileEditGateFlow } from "@/components/profile-edit-gate-flow";
 import { DeletionExitSurveyModal } from "@/components/deletion-exit-survey-modal";
-import { Loader2, MapPin, Pencil, Trash2, Eye } from "lucide-react";
+import { Loader2, MapPin, Pencil, Trash2, Eye, Phone } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useDeleteListing,
@@ -56,13 +56,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ShopSocialLinks } from "@/components/shop-social-links";
+import { ShopSocialIconBar } from "@/components/shop-social-icon-bar";
+import { shopPhoneHref } from "@/lib/shop-social-url-input";
 import type { ShopSocialProfileData } from "@/components/shop-social-profiles";
+import { ShopProductCard, type ShopProductPublic } from "@/components/shop-product-card";
+import { useShopProductsCopy } from "@/lib/shop-products-i18n";
 import { recordShopView } from "@/lib/record-shop-view";
 
 type ShopData = {
   id: number;
+  slug?: string | null;
+  public_path?: string | null;
   shop_name: string;
   logo_url: string;
+  cover_image_url?: string | null;
+  tagline?: string | null;
   description: string;
   category: string;
   category_id?: number | null;
@@ -80,10 +88,12 @@ type ShopData = {
   average_rating?: number | null;
   rating_count?: number;
   views?: number;
+  storefront_eligible?: boolean;
   facebook?: string | null;
   instagram?: string | null;
   tiktok?: string | null;
   whatsapp?: string | null;
+  youtube?: string | null;
   website?: string | null;
 };
 
@@ -96,14 +106,16 @@ type SubcategoryFilter = {
 type ListingRow = Parameters<typeof ListingCard>[0]["listing"];
 
 export default function ShopDetailPage() {
-  const [, params] = useRoute("/dyqani/:id");
-  const id = Number(params?.id);
+  const [, params] = useRoute("/dyqani/:slugOrId");
+  const slugOrId = params?.slugOrId?.trim() ?? "";
   const { uiLang, t } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
   const d = useShopDetailCopy();
+  const pc = useShopProductsCopy();
   const { user, refresh } = useAuth();
   const [loading, setLoading] = useState(true);
   const [shop, setShop] = useState<ShopData | null>(null);
+  const [products, setProducts] = useState<ShopProductPublic[]>([]);
   const [listings, setListings] = useState<ListingRow[]>([]);
   const [subcategories, setSubcategories] = useState<SubcategoryFilter[]>([]);
   const [activeCount, setActiveCount] = useState(0);
@@ -156,9 +168,9 @@ export default function ShopDetailPage() {
   ]);
 
   function loadShop() {
-    if (!id) return;
+    if (!slugOrId) return;
     setLoading(true);
-    void fetchWithTimeout(`/api/shops/${id}?lang=${encodeURIComponent(uiLang)}`, {
+    void fetchWithTimeout(`/api/shops/${encodeURIComponent(slugOrId)}?lang=${encodeURIComponent(uiLang)}`, {
       credentials: "include",
       cache: "no-store",
     })
@@ -166,6 +178,8 @@ export default function ShopDetailPage() {
         if (!r.ok) throw new Error("not found");
         return r.json() as Promise<{
           shop: ShopData;
+          products?: ShopProductPublic[];
+          product_count?: number;
           listings: ListingRow[];
           active_count?: number;
           subcategories?: SubcategoryFilter[];
@@ -175,6 +189,7 @@ export default function ShopDetailPage() {
       })
       .then((data) => {
         setShop(data.shop);
+        setProducts(data.products ?? []);
         setListings(data.listings);
         setActiveCount(data.active_count ?? data.listings.length);
         setSubcategories(data.subcategories ?? []);
@@ -204,14 +219,14 @@ export default function ShopDetailPage() {
 
   useEffect(() => {
     loadShop();
-  }, [id, d, locale, uiLang]);
+  }, [slugOrId, d, locale, uiLang]);
 
   useEffect(() => {
-    if (!id || loading || !shop) return;
-    void recordShopView(id, (views) => {
+    if (!shop?.id || loading || !shop) return;
+    void recordShopView(shop.id, (views) => {
       setShop((prev) => (prev ? { ...prev, views } : prev));
     });
-  }, [id, loading, shop?.id]);
+  }, [shop?.id, loading]);
 
   useEffect(() => {
     if (editRequested && gate.isUnlocked) {
@@ -347,45 +362,80 @@ export default function ShopDetailPage() {
     country: shop.country,
   });
   const mapExternalUrl = googleMapsOpenUrl(mapExternalQuery);
+  const heroBackground = shop.cover_image_url?.trim()
+    ? `url(${shop.cover_image_url}) center/cover no-repeat`
+    : `linear-gradient(135deg, ${BRAND_BLUE} 0%, #1e3a8a 45%, ${BRAND_ORANGE} 100%)`;
+  const phoneHref = shopPhoneHref(shop.phone);
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <SiteHeader />
-      <header
-        className="text-white px-4 py-10"
-        style={{ background: `linear-gradient(135deg, ${BRAND_BLUE} 0%, ${BRAND_ORANGE} 100%)` }}
-      >
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center gap-6">
-          <img
-            src={shop.logo_url}
-            alt={shop.shop_name}
-            className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl object-contain border-4 border-white/30 shadow-lg"
-          />
-          <div className="text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl font-black">{shop.shop_name}</h1>
-            <p className="mt-1 text-white/90 font-medium">
-              {translateCategory(shop.category, locale)}
-            </p>
-            <p className="mt-2 text-sm text-white/80 flex items-center justify-center sm:justify-start gap-1">
-              <MapPin size={14} />
-              {shop.city}, {shop.region} — {shop.country}
-            </p>
-            <div className="mt-2 flex flex-wrap items-center justify-center sm:justify-start gap-3">
-              <ShopRatingBadge
-                averageRating={shop.average_rating}
-                ratingCount={shop.rating_count}
-                size="md"
-                tone="onDark"
+      <header className="relative text-white overflow-hidden">
+        <div
+          className="absolute inset-0 scale-105"
+          style={{ background: heroBackground }}
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/20" aria-hidden />
+        <div className="relative max-w-5xl mx-auto px-4 py-12 sm:py-16">
+          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6">
+            <img
+              src={shop.logo_url}
+              alt={shop.shop_name}
+              className="h-28 w-28 sm:h-32 sm:w-32 rounded-2xl object-contain border-4 border-white/40 shadow-2xl bg-white/10 backdrop-blur-sm"
+            />
+            <div className="flex-1 text-center sm:text-left space-y-2">
+              {shop.storefront_eligible !== false ? (
+                <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider bg-white/15 backdrop-blur px-3 py-1 rounded-full border border-white/25">
+                  ✓ {pc.storefrontBadge}
+                </span>
+              ) : null}
+              <h1 className="text-3xl sm:text-4xl font-black drop-shadow-lg">{shop.shop_name}</h1>
+              {shop.tagline ? (
+                <p className="text-lg text-white/90 font-medium max-w-xl">{shop.tagline}</p>
+              ) : null}
+              <p className="text-white/85 font-medium">{translateCategory(shop.category, locale)}</p>
+              <p className="text-sm text-white/75 flex items-center justify-center sm:justify-start gap-1">
+                <MapPin size={14} />
+                {shop.city}, {shop.region} — {shop.country}
+              </p>
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1">
+                <ShopRatingBadge
+                  averageRating={shop.average_rating}
+                  ratingCount={shop.rating_count}
+                  size="md"
+                  tone="onDark"
+                />
+                <span className="inline-flex items-center gap-1 text-sm text-white/85">
+                  <Eye size={14} aria-hidden />
+                  {(shop.views ?? 0).toLocaleString()} {t.views}
+                </span>
+              </div>
+              <ShopSocialIconBar
+                variant="hero"
+                className="justify-center sm:justify-start pt-3"
+                fields={{
+                  facebook: shop.facebook,
+                  instagram: shop.instagram,
+                  tiktok: shop.tiktok,
+                  youtube: shop.youtube,
+                }}
               />
-              <span className="inline-flex items-center gap-1 text-sm text-white/85">
-                <Eye size={14} aria-hidden />
-                {(shop.views ?? 0).toLocaleString()} {t.views}
-              </span>
+              {phoneHref ? (
+                <a
+                  href={phoneHref}
+                  className="inline-flex items-center justify-center gap-2 mt-3 min-h-11 px-5 rounded-full bg-white/15 hover:bg-white/25 border border-white/30 text-white font-semibold text-sm backdrop-blur transition-colors"
+                >
+                  <Phone size={16} />
+                  Thirr {shop.phone}
+                </a>
+              ) : null}
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      <div className="max-w-5xl mx-auto px-4 py-8 space-y-10">
         {isOwner ? (
           <div className="flex flex-wrap gap-2">
             <Button
@@ -411,6 +461,31 @@ export default function ShopDetailPage() {
           <h2 className="text-lg font-bold text-gray-900 mb-3">{d.aboutTitle}</h2>
           <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{shop.description}</p>
         </section>
+
+        {shop.storefront_eligible !== false ? (
+          <section>
+            <div className="mb-6 space-y-1">
+              <h2 className="text-2xl font-black text-gray-900">{pc.catalogTitle}</h2>
+              <p className="text-sm text-gray-500">{pc.catalogSubtitle}</p>
+            </div>
+            {products.length === 0 ? (
+              <p className="text-gray-500 text-sm rounded-2xl border border-dashed border-gray-200 bg-white px-5 py-8 text-center">
+                {isOwner ? pc.noProductsOwner : pc.noProducts}
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {products.map((product) => (
+                  <ShopProductCard
+                    key={product.id}
+                    product={product}
+                    shopName={shop.shop_name}
+                    shopWhatsapp={shop.whatsapp}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        ) : null}
 
         <ShopRatingsPanel shopId={shop.id} />
 
@@ -452,6 +527,7 @@ export default function ShopDetailPage() {
           </div>
         </section>
 
+        {filteredListings.length > 0 ? (
         <section>
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <h2 className="text-xl font-black text-gray-900">{d.listingsTitle}</h2>
@@ -573,6 +649,7 @@ export default function ShopDetailPage() {
             </div>
           )}
         </section>
+        ) : null}
       </div>
 
       {isOwner && user ? <ProfileEditGateFlow user={user} gate={gate} /> : null}

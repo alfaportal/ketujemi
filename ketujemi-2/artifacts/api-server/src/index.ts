@@ -8,6 +8,7 @@ import {
   ensureOAuthSchema,
   ensureEngagementNotificationsSchema,
   ensureShopSchema,
+  ensureShopProductsSchema,
   ensureShopDirectoryTaxonomy,
   ensureFemijeCategoryImages,
   ensureSportOutdoorTypeCategories,
@@ -86,6 +87,11 @@ async function startServer(): Promise<void> {
     logger.info("Homepage partners schema verified (homepage_partners)");
     await ensureShopSchema(pool);
     logger.info("Shop schema verified (shop_applications, shops)");
+    await ensureShopProductsSchema(pool);
+    logger.info("Shop products + slug schema verified (shop_products, shops.slug)");
+    const { backfillMissingShopSlugs } = await import("./lib/shop-slug.js");
+    const slugCount = await backfillMissingShopSlugs().catch(() => 0);
+    if (slugCount > 0) logger.info({ slugCount }, "Backfilled missing shop slugs");
     const { SHOP_DIRECTORY_CATEGORIES } = await import("../../../lib/shop-directory-taxonomy.js");
     const { SHOP_DIRECTORY_CATEGORY_IMAGE_URLS } = await import(
       "../../../lib/shop-directory-category-images.js"

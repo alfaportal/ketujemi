@@ -8,6 +8,10 @@ import {
 } from "@workspace/db";
 import { and, eq } from "drizzle-orm";
 import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxonomy.js";
+import {
+  SHOP_STOREFRONT_BLOCKED_SUBCATEGORY_SLUGS,
+  filterStorefrontDirectoryCategories,
+} from "../../../../lib/shop-storefront-policy.js";
 
 let adminDirectorySeedCache: ShopDirectorySeedCategory[] | null = null;
 
@@ -49,6 +53,24 @@ export function validateAdminShopDirectorySlugs(
     return "Nënkategoria nuk i përket kësaj kategorie.";
   }
   return null;
+}
+
+/** Reject job/restaurant directory types — no product storefront allowed. */
+export function validateShopStorefrontDirectorySlugs(
+  categorySlug: string | null | undefined,
+  subcategorySlug: string | null | undefined,
+): string | null {
+  const base = validateAdminShopDirectorySlugs(categorySlug, subcategorySlug);
+  if (base) return base;
+  const sub = subcategorySlug?.trim();
+  if (sub && SHOP_STOREFRONT_BLOCKED_SUBCATEGORY_SLUGS.has(sub)) {
+    return "Kjo kategori (punë ose restorant/catering) nuk lejon dyqan me webfaqe produktesh. Zgjidhni kategori shitje/shërbimi.";
+  }
+  return null;
+}
+
+export function storefrontDirectoryCategoriesForForms() {
+  return filterStorefrontDirectoryCategories(SHOP_DIRECTORY_CATEGORIES);
 }
 
 export function adminShopDirectoryLabel(categorySlug: string, subcategorySlug: string): string {
@@ -154,7 +176,7 @@ export function collectAdminShopValidationErrors(body: Record<string, unknown>):
     errors.push("Plotësoni të paktën një rrjet social.");
   }
 
-  const dirErr = validateAdminShopDirectorySlugs(
+  const dirErr = validateShopStorefrontDirectorySlugs(
     trimOrNull(body.directory_category_slug),
     trimOrNull(body.directory_subcategory_slug),
   );

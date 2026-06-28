@@ -31,12 +31,17 @@ export const shopsTable = pgTable("shops", {
   tiktok: text("tiktok"),
   whatsapp: text("whatsapp"),
   website: text("website"),
+  youtube: text("youtube"),
   contact_name: text("contact_name").notNull(),
   phone: text("phone").notNull(),
   email: text("email").notNull(),
   is_active: boolean("is_active").notNull().default(true),
   views: integer("views").notNull().default(0),
   admin_notes: text("admin_notes"),
+  /** Public URL slug — ketujemi.com/dyqani/:slug */
+  slug: text("slug"),
+  cover_image_url: text("cover_image_url"),
+  tagline: text("tagline"),
   created_at: timestamp("created_at").notNull().defaultNow(),
   deleted_at: timestamp("deleted_at"),
 });

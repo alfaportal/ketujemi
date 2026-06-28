@@ -8,6 +8,8 @@ export const listingsTable = pgTable("listings", {
   user_id: integer("user_id"),
   /** Approved shop linked to this listing (nullable for private sellers). */
   shop_id: integer("shop_id"),
+  /** Auto-synced from shop_products catalog (nullable). */
+  shop_product_id: integer("shop_product_id"),
   title: text("title").notNull(),
   description: text("description").notNull(),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),

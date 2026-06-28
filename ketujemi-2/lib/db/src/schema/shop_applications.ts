@@ -32,6 +32,7 @@ export const shopApplicationsTable = pgTable("shop_applications", {
   tiktok: text("tiktok"),
   whatsapp: text("whatsapp"),
   website: text("website"),
+  youtube: text("youtube"),
   contact_name: text("contact_name").notNull(),
   phone: text("phone").notNull(),
   email: text("email").notNull(),

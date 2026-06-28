@@ -52,6 +52,11 @@ export function buildShopFieldPatch(body: Record<string, unknown>): Partial<Shop
   if ("tiktok" in body) patch.tiktok = trimOrNull(body.tiktok);
   if ("whatsapp" in body) patch.whatsapp = normalizeShopWhatsappStored(body.whatsapp);
   if ("website" in body) patch.website = trimOrNull(body.website);
+  if ("youtube" in body) patch.youtube = trimOrNull(body.youtube);
+  if ("slug" in body) {
+    const slugRaw = trimOrNull(body.slug);
+    if (slugRaw) patch.slug = slugRaw.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48);
+  }
   const contactName = trimOrNull(body.contact_name);
   if (contactName) patch.contact_name = contactName;
   const phone = trimOrNull(body.phone);
@@ -59,6 +64,8 @@ export function buildShopFieldPatch(body: Record<string, unknown>): Partial<Shop
   const email = trimOrNull(body.email);
   if (email) patch.email = email;
   if ("admin_notes" in body) patch.admin_notes = trimOrNull(body.admin_notes);
+  if ("cover_image_url" in body) patch.cover_image_url = trimOrNull(body.cover_image_url);
+  if ("tagline" in body) patch.tagline = trimOrNull(body.tagline);
 
   return patch;
 }

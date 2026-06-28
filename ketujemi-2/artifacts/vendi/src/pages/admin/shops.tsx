@@ -28,6 +28,8 @@ import {
 } from "@/lib/shop-directory-taxonomy";
 import { Loader2, Plus, RefreshCw, Store, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ShopLinkRow, shopLinkFromParts } from "@/components/shop-link-row";
+import { copyTextToClipboard } from "@/lib/shop-public-url";
 
 type DirectoryDraft = { categorySlug: string; subcategorySlug: string };
 
@@ -105,13 +107,25 @@ export default function AdminShops() {
 
   async function onApprove(id: number) {
     setBusyId(id);
-    const draft = directoryDrafts[id] ?? defaultDirectoryDraft(rows.find((r) => r.id === id)!);
+    const row = rows.find((r) => r.id === id);
+    const draft = directoryDrafts[id] ?? defaultDirectoryDraft(row!);
     try {
-      await approveAdminShopApplication(id, {
+      const result = await approveAdminShopApplication(id, {
         directory_category_slug: draft.categorySlug,
         directory_subcategory_slug: draft.subcategorySlug,
       });
-      setToast("Dyqani u aprovua.");
+      const url = shopLinkFromParts({
+        shopName: row?.shop_name,
+        slug: result.slug,
+        shopId: result.shop_id,
+        publicPath: result.public_path,
+      });
+      if (url) {
+        await copyTextToClipboard(url);
+        setToast(`U aprovua! Linku u kopjua — dërgoje te dyqani: ${url}`);
+      } else {
+        setToast("Dyqani u aprovua.");
+      }
       await load();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Gabim gjatë aprovimit.";
@@ -145,7 +159,18 @@ export default function AdminShops() {
         await updateAdminShopApplication(editRow.id, payload);
       }
       setEditRow(null);
-      setToast("Dyqani u përditësua.");
+      const url = shopLinkFromParts({
+        shopName: editRow.shop_name,
+        slug: (payload.slug as string | undefined) ?? editRow.slug,
+        shopId: editRow.shop_id,
+        publicPath: editRow.public_path,
+      });
+      if (url) {
+        await copyTextToClipboard(url);
+        setToast(`U ruajt! Linku u kopjua: ${url}`);
+      } else {
+        setToast("Dyqani u përditësua.");
+      }
       await load();
     } catch (e) {
       throw e instanceof Error ? e : new Error("Gabim gjatë përditësimit.");
@@ -219,11 +244,11 @@ export default function AdminShops() {
       ) : null}
 
       <p className="text-sm text-gray-500">
-        Dyqanet janë veçmas nga shpalljet e thjeshta: shfaqen vetëm në{" "}
+        Dyqanet shfaqen në{" "}
         <a href="/dyqanet" target="_blank" rel="noreferrer" className="text-blue-600 underline">
           /dyqanet
         </a>
-        . Shpalljet e dyqanit shfaqen te faqja e dyqanit dhe në Blej &amp; Shite me logo të dyqanit.
+        . Për webfaqe publike (/dyqani/slug): kliko <strong>✏️ Edito</strong> dhe plotëso slug, WhatsApp (Porosit), telefon (Thirr), rrjetet sociale dhe YouTube.
       </p>
 
       <div className="flex gap-3 text-sm">
@@ -252,17 +277,16 @@ export default function AdminShops() {
                       <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full", statusBadge(row.status))}>
                         {row.status}
                       </span>
-                      {row.shop_id ? (
-                        <a
-                          href={`/dyqani/${row.shop_id}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs text-blue-600 underline"
-                        >
-                          Shiko dyqanin
-                        </a>
-                      ) : null}
                     </div>
+                    {row.status === "approved" && row.shop_id ? (
+                      <ShopLinkRow
+                        className="mt-3"
+                        shopName={row.shop_name}
+                        slug={row.slug}
+                        shopId={row.shop_id}
+                        publicPath={row.public_path}
+                      />
+                    ) : null}
                     <p className="text-sm text-gray-600">
                       {row.category} · {row.city}, {row.country}
                       {row.shop_id ? ` · ${row.listing_count ?? 0} shpallje` : null}
@@ -280,6 +304,8 @@ export default function AdminShops() {
                   </span>
                   {row.facebook ? <span>FB: {row.facebook}</span> : null}
                   {row.instagram ? <span>IG: {row.instagram}</span> : null}
+                  {row.whatsapp ? <span>WA: {row.whatsapp}</span> : null}
+                  {row.youtube ? <span>YT: {row.youtube}</span> : null}
                   {row.website ? <span>Web: {row.website}</span> : null}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">
@@ -445,6 +471,8 @@ export default function AdminShops() {
           {editRow ? (
             <AdminShopForm
               initial={adminApplicationToFormValues(editRow)}
+              shopId={editRow.shop_id}
+              shopName={editRow.shop_name}
               onSubmit={onSaveEdit}
               onCancel={() => setEditRow(null)}
               saving={editSaving}

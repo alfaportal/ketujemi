@@ -300,7 +300,7 @@ export const APP_ROUTES: AppRouteDefinition[] = [
   },
   {
     id: "shop-detail",
-    path: "/dyqani/:id",
+    path: "/dyqani/:slugOrId",
     requiresAuth: false,
     marketPrefix: null,
     fallbackPath: HOME_FALLBACK,

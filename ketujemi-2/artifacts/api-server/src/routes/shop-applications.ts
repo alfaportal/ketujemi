@@ -8,6 +8,7 @@ import {
   shopDirectorySubcategoriesTable,
   shopRatingsTable,
   shopsTable,
+  shopProductsTable,
   listingsTable,
   usersTable,
   categoriesTable,
@@ -20,9 +21,17 @@ import { activeShopSqlCondition, isShopPubliclyVisible } from "../lib/shop-visib
 import { backfillShopListingsForShop, shopPublicListingsCondition, resolveShopOwnerUserIds, reconcileShopListingAssignmentsIfStale } from "../lib/shop-listing-lookup.js";
 import { sendShopApplicationEmail, sendShopRatingEmail } from "../lib/send-shop-application-email";
 import { formatListingsBatch } from "../lib/format-listings-batch";
-import { resolveDirectoryFieldsWithEnsure } from "../lib/shop-directory-patch";
-import { validateAdminShopDirectorySlugs } from "../lib/admin-shop-directory.js";
+import { resolveDirectoryFields, resolveDirectoryFieldsWithEnsure } from "../lib/shop-directory-patch";
+import { validateShopStorefrontDirectorySlugs } from "../lib/admin-shop-directory.js";
 import { ownerShopFieldPatch, parseLatitude, parseLongitude } from "../lib/shop-field-patch";
+import { refreshShopProductListingsAfterShopUpdate } from "../lib/shop-product-listing-sync.js";
+import {
+  ensureShopSlug,
+  generateUniqueShopSlug,
+  resolveShopByIdOrSlug,
+  shopPublicPath,
+} from "../lib/shop-slug.js";
+import { isShopStorefrontEligible } from "../../../../lib/shop-storefront-policy.js";
 import { normalizeShopWhatsappStored } from "../lib/shop-whatsapp-url";
 import { parseDeletionSurveyBody } from "../lib/deletion-feedback.js";
 import { softDeleteShopWithFeedback } from "../lib/soft-delete-shop.js";
@@ -137,7 +146,8 @@ router.post("/shop-applications", async (req, res) => {
   const tiktok = trimOrNull(body.tiktok);
   const whatsapp = normalizeShopWhatsappStored(body.whatsapp);
   const website = trimOrNull(body.website);
-  if (!facebook && !instagram && !tiktok && !whatsapp && !website) {
+  const youtube = trimOrNull(body.youtube);
+  if (!facebook && !instagram && !tiktok && !whatsapp && !website && !youtube) {
     errors.push("Plotësoni të paktën një rrjet social.");
   }
 
@@ -150,7 +160,7 @@ router.post("/shop-applications", async (req, res) => {
     directoryCategoryId > 0 &&
     Number.isFinite(directorySubcategoryId) &&
     directorySubcategoryId > 0;
-  const slugErr = validateAdminShopDirectorySlugs(categorySlug, subcategorySlug);
+  const slugErr = validateShopStorefrontDirectorySlugs(categorySlug, subcategorySlug);
   if (slugErr && !hasValidIds) {
     errors.push("Zgjidhni kategorinë dhe nënkategorinë e dyqanit.");
   }
@@ -201,6 +211,7 @@ router.post("/shop-applications", async (req, res) => {
       tiktok,
       whatsapp,
       website,
+      youtube,
       contact_name: String(body.contact_name).trim(),
       phone: String(body.phone).trim(),
       email: String(body.email).trim(),
@@ -260,14 +271,16 @@ async function ratingSummariesForShops(shopIds: number[]): Promise<Record<number
   return out;
 }
 
-function shopDirectoryRow(
-  shop: typeof shopsTable.$inferSelect,
-  ratings?: RatingSummary,
-) {
+function shopPublicFields(shop: typeof shopsTable.$inferSelect, ratings?: RatingSummary) {
+  const slug = shop.slug?.trim() || null;
   return {
     id: shop.id,
+    slug,
+    public_path: shopPublicPath(slug, shop.id),
     shop_name: shop.shop_name,
     logo_url: shop.logo_url,
+    cover_image_url: shop.cover_image_url ?? null,
+    tagline: shop.tagline ?? null,
     description: shop.description,
     category: shop.category,
     category_id: shop.category_id,
@@ -286,16 +299,64 @@ function shopDirectoryRow(
     tiktok: shop.tiktok,
     whatsapp: shop.whatsapp,
     website: shop.website,
+    youtube: shop.youtube ?? null,
+    contact_name: shop.contact_name,
+    phone: shop.phone,
+    email: shop.email,
     average_rating: ratings?.average_rating ?? null,
     rating_count: ratings?.rating_count ?? 0,
     views: shop.views ?? 0,
+    storefront_eligible: isShopStorefrontEligible(shop),
   };
 }
 
-function parseShopId(raw: string): number | null {
-  const id = Number(raw);
-  if (!Number.isFinite(id) || id < 1) return null;
-  return id;
+function shopDirectoryRow(
+  shop: typeof shopsTable.$inferSelect,
+  ratings?: RatingSummary,
+) {
+  const base = shopPublicFields(shop, ratings);
+  return {
+    id: base.id,
+    slug: base.slug,
+    public_path: base.public_path,
+    shop_name: base.shop_name,
+    logo_url: base.logo_url,
+    description: base.description,
+    category: base.category,
+    category_id: base.category_id,
+    directory_category_slug: base.directory_category_slug,
+    directory_subcategory_slug: base.directory_subcategory_slug,
+    directory_category_id: base.directory_category_id,
+    directory_subcategory_id: base.directory_subcategory_id,
+    country: base.country,
+    city: base.city,
+    region: base.region,
+    address: base.address,
+    latitude: base.latitude,
+    longitude: base.longitude,
+    facebook: base.facebook,
+    instagram: base.instagram,
+    tiktok: base.tiktok,
+    whatsapp: base.whatsapp,
+    website: base.website,
+    average_rating: base.average_rating,
+    rating_count: base.rating_count,
+    views: base.views,
+  };
+}
+
+function formatShopProductPublic(row: typeof shopProductsTable.$inferSelect) {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    price: Number(row.price),
+    compare_at_price: row.compare_at_price != null ? Number(row.compare_at_price) : null,
+    category_id: row.category_id,
+    image_url: row.image_url,
+    sku: row.sku,
+    listing_id: row.listing_id,
+  };
 }
 
 // ─── GET /shops/directory/taxonomy ────────────────────────────────────────────
@@ -464,7 +525,11 @@ router.get("/shops/me", async (req, res) => {
 
   let listing_count = 0;
   let total_views = 0;
+  let product_count = 0;
   if (shop) {
+    if (!shop.slug?.trim()) {
+      await ensureShopSlug(shop.id, shop.shop_name).catch(() => undefined);
+    }
     const ownerUserIds = await resolveShopOwnerUserIds({
       user_id: shop.user_id,
       email: shop.email,
@@ -482,45 +547,29 @@ router.get("/shops/me", async (req, res) => {
       })
       .from(listingsTable)
       .where(
-        shopPublicListingsCondition({
-          id: shop.id,
-          user_id: shop.user_id,
-          phone: shop.phone,
-          ownerUserIds,
-        }),
+        shopPublicListingsCondition({ id: shop.id }),
       );
     listing_count = stats?.listing_count ?? 0;
     total_views = stats?.total_views ?? 0;
+
+    if (isShopStorefrontEligible(shop)) {
+      const [pc] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(shopProductsTable)
+        .where(and(eq(shopProductsTable.shop_id, shop.id), eq(shopProductsTable.is_active, true)));
+      product_count = pc?.count ?? 0;
+    }
   }
 
+  const shopRow = shop ? await resolveShopByIdOrSlug(String(shop.id)) : null;
+
   res.json({
-    shop: shop
-      ? {
-          id: shop.id,
-          shop_name: shop.shop_name,
-          logo_url: shop.logo_url,
-          description: shop.description,
-          category: shop.category,
-          category_id: shop.category_id,
-          country: shop.country,
-          city: shop.city,
-          region: shop.region,
-          address: shop.address,
-          latitude: shop.latitude,
-          longitude: shop.longitude,
-          facebook: shop.facebook,
-          instagram: shop.instagram,
-          tiktok: shop.tiktok,
-          whatsapp: shop.whatsapp,
-          website: shop.website,
-          contact_name: shop.contact_name,
-          phone: shop.phone,
-          email: shop.email,
-        }
-      : null,
+    shop: shopRow ? shopPublicFields(shopRow) : null,
     application: application ?? null,
     listing_count,
+    product_count,
     total_views,
+    storefront_eligible: shopRow ? isShopStorefrontEligible(shopRow) : false,
   });
 });
 
@@ -554,10 +603,7 @@ router.get("/shops/me/listings", async (req, res) => {
     .select()
     .from(listingsTable)
     .where(
-      shopPublicListingsCondition({
-        ...shop,
-        ownerUserIds,
-      }),
+      shopPublicListingsCondition({ id: shop.id }),
     )
     .orderBy(desc(listingsTable.listed_at))
     .limit(200);
@@ -574,11 +620,12 @@ router.patch("/shops/:id", async (req, res) => {
     return;
   }
 
-  const id = parseShopId(req.params.id);
-  if (!id) {
-    res.status(400).json({ error: "Invalid id" });
+  const shopRef = await resolveShopByIdOrSlug(req.params.id);
+  if (!shopRef) {
+    res.status(404).json({ error: "Not found" });
     return;
   }
+  const id = shopRef.id;
 
   const [shop] = await db.select().from(shopsTable).where(eq(shopsTable.id, id)).limit(1);
   if (!shop) {
@@ -605,9 +652,26 @@ router.patch("/shops/:id", async (req, res) => {
   const directory = await resolveDirectoryFields(body, shop);
   Object.assign(patch, directory);
 
+  if (directory.directory_subcategory_slug || directory.directory_category_slug) {
+    const dirErr = validateShopStorefrontDirectorySlugs(
+      directory.directory_category_slug ?? shop.directory_category_slug,
+      directory.directory_subcategory_slug ?? shop.directory_subcategory_slug,
+    );
+    if (dirErr) {
+      res.status(400).json({ error: "VALIDATION", message: dirErr });
+      return;
+    }
+  }
+
   if (!Object.keys(patch).length) {
     res.status(400).json({ error: "VALIDATION", message: "Nuk ka fusha për përditësim." });
     return;
+  }
+
+  if (patch.shop_name && patch.shop_name !== shop.shop_name) {
+    patch.slug = await generateUniqueShopSlug(patch.shop_name, id);
+  } else if (!shop.slug?.trim()) {
+    patch.slug = await generateUniqueShopSlug(shop.shop_name, id);
   }
 
   const [updated] = await db.update(shopsTable).set(patch).where(eq(shopsTable.id, id)).returning();
@@ -616,10 +680,16 @@ router.patch("/shops/:id", async (req, res) => {
     await db.update(shopApplicationsTable).set(patch).where(eq(shopApplicationsTable.id, shop.application_id));
   }
 
+  if (isShopStorefrontEligible(updated)) {
+    await refreshShopProductListingsAfterShopUpdate(id).catch((err) => {
+      req.log?.error?.({ err, shopId: id }, "refresh shop product listings after shop update failed");
+    });
+  }
+
   scheduleShopSocialEnrich(id);
 
   const social_profiles = await getShopSocialProfilesForApi(id);
-  res.json({ ok: true, shop: updated, social_profiles });
+  res.json({ ok: true, shop: shopPublicFields(updated), social_profiles });
 });
 
 router.delete("/shops/:id", async (req, res) => {
@@ -629,11 +699,12 @@ router.delete("/shops/:id", async (req, res) => {
     return;
   }
 
-  const id = parseShopId(req.params.id);
-  if (!id) {
-    res.status(400).json({ error: "Invalid id" });
+  const shopRef = await resolveShopByIdOrSlug(req.params.id);
+  if (!shopRef) {
+    res.status(404).json({ error: "Not found" });
     return;
   }
+  const id = shopRef.id;
 
   const [shop] = await db
     .select({
@@ -678,11 +749,12 @@ router.delete("/shops/:id", async (req, res) => {
 
 // ─── GET /shops/:id/ratings ─────────────────────────────────────────────────
 router.get("/shops/:id/ratings", async (req, res) => {
-  const id = parseShopId(req.params.id);
-  if (!id) {
-    res.status(400).json({ error: "Invalid id" });
+  const shopRef = await resolveShopByIdOrSlug(req.params.id);
+  if (!shopRef) {
+    res.status(404).json({ error: "Not found" });
     return;
   }
+  const id = shopRef.id;
 
   const [shop] = await db.select({ id: shopsTable.id }).from(shopsTable).where(eq(shopsTable.id, id)).limit(1);
   if (!shop) {
@@ -764,11 +836,12 @@ router.post("/shops/:id/ratings", async (req, res) => {
     return;
   }
 
-  const id = parseShopId(req.params.id);
-  if (!id) {
-    res.status(400).json({ error: "Invalid id" });
+  const shopRef = await resolveShopByIdOrSlug(req.params.id);
+  if (!shopRef) {
+    res.status(404).json({ error: "Not found" });
     return;
   }
+  const id = shopRef.id;
 
   const [shop] = await db
     .select({
@@ -843,11 +916,12 @@ router.post("/shops/:id/ratings", async (req, res) => {
 
 // ─── POST /shops/:id/view ─────────────────────────────────────────────────────
 router.post("/shops/:id/view", async (req, res) => {
-  const id = parseShopId(req.params.id);
-  if (!id) {
-    res.status(400).json({ error: "Invalid id" });
+  const shopRef = await resolveShopByIdOrSlug(req.params.id);
+  if (!shopRef) {
+    res.status(404).json({ error: "Not found" });
     return;
   }
+  const id = shopRef.id;
 
   const viewer = await getSessionUser(req);
   const result = await incrementShopView(id, {
@@ -863,21 +937,22 @@ router.post("/shops/:id/view", async (req, res) => {
 
 // ─── GET /shops/:id ───────────────────────────────────────────────────────────
 router.get("/shops/:id", async (req, res) => {
-  const id = parseShopId(req.params.id);
-  if (!id) {
-    res.status(400).json({ error: "Invalid id" });
-    return;
-  }
-
   await reconcileShopListingAssignmentsIfStale().catch(() => undefined);
 
-  const [shop] = await db.select().from(shopsTable).where(eq(shopsTable.id, id)).limit(1);
+  const shop = await resolveShopByIdOrSlug(req.params.id);
   if (!shop || !isShopPubliclyVisible(shop)) {
     res.status(404).json({ error: "Not found" });
     return;
   }
 
+  if (!shop.slug?.trim()) {
+    await ensureShopSlug(shop.id, shop.shop_name).catch(() => undefined);
+    const refreshed = await resolveShopByIdOrSlug(String(shop.id));
+    if (refreshed) Object.assign(shop, refreshed);
+  }
+
   const viewer = await getSessionUser(req);
+  const id = shop.id;
 
   const ownerUserIds = await resolveShopOwnerUserIds({
     user_id: shop.user_id,
@@ -895,12 +970,7 @@ router.get("/shops/:id", async (req, res) => {
     .select()
     .from(listingsTable)
     .where(
-      shopPublicListingsCondition({
-        id: shop.id,
-        user_id: shop.user_id,
-        phone: shop.phone,
-        ownerUserIds,
-      }),
+      shopPublicListingsCondition({ id: shop.id }),
     )
     .orderBy(desc(listingsTable.listed_at))
     .limit(200);
@@ -926,52 +996,53 @@ router.get("/shops/:id", async (req, res) => {
   const ratings = ratingMap[shop.id];
   const social_profiles = await getShopSocialProfilesForApi(shop.id);
 
+  const productRows = isShopStorefrontEligible(shop)
+    ? await db
+        .select()
+        .from(shopProductsTable)
+        .where(and(eq(shopProductsTable.shop_id, shop.id), eq(shopProductsTable.is_active, true)))
+        .orderBy(asc(shopProductsTable.sort_order), desc(shopProductsTable.id))
+    : [];
+
   const lang = parseUiLang(req.query.lang);
   let description = shop.description;
   let address = shop.address;
+  let tagline = shop.tagline ?? null;
   let translatedListings = listings;
+  let products = productRows.map(formatShopProductPublic);
 
   if (contentTranslationTarget(lang)) {
-    const texts = [shop.description, shop.address, ...listings.map((l) => l.title)];
+    const texts = [
+      shop.description,
+      shop.address,
+      tagline ?? "",
+      ...listings.map((l) => l.title),
+      ...products.map((p) => p.title),
+    ];
     const translated = await translateUserTexts(texts, lang);
     description = translated[0] ?? shop.description;
     address = translated[1] ?? shop.address;
+    tagline = tagline ? (translated[2] ?? tagline) : null;
+    const listingOffset = 3;
     translatedListings = listings.map((listing, i) => ({
       ...listing,
-      title: translated[i + 2] ?? listing.title,
+      title: translated[listingOffset + i] ?? listing.title,
+    }));
+    products = products.map((product, i) => ({
+      ...product,
+      title: translated[listingOffset + listings.length + i] ?? product.title,
     }));
   }
 
+  const shopOut = shopPublicFields(shop, ratings);
+  shopOut.description = description;
+  shopOut.address = address;
+  shopOut.tagline = tagline;
+
   res.json({
-    shop: {
-      id: shop.id,
-      shop_name: shop.shop_name,
-      logo_url: shop.logo_url,
-      description,
-      category: shop.category,
-      category_id: shop.category_id,
-      directory_category_slug: shop.directory_category_slug,
-      directory_subcategory_slug: shop.directory_subcategory_slug,
-      directory_category_id: shop.directory_category_id,
-      directory_subcategory_id: shop.directory_subcategory_id,
-      country: shop.country,
-      city: shop.city,
-      region: shop.region,
-      address,
-      latitude: shop.latitude,
-      longitude: shop.longitude,
-      facebook: shop.facebook,
-      instagram: shop.instagram,
-      tiktok: shop.tiktok,
-      whatsapp: shop.whatsapp,
-      website: shop.website,
-      contact_name: shop.contact_name,
-      phone: shop.phone,
-      email: shop.email,
-      average_rating: ratings?.average_rating ?? null,
-      rating_count: ratings?.rating_count ?? 0,
-      views: shop.views ?? 0,
-    },
+    shop: shopOut,
+    products,
+    product_count: products.length,
     listings: translatedListings,
     active_count: translatedListings.length,
     subcategories,

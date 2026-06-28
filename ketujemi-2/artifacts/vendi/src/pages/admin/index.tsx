@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard, FileText, Users, Tag, AlertTriangle, Settings,
-  LogOut, Menu, X, Lock, ShieldCheck, Building2, CreditCard, Store, Share2, UserPlus, Instagram, Trash2, Megaphone,
+  LogOut, Menu, X, Lock, ShieldCheck, Building2, CreditCard, Store, Share2, UserPlus, Instagram, Trash2, Megaphone, Link2,
 } from "lucide-react";
-import { adminLoginEmailStart, adminLoginEmailVerify, adminLogout, isAdminLoggedIn } from "@/lib/admin-api";
+import { adminLoginEmailStart, adminLoginEmailVerify, adminLogout, verifyAdminSession } from "@/lib/admin-api";
 import { useMarket } from "@/lib/market-context";
 import Dashboard from "./dashboard";
 import AdminListings from "./listings";
@@ -20,9 +20,11 @@ import AdminFollowers from "./followers";
 import AdminShopSocialEnrichments from "./shop-social-enrichments";
 import AdminDeletionFeedback from "./deletion-feedback";
 import AdminAnnouncements from "./announcements";
+import AdminShopLinks from "./shop-links";
 
 type Section =
   | "dashboard"
+  | "links"
   | "partners"
   | "payments"
   | "listings"
@@ -39,6 +41,7 @@ type Section =
   | "announcements";
 
 const NAV: { id: Section; icon: React.ElementType }[] = [
+  { id: "links", icon: Link2 },
   { id: "dashboard", icon: LayoutDashboard },
   { id: "partners", icon: Building2 },
   { id: "shops", icon: Store },
@@ -58,6 +61,7 @@ const NAV: { id: Section; icon: React.ElementType }[] = [
 
 const NAV_TITLE_KEY: Record<Section, string> = {
   dashboard: "adm_nav_dash",
+  links: "adm_nav_links",
   partners: "adm_nav_partners",
   payments: "adm_nav_payments",
   listings: "adm_nav_list",
@@ -74,11 +78,60 @@ const NAV_TITLE_KEY: Record<Section, string> = {
   announcements: "adm_nav_announcements",
 };
 
+const NAV_LABEL_SQ: Record<Section, string> = {
+  dashboard: "Paneli",
+  links: "Linka dyqanesh",
+  partners: "Partnerët",
+  payments: "Pagesat",
+  listings: "Shpalljet",
+  social: "Facebook & Instagram",
+  followers: "Ndjekësit",
+  users: "Përdoruesit",
+  categories: "Kategoritë",
+  reports: "Raportet",
+  moderation: "Moderim automatik",
+  settings: "Cilësimet",
+  shops: "Dyqanet",
+  "shop-social": "IG/TikTok dyqane",
+  "deletion-feedback": "Fshirje llogarish",
+  announcements: "Njoftime",
+};
+
+const SECTION_HASH: Record<Section, string> = {
+  dashboard: "paneli",
+  links: "linka",
+  partners: "partnere",
+  shops: "dyqanet",
+  "shop-social": "ig-tiktok",
+  "deletion-feedback": "fshirje",
+  payments: "pagesat",
+  listings: "shpalljet",
+  social: "social",
+  followers: "ndjekesit",
+  announcements: "njoftime",
+  users: "perdoruesit",
+  categories: "kategorite",
+  reports: "raportet",
+  moderation: "moderim",
+  settings: "cilesimet",
+};
+
+const HASH_SECTION: Record<string, Section> = Object.fromEntries(
+  Object.entries(SECTION_HASH).map(([section, hash]) => [hash, section as Section]),
+) as Record<string, Section>;
+
+function sectionFromHash(): Section | null {
+  if (typeof window === "undefined") return null;
+  const hash = window.location.hash.replace(/^#/, "").trim().toLowerCase();
+  return HASH_SECTION[hash] ?? null;
+}
+
 // ─── Login page ───────────────────────────────────────────────────────────────
 function LoginPage({ onLogin }: { onLogin: () => void }) {
   const { t } = useMarket();
   const [code, setCode] = useState("");
-  const [rememberMe, setRememberMe] = useState(true);
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<"idle" | "sent">("idle");
@@ -101,7 +154,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
     setError("");
     setLoading(true);
     try {
-      await adminLoginEmailVerify(code, rememberMe);
+      await adminLoginEmailVerify(code, password, rememberMe);
       onLogin();
     } catch {
       setError(t.adm_badLogin);
@@ -163,6 +216,20 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
                 />
               </div>
 
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+                  {t.adm_password}
+                </label>
+                <input
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all min-h-12"
+                  required
+                />
+              </div>
+
               <label className="flex items-center gap-2.5 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -182,8 +249,8 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 
               <button
                 type="submit"
-                disabled={loading || code.trim().length < 4}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl py-3 font-bold text-sm transition-colors"
+                disabled={loading || code.trim().length < 4 || !password.trim()}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl py-3 font-bold text-sm transition-colors min-h-12"
               >
                 {loading ? t.adm_signingIn : t.adm_signInBtn}
               </button>
@@ -252,7 +319,7 @@ function Sidebar({
             }`}
           >
             <Icon size={16} />
-            {t[NAV_TITLE_KEY[id]]}
+            {t[NAV_TITLE_KEY[id]] || NAV_LABEL_SQ[id]}
           </button>
         ))}
       </nav>
@@ -283,8 +350,8 @@ function Sidebar({
 // ─── Admin App ────────────────────────────────────────────────────────────────
 export default function AdminPanel() {
   const { t } = useMarket();
-  const [loggedIn, setLoggedIn] = useState(isAdminLoggedIn());
-  const [section, setSection] = useState<Section>("partners");
+  const [authState, setAuthState] = useState<"loading" | "guest" | "authed">("loading");
+  const [section, setSection] = useState<Section>(() => sectionFromHash() ?? "links");
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -292,19 +359,58 @@ export default function AdminPanel() {
     return () => { document.title = t.adm_docAfter; };
   }, [t.adm_docTitle, t.adm_docAfter]);
 
+  useEffect(() => {
+    const onHash = () => {
+      const fromHash = sectionFromHash();
+      if (fromHash) setSection(fromHash);
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  useEffect(() => {
+    if (authState !== "authed") return;
+    const hash = SECTION_HASH[section];
+    const next = `#${hash}`;
+    if (window.location.hash !== next) {
+      window.history.replaceState(null, "", `/admin${next}`);
+    }
+  }, [section, authState]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void verifyAdminSession().then((ok) => {
+      if (!cancelled) setAuthState(ok ? "authed" : "guest");
+    });
+    return () => { cancelled = true; };
+  }, []);
+
   const handleLogout = () => {
     adminLogout();
-    setLoggedIn(false);
+    setAuthState("guest");
   };
 
-  if (!loggedIn) {
-    return <LoginPage onLogin={() => setLoggedIn(true)} />;
+  if (authState === "loading") {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center gap-3 p-4"
+        style={{ background: "linear-gradient(135deg, #0F2B7F 0%, #1A4FCC 50%, #2563EB 100%)" }}
+      >
+        <ShieldCheck size={40} className="text-white/90" />
+        <p className="text-white/80 text-sm">{t.adm_signingIn}</p>
+      </div>
+    );
   }
 
-  const sectionLabel = t[NAV_TITLE_KEY[section]] ?? "";
+  if (authState === "guest") {
+    return <LoginPage onLogin={() => setAuthState("authed")} />;
+  }
+
+  const sectionLabel = t[NAV_TITLE_KEY[section]] || NAV_LABEL_SQ[section] || "";
 
   const SectionComponent = {
     dashboard:  Dashboard,
+    links:      AdminShopLinks,
     partners:   AdminPartners,
     payments:   AdminPayments,
     listings:   AdminListings,

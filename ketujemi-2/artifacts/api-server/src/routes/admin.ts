@@ -159,9 +159,15 @@ router.post("/admin/login/email/verify", adminLoginLimiter, async (req, res) => 
     return;
   }
   const code = typeof req.body?.code === "string" ? req.body.code.trim() : "";
+  const password = typeof req.body?.password === "string" ? req.body.password : "";
   const rememberMe = req.body?.remember_me === true;
   if (code.length < 4) {
     res.status(400).json({ error: "Code required" });
+    return;
+  }
+  if (!verifyAdminPassword(password)) {
+    notifyAdminLoginFailed(req);
+    res.status(401).json({ error: "Invalid credentials" });
     return;
   }
   if (!(await verifyAdminEmailLoginCode(code))) {
@@ -196,6 +202,15 @@ router.post("/admin/login", adminLoginLimiter, (req, res) => {
     return;
   }
   res.json(session);
+});
+
+// ─── GET /admin/session — verify bearer (frontend gate) ───────────────────────
+router.get("/admin/session", (req, res) => {
+  if (!verifyAdminBearer(req.headers.authorization)) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  res.json({ ok: true });
 });
 
 // ─── GET /admin/dashboard ─────────────────────────────────────────────────────
@@ -1538,6 +1553,17 @@ router.get("/admin/shop-applications", requireAdmin, async (_req, res) => {
   const shopIds = rows.map((r) => r.shop_id).filter((id): id is number => typeof id === "number" && id > 0);
   const listingCountByShop = new Map<number, number>();
   const adminNotesByShop = new Map<number, string | null>();
+  const shopMetaById = new Map<
+    number,
+    {
+      id: number;
+      slug: string | null;
+      tagline: string | null;
+      cover_image_url: string | null;
+      youtube: string | null;
+      admin_notes: string | null;
+    }
+  >();
   if (shopIds.length) {
     const countRows = await db
       .select({
@@ -1552,13 +1578,23 @@ router.get("/admin/shop-applications", requireAdmin, async (_req, res) => {
     }
 
     const shopRows = await db
-      .select({ id: shopsTable.id, admin_notes: shopsTable.admin_notes })
+      .select({
+        id: shopsTable.id,
+        slug: shopsTable.slug,
+        tagline: shopsTable.tagline,
+        cover_image_url: shopsTable.cover_image_url,
+        youtube: shopsTable.youtube,
+        admin_notes: shopsTable.admin_notes,
+      })
       .from(shopsTable)
       .where(inArray(shopsTable.id, shopIds));
     for (const row of shopRows) {
+      shopMetaById.set(row.id, row);
       adminNotesByShop.set(row.id, row.admin_notes);
     }
   }
+
+  const { shopPublicPath } = await import("../lib/shop-slug.js");
 
   const stats = {
     pending: rows.filter((r) => r.status === "pending").length,
@@ -1566,13 +1602,21 @@ router.get("/admin/shop-applications", requireAdmin, async (_req, res) => {
     rejected: rows.filter((r) => r.status === "rejected").length,
   };
   res.json({
-    applications: rows.map((row) => ({
-      ...row,
-      listing_count: row.shop_id ? (listingCountByShop.get(row.shop_id) ?? 0) : 0,
-      admin_notes: row.shop_id
-        ? (adminNotesByShop.get(row.shop_id) ?? row.admin_notes)
-        : row.admin_notes,
-    })),
+    applications: rows.map((row) => {
+      const shopMeta = row.shop_id ? shopMetaById.get(row.shop_id) : undefined;
+      return {
+        ...row,
+        slug: shopMeta?.slug ?? null,
+        tagline: shopMeta?.tagline ?? null,
+        cover_image_url: shopMeta?.cover_image_url ?? null,
+        youtube: shopMeta?.youtube ?? row.youtube ?? null,
+        public_path: row.shop_id ? shopPublicPath(shopMeta?.slug, row.shop_id) : null,
+        listing_count: row.shop_id ? (listingCountByShop.get(row.shop_id) ?? 0) : 0,
+        admin_notes: row.shop_id
+          ? (adminNotesByShop.get(row.shop_id) ?? row.admin_notes)
+          : row.admin_notes,
+      };
+    }),
     stats,
   });
 });
@@ -1590,7 +1634,19 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
     return;
   }
   if (app.status === "approved" && app.shop_id) {
-    res.json({ ok: true, shop_id: app.shop_id });
+    const { shopPublicPath } = await import("../lib/shop-slug.js");
+    const [existing] = await db
+      .select({ slug: shopsTable.slug })
+      .from(shopsTable)
+      .where(eq(shopsTable.id, app.shop_id))
+      .limit(1);
+    const slug = existing?.slug ?? null;
+    res.json({
+      ok: true,
+      shop_id: app.shop_id,
+      slug,
+      public_path: shopPublicPath(slug, app.shop_id),
+    });
     return;
   }
 
@@ -1690,7 +1746,15 @@ router.post("/admin/shop-applications/:id/approve", requireAdmin, async (req, re
   const { scheduleShopSocialEnrich } = await import("../lib/shop-social-enrich.js");
   scheduleShopSocialEnrich(shop.id);
 
-  res.json({ ok: true, shop_id: shop.id });
+  const { ensureShopSlug, shopPublicPath } = await import("../lib/shop-slug.js");
+  const slug = await ensureShopSlug(shop.id, shop.shop_name).catch(() => shop.slug ?? "");
+
+  res.json({
+    ok: true,
+    shop_id: shop.id,
+    slug: slug || null,
+    public_path: shopPublicPath(slug || null, shop.id),
+  });
 });
 
 router.post("/admin/shop-applications/:id/reject", requireAdmin, async (req, res) => {
@@ -1770,6 +1834,10 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
     const tiktok = trimOrNull(body.tiktok);
     const whatsapp = normalizeShopWhatsappStored(body.whatsapp);
     const website = trimOrNull(body.website);
+    const youtube = trimOrNull(body.youtube);
+    const slugInput = trimOrNull(body.slug);
+    const tagline = trimOrNull(body.tagline);
+    const cover_image_url = trimOrNull(body.cover_image_url);
 
     const shopValues: AdminShopInsertValues = {
       shop_name: String(body.shop_name).trim(),
@@ -1792,6 +1860,10 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
       tiktok,
       whatsapp,
       website,
+      youtube,
+      slug: slugInput,
+      tagline,
+      cover_image_url,
       contact_name: String(body.contact_name).trim(),
       phone: String(body.phone).trim(),
       email: String(body.email).trim(),
@@ -1799,6 +1871,16 @@ router.post("/admin/shops", requireAdmin, async (req, res) => {
     };
 
     const { application, shop } = await persistAdminShopCreate(adminUser.id, shopValues);
+
+    const { ensureShopSlug, generateUniqueShopSlug } = await import("../lib/shop-slug.js");
+    if (slugInput) {
+      await db
+        .update(shopsTable)
+        .set({ slug: await generateUniqueShopSlug(slugInput, shop.id) })
+        .where(eq(shopsTable.id, shop.id));
+    } else {
+      await ensureShopSlug(shop.id, shop.shop_name);
+    }
 
     const { backfillShopListingsForShop } = await import("../lib/shop-listing-lookup.js");
     await backfillShopListingsForShop({
@@ -1889,6 +1971,14 @@ router.patch("/admin/shops/:id", requireAdmin, async (req, res) => {
   if (!Object.keys(patch).length && !("status" in appPatch)) {
     res.status(400).json({ error: "VALIDATION", message: "Nuk ka fusha për përditësim." });
     return;
+  }
+
+  if (patch.slug) {
+    const { generateUniqueShopSlug } = await import("../lib/shop-slug.js");
+    patch.slug = await generateUniqueShopSlug(String(patch.slug), id);
+  } else if (!shop.slug?.trim()) {
+    const { generateUniqueShopSlug } = await import("../lib/shop-slug.js");
+    patch.slug = await generateUniqueShopSlug(String(patch.shop_name ?? shop.shop_name), id);
   }
 
   const [updated] = await db.update(shopsTable).set(patch).where(eq(shopsTable.id, id)).returning();

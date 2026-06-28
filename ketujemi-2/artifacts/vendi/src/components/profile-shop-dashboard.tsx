@@ -20,12 +20,19 @@ import { ShopAddressAutocomplete } from "@/components/shop-address-autocomplete"
 import { useShopFormCopy } from "@/lib/shop-application-i18n";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
+import { ShopProductManager } from "@/components/shop-product-manager";
+import { useShopProductsCopy } from "@/lib/shop-products-i18n";
 import { shopSocialFieldsForSubmit, shopSocialSuffix } from "@/lib/shop-social-url-input";
+import { ShopPublicLinkCopy } from "@/components/shop-public-link-copy";
 
 type ShopMe = {
   id: number;
+  slug?: string | null;
+  public_path?: string | null;
   shop_name: string;
   logo_url: string;
+  cover_image_url?: string | null;
+  tagline?: string | null;
   description: string;
   category: string;
   country: string;
@@ -39,19 +46,24 @@ type ShopMe = {
   tiktok?: string | null;
   whatsapp?: string | null;
   website?: string | null;
+  youtube?: string | null;
+  storefront_eligible?: boolean;
 };
 
 type ShopMeResponse = {
   shop: ShopMe | null;
   application: { status: string } | null;
   listing_count: number;
+  product_count?: number;
   total_views: number;
+  storefront_eligible?: boolean;
 };
 
 type ShopListing = Parameters<typeof ListingCard>[0]["listing"];
 
 export function ProfileShopDashboard() {
   const c = useShopDashboardCopy();
+  const pc = useShopProductsCopy();
   const formCopy = useShopFormCopy();
   const { uiLang, t } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
@@ -82,6 +94,9 @@ export function ProfileShopDashboard() {
   const [tiktok, setTiktok] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [website, setWebsite] = useState("");
+  const [youtube, setYoutube] = useState("");
+  const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [tagline, setTagline] = useState("");
 
   function loadMe() {
     setLoading(true);
@@ -107,6 +122,9 @@ export function ProfileShopDashboard() {
           setTiktok(shopSocialSuffix(res.shop.tiktok, "tiktok"));
           setWhatsapp(shopSocialSuffix(res.shop.whatsapp, "whatsapp"));
           setWebsite(shopSocialSuffix(res.shop.website, "website"));
+          setYoutube(shopSocialSuffix(res.shop.youtube, "youtube"));
+          setCoverImageUrl(res.shop.cover_image_url ?? "");
+          setTagline(res.shop.tagline ?? "");
         }
       })
       .catch(() => setData(null))
@@ -162,6 +180,7 @@ export function ProfileShopDashboard() {
         tiktok,
         whatsapp,
         website,
+        youtube,
       });
       const res = await fetchWithTimeout(`/api/shops/${data.shop.id}`, {
         method: "PATCH",
@@ -182,6 +201,9 @@ export function ProfileShopDashboard() {
           tiktok: social.tiktok,
           whatsapp: social.whatsapp,
           website: social.website,
+          youtube: social.youtube,
+          cover_image_url: coverImageUrl.trim() || null,
+          tagline: tagline.trim() || null,
         }),
       });
       if (!res.ok) throw new Error("fail");
@@ -203,6 +225,7 @@ export function ProfileShopDashboard() {
         setTiktok(shopSocialSuffix(saved.tiktok, "tiktok"));
         setWhatsapp(shopSocialSuffix(saved.whatsapp, "whatsapp"));
         setWebsite(shopSocialSuffix(saved.website, "website"));
+        setYoutube(shopSocialSuffix(saved.youtube, "youtube"));
       }
       toast({ title: c.shopSaved });
       setEditFormOpen(false);
@@ -257,13 +280,15 @@ export function ProfileShopDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
           <div className="rounded-xl bg-white border border-gray-100 px-3 py-2">
             <div className="flex items-center gap-1 text-gray-500">
               <Package size={14} />
-              {c.totalListings}
+              {data.storefront_eligible ? pc.manageProducts : c.totalListings}
             </div>
-            <p className="font-bold text-gray-900 mt-0.5">{data.listing_count}</p>
+            <p className="font-bold text-gray-900 mt-0.5">
+              {data.storefront_eligible ? (data.product_count ?? 0) : data.listing_count}
+            </p>
           </div>
           <div className="rounded-xl bg-white border border-gray-100 px-3 py-2">
             <div className="flex items-center gap-1 text-gray-500">
@@ -273,6 +298,14 @@ export function ProfileShopDashboard() {
             <p className="font-bold text-gray-900 mt-0.5">{data.total_views.toLocaleString()}</p>
           </div>
         </div>
+
+        {shop.storefront_eligible !== false && (shop.public_path || shop.slug || shop.id) ? (
+          <ShopPublicLinkCopy
+            slug={shop.slug}
+            shopId={shop.id}
+            publicPath={shop.public_path}
+          />
+        ) : null}
 
         <div className="flex flex-col gap-2">
           <Link href="/listings/new">
@@ -293,12 +326,20 @@ export function ProfileShopDashboard() {
             <Pencil size={16} className="mr-2" />
             {c.editShop}
           </Button>
-          <Link href={`/dyqani/${shop.id}`}>
+          <Link href={shop.public_path ?? `/dyqani/${shop.id}`}>
             <Button type="button" variant="ghost" className="w-full min-h-11 text-blue-700">
               {c.viewShop}
             </Button>
           </Link>
         </div>
+
+        {data.storefront_eligible ? (
+          <ShopProductManager
+            changeToken={gate.changeToken}
+            storefrontEligible={!!data.storefront_eligible}
+            onProductsChange={loadMe}
+          />
+        ) : null}
 
         {showListings ? (
           <div className="space-y-3 pt-2 border-t border-blue-100">
@@ -337,6 +378,19 @@ export function ProfileShopDashboard() {
             <div className="space-y-1">
               <Label htmlFor="shop-edit-logo">{c.logo}</Label>
               <Input id="shop-edit-logo" type="url" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="shop-edit-cover">{pc.coverImage}</Label>
+              <Input
+                id="shop-edit-cover"
+                type="url"
+                value={coverImageUrl}
+                onChange={(e) => setCoverImageUrl(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="shop-edit-tagline">{pc.tagline}</Label>
+              <Input id="shop-edit-tagline" value={tagline} onChange={(e) => setTagline(e.target.value)} />
             </div>
             <div className="space-y-1">
               <Label htmlFor="shop-edit-desc">{c.description}</Label>
@@ -394,6 +448,10 @@ export function ProfileShopDashboard() {
             <div className="space-y-1">
               <Label htmlFor="shop-edit-web">{c.website}</Label>
               <Input id="shop-edit-web" value={website} onChange={(e) => setWebsite(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="shop-edit-yt">YouTube</Label>
+              <Input id="shop-edit-yt" value={youtube} onChange={(e) => setYoutube(e.target.value)} placeholder="youtube.com/@kanali" />
             </div>
             <Button type="submit" className="w-full min-h-11" disabled={saving || !gate.changeToken}>
               {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : c.saveShop}

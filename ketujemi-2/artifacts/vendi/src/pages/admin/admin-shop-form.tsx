@@ -22,6 +22,8 @@ import {
   type ShopSocialField,
 } from "@/lib/shop-social-url-input";
 import { ShopAddressAutocomplete } from "@/components/shop-address-autocomplete";
+import { ShopLinkRow } from "@/components/shop-link-row";
+import { parseKetujemiShopSlugFromUrl, normalizeShopSlug } from "@/lib/shop-public-url";
 
 export type AdminShopFormValues = {
   shop_name: string;
@@ -40,6 +42,10 @@ export type AdminShopFormValues = {
   tiktok: string;
   whatsapp: string;
   website: string;
+  youtube: string;
+  slug: string;
+  tagline: string;
+  cover_image_url: string;
   contact_name: string;
   phone: string;
   email: string;
@@ -65,6 +71,10 @@ export const BLANK_ADMIN_SHOP: AdminShopFormValues = {
   tiktok: "",
   whatsapp: "",
   website: "",
+  youtube: "",
+  slug: "",
+  tagline: "",
+  cover_image_url: "",
   contact_name: "",
   phone: "",
   email: "",
@@ -91,7 +101,9 @@ type AdminShopFormProps = {
   saving?: boolean;
   showStatus?: boolean;
   showAdminNotes?: boolean;
+  shopId?: number | null;
   labels?: { save: string; cancel: string; status?: string; adminNotes?: string };
+  shopName?: string;
 };
 
 function validate(values: AdminShopFormValues): string | null {
@@ -105,7 +117,7 @@ function validate(values: AdminShopFormValues): string | null {
     return "Zgjidhni kategorinë dhe nënkategorinë e dyqanit.";
   }
   const social = shopSocialFieldsForSubmit(values);
-  if (!social.facebook && !social.instagram && !social.tiktok && !social.whatsapp && !social.website) {
+  if (!social.facebook && !social.instagram && !social.tiktok && !social.whatsapp && !social.website && !social.youtube) {
     return "Plotësoni të paktën një rrjet social.";
   }
   if (!values.contact_name.trim()) return "Plotësoni emrin e kontaktit.";
@@ -137,10 +149,17 @@ export function buildAdminShopApiPayload(values: AdminShopFormValues): Record<st
     tiktok: social.tiktok,
     whatsapp: social.whatsapp,
     website: social.website,
+    youtube: social.youtube,
     contact_name: values.contact_name.trim(),
     phone: values.phone.trim(),
     email: values.email.trim(),
   };
+  const slug = normalizeShopSlug((values.slug.trim() || values.shop_name.trim()));
+  if (slug) payload.slug = slug;
+  const tagline = values.tagline.trim();
+  if (tagline) payload.tagline = tagline;
+  const cover = values.cover_image_url.trim();
+  if (cover) payload.cover_image_url = cover;
   const notes = values.admin_notes?.trim();
   if (notes) payload.admin_notes = notes;
   if (values.status) payload.status = values.status;
@@ -164,6 +183,10 @@ export function adminApplicationToFormValues(row: {
   tiktok: string | null;
   whatsapp: string | null;
   website: string | null;
+  youtube?: string | null;
+  slug?: string | null;
+  tagline?: string | null;
+  cover_image_url?: string | null;
   contact_name: string;
   phone: string;
   email: string;
@@ -179,6 +202,18 @@ export function adminApplicationToFormValues(row: {
     row.directory_subcategory_slug?.trim() ||
     catDef?.subcategories[0]?.slug ||
     "dyqane-te-pergjithshme";
+
+  const websiteStored = row.website ?? "";
+  const slugFromWebsite = parseKetujemiShopSlugFromUrl(websiteStored);
+  let slug = row.slug?.trim() ?? "";
+  let website = shopSocialSuffix(row.website, "website");
+  if (slugFromWebsite) {
+    slug = slug || slugFromWebsite;
+    website = "";
+  }
+  if (!slug && row.shop_name.trim()) {
+    slug = normalizeShopSlug(row.shop_name);
+  }
 
   return {
     shop_name: row.shop_name,
@@ -196,7 +231,11 @@ export function adminApplicationToFormValues(row: {
     instagram: shopSocialSuffix(row.instagram, "instagram"),
     tiktok: shopSocialSuffix(row.tiktok, "tiktok"),
     whatsapp: shopSocialSuffix(row.whatsapp, "whatsapp"),
-    website: shopSocialSuffix(row.website, "website"),
+    website,
+    youtube: shopSocialSuffix(row.youtube ?? null, "youtube"),
+    slug,
+    tagline: row.tagline?.trim() ?? "",
+    cover_image_url: row.cover_image_url?.trim() ?? "",
     contact_name: row.contact_name,
     phone: row.phone,
     email: row.email,
@@ -212,7 +251,9 @@ export function AdminShopForm({
   saving = false,
   showStatus = false,
   showAdminNotes = false,
+  shopId = null,
   labels,
+  shopName,
 }: AdminShopFormProps) {
   const c = useShopFormCopy();
   const cloudinary = useCloudinaryConfig();
@@ -221,6 +262,7 @@ export function AdminShopForm({
   const [values, setValues] = useState(initial);
   const [error, setError] = useState<string | null>(null);
   const [logoBusy, setLogoBusy] = useState(false);
+  const slugTouchedRef = useRef(false);
   const errorRef = useRef<HTMLParagraphElement>(null);
   const logoRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -228,6 +270,7 @@ export function AdminShopForm({
   useEffect(() => {
     setValues(initial);
     setError(null);
+    slugTouchedRef.current = false;
   }, [initial]);
 
   const cityOptions = citiesForShopCountry(values.country);
@@ -294,19 +337,44 @@ export function AdminShopForm({
     </p>
   ) : null;
 
+  const saveLabel = labels?.save ?? c.submitBtn;
+  const cancelLabel = labels?.cancel ?? "Anulo";
+
+  const shopLinkSection = (
+    <ShopLinkRow
+      className="shrink-0 rounded-xl border-2 border-green-300 bg-green-50/90 p-4"
+      shopName={shopName ?? values.shop_name}
+      slug={values.slug || initial.slug}
+      shopId={shopId}
+    />
+  );
+
   return (
     <form noValidate onSubmit={(e) => void handleSubmit(e)} className="flex flex-col max-h-[75vh] min-h-0">
       {errorBanner}
 
-      <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 shrink-0">
-        Obligative: logo, kategori, të paktën 1 rrjet social, telefon dhe email. Pastaj shtyp «Krijo dyqanin».
+      {shopLinkSection}
+
+      <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 shrink-0 mt-3">
+        Obligative: logo, kategori, të paktën 1 rrjet social, telefon dhe email. Pastaj shtyp «{saveLabel}».
       </p>
 
       <div ref={scrollRef} className="space-y-4 overflow-y-auto flex-1 min-h-0 pr-1">
         <div className="grid sm:grid-cols-2 gap-3">
           <div className="space-y-1.5 sm:col-span-2">
             <Label>{c.shopName} *</Label>
-            <Input value={values.shop_name} onChange={(e) => setField("shop_name", e.target.value)} className="min-h-10" />
+            <Input
+              value={values.shop_name}
+              onChange={(e) => {
+                const shop_name = e.target.value;
+                setValues((prev) => ({
+                  ...prev,
+                  shop_name,
+                  slug: slugTouchedRef.current ? prev.slug : normalizeShopSlug(shop_name),
+                }));
+              }}
+              className="min-h-10"
+            />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label>{c.logo} *</Label>
@@ -390,15 +458,51 @@ export function AdminShopForm({
           </div>
         </div>
 
+        <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-4 space-y-3">
+          <p className="text-sm font-bold text-gray-800">Pamje e webfaqes (opsionale)</p>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label>Slogan (tagline)</Label>
+              <Input
+                value={values.tagline}
+                onChange={(e) => setField("tagline", e.target.value)}
+                placeholder="Mobilje moderne për shtëpinë tuaj"
+                className="min-h-10"
+              />
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label>Foto cover (URL)</Label>
+              <Input
+                type="url"
+                value={values.cover_image_url}
+                onChange={(e) => setField("cover_image_url", e.target.value)}
+                placeholder="https://…"
+                className="min-h-10"
+              />
+            </div>
+          </div>
+        </div>
+
         <ShopSocialUrlFields
+          showStorefrontHints
           values={{
             facebook: values.facebook,
             instagram: values.instagram,
             tiktok: values.tiktok,
             whatsapp: values.whatsapp,
             website: values.website,
+            youtube: values.youtube,
           }}
-          onChange={(field: ShopSocialField, v) => setField(field, v)}
+          onChange={(field: ShopSocialField, v) => {
+            if (field === "website") {
+              const extracted = parseKetujemiShopSlugFromUrl(v);
+              if (extracted) {
+                setValues((prev) => ({ ...prev, slug: extracted, website: "" }));
+                return;
+              }
+            }
+            setField(field, v);
+          }}
         />
 
         <div className="grid sm:grid-cols-2 gap-3">
@@ -408,7 +512,8 @@ export function AdminShopForm({
           </div>
           <div className="space-y-1.5">
             <Label>{c.phone} *</Label>
-            <Input value={values.phone} onChange={(e) => setField("phone", e.target.value)} className="min-h-10" />
+            <p className="text-xs text-gray-500">Shfaqet si buton «Thirr» në webfaqe (tel:)</p>
+            <Input value={values.phone} onChange={(e) => setField("phone", e.target.value)} className="min-h-10" placeholder="+38344123456" />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label>{c.email} *</Label>

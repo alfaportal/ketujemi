@@ -10,6 +10,8 @@ import { ShopSocialLinks } from "@/components/shop-social-links";
 
 export type ShopDirectoryListItem = {
   id: number;
+  slug?: string | null;
+  public_path?: string | null;
   shop_name: string;
   logo_url: string;
   category?: string | null;
@@ -95,7 +97,7 @@ export function ShopDirectoryCard({ shop, viewLabel }: Props) {
         }}
       />
       <Link
-        href={`/dyqani/${shop.id}`}
+        href={shop.public_path ?? (shop.slug ? `/dyqani/${shop.slug}` : `/dyqani/${shop.id}`)}
         className="mt-auto inline-flex items-center justify-center min-h-11 rounded-xl px-4 text-sm font-bold text-white"
         style={{ backgroundColor: BRAND_BLUE }}
       >

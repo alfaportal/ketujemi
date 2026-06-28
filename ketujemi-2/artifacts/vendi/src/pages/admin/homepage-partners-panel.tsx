@@ -16,6 +16,7 @@ import { PartnerCategoriesModal } from "./partner-categories-modal";
 import { Loader2, Pencil, Plus, Star, Trash2, LayoutGrid, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { uploadImageToCloudinary, useCloudinaryConfig } from "@/lib/cloudinary-config";
+import { PublicLinkCopy } from "@/components/public-link-copy";
 
 export function AdminHomepagePartnersPanel() {
   const [partners, setPartners] = useState<AdminHomepagePartner[]>([]);
@@ -389,6 +390,10 @@ export function AdminHomepagePartnersPanel() {
               </button>
             </div>
             <p className="text-sm text-gray-600 truncate">{editRow.business_name}</p>
+            <PublicLinkCopy
+              href={`/partners/${editRow.id}`}
+              shareTitle={`Shiko profilin e ${editRow.business_name}`}
+            />
             <input
               type="text"
               required
@@ -564,11 +569,15 @@ function PartnerProfileFieldInputs({
         placeholder="TikTok URL"
         className={inputClass}
       />
+      <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1.5">
+        Website URL = faqja e jashtme e firmës. Për webfaqe dyqani në KetuJemi (/dyqani/…) shko te menuja{" "}
+        <strong>Dyqanet</strong> ose <strong>Linka dyqanesh</strong>, jo këtu.
+      </p>
       <input
         type="url"
         value={websiteUrl}
         onChange={(e) => onWebsiteUrlChange(e.target.value)}
-        placeholder="Website URL"
+        placeholder="Website i jashtëm (p.sh. https://jetfund.com)"
         className={inputClass}
       />
     </div>
@@ -628,7 +637,11 @@ function PartnerList({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-sm text-gray-900 truncate">{p.business_name}</p>
-                <p className="text-xs text-gray-500 truncate">{p.link_url}</p>
+                <PublicLinkCopy
+                  variant="inline"
+                  href={`/partners/${p.id}`}
+                  shareTitle={p.business_name}
+                />
                 <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-2">
                   {formatPartnerCategoryLabels(p.category_ids ?? [], categories)}
                 </p>

@@ -106,6 +106,7 @@ export const ADMIN_EN_EXTRA: Record<string, string> = {
   adm_nav_settings: "Settings",
   adm_nav_shop_social: "Shop IG/TikTok",
   adm_nav_shops: "Shops",
+  adm_nav_links: "Links",
   adm_nav_social: "Facebook & Instagram",
   adm_nav_users: "Users",
   adm_password: "Password",

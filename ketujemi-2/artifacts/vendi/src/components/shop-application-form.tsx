@@ -15,6 +15,7 @@ import {
   translateDirectorySubcategory,
 } from "@/lib/shop-directory-i18n";
 import { SHOP_DIRECTORY_CATEGORIES } from "@/lib/shop-directory-taxonomy";
+import { filterStorefrontDirectoryCategories } from "@/lib/shop-storefront-policy";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
 import { openShopApplyPath } from "@/lib/static-page-paths";
@@ -43,11 +44,13 @@ export function ShopApplicationForm() {
   const [shopName, setShopName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [description, setDescription] = useState("");
+  const storefrontCategories = useMemo(() => filterStorefrontDirectoryCategories(SHOP_DIRECTORY_CATEGORIES), []);
+
   const [directoryCategorySlug, setDirectoryCategorySlug] = useState(
-    SHOP_DIRECTORY_CATEGORIES[0]?.slug ?? "biznes-sherbime",
+    storefrontCategories[0]?.slug ?? "shtepi-mobilje",
   );
   const [directorySubcategorySlug, setDirectorySubcategorySlug] = useState(
-    SHOP_DIRECTORY_CATEGORIES[0]?.subcategories[0]?.slug ?? "dyqane-te-pergjithshme",
+    storefrontCategories[0]?.subcategories[0]?.slug ?? "mobilje-dekor",
   );
   const [country, setCountry] = useState("XK");
   const [city, setCity] = useState("");
@@ -60,6 +63,7 @@ export function ShopApplicationForm() {
   const [tiktok, setTiktok] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [website, setWebsite] = useState("");
+  const [youtube, setYoutube] = useState("");
   const [contactName, setContactName] = useState(c.defaultContactName);
   const [phone, setPhone] = useState(c.defaultContactPhone);
   const [email, setEmail] = useState(c.defaultContactEmail);
@@ -71,12 +75,12 @@ export function ShopApplicationForm() {
 
   const subcategories = useMemo(() => {
     return (
-      SHOP_DIRECTORY_CATEGORIES.find((c) => c.slug === directoryCategorySlug)?.subcategories ?? []
+      storefrontCategories.find((c) => c.slug === directoryCategorySlug)?.subcategories ?? []
     );
-  }, [directoryCategorySlug]);
+  }, [directoryCategorySlug, storefrontCategories]);
 
   const selectedCategoryName = useMemo(() => {
-    const catDef = SHOP_DIRECTORY_CATEGORIES.find((c) => c.slug === directoryCategorySlug);
+    const catDef = storefrontCategories.find((c) => c.slug === directoryCategorySlug);
     const sub = subcategories.find((s) => s.slug === directorySubcategorySlug);
     if (catDef && sub) {
       return `${translateDirectoryCategory(catDef, locale)} · ${translateDirectorySubcategory(sub, locale)}`;
@@ -133,7 +137,7 @@ export function ShopApplicationForm() {
       return;
     }
 
-    const catDef = SHOP_DIRECTORY_CATEGORIES.find((c) => c.slug === directoryCategorySlug);
+    const catDef = storefrontCategories.find((c) => c.slug === directoryCategorySlug);
     const sub = subcategories.find((s) => s.slug === directorySubcategorySlug);
     const categoryName =
       catDef && sub
@@ -144,7 +148,7 @@ export function ShopApplicationForm() {
       setError(c.logo);
       return;
     }
-    if (!facebook.trim() && !instagram.trim() && !tiktok.trim() && !whatsapp.trim() && !website.trim()) {
+    if (!facebook.trim() && !instagram.trim() && !tiktok.trim() && !whatsapp.trim() && !website.trim() && !youtube.trim()) {
       setError(c.socialRequired);
       return;
     }
@@ -155,6 +159,7 @@ export function ShopApplicationForm() {
       tiktok,
       whatsapp,
       website,
+      youtube,
     });
 
     setSubmitBusy(true);
@@ -281,13 +286,13 @@ export function ShopApplicationForm() {
                 value={directoryCategorySlug}
                 onChange={(e) => {
                   const slug = e.target.value;
-                  const cat = SHOP_DIRECTORY_CATEGORIES.find((item) => item.slug === slug);
+                  const cat = storefrontCategories.find((item) => item.slug === slug);
                   setDirectoryCategorySlug(slug);
                   setDirectorySubcategorySlug(cat?.subcategories[0]?.slug ?? directorySubcategorySlug);
                 }}
                 required
               >
-                {SHOP_DIRECTORY_CATEGORIES.map((cat) => (
+                {storefrontCategories.map((cat) => (
                   <option key={cat.slug} value={cat.slug}>
                     {cat.emoji} {translateDirectoryCategory(cat, locale)}
                   </option>
@@ -377,13 +382,14 @@ export function ShopApplicationForm() {
           <h3 className="text-lg font-bold text-gray-900">{c.section3Title}</h3>
           <p className="text-xs text-amber-800/80">{c.socialRequired}</p>
           <ShopSocialUrlFields
-            values={{ facebook, instagram, tiktok, whatsapp, website }}
+            values={{ facebook, instagram, tiktok, whatsapp, website, youtube }}
             onChange={(field: ShopSocialField, v) => {
               if (field === "facebook") setFacebook(v);
               if (field === "instagram") setInstagram(v);
               if (field === "tiktok") setTiktok(v);
               if (field === "whatsapp") setWhatsapp(v);
               if (field === "website") setWebsite(v);
+              if (field === "youtube") setYoutube(v);
             }}
             inputClassName="min-h-12"
           />

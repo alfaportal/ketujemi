@@ -28,6 +28,10 @@ export type AdminShopInsertValues = {
   tiktok: string | null;
   whatsapp: string | null;
   website: string | null;
+  youtube?: string | null;
+  slug?: string | null;
+  tagline?: string | null;
+  cover_image_url?: string | null;
   contact_name: string;
   phone: string;
   email: string;

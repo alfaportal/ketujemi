@@ -84,12 +84,16 @@ export async function adminLoginEmailStart(): Promise<void> {
   }
 }
 
-/** Admin panel: verify email code sent to EMAIL_ADMIN. */
-export async function adminLoginEmailVerify(code: string, rememberMe = false): Promise<string> {
+/** Admin panel: verify email code + owner password sent to EMAIL_ADMIN. */
+export async function adminLoginEmailVerify(
+  code: string,
+  password: string,
+  rememberMe = false,
+): Promise<string> {
   const res = await fetchWithTimeout(`${BASE}/login/email/verify`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code, remember_me: rememberMe }),
+    body: JSON.stringify({ code, password, remember_me: rememberMe }),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -130,8 +134,27 @@ export function adminLogout() {
   localStorage.removeItem(REMEMBER_EXP_KEY);
 }
 
+/** @deprecated Client token alone is not trusted — use verifyAdminSession(). */
 export function isAdminLoggedIn(): boolean {
   return !!readStoredToken();
+}
+
+/** Validates stored token with the server; clears local session on failure. */
+export async function verifyAdminSession(): Promise<boolean> {
+  if (!readStoredToken()) return false;
+  try {
+    const res = await fetchWithTimeout(`${BASE}/session`, {
+      headers: authHeaders(),
+    });
+    if (!res.ok) {
+      adminLogout();
+      return false;
+    }
+    return true;
+  } catch {
+    adminLogout();
+    return false;
+  }
 }
 
 /** Bearer headers for admin-panel API calls from the public site (e.g. admin post form). */
@@ -623,6 +646,11 @@ export interface AdminShopApplication {
   tiktok: string | null;
   whatsapp: string | null;
   website: string | null;
+  youtube?: string | null;
+  slug?: string | null;
+  tagline?: string | null;
+  cover_image_url?: string | null;
+  public_path?: string | null;
   contact_name: string;
   phone: string;
   email: string;
@@ -650,10 +678,13 @@ export function approveAdminShopApplication(
     directory_subcategory_id?: number;
   },
 ) {
-  return request<{ ok: boolean; shop_id: number }>(`/shop-applications/${id}/approve`, {
-    method: "POST",
-    body: JSON.stringify(payload ?? {}),
-  });
+  return request<{ ok: boolean; shop_id: number; slug?: string | null; public_path?: string | null }>(
+    `/shop-applications/${id}/approve`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload ?? {}),
+    },
+  );
 }
 
 export function rejectAdminShopApplication(id: number, reason?: string) {

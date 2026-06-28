@@ -35,6 +35,7 @@ import {
   formatPartnerCategoryLabels,
 } from "./partner-category-checklist";
 import { PartnerCategoriesModal } from "./partner-categories-modal";
+import { PublicLinkCopy } from "@/components/public-link-copy";
 
 type Filter = "all" | "pending" | "active" | "suspended" | "rejected";
 
@@ -292,6 +293,13 @@ export default function AdminPartners() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-gray-900 truncate">{p.business_name}</p>
+                      {p.status === "active" ? (
+                        <PublicLinkCopy
+                          variant="inline"
+                          href={`/partners/${p.id}`}
+                          shareTitle={p.business_name}
+                        />
+                      ) : null}
                       <p className="text-xs text-gray-500 mt-0.5">
                         {p.package_label} · {p.contact_name} · #
                         {formatDistanceToNow(new Date(p.created_at), {

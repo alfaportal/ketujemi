@@ -45,6 +45,7 @@ export { ensurePhoneVerifySchema } from "./ensure-phone-verify-schema.js";
 export { ensureEmailVerifySchema } from "./ensure-email-verify-schema.js";
 export { ensureAdminLoginSchema } from "./ensure-admin-login-schema.js";
 export { ensureShopSchema } from "./ensure-shop-schema.js";
+export { ensureShopProductsSchema } from "./ensure-shop-products-schema.js";
 export { ensureShopSocialProfileSchema } from "./ensure-shop-social-profile-schema.js";
 export { ensureDeletionFeedbackSchema } from "./ensure-deletion-feedback-schema.js";
 export { ensureFacebookDataDeletionSchema } from "./ensure-facebook-data-deletion-schema.js";

@@ -44,6 +44,7 @@ export type ShopEditFormValues = {
   tiktok: string;
   whatsapp: string;
   website: string;
+  youtube: string;
   contact_name: string;
   phone: string;
   email: string;
@@ -67,8 +68,9 @@ function validateShopEditForm(values: ShopEditFormValues): string | null {
     tiktok: values.tiktok,
     whatsapp: values.whatsapp,
     website: values.website,
+    youtube: values.youtube,
   });
-  if (!social.facebook && !social.instagram && !social.tiktok && !social.whatsapp && !social.website) {
+  if (!social.facebook && !social.instagram && !social.tiktok && !social.whatsapp && !social.website && !social.youtube) {
     return "Plotësoni të paktën një rrjet social (Facebook, Instagram, TikTok, WhatsApp ose website).";
   }
   if (!values.contact_name.trim()) return "Plotësoni emrin e kontaktit.";
@@ -214,6 +216,7 @@ export function ShopEditForm({
       tiktok: values.tiktok,
       whatsapp: values.whatsapp,
       website: values.website,
+      youtube: values.youtube,
     });
     try {
       await onSubmit({
@@ -228,6 +231,7 @@ export function ShopEditForm({
         tiktok: social.tiktok ?? "",
         whatsapp: social.whatsapp ?? "",
         website: social.website ?? "",
+        youtube: social.youtube ?? "",
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Gabim gjatë ruajtjes së dyqanit.";
@@ -450,6 +454,7 @@ export function ShopEditForm({
           tiktok: values.tiktok,
           whatsapp: values.whatsapp,
           website: values.website,
+          youtube: values.youtube,
         }}
         onChange={(field: ShopSocialField, v) => setField(field, v)}
       />
