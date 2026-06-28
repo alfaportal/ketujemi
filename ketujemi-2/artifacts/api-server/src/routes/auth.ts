@@ -874,130 +874,19 @@ router.get("/auth/profile/edit-session", async (req, res) => {
 });
 
 // ─── POST /auth/profile/verify/sms/start ─────────────────────────────────────
-router.post("/auth/profile/verify/sms/start", authLoginRegisterLimiter, async (req, res) => {
-  if (!isSmsAuthEnabled()) {
-    res.status(503).json({ error: "SMS_AUTH_DISABLED", message: SMS_AUTH_DISABLED_MESSAGE });
-    return;
-  }
-
-  const id = await sessionUserId(req);
-  if (id == null) {
-    res.status(401).json({ error: "Not logged in" });
-    return;
-  }
-
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
-  if (!user) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
-
-  if (isPlatformAdminUser(user)) {
-    res.status(400).json({
-      error: "SMS_NOT_ALLOWED",
-      message: "Llogaritë e administratorit verifikohen vetëm me email.",
-    });
-    return;
-  }
-
-  const identity = resolveAuthIdentity(user);
-  const addingPhone =
-    identity.missing_second_method === "phone" && !identity.has_verified_phone;
-  if (identity.profile_edit_second_factor !== "sms" && !addingPhone) {
-    res.status(400).json({
-      error: "SMS_NOT_REQUIRED",
-      message: "Verifikimi SMS nuk kërkohet për këtë llogari.",
-    });
-    return;
-  }
-
-  const phone = userSmsPhoneForProfile(user, req.body?.phone);
-  if (!phone) {
-    res.status(400).json({
-      error: "PHONE_REQUIRED",
-      message: "Vendosni numrin e telefonit për verifikim SMS.",
-    });
-    return;
-  }
-
-  try {
-    await assertSmsStartAllowed(req, phone);
-    const requestId = await vonageVerifyRequest(phone);
-    await storeSmsProfileChallenge(user.id, phone, requestId);
-    res.json({ ok: true });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "SMS start failed";
-    req.log?.error({ err }, "profile verify sms start");
-    res.status(502).json({ error: "SMS_START_FAILED", message: msg });
-  }
+router.post("/auth/profile/verify/sms/start", authLoginRegisterLimiter, async (_req, res) => {
+  res.status(400).json({
+    error: "SMS_DISABLED",
+    message: "Verifikimi për ndryshime bëhet me email. Kërkoni kodin në email-in tuaj.",
+  });
 });
 
 // ─── POST /auth/profile/verify/sms/confirm ──────────────────────────────────
-router.post("/auth/profile/verify/sms/confirm", authLoginRegisterLimiter, async (req, res) => {
-  const id = await sessionUserId(req);
-  if (id == null) {
-    res.status(401).json({ error: "Not logged in" });
-    return;
-  }
-
-  const code = typeof req.body?.code === "string" ? req.body.code.trim() : "";
-  if (code.length < 4) {
-    res.status(400).json({ error: "Code required" });
-    return;
-  }
-
-  const challenge = await getActiveProfileChallenge(id, "sms");
-  if (!challenge?.request_id || !challenge.phone_e164_digits) {
-    res.status(400).json({
-      error: "NO_CHALLENGE",
-      message: "Kërkoni një kod të ri SMS.",
-    });
-    return;
-  }
-
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
-  if (!user) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
-
-  try {
-    await vonageVerifyCheck(challenge.request_id, code, challenge.phone_e164_digits);
-    const token = await issueProfileChangeToken(id, "sms");
-
-    if (!user.phone_e164_digits) {
-      await db
-        .update(usersTable)
-        .set({
-          phone_e164_digits: challenge.phone_e164_digits,
-          contact_phone: challenge.phone_e164_digits,
-        })
-        .where(eq(usersTable.id, id));
-    }
-
-    res.json({
-      ok: true,
-      profile_change_token: token,
-      channel: "sms",
-      expires_in_seconds: Math.floor(PROFILE_EDIT_SESSION_TTL_MS / 1000),
-    });
-  } catch (err: unknown) {
-    const failCount = await incrementProfileSmsFailCount(id);
-    if (failCount >= SMS_VERIFY_FAIL_THRESHOLD) {
-      const fallback = await triggerProfileSmsEmailFallback(user);
-      if (fallback.ok) {
-        res.status(400).json({
-          error: "SMS_FAILED_EMAIL_FALLBACK",
-          fallback_to_email: true,
-          message: SMS_FALLBACK_MESSAGE_SQ,
-          masked_email: fallback.masked_email,
-        });
-        return;
-      }
-    }
-    const msg = err instanceof Error ? err.message : "Verification failed";
-    res.status(400).json({ error: msg, fail_count: failCount });
-  }
+router.post("/auth/profile/verify/sms/confirm", authLoginRegisterLimiter, async (_req, res) => {
+  res.status(400).json({
+    error: "SMS_DISABLED",
+    message: "Verifikimi për ndryshime bëhet me email. Kërkoni kodin në email-in tuaj.",
+  });
 });
 
 // ─── POST /auth/profile/verify/email/start ────────────────────────────────────
@@ -1025,14 +914,6 @@ router.post("/auth/profile/verify/email/start", authLoginRegisterLimiter, async 
       message: identity.can_add_email
         ? "Vendosni emailin që dëshironi të shtoni në llogari."
         : "Llogaria nuk ka email të regjistruar për verifikim.",
-    });
-    return;
-  }
-
-  if (!addingEmail && identity.profile_edit_second_factor !== "email") {
-    res.status(400).json({
-      error: "EMAIL_NOT_REQUIRED",
-      message: "Verifikimi me email nuk kërkohet për këtë llogari.",
     });
     return;
   }
@@ -1097,20 +978,30 @@ router.post("/auth/profile/verify/email/confirm", authLoginRegisterLimiter, asyn
   }
 
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
-  if (user && challenge.email && !user.email?.trim()) {
-    const [taken] = await db
-      .select({ id: usersTable.id })
-      .from(usersTable)
-      .where(eq(usersTable.email, challenge.email))
-      .limit(1);
-    if (taken && taken.id !== user.id) {
-      res.status(409).json({ error: "EMAIL_TAKEN", message: "Ky email është i zënë." });
-      return;
+  if (user && challenge.email) {
+    if (!user.email?.trim()) {
+      const [taken] = await db
+        .select({ id: usersTable.id })
+        .from(usersTable)
+        .where(eq(usersTable.email, challenge.email))
+        .limit(1);
+      if (taken && taken.id !== user.id) {
+        res.status(409).json({ error: "EMAIL_TAKEN", message: "Ky email është i zënë." });
+        return;
+      }
+      await db
+        .update(usersTable)
+        .set({ email: challenge.email, email_verified_at: new Date() })
+        .where(eq(usersTable.id, id));
+    } else if (
+      user.email.trim().toLowerCase() === challenge.email.trim().toLowerCase() &&
+      !user.email_verified_at
+    ) {
+      await db
+        .update(usersTable)
+        .set({ email_verified_at: new Date() })
+        .where(eq(usersTable.id, id));
     }
-    await db
-      .update(usersTable)
-      .set({ email: challenge.email, email_verified_at: new Date() })
-      .where(eq(usersTable.id, id));
   }
 
   const token = await issueProfileChangeToken(id, "email");
@@ -1299,10 +1190,7 @@ router.patch("/auth/profile", async (req, res) => {
       res.status(403).json({
         error: "VERIFICATION_REQUIRED",
         channel: verifyNeed.channel,
-        message:
-          verifyNeed.channel === "sms"
-            ? "Konfirmoni me SMS para se të ndryshoni profilin."
-            : "Konfirmoni me email para se të ndryshoni profilin.",
+        message: "Konfirmoni me email para se të ndryshoni profilin.",
       });
       return;
     }
@@ -1383,7 +1271,7 @@ router.post("/auth/sms/start", authLoginRegisterLimiter, async (req, res) => {
       if (!captchaOk) {
         res.status(400).json({
           error: "CAPTCHA_FAILED",
-          message: "Plotësoni verifikimin «Nuk jam robot» para se të dërgoni SMS.",
+          message: "Plotësoni verifikimin «Nuk jam robot» para se të dërgoni kodin.",
         });
         return;
       }
@@ -1409,7 +1297,7 @@ router.post("/auth/sms/start", authLoginRegisterLimiter, async (req, res) => {
     if (existing && isPlatformAdminUser(existing)) {
       res.status(400).json({
         error: "SMS_NOT_ALLOWED",
-        message: "Llogaritë e administratorit hyjnë me email, jo SMS.",
+        message: "Llogaritë e administratorit hyjnë me email, jo me telefon.",
       });
       return;
     }
@@ -1449,11 +1337,18 @@ router.post("/auth/sms/start", authLoginRegisterLimiter, async (req, res) => {
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "OTP start failed";
     req.log?.error({ err }, "phone otp start");
+    if (msg === "SMS_OTP_DISABLED") {
+      res.status(400).json({
+        error: "SMS_OTP_DISABLED",
+        message: "Verifikimi me SMS është i çaktivizuar. Përdorni email ose WhatsApp.",
+      });
+      return;
+    }
     const authHint = /authenticate|bad credentials|20003|OAuthException|invalid oauth/i.test(msg);
     res.status(502).json({
       error: authHint ? "OTP_PROVIDER_AUTH_FAILED" : "OTP_START_FAILED",
       message: authHint
-        ? "Konfigurimi WhatsApp/SMS nuk u pranua. Kontrollo token-in Meta ose Vonage në Railway Variables."
+        ? "Konfigurimi WhatsApp nuk u pranua. Kontrollo token-in Meta në Railway Variables."
         : msg,
     });
   }
@@ -1507,7 +1402,7 @@ router.post("/auth/sms/verify", authLoginRegisterLimiter, async (req, res) => {
       if (failCount >= SMS_VERIFY_FAIL_THRESHOLD && user && isPlatformAdminUser(user)) {
         res.status(400).json({
           error: "SMS_NOT_ALLOWED",
-          message: "Llogaritë e administratorit hyjnë me email, jo SMS.",
+          message: "Llogaritë e administratorit hyjnë me email, jo me telefon.",
         });
         return;
       }

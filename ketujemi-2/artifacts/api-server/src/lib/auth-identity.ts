@@ -87,55 +87,17 @@ export function isPhoneLoginAnchor(u: User): boolean {
 }
 
 /**
- * Second authentication factor for profile edits — always the credential that is NOT
- * the primary login channel.
+ * Second factor for profile / shop edits — email code only (no SMS).
+ * Any account with an email on file can receive a verification code.
  */
 export function resolveProfileEditSecondFactor(u: User): ProfileEditSecondFactor | null {
-  if (isPlatformAdminUser(u)) {
-    return hasTrustedEmail(u) ? "email" : null;
-  }
-
-  const channel = resolveAuthChannel(u);
-
-  if (isOAuthAuthChannel(channel)) {
-    if (hasTrustedEmail(u)) return "email";
-    if (hasVerifiedPhone(u)) return "sms";
-    return null;
-  }
-
-  if (channel === "phone" || (channel === "both" && isPhoneLoginAnchor(u))) {
-    if (hasTrustedEmail(u)) return "email";
-    return null;
-  }
-
-  if (channel === "email" || channel === "both") {
-    if (hasVerifiedPhone(u)) return "sms";
-    return null;
-  }
-
+  if (u.email?.trim()) return "email";
   return null;
 }
 
 /** What the user must add before profile edit is possible. */
 export function resolveMissingSecondMethod(u: User): "email" | "phone" | null {
-  if (isPlatformAdminUser(u)) {
-    return hasTrustedEmail(u) ? null : "email";
-  }
-
   if (resolveProfileEditSecondFactor(u) !== null) return null;
-
-  const channel = resolveAuthChannel(u);
-  if (isOAuthAuthChannel(channel)) {
-    if (!hasTrustedEmail(u)) return "email";
-    if (!hasVerifiedPhone(u)) return "phone";
-    return null;
-  }
-  if (channel === "phone" || (channel === "both" && isPhoneLoginAnchor(u))) {
-    return hasTrustedEmail(u) ? null : "email";
-  }
-  if (channel === "email" || channel === "both") {
-    return hasVerifiedPhone(u) ? null : "phone";
-  }
   return "email";
 }
 

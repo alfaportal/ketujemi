@@ -66,18 +66,16 @@ export function useProfileEditGate(user: AuthUser | null | undefined, refresh: (
 
   function startGate() {
     if (!user) return;
-    setPhase("security-notice");
+    proceedAfterSecurityNotice();
   }
 
   function proceedAfterSecurityNotice() {
     if (!user) return;
-    if (user.profile_edit_needs_second_method) {
-      setPhase("need-method");
+    if (user.email?.trim() || user.profile_edit_second_factor === "email") {
+      setPhase("verify");
       return;
     }
-    if (user.profile_edit_second_factor) {
-      setPhase("verify");
-    }
+    setPhase("need-method");
   }
 
   function cancelGate() {

@@ -80,7 +80,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     hero: "KetuJemi",
     heroSub: "Blej & Shite çdo gjë — falas dhe shpejt!",
     categories: "Kategoritë", viewAll: "Shiko të gjitha",
-    trust1: "Verifikim SMS & Email", trust2: "Posto falas", trust3: "21 kategori",
+    trust1: "Verifikim Email & WhatsApp", trust2: "Posto falas", trust3: "21 kategori",
     markets: "KetuJemi në 11 tregje",
     // Common actions
     back: "Kthehu", edit: "Edito", delete: "Fshi", cancel: "Anulo",
@@ -354,7 +354,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     hero: "KetuJemi",
     heroSub: "Blej & Shite çdo gjë — falas dhe shpejt!",
     categories: "Kategoritë", viewAll: "Shiko të gjitha",
-    trust1: "Verifikim SMS & Email", trust2: "Posto falas", trust3: "21 kategori",
+    trust1: "Verifikim Email & WhatsApp", trust2: "Posto falas", trust3: "21 kategori",
     markets: "KetuJemi në 11 tregje",
     back: "Kthehu", edit: "Edito", delete: "Fshi", cancel: "Anulo",
     saveChanges: "Ruaj ndryshimet", saving: "Duke ruajtur...",

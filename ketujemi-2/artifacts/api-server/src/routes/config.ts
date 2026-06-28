@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { isRecaptchaRequired } from "../lib/recaptcha-verify";
 import { hasEmailDeliveryConfigured, isEmailVerificationRequired } from "../lib/email-auth";
-import { isSmsAuthEnabled } from "../lib/sms-auth";
 import { isPhoneOtpAuthEnabled } from "../lib/phone-otp.js";
 import { isWhatsAppOtpEnabled } from "../lib/whatsapp-auth-config.js";
 import { isFacebookOAuthEnabled, facebookPageUrl, instagramProfileUrl } from "../lib/meta-oauth-config";
@@ -51,7 +50,7 @@ router.get("/config/public", (_req, res) => {
     stripePublishableKey: stripePublishableKey(),
     cloudinaryCloudName,
     cloudinaryUploadPreset,
-    smsAuthEnabled: isSmsAuthEnabled(),
+    smsAuthEnabled: false,
     phoneOtpEnabled: isPhoneOtpAuthEnabled(),
     whatsappOtpEnabled: isWhatsAppOtpEnabled(),
     emailVerificationRequired: isEmailVerificationRequired(),

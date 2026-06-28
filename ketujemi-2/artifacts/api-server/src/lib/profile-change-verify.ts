@@ -173,9 +173,7 @@ export async function enforceProfileChangeToken(
         message:
           missing === "email"
             ? "Shtoni dhe verifikoni një email para se të vazhdoni."
-            : missing === "phone"
-              ? "Shtoni dhe verifikoni një telefon para se të vazhdoni."
-              : "Shtoni një metodë të dytë verifikimi para se të vazhdoni.",
+            : "Shtoni një email në llogari para se të vazhdoni.",
       },
     };
   }
@@ -189,10 +187,7 @@ export async function enforceProfileChangeToken(
         body: {
           error: "VERIFICATION_REQUIRED",
           channel: verifyNeed.channel,
-          message:
-            verifyNeed.channel === "sms"
-              ? "Konfirmoni me SMS para se të vazhdoni."
-              : "Konfirmoni me email para se të vazhdoni.",
+          message: "Konfirmoni me email para se të vazhdoni.",
         },
       };
     }

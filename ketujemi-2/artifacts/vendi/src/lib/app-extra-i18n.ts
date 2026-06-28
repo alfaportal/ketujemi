@@ -100,8 +100,8 @@ const KS_EXTRA: Record<string, string> = {
   login_resetBtn: "Ruaj fjalëkalimin e ri",
   login_backToSignin: "← kthehu te email + fjalëkalim",
   login_passwordResetDone: "Fjalëkalimi u ndryshua. Je i kyçur.",
-  login_sub_login_phone_only: "Numri i telefonit → kodi SMS → hyr.",
-  login_phoneVerifyHint: "Shkruaj kodin që erdhi me SMS.",
+  login_sub_login_phone_only: "Numri i telefonit → kodi në WhatsApp → hyr.",
+  login_phoneVerifyHint: "Shkruaj kodin që erdhi në WhatsApp.",
   login_havePhoneAccount: "Ke llogari me telefon?",
   login_switchToPhone: "Kyçu me telefon",
   login_needEmailAccount: "Llogari e re me email?",
@@ -203,9 +203,11 @@ const KS_EXTRA: Record<string, string> = {
   profile_edit_start: "Ndrysho profilin",
   profile_edit_cancel: "Anulo",
   profile_edit_locked_hint:
-    "Për të ndryshuar të dhënat, së pari konfirmoni identitetin me metodën e dytë (SMS ose email).",
+    "Për të ndryshuar të dhënat, konfirmoni me kod që vjen në email-in tuaj.",
   profile_edit_need_second_method:
-    "Shtoni dhe verifikoni një metodë të dytë (email ose telefon) para se të hapni formularin e ndryshimit.",
+    "Shtoni email në llogari para se të hapni formularin e ndryshimit.",
+  profile_edit_need_email:
+    "Shtoni email në llogari — do të merrni kod verifikimi për të vazhduar.",
   profile_edit_session_left: "Sesioni: {minutes} min",
   profile_edit_session_expired: "Sesioni i redaktimit skadoi. Konfirmoni përsëri.",
   profile_edit_security_title: "Për sigurinë tuaj",
@@ -266,7 +268,7 @@ const KS_EXTRA: Record<string, string> = {
   delete_feedback_ph: "Opsionale — ndani mendimin tuaj…",
   delete_warning:
     "Kjo veprim është i pakthyeshëm. Të gjitha shpalljet dhe të dhënat tuaja do të fshihen përgjithmonë.",
-  delete_verify_hint: "Për të vazhduar, konfirmoni identitetin me SMS ose email.",
+  delete_verify_hint: "Për të vazhduar, konfirmoni identitetin me kod në email.",
   delete_start_verify: "Vazhdo me verifikimin",
   delete_final_confirm: "Jeni i sigurt? Pas konfirmimit, fshirja nuk mund të anulohet.",
   delete_confirm_btn: "Po, fshi përgjithmonë",
@@ -284,7 +286,8 @@ const KS_EXTRA: Record<string, string> = {
     "Dërgojmë një kod SMS në telefonin tuaj. Vendoseni kodin për të hapur formularin e ndryshimit.",
   profile_verify_email_hint:
     "Dërgojmë një kod në emailin tuaj. Vendoseni kodin për të hapur formularin e ndryshimit.",
-  profile_verify_send: "Dërgo kodin e verifikimit",
+  profile_verify_send: "Dërgo kodin në email",
+  profile_verify_send_email: "Dërgo kodin në email",
   profile_verify_code: "Kodi i verifikimit",
   profile_verify_confirm: "Konfirmo",
   profile_verify_resend: "Dërgo kodin përsëri",
@@ -2149,7 +2152,7 @@ const KS_EXTRA: Record<string, string> = {
 
 const AL_OVERRIDES: Record<string, string> = {
   login_sub:
-    "Për të postuar njoftime, përdorni email + fjalëkalim ose verifikimin me SMS (Vonage).",
+    "Për të postuar njoftime, përdorni email + fjalëkalim ose WhatsApp (kur është aktivizuar).",
   login_stripeBody:
     "Lidhja e kartës bankare si metodë pagese do të jetë e disponueshme së shpejti përmes Stripe. Për tani mund të hyni vetëm me email ose SMS.",
   hub_show_listings_m: "Shfaq {count} njoftime",

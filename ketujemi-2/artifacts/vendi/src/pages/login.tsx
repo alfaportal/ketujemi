@@ -33,7 +33,7 @@ type RegisterAuthPayload = {
 type Flow = "register" | "login";
 type Step = "credentials" | "verify";
 type EmailMode = "signin" | "verify" | "forgot" | "reset";
-type OtpChannel = "whatsapp" | "sms";
+type OtpChannel = "whatsapp";
 
 const MIN_PASSWORD = 6;
 
@@ -99,10 +99,9 @@ export default function LoginPage() {
   const [phoneLoginEmailFallback, setPhoneLoginEmailFallback] = useState(false);
   const [phoneFallbackNote, setPhoneFallbackNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [smsAuthEnabled, setSmsAuthEnabled] = useState(false);
   const [phoneOtpEnabled, setPhoneOtpEnabled] = useState(false);
   const [whatsappOtpEnabled, setWhatsappOtpEnabled] = useState(false);
-  const [otpChannel, setOtpChannel] = useState<OtpChannel>("whatsapp");
+  const [otpChannel] = useState<OtpChannel>("whatsapp");
   const [googleOAuthEnabled, setGoogleOAuthEnabled] = useState(false);
   const [facebookOAuthEnabled, setFacebookOAuthEnabled] = useState(false);
   const [tiktokOAuthEnabled, setTiktokOAuthEnabled] = useState(false);
@@ -123,19 +122,14 @@ export default function LoginPage() {
         tiktokOAuthEnabled?: boolean;
       }) => {
         if (cancelled) return;
-        setSmsAuthEnabled(Boolean(data.smsAuthEnabled));
-        setPhoneOtpEnabled(Boolean(data.phoneOtpEnabled ?? data.smsAuthEnabled));
+        setPhoneOtpEnabled(Boolean(data.phoneOtpEnabled ?? data.whatsappOtpEnabled));
         setWhatsappOtpEnabled(Boolean(data.whatsappOtpEnabled));
-        if (data.whatsappOtpEnabled) {
-          setOtpChannel("whatsapp");
-        }
         setGoogleOAuthEnabled(Boolean(data.googleOAuthEnabled));
         setFacebookOAuthEnabled(Boolean(data.facebookOAuthEnabled));
         setTiktokOAuthEnabled(Boolean(data.tiktokOAuthEnabled));
       })
       .catch(() => {
         if (!cancelled) {
-          setSmsAuthEnabled(false);
           setPhoneOtpEnabled(false);
           setWhatsappOtpEnabled(false);
           setGoogleOAuthEnabled(false);
@@ -235,12 +229,10 @@ export default function LoginPage() {
     setPasswordFailCount(0);
     setNewPassword("");
     setConfirmPassword("");
-    setOtpChannel(whatsappOtpEnabled ? "whatsapp" : "sms");
   }
 
   function startWhatsAppAuth() {
     switchFlow("login");
-    setOtpChannel("whatsapp");
   }
 
   function backToEmailSignin() {
@@ -688,7 +680,7 @@ export default function LoginPage() {
     />
   );
 
-  const useWhatsAppOtp = whatsappOtpEnabled && otpChannel === "whatsapp";
+  const useWhatsAppOtp = phoneOtpEnabled;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -965,9 +957,9 @@ export default function LoginPage() {
                   {t.login_changePhone}
                 </button>
                 <div className="space-y-2">
-                  <Label htmlFor="sms-code">{t.login_smsLbl}</Label>
+                  <Label htmlFor="phone-code">{t.login_codeLbl}</Label>
                   <Input
-                    id="sms-code"
+                    id="phone-code"
                     inputMode="numeric"
                     autoComplete="one-time-code"
                     value={code}

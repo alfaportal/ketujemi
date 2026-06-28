@@ -3,8 +3,6 @@ import { useMarket } from "@/lib/market-context";
 import { Button } from "@/components/ui/button";
 import { ProfileChangeGate } from "@/components/profile-change-gate";
 import { ProfileAddEmail } from "@/components/profile-add-email";
-import { ProfileAddPhone } from "@/components/profile-add-phone";
-import { ProfileEditSecurityNotice } from "@/components/profile-edit-security-notice";
 import type { useProfileEditGate } from "@/hooks/use-profile-edit-gate";
 
 type Gate = ReturnType<typeof useProfileEditGate>;
@@ -16,11 +14,7 @@ type Props = {
 
 export function ProfileEditGateFlow({ user, gate }: Props) {
   const { t } = useMarket();
-  const { phase, proceedAfterSecurityNotice, onUnlocked, onSecondMethodAdded, cancelGate } = gate;
-
-  if (phase === "security-notice") {
-    return <ProfileEditSecurityNotice onContinue={proceedAfterSecurityNotice} />;
-  }
+  const { phase, onUnlocked, onSecondMethodAdded, cancelGate } = gate;
 
   if (phase === "need-method" || phase === "verify") {
     return (
@@ -33,25 +27,16 @@ export function ProfileEditGateFlow({ user, gate }: Props) {
           {phase === "need-method" ? (
             <>
               <p className="text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-                {t.profile_edit_need_second_method}
+                {t.profile_edit_need_email ?? t.profile_edit_need_second_method}
               </p>
-              {user.missing_second_method === "email" ? (
-                <ProfileAddEmail onAdded={(s) => void onSecondMethodAdded(s)} />
-              ) : user.missing_second_method === "phone" ? (
-                <ProfileAddPhone onAdded={(s) => void onSecondMethodAdded(s)} />
-              ) : null}
+              <ProfileAddEmail onAdded={(s) => void onSecondMethodAdded(s)} />
               <Button type="button" variant="ghost" className="w-full" onClick={cancelGate}>
                 {t.profile_edit_cancel}
               </Button>
             </>
-          ) : user.profile_edit_second_factor ? (
-            <ProfileChangeGate
-              user={user}
-              secondFactor={user.profile_edit_second_factor}
-              onUnlocked={onUnlocked}
-              onCancel={cancelGate}
-            />
-          ) : null}
+          ) : (
+            <ProfileChangeGate user={user} onUnlocked={onUnlocked} onCancel={cancelGate} />
+          )}
         </div>
       </div>
     );

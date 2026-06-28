@@ -10,37 +10,33 @@ import { Label } from "@/components/ui/label";
 
 type Props = {
   user: AuthUser;
-  secondFactor: "sms" | "email";
   onUnlocked: (token: string, expiresInSeconds: number) => void;
   onCancel: () => void;
 };
 
-export function ProfileChangeGate({ user, secondFactor, onUnlocked, onCancel }: Props) {
+/** Email OTP gate before profile / shop edits (SMS removed). */
+export function ProfileChangeGate({ user, onUnlocked, onCancel }: Props) {
   const { t } = useMarket();
   const { toast } = useToast();
   const [code, setCode] = useState("");
-  const [activeChannel, setActiveChannel] = useState<"sms" | "email">(secondFactor);
-  const [fallbackNote, setFallbackNote] = useState<string | null>(null);
-  const [smsPhone, setSmsPhone] = useState(
-    user.contact_phone?.trim() ||
-      (user.phone_e164_digits ? `+${user.phone_e164_digits}` : ""),
-  );
   const [step, setStep] = useState<"idle" | "sent">("idle");
   const [busy, setBusy] = useState(false);
+
+  const maskedEmail = user.email?.trim()
+    ? user.email.replace(/^(.)(.*)(@.*)$/, (_, a, mid, domain) => {
+        const hidden = mid.length > 2 ? `${mid.slice(0, 1)}***` : "***";
+        return `${a}${hidden}${domain}`;
+      })
+    : null;
 
   async function sendCode() {
     setBusy(true);
     try {
-      const url =
-        activeChannel === "sms"
-          ? "/api/auth/profile/verify/sms/start"
-          : "/api/auth/profile/verify/email/start";
-      const body = activeChannel === "sms" ? { phone: smsPhone } : {};
-      const res = await fetchWithTimeout(url, {
+      const res = await fetchWithTimeout("/api/auth/profile/verify/email/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(body),
+        body: JSON.stringify({}),
       });
       const data = (await res.json().catch(() => ({}))) as { message?: string; error?: string };
       if (!res.ok) {
@@ -51,9 +47,7 @@ export function ProfileChangeGate({ user, secondFactor, onUnlocked, onCancel }: 
         return;
       }
       setStep("sent");
-      toast({
-        title: activeChannel === "sms" ? t.toast_codeSent : t.toast_emailSent,
-      });
+      toast({ title: t.toast_emailSent });
     } finally {
       setBusy(false);
     }
@@ -63,11 +57,7 @@ export function ProfileChangeGate({ user, secondFactor, onUnlocked, onCancel }: 
     e.preventDefault();
     setBusy(true);
     try {
-      const url =
-        activeChannel === "sms"
-          ? "/api/auth/profile/verify/sms/confirm"
-          : "/api/auth/profile/verify/email/confirm";
-      const res = await fetchWithTimeout(url, {
+      const res = await fetchWithTimeout("/api/auth/profile/verify/email/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -76,21 +66,10 @@ export function ProfileChangeGate({ user, secondFactor, onUnlocked, onCancel }: 
       const data = (await res.json().catch(() => ({}))) as {
         profile_change_token?: string;
         expires_in_seconds?: number;
-        fallback_to_email?: boolean;
-        masked_email?: string;
         message?: string;
         error?: string;
       };
       if (!res.ok) {
-        if (data.fallback_to_email && activeChannel === "sms") {
-          const msg = data.message ?? t.profile_sms_fallback_message;
-          setActiveChannel("email");
-          setFallbackNote(msg);
-          setStep("sent");
-          setCode("");
-          toast({ title: msg });
-          return;
-        }
         toast({
           title: data.message ?? data.error ?? t.toast_verifyFail,
           variant: "destructive",
@@ -112,31 +91,14 @@ export function ProfileChangeGate({ user, secondFactor, onUnlocked, onCancel }: 
   return (
     <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 space-y-3">
       <p className="text-sm text-amber-900 font-medium">
-        {activeChannel === "sms" ? t.profile_verify_sms_hint : t.profile_verify_email_hint}
+        {maskedEmail
+          ? `${t.profile_verify_email_hint} (${maskedEmail})`
+          : t.profile_verify_email_hint}
       </p>
-
-      {fallbackNote ? (
-        <p className="text-sm text-blue-900 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-          {fallbackNote}
-        </p>
-      ) : null}
-
-      {activeChannel === "sms" && !user.phone_verified ? (
-        <div className="space-y-2">
-          <Label htmlFor="profile-verify-phone">{t.phoneNum}</Label>
-          <Input
-            id="profile-verify-phone"
-            type="tel"
-            value={smsPhone}
-            onChange={(e) => setSmsPhone(e.target.value)}
-            className="min-h-12 h-12 bg-white"
-          />
-        </div>
-      ) : null}
 
       {step === "idle" ? (
         <Button type="button" className="w-full min-h-11" disabled={busy} onClick={() => void sendCode()}>
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : t.profile_verify_send}
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : t.profile_verify_send_email ?? t.profile_verify_send}
         </Button>
       ) : (
         <form onSubmit={confirmCode} className="space-y-3">

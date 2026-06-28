@@ -18,11 +18,9 @@ import { PartnerProfilePanel } from "@/components/partner-profile-panel";
 import { ProfileShopDashboard } from "@/components/profile-shop-dashboard";
 import { ProfileChangeGate } from "@/components/profile-change-gate";
 import { ProfileAddEmail } from "@/components/profile-add-email";
-import { ProfileAddPhone } from "@/components/profile-add-phone";
-import { ProfileEditSecurityNotice } from "@/components/profile-edit-security-notice";
 import { DeletionExitSurveyModal } from "@/components/deletion-exit-survey-modal";
 
-type EditPhase = "readonly" | "security-notice" | "need-method" | "verify" | "editing";
+type EditPhase = "readonly" | "need-method" | "verify" | "editing";
 
 function syncFormFromUser(
   user: NonNullable<ReturnType<typeof useAuth>["user"]>,
@@ -189,18 +187,16 @@ export default function ProfilePage() {
 
   function startEdit() {
     if (!user) return;
-    setEditPhase("security-notice");
+    proceedAfterSecurityNotice();
   }
 
   function proceedAfterSecurityNotice() {
     if (!user) return;
-    if (user.profile_edit_needs_second_method) {
-      setEditPhase("need-method");
+    if (user.email?.trim() || user.profile_edit_second_factor === "email") {
+      setEditPhase("verify");
       return;
     }
-    if (user.profile_edit_second_factor) {
-      setEditPhase("verify");
-    }
+    setEditPhase("need-method");
   }
 
   function cancelEdit() {
@@ -468,26 +464,17 @@ export default function ProfilePage() {
             {editPhase === "need-method" ? (
               <div className="space-y-3">
                 <p className="text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-                  {t.profile_edit_need_second_method}
+                  {t.profile_edit_need_email ?? t.profile_edit_need_second_method}
                 </p>
-                {user.missing_second_method === "email" ? (
-                  <ProfileAddEmail onAdded={(s) => void onSecondMethodAdded(s)} />
-                ) : user.missing_second_method === "phone" ? (
-                  <ProfileAddPhone onAdded={(s) => void onSecondMethodAdded(s)} />
-                ) : null}
+                <ProfileAddEmail onAdded={(s) => void onSecondMethodAdded(s)} />
                 <Button type="button" variant="ghost" className="w-full" onClick={cancelEdit}>
                   {t.profile_edit_cancel}
                 </Button>
               </div>
             ) : null}
 
-            {editPhase === "verify" && user.profile_edit_second_factor ? (
-              <ProfileChangeGate
-                user={user}
-                secondFactor={user.profile_edit_second_factor}
-                onUnlocked={onUnlocked}
-                onCancel={cancelEdit}
-              />
+            {editPhase === "verify" ? (
+              <ProfileChangeGate user={user} onUnlocked={onUnlocked} onCancel={cancelEdit} />
             ) : null}
 
             {editPhase === "editing" ? (
@@ -597,10 +584,6 @@ export default function ProfilePage() {
           ) : null}
         </div>
       </main>
-
-      {editPhase === "security-notice" ? (
-        <ProfileEditSecurityNotice onContinue={proceedAfterSecurityNotice} />
-      ) : null}
 
       {user && !user.is_platform_admin ? (
         <DeletionExitSurveyModal

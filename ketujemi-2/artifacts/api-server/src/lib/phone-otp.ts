@@ -1,22 +1,17 @@
-/** Unified phone OTP — WhatsApp Cloud API (Meta) dhe/ose Vonage SMS. */
+/** Unified phone OTP — WhatsApp Cloud API only (SMS/Vonage disabled). */
 
 import { randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
-import { logger } from "./logger.js";
-import { isSmsAuthEnabled } from "./sms-auth.js";
 import {
   isWhatsAppOtpEnabled,
-  whatsappOtpMode,
 } from "./whatsapp-auth-config.js";
 import { generateOTP, sendWhatsAppOTP } from "./whatsapp-otp.js";
-import { vonageVerifyCheck, vonageVerifyRequest } from "./vonage-verify.js";
-import { isTwilioVerifyRequestId } from "./twilio-verify.js";
 
-export type PhoneOtpChannel = "whatsapp" | "sms";
+export type PhoneOtpChannel = "whatsapp";
 
 const WHATSAPP_VERIFY_REQUEST_PREFIX = "whatsapp:";
 
-function isWhatsAppVerifyRequestId(requestId: string): boolean {
+export function isWhatsAppVerifyRequestId(requestId: string): boolean {
   return requestId.startsWith(WHATSAPP_VERIFY_REQUEST_PREFIX);
 }
 
@@ -34,97 +29,50 @@ async function verifyWhatsAppOtpCode(
 }
 
 export function isPhoneOtpAuthEnabled(): boolean {
-  return isSmsAuthEnabled() || isWhatsAppOtpEnabled();
+  return isWhatsAppOtpEnabled();
 }
 
 export const PHONE_OTP_DISABLED_MESSAGE =
-  "Regjistrimi me telefon është i çaktivizuar. Përdorni email ose aktivizoni WhatsApp/SMS në server.";
+  "Regjistrimi me telefon kërkon WhatsApp. Përdorni email ose aktivizoni WhatsApp OTP në server.";
 
-function parsePreferredChannel(raw: unknown): PhoneOtpChannel | null {
-  if (typeof raw !== "string") return null;
-  const v = raw.trim().toLowerCase();
-  if (v === "whatsapp" || v === "wa") return "whatsapp";
-  if (v === "sms") return "sms";
-  return null;
-}
-
-export function resolvePhoneOtpChannel(preferred?: unknown): PhoneOtpChannel {
-  const want = parsePreferredChannel(preferred);
-  const wa = isWhatsAppOtpEnabled();
-  const sms = isSmsAuthEnabled();
-  const mode = whatsappOtpMode();
-
-  if (want === "whatsapp" && wa) return "whatsapp";
-  if (want === "sms" && sms) return "sms";
-
-  if (mode === "only" && wa) return "whatsapp";
-  if (mode === "off" || !wa) {
-    if (sms) return "sms";
-    if (wa) return "whatsapp";
+export function resolvePhoneOtpChannel(_preferred?: unknown): PhoneOtpChannel {
+  if (!isWhatsAppOtpEnabled()) {
     throw new Error("PHONE_OTP_NOT_CONFIGURED");
   }
-
-  if (wa) return "whatsapp";
-  if (sms) return "sms";
-  throw new Error("PHONE_OTP_NOT_CONFIGURED");
+  return "whatsapp";
 }
 
 export async function startPhoneOtpChallenge(
   phoneDigits: string,
   preferredChannel?: unknown,
 ): Promise<{ requestId: string; otpCodeHash: string | null; channel: PhoneOtpChannel }> {
-  let channel = resolvePhoneOtpChannel(preferredChannel);
-  const mode = whatsappOtpMode();
-  const sms = isSmsAuthEnabled();
-
-  const tryWhatsApp = async () => {
-    const code = generateOTP();
-    const ok = await sendWhatsAppOTP(phoneDigits, code);
-    if (!ok) {
-      throw new Error("WhatsApp OTP send failed");
-    }
-    const otpCodeHash = await bcrypt.hash(code, 10);
-    return {
-      requestId: `${WHATSAPP_VERIFY_REQUEST_PREFIX}${randomUUID()}`,
-      otpCodeHash,
-      channel: "whatsapp" as const,
-    };
-  };
-
-  const trySms = async () => {
-    const requestId = await vonageVerifyRequest(phoneDigits);
-    return { requestId, otpCodeHash: null, channel: "sms" as const };
-  };
-
-  if (channel === "whatsapp") {
-    try {
-      return await tryWhatsApp();
-    } catch (err) {
-      if (sms && mode === "preferred") {
-        logger.warn({ err, phoneTail: phoneDigits.slice(-4) }, "whatsapp otp failed; fallback sms");
-        return await trySms();
-      }
-      throw err;
-    }
+  if (typeof preferredChannel === "string" && preferredChannel.trim().toLowerCase() === "sms") {
+    throw new Error("SMS_OTP_DISABLED");
+  }
+  if (!isWhatsAppOtpEnabled()) {
+    throw new Error("PHONE_OTP_NOT_CONFIGURED");
   }
 
-  return await trySms();
+  const code = generateOTP();
+  const ok = await sendWhatsAppOTP(phoneDigits, code);
+  if (!ok) {
+    throw new Error("WhatsApp OTP send failed");
+  }
+  const otpCodeHash = await bcrypt.hash(code, 10);
+  return {
+    requestId: `${WHATSAPP_VERIFY_REQUEST_PREFIX}${randomUUID()}`,
+    otpCodeHash,
+    channel: "whatsapp",
+  };
 }
 
 export async function verifyPhoneOtpChallenge(
   challenge: { request_id: string; otp_code_hash?: string | null },
   code: string,
-  phoneDigits: string,
+  _phoneDigits: string,
 ): Promise<void> {
-  if (isWhatsAppVerifyRequestId(challenge.request_id)) {
-    await verifyWhatsAppOtpCode(challenge.otp_code_hash, code);
-    return;
+  if (!isWhatsAppVerifyRequestId(challenge.request_id)) {
+    throw new Error("Legacy SMS verification is no longer supported. Request a new WhatsApp code.");
   }
-
-  if (isTwilioVerifyRequestId(challenge.request_id)) {
-    await vonageVerifyCheck(challenge.request_id, code, phoneDigits);
-    return;
-  }
-
-  await vonageVerifyCheck(challenge.request_id, code, phoneDigits);
+  await verifyWhatsAppOtpCode(challenge.otp_code_hash, code);
 }
