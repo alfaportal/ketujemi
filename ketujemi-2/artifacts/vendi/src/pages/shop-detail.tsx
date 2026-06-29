@@ -360,6 +360,21 @@ export default function ShopDetailPage() {
     return listings.filter((l) => l.category_id === categoryFilter);
   }, [listings, categoryFilter]);
 
+  const productGroups = useMemo(() => {
+    const groups = new Map<string, ShopProductPublic[]>();
+    for (const product of products) {
+      const key = product.collection?.trim() || "";
+      const list = groups.get(key) ?? [];
+      list.push(product);
+      groups.set(key, list);
+    }
+    return [...groups.entries()].sort(([a], [b]) => {
+      if (!a) return 1;
+      if (!b) return -1;
+      return a.localeCompare(b, "sq");
+    });
+  }, [products]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -510,14 +525,25 @@ export default function ShopDetailPage() {
                 {isOwner ? pc.noProductsOwner : pc.noProducts}
               </p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {products.map((product) => (
-                  <ShopProductCard
-                    key={product.id}
-                    product={product}
-                    shopName={shop.shop_name}
-                    shopWhatsapp={shop.whatsapp}
-                  />
+              <div className="space-y-10">
+                {productGroups.map(([collection, items]) => (
+                  <div key={collection || "all"} className="space-y-4">
+                    {collection ? (
+                      <h3 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">
+                        {collection}
+                      </h3>
+                    ) : null}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {items.map((product) => (
+                        <ShopProductCard
+                          key={product.id}
+                          product={product}
+                          shopName={shop.shop_name}
+                          shopWhatsapp={shop.whatsapp}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}

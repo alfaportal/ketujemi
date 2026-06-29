@@ -14,6 +14,7 @@ import {
   expiresAtForCategoryRootSlug,
   resolveCategorySlugMeta,
 } from "./listing-special-categories.js";
+import { sanitizeListingImageUrlField } from "./listing-images.js";
 
 type ShopContact = Pick<
   Shop,
@@ -61,7 +62,7 @@ export async function syncShopProductToListing(
   const location = shopListingLocation(shop);
   const sellerName = shop.shop_name.trim() || shop.contact_name.trim();
   const price = String(product.price);
-  const imageUrl = product.image_url?.trim() || null;
+  const imageUrl = sanitizeListingImageUrlField(product.image_url) ?? null;
 
   const listingValues = {
     user_id: shop.user_id,

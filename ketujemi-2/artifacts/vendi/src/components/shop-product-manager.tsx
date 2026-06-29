@@ -37,7 +37,9 @@ import { BRAND_BLUE } from "@/lib/brand-colors";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import { useMarket } from "@/lib/market-context";
+import { parseListingImageUrls } from "@/lib/listing-images";
 import type { ShopProductPublic } from "@/components/shop-product-card";
+import { ShopProductPhotoUpload } from "@/components/shop-product-photo-upload";
 
 type ProductForm = {
   title: string;
@@ -45,7 +47,8 @@ type ProductForm = {
   price: string;
   compare_at_price: string;
   category_id: string;
-  image_url: string;
+  collection: string;
+  image_urls: string[];
   sku: string;
 };
 
@@ -55,7 +58,8 @@ const emptyForm = (): ProductForm => ({
   price: "",
   compare_at_price: "",
   category_id: "",
-  image_url: "",
+  collection: "",
+  image_urls: [],
   sku: "",
 });
 
@@ -81,7 +85,6 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
 
   const categoryOptions = useMemo(() => {
     if (!allCategories?.length) return [];
-    const byId = new Map(allCategories.map((cat) => [cat.id, cat]));
     return allCategories
       .filter((cat) => {
         if (cat.parent_id != null) return false;
@@ -120,12 +123,15 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
   function openEdit(product: ShopProductPublic) {
     setEditingId(product.id);
     setForm({
-      title: product.title,
-      description: product.description,
-      price: String(product.price),
+      title: product.title === "Produkt" ? "" : product.title,
+      description: product.description.startsWith("Produkt nga dyqani") ? "" : product.description,
+      price: product.price > 0 ? String(product.price) : "",
       compare_at_price: product.compare_at_price != null ? String(product.compare_at_price) : "",
       category_id: String(product.category_id),
-      image_url: product.image_url ?? "",
+      collection: product.collection ?? "",
+      image_urls: product.image_urls?.length
+        ? product.image_urls
+        : parseListingImageUrls(product.image_url ?? null),
       sku: product.sku ?? "",
     });
     setDialogOpen(true);
@@ -136,16 +142,18 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
     if (!changeToken) return;
     setSaving(true);
     try {
-      const body = {
+      const body: Record<string, unknown> = {
         profile_change_token: changeToken,
         title: form.title.trim(),
         description: form.description.trim(),
-        price: Number(form.price),
+        price: form.price.trim() ? Number(form.price) : 0,
         compare_at_price: form.compare_at_price.trim() ? Number(form.compare_at_price) : null,
-        category_id: Number(form.category_id),
-        image_url: form.image_url.trim() || null,
+        image_urls: form.image_urls,
+        collection: form.collection.trim() || null,
         sku: form.sku.trim() || null,
       };
+      if (form.category_id) body.category_id = Number(form.category_id);
+
       const url = editingId ? `/api/shops/me/products/${editingId}` : "/api/shops/me/products";
       const method = editingId ? "PATCH" : "POST";
       const res = await fetchWithTimeout(url, {
@@ -154,13 +162,17 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
         credentials: "include",
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error("fail");
+      const payload = (await res.json().catch(() => ({}))) as { message?: string };
+      if (!res.ok) throw new Error(payload.message ?? "fail");
       toast({ title: c.productSaved });
       setDialogOpen(false);
       loadProducts();
       onProductsChange?.();
-    } catch {
-      toast({ title: c.productError, variant: "destructive" });
+    } catch (err) {
+      toast({
+        title: err instanceof Error ? err.message : c.productError,
+        variant: "destructive",
+      });
     } finally {
       setSaving(false);
     }
@@ -219,81 +231,105 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
         </p>
       ) : (
         <div className="space-y-2">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="flex items-center gap-3 rounded-xl border border-white bg-white/90 px-3 py-2 shadow-sm"
-            >
-              {product.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt=""
-                  className="h-12 w-12 rounded-lg object-cover border border-gray-100"
-                />
-              ) : (
-                <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center text-lg">
-                  🛍️
+          {products.map((product) => {
+            const thumb =
+              product.image_urls?.[0] ?? product.image_url ?? null;
+            return (
+              <div
+                key={product.id}
+                className="flex items-center gap-3 rounded-xl border border-white bg-white/90 px-3 py-2 shadow-sm"
+              >
+                {thumb ? (
+                  <img
+                    src={thumb}
+                    alt=""
+                    className="h-12 w-12 rounded-lg object-cover border border-gray-100"
+                  />
+                ) : (
+                  <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center text-lg">
+                    🛍️
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-gray-900 truncate">{product.title}</p>
+                  {product.collection ? (
+                    <p className="text-xs text-gray-500 truncate">{product.collection}</p>
+                  ) : null}
+                  <p className="text-sm text-blue-700 font-bold">
+                    {product.price > 0 ? `€${product.price}` : c.priceOnRequest}
+                  </p>
                 </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 truncate">{product.title}</p>
-                <p className="text-sm text-blue-700 font-bold">€{product.price}</p>
+                <Button type="button" variant="ghost" size="icon" onClick={() => openEdit(product)}>
+                  <Pencil size={16} />
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button type="button" variant="ghost" size="icon" className="text-red-600">
+                      <Trash2 size={16} />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{c.deleteProduct}</AlertDialogTitle>
+                      <AlertDialogDescription>{product.title}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Anulo</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-red-600 hover:bg-red-700"
+                        onClick={() => void onDelete(product.id)}
+                      >
+                        {c.deleteProduct}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
-              <Button type="button" variant="ghost" size="icon" onClick={() => openEdit(product)}>
-                <Pencil size={16} />
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button type="button" variant="ghost" size="icon" className="text-red-600">
-                    <Trash2 size={16} />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>{c.deleteProduct}</AlertDialogTitle>
-                    <AlertDialogDescription>{product.title}</AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Anulo</AlertDialogCancel>
-                    <AlertDialogAction
-                      className="bg-red-600 hover:bg-red-700"
-                      onClick={() => void onDelete(product.id)}
-                    >
-                      {c.deleteProduct}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-xl max-h-[92vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingId ? c.editProduct : c.addProduct}</DialogTitle>
           </DialogHeader>
-          <form className="space-y-3" onSubmit={onSave}>
+          <p className="text-xs text-gray-500 -mt-2">{c.productFormHint}</p>
+          <form className="space-y-4" onSubmit={onSave}>
+            <ShopProductPhotoUpload
+              urls={form.image_urls}
+              onChange={(image_urls) => setForm((f) => ({ ...f, image_urls }))}
+            />
+
             <div className="space-y-1">
               <Label>{c.productTitle}</Label>
               <Input
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                required
-                minLength={3}
+                placeholder={c.productTitlePlaceholder}
               />
             </div>
+
+            <div className="space-y-1">
+              <Label>{c.productCollection}</Label>
+              <Input
+                value={form.collection}
+                onChange={(e) => setForm((f) => ({ ...f, collection: e.target.value }))}
+                placeholder={c.productCollectionPlaceholder}
+              />
+            </div>
+
             <div className="space-y-1">
               <Label>{c.productDescription}</Label>
               <Textarea
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                required
-                minLength={10}
+                placeholder={c.productDescriptionPlaceholder}
                 rows={4}
               />
             </div>
+
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <Label>{c.productPrice}</Label>
@@ -303,7 +339,7 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
                   step="0.01"
                   value={form.price}
                   onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-                  required
+                  placeholder="0"
                 />
               </div>
               <div className="space-y-1">
@@ -317,17 +353,20 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
                 />
               </div>
             </div>
+
             <div className="space-y-1">
               <Label>{c.productCategory}</Label>
               <Select
-                value={form.category_id}
-                onValueChange={(v) => setForm((f) => ({ ...f, category_id: v }))}
-                required
+                value={form.category_id || "__none__"}
+                onValueChange={(v) =>
+                  setForm((f) => ({ ...f, category_id: v === "__none__" ? "" : v }))
+                }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={c.selectCategory} />
+                  <SelectValue placeholder={c.selectCategoryOptional} />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__none__">{c.selectCategoryOptional}</SelectItem>
                   {categoryOptions.map((opt) => (
                     <SelectItem key={opt.id} value={String(opt.id)}>
                       {opt.label}
@@ -335,16 +374,9 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-gray-500">{c.productCategoryHint}</p>
             </div>
-            <div className="space-y-1">
-              <Label>{c.productImage}</Label>
-              <Input
-                type="url"
-                value={form.image_url}
-                onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))}
-                placeholder="https://..."
-              />
-            </div>
+
             <div className="space-y-1">
               <Label>{c.productSku}</Label>
               <Input
@@ -352,6 +384,7 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
                 onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))}
               />
             </div>
+
             <Button type="submit" className="w-full min-h-11" disabled={saving || !changeToken}>
               {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : c.saveProduct}
             </Button>

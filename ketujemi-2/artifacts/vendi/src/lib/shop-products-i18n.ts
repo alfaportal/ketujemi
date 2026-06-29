@@ -47,6 +47,27 @@ export type ShopProductsCopy = {
   contentNoticeWait: string;
   contentNoticeReady: string;
   contentNoticeContinue: string;
+  productPhotos: string;
+  productPhotosHint: string;
+  addPhotos: string;
+  takePhoto: string;
+  uploadingPhotos: string;
+  uploadFailed: string;
+  uploadNotReady: string;
+  photosMaxReached: string;
+  mainPhoto: string;
+  removePhoto: string;
+  movePhotoLeft: string;
+  movePhotoRight: string;
+  productCollection: string;
+  productCollectionPlaceholder: string;
+  productFormHint: string;
+  productTitlePlaceholder: string;
+  productDescriptionPlaceholder: string;
+  productCategoryHint: string;
+  selectCategoryOptional: string;
+  priceOnRequest: string;
+  uncategorizedProducts: string;
 };
 
 const KS: ShopProductsCopy = {
@@ -109,6 +130,27 @@ Materialet e ndaluara refuzohen automatikisht. Ekipi i KetuJemi mund të heqë d
   contentNoticeWait: "Ju lutem lexoni rregullat — {seconds} sekonda",
   contentNoticeReady: "Mund të vazhdoni me editimin e dyqanit.",
   contentNoticeContinue: "Kuptova, vazhdo",
+  productPhotos: "Fotot e produktit",
+  productPhotosHint: "Ngarkoni deri në 10 foto — si te shpalljet. Fotoja e parë shfaqet kryesore; lëvizni me shigjetat.",
+  addPhotos: "Ngarko foto",
+  takePhoto: "Foto me kamerë",
+  uploadingPhotos: "Duke ngarkuar…",
+  uploadFailed: "Ngarkimi dështoi — provoni përsëri.",
+  uploadNotReady: "Ngarkimi nuk është gati — rifreskoni faqen.",
+  photosMaxReached: "Maksimumi {max} foto.",
+  mainPhoto: "Kryesore",
+  removePhoto: "Fshi foton",
+  movePhotoLeft: "Lëviz majtas",
+  movePhotoRight: "Lëviz djathtas",
+  productCollection: "Kategoria juaj në dyqan",
+  productCollectionPlaceholder: "p.sh. Pica, Pije, Dessert — për t'i grupuar në webfaqe",
+  productFormHint: "Plotësoni sa të doni — mund ta ruani edhe vetëm me foto. Asnjë fushë nuk ju bllokon.",
+  productTitlePlaceholder: "Emri i produktit (opsional)",
+  productDescriptionPlaceholder: "Përshkrimi (opsional)",
+  productCategoryHint: "Opsionale — vetëm për publikimin automatik në Blej & Shite.",
+  selectCategoryOptional: "Pa kategori Blej & Shite",
+  priceOnRequest: "Me marrëveshje",
+  uncategorizedProducts: "Produkte",
 };
 
 const EN: ShopProductsCopy = {
@@ -171,6 +213,27 @@ Prohibited content is rejected automatically. KetuJemi may remove shops that bre
   contentNoticeWait: "Please read the rules — {seconds} seconds",
   contentNoticeReady: "You can continue editing your shop.",
   contentNoticeContinue: "Got it, continue",
+  productPhotos: "Product photos",
+  productPhotosHint: "Upload up to 10 photos — like listings. First photo is the cover; reorder with arrows.",
+  addPhotos: "Upload photos",
+  takePhoto: "Take photo",
+  uploadingPhotos: "Uploading…",
+  uploadFailed: "Upload failed — try again.",
+  uploadNotReady: "Upload not ready — refresh the page.",
+  photosMaxReached: "Maximum {max} photos.",
+  mainPhoto: "Main",
+  removePhoto: "Remove photo",
+  movePhotoLeft: "Move left",
+  movePhotoRight: "Move right",
+  productCollection: "Your shop category",
+  productCollectionPlaceholder: "e.g. Pizza, Drinks, Desserts — groups products on your page",
+  productFormHint: "Fill in what you want — you can save with photos only. No field blocks you.",
+  productTitlePlaceholder: "Product name (optional)",
+  productDescriptionPlaceholder: "Description (optional)",
+  productCategoryHint: "Optional — for auto-publish on Buy & Sell only.",
+  selectCategoryOptional: "No Buy & Sell category",
+  priceOnRequest: "On request",
+  uncategorizedProducts: "Products",
 };
 
 const BY_LOCALE: Partial<Record<UiTranslationLocale, ShopProductsCopy>> = {

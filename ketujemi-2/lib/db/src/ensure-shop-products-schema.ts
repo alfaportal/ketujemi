@@ -32,6 +32,7 @@ ALTER TABLE shops ADD COLUMN IF NOT EXISTS cover_image_url text;
 ALTER TABLE shops ADD COLUMN IF NOT EXISTS tagline text;
 ALTER TABLE shops ADD COLUMN IF NOT EXISTS youtube text;
 ALTER TABLE shops ADD COLUMN IF NOT EXISTS business_hours text;
+ALTER TABLE shop_products ADD COLUMN IF NOT EXISTS collection text;
 ALTER TABLE shop_applications ADD COLUMN IF NOT EXISTS youtube text;
 `;
 

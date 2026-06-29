@@ -18,6 +18,8 @@ export const shopProductsTable = pgTable("shop_products", {
     .notNull()
     .references(() => categoriesTable.id),
   image_url: text("image_url"),
+  /** Owner-defined shelf/group label (e.g. Menu, Desserts) — storefront only. */
+  collection: text("collection"),
   sku: text("sku"),
   sort_order: integer("sort_order").notNull().default(0),
   is_active: boolean("is_active").notNull().default(true),

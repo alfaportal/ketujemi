@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link } from "wouter";
-import { ShoppingBag, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShoppingBag, ExternalLink } from "lucide-react";
 import { BRAND_BLUE, BRAND_ORANGE } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
 import { useShopProductsCopy } from "@/lib/shop-products-i18n";
@@ -14,6 +15,8 @@ export type ShopProductPublic = {
   compare_at_price?: number | null;
   category_id: number;
   image_url?: string | null;
+  image_urls?: string[];
+  collection?: string | null;
   sku?: string | null;
   listing_id?: number | null;
 };
@@ -35,6 +38,10 @@ function formatPrice(value: number): string {
 
 export function ShopProductCard({ product, shopName, shopWhatsapp, className }: Props) {
   const c = useShopProductsCopy();
+  const photos =
+    product.image_urls?.length ? product.image_urls : product.image_url ? [product.image_url] : [];
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const activePhoto = photos[photoIndex] ?? photos[0] ?? null;
   const orderHref = shopWhatsAppOrderHref(shopWhatsapp, product.title, product.price, shopName);
   const hasDiscount =
     product.compare_at_price != null &&
@@ -47,10 +54,10 @@ export function ShopProductCard({ product, shopName, shopWhatsapp, className }: 
         className,
       )}
     >
-      <div className="relative aspect-square bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
-        {product.image_url ? (
+      <div className="relative aspect-square bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden group/photos">
+        {activePhoto ? (
           <img
-            src={product.image_url}
+            src={activePhoto}
             alt={product.title}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
@@ -63,6 +70,34 @@ export function ShopProductCard({ product, shopName, shopWhatsapp, className }: 
             🛍️
           </div>
         )}
+        {photos.length > 1 ? (
+          <>
+            <button
+              type="button"
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow flex items-center justify-center opacity-0 group-hover/photos:opacity-100 transition-opacity"
+              onClick={() => setPhotoIndex((i) => (i > 0 ? i - 1 : photos.length - 1))}
+              aria-label="Previous photo"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              type="button"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow flex items-center justify-center opacity-0 group-hover/photos:opacity-100 transition-opacity"
+              onClick={() => setPhotoIndex((i) => (i < photos.length - 1 ? i + 1 : 0))}
+              aria-label="Next photo"
+            >
+              <ChevronRight size={18} />
+            </button>
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
+              {photos.map((_, i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all ${i === photoIndex ? "w-4 bg-white" : "w-1.5 bg-white/60"}`}
+                />
+              ))}
+            </div>
+          </>
+        ) : null}
         {hasDiscount ? (
           <span
             className="absolute top-3 left-3 text-xs font-bold text-white px-2.5 py-1 rounded-full shadow"
@@ -84,7 +119,7 @@ export function ShopProductCard({ product, shopName, shopWhatsapp, className }: 
 
         <div className="flex items-baseline gap-2 pt-1">
           <span className="text-xl font-black" style={{ color: BRAND_BLUE }}>
-            {formatPrice(product.price)}
+            {product.price > 0 ? formatPrice(product.price) : c.priceOnRequest}
           </span>
           {hasDiscount ? (
             <span className="text-sm text-gray-400 line-through">

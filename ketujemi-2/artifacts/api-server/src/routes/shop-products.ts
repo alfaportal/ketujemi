@@ -3,8 +3,9 @@ import {
   db,
   shopProductsTable,
   shopsTable,
+  categoriesTable,
 } from "@workspace/db";
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import { getSessionUser } from "../lib/session-user.js";
 import { isShopPubliclyVisible } from "../lib/shop-visibility.js";
 import { enforceProfileChangeToken } from "../lib/profile-change-verify.js";
@@ -20,8 +21,11 @@ import {
 } from "../lib/shop-product-listing-sync.js";
 import { resolveShopByIdOrSlug } from "../lib/shop-slug.js";
 import { assertShopProductTextAllowed } from "../lib/shop-content-moderation.js";
+import { joinListingImageUrls, parseListingImageUrls, sanitizeListingImageUrlField } from "../lib/listing-images.js";
+import { SHOP_PRODUCT_BLOCKED_LISTING_ROOT_SLUGS } from "../../../../lib/shop-storefront-policy.js";
 
-const router = Router();
+const DEFAULT_PRODUCT_TITLE = "Produkt";
+const DEFAULT_PRODUCT_DESCRIPTION = "Produkt nga dyqani im në KetuJemi.";
 
 function trimOrNull(v: unknown): string | null {
   if (typeof v !== "string") return null;
@@ -30,12 +34,48 @@ function trimOrNull(v: unknown): string | null {
 }
 
 function parsePrice(v: unknown): string | null {
+  if (v === null || v === undefined || v === "") return "0.00";
   const n = Number(v);
   if (!Number.isFinite(n) || n < 0) return null;
   return n.toFixed(2);
 }
 
+let cachedDefaultCategoryId: number | null = null;
+
+async function defaultShopProductCategoryId(): Promise<number> {
+  if (cachedDefaultCategoryId != null) return cachedDefaultCategoryId;
+  const roots = await db
+    .select({ id: categoriesTable.id, slug: categoriesTable.slug })
+    .from(categoriesTable)
+    .where(isNull(categoriesTable.parent_id))
+    .orderBy(asc(categoriesTable.id));
+  for (const row of roots) {
+    const slug = row.slug?.trim();
+    if (slug && !SHOP_PRODUCT_BLOCKED_LISTING_ROOT_SLUGS.has(slug)) {
+      cachedDefaultCategoryId = row.id;
+      return row.id;
+    }
+  }
+  const [any] = await db.select({ id: categoriesTable.id }).from(categoriesTable).limit(1);
+  if (!any) throw new Error("Nuk u gjet asnjë kategori.");
+  cachedDefaultCategoryId = any.id;
+  return any.id;
+}
+
+function resolveProductImages(body: Record<string, unknown>): string | null | undefined {
+  if ("image_urls" in body && Array.isArray(body.image_urls)) {
+    const urls = body.image_urls.filter((u): u is string => typeof u === "string");
+    return joinListingImageUrls(urls);
+  }
+  if ("image_url" in body) {
+    const raw = trimOrNull(body.image_url);
+    return raw ? sanitizeListingImageUrlField(raw) : null;
+  }
+  return undefined;
+}
+
 function formatProductRow(row: typeof shopProductsTable.$inferSelect) {
+  const image_urls = parseListingImageUrls(row.image_url);
   return {
     id: row.id,
     shop_id: row.shop_id,
@@ -45,7 +85,9 @@ function formatProductRow(row: typeof shopProductsTable.$inferSelect) {
     price: Number(row.price),
     compare_at_price: row.compare_at_price != null ? Number(row.compare_at_price) : null,
     category_id: row.category_id,
-    image_url: row.image_url,
+    image_url: image_urls[0] ?? row.image_url,
+    image_urls,
+    collection: row.collection ?? null,
     sku: row.sku,
     sort_order: row.sort_order,
     is_active: row.is_active,
@@ -87,29 +129,28 @@ function validateProductBody(body: Record<string, unknown>, partial = false): { 
 
   if (!partial || "title" in body) {
     const title = trimOrNull(body.title);
-    if (!title || title.length < 3) errors.push("Titulli duhet të ketë të paktën 3 karaktere.");
-    else data.title = title;
+    data.title = title && title.length > 0 ? title.slice(0, 120) : DEFAULT_PRODUCT_TITLE;
   }
   if (!partial || "description" in body) {
     const description = trimOrNull(body.description);
-    if (!description || description.length < 10) errors.push("Përshkrimi duhet të ketë të paktën 10 karaktere.");
-    else data.description = description;
+    data.description =
+      description && description.length > 0 ? description.slice(0, 4000) : DEFAULT_PRODUCT_DESCRIPTION;
   }
   if (!partial || "price" in body) {
     const price = parsePrice(body.price);
-    if (!price) errors.push("Çmimi duhet të jetë numër pozitiv.");
-    else data.price = price;
+    data.price = price ?? "0.00";
   }
   if (!partial || "category_id" in body) {
     const categoryId = Number(body.category_id);
-    if (!Number.isFinite(categoryId) || categoryId < 1) errors.push("Zgjidhni kategorinë e produktit.");
-    else data.category_id = categoryId;
+    if (Number.isFinite(categoryId) && categoryId > 0) data.category_id = categoryId;
   }
   if ("compare_at_price" in body) {
     const cap = body.compare_at_price === null || body.compare_at_price === "" ? null : parsePrice(body.compare_at_price);
     data.compare_at_price = cap;
   }
-  if ("image_url" in body) data.image_url = trimOrNull(body.image_url);
+  const images = resolveProductImages(body);
+  if (images !== undefined) data.image_url = images;
+  if ("collection" in body) data.collection = trimOrNull(body.collection)?.slice(0, 80) ?? null;
   if ("sku" in body) data.sku = trimOrNull(body.sku);
   if ("sort_order" in body) {
     const sort = Number(body.sort_order);
@@ -119,6 +160,8 @@ function validateProductBody(body: Record<string, unknown>, partial = false): { 
 
   return { errors, data };
 }
+
+const router = Router();
 
 // ─── GET /shops/:idOrSlug/products (public) ─────────────────────────────────
 router.get("/shops/:idOrSlug/products", async (req, res) => {
@@ -198,6 +241,9 @@ router.post("/shops/me/products", async (req, res) => {
   }
 
   try {
+    if (!data.category_id) {
+      data.category_id = await defaultShopProductCategoryId();
+    }
     await validateShopProductCategoryId(data.category_id as number);
   } catch (err) {
     res.status(400).json({
@@ -229,6 +275,7 @@ router.post("/shops/me/products", async (req, res) => {
       compare_at_price: (data.compare_at_price as string | null | undefined) ?? null,
       category_id: data.category_id as number,
       image_url: (data.image_url as string | null | undefined) ?? null,
+      collection: (data.collection as string | null | undefined) ?? null,
       sku: (data.sku as string | null | undefined) ?? null,
       sort_order: (data.sort_order as number | undefined) ?? 0,
       is_active: data.is_active !== false,

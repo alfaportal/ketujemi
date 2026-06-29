@@ -40,6 +40,7 @@ import { syncShopDirectoryFieldsFromApplications } from "../lib/shop-directory-s
 import { SHOP_DIRECTORY_CATEGORIES } from "../../../../lib/shop-directory-taxonomy.js";
 import { SHOP_DIRECTORY_CATEGORY_IMAGE_URLS } from "../../../../lib/shop-directory-category-images.js";
 import { enforceProfileChangeToken } from "../lib/profile-change-verify.js";
+import { parseListingImageUrls } from "../lib/listing-images.js";
 import {
   getShopSocialProfilesForApi,
   scheduleShopSocialEnrich,
@@ -380,6 +381,7 @@ function shopDirectoryRow(
 }
 
 function formatShopProductPublic(row: typeof shopProductsTable.$inferSelect) {
+  const image_urls = parseListingImageUrls(row.image_url);
   return {
     id: row.id,
     title: row.title,
@@ -387,7 +389,9 @@ function formatShopProductPublic(row: typeof shopProductsTable.$inferSelect) {
     price: Number(row.price),
     compare_at_price: row.compare_at_price != null ? Number(row.compare_at_price) : null,
     category_id: row.category_id,
-    image_url: row.image_url,
+    image_url: image_urls[0] ?? row.image_url,
+    image_urls,
+    collection: row.collection ?? null,
     sku: row.sku,
     listing_id: row.listing_id,
   };
