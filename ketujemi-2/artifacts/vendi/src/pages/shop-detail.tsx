@@ -252,7 +252,7 @@ export default function ShopDetailPage() {
     <img
       src={shop.logo_url}
       alt={shop.shop_name}
-      className="h-16 w-16 sm:h-20 sm:w-20 rounded-xl object-contain border-2 border-white/50 shadow-lg bg-white/95 p-1"
+      className="h-14 w-14 sm:h-[4.5rem] sm:w-[4.5rem] rounded-lg object-contain border border-white/60 shadow-md bg-white p-0.5"
     />
   );
 
@@ -266,52 +266,54 @@ export default function ShopDetailPage() {
           aria-hidden
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/45 to-black/25" aria-hidden />
-        <div className="relative max-w-5xl mx-auto px-4 py-10 sm:py-12">
-          <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
-            {websiteHref ? (
-              <a
-                href={websiteHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block rounded-xl transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
-                aria-label={`Website — ${shop.shop_name}`}
-              >
-                {logoImg}
-              </a>
-            ) : (
-              logoImg
-            )}
-          </div>
-
-          <div className="max-w-2xl space-y-2 text-left pr-[4.75rem] sm:pr-28">
-            {shop.storefront_eligible !== false ? (
-              <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-white/15 backdrop-blur px-2.5 py-1 rounded-full border border-white/25">
-                ✓ {pc.storefrontBadge}
-              </span>
-            ) : null}
-            <h1 className="text-2xl sm:text-3xl font-black drop-shadow-lg leading-tight">{shop.shop_name}</h1>
-            {shop.tagline ? (
-              <p className="text-sm sm:text-base text-white/90 font-medium leading-snug">{shop.tagline}</p>
-            ) : null}
-            <p className="text-xs sm:text-sm text-white/80 font-medium">{translateCategory(shop.category, locale)}</p>
-            <p className="text-xs text-white/70 flex items-center gap-1">
-              <MapPin size={13} aria-hidden />
-              {shop.city}, {shop.region} — {shop.country}
-            </p>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-0.5">
-              <ShopRatingBadge
-                averageRating={shop.average_rating}
-                ratingCount={shop.rating_count}
-                size="sm"
-                tone="onDark"
-              />
-              <span className="inline-flex items-center gap-1 text-xs text-white/80">
-                <Eye size={13} aria-hidden />
-                {(shop.views ?? 0).toLocaleString()} {t.views}
-              </span>
+        <div className="relative max-w-5xl mx-auto px-4 pt-3 pb-8 sm:pt-4 sm:pb-10">
+          <div className="flex items-start justify-between gap-3 sm:gap-4">
+            <div className="flex-1 min-w-0 space-y-1 text-left">
+              {shop.storefront_eligible !== false ? (
+                <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wide bg-white/20 backdrop-blur px-2 py-0.5 rounded-full border border-white/30 text-white">
+                  ✓ {pc.storefrontBadge}
+                </span>
+              ) : null}
+              <h1 className="text-xl sm:text-2xl font-black drop-shadow-md leading-tight text-white">{shop.shop_name}</h1>
+              {shop.tagline ? (
+                <p className="text-xs sm:text-sm text-white font-semibold leading-snug drop-shadow-sm">{shop.tagline}</p>
+              ) : null}
+              <p className="text-[11px] sm:text-xs text-white/90 font-medium">{translateCategory(shop.category, locale)}</p>
+              <p className="text-[10px] sm:text-[11px] text-white/85 flex items-center gap-1 font-medium">
+                <MapPin size={11} aria-hidden className="shrink-0" />
+                {shop.city}, {shop.region} — {shop.country}
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                <ShopRatingBadge
+                  averageRating={shop.average_rating}
+                  ratingCount={shop.rating_count}
+                  size="sm"
+                  tone="onDark"
+                />
+                <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] text-white/90 font-medium">
+                  <Eye size={11} aria-hidden />
+                  {(shop.views ?? 0).toLocaleString()} {t.views}
+                </span>
+              </div>
+              <div className="pt-1.5">
+                <ShopPwaInstall shopName={shop.shop_name} variant="hero" />
+              </div>
             </div>
-            <div className="pt-2">
-              <ShopPwaInstall shopName={shop.shop_name} variant="hero" />
+
+            <div className="shrink-0 pt-0">
+              {websiteHref ? (
+                <a
+                  href={websiteHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-lg transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+                  aria-label={`Website — ${shop.shop_name}`}
+                >
+                  {logoImg}
+                </a>
+              ) : (
+                logoImg
+              )}
             </div>
           </div>
         </div>
@@ -342,9 +344,9 @@ export default function ShopDetailPage() {
           </section>
         ) : null}
 
-        <section className="rounded-2xl bg-white border border-gray-100 p-4 sm:p-5 shadow-sm">
-          <h2 className="text-sm font-bold text-gray-900 mb-2">{d.aboutTitle}</h2>
-          <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">{shop.description}</p>
+        <section className="rounded-xl bg-white border border-gray-100 px-3 py-3 sm:px-4 sm:py-3.5 shadow-sm">
+          <h2 className="text-xs font-bold text-gray-900 mb-1.5">{d.aboutTitle}</h2>
+          <p className="text-[11px] sm:text-xs text-gray-900 font-medium whitespace-pre-wrap leading-[1.45]">{shop.description}</p>
         </section>
 
         {shop.business_hours?.trim() ? (
