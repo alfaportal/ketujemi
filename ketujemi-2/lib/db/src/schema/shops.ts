@@ -37,6 +37,8 @@ export const shopsTable = pgTable("shops", {
   email: text("email").notNull(),
   is_active: boolean("is_active").notNull().default(true),
   views: integer("views").notNull().default(0),
+  /** Home-screen / PWA installs (per shop app, not platform). */
+  pwa_installs: integer("pwa_installs").notNull().default(0),
   admin_notes: text("admin_notes"),
   /** Public URL slug — ketujemi.com/dyqani/:slug */
   slug: text("slug"),

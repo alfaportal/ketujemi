@@ -251,10 +251,15 @@ export default function AdminShops() {
         . Për webfaqe publike (/dyqani/slug): kliko <strong>✏️ Edito</strong> dhe plotëso slug, WhatsApp (Porosit), telefon (Thirr), rrjetet sociale dhe YouTube.
       </p>
 
-      <div className="flex gap-3 text-sm">
+      <div className="flex gap-3 text-sm flex-wrap">
         <span className="px-3 py-1 rounded-full bg-amber-100">Në pritje: {stats.pending}</span>
         <span className="px-3 py-1 rounded-full bg-green-100">Aprovuar: {stats.approved}</span>
         <span className="px-3 py-1 rounded-full bg-red-100">Refuzuar: {stats.rejected}</span>
+        {typeof stats.pwa_installs_total === "number" ? (
+          <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-900 font-semibold">
+            📲 Instalime PWA (platformë): {stats.pwa_installs_total.toLocaleString()}
+          </span>
+        ) : null}
       </div>
 
       {loading ? (
@@ -290,6 +295,9 @@ export default function AdminShops() {
                     <p className="text-sm text-gray-600">
                       {row.category} · {row.city}, {row.country}
                       {row.shop_id ? ` · ${row.listing_count ?? 0} shpallje` : null}
+                      {row.shop_id && (row.pwa_installs ?? 0) > 0
+                        ? ` · 📲 ${row.pwa_installs} instalime PWA`
+                        : null}
                     </p>
                     <p className="text-sm text-gray-500 mt-1 line-clamp-2">{row.description}</p>
                   </div>

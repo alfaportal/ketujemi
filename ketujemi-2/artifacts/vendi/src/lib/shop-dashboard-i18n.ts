@@ -11,6 +11,7 @@ export type ShopDashboardCopy = {
   editShop: string;
   totalListings: string;
   totalViews: string;
+  pwaInstalls: string;
   viewShop: string;
   saveShop: string;
   shopSaved: string;
@@ -44,6 +45,7 @@ const KS: ShopDashboardCopy = {
   editShop: "Edito Dyqanin",
   totalListings: "Shpallje totale",
   totalViews: "Shikime totale",
+  pwaInstalls: "Instalime app (PWA)",
   viewShop: "Shiko dyqanin →",
   saveShop: "Ruaj ndryshimet",
   shopSaved: "Dyqani u përditësua.",
@@ -77,6 +79,7 @@ const MK: ShopDashboardCopy = {
   editShop: "Уреди продавница",
   totalListings: "Вкупно огласи",
   totalViews: "Вкупно прегледи",
+  pwaInstalls: "Инсталации app (PWA)",
   viewShop: "Види продавница →",
   saveShop: "Зачувај промени",
   shopSaved: "Продавницата е ажурирана.",
@@ -110,6 +113,7 @@ const MNE: ShopDashboardCopy = {
   editShop: "Uredi prodavnicu",
   totalListings: "Ukupno oglasa",
   totalViews: "Ukupno pregleda",
+  pwaInstalls: "Instalacije app (PWA)",
   viewShop: "Pogledaj prodavnicu →",
   saveShop: "Sačuvaj izmjene",
   shopSaved: "Prodavnica je ažurirana.",
@@ -143,6 +147,7 @@ const EN: ShopDashboardCopy = {
   editShop: "Edit Shop",
   totalListings: "Total listings",
   totalViews: "Total views",
+  pwaInstalls: "App installs (PWA)",
   viewShop: "View shop →",
   saveShop: "Save changes",
   shopSaved: "Shop updated.",
@@ -176,6 +181,7 @@ const IT: ShopDashboardCopy = {
   editShop: "Modifica negozio",
   totalListings: "Annunci totali",
   totalViews: "Visualizzazioni totali",
+  pwaInstalls: "Installazioni app (PWA)",
   viewShop: "Vedi negozio →",
   saveShop: "Salva",
   shopSaved: "Negozio aggiornato.",
@@ -209,6 +215,7 @@ const DE: ShopDashboardCopy = {
   editShop: "Shop bearbeiten",
   totalListings: "Anzeigen gesamt",
   totalViews: "Aufrufe gesamt",
+  pwaInstalls: "App-Installationen (PWA)",
   viewShop: "Shop ansehen →",
   saveShop: "Speichern",
   shopSaved: "Shop aktualisiert.",
@@ -242,6 +249,7 @@ const FR: ShopDashboardCopy = {
   editShop: "Modifier la boutique",
   totalListings: "Annonces au total",
   totalViews: "Vues au total",
+  pwaInstalls: "Installations app (PWA)",
   viewShop: "Voir la boutique →",
   saveShop: "Enregistrer",
   shopSaved: "Boutique mise à jour.",

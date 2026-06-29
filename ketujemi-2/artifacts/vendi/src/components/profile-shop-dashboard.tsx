@@ -4,7 +4,7 @@ import { useMarket } from "@/lib/market-context";
 import { useProfileEditGate } from "@/hooks/use-profile-edit-gate";
 import { ProfileEditGateFlow } from "@/components/profile-edit-gate-flow";
 import { Link } from "wouter";
-import { Loader2, Store, Eye, Package, Pencil, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Store, Eye, Package, Pencil, ChevronDown, ChevronUp, Smartphone } from "lucide-react";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -71,6 +71,7 @@ type ShopMeResponse = {
   listing_count: number;
   product_count?: number;
   total_views: number;
+  pwa_installs?: number;
   storefront_eligible?: boolean;
 };
 
@@ -289,6 +290,15 @@ export function ProfileShopDashboard() {
             </div>
             <p className="font-bold text-gray-900 mt-0.5">{data.total_views.toLocaleString()}</p>
           </div>
+          {storefrontEligible ? (
+            <div className="rounded-xl bg-white border border-gray-100 px-3 py-2">
+              <div className="flex items-center gap-1 text-gray-500">
+                <Smartphone size={14} />
+                {c.pwaInstalls}
+              </div>
+              <p className="font-bold text-gray-900 mt-0.5">{(data.pwa_installs ?? 0).toLocaleString()}</p>
+            </div>
+          ) : null}
         </div>
 
         {storefrontEligible && (shop.public_path || shop.slug || shop.id) ? (

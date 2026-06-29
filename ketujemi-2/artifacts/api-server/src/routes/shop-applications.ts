@@ -16,6 +16,7 @@ import {
 import { eq, and, asc, desc, gt, gte, isNotNull, sql, inArray, or, isNull, count } from "drizzle-orm";
 import { getSessionUser } from "../lib/session-user";
 import { incrementShopView } from "../lib/shop-view.js";
+import { incrementShopPwaInstall } from "../lib/shop-pwa-install.js";
 import { clientIpFromRequest } from "../lib/request-ip.js";
 import { activeShopSqlCondition, isShopPubliclyVisible } from "../lib/shop-visibility.js";
 import { backfillShopListingsForShop, shopPublicListingsCondition, resolveShopOwnerUserIds, reconcileShopListingAssignmentsIfStale } from "../lib/shop-listing-lookup.js";
@@ -342,6 +343,7 @@ function shopPublicFields(shop: typeof shopsTable.$inferSelect, ratings?: Rating
     average_rating: ratings?.average_rating ?? null,
     rating_count: ratings?.rating_count ?? 0,
     views: shop.views ?? 0,
+    pwa_installs: shop.pwa_installs ?? 0,
     storefront_eligible: isShopStorefrontEligible(shop),
   };
 }
@@ -608,6 +610,7 @@ router.get("/shops/me", async (req, res) => {
     listing_count,
     product_count,
     total_views,
+    pwa_installs: shopRow?.pwa_installs ?? 0,
     storefront_eligible: shopRow ? isShopStorefrontEligible(shopRow) : false,
   });
 });
@@ -988,6 +991,27 @@ router.post("/shops/:id/view", async (req, res) => {
     return;
   }
   res.json({ ok: true, views: result.views, counted: result.counted });
+});
+
+// ─── POST /shops/:id/pwa-install ─────────────────────────────────────────────
+router.post("/shops/:id/pwa-install", async (req, res) => {
+  const shopRef = await resolveShopByIdOrSlug(req.params.id);
+  if (!shopRef) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  const id = shopRef.id;
+
+  const viewer = await getSessionUser(req);
+  const result = await incrementShopPwaInstall(id, {
+    viewer,
+    clientIp: clientIpFromRequest(req),
+  });
+  if (!result.ok) {
+    res.status(result.status).json({ error: result.status === 404 ? "Not found" : "Invalid id" });
+    return;
+  }
+  res.json({ ok: true, pwa_installs: result.pwa_installs, counted: result.counted });
 });
 
 // ─── GET /shops/:idOrSlug/manifest.webmanifest (per-shop PWA) ─────────────────

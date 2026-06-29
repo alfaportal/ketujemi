@@ -657,6 +657,8 @@ export interface AdminShopApplication {
   status: string;
   shop_id: number | null;
   listing_count?: number;
+  shop_views?: number;
+  pwa_installs?: number;
   rejected_reason: string | null;
   admin_notes: string | null;
   created_at: string;
@@ -665,7 +667,7 @@ export interface AdminShopApplication {
 export function getAdminShopApplications() {
   return request<{
     applications: AdminShopApplication[];
-    stats: { pending: number; approved: number; rejected: number };
+    stats: { pending: number; approved: number; rejected: number; pwa_installs_total?: number };
   }>("/shop-applications");
 }
 

@@ -18,14 +18,17 @@ import {
   triggerPwaInstallPrompt,
 } from "@/lib/shop-pwa";
 import { useShopPwaCopy } from "@/lib/shop-pwa-i18n";
+import { recordShopPwaInstall } from "@/lib/record-shop-pwa-install";
 
 type Props = {
+  shopId: number;
   shopName: string;
   className?: string;
   variant?: "hero" | "bar";
+  onPwaInstallCount?: (count: number) => void;
 };
 
-export function ShopPwaInstall({ shopName, className, variant = "hero" }: Props) {
+export function ShopPwaInstall({ shopId, shopName, className, variant = "hero", onPwaInstallCount }: Props) {
   const c = useShopPwaCopy();
   const [installEvent, setInstallEvent] = useState<
     (Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }) | null
@@ -48,7 +51,10 @@ export function ShopPwaInstall({ shopName, className, variant = "hero" }: Props)
   async function onInstallClick() {
     if (installEvent) {
       const accepted = await triggerPwaInstallPrompt(installEvent);
-      if (accepted) setHidden(true);
+      if (accepted) {
+        setHidden(true);
+        void recordShopPwaInstall(shopId, onPwaInstallCount);
+      }
       setInstallEvent(null);
       return;
     }

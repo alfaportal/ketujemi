@@ -28,7 +28,8 @@ import { SHOP_STOREFRONT_MAX_TILES } from "@/lib/shop-storefront-policy";
 import type { ShopProductPublic } from "@/components/shop-product-card";
 import { useShopProductsCopy } from "@/lib/shop-products-i18n";
 import { recordShopView } from "@/lib/record-shop-view";
-import { applyShopPwaMeta } from "@/lib/shop-pwa";
+import { recordShopPwaInstall } from "@/lib/record-shop-pwa-install";
+import { applyShopPwaMeta, isShopPwaStandalone } from "@/lib/shop-pwa";
 import { ShopPwaInstall } from "@/components/shop-pwa-install";
 
 type ShopData = {
@@ -59,6 +60,7 @@ type ShopData = {
   average_rating?: number | null;
   rating_count?: number;
   views?: number;
+  pwa_installs?: number;
   storefront_eligible?: boolean;
   facebook?: string | null;
   instagram?: string | null;
@@ -182,10 +184,26 @@ export default function ShopDetailPage() {
   }, [slugOrId, d, locale, uiLang]);
 
   useEffect(() => {
-    if (!shop?.id || loading || !shop) return;
+    if (!shop?.id || loading) return;
     void recordShopView(shop.id, (views) => {
       setShop((prev) => (prev ? { ...prev, views } : prev));
     });
+  }, [shop?.id, loading]);
+
+  useEffect(() => {
+    if (!shop?.id || loading) return;
+    if (isShopPwaStandalone()) {
+      void recordShopPwaInstall(shop.id, (pwa_installs) => {
+        setShop((prev) => (prev ? { ...prev, pwa_installs } : prev));
+      });
+    }
+    const onInstalled = () => {
+      void recordShopPwaInstall(shop.id, (pwa_installs) => {
+        setShop((prev) => (prev ? { ...prev, pwa_installs } : prev));
+      });
+    };
+    window.addEventListener("appinstalled", onInstalled);
+    return () => window.removeEventListener("appinstalled", onInstalled);
   }, [shop?.id, loading]);
 
   useEffect(() => {
@@ -294,9 +312,21 @@ export default function ShopDetailPage() {
                   <Eye size={11} aria-hidden />
                   {(shop.views ?? 0).toLocaleString()} {t.views}
                 </span>
+                {(shop.pwa_installs ?? 0) > 0 ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] text-white/90 font-medium">
+                    📲 {(shop.pwa_installs ?? 0).toLocaleString()} PWA
+                  </span>
+                ) : null}
               </div>
               <div className="pt-1.5">
-                <ShopPwaInstall shopName={shop.shop_name} variant="hero" />
+                <ShopPwaInstall
+                  shopId={shop.id}
+                  shopName={shop.shop_name}
+                  variant="hero"
+                  onPwaInstallCount={(pwa_installs) =>
+                    setShop((prev) => (prev ? { ...prev, pwa_installs } : prev))
+                  }
+                />
               </div>
             </div>
 
@@ -397,7 +427,14 @@ export default function ShopDetailPage() {
         />
 
         <div className="flex justify-center sm:justify-start">
-          <ShopPwaInstall shopName={shop.shop_name} variant="bar" />
+          <ShopPwaInstall
+            shopId={shop.id}
+            shopName={shop.shop_name}
+            variant="bar"
+            onPwaInstallCount={(pwa_installs) =>
+              setShop((prev) => (prev ? { ...prev, pwa_installs } : prev))
+            }
+          />
         </div>
 
         <section className="rounded-2xl overflow-hidden border border-gray-100 bg-white shadow-sm">

@@ -1562,6 +1562,8 @@ router.get("/admin/shop-applications", requireAdmin, async (_req, res) => {
       cover_image_url: string | null;
       youtube: string | null;
       admin_notes: string | null;
+      views: number;
+      pwa_installs: number;
     }
   >();
   if (shopIds.length) {
@@ -1585,6 +1587,8 @@ router.get("/admin/shop-applications", requireAdmin, async (_req, res) => {
         cover_image_url: shopsTable.cover_image_url,
         youtube: shopsTable.youtube,
         admin_notes: shopsTable.admin_notes,
+        views: shopsTable.views,
+        pwa_installs: shopsTable.pwa_installs,
       })
       .from(shopsTable)
       .where(inArray(shopsTable.id, shopIds));
@@ -1600,6 +1604,7 @@ router.get("/admin/shop-applications", requireAdmin, async (_req, res) => {
     pending: rows.filter((r) => r.status === "pending").length,
     approved: rows.filter((r) => r.status === "approved").length,
     rejected: rows.filter((r) => r.status === "rejected").length,
+    pwa_installs_total: [...shopMetaById.values()].reduce((s, m) => s + (m.pwa_installs ?? 0), 0),
   };
   res.json({
     applications: rows.map((row) => {
@@ -1612,6 +1617,8 @@ router.get("/admin/shop-applications", requireAdmin, async (_req, res) => {
         youtube: shopMeta?.youtube ?? row.youtube ?? null,
         public_path: row.shop_id ? shopPublicPath(shopMeta?.slug, row.shop_id) : null,
         listing_count: row.shop_id ? (listingCountByShop.get(row.shop_id) ?? 0) : 0,
+        shop_views: shopMeta?.views ?? 0,
+        pwa_installs: shopMeta?.pwa_installs ?? 0,
         admin_notes: row.shop_id
           ? (adminNotesByShop.get(row.shop_id) ?? row.admin_notes)
           : row.admin_notes,

@@ -4,7 +4,7 @@ export const VIEW_DEDUP_WINDOW_MS = 30 * 60 * 1000;
 const recentViews = new Map<string, number>();
 
 export function viewDedupKey(
-  kind: "listing" | "shop",
+  kind: "listing" | "shop" | "shop-pwa",
   entityId: number,
   ip: string,
   viewerUserId?: number | null,

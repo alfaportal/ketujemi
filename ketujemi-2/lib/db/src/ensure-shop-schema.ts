@@ -75,6 +75,7 @@ ALTER TABLE shops ADD COLUMN IF NOT EXISTS longitude double precision;
 ALTER TABLE shop_applications ADD COLUMN IF NOT EXISTS latitude double precision;
 ALTER TABLE shop_applications ADD COLUMN IF NOT EXISTS longitude double precision;
 ALTER TABLE shops ADD COLUMN IF NOT EXISTS views integer NOT NULL DEFAULT 0;
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS pwa_installs integer NOT NULL DEFAULT 0;
 ALTER TABLE shops ADD COLUMN IF NOT EXISTS deleted_at timestamp;
 `;
 
