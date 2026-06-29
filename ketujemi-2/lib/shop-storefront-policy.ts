@@ -17,6 +17,9 @@ export const SHOP_PRODUCT_BLOCKED_LISTING_ROOT_SLUGS = new Set([
   "pune-sherbime",
 ]);
 
+/** Max product/service tiles on the public shop storefront grid. */
+export const SHOP_STOREFRONT_MAX_TILES = 8;
+
 export type ShopDirectoryFields = {
   directory_category_slug?: string | null;
   directory_subcategory_slug?: string | null;

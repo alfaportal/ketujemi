@@ -5,7 +5,7 @@ import {
   shopsTable,
   categoriesTable,
 } from "@workspace/db";
-import { and, asc, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { getSessionUser } from "../lib/session-user.js";
 import { isShopPubliclyVisible } from "../lib/shop-visibility.js";
 import { enforceProfileChangeToken } from "../lib/profile-change-verify.js";
@@ -22,7 +22,7 @@ import {
 import { resolveShopByIdOrSlug } from "../lib/shop-slug.js";
 import { assertShopProductTextAllowed } from "../lib/shop-content-moderation.js";
 import { joinListingImageUrls, parseListingImageUrls, sanitizeListingImageUrlField } from "../lib/listing-images.js";
-import { SHOP_PRODUCT_BLOCKED_LISTING_ROOT_SLUGS } from "../../../../lib/shop-storefront-policy.js";
+import { SHOP_PRODUCT_BLOCKED_LISTING_ROOT_SLUGS, SHOP_STOREFRONT_MAX_TILES } from "../../../../lib/shop-storefront-policy.js";
 
 const DEFAULT_PRODUCT_TITLE = "Produkt";
 const DEFAULT_PRODUCT_DESCRIPTION = "Produkt nga dyqani im në KetuJemi.";
@@ -233,6 +233,18 @@ router.post("/shops/me/products", async (req, res) => {
     return;
   }
   const shop = owned.shop!;
+
+  const [countRow] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(shopProductsTable)
+    .where(and(eq(shopProductsTable.shop_id, shop.id), eq(shopProductsTable.is_active, true)));
+  if ((countRow?.count ?? 0) >= SHOP_STOREFRONT_MAX_TILES) {
+    res.status(400).json({
+      error: "VALIDATION",
+      message: `Maksimumi ${SHOP_STOREFRONT_MAX_TILES} produkte/shërbime në webfaqe.`,
+    });
+    return;
+  }
 
   const { errors, data } = validateProductBody(req.body as Record<string, unknown>);
   if (errors.length) {

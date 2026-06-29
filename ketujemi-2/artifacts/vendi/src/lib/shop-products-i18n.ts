@@ -68,11 +68,20 @@ export type ShopProductsCopy = {
   selectCategoryOptional: string;
   priceOnRequest: string;
   uncategorizedProducts: string;
+  viewProduct: string;
+  morePhotos: string;
+  contactForProduct: string;
+  callShop: string;
+  prevPhoto: string;
+  nextPhoto: string;
+  maxTilesHint: string;
+  maxTilesReached: string;
+  coverPhotoLabel: string;
 };
 
 const KS: ShopProductsCopy = {
   catalogTitle: "Produktet tona",
-  catalogSubtitle: "Katalogu zyrtar i dyqanit — çdo produkt publikohet automatikisht në KetuJemi.",
+  catalogSubtitle: "Deri në 8 shërbime ose produkte — secili me foto kryesore dhe deri në 10 foto brenda.",
   addProduct: "➕ Shto produkt",
   editProduct: "Edito produktin",
   deleteProduct: "Fshi produktin",
@@ -151,6 +160,15 @@ Materialet e ndaluara refuzohen automatikisht. Ekipi i KetuJemi mund të heqë d
   selectCategoryOptional: "Pa kategori Blej & Shite",
   priceOnRequest: "Me marrëveshje",
   uncategorizedProducts: "Produkte",
+  viewProduct: "Shiko",
+  morePhotos: "foto",
+  contactForProduct: "Na kontaktoni",
+  callShop: "Thirr",
+  prevPhoto: "Foto e mëparshme",
+  nextPhoto: "Foto tjetër",
+  maxTilesHint: "Maksimumi 8 shërbime/produkte në webfaqe — secili me deri në 10 foto.",
+  maxTilesReached: "Keni arritur 8 produkte në webfaqe. Fshini një për të shtuar tjetër.",
+  coverPhotoLabel: "Foto kryesore (cover)",
 };
 
 const EN: ShopProductsCopy = {
@@ -234,6 +252,15 @@ Prohibited content is rejected automatically. KetuJemi may remove shops that bre
   selectCategoryOptional: "No Buy & Sell category",
   priceOnRequest: "On request",
   uncategorizedProducts: "Products",
+  viewProduct: "View",
+  morePhotos: "photos",
+  contactForProduct: "Contact us",
+  callShop: "Call",
+  prevPhoto: "Previous photo",
+  nextPhoto: "Next photo",
+  maxTilesHint: "Up to 8 services/products on your storefront — each with up to 10 photos.",
+  maxTilesReached: "You reached 8 storefront items. Delete one to add another.",
+  coverPhotoLabel: "Cover photo",
 };
 
 const BY_LOCALE: Partial<Record<UiTranslationLocale, ShopProductsCopy>> = {

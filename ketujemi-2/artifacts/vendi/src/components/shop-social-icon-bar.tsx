@@ -1,5 +1,6 @@
-import { Facebook, Instagram, Youtube } from "lucide-react";
+import { Facebook, Instagram, Globe, MessageCircle, Youtube } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { shopWhatsappHref } from "@/lib/shop-social-url-input";
 
 export type ShopSocialFields = {
   facebook?: string | null;
@@ -11,7 +12,7 @@ export type ShopSocialFields = {
 };
 
 export type ShopSocialIconItem = {
-  key: "facebook" | "instagram" | "tiktok" | "youtube";
+  key: "facebook" | "instagram" | "tiktok" | "youtube" | "whatsapp" | "website";
   label: string;
   href: string;
   className: string;
@@ -74,21 +75,44 @@ export function buildShopStorefrontSocialIcons(fields: ShopSocialFields): ShopSo
     });
   }
 
+  const whatsappHref = shopWhatsappHref(fields.whatsapp);
+  if (whatsappHref) {
+    icons.push({
+      key: "whatsapp",
+      label: "WhatsApp",
+      href: whatsappHref,
+      icon: MessageCircle,
+      className: "bg-[#25D366] hover:bg-[#20bd5a]",
+    });
+  }
+
+  const website = fields.website?.trim();
+  if (website) {
+    icons.push({
+      key: "website",
+      label: "Website",
+      href: /^https?:\/\//i.test(website) ? website : `https://${website}`,
+      icon: Globe,
+      className: "bg-slate-700 hover:bg-slate-800",
+    });
+  }
+
   return icons;
 }
 
 type Props = {
   fields: ShopSocialFields;
   className?: string;
-  variant?: "hero" | "inline";
+  variant?: "hero" | "inline" | "light";
 };
 
 export function ShopSocialIconBar({ fields, className, variant = "hero" }: Props) {
   const icons = buildShopStorefrontSocialIcons(fields);
   if (icons.length === 0) return null;
 
-  const size = variant === "hero" ? "h-11 w-11" : "h-9 w-9";
-  const iconSize = variant === "hero" ? "h-5 w-5" : "h-4 w-4";
+  const size =
+    variant === "hero" ? "h-11 w-11" : variant === "light" ? "h-11 w-11" : "h-9 w-9";
+  const iconSize = variant === "hero" || variant === "light" ? "h-5 w-5" : "h-4 w-4";
 
   return (
     <div className={cn("flex flex-wrap items-center gap-2.5", className)}>
@@ -103,12 +127,14 @@ export function ShopSocialIconBar({ fields, className, variant = "hero" }: Props
             title={item.label}
             aria-label={item.label}
             className={cn(
-              "inline-flex items-center justify-center rounded-full text-white shadow-md transition-transform hover:scale-105",
+              "inline-flex items-center justify-center rounded-full transition-transform hover:scale-105",
               size,
-              item.className,
+              variant === "light"
+                ? "bg-white border border-gray-200 text-gray-700 shadow-sm hover:border-gray-300 hover:shadow"
+                : cn("text-white shadow-md", item.className),
             )}
           >
-            <Icon className={iconSize} />
+            <Icon className={cn(iconSize, variant === "light" ? "text-gray-700" : undefined)} />
           </a>
         );
       })}

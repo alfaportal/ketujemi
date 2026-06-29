@@ -32,7 +32,10 @@ import {
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { useToast } from "@/hooks/use-toast";
 import { useShopProductsCopy } from "@/lib/shop-products-i18n";
-import { SHOP_PRODUCT_BLOCKED_LISTING_ROOT_SLUGS } from "@/lib/shop-storefront-policy";
+import {
+  SHOP_PRODUCT_BLOCKED_LISTING_ROOT_SLUGS,
+  SHOP_STOREFRONT_MAX_TILES,
+} from "@/lib/shop-storefront-policy";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
@@ -115,6 +118,10 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
   }, [storefrontEligible]);
 
   function openCreate() {
+    if (products.length >= SHOP_STOREFRONT_MAX_TILES) {
+      toast({ title: c.maxTilesReached, variant: "destructive" });
+      return;
+    }
     setEditingId(null);
     setForm(emptyForm());
     setDialogOpen(true);
@@ -207,6 +214,7 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
             <h3 className="font-bold text-gray-900">{c.manageProducts}</h3>
           </div>
           <p className="text-xs text-gray-600 mt-1 leading-relaxed">{c.autoListingHint}</p>
+          <p className="text-xs text-gray-500 mt-0.5">{c.maxTilesHint}</p>
         </div>
         <Button
           type="button"
@@ -214,7 +222,7 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
           className="font-semibold text-white shrink-0"
           style={{ backgroundColor: BRAND_BLUE }}
           onClick={openCreate}
-          disabled={!changeToken}
+          disabled={!changeToken || products.length >= SHOP_STOREFRONT_MAX_TILES}
         >
           <Plus size={16} className="mr-1" />
           {c.addProduct}

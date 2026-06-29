@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useProfileEditGate } from "@/hooks/use-profile-edit-gate";
 import { ProfileEditGateFlow } from "@/components/profile-edit-gate-flow";
 import { DeletionExitSurveyModal } from "@/components/deletion-exit-survey-modal";
-import { Loader2, MapPin, Pencil, Trash2, Eye, Phone } from "lucide-react";
+import { Loader2, MapPin, Settings, Eye, Phone } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useDeleteListing,
@@ -59,7 +59,10 @@ import { ShopSocialLinks } from "@/components/shop-social-links";
 import { ShopSocialIconBar } from "@/components/shop-social-icon-bar";
 import { shopPhoneHref } from "@/lib/shop-social-url-input";
 import type { ShopSocialProfileData } from "@/components/shop-social-profiles";
-import { ShopProductCard, type ShopProductPublic } from "@/components/shop-product-card";
+import { ShopProductTile } from "@/components/shop-product-tile";
+import { ShopProductDetailDialog } from "@/components/shop-product-detail-dialog";
+import { SHOP_STOREFRONT_MAX_TILES } from "@/lib/shop-storefront-policy";
+import type { ShopProductPublic } from "@/components/shop-product-card";
 import { ShopProductManager } from "@/components/shop-product-manager";
 import { ShopEditContentNotice } from "@/components/shop-edit-content-notice";
 import { useShopProductsCopy } from "@/lib/shop-products-i18n";
@@ -128,6 +131,8 @@ export default function ShopDetailPage() {
   const [isOwner, setIsOwner] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [contentNoticeOpen, setContentNoticeOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<ShopProductPublic | null>(null);
+  const [productDetailOpen, setProductDetailOpen] = useState(false);
   const [editTab, setEditTab] = useState<"site" | "products">("site");
   const [editRequested, setEditRequested] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
@@ -360,20 +365,15 @@ export default function ShopDetailPage() {
     return listings.filter((l) => l.category_id === categoryFilter);
   }, [listings, categoryFilter]);
 
-  const productGroups = useMemo(() => {
-    const groups = new Map<string, ShopProductPublic[]>();
-    for (const product of products) {
-      const key = product.collection?.trim() || "";
-      const list = groups.get(key) ?? [];
-      list.push(product);
-      groups.set(key, list);
-    }
-    return [...groups.entries()].sort(([a], [b]) => {
-      if (!a) return 1;
-      if (!b) return -1;
-      return a.localeCompare(b, "sq");
-    });
-  }, [products]);
+  const storefrontProducts = useMemo(
+    () => products.slice(0, SHOP_STOREFRONT_MAX_TILES),
+    [products],
+  );
+
+  function openProductDetail(product: ShopProductPublic) {
+    setSelectedProduct(product);
+    setProductDetailOpen(true);
+  }
 
   if (loading) {
     return (
@@ -461,6 +461,8 @@ export default function ShopDetailPage() {
                   instagram: shop.instagram,
                   tiktok: shop.tiktok,
                   youtube: shop.youtube,
+                  whatsapp: shop.whatsapp,
+                  website: shop.website,
                 }}
               />
               {phoneHref ? (
@@ -477,29 +479,38 @@ export default function ShopDetailPage() {
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-4 py-8 space-y-10">
-        {isOwner ? (
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="min-h-11 font-semibold"
-              onClick={onEditShopClick}
-            >
-              {d.editShop}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              className="min-h-11 font-semibold bg-red-600 hover:bg-red-700"
-              onClick={onDeleteShopClick}
-            >
-              {d.deleteShop}
-            </Button>
-          </div>
+      <div className="max-w-6xl mx-auto px-4 py-10 space-y-12">
+        {shop.storefront_eligible !== false ? (
+          <section>
+            <div className="mb-8 space-y-2 text-center sm:text-left">
+              <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">{pc.catalogTitle}</h2>
+              <p className="text-sm text-gray-500 max-w-2xl">{pc.catalogSubtitle}</p>
+            </div>
+            {storefrontProducts.length === 0 ? (
+              isOwner ? (
+                <p className="text-gray-500 text-sm rounded-2xl border border-dashed border-gray-200 bg-white px-5 py-10 text-center">
+                  {pc.noProductsOwner}
+                </p>
+              ) : (
+                <p className="text-gray-500 text-sm rounded-2xl border border-dashed border-gray-200 bg-white px-5 py-10 text-center">
+                  {pc.noProducts}
+                </p>
+              )
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {storefrontProducts.map((product) => (
+                  <ShopProductTile
+                    key={product.id}
+                    product={product}
+                    onOpen={() => openProductDetail(product)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
         ) : null}
 
-        <section className="rounded-2xl bg-white border border-gray-100 p-6 shadow-sm">
+        <section className="rounded-2xl bg-white border border-gray-100 p-6 sm:p-8 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900 mb-3">{d.aboutTitle}</h2>
           {shop.tagline?.trim() ? (
             <p className="text-base font-semibold text-blue-800 mb-3">{shop.tagline}</p>
@@ -511,42 +522,6 @@ export default function ShopDetailPage() {
           <section className="rounded-2xl bg-white border border-gray-100 p-6 shadow-sm">
             <h2 className="text-lg font-bold text-gray-900 mb-3">{pc.businessHours}</h2>
             <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{shop.business_hours}</p>
-          </section>
-        ) : null}
-
-        {shop.storefront_eligible !== false ? (
-          <section>
-            <div className="mb-6 space-y-1">
-              <h2 className="text-2xl font-black text-gray-900">{pc.catalogTitle}</h2>
-              <p className="text-sm text-gray-500">{pc.catalogSubtitle}</p>
-            </div>
-            {products.length === 0 ? (
-              <p className="text-gray-500 text-sm rounded-2xl border border-dashed border-gray-200 bg-white px-5 py-8 text-center">
-                {isOwner ? pc.noProductsOwner : pc.noProducts}
-              </p>
-            ) : (
-              <div className="space-y-10">
-                {productGroups.map(([collection, items]) => (
-                  <div key={collection || "all"} className="space-y-4">
-                    {collection ? (
-                      <h3 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">
-                        {collection}
-                      </h3>
-                    ) : null}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                      {items.map((product) => (
-                        <ShopProductCard
-                          key={product.id}
-                          product={product}
-                          shopName={shop.shop_name}
-                          shopWhatsapp={shop.whatsapp}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </section>
         ) : null}
 
@@ -590,7 +565,7 @@ export default function ShopDetailPage() {
           </div>
         </section>
 
-        {filteredListings.length > 0 ? (
+        {filteredListings.length > 0 && shop.storefront_eligible === false ? (
         <section>
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <h2 className="text-xl font-black text-gray-900">{d.listingsTitle}</h2>
@@ -718,6 +693,35 @@ export default function ShopDetailPage() {
       {isOwner && user ? <ProfileEditGateFlow user={user} gate={gate} /> : null}
 
       {contentNoticeOpen ? <ShopEditContentNotice onContinue={onContentNoticeContinue} /> : null}
+
+      <ShopProductDetailDialog
+        product={selectedProduct}
+        open={productDetailOpen}
+        onOpenChange={setProductDetailOpen}
+        shop={{
+          phone: shop?.phone,
+          shop_name: shop?.shop_name,
+          facebook: shop?.facebook,
+          instagram: shop?.instagram,
+          tiktok: shop?.tiktok,
+          whatsapp: shop?.whatsapp,
+          website: shop?.website,
+          youtube: shop?.youtube,
+        }}
+      />
+
+      {isOwner ? (
+        <button
+          type="button"
+          onClick={onEditShopClick}
+          className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-xl transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+          style={{ backgroundColor: BRAND_BLUE }}
+          aria-label={d.editShop}
+          title={d.editShop}
+        >
+          <Settings className="h-6 w-6" />
+        </button>
+      ) : null}
 
       {isOwner && user && shop ? (
         <DeletionExitSurveyModal
