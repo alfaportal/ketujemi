@@ -1,6 +1,6 @@
 import { useRoute, Link } from "wouter";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, MapPin, Eye, Phone } from "lucide-react";
+import { Loader2, MapPin, Eye, Phone, Mail } from "lucide-react";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { SiteHeader } from "@/components/site-header";
 import { ShopRatingBadge } from "@/components/shop-rating-badge";
@@ -20,7 +20,6 @@ import {
 import { shopDetailSeoTitle, useShopDetailCopy } from "@/lib/shop-detail-i18n";
 import { cn } from "@/lib/utils";
 import { ShopSocialLinks } from "@/components/shop-social-links";
-import { ShopSocialIconBar } from "@/components/shop-social-icon-bar";
 import { shopPhoneHref } from "@/lib/shop-social-url-input";
 import type { ShopSocialProfileData } from "@/components/shop-social-profiles";
 import { ShopProductTile } from "@/components/shop-product-tile";
@@ -247,6 +246,15 @@ export default function ShopDetailPage() {
     ? `url(${shop.cover_image_url}) center/cover no-repeat`
     : `linear-gradient(135deg, ${BRAND_BLUE} 0%, #1e3a8a 45%, ${BRAND_ORANGE} 100%)`;
   const phoneHref = shopPhoneHref(shop.phone);
+  const websiteHref = shop.website?.trim() || null;
+
+  const logoImg = (
+    <img
+      src={shop.logo_url}
+      alt={shop.shop_name}
+      className="h-16 w-16 sm:h-20 sm:w-20 rounded-xl object-contain border-2 border-white/50 shadow-lg bg-white/95 p-1"
+    />
+  );
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -257,65 +265,53 @@ export default function ShopDetailPage() {
           style={{ background: heroBackground }}
           aria-hidden
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/20" aria-hidden />
-        <div className="relative max-w-5xl mx-auto px-4 py-12 sm:py-16">
-          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6">
-            <img
-              src={shop.logo_url}
-              alt={shop.shop_name}
-              className="h-28 w-28 sm:h-32 sm:w-32 rounded-2xl object-contain border-4 border-white/40 shadow-2xl bg-white/10 backdrop-blur-sm"
-            />
-            <div className="flex-1 text-center sm:text-left space-y-2">
-              {shop.storefront_eligible !== false ? (
-                <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider bg-white/15 backdrop-blur px-3 py-1 rounded-full border border-white/25">
-                  ✓ {pc.storefrontBadge}
-                </span>
-              ) : null}
-              <h1 className="text-3xl sm:text-4xl font-black drop-shadow-lg">{shop.shop_name}</h1>
-              {shop.tagline ? (
-                <p className="text-lg text-white/90 font-medium max-w-xl">{shop.tagline}</p>
-              ) : null}
-              <p className="text-white/85 font-medium">{translateCategory(shop.category, locale)}</p>
-              <p className="text-sm text-white/75 flex items-center justify-center sm:justify-start gap-1">
-                <MapPin size={14} />
-                {shop.city}, {shop.region} — {shop.country}
-              </p>
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1">
-                <ShopRatingBadge
-                  averageRating={shop.average_rating}
-                  ratingCount={shop.rating_count}
-                  size="md"
-                  tone="onDark"
-                />
-                <span className="inline-flex items-center gap-1 text-sm text-white/85">
-                  <Eye size={14} aria-hidden />
-                  {(shop.views ?? 0).toLocaleString()} {t.views}
-                </span>
-              </div>
-              <ShopSocialIconBar
-                variant="hero"
-                className="justify-center sm:justify-start pt-3"
-                fields={{
-                  facebook: shop.facebook,
-                  instagram: shop.instagram,
-                  tiktok: shop.tiktok,
-                  youtube: shop.youtube,
-                  whatsapp: shop.whatsapp,
-                  website: shop.website,
-                }}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/45 to-black/25" aria-hidden />
+        <div className="relative max-w-5xl mx-auto px-4 py-10 sm:py-12">
+          <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
+            {websiteHref ? (
+              <a
+                href={websiteHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block rounded-xl transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+                aria-label={`Website — ${shop.shop_name}`}
+              >
+                {logoImg}
+              </a>
+            ) : (
+              logoImg
+            )}
+          </div>
+
+          <div className="max-w-2xl space-y-2 text-left pr-[4.75rem] sm:pr-28">
+            {shop.storefront_eligible !== false ? (
+              <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-white/15 backdrop-blur px-2.5 py-1 rounded-full border border-white/25">
+                ✓ {pc.storefrontBadge}
+              </span>
+            ) : null}
+            <h1 className="text-2xl sm:text-3xl font-black drop-shadow-lg leading-tight">{shop.shop_name}</h1>
+            {shop.tagline ? (
+              <p className="text-sm sm:text-base text-white/90 font-medium leading-snug">{shop.tagline}</p>
+            ) : null}
+            <p className="text-xs sm:text-sm text-white/80 font-medium">{translateCategory(shop.category, locale)}</p>
+            <p className="text-xs text-white/70 flex items-center gap-1">
+              <MapPin size={13} aria-hidden />
+              {shop.city}, {shop.region} — {shop.country}
+            </p>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-0.5">
+              <ShopRatingBadge
+                averageRating={shop.average_rating}
+                ratingCount={shop.rating_count}
+                size="sm"
+                tone="onDark"
               />
-              {phoneHref ? (
-                <a
-                  href={phoneHref}
-                  className="inline-flex items-center justify-center gap-2 mt-3 min-h-11 px-5 rounded-full bg-white/15 hover:bg-white/25 border border-white/30 text-white font-semibold text-sm backdrop-blur transition-colors"
-                >
-                  <Phone size={16} />
-                  Thirr {shop.phone}
-                </a>
-              ) : null}
-              <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                <ShopPwaInstall shopName={shop.shop_name} variant="hero" />
-              </div>
+              <span className="inline-flex items-center gap-1 text-xs text-white/80">
+                <Eye size={13} aria-hidden />
+                {(shop.views ?? 0).toLocaleString()} {t.views}
+              </span>
+            </div>
+            <div className="pt-2">
+              <ShopPwaInstall shopName={shop.shop_name} variant="hero" />
             </div>
           </div>
         </div>
@@ -346,12 +342,9 @@ export default function ShopDetailPage() {
           </section>
         ) : null}
 
-        <section className="rounded-2xl bg-white border border-gray-100 p-6 sm:p-8 shadow-sm">
-          <h2 className="text-lg font-bold text-gray-900 mb-3">{d.aboutTitle}</h2>
-          {shop.tagline?.trim() ? (
-            <p className="text-base font-semibold text-blue-800 mb-3">{shop.tagline}</p>
-          ) : null}
-          <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{shop.description}</p>
+        <section className="rounded-2xl bg-white border border-gray-100 p-4 sm:p-5 shadow-sm">
+          <h2 className="text-sm font-bold text-gray-900 mb-2">{d.aboutTitle}</h2>
+          <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">{shop.description}</p>
         </section>
 
         {shop.business_hours?.trim() ? (
@@ -363,6 +356,32 @@ export default function ShopDetailPage() {
 
         <ShopRatingsPanel shopId={shop.id} />
 
+        {phoneHref || shop.email?.trim() ? (
+          <section className="rounded-2xl bg-white border border-gray-100 p-4 sm:p-5 shadow-sm space-y-2">
+            <h2 className="text-sm font-bold text-gray-900">{d.socialContactTitle}</h2>
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
+              {phoneHref ? (
+                <a
+                  href={phoneHref}
+                  className="inline-flex items-center gap-2 min-h-10 px-4 rounded-xl border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-800 hover:bg-gray-100 transition-colors"
+                >
+                  <Phone size={16} className="text-blue-700 shrink-0" />
+                  {shop.phone}
+                </a>
+              ) : null}
+              {shop.email?.trim() ? (
+                <a
+                  href={`mailto:${shop.email.trim()}`}
+                  className="inline-flex items-center gap-2 min-h-10 px-4 rounded-xl border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-800 hover:bg-gray-100 transition-colors"
+                >
+                  <Mail size={16} className="text-blue-700 shrink-0" />
+                  {shop.email.trim()}
+                </a>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
+
         <ShopSocialLinks
           fields={{
             facebook: shop.facebook,
@@ -372,7 +391,7 @@ export default function ShopDetailPage() {
             website: shop.website,
           }}
           enriched={socialProfiles}
-          title={d.socialContactTitle}
+          title={phoneHref || shop.email?.trim() ? undefined : d.socialContactTitle}
         />
 
         <div className="flex justify-center sm:justify-start">
