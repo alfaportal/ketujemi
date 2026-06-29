@@ -277,14 +277,14 @@ export default function ShopDetailPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <SiteHeader />
-      <header className="relative text-white overflow-hidden">
+      <header className="relative text-white overflow-hidden min-h-[500px] sm:min-h-[600px]">
         <div
-          className="absolute inset-0 scale-105"
+          className="absolute inset-0 scale-105 bg-cover bg-center"
           style={{ background: heroBackground }}
           aria-hidden
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/45 to-black/25" aria-hidden />
-        <div className="relative w-full min-h-[7.5rem] sm:min-h-[8.5rem] pb-4 sm:pb-5">
+        <div className="relative w-full min-h-[500px] sm:min-h-[600px]">
           <div className="absolute top-0 right-0 z-20 p-2 sm:p-3">
             {websiteHref ? (
               <a
