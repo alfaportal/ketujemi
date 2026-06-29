@@ -270,7 +270,7 @@ export default function ShopDetailPage() {
     <img
       src={shop.logo_url}
       alt={shop.shop_name}
-      className="h-14 w-14 sm:h-[4.5rem] sm:w-[4.5rem] rounded-lg object-contain border border-white/60 shadow-md bg-white p-0.5"
+      className="h-16 w-16 sm:h-[5rem] sm:w-[5rem] rounded-xl object-contain border-2 border-white/70 shadow-lg bg-white p-1"
     />
   );
 
@@ -284,66 +284,64 @@ export default function ShopDetailPage() {
           aria-hidden
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/45 to-black/25" aria-hidden />
-        <div className="relative max-w-5xl mx-auto px-4 pt-3 pb-8 sm:pt-4 sm:pb-10">
-          <div className="flex items-start justify-between gap-3 sm:gap-4">
-            <div className="flex-1 min-w-0 space-y-1 text-left">
-              {shop.storefront_eligible !== false ? (
-                <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wide bg-white/20 backdrop-blur px-2 py-0.5 rounded-full border border-white/30 text-white">
-                  ✓ {pc.storefrontBadge}
-                </span>
-              ) : null}
-              <h1 className="text-xl sm:text-2xl font-black drop-shadow-md leading-tight text-white">{shop.shop_name}</h1>
-              {shop.tagline ? (
-                <p className="text-xs sm:text-sm text-white font-semibold leading-snug drop-shadow-sm">{shop.tagline}</p>
-              ) : null}
-              <p className="text-[11px] sm:text-xs text-white/90 font-medium">{translateCategory(shop.category, locale)}</p>
-              <p className="text-[10px] sm:text-[11px] text-white/85 flex items-center gap-1 font-medium">
-                <MapPin size={11} aria-hidden className="shrink-0" />
-                {shop.city}, {shop.region} — {shop.country}
-              </p>
-              <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                <ShopRatingBadge
-                  averageRating={shop.average_rating}
-                  ratingCount={shop.rating_count}
-                  size="sm"
-                  tone="onDark"
-                />
-                <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] text-white/90 font-medium">
-                  <Eye size={11} aria-hidden />
-                  {(shop.views ?? 0).toLocaleString()} {t.views}
-                </span>
-                {(shop.pwa_installs ?? 0) > 0 ? (
-                  <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] text-white/90 font-medium">
-                    📲 {(shop.pwa_installs ?? 0).toLocaleString()} PWA
-                  </span>
-                ) : null}
-              </div>
-              <div className="pt-1.5">
-                <ShopPwaInstall
-                  shopId={shop.id}
-                  shopName={shop.shop_name}
-                  variant="hero"
-                  onPwaInstallCount={(pwa_installs) =>
-                    setShop((prev) => (prev ? { ...prev, pwa_installs } : prev))
-                  }
-                />
-              </div>
-            </div>
+        <div className="relative w-full min-h-[7.5rem] sm:min-h-[8.5rem] pb-4 sm:pb-5">
+          <div className="absolute top-0 right-0 z-20 p-2 sm:p-3">
+            {websiteHref ? (
+              <a
+                href={websiteHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block rounded-xl transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+                aria-label={`Website — ${shop.shop_name}`}
+              >
+                {logoImg}
+              </a>
+            ) : (
+              logoImg
+            )}
+          </div>
 
-            <div className="shrink-0 pt-0">
-              {websiteHref ? (
-                <a
-                  href={websiteHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block rounded-lg transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
-                  aria-label={`Website — ${shop.shop_name}`}
-                >
-                  {logoImg}
-                </a>
-              ) : (
-                logoImg
-              )}
+          <div className="relative z-10 p-2 sm:p-3 pr-[4.75rem] sm:pr-[6rem] text-left space-y-0.5 max-w-3xl">
+            {shop.storefront_eligible !== false ? (
+              <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wide bg-white/20 backdrop-blur px-2 py-0.5 rounded-full border border-white/30 text-white">
+                ✓ {pc.storefrontBadge}
+              </span>
+            ) : null}
+            <h1 className="text-xl sm:text-2xl font-black drop-shadow-md leading-tight text-white">{shop.shop_name}</h1>
+            {shop.tagline ? (
+              <p className="text-xs sm:text-sm text-white font-semibold leading-snug drop-shadow-sm">{shop.tagline}</p>
+            ) : null}
+            <p className="text-[11px] sm:text-xs text-white/90 font-medium">{translateCategory(shop.category, locale)}</p>
+            <p className="text-[10px] sm:text-[11px] text-white/85 flex items-center gap-1 font-medium">
+              <MapPin size={11} aria-hidden className="shrink-0" />
+              {shop.city}, {shop.region} — {shop.country}
+            </p>
+            <div className="flex flex-wrap items-center gap-2 pt-0.5">
+              <ShopRatingBadge
+                averageRating={shop.average_rating}
+                ratingCount={shop.rating_count}
+                size="sm"
+                tone="onDark"
+              />
+              <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] text-white/90 font-medium">
+                <Eye size={11} aria-hidden />
+                {(shop.views ?? 0).toLocaleString()} {t.views}
+              </span>
+              {(shop.pwa_installs ?? 0) > 0 ? (
+                <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] text-white/90 font-medium">
+                  📲 {(shop.pwa_installs ?? 0).toLocaleString()} PWA
+                </span>
+              ) : null}
+            </div>
+            <div className="pt-1">
+              <ShopPwaInstall
+                shopId={shop.id}
+                shopName={shop.shop_name}
+                variant="hero"
+                onPwaInstallCount={(pwa_installs) =>
+                  setShop((prev) => (prev ? { ...prev, pwa_installs } : prev))
+                }
+              />
             </div>
           </div>
         </div>
