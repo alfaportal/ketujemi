@@ -32,6 +32,7 @@ import {
   resolveShopByIdOrSlug,
   shopPublicPath,
 } from "../lib/shop-slug.js";
+import { buildShopWebManifest } from "../lib/shop-web-manifest.js";
 import { isShopStorefrontEligible } from "../../../../lib/shop-storefront-policy.js";
 import { normalizeShopWhatsappStored } from "../lib/shop-whatsapp-url";
 import { parseDeletionSurveyBody } from "../lib/deletion-feedback.js";
@@ -987,6 +988,29 @@ router.post("/shops/:id/view", async (req, res) => {
     return;
   }
   res.json({ ok: true, views: result.views, counted: result.counted });
+});
+
+// ─── GET /shops/:idOrSlug/manifest.webmanifest (per-shop PWA) ─────────────────
+router.get("/shops/:idOrSlug/manifest.webmanifest", async (req, res) => {
+  const shop = await resolveShopByIdOrSlug(req.params.idOrSlug);
+  if (!shop || !isShopPubliclyVisible(shop)) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+
+  const proto = req.get("x-forwarded-proto")?.split(",")[0]?.trim() || req.protocol;
+  const host = req.get("x-forwarded-host")?.split(",")[0]?.trim() || req.get("host") || "ketujemi.com";
+  const origin = `${proto}://${host}`;
+
+  const manifest = buildShopWebManifest(shop, origin);
+  if (!manifest) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+
+  res.setHeader("Content-Type", "application/manifest+json; charset=utf-8");
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  res.json(manifest);
 });
 
 // ─── GET /shops/:id ───────────────────────────────────────────────────────────

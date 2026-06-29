@@ -296,6 +296,7 @@ export function ProfileShopDashboard() {
             slug={shop.slug}
             shopId={shop.id}
             publicPath={shop.public_path}
+            shopName={shop.shop_name}
           />
         ) : null}
 

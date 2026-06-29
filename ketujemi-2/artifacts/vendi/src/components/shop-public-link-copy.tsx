@@ -3,6 +3,7 @@ import { Check, Copy, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useShopPwaCopy } from "@/lib/shop-pwa-i18n";
 import {
   copyTextToClipboard,
   shopPublicAbsoluteUrl,
@@ -36,6 +37,7 @@ export function ShopPublicLinkCopy({
   variant = "bar",
 }: Props) {
   const { toast } = useToast();
+  const pwa = useShopPwaCopy();
   const [copied, setCopied] = useState(false);
 
   const path = useMemo(
@@ -110,6 +112,7 @@ export function ShopPublicLinkCopy({
     >
       <p className="text-xs font-semibold text-blue-900">Linku i webfaqes</p>
       <p className="text-xs text-blue-800 break-all font-mono leading-relaxed">{absoluteUrl}</p>
+      <p className="text-xs text-blue-800/90 leading-relaxed">{pwa.ownerHint}</p>
         <div className="flex flex-col sm:flex-row gap-2">
         <Button
           type="button"

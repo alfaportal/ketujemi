@@ -29,6 +29,8 @@ import { SHOP_STOREFRONT_MAX_TILES } from "@/lib/shop-storefront-policy";
 import type { ShopProductPublic } from "@/components/shop-product-card";
 import { useShopProductsCopy } from "@/lib/shop-products-i18n";
 import { recordShopView } from "@/lib/record-shop-view";
+import { applyShopPwaMeta } from "@/lib/shop-pwa";
+import { ShopPwaInstall } from "@/components/shop-pwa-install";
 
 type ShopData = {
   id: number;
@@ -187,6 +189,16 @@ export default function ShopDetailPage() {
     });
   }, [shop?.id, loading]);
 
+  useEffect(() => {
+    if (!shop || loading) return;
+    const slugKey = shop.slug?.trim() || String(shop.id);
+    return applyShopPwaMeta({
+      slugOrId: slugKey,
+      shopName: shop.shop_name,
+      logoUrl: shop.logo_url,
+    });
+  }, [shop?.id, shop?.slug, shop?.shop_name, shop?.logo_url, loading]);
+
   const filteredListings = useMemo(() => {
     if (!categoryFilter) return listings;
     return listings.filter((l) => l.category_id === categoryFilter);
@@ -301,6 +313,9 @@ export default function ShopDetailPage() {
                   Thirr {shop.phone}
                 </a>
               ) : null}
+              <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <ShopPwaInstall shopName={shop.shop_name} variant="hero" />
+              </div>
             </div>
           </div>
         </div>
@@ -359,6 +374,10 @@ export default function ShopDetailPage() {
           enriched={socialProfiles}
           title={d.socialContactTitle}
         />
+
+        <div className="flex justify-center sm:justify-start">
+          <ShopPwaInstall shopName={shop.shop_name} variant="bar" />
+        </div>
 
         <section className="rounded-2xl overflow-hidden border border-gray-100 bg-white shadow-sm">
           {mapEmbedSrc ? (
