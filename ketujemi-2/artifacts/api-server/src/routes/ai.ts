@@ -12,6 +12,11 @@ import { scanImageBase64ForProhibitedContent } from "../lib/listing-image-prohib
 import { suggestListingCategory } from "../lib/listing-category-suggest";
 import { getSimilarListingsForListing } from "../lib/listing-ai-recommendations";
 import { runSupportChat, supportChatFallbackReply, type ChatMessage } from "../lib/support-chatbot";
+import {
+  countSupportUserMessages,
+  MAX_SUPPORT_USER_QUESTIONS,
+  supportChatQuestionLimitReply,
+} from "../lib/support-chat-screening";
 import { isClaudeConfigured, parseUiLang } from "../lib/claude-client";
 import { isGoogleVisionConfigured } from "../lib/google-vision-client";
 import {
@@ -244,6 +249,15 @@ router.post("/ai/support-chat", aiSupportChatLimiter, async (req, res) => {
       (body as { site_locale?: string }).site_locale ??
       body.lang,
   );
+
+  if (countSupportUserMessages(valid) > MAX_SUPPORT_USER_QUESTIONS) {
+    res.json({
+      reply: supportChatQuestionLimitReply(lang),
+      ai_enabled: isClaudeConfigured(),
+    });
+    return;
+  }
+
   let reply: string;
   try {
     reply = await runSupportChat(valid, lang);

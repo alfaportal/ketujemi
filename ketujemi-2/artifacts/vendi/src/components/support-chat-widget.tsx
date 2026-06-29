@@ -18,6 +18,12 @@ import {
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
+const MAX_SUPPORT_USER_QUESTIONS = 3;
+
+function countUserMessages(messages: ChatMessage[]): number {
+  return messages.filter((m) => m.role === "user").length;
+}
+
 function isBrowseLinkContent(content: string): boolean {
   const t = content.trim();
   return /^\/[\w\-%./?=&+]*$/.test(t) || /^https?:\/\/\S+$/i.test(t);
@@ -137,6 +143,15 @@ export function SupportChatWidget() {
       const text = (textOverride ?? inputRef.current).trim();
       if (!text || busyRef.current) return;
 
+      if (countUserMessages(messagesRef.current) >= MAX_SUPPORT_USER_QUESTIONS) {
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "assistant" && last.content === copy.questionLimit) return prev;
+          return [...prev, { role: "assistant", content: copy.questionLimit }];
+        });
+        return;
+      }
+
       const next: ChatMessage[] = [
         ...messagesRef.current,
         { role: "user", content: text },
@@ -186,8 +201,14 @@ export function SupportChatWidget() {
         busyRef.current = false;
       }
     },
-    [copy.busy, uiLang, navigate],
+    [copy.busy, copy.questionLimit, uiLang, navigate],
   );
+
+  const userQuestionCount = useMemo(
+    () => countUserMessages(messages),
+    [messages],
+  );
+  const questionLimitReached = userQuestionCount >= MAX_SUPPORT_USER_QUESTIONS;
 
   const openBrowseLink = useCallback(
     (href: string) => {
@@ -359,16 +380,22 @@ export function SupportChatWidget() {
               key={uiLang}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={listening ? copy.listeningPh : copy.inputPh}
+              placeholder={
+                questionLimitReached
+                  ? copy.questionLimitPh
+                  : listening
+                    ? copy.listeningPh
+                    : copy.inputPh
+              }
               className="flex-1 min-w-0 w-0 min-h-10 sm:min-h-11 rounded-xl border border-gray-200 px-2.5 sm:px-3 text-sm"
-              disabled={busy || listening}
+              disabled={busy || listening || questionLimitReached}
               readOnly={listening}
             />
             {voiceAvailable ? (
               <button
                 type="button"
                 onClick={toggleVoiceInput}
-                disabled={busy}
+                disabled={busy || questionLimitReached}
                 data-testid="button-support-voice"
                 className={cn(
                   "flex-none shrink-0 min-h-10 min-w-10 sm:min-h-11 sm:min-w-11 rounded-xl text-white flex items-center justify-center disabled:opacity-50 transition-colors",
@@ -384,7 +411,7 @@ export function SupportChatWidget() {
             ) : null}
             <button
               type="submit"
-              disabled={busy || listening || !input.trim()}
+              disabled={busy || listening || questionLimitReached || !input.trim()}
               className="flex-none shrink-0 min-h-10 min-w-10 sm:min-h-11 sm:min-w-11 rounded-xl bg-[#1A56A0] text-white flex items-center justify-center disabled:opacity-50"
             >
               <Send className="h-4 w-4" />

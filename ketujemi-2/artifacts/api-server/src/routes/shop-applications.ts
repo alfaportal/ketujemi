@@ -47,11 +47,6 @@ import {
   getShopSocialProfilesForApi,
   scheduleShopSocialEnrich,
 } from "../lib/shop-social-enrich.js";
-import { parseUiLang } from "../lib/claude-client.js";
-import {
-  contentTranslationTarget,
-  translateUserTexts,
-} from "../lib/translate-user-content.js";
 
 const router = Router();
 
@@ -857,8 +852,7 @@ router.get("/shops/:id/ratings", async (req, res) => {
     if (mine) userRating = { rating: mine.rating, comment: mine.comment };
   }
 
-  const lang = parseUiLang(req.query.lang);
-  let reviews = reviewRows.map((r) => ({
+  const reviews = reviewRows.map((r) => ({
     id: r.id,
     rating: r.rating,
     comment: r.comment,
@@ -866,17 +860,6 @@ router.get("/shops/:id/ratings", async (req, res) => {
     author_name: r.business_name?.trim() || r.display_name?.trim() || null,
     is_mine: viewer?.id === r.user_id,
   }));
-
-  if (contentTranslationTarget(lang)) {
-    const translatedComments = await translateUserTexts(
-      reviews.map((r) => r.comment),
-      lang,
-    );
-    reviews = reviews.map((r, i) => ({
-      ...r,
-      comment: r.comment ? translatedComments[i] : null,
-    }));
-  }
 
   res.json({
     average_rating: summary?.rating_count ? Number(summary.average_rating) : null,
@@ -1106,47 +1089,15 @@ router.get("/shops/:id", async (req, res) => {
         .orderBy(asc(shopProductsTable.sort_order), desc(shopProductsTable.id))
     : [];
 
-  const lang = parseUiLang(req.query.lang);
-  let description = shop.description;
-  let address = shop.address;
-  let tagline = shop.tagline ?? null;
-  let translatedListings = listings;
-  let products = productRows.map(formatShopProductPublic);
-
-  if (contentTranslationTarget(lang)) {
-    const texts = [
-      shop.description,
-      shop.address,
-      tagline ?? "",
-      ...listings.map((l) => l.title),
-      ...products.map((p) => p.title),
-    ];
-    const translated = await translateUserTexts(texts, lang);
-    description = translated[0] ?? shop.description;
-    address = translated[1] ?? shop.address;
-    tagline = tagline ? (translated[2] ?? tagline) : null;
-    const listingOffset = 3;
-    translatedListings = listings.map((listing, i) => ({
-      ...listing,
-      title: translated[listingOffset + i] ?? listing.title,
-    }));
-    products = products.map((product, i) => ({
-      ...product,
-      title: translated[listingOffset + listings.length + i] ?? product.title,
-    }));
-  }
-
+  const products = productRows.map(formatShopProductPublic);
   const shopOut = shopPublicFields(shop, ratings);
-  shopOut.description = description;
-  shopOut.address = address;
-  shopOut.tagline = tagline;
 
   res.json({
     shop: shopOut,
     products,
     product_count: products.length,
-    listings: translatedListings,
-    active_count: translatedListings.length,
+    listings,
+    active_count: listings.length,
     subcategories,
     is_owner: viewer ? viewer.id === shop.user_id : false,
     social_profiles,

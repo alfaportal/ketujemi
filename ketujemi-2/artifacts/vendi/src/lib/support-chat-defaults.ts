@@ -17,6 +17,8 @@ export type SupportChatUiCopy = {
   voiceHttps: string;
   voiceMobile: string;
   voiceUnsupported: string;
+  questionLimit: string;
+  questionLimitPh: string;
 };
 
 const KS: SupportChatUiCopy = {
@@ -36,6 +38,9 @@ const KS: SupportChatUiCopy = {
   voiceHttps: "Për zërin (🎤) hapni faqen me HTTPS: https://ketujemi.com",
   voiceMobile: "Për funksionin e zërit përdor Chrome në desktop.",
   voiceUnsupported: "Ky shfletues nuk mbështet zërin. Përdorni Chrome ose Edge në desktop.",
+  questionLimit:
+    "Keni arritur limitin prej 3 pyetjesh. Për më shumë ndihmë: support@ketujemi.com ose +383 43 555 294.",
+  questionLimitPh: "Limiti i pyetjeve u arrit",
 };
 
 const MK: SupportChatUiCopy = {
@@ -197,5 +202,7 @@ export function mergeSupportChatCopy(
     voiceHttps: pick("voiceHttps", "ui_supportVoiceHttps"),
     voiceMobile: pick("voiceMobile", "ui_supportVoiceMobile"),
     voiceUnsupported: pick("voiceUnsupported", "ui_supportVoiceUnsupported"),
+    questionLimit: pick("questionLimit", "ui_supportQuestionLimit"),
+    questionLimitPh: pick("questionLimitPh", "ui_supportQuestionLimitPh"),
   };
 }

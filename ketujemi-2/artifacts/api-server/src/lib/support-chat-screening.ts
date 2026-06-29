@@ -14,6 +14,24 @@ export function invalidSupportQuestionReply(lang: UiLang): string {
   return INVALID_SUPPORT_REPLY[lang] ?? INVALID_SUPPORT_REPLY.sq;
 }
 
+export const MAX_SUPPORT_USER_QUESTIONS = 3;
+
+const QUESTION_LIMIT_REPLY: Record<UiLang, string> = {
+  sq: "Keni arritur limitin prej 3 pyetjesh në këtë bisedë. Për më shumë ndihmë, na shkruani në support@ketujemi.com ose telefononi +383 43 555 294.",
+  mk: "Достигнавте лимит од 3 прашања. За повеќе помош: support@ketujemi.com или +383 43 555 294.",
+  me: "Dostigli ste limit od 3 pitanja. Za više pomoći: support@ketujemi.com ili +383 43 555 294.",
+  en: "You have reached the limit of 3 questions in this chat. For more help: support@ketujemi.com or +383 43 555 294.",
+  fr: "Vous avez atteint la limite de 3 questions. Pour plus d'aide : support@ketujemi.com ou +383 43 555 294.",
+};
+
+export function supportChatQuestionLimitReply(lang: UiLang): string {
+  return QUESTION_LIMIT_REPLY[lang] ?? QUESTION_LIMIT_REPLY.sq;
+}
+
+export function countSupportUserMessages(messages: { role: string }[]): number {
+  return messages.filter((m) => m.role === "user").length;
+}
+
 /** Vulgar / abusive / violent phrasing (SQ/AL + EN). Word boundaries to limit false positives. */
 const ABUSIVE_PATTERNS: RegExp[] = [
   /\bqifsha\b/i,

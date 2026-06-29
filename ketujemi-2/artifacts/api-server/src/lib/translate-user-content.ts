@@ -10,9 +10,9 @@ const cache = new Map<string, string>();
 const MAX_CACHE_ENTRIES = 5000;
 const BATCH_SIZE = 15;
 
-/** Always attempt translation when Claude is available — prompt keeps text unchanged if already in target language. */
-export function contentTranslationTarget(_lang: UiLang): boolean {
-  return true;
+/** Translate user content into Albanian only — other UI languages show originals. */
+export function contentTranslationTarget(lang: UiLang): boolean {
+  return lang === "sq";
 }
 
 function cacheKey(lang: UiLang, text: string): string {

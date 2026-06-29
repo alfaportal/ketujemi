@@ -20,10 +20,13 @@ import {
 import { buildSupportBrowseLink } from "./support-chat-browse-link";
 import { KETUJEMI_PLATFORM_KNOWLEDGE } from "./support-platform-knowledge";
 import {
+  countSupportUserMessages,
   getLastUserMessage,
   invalidSupportQuestionReply,
   isSupportContactQuestion,
+  MAX_SUPPORT_USER_QUESTIONS,
   screenSupportUserMessage,
+  supportChatQuestionLimitReply,
   supportsEmailEscalation,
 } from "./support-chat-screening";
 
@@ -178,6 +181,10 @@ export async function runSupportChat(
 ): Promise<string> {
   const lastUser = getLastUserMessage(messages);
   const replyLang = resolveReplyLang(messages, siteLang);
+
+  if (countSupportUserMessages(messages) > MAX_SUPPORT_USER_QUESTIONS) {
+    return supportChatQuestionLimitReply(replyLang);
+  }
 
   if (screenSupportUserMessage(lastUser) === "invalid") {
     return invalidSupportQuestionReply(replyLang);
