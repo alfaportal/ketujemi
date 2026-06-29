@@ -11,6 +11,7 @@ import {
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
 import {
+  getShopInstallPrompt,
   isIosSafari,
   isShopPwaStandalone,
   listenForPwaInstallPrompt,
@@ -37,6 +38,8 @@ export function ShopPwaInstall({ shopName, className, variant = "hero" }: Props)
       setHidden(true);
       return;
     }
+    const existing = getShopInstallPrompt();
+    if (existing) setInstallEvent(existing);
     return listenForPwaInstallPrompt((event) => setInstallEvent(event));
   }, []);
 

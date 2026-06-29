@@ -2,8 +2,11 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import { AppErrorBoundary } from "@/components/app-error-boundary";
 import { bootstrapAppStability } from "@/lib/bootstrap-app-stability";
+import { bootShopPwaFromPath } from "@/lib/shop-pwa";
 import { setupPwaUpdates } from "@/lib/pwa-updates";
 import "./index.css";
+
+bootShopPwaFromPath();
 
 async function startApp(): Promise<void> {
   await bootstrapAppStability();

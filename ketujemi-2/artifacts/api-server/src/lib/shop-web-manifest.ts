@@ -51,14 +51,17 @@ export function buildShopWebManifest(
   const scopePath = startPath;
   const name = shop.shop_name.trim() || "Dyqan";
   const icon = absoluteIconUrl(origin, shop.logo_url);
+  const startUrl = `${origin}${startPath}`;
+  const scopeUrl = `${origin}${scopePath}`;
+  const appId = `${origin}${path.replace(/\/$/, "")}`;
 
   return {
-    id: `${origin}${path}`,
+    id: appId,
     name,
     short_name: shortAppName(name),
     description: (shop.description?.trim() || `${name} — webfaqe zyrtare në KetuJemi.`).slice(0, 240),
-    start_url: startPath,
-    scope: scopePath,
+    start_url: startUrl,
+    scope: scopeUrl,
     display: "standalone",
     orientation: "portrait-primary",
     theme_color: DEFAULT_THEME,

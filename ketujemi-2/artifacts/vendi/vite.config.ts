@@ -33,6 +33,18 @@ export default defineConfig(async ({ command }) => {
     },
   });
 
+  /** Per-shop PWA boot must run after vite-plugin-pwa injects the platform manifest link. */
+  const shopPwaBootLastPlugin = (): PluginOption => ({
+    name: "shop-pwa-boot-last",
+    transformIndexHtml(html) {
+      const cleaned = html.replace(/\s*<script src="\/shop-pwa-boot\.js"><\/script>\s*/i, "");
+      return cleaned.replace(
+        "</head>",
+        '    <script src="/shop-pwa-boot.js"></script>\n  </head>',
+      );
+    },
+  });
+
   const plugins: PluginOption[] = [
     react({
       // Radix / "use client" packages ship broken sourcemaps; avoid noisy build errors.
@@ -54,6 +66,7 @@ export default defineConfig(async ({ command }) => {
         "icons/pwa-512x512-maskable.png",
       ],
       manifest: {
+        id: "https://ketujemi.com/",
         name: "KetuJemi — Bli & Shit",
         short_name: "KetuJemi",
         description:
@@ -127,6 +140,7 @@ export default defineConfig(async ({ command }) => {
         enabled: false,
       },
     }),
+    shopPwaBootLastPlugin(),
   ];
 
   if (command === "serve") {
