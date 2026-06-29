@@ -21,6 +21,7 @@ import { useShopFormCopy } from "@/lib/shop-application-i18n";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
 import { ShopProductManager } from "@/components/shop-product-manager";
+import { ShopEditContentNotice } from "@/components/shop-edit-content-notice";
 import { useShopProductsCopy } from "@/lib/shop-products-i18n";
 import { shopSocialFieldsForSubmit, shopSocialSuffix } from "@/lib/shop-social-url-input";
 import { ShopPublicLinkCopy } from "@/components/shop-public-link-copy";
@@ -77,6 +78,7 @@ export function ProfileShopDashboard() {
   const [shopListings, setShopListings] = useState<ShopListing[]>([]);
   const [listingsLoading, setListingsLoading] = useState(false);
   const [editFormOpen, setEditFormOpen] = useState(false);
+  const [contentNoticeOpen, setContentNoticeOpen] = useState(false);
   const [editRequested, setEditRequested] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -161,8 +163,13 @@ export function ProfileShopDashboard() {
   }
 
   function onEditShopClick() {
+    setContentNoticeOpen(true);
+  }
+
+  function onContentNoticeContinue() {
+    setContentNoticeOpen(false);
     if (gate.isUnlocked) {
-      setEditFormOpen((open) => !open);
+      setEditFormOpen(true);
       return;
     }
     setEditRequested(true);
@@ -461,6 +468,8 @@ export function ProfileShopDashboard() {
       </div>
 
       {user ? <ProfileEditGateFlow user={user} gate={gate} /> : null}
+
+      {contentNoticeOpen ? <ShopEditContentNotice onContinue={onContentNoticeContinue} /> : null}
     </section>
   );
 }

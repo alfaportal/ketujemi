@@ -22,10 +22,16 @@ import {
   type ShopSocialField,
 } from "@/lib/shop-social-url-input";
 import { ShopAddressAutocomplete } from "@/components/shop-address-autocomplete";
+import { ShopMediaUploadField } from "@/components/shop-media-upload-field";
+import { useShopProductsCopy } from "@/lib/shop-products-i18n";
+import { cn } from "@/lib/utils";
 
 export type ShopEditFormValues = {
   shop_name: string;
   logo_url: string;
+  cover_image_url: string;
+  tagline: string;
+  business_hours: string;
   description: string;
   category: string;
   category_id: number | null;
@@ -73,6 +79,7 @@ type ShopEditFormProps = {
   onSubmit: (values: ShopEditFormValues) => Promise<void>;
   onCancel: () => void;
   saving?: boolean;
+  variant?: "owner" | "admin";
   showStatus?: boolean;
   showAdminNotes?: boolean;
   labels?: {
@@ -90,11 +97,14 @@ export function ShopEditForm({
   onSubmit,
   onCancel,
   saving = false,
+  variant = "admin",
   showStatus = false,
   showAdminNotes = false,
   labels,
 }: ShopEditFormProps) {
   const c = useShopFormCopy();
+  const pc = useShopProductsCopy();
+  const isOwner = variant === "owner";
   const { uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
   const [taxonomy, setTaxonomy] = useState<ShopDirectoryTaxonomyCategory[]>(staticShopDirectoryTaxonomy);
@@ -232,40 +242,9 @@ export function ShopEditForm({
   const saveLabel = labels?.save ?? c.submitBtn;
   const cancelLabel = labels?.cancel ?? c.aiCancelBtn;
 
-  return (
-    <form
-      noValidate
-      onSubmit={(e) => void handleSubmit(e)}
-      className="flex flex-col max-h-[75vh] min-h-0"
-    >
-      {submitError ? (
-        <p
-          ref={errorRef}
-          className="mb-3 text-sm text-red-700 rounded-lg border border-red-200 bg-red-50 px-3 py-2 shrink-0"
-          role="alert"
-        >
-          {submitError}
-        </p>
-      ) : null}
-
-      <div className="space-y-4 overflow-y-auto flex-1 min-h-0 pr-1">
+  const locationAndCategoryFields = (
+    <>
       <div className="grid sm:grid-cols-2 gap-3">
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label>{c.shopName}</Label>
-          <Input value={values.shop_name} onChange={(e) => setField("shop_name", e.target.value)} />
-        </div>
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label>{c.logo}</Label>
-          <Input value={values.logo_url} onChange={(e) => setField("logo_url", e.target.value)} />
-        </div>
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label>{c.description}</Label>
-          <Textarea
-            value={values.description}
-            onChange={(e) => setField("description", e.target.value)}
-            className="min-h-[100px]"
-          />
-        </div>
         <div className="space-y-1.5">
           <Label>{c.country}</Label>
           <Select value={values.country} onValueChange={(v) => setField("country", v)}>
@@ -335,10 +314,10 @@ export function ShopEditForm({
         </div>
       </div>
 
-      {taxonomyLoading ? (
+      {taxonomyLoading && !isOwner ? (
         <p className="text-xs text-gray-500">Duke sinkronizuar kategoritë me serverin…</p>
       ) : null}
-      {!taxonomyUsesApiIds ? (
+      {!taxonomyUsesApiIds && !isOwner ? (
         <p className="text-xs text-amber-800 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2">
           Kategoritë u ngarkuan nga lista lokale — serveri do t&apos;i sinkronizojë gjatë ruajtjes.
         </p>
@@ -347,95 +326,89 @@ export function ShopEditForm({
         <div className="space-y-1.5">
           <Label>{labels?.directoryCategory ?? c.directoryCategory} *</Label>
           <select
-                className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
-                value={
-                  taxonomyUsesApiIds
-                    ? (values.directory_category_id ?? "")
-                    : (values.directory_category_slug ?? "")
-                }
-                required={false}
-                onChange={(e) => {
-                  if (taxonomyUsesApiIds) {
-                    const directory_category_id = Number(e.target.value) || null;
-                    const cat = taxonomy.find((t) => t.id === directory_category_id);
-                    const firstSub = cat?.subcategories[0];
-                    setValues((prev) => ({
-                      ...prev,
-                      directory_category_id,
-                      directory_subcategory_id: firstSub?.id ?? null,
-                      directory_category_slug: cat?.slug ?? null,
-                      directory_subcategory_slug: firstSub?.slug ?? null,
-                    }));
-                    return;
-                  }
-                  const directory_category_slug = e.target.value || null;
-                  const cat = taxonomy.find((t) => t.slug === directory_category_slug);
-                  const firstSub = cat?.subcategories[0];
-                  setValues((prev) => ({
-                    ...prev,
-                    directory_category_id: null,
-                    directory_subcategory_id: null,
-                    directory_category_slug,
-                    directory_subcategory_slug: firstSub?.slug ?? null,
-                  }));
-                }}
-              >
-                {taxonomy.map((cat) => {
-                  const catDef = SHOP_DIRECTORY_CATEGORIES.find((c) => c.slug === cat.slug);
-                  const label = catDef
-                    ? translateDirectoryCategory(catDef, locale)
-                    : cat.name;
-                  return (
-                    <option
-                      key={cat.slug}
-                      value={taxonomyUsesApiIds ? cat.id : cat.slug}
-                    >
-                      {cat.emoji} {label}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>{labels?.directorySubcategory ?? c.directorySubcategory} *</Label>
-              <select
-                className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
-                value={
-                  taxonomyUsesApiIds
-                    ? (values.directory_subcategory_id ?? "")
-                    : (values.directory_subcategory_slug ?? "")
-                }
-                required={false}
-                onChange={(e) => {
-                  if (taxonomyUsesApiIds) {
-                    const directory_subcategory_id = Number(e.target.value) || null;
-                    const sub = subcategories.find((s) => s.id === directory_subcategory_id);
-                    setValues((prev) => ({
-                      ...prev,
-                      directory_subcategory_id,
-                      directory_subcategory_slug: sub?.slug ?? prev.directory_subcategory_slug,
-                    }));
-                    return;
-                  }
-                  setValues((prev) => ({
-                    ...prev,
-                    directory_subcategory_id: null,
-                    directory_subcategory_slug: e.target.value || null,
-                  }));
-                }}
-              >
-                {subcategories.map((sub) => (
-                  <option
-                    key={sub.slug}
-                    value={taxonomyUsesApiIds ? sub.id : sub.slug}
-                  >
-                    {translateDirectorySubcategory({ slug: sub.slug, nameSq: sub.name }, locale)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+            className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
+            value={
+              taxonomyUsesApiIds
+                ? (values.directory_category_id ?? "")
+                : (values.directory_category_slug ?? "")
+            }
+            onChange={(e) => {
+              if (taxonomyUsesApiIds) {
+                const directory_category_id = Number(e.target.value) || null;
+                const cat = taxonomy.find((t) => t.id === directory_category_id);
+                const firstSub = cat?.subcategories[0];
+                setValues((prev) => ({
+                  ...prev,
+                  directory_category_id,
+                  directory_subcategory_id: firstSub?.id ?? null,
+                  directory_category_slug: cat?.slug ?? null,
+                  directory_subcategory_slug: firstSub?.slug ?? null,
+                }));
+                return;
+              }
+              const directory_category_slug = e.target.value || null;
+              const cat = taxonomy.find((t) => t.slug === directory_category_slug);
+              const firstSub = cat?.subcategories[0];
+              setValues((prev) => ({
+                ...prev,
+                directory_category_id: null,
+                directory_subcategory_id: null,
+                directory_category_slug,
+                directory_subcategory_slug: firstSub?.slug ?? null,
+              }));
+            }}
+          >
+            {taxonomy.map((cat) => {
+              const catDef = SHOP_DIRECTORY_CATEGORIES.find((c) => c.slug === cat.slug);
+              const label = catDef ? translateDirectoryCategory(catDef, locale) : cat.name;
+              return (
+                <option key={cat.slug} value={taxonomyUsesApiIds ? cat.id : cat.slug}>
+                  {cat.emoji} {label}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <Label>{labels?.directorySubcategory ?? c.directorySubcategory} *</Label>
+          <select
+            className="w-full border rounded-lg px-3 py-2 text-sm min-h-10"
+            value={
+              taxonomyUsesApiIds
+                ? (values.directory_subcategory_id ?? "")
+                : (values.directory_subcategory_slug ?? "")
+            }
+            onChange={(e) => {
+              if (taxonomyUsesApiIds) {
+                const directory_subcategory_id = Number(e.target.value) || null;
+                const sub = subcategories.find((s) => s.id === directory_subcategory_id);
+                setValues((prev) => ({
+                  ...prev,
+                  directory_subcategory_id,
+                  directory_subcategory_slug: sub?.slug ?? prev.directory_subcategory_slug,
+                }));
+                return;
+              }
+              setValues((prev) => ({
+                ...prev,
+                directory_subcategory_id: null,
+                directory_subcategory_slug: e.target.value || null,
+              }));
+            }}
+          >
+            {subcategories.map((sub) => (
+              <option key={sub.slug} value={taxonomyUsesApiIds ? sub.id : sub.slug}>
+                {translateDirectorySubcategory({ slug: sub.slug, nameSq: sub.name }, locale)}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+    </>
+  );
 
+  const contactFields = (
+    <>
       <ShopSocialUrlFields
         values={{
           facebook: values.facebook,
@@ -447,7 +420,6 @@ export function ShopEditForm({
         }}
         onChange={(field: ShopSocialField, v) => setField(field, v)}
       />
-
       <div className="grid sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label>{c.contactName}</Label>
@@ -462,6 +434,126 @@ export function ShopEditForm({
           <Input type="email" value={values.email} onChange={(e) => setField("email", e.target.value)} />
         </div>
       </div>
+    </>
+  );
+
+  return (
+    <form
+      noValidate
+      onSubmit={(e) => void handleSubmit(e)}
+      className={cn("flex flex-col min-h-0", isOwner ? "max-h-[80vh]" : "max-h-[75vh]")}
+    >
+      {submitError ? (
+        <p
+          ref={errorRef}
+          className="mb-3 text-sm text-red-700 rounded-lg border border-red-200 bg-red-50 px-3 py-2 shrink-0"
+          role="alert"
+        >
+          {submitError}
+        </p>
+      ) : null}
+
+      <div className="space-y-4 overflow-y-auto flex-1 min-h-0 pr-1">
+      {isOwner ? (
+        <p className="text-xs text-blue-900 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+          {pc.moderationNotice}
+        </p>
+      ) : null}
+
+      {isOwner ? (
+        <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-4 space-y-4">
+          <p className="text-sm font-bold text-gray-900">{pc.storefrontEditSection}</p>
+          <div className="space-y-1.5">
+            <Label>{c.shopName}</Label>
+            <Input value={values.shop_name} onChange={(e) => setField("shop_name", e.target.value)} />
+          </div>
+          <ShopMediaUploadField
+            id="shop-edit-cover"
+            label={pc.coverImage}
+            value={values.cover_image_url}
+            onChange={(url) => setField("cover_image_url", url)}
+            uploadLabel={pc.uploadCover}
+            uploadingLabel={c.uploadingLogo}
+            uploadFailedMessage={c.logoUploadFailed}
+            aspect="wide"
+          />
+          <ShopMediaUploadField
+            id="shop-edit-logo"
+            label={c.logo}
+            value={values.logo_url}
+            onChange={(url) => setField("logo_url", url)}
+            uploadLabel={pc.uploadLogo}
+            uploadingLabel={c.uploadingLogo}
+            uploadFailedMessage={c.logoUploadFailed}
+          />
+          <div className="space-y-1.5">
+            <Label>{pc.tagline}</Label>
+            <Input
+              value={values.tagline}
+              onChange={(e) => setField("tagline", e.target.value)}
+              placeholder={pc.taglinePlaceholder}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>{pc.businessHours}</Label>
+            <Textarea
+              value={values.business_hours}
+              onChange={(e) => setField("business_hours", e.target.value)}
+              className="min-h-[88px]"
+              placeholder={pc.businessHoursPlaceholder}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>{c.description}</Label>
+            <Textarea
+              value={values.description}
+              onChange={(e) => setField("description", e.target.value)}
+              className="min-h-[120px]"
+              placeholder={pc.aboutPlaceholder}
+            />
+          </div>
+        </div>
+      ) : (
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label>{c.shopName}</Label>
+          <Input value={values.shop_name} onChange={(e) => setField("shop_name", e.target.value)} />
+        </div>
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label>{c.logo}</Label>
+          <Input value={values.logo_url} onChange={(e) => setField("logo_url", e.target.value)} />
+        </div>
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label>{c.description}</Label>
+          <Textarea
+            value={values.description}
+            onChange={(e) => setField("description", e.target.value)}
+            className="min-h-[100px]"
+          />
+        </div>
+      </div>
+      )}
+
+      {isOwner ? (
+        <details className="rounded-xl border border-gray-200 bg-white p-4 group">
+          <summary className="cursor-pointer text-sm font-semibold text-gray-800 list-none flex items-center justify-between">
+            {pc.locationCategorySection}
+            <span className="text-gray-400 text-xs group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div className="mt-4 space-y-4">{locationAndCategoryFields}</div>
+        </details>
+      ) : (
+        locationAndCategoryFields
+      )}
+
+      {isOwner ? (
+        <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+          <p className="text-sm font-bold text-gray-900">{pc.contactSection}</p>
+          {contactFields}
+        </div>
+      ) : (
+        contactFields
+      )}
 
       {showStatus ? (
         <div className="space-y-1.5">
@@ -507,11 +599,16 @@ export function ShopEditForm({
 export function adminRowToFormValues(row: {
   shop_name: string;
   logo_url: string;
+  cover_image_url?: string | null;
+  tagline?: string | null;
+  business_hours?: string | null;
   description: string;
   category: string;
   category_id: number | null;
   directory_category_id: number | null;
   directory_subcategory_id: number | null;
+  directory_category_slug?: string | null;
+  directory_subcategory_slug?: string | null;
   country: string;
   city: string;
   region: string;
@@ -523,6 +620,7 @@ export function adminRowToFormValues(row: {
   tiktok: string | null;
   whatsapp: string | null;
   website: string | null;
+  youtube?: string | null;
   contact_name: string;
   phone: string;
   email: string;
@@ -532,6 +630,9 @@ export function adminRowToFormValues(row: {
   return {
     shop_name: row.shop_name,
     logo_url: row.logo_url,
+    cover_image_url: row.cover_image_url?.trim() ?? "",
+    tagline: row.tagline?.trim() ?? "",
+    business_hours: row.business_hours?.trim() ?? "",
     description: row.description,
     category: row.category,
     category_id: row.category_id,
@@ -550,6 +651,7 @@ export function adminRowToFormValues(row: {
     tiktok: shopSocialSuffix(row.tiktok, "tiktok"),
     whatsapp: shopSocialSuffix(row.whatsapp, "whatsapp"),
     website: shopSocialSuffix(row.website, "website"),
+    youtube: shopSocialSuffix(row.youtube ?? null, "youtube"),
     contact_name: row.contact_name,
     phone: row.phone,
     email: row.email,

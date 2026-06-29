@@ -42,6 +42,8 @@ export const shopsTable = pgTable("shops", {
   slug: text("slug"),
   cover_image_url: text("cover_image_url"),
   tagline: text("tagline"),
+  /** Free-text working hours / services offered (owner-editable storefront copy). */
+  business_hours: text("business_hours"),
   created_at: timestamp("created_at").notNull().defaultNow(),
   deleted_at: timestamp("deleted_at"),
 });

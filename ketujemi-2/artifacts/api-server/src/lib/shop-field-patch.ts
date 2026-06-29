@@ -66,6 +66,7 @@ export function buildShopFieldPatch(body: Record<string, unknown>): Partial<Shop
   if ("admin_notes" in body) patch.admin_notes = trimOrNull(body.admin_notes);
   if ("cover_image_url" in body) patch.cover_image_url = trimOrNull(body.cover_image_url);
   if ("tagline" in body) patch.tagline = trimOrNull(body.tagline);
+  if ("business_hours" in body) patch.business_hours = trimOrNull(body.business_hours);
 
   return patch;
 }

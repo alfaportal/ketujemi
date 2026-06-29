@@ -30,6 +30,23 @@ export type ShopProductsCopy = {
   coverImage: string;
   tagline: string;
   selectCategory: string;
+  moderationNotice: string;
+  storefrontEditSection: string;
+  uploadCover: string;
+  uploadLogo: string;
+  businessHours: string;
+  businessHoursPlaceholder: string;
+  taglinePlaceholder: string;
+  aboutPlaceholder: string;
+  locationCategorySection: string;
+  contactSection: string;
+  editTabWebsite: string;
+  editTabProducts: string;
+  contentNoticeTitle: string;
+  contentNoticeMessage: string;
+  contentNoticeWait: string;
+  contentNoticeReady: string;
+  contentNoticeContinue: string;
 };
 
 const KS: ShopProductsCopy = {
@@ -58,9 +75,40 @@ const KS: ShopProductsCopy = {
   orderProduct: "Porosit",
   viewOnMarketplace: "Shiko në Blej & Shite",
   storefrontBadge: "Webfaqe zyrtare KetuJemi",
-  coverImage: "Foto cover (URL)",
+  coverImage: "Foto prapavije (cover)",
   tagline: "Slogan i shkurtër (opsional)",
   selectCategory: "Zgjidhni kategorinë",
+  moderationNotice:
+    "Mos postoni sende të ndaluara — përshkrimi më poshtë është vetëm kujtesë; kontrolli bëhet me rregulla fikse, jo me AI.",
+  storefrontEditSection: "Pamja e webfaqes suaj",
+  uploadCover: "Ngarko foto prapavije",
+  uploadLogo: "Ngarko logo",
+  businessHours: "Orari & shërbimet",
+  businessHoursPlaceholder: "P.sh. Hënë–Shtunë 08:00–22:00 · Ofrojmë POS, menaxhim stafi, etj.",
+  taglinePlaceholder: "P.sh. Menaxhimi modern për restorante",
+  aboutPlaceholder: "Përshkruani biznesin tuaj — çfarë ofroni, pse ju zgjedhin klientët…",
+  locationCategorySection: "Lokacioni & kategoria",
+  contactSection: "Kontakti & rrjetet sociale",
+  editTabWebsite: "Webfaqja",
+  editTabProducts: "Produktet",
+  contentNoticeTitle: "Rregullat e webfaqes së dyqanit",
+  contentNoticeMessage: `Personalizoni lirisht webfaqen tuaj — foto, tekst, produkte dhe orarin.
+
+Nuk lejohet të postoni:
+• Armë, municione dhe mjete të rrezikshme
+• Drogë dhe substanca narkotike
+• Alkool dhe pije alkoolike
+• Duhan, cigare, vape dhe nikotinë
+• Kriptomonedha, kazino dhe baste
+• Skema piramidale / MLM
+• Përmbajtje erotike ose shërbime escort
+• Produkte të falsifikuara / replika
+• Spam, mashtrim, fyërje ose materiale të paligjshme
+
+Materialet e ndaluara refuzohen automatikisht. Ekipi i KetuJemi mund të heqë dyqane që shkelin rregullat.`,
+  contentNoticeWait: "Ju lutem lexoni rregullat — {seconds} sekonda",
+  contentNoticeReady: "Mund të vazhdoni me editimin e dyqanit.",
+  contentNoticeContinue: "Kuptova, vazhdo",
 };
 
 const EN: ShopProductsCopy = {
@@ -89,9 +137,40 @@ const EN: ShopProductsCopy = {
   orderProduct: "Order",
   viewOnMarketplace: "View on Buy & Sell",
   storefrontBadge: "Official KetuJemi storefront",
-  coverImage: "Cover photo (URL)",
+  coverImage: "Cover photo",
   tagline: "Short tagline (optional)",
   selectCategory: "Select category",
+  moderationNotice:
+    "Do not post prohibited items — fixed rules apply, not AI scanning.",
+  storefrontEditSection: "Your storefront look",
+  uploadCover: "Upload cover photo",
+  uploadLogo: "Upload logo",
+  businessHours: "Hours & services",
+  businessHoursPlaceholder: "E.g. Mon–Sat 08:00–22:00 · We offer POS, staff management, etc.",
+  taglinePlaceholder: "E.g. Modern management for restaurants",
+  aboutPlaceholder: "Describe your business — what you offer and why customers choose you…",
+  locationCategorySection: "Location & category",
+  contactSection: "Contact & social links",
+  editTabWebsite: "Website",
+  editTabProducts: "Products",
+  contentNoticeTitle: "Shop storefront rules",
+  contentNoticeMessage: `Customize your storefront freely — photos, text, products, and hours.
+
+Not allowed:
+• Weapons, ammunition, and dangerous items
+• Drugs and narcotics
+• Alcohol and alcoholic beverages
+• Tobacco, cigarettes, vape, and nicotine
+• Cryptocurrency, casino, and betting
+• Pyramid schemes / MLM
+• Erotic content or escort services
+• Counterfeit / replica products
+• Spam, fraud, abuse, or illegal material
+
+Prohibited content is rejected automatically. KetuJemi may remove shops that break the rules.`,
+  contentNoticeWait: "Please read the rules — {seconds} seconds",
+  contentNoticeReady: "You can continue editing your shop.",
+  contentNoticeContinue: "Got it, continue",
 };
 
 const BY_LOCALE: Partial<Record<UiTranslationLocale, ShopProductsCopy>> = {

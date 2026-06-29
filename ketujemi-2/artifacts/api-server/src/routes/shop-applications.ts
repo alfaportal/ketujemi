@@ -24,6 +24,7 @@ import { formatListingsBatch } from "../lib/format-listings-batch";
 import { resolveDirectoryFields, resolveDirectoryFieldsWithEnsure } from "../lib/shop-directory-patch";
 import { validateShopStorefrontDirectorySlugs } from "../lib/admin-shop-directory.js";
 import { ownerShopFieldPatch, parseLatitude, parseLongitude } from "../lib/shop-field-patch";
+import { assertShopTextContentAllowed } from "../lib/shop-content-moderation.js";
 import { refreshShopProductListingsAfterShopUpdate } from "../lib/shop-product-listing-sync.js";
 import {
   ensureShopSlug,
@@ -313,6 +314,7 @@ function shopPublicFields(shop: typeof shopsTable.$inferSelect, ratings?: Rating
     logo_url: shop.logo_url,
     cover_image_url: shop.cover_image_url ?? null,
     tagline: shop.tagline ?? null,
+    business_hours: shop.business_hours ?? null,
     description: shop.description,
     category: shop.category,
     category_id: shop.category_id,
@@ -697,6 +699,22 @@ router.patch("/shops/:id", async (req, res) => {
 
   if (!Object.keys(patch).length) {
     res.status(400).json({ error: "VALIDATION", message: "Nuk ka fusha për përditësim." });
+    return;
+  }
+
+  try {
+    assertShopTextContentAllowed({
+      shop_name: patch.shop_name ?? shop.shop_name,
+      description: patch.description ?? shop.description,
+      tagline: "tagline" in patch ? patch.tagline : shop.tagline,
+      business_hours: "business_hours" in patch ? patch.business_hours : shop.business_hours,
+    });
+  } catch (err) {
+    const message =
+      err instanceof Error && "publicMessage" in err && typeof (err as Error & { publicMessage?: string }).publicMessage === "string"
+        ? (err as Error & { publicMessage: string }).publicMessage
+        : "Përmbajtja nuk lejohet.";
+    res.status(400).json({ error: "PROHIBITED_CONTENT", message });
     return;
   }
 

@@ -19,6 +19,7 @@ import {
   validateShopProductCategoryId,
 } from "../lib/shop-product-listing-sync.js";
 import { resolveShopByIdOrSlug } from "../lib/shop-slug.js";
+import { assertShopProductTextAllowed } from "../lib/shop-content-moderation.js";
 
 const router = Router();
 
@@ -206,6 +207,17 @@ router.post("/shops/me/products", async (req, res) => {
     return;
   }
 
+  try {
+    assertShopProductTextAllowed(data.title as string, data.description as string);
+  } catch (err) {
+    const message =
+      err instanceof Error && "publicMessage" in err && typeof (err as Error & { publicMessage?: string }).publicMessage === "string"
+        ? (err as Error & { publicMessage: string }).publicMessage
+        : "Përmbajtja nuk lejohet.";
+    res.status(400).json({ error: "PROHIBITED_CONTENT", message });
+    return;
+  }
+
   const now = new Date();
   const [product] = await db
     .insert(shopProductsTable)
@@ -297,6 +309,19 @@ router.patch("/shops/me/products/:productId", async (req, res) => {
       });
       return;
     }
+  }
+
+  const nextTitle = (data.title as string | undefined) ?? existing.title;
+  const nextDescription = (data.description as string | undefined) ?? existing.description;
+  try {
+    assertShopProductTextAllowed(nextTitle, nextDescription);
+  } catch (err) {
+    const message =
+      err instanceof Error && "publicMessage" in err && typeof (err as Error & { publicMessage?: string }).publicMessage === "string"
+        ? (err as Error & { publicMessage: string }).publicMessage
+        : "Përmbajtja nuk lejohet.";
+    res.status(400).json({ error: "PROHIBITED_CONTENT", message });
+    return;
   }
 
   const patch: Partial<typeof shopProductsTable.$inferInsert> = {

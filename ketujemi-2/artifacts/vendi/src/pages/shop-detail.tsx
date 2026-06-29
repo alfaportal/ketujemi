@@ -60,6 +60,8 @@ import { ShopSocialIconBar } from "@/components/shop-social-icon-bar";
 import { shopPhoneHref } from "@/lib/shop-social-url-input";
 import type { ShopSocialProfileData } from "@/components/shop-social-profiles";
 import { ShopProductCard, type ShopProductPublic } from "@/components/shop-product-card";
+import { ShopProductManager } from "@/components/shop-product-manager";
+import { ShopEditContentNotice } from "@/components/shop-edit-content-notice";
 import { useShopProductsCopy } from "@/lib/shop-products-i18n";
 import { recordShopView } from "@/lib/record-shop-view";
 
@@ -71,11 +73,14 @@ type ShopData = {
   logo_url: string;
   cover_image_url?: string | null;
   tagline?: string | null;
+  business_hours?: string | null;
   description: string;
   category: string;
   category_id?: number | null;
   directory_category_id?: number | null;
   directory_subcategory_id?: number | null;
+  directory_category_slug?: string | null;
+  directory_subcategory_slug?: string | null;
   country: string;
   city: string;
   region: string;
@@ -122,6 +127,8 @@ export default function ShopDetailPage() {
   const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [contentNoticeOpen, setContentNoticeOpen] = useState(false);
+  const [editTab, setEditTab] = useState<"site" | "products">("site");
   const [editRequested, setEditRequested] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
   const [deleteShopOpen, setDeleteShopOpen] = useState(false);
@@ -236,6 +243,12 @@ export default function ShopDetailPage() {
   }, [editRequested, gate.isUnlocked]);
 
   function onEditShopClick() {
+    setEditTab("site");
+    setContentNoticeOpen(true);
+  }
+
+  function onContentNoticeContinue() {
+    setContentNoticeOpen(false);
     if (gate.isUnlocked) {
       setEditOpen(true);
       return;
@@ -260,11 +273,16 @@ export default function ShopDetailPage() {
           profile_change_token: gate.changeToken,
           shop_name: values.shop_name,
           logo_url: values.logo_url,
+          cover_image_url: values.cover_image_url.trim() || null,
+          tagline: values.tagline.trim() || null,
+          business_hours: values.business_hours.trim() || null,
           description: values.description,
           category: values.category,
           category_id: values.category_id,
           directory_category_id: values.directory_category_id,
           directory_subcategory_id: values.directory_subcategory_id,
+          directory_category_slug: values.directory_category_slug,
+          directory_subcategory_slug: values.directory_subcategory_slug,
           country: values.country,
           city: values.city,
           region: values.region,
@@ -279,24 +297,30 @@ export default function ShopDetailPage() {
           tiktok: values.tiktok,
           whatsapp: values.whatsapp,
           website: values.website,
+          youtube: values.youtube,
         }),
       });
-      if (!res.ok) throw new Error("fail");
-      const payload = (await res.json()) as {
-        shop: ShopData;
+      const payload = (await res.json().catch(() => ({}))) as {
+        shop?: ShopData;
         social_profiles?: Partial<Record<"instagram" | "tiktok", ShopSocialProfileData>>;
+        message?: string;
       };
-      if (payload.shop) {
+      if (!res.ok) {
+        throw new Error(payload.message ?? d.shopSaveError);
+      }
+      const savedShop = payload.shop;
+      if (savedShop) {
         setShop((prev) =>
           prev
             ? {
                 ...prev,
-                ...payload.shop,
-                facebook: payload.shop.facebook ?? null,
-                instagram: payload.shop.instagram ?? null,
-                tiktok: payload.shop.tiktok ?? null,
-                whatsapp: payload.shop.whatsapp ?? null,
-                website: payload.shop.website ?? null,
+                ...savedShop,
+                facebook: savedShop.facebook ?? null,
+                instagram: savedShop.instagram ?? null,
+                tiktok: savedShop.tiktok ?? null,
+                whatsapp: savedShop.whatsapp ?? null,
+                website: savedShop.website ?? null,
+                youtube: savedShop.youtube ?? null,
               }
             : prev,
         );
@@ -306,8 +330,11 @@ export default function ShopDetailPage() {
       }
       toast({ title: d.shopSaved });
       setEditOpen(false);
-    } catch {
-      toast({ title: d.shopSaveError, variant: "destructive" });
+    } catch (err) {
+      toast({
+        title: err instanceof Error ? err.message : d.shopSaveError,
+        variant: "destructive",
+      });
     } finally {
       setEditSaving(false);
     }
@@ -459,8 +486,18 @@ export default function ShopDetailPage() {
 
         <section className="rounded-2xl bg-white border border-gray-100 p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900 mb-3">{d.aboutTitle}</h2>
+          {shop.tagline?.trim() ? (
+            <p className="text-base font-semibold text-blue-800 mb-3">{shop.tagline}</p>
+          ) : null}
           <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{shop.description}</p>
         </section>
+
+        {shop.business_hours?.trim() ? (
+          <section className="rounded-2xl bg-white border border-gray-100 p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-900 mb-3">{pc.businessHours}</h2>
+            <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{shop.business_hours}</p>
+          </section>
+        ) : null}
 
         {shop.storefront_eligible !== false ? (
           <section>
@@ -654,6 +691,8 @@ export default function ShopDetailPage() {
 
       {isOwner && user ? <ProfileEditGateFlow user={user} gate={gate} /> : null}
 
+      {contentNoticeOpen ? <ShopEditContentNotice onContinue={onContentNoticeContinue} /> : null}
+
       {isOwner && user && shop ? (
         <DeletionExitSurveyModal
           open={deleteShopOpen}
@@ -666,13 +705,49 @@ export default function ShopDetailPage() {
         />
       ) : null}
 
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
+      <Dialog
+        open={editOpen}
+        onOpenChange={(open) => {
+          setEditOpen(open);
+          if (!open) setEditTab("site");
+        }}
+      >
+        <DialogContent className="max-w-3xl max-h-[92vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>{d.editShop}</DialogTitle>
           </DialogHeader>
-          {shop ? (
+          {shop && shop.storefront_eligible !== false ? (
+            <div className="flex gap-2 border-b border-gray-100 pb-2 shrink-0">
+              <Button
+                type="button"
+                variant={editTab === "site" ? "default" : "outline"}
+                className="min-h-9"
+                onClick={() => setEditTab("site")}
+              >
+                {pc.editTabWebsite}
+              </Button>
+              <Button
+                type="button"
+                variant={editTab === "products" ? "default" : "outline"}
+                className="min-h-9"
+                onClick={() => setEditTab("products")}
+              >
+                {pc.editTabProducts}
+              </Button>
+            </div>
+          ) : null}
+          {shop && editTab === "products" && shop.storefront_eligible !== false ? (
+            <div className="overflow-y-auto flex-1 min-h-0 pr-1 py-2">
+              <ShopProductManager
+                changeToken={gate.changeToken}
+                storefrontEligible
+                onProductsChange={loadShop}
+              />
+            </div>
+          ) : null}
+          {shop && editTab === "site" ? (
             <ShopEditForm
+              variant="owner"
               initial={adminRowToFormValues({
                 ...shop,
                 category_id: shop.category_id ?? null,
@@ -686,6 +761,7 @@ export default function ShopDetailPage() {
                 tiktok: shop.tiktok ?? null,
                 whatsapp: shop.whatsapp ?? null,
                 website: shop.website ?? null,
+                youtube: shop.youtube ?? null,
                 status: "approved",
               })}
               onSubmit={onSaveShopEdit}
