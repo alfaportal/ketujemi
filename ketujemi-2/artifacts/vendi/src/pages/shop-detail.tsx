@@ -1,36 +1,11 @@
-import { useRoute, Link, useLocation } from "wouter";
+import { useRoute, Link } from "wouter";
 import { useEffect, useMemo, useState } from "react";
-import { useAuth } from "@/lib/auth-context";
-import { useProfileEditGate } from "@/hooks/use-profile-edit-gate";
-import { ProfileEditGateFlow } from "@/components/profile-edit-gate-flow";
-import { DeletionExitSurveyModal } from "@/components/deletion-exit-survey-modal";
-import { Loader2, MapPin, Settings, Eye, Phone } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  useDeleteListing,
-  getGetListingsQueryKey,
-  getGetRecentListingsQueryKey,
-  getGetFeaturedListingsQueryKey,
-} from "@workspace/api-client-react";
+import { Loader2, MapPin, Eye, Phone } from "lucide-react";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
-import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
 import { SiteHeader } from "@/components/site-header";
 import { ShopRatingBadge } from "@/components/shop-rating-badge";
 import { ShopRatingsPanel } from "@/components/shop-ratings-panel";
 import ListingCard from "@/components/listing-card";
-import { ListingShareButtons, listingPublicUrl } from "@/components/listing-share-buttons";
 import { BRAND_BLUE, BRAND_ORANGE } from "@/lib/brand-colors";
 import { applyPageMeta, truncateMetaDescription } from "@/lib/page-meta";
 import { translateCategory } from "@/lib/category-translations";
@@ -44,17 +19,6 @@ import {
 } from "@/lib/google-maps-embed";
 import { shopDetailSeoTitle, useShopDetailCopy } from "@/lib/shop-detail-i18n";
 import { cn } from "@/lib/utils";
-import {
-  ShopEditForm,
-  adminRowToFormValues,
-  type ShopEditFormValues,
-} from "@/components/shop-edit-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { ShopSocialLinks } from "@/components/shop-social-links";
 import { ShopSocialIconBar } from "@/components/shop-social-icon-bar";
 import { shopPhoneHref } from "@/lib/shop-social-url-input";
@@ -63,8 +27,6 @@ import { ShopProductTile } from "@/components/shop-product-tile";
 import { ShopProductDetailDialog } from "@/components/shop-product-detail-dialog";
 import { SHOP_STOREFRONT_MAX_TILES } from "@/lib/shop-storefront-policy";
 import type { ShopProductPublic } from "@/components/shop-product-card";
-import { ShopProductManager } from "@/components/shop-product-manager";
-import { ShopEditContentNotice } from "@/components/shop-edit-content-notice";
 import { useShopProductsCopy } from "@/lib/shop-products-i18n";
 import { recordShopView } from "@/lib/record-shop-view";
 
@@ -120,7 +82,6 @@ export default function ShopDetailPage() {
   const locale = translationKeyForUiLang(uiLang);
   const d = useShopDetailCopy();
   const pc = useShopProductsCopy();
-  const { user, refresh } = useAuth();
   const [loading, setLoading] = useState(true);
   const [shop, setShop] = useState<ShopData | null>(null);
   const [products, setProducts] = useState<ShopProductPublic[]>([]);
@@ -128,23 +89,12 @@ export default function ShopDetailPage() {
   const [subcategories, setSubcategories] = useState<SubcategoryFilter[]>([]);
   const [activeCount, setActiveCount] = useState(0);
   const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
-  const [isOwner, setIsOwner] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [contentNoticeOpen, setContentNoticeOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<ShopProductPublic | null>(null);
   const [productDetailOpen, setProductDetailOpen] = useState(false);
-  const [editTab, setEditTab] = useState<"site" | "products">("site");
-  const [editRequested, setEditRequested] = useState(false);
-  const [editSaving, setEditSaving] = useState(false);
-  const [deleteShopOpen, setDeleteShopOpen] = useState(false);
   const [socialProfiles, setSocialProfiles] = useState<
     Partial<Record<"instagram" | "tiktok", ShopSocialProfileData>>
   >({});
   const [mapEmbedSrc, setMapEmbedSrc] = useState("");
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const gate = useProfileEditGate(user, refresh);
 
   useEffect(() => {
     if (!shop) {
@@ -195,7 +145,6 @@ export default function ShopDetailPage() {
           listings: ListingRow[];
           active_count?: number;
           subcategories?: SubcategoryFilter[];
-          is_owner?: boolean;
           social_profiles?: Partial<Record<"instagram" | "tiktok", ShopSocialProfileData>>;
         }>;
       })
@@ -205,7 +154,6 @@ export default function ShopDetailPage() {
         setListings(data.listings);
         setActiveCount(data.active_count ?? data.listings.length);
         setSubcategories(data.subcategories ?? []);
-        setIsOwner(!!data.is_owner);
         setSocialProfiles(data.social_profiles ?? {});
         setCategoryFilter(null);
         const categoryLabel = translateCategory(data.shop.category, locale);
@@ -224,7 +172,6 @@ export default function ShopDetailPage() {
         setListings([]);
         setSubcategories([]);
         setActiveCount(0);
-        setIsOwner(false);
       })
       .finally(() => setLoading(false));
   }
@@ -239,126 +186,6 @@ export default function ShopDetailPage() {
       setShop((prev) => (prev ? { ...prev, views } : prev));
     });
   }, [shop?.id, loading]);
-
-  useEffect(() => {
-    if (editRequested && gate.isUnlocked) {
-      setEditOpen(true);
-      setEditRequested(false);
-    }
-  }, [editRequested, gate.isUnlocked]);
-
-  function onEditShopClick() {
-    setEditTab("site");
-    setContentNoticeOpen(true);
-  }
-
-  function onContentNoticeContinue() {
-    setContentNoticeOpen(false);
-    if (gate.isUnlocked) {
-      setEditOpen(true);
-      return;
-    }
-    setEditRequested(true);
-    gate.startGate();
-  }
-
-  function onDeleteShopClick() {
-    setDeleteShopOpen(true);
-  }
-
-  async function onSaveShopEdit(values: ShopEditFormValues) {
-    if (!shop || !gate.changeToken) return;
-    setEditSaving(true);
-    try {
-      const res = await fetchWithTimeout(`/api/shops/${shop.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          profile_change_token: gate.changeToken,
-          shop_name: values.shop_name,
-          logo_url: values.logo_url,
-          cover_image_url: values.cover_image_url.trim() || null,
-          tagline: values.tagline.trim() || null,
-          business_hours: values.business_hours.trim() || null,
-          description: values.description,
-          category: values.category,
-          category_id: values.category_id,
-          directory_category_id: values.directory_category_id,
-          directory_subcategory_id: values.directory_subcategory_id,
-          directory_category_slug: values.directory_category_slug,
-          directory_subcategory_slug: values.directory_subcategory_slug,
-          country: values.country,
-          city: values.city,
-          region: values.region,
-          address: values.address,
-          latitude: values.latitude,
-          longitude: values.longitude,
-          contact_name: values.contact_name,
-          phone: values.phone,
-          email: values.email,
-          facebook: values.facebook,
-          instagram: values.instagram,
-          tiktok: values.tiktok,
-          whatsapp: values.whatsapp,
-          website: values.website,
-          youtube: values.youtube,
-        }),
-      });
-      const payload = (await res.json().catch(() => ({}))) as {
-        shop?: ShopData;
-        social_profiles?: Partial<Record<"instagram" | "tiktok", ShopSocialProfileData>>;
-        message?: string;
-      };
-      if (!res.ok) {
-        throw new Error(payload.message ?? d.shopSaveError);
-      }
-      const savedShop = payload.shop;
-      if (savedShop) {
-        setShop((prev) =>
-          prev
-            ? {
-                ...prev,
-                ...savedShop,
-                facebook: savedShop.facebook ?? null,
-                instagram: savedShop.instagram ?? null,
-                tiktok: savedShop.tiktok ?? null,
-                whatsapp: savedShop.whatsapp ?? null,
-                website: savedShop.website ?? null,
-                youtube: savedShop.youtube ?? null,
-              }
-            : prev,
-        );
-      }
-      if (payload.social_profiles) {
-        setSocialProfiles(payload.social_profiles);
-      }
-      toast({ title: d.shopSaved });
-      setEditOpen(false);
-    } catch (err) {
-      toast({
-        title: err instanceof Error ? err.message : d.shopSaveError,
-        variant: "destructive",
-      });
-    } finally {
-      setEditSaving(false);
-    }
-  }
-
-  const deleteMutation = useDeleteListing({
-    mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetListingsQueryKey() });
-        queryClient.invalidateQueries({ queryKey: getGetRecentListingsQueryKey() });
-        queryClient.invalidateQueries({ queryKey: getGetFeaturedListingsQueryKey() });
-        toast({ title: t.deleteSuccess });
-        loadShop();
-      },
-      onError: () => {
-        toast({ title: t.deleteError, variant: "destructive" });
-      },
-    },
-  });
 
   const filteredListings = useMemo(() => {
     if (!categoryFilter) return listings;
@@ -487,15 +314,9 @@ export default function ShopDetailPage() {
               <p className="text-sm text-gray-500 max-w-2xl">{pc.catalogSubtitle}</p>
             </div>
             {storefrontProducts.length === 0 ? (
-              isOwner ? (
-                <p className="text-gray-500 text-sm rounded-2xl border border-dashed border-gray-200 bg-white px-5 py-10 text-center">
-                  {pc.noProductsOwner}
-                </p>
-              ) : (
-                <p className="text-gray-500 text-sm rounded-2xl border border-dashed border-gray-200 bg-white px-5 py-10 text-center">
-                  {pc.noProducts}
-                </p>
-              )
+              <p className="text-gray-500 text-sm rounded-2xl border border-dashed border-gray-200 bg-white px-5 py-10 text-center">
+                {pc.noProducts}
+              </p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {storefrontProducts.map((product) => (
@@ -565,134 +386,55 @@ export default function ShopDetailPage() {
           </div>
         </section>
 
-        {filteredListings.length > 0 && shop.storefront_eligible === false ? (
-        <section>
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h2 className="text-xl font-black text-gray-900">{d.listingsTitle}</h2>
-            <div className="flex flex-wrap items-center gap-3">
+        {filteredListings.length > 0 ? (
+          <section>
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <h2 className="text-xl font-black text-gray-900">{d.listingsTitle}</h2>
               <p className="text-sm font-semibold text-blue-700">
                 {d.activeListingsCount.replace("{count}", String(activeCount))}
               </p>
-              {isOwner ? (
-                <Link href="/listings/new">
-                  <Button
-                    type="button"
-                    className="min-h-11 font-bold text-white"
-                    style={{ background: `linear-gradient(90deg, ${BRAND_BLUE}, ${BRAND_ORANGE})` }}
-                  >
-                    {d.postNewListing}
-                  </Button>
-                </Link>
-              ) : null}
             </div>
-          </div>
 
-          {subcategories.length > 1 ? (
-            <div className="flex flex-wrap gap-2 mb-4">
-              <button
-                type="button"
-                onClick={() => setCategoryFilter(null)}
-                className={cn(
-                  "px-3 py-1.5 rounded-full text-sm font-semibold border transition-colors",
-                  categoryFilter === null
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-white text-gray-700 border-gray-200 hover:border-blue-300",
-                )}
-              >
-                {d.filterAll}
-              </button>
-              {subcategories.map((sub) => (
+            {subcategories.length > 1 ? (
+              <div className="flex flex-wrap gap-2 mb-4">
                 <button
-                  key={sub.id}
                   type="button"
-                  onClick={() => setCategoryFilter(sub.id)}
+                  onClick={() => setCategoryFilter(null)}
                   className={cn(
                     "px-3 py-1.5 rounded-full text-sm font-semibold border transition-colors",
-                    categoryFilter === sub.id
+                    categoryFilter === null
                       ? "bg-blue-600 text-white border-blue-600"
                       : "bg-white text-gray-700 border-gray-200 hover:border-blue-300",
                   )}
                 >
-                  {translateCategory(sub.name, locale)} ({sub.count})
+                  {d.filterAll}
                 </button>
-              ))}
-            </div>
-          ) : null}
+                {subcategories.map((sub) => (
+                  <button
+                    key={sub.id}
+                    type="button"
+                    onClick={() => setCategoryFilter(sub.id)}
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-sm font-semibold border transition-colors",
+                      categoryFilter === sub.id
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-gray-700 border-gray-200 hover:border-blue-300",
+                    )}
+                  >
+                    {translateCategory(sub.name, locale)} ({sub.count})
+                  </button>
+                ))}
+              </div>
+            ) : null}
 
-          {isOwner && activeCount === 0 ? (
-            <div className="rounded-2xl border border-blue-100 bg-blue-50 px-5 py-6 text-center space-y-4">
-              <p className="text-sm sm:text-base text-gray-800 leading-relaxed">{d.ownerWelcomeEmpty}</p>
-              <Link href="/listings/new">
-                <Button
-                  type="button"
-                  className="min-h-11 font-bold text-white"
-                  style={{ background: `linear-gradient(90deg, ${BRAND_BLUE}, ${BRAND_ORANGE})` }}
-                >
-                  {d.postFirstListing}
-                </Button>
-              </Link>
-            </div>
-          ) : filteredListings.length === 0 ? (
-            <p className="text-gray-500 text-sm">{d.noListings}</p>
-          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {filteredListings.map((l) => (
-                <div key={l.id} className="space-y-2">
-                  <ListingCard listing={l} />
-                  {isOwner ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <ListingShareButtons url={listingPublicUrl(l.id)} variant="compact" />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="min-h-10 gap-1.5"
-                        onClick={() => setLocation(`/listings/${l.id}/edit`)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                        ✏️ {d.editListing}
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            className="min-h-10 gap-1.5 bg-red-600 hover:bg-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            🗑️ {d.deleteListing}
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>{d.deleteListingTitle}</AlertDialogTitle>
-                            <AlertDialogDescription>{d.deleteListingDesc}</AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>{d.cancel}</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-red-600 hover:bg-red-700"
-                              onClick={() => deleteMutation.mutate({ id: l.id })}
-                            >
-                              {d.deleteListing}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  ) : null}
-                </div>
+                <ListingCard key={l.id} listing={l} />
               ))}
             </div>
-          )}
-        </section>
+          </section>
         ) : null}
       </div>
-
-      {isOwner && user ? <ProfileEditGateFlow user={user} gate={gate} /> : null}
-
-      {contentNoticeOpen ? <ShopEditContentNotice onContinue={onContentNoticeContinue} /> : null}
 
       <ShopProductDetailDialog
         product={selectedProduct}
@@ -709,99 +451,6 @@ export default function ShopDetailPage() {
           youtube: shop?.youtube,
         }}
       />
-
-      {isOwner ? (
-        <button
-          type="button"
-          onClick={onEditShopClick}
-          className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-xl transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-          style={{ backgroundColor: BRAND_BLUE }}
-          aria-label={d.editShop}
-          title={d.editShop}
-        >
-          <Settings className="h-6 w-6" />
-        </button>
-      ) : null}
-
-      {isOwner && user && shop ? (
-        <DeletionExitSurveyModal
-          open={deleteShopOpen}
-          onOpenChange={setDeleteShopOpen}
-          mode="shop"
-          shopId={shop.id}
-          user={user}
-          refresh={refresh}
-          onSuccess={() => setLocation("/profili")}
-        />
-      ) : null}
-
-      <Dialog
-        open={editOpen}
-        onOpenChange={(open) => {
-          setEditOpen(open);
-          if (!open) setEditTab("site");
-        }}
-      >
-        <DialogContent className="max-w-3xl max-h-[92vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle>{d.editShop}</DialogTitle>
-          </DialogHeader>
-          {shop && shop.storefront_eligible !== false ? (
-            <div className="flex gap-2 border-b border-gray-100 pb-2 shrink-0">
-              <Button
-                type="button"
-                variant={editTab === "site" ? "default" : "outline"}
-                className="min-h-9"
-                onClick={() => setEditTab("site")}
-              >
-                {pc.editTabWebsite}
-              </Button>
-              <Button
-                type="button"
-                variant={editTab === "products" ? "default" : "outline"}
-                className="min-h-9"
-                onClick={() => setEditTab("products")}
-              >
-                {pc.editTabProducts}
-              </Button>
-            </div>
-          ) : null}
-          {shop && editTab === "products" && shop.storefront_eligible !== false ? (
-            <div className="overflow-y-auto flex-1 min-h-0 pr-1 py-2">
-              <ShopProductManager
-                changeToken={gate.changeToken}
-                storefrontEligible
-                onProductsChange={loadShop}
-              />
-            </div>
-          ) : null}
-          {shop && editTab === "site" ? (
-            <ShopEditForm
-              variant="owner"
-              initial={adminRowToFormValues({
-                ...shop,
-                category_id: shop.category_id ?? null,
-                directory_category_id: shop.directory_category_id ?? null,
-                directory_subcategory_id: shop.directory_subcategory_id ?? null,
-                contact_name: shop.contact_name ?? "",
-                phone: shop.phone ?? "",
-                email: shop.email ?? "",
-                facebook: shop.facebook ?? null,
-                instagram: shop.instagram ?? null,
-                tiktok: shop.tiktok ?? null,
-                whatsapp: shop.whatsapp ?? null,
-                website: shop.website ?? null,
-                youtube: shop.youtube ?? null,
-                status: "approved",
-              })}
-              onSubmit={onSaveShopEdit}
-              onCancel={() => setEditOpen(false)}
-              saving={editSaving}
-              labels={{ save: d.saveShop, cancel: d.cancel }}
-            />
-          ) : null}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

@@ -7,24 +7,29 @@ import { Link } from "wouter";
 import { Loader2, Store, Eye, Package, Pencil, ChevronDown, ChevronUp } from "lucide-react";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useShopDashboardCopy } from "@/lib/shop-dashboard-i18n";
 import { translateCategory } from "@/lib/category-translations";
 import { translationKeyForUiLang } from "@/lib/ui-languages";
 import ListingCard from "@/components/listing-card";
 import { ListingShareButtons, listingPublicUrl } from "@/components/listing-share-buttons";
-import { ShopAddressAutocomplete } from "@/components/shop-address-autocomplete";
-import { useShopFormCopy } from "@/lib/shop-application-i18n";
 import { BRAND_BLUE } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
 import { ShopProductManager } from "@/components/shop-product-manager";
 import { ShopEditContentNotice } from "@/components/shop-edit-content-notice";
 import { useShopProductsCopy } from "@/lib/shop-products-i18n";
-import { shopSocialFieldsForSubmit, shopSocialSuffix } from "@/lib/shop-social-url-input";
 import { ShopPublicLinkCopy } from "@/components/shop-public-link-copy";
+import {
+  ShopEditForm,
+  adminRowToFormValues,
+  type ShopEditFormValues,
+} from "@/components/shop-edit-form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type ShopMe = {
   id: number;
@@ -34,14 +39,23 @@ type ShopMe = {
   logo_url: string;
   cover_image_url?: string | null;
   tagline?: string | null;
+  business_hours?: string | null;
   description: string;
   category: string;
+  category_id?: number | null;
+  directory_category_id?: number | null;
+  directory_subcategory_id?: number | null;
+  directory_category_slug?: string | null;
+  directory_subcategory_slug?: string | null;
   country: string;
   city: string;
   region: string;
   address: string;
   latitude?: number | null;
   longitude?: number | null;
+  contact_name?: string;
+  phone?: string;
+  email?: string;
   facebook?: string | null;
   instagram?: string | null;
   tiktok?: string | null;
@@ -65,7 +79,6 @@ type ShopListing = Parameters<typeof ListingCard>[0]["listing"];
 export function ProfileShopDashboard() {
   const c = useShopDashboardCopy();
   const pc = useShopProductsCopy();
-  const formCopy = useShopFormCopy();
   const { uiLang, t } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
   const { toast } = useToast();
@@ -77,28 +90,10 @@ export function ProfileShopDashboard() {
   const [showListings, setShowListings] = useState(false);
   const [shopListings, setShopListings] = useState<ShopListing[]>([]);
   const [listingsLoading, setListingsLoading] = useState(false);
-  const [editFormOpen, setEditFormOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [contentNoticeOpen, setContentNoticeOpen] = useState(false);
   const [editRequested, setEditRequested] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  const [shopName, setShopName] = useState("");
-  const [logoUrl, setLogoUrl] = useState("");
-  const [description, setDescription] = useState("");
-  const [address, setAddress] = useState("");
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
-  const [shopCountry, setShopCountry] = useState("XK");
-  const [city, setCity] = useState("");
-  const [region, setRegion] = useState("");
-  const [facebook, setFacebook] = useState("");
-  const [instagram, setInstagram] = useState("");
-  const [tiktok, setTiktok] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
-  const [website, setWebsite] = useState("");
-  const [youtube, setYoutube] = useState("");
-  const [coverImageUrl, setCoverImageUrl] = useState("");
-  const [tagline, setTagline] = useState("");
 
   function loadMe() {
     setLoading(true);
@@ -107,28 +102,7 @@ export function ProfileShopDashboard() {
         if (!r.ok) throw new Error("fail");
         return r.json() as Promise<ShopMeResponse>;
       })
-      .then((res) => {
-        setData(res);
-        if (res.shop) {
-          setShopName(res.shop.shop_name);
-          setLogoUrl(res.shop.logo_url);
-          setDescription(res.shop.description);
-          setAddress(res.shop.address);
-          setLatitude(res.shop.latitude ?? null);
-          setLongitude(res.shop.longitude ?? null);
-          setShopCountry(res.shop.country ?? "XK");
-          setCity(res.shop.city);
-          setRegion(res.shop.region);
-          setFacebook(shopSocialSuffix(res.shop.facebook, "facebook"));
-          setInstagram(shopSocialSuffix(res.shop.instagram, "instagram"));
-          setTiktok(shopSocialSuffix(res.shop.tiktok, "tiktok"));
-          setWhatsapp(shopSocialSuffix(res.shop.whatsapp, "whatsapp"));
-          setWebsite(shopSocialSuffix(res.shop.website, "website"));
-          setYoutube(shopSocialSuffix(res.shop.youtube, "youtube"));
-          setCoverImageUrl(res.shop.cover_image_url ?? "");
-          setTagline(res.shop.tagline ?? "");
-        }
-      })
+      .then((res) => setData(res))
       .catch(() => setData(null))
       .finally(() => setLoading(false));
   }
@@ -139,7 +113,7 @@ export function ProfileShopDashboard() {
 
   useEffect(() => {
     if (editRequested && gate.isUnlocked) {
-      setEditFormOpen(true);
+      setEditOpen(true);
       setEditRequested(false);
     }
   }, [editRequested, gate.isUnlocked]);
@@ -156,6 +130,11 @@ export function ProfileShopDashboard() {
       .finally(() => setListingsLoading(false));
   }
 
+  function onProductsChange() {
+    loadMe();
+    if (showListings) loadShopListings();
+  }
+
   function toggleListings() {
     const next = !showListings;
     setShowListings(next);
@@ -169,75 +148,80 @@ export function ProfileShopDashboard() {
   function onContentNoticeContinue() {
     setContentNoticeOpen(false);
     if (gate.isUnlocked) {
-      setEditFormOpen(true);
+      setEditOpen(true);
       return;
     }
     setEditRequested(true);
     gate.startGate();
   }
 
-  async function onSaveShop(e: React.FormEvent) {
-    e.preventDefault();
+  async function onSaveShopEdit(values: ShopEditFormValues) {
     if (!data?.shop || !gate.changeToken) return;
     setSaving(true);
     try {
-      const social = shopSocialFieldsForSubmit({
-        facebook,
-        instagram,
-        tiktok,
-        whatsapp,
-        website,
-        youtube,
-      });
       const res = await fetchWithTimeout(`/api/shops/${data.shop.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
           profile_change_token: gate.changeToken,
-          shop_name: shopName,
-          logo_url: logoUrl,
-          description,
-          address,
-          latitude,
-          longitude,
-          city,
-          region,
-          facebook: social.facebook,
-          instagram: social.instagram,
-          tiktok: social.tiktok,
-          whatsapp: social.whatsapp,
-          website: social.website,
-          youtube: social.youtube,
-          cover_image_url: coverImageUrl.trim() || null,
-          tagline: tagline.trim() || null,
+          shop_name: values.shop_name,
+          logo_url: values.logo_url,
+          cover_image_url: values.cover_image_url.trim() || null,
+          tagline: values.tagline.trim() || null,
+          business_hours: values.business_hours.trim() || null,
+          description: values.description,
+          category: values.category,
+          category_id: values.category_id,
+          directory_category_id: values.directory_category_id,
+          directory_subcategory_id: values.directory_subcategory_id,
+          directory_category_slug: values.directory_category_slug,
+          directory_subcategory_slug: values.directory_subcategory_slug,
+          country: values.country,
+          city: values.city,
+          region: values.region,
+          address: values.address,
+          latitude: values.latitude,
+          longitude: values.longitude,
+          contact_name: values.contact_name,
+          phone: values.phone,
+          email: values.email,
+          facebook: values.facebook,
+          instagram: values.instagram,
+          tiktok: values.tiktok,
+          whatsapp: values.whatsapp,
+          website: values.website,
+          youtube: values.youtube,
         }),
       });
-      if (!res.ok) throw new Error("fail");
-      const payload = (await res.json()) as { shop: ShopMe };
+      const payload = (await res.json().catch(() => ({}))) as {
+        shop?: ShopMe;
+        message?: string;
+      };
+      if (!res.ok) {
+        throw new Error(payload.message ?? c.saveShop);
+      }
       const saved = payload.shop;
       if (saved) {
         setData((prev) => (prev?.shop ? { ...prev, shop: { ...prev.shop, ...saved } } : prev));
-        setShopName(saved.shop_name);
-        setLogoUrl(saved.logo_url);
-        setDescription(saved.description);
-        setAddress(saved.address);
-        setLatitude(saved.latitude ?? null);
-        setLongitude(saved.longitude ?? null);
-        setShopCountry(saved.country ?? "XK");
-        setCity(saved.city);
-        setRegion(saved.region);
-        setFacebook(shopSocialSuffix(saved.facebook, "facebook"));
-        setInstagram(shopSocialSuffix(saved.instagram, "instagram"));
-        setTiktok(shopSocialSuffix(saved.tiktok, "tiktok"));
-        setWhatsapp(shopSocialSuffix(saved.whatsapp, "whatsapp"));
-        setWebsite(shopSocialSuffix(saved.website, "website"));
-        setYoutube(shopSocialSuffix(saved.youtube, "youtube"));
       }
-      toast({ title: c.shopSaved });
-      setEditFormOpen(false);
-    } catch {
-      toast({ title: "Error", variant: "destructive" });
+      const publicUrl =
+        saved?.public_path ??
+        data.shop.public_path ??
+        `/dyqani/${saved?.slug ?? data.shop.slug ?? data.shop.id}`;
+      toast({
+        title: storefrontEligible ? c.shopSavedPublic : c.shopSaved,
+        description: storefrontEligible ? c.shopSavedPublicHint : undefined,
+      });
+      setEditOpen(false);
+      if (storefrontEligible) {
+        window.open(publicUrl, "_blank", "noopener,noreferrer");
+      }
+    } catch (err) {
+      toast({
+        title: err instanceof Error ? err.message : c.saveShop,
+        variant: "destructive",
+      });
     } finally {
       setSaving(false);
     }
@@ -256,6 +240,7 @@ export function ProfileShopDashboard() {
   const shop = data.shop;
   const statusLabel =
     data.application?.status === "pending" ? c.statusPending : c.statusApproved;
+  const storefrontEligible = !!data.storefront_eligible;
 
   return (
     <section className="pt-4 border-t border-gray-100 space-y-4" data-testid="profile-shop-dashboard">
@@ -291,10 +276,10 @@ export function ProfileShopDashboard() {
           <div className="rounded-xl bg-white border border-gray-100 px-3 py-2">
             <div className="flex items-center gap-1 text-gray-500">
               <Package size={14} />
-              {data.storefront_eligible ? pc.manageProducts : c.totalListings}
+              {storefrontEligible ? pc.manageProducts : c.totalListings}
             </div>
             <p className="font-bold text-gray-900 mt-0.5">
-              {data.storefront_eligible ? (data.product_count ?? 0) : data.listing_count}
+              {storefrontEligible ? (data.product_count ?? 0) : data.listing_count}
             </p>
           </div>
           <div className="rounded-xl bg-white border border-gray-100 px-3 py-2">
@@ -306,12 +291,18 @@ export function ProfileShopDashboard() {
           </div>
         </div>
 
-        {shop.storefront_eligible !== false && (shop.public_path || shop.slug || shop.id) ? (
+        {storefrontEligible && (shop.public_path || shop.slug || shop.id) ? (
           <ShopPublicLinkCopy
             slug={shop.slug}
             shopId={shop.id}
             publicPath={shop.public_path}
           />
+        ) : null}
+
+        {storefrontEligible ? (
+          <p className="text-xs text-gray-600 leading-relaxed rounded-lg bg-white/80 border border-indigo-100 px-3 py-2">
+            {pc.autoListingHint} {pc.maxTilesHint}
+          </p>
         ) : null}
 
         <div className="flex flex-col gap-2">
@@ -331,22 +322,14 @@ export function ProfileShopDashboard() {
             onClick={onEditShopClick}
           >
             <Pencil size={16} className="mr-2" />
-            {c.editShop}
+            {storefrontEligible ? c.editStorefront : c.editShop}
           </Button>
-          <Link href={shop.public_path ?? `/dyqani/${shop.id}`}>
+          <Link href={shop.public_path ?? `/dyqani/${shop.slug ?? shop.id}`}>
             <Button type="button" variant="ghost" className="w-full min-h-11 text-blue-700">
               {c.viewShop}
             </Button>
           </Link>
         </div>
-
-        {data.storefront_eligible ? (
-          <ShopProductManager
-            changeToken={gate.changeToken}
-            storefrontEligible={!!data.storefront_eligible}
-            onProductsChange={loadMe}
-          />
-        ) : null}
 
         {showListings ? (
           <div className="space-y-3 pt-2 border-t border-blue-100">
@@ -372,104 +355,66 @@ export function ProfileShopDashboard() {
             )}
           </div>
         ) : null}
-
-        {editFormOpen && gate.isUnlocked ? (
-          <form className="space-y-3 pt-2 border-t border-blue-100" onSubmit={onSaveShop}>
-            <p className="text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg px-2 py-1">
-              {t.profile_edit_session_left.replace("{minutes}", String(gate.sessionMinutesLeft()))}
-            </p>
-            <div className="space-y-1">
-              <Label htmlFor="shop-edit-name">{c.shopName}</Label>
-              <Input id="shop-edit-name" value={shopName} onChange={(e) => setShopName(e.target.value)} />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="shop-edit-logo">{c.logo}</Label>
-              <Input id="shop-edit-logo" type="url" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="shop-edit-cover">{pc.coverImage}</Label>
-              <Input
-                id="shop-edit-cover"
-                type="url"
-                value={coverImageUrl}
-                onChange={(e) => setCoverImageUrl(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="shop-edit-tagline">{pc.tagline}</Label>
-              <Input id="shop-edit-tagline" value={tagline} onChange={(e) => setTagline(e.target.value)} />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="shop-edit-desc">{c.description}</Label>
-              <Textarea id="shop-edit-desc" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="shop-edit-address">{c.address}</Label>
-              <ShopAddressAutocomplete
-                id="shop-edit-address"
-                value={address}
-                country={shopCountry}
-                onChange={(next) => {
-                  setAddress(next);
-                  setLatitude(null);
-                  setLongitude(null);
-                }}
-                onPlaceSelect={(place) => {
-                  setAddress(place.address);
-                  setLatitude(place.latitude);
-                  setLongitude(place.longitude);
-                  if (place.city) setCity(place.city);
-                  if (place.region) setRegion(place.region);
-                }}
-              />
-              <p className="text-xs text-gray-500">{formCopy.addressAutocompleteHint}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label htmlFor="shop-edit-city">{c.city}</Label>
-                <Input id="shop-edit-city" value={city} onChange={(e) => setCity(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="shop-edit-region">{c.region}</Label>
-                <Input id="shop-edit-region" value={region} onChange={(e) => setRegion(e.target.value)} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label htmlFor="shop-edit-fb">{c.facebook}</Label>
-                <Input id="shop-edit-fb" value={facebook} onChange={(e) => setFacebook(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="shop-edit-ig">{c.instagram}</Label>
-                <Input id="shop-edit-ig" value={instagram} onChange={(e) => setInstagram(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="shop-edit-tt">{c.tiktok}</Label>
-                <Input id="shop-edit-tt" value={tiktok} onChange={(e) => setTiktok(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="shop-edit-wa">{c.whatsapp}</Label>
-                <Input id="shop-edit-wa" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="shop-edit-web">{c.website}</Label>
-              <Input id="shop-edit-web" value={website} onChange={(e) => setWebsite(e.target.value)} />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="shop-edit-yt">YouTube</Label>
-              <Input id="shop-edit-yt" value={youtube} onChange={(e) => setYoutube(e.target.value)} placeholder="youtube.com/@kanali" />
-            </div>
-            <Button type="submit" className="w-full min-h-11" disabled={saving || !gate.changeToken}>
-              {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : c.saveShop}
-            </Button>
-          </form>
-        ) : null}
       </div>
 
       {user ? <ProfileEditGateFlow user={user} gate={gate} /> : null}
 
       {contentNoticeOpen ? <ShopEditContentNotice onContinue={onContentNoticeContinue} /> : null}
+
+      <Dialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      >
+        <DialogContent className="max-w-3xl max-h-[92vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>{storefrontEligible ? c.editStorefront : c.editShop}</DialogTitle>
+          </DialogHeader>
+
+          {gate.isUnlocked ? (
+            <p className="text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg px-2 py-1 shrink-0">
+              {t.profile_edit_session_left.replace("{minutes}", String(gate.sessionMinutesLeft()))}
+            </p>
+          ) : null}
+
+          {editOpen && gate.isUnlocked ? (
+            <ShopEditForm
+              variant="owner"
+              layout={storefrontEligible ? "storefront" : "default"}
+              productsSlot={
+                storefrontEligible ? (
+                  <ShopProductManager
+                    changeToken={gate.changeToken}
+                    storefrontEligible={storefrontEligible}
+                    onProductsChange={onProductsChange}
+                    embedded
+                    simple
+                  />
+                ) : undefined
+              }
+              initial={adminRowToFormValues({
+                ...shop,
+                category_id: shop.category_id ?? null,
+                directory_category_id: shop.directory_category_id ?? null,
+                directory_subcategory_id: shop.directory_subcategory_id ?? null,
+                contact_name: shop.contact_name ?? "",
+                phone: shop.phone ?? "",
+                email: shop.email ?? "",
+                facebook: shop.facebook ?? null,
+                instagram: shop.instagram ?? null,
+                tiktok: shop.tiktok ?? null,
+                whatsapp: shop.whatsapp ?? null,
+                website: shop.website ?? null,
+                youtube: shop.youtube ?? null,
+                status: "approved",
+              })}
+              onSubmit={onSaveShopEdit}
+              onCancel={() => setEditOpen(false)}
+              saving={saving}
+              labels={{ save: c.saveStorefront, cancel: t.cancel }}
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

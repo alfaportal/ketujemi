@@ -28,6 +28,10 @@ export type ShopDashboardCopy = {
   noShopListings: string;
   activeListingsCount: string;
   filterAll: string;
+  editStorefront: string;
+  saveStorefront: string;
+  shopSavedPublic: string;
+  shopSavedPublicHint: string;
 };
 
 const KS: ShopDashboardCopy = {
@@ -57,6 +61,10 @@ const KS: ShopDashboardCopy = {
   noShopListings: "Nuk ka shpallje aktive nga dyqani juaj.",
   activeListingsCount: "{count} shpallje aktive",
   filterAll: "Të gjitha",
+  editStorefront: "Ndrysho webfaqen",
+  saveStorefront: "Ruaj webfaqen",
+  shopSavedPublic: "Webfaqja u ruajt!",
+  shopSavedPublicHint: "Vizitorët shohin faqen tuaj publike — jo panelin e editimit.",
 };
 
 const MK: ShopDashboardCopy = {
@@ -86,6 +94,10 @@ const MK: ShopDashboardCopy = {
   noShopListings: "Немате активни огласи од продавницата.",
   activeListingsCount: "{count} активни огласи",
   filterAll: "Сите",
+  editStorefront: "Уреди веб-страница",
+  saveStorefront: "Зачувај веб-страница",
+  shopSavedPublic: "Веб-страницата е зачувана!",
+  shopSavedPublicHint: "Посетителите ја гледаат јавната страница — не панелот.",
 };
 
 const MNE: ShopDashboardCopy = {
@@ -115,6 +127,10 @@ const MNE: ShopDashboardCopy = {
   noShopListings: "Nemate aktivnih oglasa iz prodavnice.",
   activeListingsCount: "{count} aktivnih oglasa",
   filterAll: "Sve",
+  editStorefront: "Uredi web stranicu",
+  saveStorefront: "Sačuvaj web stranicu",
+  shopSavedPublic: "Web stranica sačuvana!",
+  shopSavedPublicHint: "Posjetioci vide javnu stranicu — ne panel za uređivanje.",
 };
 
 const EN: ShopDashboardCopy = {
@@ -144,6 +160,10 @@ const EN: ShopDashboardCopy = {
   noShopListings: "No active listings from your shop.",
   activeListingsCount: "{count} active listings",
   filterAll: "All",
+  editStorefront: "Edit storefront",
+  saveStorefront: "Save storefront",
+  shopSavedPublic: "Storefront saved!",
+  shopSavedPublicHint: "Visitors see your public page — not this edit panel.",
 };
 
 const IT: ShopDashboardCopy = {
@@ -173,6 +193,10 @@ const IT: ShopDashboardCopy = {
   noShopListings: "Nessun annuncio attivo dal tuo negozio.",
   activeListingsCount: "{count} annunci attivi",
   filterAll: "Tutto",
+  editStorefront: "Modifica vetrina",
+  saveStorefront: "Salva vetrina",
+  shopSavedPublic: "Vetrina salvata!",
+  shopSavedPublicHint: "I visitatori vedono la pagina pubblica — non questo pannello.",
 };
 
 const DE: ShopDashboardCopy = {
@@ -202,6 +226,10 @@ const DE: ShopDashboardCopy = {
   noShopListings: "Keine aktiven Anzeigen aus Ihrem Shop.",
   activeListingsCount: "{count} aktive Anzeigen",
   filterAll: "Alle",
+  editStorefront: "Webseite bearbeiten",
+  saveStorefront: "Webseite speichern",
+  shopSavedPublic: "Webseite gespeichert!",
+  shopSavedPublicHint: "Besucher sehen Ihre öffentliche Seite — nicht dieses Panel.",
 };
 
 const FR: ShopDashboardCopy = {
@@ -231,6 +259,10 @@ const FR: ShopDashboardCopy = {
   noShopListings: "Aucune annonce active de votre boutique.",
   activeListingsCount: "{count} annonces actives",
   filterAll: "Tout",
+  editStorefront: "Modifier la vitrine",
+  saveStorefront: "Enregistrer la vitrine",
+  shopSavedPublic: "Vitrine enregistrée !",
+  shopSavedPublicHint: "Les visiteurs voient la page publique — pas ce panneau.",
 };
 
 const PAGES: Record<UiTranslationLocale, ShopDashboardCopy> = {

@@ -118,6 +118,11 @@ export async function deactivateShopProductListing(product: Pick<ShopProduct, "l
     .where(eq(listingsTable.id, product.listing_id));
 }
 
+/** Remove synced Blej & Shite listing when a shop product is deleted. */
+export async function removeShopProductListing(product: Pick<ShopProduct, "listing_id">): Promise<void> {
+  await deactivateShopProductListing(product);
+}
+
 export async function syncAllShopProductsForShop(shopId: number): Promise<void> {
   const [shop] = await db.select().from(shopsTable).where(eq(shopsTable.id, shopId)).limit(1);
   if (!shop) return;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,6 +80,9 @@ type ShopEditFormProps = {
   onCancel: () => void;
   saving?: boolean;
   variant?: "owner" | "admin";
+  /** Owner panel: one scroll — foto, profil, katrorët, kontakt (si faqja publike). */
+  layout?: "default" | "storefront";
+  productsSlot?: ReactNode;
   showStatus?: boolean;
   showAdminNotes?: boolean;
   labels?: {
@@ -92,12 +95,25 @@ type ShopEditFormProps = {
   };
 };
 
+function StorefrontSectionHeader({ step, title }: { step: number; title: string }) {
+  return (
+    <div className="flex items-center gap-2.5 pt-1">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-bold">
+        {step}
+      </span>
+      <h3 className="text-sm font-bold text-gray-900">{title}</h3>
+    </div>
+  );
+}
+
 export function ShopEditForm({
   initial,
   onSubmit,
   onCancel,
   saving = false,
   variant = "admin",
+  layout = "default",
+  productsSlot,
   showStatus = false,
   showAdminNotes = false,
   labels,
@@ -105,6 +121,7 @@ export function ShopEditForm({
   const c = useShopFormCopy();
   const pc = useShopProductsCopy();
   const isOwner = variant === "owner";
+  const isStorefront = isOwner && layout === "storefront";
   const { uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
   const [taxonomy, setTaxonomy] = useState<ShopDirectoryTaxonomyCategory[]>(staticShopDirectoryTaxonomy);
@@ -181,7 +198,11 @@ export function ShopEditForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const validationError = validateShopEditForm(values);
+    const payload = { ...values };
+    if (isStorefront && !payload.contact_name.trim()) {
+      payload.contact_name = payload.shop_name.trim();
+    }
+    const validationError = validateShopEditForm(payload);
     if (validationError) {
       setSubmitError(validationError);
       errorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -219,12 +240,12 @@ export function ShopEditForm({
     });
     try {
       await onSubmit({
-        ...values,
-        region: values.region.trim() || values.city.trim() || "—",
+        ...payload,
+        region: payload.region.trim() || payload.city.trim() || "—",
         category: categoryName,
         category_id: null,
-        directory_category_slug: dirCat?.slug ?? values.directory_category_slug ?? null,
-        directory_subcategory_slug: sub?.slug ?? values.directory_subcategory_slug ?? null,
+        directory_category_slug: dirCat?.slug ?? payload.directory_category_slug ?? null,
+        directory_subcategory_slug: sub?.slug ?? payload.directory_subcategory_slug ?? null,
         facebook: social.facebook ?? "",
         instagram: social.instagram ?? "",
         tiktok: social.tiktok ?? "",
@@ -421,11 +442,13 @@ export function ShopEditForm({
         onChange={(field: ShopSocialField, v) => setField(field, v)}
       />
       <div className="grid sm:grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <Label>{c.contactName}</Label>
-          <Input value={values.contact_name} onChange={(e) => setField("contact_name", e.target.value)} />
-        </div>
-        <div className="space-y-1.5">
+        {!isStorefront ? (
+          <div className="space-y-1.5">
+            <Label>{c.contactName}</Label>
+            <Input value={values.contact_name} onChange={(e) => setField("contact_name", e.target.value)} />
+          </div>
+        ) : null}
+        <div className={cn("space-y-1.5", isStorefront && "sm:col-span-2")}>
           <Label>{c.phone}</Label>
           <Input value={values.phone} onChange={(e) => setField("phone", e.target.value)} />
         </div>
@@ -454,13 +477,96 @@ export function ShopEditForm({
       ) : null}
 
       <div className="space-y-4 overflow-y-auto flex-1 min-h-0 pr-1">
-      {isOwner ? (
+      {isOwner && !isStorefront ? (
         <p className="text-xs text-blue-900 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
           {pc.moderationNotice}
         </p>
       ) : null}
 
-      {isOwner ? (
+      {isStorefront ? (
+        <>
+          <p className="text-xs text-gray-600 leading-relaxed rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+            {pc.storefrontEditorIntro}
+          </p>
+
+          <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+            <StorefrontSectionHeader step={1} title={pc.storefrontStepPhotos} />
+            <ShopMediaUploadField
+              id="shop-edit-cover"
+              label={pc.coverImage}
+              value={values.cover_image_url}
+              onChange={(url) => setField("cover_image_url", url)}
+              uploadLabel={pc.uploadCover}
+              uploadingLabel={c.uploadingLogo}
+              uploadFailedMessage={c.logoUploadFailed}
+              aspect="wide"
+            />
+            <ShopMediaUploadField
+              id="shop-edit-logo"
+              label={c.logo}
+              value={values.logo_url}
+              onChange={(url) => setField("logo_url", url)}
+              uploadLabel={pc.uploadLogo}
+              uploadingLabel={c.uploadingLogo}
+              uploadFailedMessage={c.logoUploadFailed}
+            />
+            <div className="space-y-1.5">
+              <Label>{c.shopName}</Label>
+              <Input value={values.shop_name} onChange={(e) => setField("shop_name", e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{pc.tagline}</Label>
+              <Input
+                value={values.tagline}
+                onChange={(e) => setField("tagline", e.target.value)}
+                placeholder={pc.taglinePlaceholder}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
+            <StorefrontSectionHeader step={2} title={pc.storefrontStepAbout} />
+            <Textarea
+              value={values.description}
+              onChange={(e) => setField("description", e.target.value)}
+              className="min-h-[100px]"
+              placeholder={pc.aboutPlaceholder}
+            />
+          </div>
+
+          {productsSlot ? (
+            <div className="rounded-xl border border-indigo-100 bg-indigo-50/30 p-4 space-y-3">
+              <StorefrontSectionHeader step={3} title={pc.storefrontStepTiles} />
+              <p className="text-xs text-gray-600 -mt-1">{pc.maxTilesHint}</p>
+              {productsSlot}
+            </div>
+          ) : null}
+
+          <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+            <StorefrontSectionHeader step={productsSlot ? 4 : 3} title={pc.storefrontStepContact} />
+            {contactFields}
+          </div>
+
+          <details className="rounded-xl border border-gray-200 bg-white p-4 group">
+            <summary className="cursor-pointer text-sm font-semibold text-gray-700 list-none flex items-center justify-between">
+              {pc.storefrontStepExtra}
+              <span className="text-gray-400 text-xs group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <div className="mt-4 space-y-4">
+              <div className="space-y-1.5">
+                <Label>{pc.businessHours}</Label>
+                <Textarea
+                  value={values.business_hours}
+                  onChange={(e) => setField("business_hours", e.target.value)}
+                  className="min-h-[72px]"
+                  placeholder={pc.businessHoursPlaceholder}
+                />
+              </div>
+              {locationAndCategoryFields}
+            </div>
+          </details>
+        </>
+      ) : isOwner ? (
         <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-4 space-y-4">
           <p className="text-sm font-bold text-gray-900">{pc.storefrontEditSection}</p>
           <div className="space-y-1.5">
@@ -534,7 +640,7 @@ export function ShopEditForm({
       </div>
       )}
 
-      {isOwner ? (
+      {isOwner && !isStorefront ? (
         <details className="rounded-xl border border-gray-200 bg-white p-4 group">
           <summary className="cursor-pointer text-sm font-semibold text-gray-800 list-none flex items-center justify-between">
             {pc.locationCategorySection}
@@ -542,18 +648,18 @@ export function ShopEditForm({
           </summary>
           <div className="mt-4 space-y-4">{locationAndCategoryFields}</div>
         </details>
-      ) : (
+      ) : !isOwner ? (
         locationAndCategoryFields
-      )}
+      ) : null}
 
-      {isOwner ? (
+      {isOwner && !isStorefront ? (
         <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
           <p className="text-sm font-bold text-gray-900">{pc.contactSection}</p>
           {contactFields}
         </div>
-      ) : (
+      ) : !isOwner ? (
         contactFields
-      )}
+      ) : null}
 
       {showStatus ? (
         <div className="space-y-1.5">

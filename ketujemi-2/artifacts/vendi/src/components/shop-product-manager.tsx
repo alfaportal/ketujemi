@@ -70,9 +70,19 @@ type Props = {
   changeToken: string | null;
   storefrontEligible: boolean;
   onProductsChange?: () => void;
+  /** Inside profile edit dialog — no outer card chrome. */
+  embedded?: boolean;
+  /** Panel editor: vetëm foto, etiketë e shkurtër, përshkrim, çmim. */
+  simple?: boolean;
 };
 
-export function ShopProductManager({ changeToken, storefrontEligible, onProductsChange }: Props) {
+export function ShopProductManager({
+  changeToken,
+  storefrontEligible,
+  onProductsChange,
+  embedded = false,
+  simple = false,
+}: Props) {
   const c = useShopProductsCopy();
   const { uiLang } = useMarket();
   const locale = translationKeyForUiLang(uiLang);
@@ -205,29 +215,50 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
 
   if (!storefrontEligible) return null;
 
+  const shellClass = embedded
+    ? "space-y-4"
+    : "rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/80 to-white p-4 space-y-4";
+
   return (
-    <section className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/80 to-white p-4 space-y-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <Package className="h-5 w-5" style={{ color: BRAND_BLUE }} />
-            <h3 className="font-bold text-gray-900">{c.manageProducts}</h3>
+    <section className={shellClass}>
+      {!simple ? (
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <Package className="h-5 w-5" style={{ color: BRAND_BLUE }} />
+              <h3 className="font-bold text-gray-900">{c.manageProducts}</h3>
+            </div>
+            <p className="text-xs text-gray-600 mt-1 leading-relaxed">{c.autoListingHint}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{c.maxTilesHint}</p>
           </div>
-          <p className="text-xs text-gray-600 mt-1 leading-relaxed">{c.autoListingHint}</p>
-          <p className="text-xs text-gray-500 mt-0.5">{c.maxTilesHint}</p>
+          <Button
+            type="button"
+            size="sm"
+            className="font-semibold text-white shrink-0"
+            style={{ backgroundColor: BRAND_BLUE }}
+            onClick={openCreate}
+            disabled={!changeToken || products.length >= SHOP_STOREFRONT_MAX_TILES}
+          >
+            <Plus size={16} className="mr-1" />
+            {c.addProduct}
+          </Button>
         </div>
-        <Button
-          type="button"
-          size="sm"
-          className="font-semibold text-white shrink-0"
-          style={{ backgroundColor: BRAND_BLUE }}
-          onClick={openCreate}
-          disabled={!changeToken || products.length >= SHOP_STOREFRONT_MAX_TILES}
-        >
-          <Plus size={16} className="mr-1" />
-          {c.addProduct}
-        </Button>
-      </div>
+      ) : (
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs text-gray-600">{c.tileSaveHint}</p>
+          <Button
+            type="button"
+            size="sm"
+            className="font-semibold text-white shrink-0"
+            style={{ backgroundColor: BRAND_BLUE }}
+            onClick={openCreate}
+            disabled={!changeToken || products.length >= SHOP_STOREFRONT_MAX_TILES}
+          >
+            <Plus size={16} className="mr-1" />
+            {c.addTile}
+          </Button>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex justify-center py-6">
@@ -235,8 +266,66 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
         </div>
       ) : products.length === 0 ? (
         <p className="text-sm text-gray-600 bg-white/70 rounded-xl px-4 py-3 border border-indigo-50">
-          {c.noProductsOwner}
+          {simple ? c.noTilesOwner : c.noProductsOwner}
         </p>
+      ) : simple ? (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {products.map((product, index) => {
+            const thumb = product.image_urls?.[0] ?? product.image_url ?? null;
+            const label =
+              product.title && product.title !== "Produkt"
+                ? product.title
+                : product.collection ?? `${c.tileNumber} ${index + 1}`;
+            return (
+              <div
+                key={product.id}
+                className="group relative aspect-square rounded-xl border border-white bg-white shadow-sm overflow-hidden"
+              >
+                {thumb ? (
+                  <img src={thumb} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="h-full w-full bg-gray-100 flex items-center justify-center text-2xl">🛍️</div>
+                )}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-2">
+                  <p className="text-xs font-bold text-white line-clamp-2">{label}</p>
+                </div>
+                <div className="absolute top-1 right-1 flex gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => openEdit(product)}
+                  >
+                    <Pencil size={13} />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button type="button" variant="secondary" size="icon" className="h-7 w-7 text-red-600">
+                        <Trash2 size={13} />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>{c.deleteProduct}</AlertDialogTitle>
+                        <AlertDialogDescription>{label}</AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Anulo</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-red-600 hover:bg-red-700"
+                          onClick={() => void onDelete(product.id)}
+                        >
+                          {c.deleteProduct}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       ) : (
         <div className="space-y-2">
           {products.map((product) => {
@@ -301,9 +390,9 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-xl max-h-[92vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingId ? c.editProduct : c.addProduct}</DialogTitle>
+            <DialogTitle>{editingId ? (simple ? c.editTile : c.editProduct) : simple ? c.addTile : c.addProduct}</DialogTitle>
           </DialogHeader>
-          <p className="text-xs text-gray-500 -mt-2">{c.productFormHint}</p>
+          {!simple ? <p className="text-xs text-gray-500 -mt-2">{c.productFormHint}</p> : null}
           <form className="space-y-4" onSubmit={onSave}>
             <ShopProductPhotoUpload
               urls={form.image_urls}
@@ -311,87 +400,120 @@ export function ShopProductManager({ changeToken, storefrontEligible, onProducts
             />
 
             <div className="space-y-1">
-              <Label>{c.productTitle}</Label>
+              <Label>{simple ? c.tileLabel : c.productTitle}</Label>
               <Input
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                placeholder={c.productTitlePlaceholder}
+                placeholder={simple ? c.tileLabelPlaceholder : c.productTitlePlaceholder}
               />
             </div>
 
             <div className="space-y-1">
-              <Label>{c.productCollection}</Label>
-              <Input
-                value={form.collection}
-                onChange={(e) => setForm((f) => ({ ...f, collection: e.target.value }))}
-                placeholder={c.productCollectionPlaceholder}
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label>{c.productDescription}</Label>
+              <Label>{simple ? c.tileDescription : c.productDescription}</Label>
               <Textarea
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                placeholder={c.productDescriptionPlaceholder}
-                rows={4}
+                placeholder={simple ? c.tileDescriptionPlaceholder : c.productDescriptionPlaceholder}
+                rows={simple ? 2 : 4}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label>{c.productPrice}</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={form.price}
-                  onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-                  placeholder="0"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label>{c.productComparePrice}</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={form.compare_at_price}
-                  onChange={(e) => setForm((f) => ({ ...f, compare_at_price: e.target.value }))}
-                />
-              </div>
-            </div>
-
             <div className="space-y-1">
-              <Label>{c.productCategory}</Label>
-              <Select
-                value={form.category_id || "__none__"}
-                onValueChange={(v) =>
-                  setForm((f) => ({ ...f, category_id: v === "__none__" ? "" : v }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={c.selectCategoryOptional} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">{c.selectCategoryOptional}</SelectItem>
-                  {categoryOptions.map((opt) => (
-                    <SelectItem key={opt.id} value={String(opt.id)}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-gray-500">{c.productCategoryHint}</p>
-            </div>
-
-            <div className="space-y-1">
-              <Label>{c.productSku}</Label>
+              <Label>{c.productPrice}</Label>
               <Input
-                value={form.sku}
-                onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))}
+                type="number"
+                min={0}
+                step="0.01"
+                value={form.price}
+                onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+                placeholder="0"
               />
             </div>
+
+            {!simple ? (
+              <>
+                <div className="space-y-1">
+                  <Label>{c.productCollection}</Label>
+                  <Input
+                    value={form.collection}
+                    onChange={(e) => setForm((f) => ({ ...f, collection: e.target.value }))}
+                    placeholder={c.productCollectionPlaceholder}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label>{c.productComparePrice}</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={form.compare_at_price}
+                      onChange={(e) => setForm((f) => ({ ...f, compare_at_price: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label>{c.productCategory}</Label>
+                  <Select
+                    value={form.category_id || "__none__"}
+                    onValueChange={(v) =>
+                      setForm((f) => ({ ...f, category_id: v === "__none__" ? "" : v }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={c.selectCategoryOptional} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">{c.selectCategoryOptional}</SelectItem>
+                      {categoryOptions.map((opt) => (
+                        <SelectItem key={opt.id} value={String(opt.id)}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500">{c.productCategoryHint}</p>
+                </div>
+
+                <div className="space-y-1">
+                  <Label>{c.productSku}</Label>
+                  <Input
+                    value={form.sku}
+                    onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))}
+                  />
+                </div>
+              </>
+            ) : (
+              <details className="text-sm">
+                <summary className="cursor-pointer text-gray-600 font-medium">{c.tileAdvanced}</summary>
+                <div className="mt-3 space-y-3">
+                  <div className="space-y-1">
+                    <Label>{c.productCategory}</Label>
+                    <Select
+                      value={form.category_id || "__none__"}
+                      onValueChange={(v) =>
+                        setForm((f) => ({ ...f, category_id: v === "__none__" ? "" : v }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={c.selectCategoryOptional} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">{c.selectCategoryOptional}</SelectItem>
+                        {categoryOptions.map((opt) => (
+                          <SelectItem key={opt.id} value={String(opt.id)}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500">{c.productCategoryHint}</p>
+                  </div>
+                </div>
+              </details>
+            )}
 
             <Button type="submit" className="w-full min-h-11" disabled={saving || !changeToken}>
               {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : c.saveProduct}

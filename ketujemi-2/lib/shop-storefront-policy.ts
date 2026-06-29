@@ -20,6 +20,13 @@ export const SHOP_PRODUCT_BLOCKED_LISTING_ROOT_SLUGS = new Set([
 /** Max product/service tiles on the public shop storefront grid. */
 export const SHOP_STOREFRONT_MAX_TILES = 8;
 
+/** Max photos per product tile (same as marketplace listings). */
+export const SHOP_STOREFRONT_MAX_PHOTOS_PER_PRODUCT = 10;
+
+/** Max total product photos across the storefront (8 tiles × 10 photos). */
+export const SHOP_STOREFRONT_MAX_PHOTOS_TOTAL =
+  SHOP_STOREFRONT_MAX_TILES * SHOP_STOREFRONT_MAX_PHOTOS_PER_PRODUCT;
+
 export type ShopDirectoryFields = {
   directory_category_slug?: string | null;
   directory_subcategory_slug?: string | null;

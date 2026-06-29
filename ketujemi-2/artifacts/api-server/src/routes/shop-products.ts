@@ -16,6 +16,7 @@ import {
 import {
   deactivateShopProductListing,
   refreshShopProductListingsAfterShopUpdate,
+  removeShopProductListing,
   syncShopProductToListing,
   validateShopProductCategoryId,
 } from "../lib/shop-product-listing-sync.js";
@@ -23,6 +24,7 @@ import { resolveShopByIdOrSlug } from "../lib/shop-slug.js";
 import { assertShopProductTextAllowed } from "../lib/shop-content-moderation.js";
 import { joinListingImageUrls, parseListingImageUrls, sanitizeListingImageUrlField } from "../lib/listing-images.js";
 import { SHOP_PRODUCT_BLOCKED_LISTING_ROOT_SLUGS, SHOP_STOREFRONT_MAX_TILES } from "../../../../lib/shop-storefront-policy.js";
+import { LISTING_MAX_PHOTOS } from "../../../../lib/special-listing-categories.js";
 
 const DEFAULT_PRODUCT_TITLE = "Produkt";
 const DEFAULT_PRODUCT_DESCRIPTION = "Produkt nga dyqani im në KetuJemi.";
@@ -65,6 +67,9 @@ async function defaultShopProductCategoryId(): Promise<number> {
 function resolveProductImages(body: Record<string, unknown>): string | null | undefined {
   if ("image_urls" in body && Array.isArray(body.image_urls)) {
     const urls = body.image_urls.filter((u): u is string => typeof u === "string");
+    if (urls.length > LISTING_MAX_PHOTOS) {
+      throw new Error(`Maksimumi ${LISTING_MAX_PHOTOS} foto për produkt.`);
+    }
     return joinListingImageUrls(urls);
   }
   if ("image_url" in body) {
@@ -148,8 +153,12 @@ function validateProductBody(body: Record<string, unknown>, partial = false): { 
     const cap = body.compare_at_price === null || body.compare_at_price === "" ? null : parsePrice(body.compare_at_price);
     data.compare_at_price = cap;
   }
-  const images = resolveProductImages(body);
-  if (images !== undefined) data.image_url = images;
+  try {
+    const images = resolveProductImages(body);
+    if (images !== undefined) data.image_url = images;
+  } catch (err) {
+    errors.push(err instanceof Error ? err.message : "Foto të pavlefshme.");
+  }
   if ("collection" in body) data.collection = trimOrNull(body.collection)?.slice(0, 80) ?? null;
   if ("sku" in body) data.sku = trimOrNull(body.sku);
   if ("sort_order" in body) {
@@ -237,7 +246,7 @@ router.post("/shops/me/products", async (req, res) => {
   const [countRow] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(shopProductsTable)
-    .where(and(eq(shopProductsTable.shop_id, shop.id), eq(shopProductsTable.is_active, true)));
+    .where(eq(shopProductsTable.shop_id, shop.id));
   if ((countRow?.count ?? 0) >= SHOP_STOREFRONT_MAX_TILES) {
     res.status(400).json({
       error: "VALIDATION",
@@ -444,7 +453,7 @@ router.delete("/shops/me/products/:productId", async (req, res) => {
     return;
   }
 
-  await deactivateShopProductListing(existing);
+  await removeShopProductListing(existing);
   await db.delete(shopProductsTable).where(eq(shopProductsTable.id, productId));
 
   res.json({ ok: true });

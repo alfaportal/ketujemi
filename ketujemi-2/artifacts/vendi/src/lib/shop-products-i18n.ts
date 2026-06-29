@@ -77,6 +77,22 @@ export type ShopProductsCopy = {
   maxTilesHint: string;
   maxTilesReached: string;
   coverPhotoLabel: string;
+  storefrontEditorIntro: string;
+  storefrontStepPhotos: string;
+  storefrontStepAbout: string;
+  storefrontStepTiles: string;
+  storefrontStepContact: string;
+  storefrontStepExtra: string;
+  addTile: string;
+  editTile: string;
+  tileLabel: string;
+  tileLabelPlaceholder: string;
+  tileDescription: string;
+  tileDescriptionPlaceholder: string;
+  tileSaveHint: string;
+  tileAdvanced: string;
+  noTilesOwner: string;
+  tileNumber: string;
 };
 
 const KS: ShopProductsCopy = {
@@ -166,9 +182,26 @@ Materialet e ndaluara refuzohen automatikisht. Ekipi i KetuJemi mund të heqë d
   callShop: "Thirr",
   prevPhoto: "Foto e mëparshme",
   nextPhoto: "Foto tjetër",
-  maxTilesHint: "Maksimumi 8 shërbime/produkte në webfaqe — secili me deri në 10 foto.",
+  maxTilesHint: "Maksimumi 8 katrorë në webfaqe — secili me deri në 10 foto (80 foto gjithsej).",
   maxTilesReached: "Keni arritur 8 produkte në webfaqe. Fshini një për të shtuar tjetër.",
   coverPhotoLabel: "Foto kryesore (cover)",
+  storefrontEditorIntro:
+    "Ndryshoni webfaqen këtu — vizitorët shohin vetëm faqen publike, jo këtë panel. Ruajeni çdo katror veç e pastaj «Ruaj webfaqen».",
+  storefrontStepPhotos: "Foto kryesore & logo",
+  storefrontStepAbout: "Përshkrimi i dyqanit",
+  storefrontStepTiles: "8 katrorët — çka shiten",
+  storefrontStepContact: "Telefon, email & rrjetet sociale",
+  storefrontStepExtra: "Orari, adresa & kategoria (opsionale)",
+  addTile: "Shto katror",
+  editTile: "Edito katrorin",
+  tileLabel: "Çka shiten këtu?",
+  tileLabelPlaceholder: "P.sh. Rroba për femra, Këpucë meshkuj…",
+  tileDescription: "Përshkrim i shkurtër",
+  tileDescriptionPlaceholder: "P.sh. Veshje casual, madhësi S–XL, stok i ri…",
+  tileSaveHint: "Çdo katror ruhet veç — klikoni Ruaj produktin. Shfaqet në webfaqe dhe Blej & Shite.",
+  tileAdvanced: "Blej & Shite — kategoria (opsionale)",
+  noTilesOwner: "Shtoni katrorin e parë — deri në 8, secili me deri në 10 foto.",
+  tileNumber: "Katror",
 };
 
 const EN: ShopProductsCopy = {
@@ -258,9 +291,26 @@ Prohibited content is rejected automatically. KetuJemi may remove shops that bre
   callShop: "Call",
   prevPhoto: "Previous photo",
   nextPhoto: "Next photo",
-  maxTilesHint: "Up to 8 services/products on your storefront — each with up to 10 photos.",
+  maxTilesHint: "Up to 8 tiles on your storefront — each with up to 10 photos (80 total).",
   maxTilesReached: "You reached 8 storefront items. Delete one to add another.",
   coverPhotoLabel: "Cover photo",
+  storefrontEditorIntro:
+    "Edit your storefront here — visitors only see the public page, not this panel. Save each tile, then «Save storefront».",
+  storefrontStepPhotos: "Cover photo & logo",
+  storefrontStepAbout: "About your shop",
+  storefrontStepTiles: "8 tiles — what you sell",
+  storefrontStepContact: "Phone, email & social links",
+  storefrontStepExtra: "Hours, address & category (optional)",
+  addTile: "Add tile",
+  editTile: "Edit tile",
+  tileLabel: "What do you sell here?",
+  tileLabelPlaceholder: "E.g. Women's clothing, Men's shoes…",
+  tileDescription: "Short description",
+  tileDescriptionPlaceholder: "E.g. Casual wear, sizes S–XL, new stock…",
+  tileSaveHint: "Each tile saves separately — click Save product. It appears on your site and Buy & Sell.",
+  tileAdvanced: "Buy & Sell category (optional)",
+  noTilesOwner: "Add your first tile — up to 8, each with up to 10 photos.",
+  tileNumber: "Tile",
 };
 
 const BY_LOCALE: Partial<Record<UiTranslationLocale, ShopProductsCopy>> = {
